@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     P = ParamSpec("P")
 
     MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]
-    MongoCollection: TypeAlias = Type[Collection]  # type: ignore
+    MongoCollection: TypeAlias = Type[type(Collection)]  # type: ignore
 
 
 T = TypeVar("T")
@@ -78,12 +78,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     """A custom implementation of commands.Context class."""
 
     if TYPE_CHECKING:
-        from .Cog import Cog
         from .Parrot import Parrot
 
-    prefix: Optional[str]
-    command: commands.Command[Any, ..., Any]
-    cog: Optional[Cog]
     bot: Parrot
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

@@ -1,0 +1,45 @@
+0_hellofriend.mov
+1_ones-and-zer0es.mpeg
+2_d3bug.mkv
+3_da3m0ns.mp4
+4_3xpl0its.wmv
+5_br4ve-trave1er.asf
+6_v1ew-s0urce.flv
+7_wh1ter0se.m4v
+8_m1rr0r1ng.qt
+9_zer0-day.avi
+0_unm4sk-pt1.tc
+0_unm4sk-pt2.tc
+1_k3rnel-pan1c.ksd
+2_init_1.asec
+3_logic-b0mb.hc
+4_m4ster-s1ave.aes
+5_h4ndshake.sme
+6_succ3ss0r.p12
+7_init_5.fve
+8_h1dden-pr0cess.axx
+9_pyth0n-pt1.p7z
+9_pyth0n-pt2.p7z
+0_power-saver-mode.h
+1_undo.gz
+2_legacy.so
+3_metadata.par2
+4_runtime-error.r00
+5_kill-process.inc
+6_fredrick+tanya.chk
+7_dont-delete-me.ko
+8_stage3.torrent
+shutdown -r
+401 Unauthorized
+402 Payment Required
+403 Forbidden
+404 Not Found
+405 Method Not Allowed
+406 Not Acceptable
+407 Proxy Authentication Required
+408 Request Timeout
+409 Conflict
+410 Gone
+eXit
+whoami
+Hello, Friend

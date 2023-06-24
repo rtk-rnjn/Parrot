@@ -146,7 +146,7 @@ class MessageConstruct:
                 ("BOT_TAG", is_bot, PARSE_MODE_NONE),
                 (
                     "NAME_TAG",
-                    f"{message.author.name}#{message.author.discriminator}",
+                    f"{message.author}",
                     PARSE_MODE_NONE,
                 ),
                 ("NAME", str(html.escape(message.author.display_name))),
@@ -246,7 +246,7 @@ class MessageConstruct:
                     ("AVATAR_URL", str(avatar_url), PARSE_MODE_NONE),
                     (
                         "NAME_TAG",
-                        f"{self.message.author.name}#{self.message.author.discriminator}",
+                        f"{self.message.author}",
                         PARSE_MODE_NONE,
                     ),
                     ("USER_ID", str(self.message.author.id)),
@@ -278,7 +278,7 @@ class MessageConstruct:
                 ("NAME", str(html.escape(self.message.author.display_name))),
                 (
                     "NAME_TAG",
-                    f"{self.message.author.name}#{self.message.author.discriminator}",
+                    f"{self.message.author}",
                     PARSE_MODE_NONE,
                 ),
                 ("MESSAGE_ID", str(self.message.id), PARSE_MODE_NONE),
@@ -304,7 +304,7 @@ class MessageConstruct:
                 ("NAME", str(html.escape(self.message.author.display_name))),
                 (
                     "NAME_TAG",
-                    f"{self.message.author.name}#{self.message.author.discriminator}",
+                    f"{self.message.author}",
                     PARSE_MODE_NONE,
                 ),
                 ("MESSAGE_ID", str(self.message.id), PARSE_MODE_NONE),

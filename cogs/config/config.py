@@ -864,7 +864,7 @@ class Configuration(Cog):
                 f"{ctx.author.mention} member ping reseted! or removed"
             )
         await ctx.reply(
-            f"{ctx.author.mention} success! **@{member.name}#{member.discriminator}** will be now pinged when someone calls your server."
+            f"{ctx.author.mention} success! **@{member}** will be now pinged when someone calls your server."
         )
 
     @telephone.command(name="block")

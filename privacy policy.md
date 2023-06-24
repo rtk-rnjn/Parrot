@@ -14,7 +14,7 @@ For a better experience, while using our Service, I may require you to provide u
 
 ### Log Data
 
-I want to inform you that whenever you use my Service, in a case of an error in the app I collect data and information called Log Data. This Log Data may include information such as your user ID, name, discriminator, channel, roles and server (if applicable), the configuration of the app when utilizing my Service, the time and date of your use of the Service, and other statistics.
+I want to inform you that whenever you use my Service, in a case of an error in the app I collect data and information called Log Data. This Log Data may include information such as your user ID, name, channel, roles and server (if applicable), the configuration of the app when utilizing my Service, the time and date of your use of the Service, and other statistics.
 
 ### Service Providers
 

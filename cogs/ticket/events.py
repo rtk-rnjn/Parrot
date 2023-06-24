@@ -100,7 +100,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             )
 
             em = discord.Embed(
-                title=f"New ticket from {member.name}#{member.discriminator}",
+                title=f"New ticket from {member}",
                 description="Pls wait while you reach you",
                 color=0x00A8FF,
             )

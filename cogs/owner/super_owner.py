@@ -495,7 +495,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         for member in json["members"]:
             id_ = member["id"]
             username = member["username"]
-            discriminator = member["discriminator"]
             avatar_url = member["avatar_url"]
             status = member["status"]
             vc = member["channel_id"] if "channel_id" in member else None
@@ -507,7 +506,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
             em = (
                 discord.Embed(
-                    title=f"Username: {username}#{discriminator}",
+                    title=f"Username: {username}",
                     color=ctx.author.color,
                     timestamp=discord.utils.utcnow(),
                 )

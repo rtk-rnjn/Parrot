@@ -33,14 +33,13 @@ class ArbitraryEvents(Cog):
         elif entry.target and getattr(entry.target, "id", None) == self.bot.user.id:
             self.bot.dispatch("bot_activity")
 
-    @tasks.loop(count=1)
+    @tasks.loop(seconds=15)
     async def bot_activity(self) -> None:
         try:
             await self.bot.wait_for("bot_activity", timeout=10)
         except asyncio.TimeoutError:
+            await self.bot.wait_until_ready()
             self.bot.dispatch("bot_idle")
-
-        self.bot_activity.restart()
 
     async def cog_unload(self) -> None:
         if self.bot_activity.is_running():

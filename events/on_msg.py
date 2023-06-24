@@ -280,8 +280,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         self,
         file_contents: Optional[Any],
         file_path: str,
-        start_line: Optional[Union[str, int]],
-        end_line: Optional[Union[str, int]],
+        start_line: Union[str, int],
+        end_line: Union[str, int],
     ) -> str:
         """
         Given the entire file contents and target lines, creates a code block.

@@ -44,7 +44,7 @@ class Telephone(Cog):
             f"Call Details\n"
             f"`Total Time Taken:` **{round(fin-ini)}**\n"
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
-            f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
+            f"`Called by       :` **{ctx.author}**\n"
             f"`Can Redial?     :` **True**\n"
             f"`Call log saved? :` **False**\n"
         )
@@ -68,7 +68,7 @@ class Telephone(Cog):
                     f"Call Details\n"
                     f"`Total Time Taken:` **{round(fin-ini)}**\n"
                     f"`Tried to call   :` **{server.name} ({server.id})**\n"
-                    f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
+                    f"`Called by       :` **{ctx.author}**\n"
                     f"`Can Redial?     :` **True**\n"
                     f"`Call log saved? :` **False**\n"
                 )
@@ -95,7 +95,7 @@ class Telephone(Cog):
             f"Call Details\n"
             f"`Total Time Taken:` **{round(fin-ini)}**\n"
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
-            f"`Called by       :` **{ctx.author.name}#{ctx.author.discriminator}**\n"
+            f"`Called by       :` **{ctx.author}**\n"
             f"`Can Redial?     :` **True**\n"
             f"`Call log saved? :` **False**\n"
         )

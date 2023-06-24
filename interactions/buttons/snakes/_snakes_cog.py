@@ -790,7 +790,7 @@ class Snakes(Cog):
         )
         my_snake_embed.set_thumbnail(url=snake_image)
         my_snake_embed.set_footer(
-            text=" Owner: {0}#{1}".format(ctx.author.name, ctx.author.discriminator)
+            text=" Owner: {0}".format(ctx.author)
         )
 
         await ctx.send(embed=my_snake_embed)
@@ -999,7 +999,7 @@ class Snakes(Cog):
 
             # Build and send the embed
             embed.set_author(
-                name=f"{user.name}#{user.discriminator}",
+                name=f"{user}",
                 icon_url=user.display_avatar.url,
             )
             embed.description = f"*{self._snakify(message)}*"

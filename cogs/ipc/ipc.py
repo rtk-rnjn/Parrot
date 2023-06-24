@@ -92,7 +92,6 @@ class IPCRoutes(Cog):
                 "owner": {
                     "id": guild.owner.id,
                     "name": guild.owner.name,
-                    "discriminator": guild.owner.discriminator,
                     "avatar_url": guild.owner.display_avatar.url,
                 }
                 if guild.owner is not None
@@ -126,7 +125,6 @@ class IPCRoutes(Cog):
                     {
                         "id": member.id,
                         "name": member.name,
-                        "discriminator": member.discriminator,
                         "avatar_url": member.display_avatar.url,
                         "bot": member.bot,
                         "roles": [role.id for role in member.roles],
@@ -171,12 +169,10 @@ class IPCRoutes(Cog):
     async def users(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
-        elif (name := getattr(data, "name", None)) and (
-            discriminator := getattr(data, "discriminator", None)
-        ):
+        elif (name := getattr(data, "name", None)):
             users = [
                 discord.utils.get(
-                    self.bot.users, name=name, discriminator=discriminator
+                    self.bot.users, name=name
                 )
             ]
         else:
@@ -186,7 +182,6 @@ class IPCRoutes(Cog):
             {
                 "id": user.id,
                 "name": user.name,
-                "discriminator": user.discriminator,
                 "avatar_url": user.display_avatar.url,
                 "bot": user.bot,
                 "created_at": user.created_at.isoformat(),
@@ -209,7 +204,6 @@ class IPCRoutes(Cog):
                 "author": {
                     "id": message.author.id,
                     "name": message.author.name,
-                    "discriminator": message.author.discriminator,
                     "avatar_url": message.author.display_avatar.url,
                     "bot": message.author.bot,
                     "system": message.author.system,
@@ -235,7 +229,7 @@ class IPCRoutes(Cog):
                     )
                     msg = await webhook.send(
                         content=data.content[:1990],
-                        username=f"{data.author_name}#{data.discriminator}",
+                        username=f"{data.author_name}",
                         avatar_url=data.avatar_url,
                         allowed_mentions=discord.AllowedMentions.none(),
                         wait=True,

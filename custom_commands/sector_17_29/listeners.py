@@ -111,7 +111,9 @@ class Sector17Listeners(Cog):
         log.debug("Command list: %s", ls)
         return tuple(set(ls))
 
-    async def change_owo_prefix(self, message: discord.Message, content: str) -> Optional[bool]:
+    async def change_owo_prefix(
+        self, message: discord.Message, content: str
+    ) -> Optional[bool]:
         if not content.startswith(self._get_command_list({"prefix": "prefix"})):
             return
 

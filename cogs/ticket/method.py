@@ -164,7 +164,7 @@ async def _close(ctx: Context, bot: Parrot) -> None:
                 return
             await ctx.reply(embed=em)
             await ctx.channel.delete(
-                reason=f"Parrot Ticket bot feature | On request from {ctx.author.name}#{ctx.author.discriminator}"
+                reason=f"Parrot Ticket bot feature | On request from {ctx.author}"
             )
             await ctx.bot.guild_configurations.update_one(
                 {"_id": ctx.guild.id},

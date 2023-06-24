@@ -1,0 +1,390 @@
+How long have you worked there?
+Do you like it?
+How are your coworkers?
+What’s the best / worst thing about being a (their job)?
+What do you think about (current news story)?
+Did you hear about (news story)?
+How much do you follow the news?
+What do you think doesn’t get enough news coverage?
+What gets too much attention in the news?
+How do you get your news?
+Do you play any sports?
+How do you like your neighborhood?
+When did you move there?
+What’s the best thing about living in that part of town?
+What are your plans for the weekend?
+Where are you planning to go for your next vacation?
+Anything exciting going on this week?
+What do you do in your free time?
+How much free time do you have?
+What do you wish you had more time for?
+What kind of music are you into?
+What music did you like when you were younger?
+What’s your favorite band / singer?
+Have you been to any concerts recently?
+What’s your favorite album?
+What type of movies do you like?
+What’s your favorite movie?
+Who’s your favorite actor / actress / director?
+What’s the last movie you saw?
+What’s your favorite food / ethnic food / restaurant / thing to cook / seasonal food?
+Do you like cooking?
+How do you usually find good restaurants?
+What weird foods have you tried?
+Do you like reading books?
+What types of books do you like?
+What’s the last book you read?
+What’s your favorite book?
+What book is overrated?
+Are there any books you would really recommend I read?
+What shows do you watch?
+What do you think about (popular TV show)?
+Have you seen (TV show you like)?
+What are some shows that ended that you were really into?
+What show do I really need to check out?
+Where have you been on vacation?
+What did you like / dislike about (place they traveled)?
+Where do you wish you could go?
+What place do I really need to see?
+What’s your favorite place you’ve been?
+Do you have any hobbies?
+How long have you been doing them?
+How did you get started?
+What common misconceptions do people have about your hobby?
+What hobbies did you have when you were younger?
+Are you a cat person or a dog person?
+What do you think about (animal) as a pet?
+What pets have you had?
+What pet would you like to have?
+What good restaurants do you know of around here?
+What’s your go to restaurant when you want to eat out but can’t decide where to go?
+What’s your favorite (Mexican/ Thai / Vietnamese / etc.) restaurant around here?
+What’s your favorite pizza place near here?
+What are some current trends you just can’t get behind?
+What current trend is going to look the silliest in 10 years?
+Do you usually follow trends or just do your own thing?
+What kind of sense of humor do you have?
+Are there any comedians you really like?
+What are some of your favorite comedies?
+Who are some of your favorite actors or actresses?
+What actor or actress will you watch no matter how bad the ratings for the movie are?
+Which actor or actress used to be really popular but has fallen off the radar?
+What actors or actresses only play one character in every movie they are in?
+What kinds of things do you pick up easily?
+What subjects were hardest for you in school?
+What kinds of things are you interested in learning more about?
+What’s your favorite app on your phone?
+What app do you spend the most time on?
+What app would you suggest everyone get?
+What app do you wish you didn’t have to use?
+What do direction do you think the internet is headed in?
+What is the longest you’ve been offline?
+What’s on the internet that you couldn’t live without?
+What game on your phone or tablet are you really into now?
+What was the best mobile game you’ve played?
+Do you like board or card games?
+How about console or PC games?
+What do you think would be the most useful thing you could do with virtual reality?
+What would be the most entertaining or interesting thing you could do with VR?
+Do you think that VR will become mainstream in the near future?
+What phone do you have?
+How do you like your phone?
+How often do you get a new phone?
+What do you look for when you get a new phone?
+How many phones have you lost or broken?
+How concerned about privacy are you?
+Do you think all the hype about privacy is warranted?
+Would you buy a self-driving car if it was affordable?
+Are you concerned about the rise of self-driving cars?
+What will be some of the benefits of self-driving cars?
+Will there be any drawbacks of self-driving cars?
+What podcast do you always start up as soon as it hits your feed?
+What are some podcasts that you used to be into but you don’t listen do anymore?
+What kind of podcast would you start if you were given the chance?
+What social media platform do you spend the most time on?
+Who is the most interesting person you follow?
+What kinds of people do you follow?
+Who sometimes annoys you but you still follow them because they occasional put out something amazing?
+What websites do you spend the most time on?
+What are some truly bizarre websites you’ve been to?
+What is the most useful site you’ve used?
+What was your hometown like?
+Did you enjoy where you grew up?
+How much did where you grew up shape you?
+What were some of the best and worst things about where you grew up?
+What games did you play as a child?
+What kind of hobbies did you have when you were growing up?
+What cartoons or shows did you watch when you were a kid?
+What fads or interests were you really into when you were younger?
+What was your elementary / junior high / high school like?
+Did you go to college? What did you major in?
+Where did you go to college / high school?
+What kind of kid were you when you were in high school?
+Do you stay in touch with your old childhood friends?
+What do you usually do when you hang out with your friends?
+Do you prefer having a lot of friends or just a few close ones?
+How long have you known your best friend?
+How did you and your best friend meet?
+How many siblings do you have?
+Do you live close to your family?
+Do you still go to a lot of family gatherings?
+What family traditions do you have?
+What kind of jobs have you worked at?
+What’s the best / worst / most interesting job you’ve had?
+What’s the longest you’ve worked at a job?
+Where’s the best / worst place you’ve lived?
+What was your college apartment / dorm like?
+What accomplishment are you most proud of?
+What awards or trophies have you won?
+What is the next big thing you want to accomplish?
+What clubs have you been a part of?
+Where there any clubs you joined but then immediately realized it wasn’t what you expected?
+If you were to start a club, what kind of club would it be?
+What was the first car you owned?
+What car would you like to have?
+Do you like the car you have now?
+How long have you had your current car?
+What were your favorite holidays when you were a child?
+How about now, what are your favorite holidays now that you are older?
+What holiday do you wish existed?
+What are your plans for (upcoming holiday)?
+Do you like coffee?
+How many cups do you usually drink a day?
+How do you take your coffee?
+Where do you usually get your coffee fix?
+How often do you go to a café?
+What kind of coffee do you usually order at a café?
+Do you take a lot of pictures?
+What do you usually take pictures of?
+Do you have a stand-alone camera or do you usually just use your phone?
+Do you use a selfie stick?
+What are some of your favorite photos you’ve taken?
+Do you like going to beaches?
+How often do you go to a beach?
+What good / bad memories of beaches do you have?
+When was the last time you went to a beach?
+What was the best / worst beach you’ve been do?
+What’s your favorite thing to do at the beach?
+How often do you go on hikes?
+Do you like hiking?
+What was the most beautiful hike you’ve been on?
+What was the longest hike you’ve done?
+Where is the best place to go hiking near you?
+Do you think alien life exists?
+How about intelligent alien life?
+Do you think we’ll find microscopic alien life in our own solar system?
+Do you think that intelligent aliens have ever or will ever visit earth?
+How different will alien life be to life on Earth?
+How comfortable are you with change?
+Do you think a lot of change is healthy or unhealthy for a person?
+What do you think about the speed of change happening in the world today?
+What do you think has been the biggest change that has happened in the last 50 years?
+What still needs to be changed?
+Are you good at cooking?
+What are you the best at cooking?
+What are you the worst at cooking?
+What was your most epic cooking failure?
+Who is the best cook you know?
+Is there anything you are naturally good at?
+What do you wish you were better at?
+What are the most useful skills you have?
+What skills would you like to learn?
+What are some skills that you think everyone should learn?
+Do you have any unusual skills or talents?
+What do you like / hate shopping for?
+Where do you usually shop for clothes / shoes / groceries?
+How often do you window shop?
+Do you prefer shopping online or in person?
+When shopping for clothes / shoes, do you prefer to shop alone or with other people?
+What’s your best / worst habit?
+Have you ever succeeded in breaking a bad habit?
+What’s a good habit you’d like to start?
+What’s a bad habit that you just can’t seem to break?
+What are some things you want to achieve before you die?
+What is the silliest goal you have?
+What goals have you achieved so far?
+How good are you at finishing what you start?
+What goals have you realized just aren’t going to happen?
+What social media platform do you use most often?
+Which social media platforms do you not get?
+Are there any social media outlets that you don’t like but have to be on them because of friends or family?
+How much time do you spend on social media?
+Have you done any volunteering?
+How did you like it?
+Do you ever contribute to charities?
+What charities do you think are most worthwhile?
+Do you think any charities aren’t worth supporting?
+What kind of volunteer would you like to try?
+When was the last time you went fishing?
+Do you like fishing?
+What was the biggest fish you have ever caught?
+Who do you go fishing with or do you go alone?
+Where is your favorite place to fish?
+Do you know any other languages?
+What words do you know in other languages?
+What language do you wish you could learn?
+What is the most useful language to know?
+What do you think about English becoming the default language?
+What do you think would be the hardest language to learn?
+Have you ever tried a dating site or app? How did it go?
+Do you think that online / app dating or more traditional ways of dating are better?
+What do you think could be done to improve online dating and dating apps?
+What do you think about the flood of super hero movies and TV shows?
+Which super hero movie / TV show is your favorite?
+Did you read comics when you were a kid?
+Who is your favorite / least favorite super hero?
+What super power would you like to have?
+What stresses you out the most?
+How stressed are you on a daily basis?
+What’s the best way to relieve stress?
+What’s stressing you out these days?
+What stresses you out but really shouldn’t?
+How creative are you?
+What do you do that requires you to be creative?
+Is creativity something that can be learned?
+Who is the most creative person you know?
+How important is creativity for your job?
+What profession requires the most creativity?
+Who did you look up to as a child?
+Who do you look up to now?
+Did you have any of your role models let you down?
+What is the most heroic profession?
+What makes a person a good role model?
+When are you happiest?
+What do you think leads to long term happiness?
+Can a person learn to be happier?
+What do you do that makes you happy in the short term but makes you unhappy in the long term?
+Do you think people are happier on average now than they were in the past?
+What ads annoy you the most?
+Do you think that advertising affects your buying choices?
+What ads are the most effective?
+What are some clever or funny ads you have seen?
+Do you think the internet would survive without advertising?
+Which celebrities do you like / dislike?
+How much do you follow news about celebrities?
+Would you ever want to be famous?
+Which celebrity has done the most good for society?
+Which celebrity has done the most harm to society?
+What makes you like / dislike a celebrity?
+At what age would you like to retire?
+What would you like to do once you retire?
+How do you think you’ll adapt to retirement?
+Where would you like settle down after you retire?
+How has retirement changed over the years?
+How accurate do you think stereotypes are?
+What stereotypes apply to you? Do you think they are accurate?
+What are some positive stereotypes?
+What stereotypes are the most hurtful?
+Why do you think stereotypes are so common?
+How widespread is corruption in your country / state / city / job?
+What do you think is the most common type of corruption?
+What is the most dangerous type of corruption?
+What are some of the worst instances of corruption you’ve heard about?
+What’s your favorite type of weather?
+What do you like to do on rainy days?
+What is the best thing do on hot / cold / sunny / windy days?
+What’s the worst storm you’ve been through?
+Where do you think the best place to live is for the type of weather you like?
+What do you think life will be like in 10 / 25 / 50 / 100 years?
+Do you think humanity is headed in a good direction?
+What discovery could be made that would completely change the course of humanity?
+How long would you like to live?
+What’s your favorite / least favorite place to drive?
+How is your commute?
+Do you usually listen to music, talk radio, podcasts, or silence while driving?
+What’s the best road trip you’ve been on?
+How often do you go to parks?
+Are there a lot of parks around where you live?
+Where is the best park you’ve been to?
+Given the chance, would you go to colonize Mars if you knew you would never be coming back to Earth?
+What do you usually do when you are at a park?
+Do you think there are intelligent aliens in our galaxy?
+If you could have a faster than light space ship and could go anywhere in space, where would you go?
+What is your spirit animal?
+Besides dogs or domestic cats do you have any favorite animals?
+What is the coolest thing you’ve seen an animal do?
+How old do you want to live to?
+Do you think younger or older people are happier? Why?
+What is the perfect age to be?
+What kind of crafts have you done?
+Are you good with your hands?
+What home improvement project would you like to attempt?
+What is the coolest thing you’ve made?
+What do you do to stay active?
+Do you like exercising or lifting weights?
+What’s your favorite outdoor activity?
+What’s your favorite drink?
+How often do you go camping?
+Do you usually go out or have friends over when you have a few drinks?
+Do you like beer or cocktails more? What types?
+What comes up when you Google your name?
+What is the weirdest thing you’ve Googled?
+How bad would it be if you Google search results were made public?
+Where have you been camping?
+What was your best / worst camping trip?
+What do you usually take with you when you go camping?
+What’s your favorite flavor?
+What’s your favorite ice cream brand or shop?
+Where was your best ice cream experience?
+Do you try to keep up with the latest fashion?
+Where do you usually shop for clothes at? Why there?
+How would you describe your look?
+Who is the luckiest / unluckiest person you know?
+Do you think some people are born lucky or do you think people make their own luck?
+What was the luckiest thing that happened to you?
+Do you have any good luck charms or rituals?
+How much sleep do you need to function? Do you usually get more or less than that?
+What’s your secret for getting a good night’s sleep?
+What was the last thing you fixed?
+What’s the longest you’ve gone without sleeping?
+How good of a dancer are you?
+How good are you at fixing things?
+What did you try to fix but it ended up just making it worse?
+Where do you usually dance?
+If you could master any form of dancing, what type of dancing would you master?
+Have you ever done karaoke? What’s your go to song?
+Do you sing in the car while you are listening to music?
+How good of a singer are you?
+What culture do you identify most with?
+What’s your favorite / least favorite fruit?
+How good are you at taking care of plants?
+Can you swim? How did you learn?
+Have you ever had a garden? Would you like to have a garden?
+Do you go swimming often? Where do you usually go swimming?
+What’s the most interesting fact you know?
+What kind of things get on your nerves more than they should?
+What small things do you consider rude?
+Can you play any musical instruments?
+What musical instruments have you tried playing?
+Would you want to be famous?
+What level of popularity do people have to have to be considered famous?
+How long do you think you would have survived in prehistoric times?
+What is the most interesting period of history?
+What’s the most important lesson people can learn from history?
+What historical figure was not as great as people think they are?
+What are the biggest upsides and downsides of being famous?
+If you could play any musical instrument like a master without any effort, what instrument would you choose?
+What does your friend / coworker / roommate that bugs you to no end?
+Are there any facts you learned that caused you to change how you lived your life?
+What are some things that are bandied about as facts but aren’t true?
+Where is the most beautiful / dirtiest place you’ve swum?
+What’s the coolest looking plant you’ve seen?
+How often do you go to botanical gardens?
+What fruit flavor do you love but aren’t crazy about the actual fruit?
+What fruit is the biggest pain to eat?
+What’s the best and worst thing about popular culture?
+What kind of art do you like?
+Do you have any brands that you are really loyal to?
+What brands are not worth the extra money they charge? What brands are worth the extra money?
+What’s your favorite natural setting to be in?
+How often do you get out into nature?
+What’s the farthest you’ve been from civilization?
+What brand has seriously gone downhill?
+Do you ever go to art museums?
+Do you like playing cards? What kind of games do you know how to play?
+Have you ever won money playing cards?
+How often do you play cards?
+What do you think of modern art?
+What is the coolest piece of art you’ve seen?
+What kind of culture did you grow up in?
+Do you think people are born good singers or can someone learn to be a good singer?

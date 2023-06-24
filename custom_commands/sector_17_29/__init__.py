@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
+import random
 import re
 import unicodedata
 from contextlib import suppress
-from datetime import datetime
+from datetime import datetime, timezone
 from time import time
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
@@ -38,8 +40,18 @@ MESSAGE_ID = 1025455601398075535
 VOTER_ROLE_ID = 836492413312040990
 QU_ROLE = 851837681688248351
 MEMBER_ROLE_ID = 1022216700650868916
+GENERAL_CHAT = 1022211381031866459
+RAINBOW_ROLE = 1121978468389896235
+GENERAL_VOICE = 1022337864379404478
 
 __all__ = ("Sector1729", "Sector17Listeners")
+
+
+with open("extra/adjectives.txt", "r", encoding="utf-8", errors="ignore") as f:
+    ADJECTIVES = f.read().splitlines()
+
+with open("extra/mr_robot.txt", "r", encoding="utf-8", errors="ignore") as f:
+    MR_ROBOT = f.read().splitlines()
 
 
 class Sector1729(Cog):
@@ -55,6 +67,15 @@ class Sector1729(Cog):
             1022896162107310130,  # BOT ACCESS
             1022897174624866426,  # MUSIC ACCESS
         ]
+        self.adjectives = ADJECTIVES
+        self.mr_robots = MR_ROBOT
+
+        self._updating_channel = True
+        self._updating_rainbow = True
+
+        self.iter_cycle = itertools.cycle(self.mr_robots)
+        self.change_rainbow_role.start()
+        self.change_channel_name.start()
 
     async def cog_check(self, ctx: Context) -> bool:
         return ctx.guild is not None and ctx.guild.id == getattr(
@@ -228,6 +249,49 @@ class Sector1729(Cog):
                 )  # type: ignore
                 if guild and (member := guild.get_member(doc["_id"])):
                     await member.remove_roles(role, reason="Top.gg vote expired")
+
+    @tasks.loop(minutes=30)
+    async def change_channel_name(self):
+        if not self._updating_channel:
+            return
+
+        try:
+            await self.bot.wait_for("on_bot_idle", timeout=60)
+        except asyncio.TimeoutError:
+            await self.bot.wait_until_ready()
+
+        general_chat: discord.TextChannel = self.bot.get_channel(GENERAL_CHAT)  # type: ignore
+        if general_chat is not None:
+            LINE = "\N{BOX DRAWINGS LIGHT VERTICAL}"
+            EMOJI = "\N{SPEECH BALLOON}"
+            await general_chat.edit(
+                name=f"{LINE}{EMOJI}{LINE}{random.choice(self.adjectives)}-general",
+                reason="General chat name update",
+            )
+
+        general_voice: discord.VoiceChannel = self.bot.get_channel(GENERAL_VOICE)  # type: ignore
+        if general_voice is not None:
+            await general_voice.edit(
+                name=f"{next(self.iter_cycle)}",
+                reason="General voice name update",
+            )
+
+    @tasks.loop(minutes=10)
+    async def change_rainbow_role(self):
+        if not self._updating_rainbow:
+            return
+
+        try:
+            await self.bot.wait_for("on_bot_idle", timeout=60)
+        except asyncio.TimeoutError:
+            await self.bot.wait_until_ready()
+
+        role: discord.Role = self.bot.server.get_role(RAINBOW_ROLE)  # type: ignore
+        if role is not None:
+            await role.edit(
+                colour=discord.Colour(random.randint(0, 0xFFFFFF)),
+                reason="Rainbow role update",
+            )
 
     @vote_reseter.before_loop
     async def before_vote_reseter(self):

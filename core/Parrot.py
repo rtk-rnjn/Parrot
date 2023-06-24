@@ -177,6 +177,7 @@ LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
 TOPGG_PORT = 1019
 
+__all__ = ("Parrot",)
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""

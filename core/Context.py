@@ -7,7 +7,6 @@ import datetime
 import functools
 import io
 import logging
-import re
 from contextlib import suppress
 from io import BytesIO
 from operator import attrgetter
@@ -93,7 +92,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     def __repr__(self) -> str:
         return (
-            f"<core.Context author=`{self.author}` ({self.author.id}) guild=`{self.guild}` ({getattr(self.guild, 'id')}) "
+            f"<{self.__class__.__name__} author=`{self.author}` ({self.author.id}) guild=`{self.guild}` ({getattr(self.guild, 'id')}) "
             f"channel=`{self.channel}` ({self.channel.id}) command={getattr(self.command, 'qualified_name')}>"
         )
 
@@ -349,31 +348,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         author_id: Optional[int] = None,
         **kwargs: Any,
     ) -> Optional[bool]:
-        """|coro|
-
-        An interactive reaction confirmation dialog.
-
-        Parameters
-        -----------
-        message: str
-            The message to show along with the prompt.
-        timeout: float
-            How long to wait before returning.
-        delete_after: bool
-            Whether to delete the confirmation message after we're done.
-        reacquire: bool
-            Whether to release the database connection and then acquire it
-            again when we're done.
-        author_id: Optional[int]
-            The member who should respond to the prompt. Defaults to the author of the
-            Context's message.
-        Returns
-        --------
-        Optional[bool]
-            ``True`` if explicit confirm,
-            ``False`` if explicit deny,
-            ``None`` if deny due to timeout
-        """
         author_id = author_id or self.author.id
         view = ConfirmationView(
             timeout=timeout,
@@ -440,27 +414,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         delete_after: bool = False,
         **kwargs: Any,
     ) -> Optional[bool]:
-        """|coro|
-
-        Reaction based Prompt
-
-        Parameters
-        -----------
-        channel: Channel
-            Message that will be sent in the channel
-        timeout: float
-            How long to wait before returning.
-        delete_after: bool
-            Whether to delete the confirmation message after we're done.
-        user: Union[Member, User]
-            The member who should respond to the prompt.
-
-        Returns
-        -----------
-        Optional[bool]
-            ``True`` if explicit confirm,
-            ``None`` if deny due to timeout
-        """
 
         message: Optional[discord.Message] = await channel.send(*args, **kwargs)
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
@@ -525,35 +478,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         operator: Callable[[Iterable[object]], bool] = all,
         **kwargs: Any,
     ) -> Any:
-        """|coro|
-
-        Waits for a given event to be triggered.
-
-        Parameters
-        -----------
-        _event_name: str
-            The event name to wait for.
-        timeout: float
-            How long to wait for the event to be triggered.
-        **kwargs: Any
-            The arguments to pass to the event.
-
-        Examples
-        -----------
-
-        ```python
-        # Wait for the message to be sent
-        await ctx.wait_for("message", timeout=10, author__id=741614468546560092)
-        ```
-        ```python
-        await ctx.wait_for("on_message_edit", check=lambda m: m.author.id == self.bot.user.id)
-        ```
-
-        Raises
-        -----------
-        asyncio.TimeoutError
-            If the event is not triggered before the given timeout.
-        """
         if _event_name.lower().startswith("on_"):
             _event_name = _event_name[3:].lower()
 
@@ -573,31 +497,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         self,
         entries: Union[List[Any], str],
         *,
-        _type: str = "SimplePages",
+        module: str = "SimplePages",
         **kwargs: Any,
     ) -> None:
-        """|coro|
-
-        Paginates a list of entries.
-
-        Parameters
-        -----------
-        entries: List[str]
-            A list of entries to paginate.
-        _type: str
-            The type of paginator to use.
-        **kwargs: Any
-            The arguments to pass to the paginator.
-
-        Raises
-        -----------
-        ValueError
-            If the paginator type is not found.
-        """
         if not entries:
             raise commands.BadArgument("Cannot paginate an empty list.")
 
-        if _type == "SimplePages":
+        if module == "SimplePages":
             from cogs.meta.robopage import SimplePages
 
             assert isinstance(entries, list)
@@ -610,7 +516,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             await pages.start()
             return
 
-        if _type == "PaginationView":
+        if module == "PaginationView":
             from utilities.paginator import PaginationView
 
             assert isinstance(entries, list)
@@ -621,7 +527,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             )
             return
 
-        if _type == "JishakuPaginatorInterface":
+        if module == "JishakuPaginatorInterface":
             from jishaku.paginators import PaginatorInterface
 
             assert isinstance(entries, str)
@@ -645,63 +551,26 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             "FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"
         ] = "FIRST_COMPLETED",
         timeout: Optional[float] = None,
-        **kwargs: Any,
-    ) -> Tuple[Set[asyncio.Task], Set[asyncio.Task]]:
-        """|coro|
-
-        To wait for multiple events at once.
-
-        Parameters
-        -----------
-        events: List[Tuple[str, Callable[..., bool]]]
-            A list of events to wait for.
-        return_when: str
-            `return_when` indicates when this function should return. It must be one of the following constants
-
-            ```ini
-            +-----------------+-----------------------------------+
-            | FIRST_COMPLETED | The function will return when any |
-            |                 | future finishes or is cancelled.  |
-            +-----------------+-----------------------------------+
-            |                 | The function will return when any |
-            |                 | future finishes by raising an     |
-            | FIRST_EXCEPTION | exception. If no future raises an |
-            |                 | exception then it is equivalent   |
-            |                 | to ALL_COMPLETED.                 |
-            +-----------------+-----------------------------------+
-            |  ALL_COMPLETED  | The function will return when all |
-            |                 | futures finish or are cancelled.  |
-            +-----------------+-----------------------------------+
-            ```
-
-        timeout: Optional[float]
-            The maximum amount of time in seconds to wait for the events to finish.
-
-        Returns
-        -----------
-        Tuple[Set[asyncio.Task], Set[asyncio.Task]]
-            A tuple of two sets of tasks, the first set is the finished tasks, the second set is the cancelled tasks.
-
-        Raises
-        -----------
-        asyncio.TimeoutError
-            If the event is not triggered before the given timeout.
-        """
+    ) -> List[Any]:
         if isinstance(events, dict):
-            events = list(events.items())  # type: ignore
+            events = list(events.items())
 
-        _events: Set[asyncio.Task] = {
-            asyncio.create_task(
-                self.wait_for(event, check=check, timeout=timeout, **kwargs)
-            )
+        _events: "Set[asyncio.Task[Any]]" = {
+            self.bot.loop.create_task(self.wait_for(event, check=check))
             for event, check in events
         }
 
-        return await asyncio.wait(
+        completed, pendings = await asyncio.wait(
             _events,
-            timeout=(timeout or 0) + 0.001,
-            return_when=getattr(asyncio, return_when, "FIRST_COMPLETED"),
+            timeout=timeout,
+            return_when=getattr(asyncio, return_when.upper(), "FIRST_COMPLETED"),
         )
+
+        for pending in pendings:
+            pending.cancel()
+            log.info(f"Cancelled pending task {pending}")
+
+        return [r.result() for r in completed]
 
     async def wait_for_till(
         self,
@@ -713,31 +582,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         after: Union[float, int, None] = None,
         **kwargs: Any,
     ) -> List[Any]:
-        """|coro|
-
-        Returns multiple event record at given time.
-
-        Parameters
-        -----------
-        events: List[Tuple[str, Callable[..., bool]]]
-            A list of events to wait for.
-        _for: Union[float, int, None]
-            The amount of time to wait for the event to be triggered.
-        after: Union[float, int]
-            The amount of time to wait after the event is triggered.
-        **kwargs: Any
-            The arguments to pass to the event.
-
-        Raises
-        -----------
-        asyncio.TimeoutError
-            If the event is not triggered before the given timeout.
-
-        Returns
-        -----------
-        List[Any]
-            The list of discord Objects.
-        """
         if after:
             await self.release(after)
         done_result: List[Any] = []
@@ -750,18 +594,22 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 done_result.append(task.result())
 
         while discord.utils.utcnow().timestamp() <= now:
-            done, _ = await self.multiple_wait_for(
+            done = await self.multiple_wait_for(
                 events, return_when="FIRST_COMPLETED", **kwargs
             )
             __internal_appender(done)
 
         if not _for:
-            done, _ = await self.multiple_wait_for(
+            done = await self.multiple_wait_for(
                 events, return_when="FIRST_COMPLETED", **kwargs
             )
             __internal_appender(done)
 
         return done_result
+
+    async def wait_for_delete(self, message: Optional[discord.Message] = None, *, timeout: Optional[float] = None) -> Any:
+        message = message or self.message
+        await self.wait_for("on_message_delete", message__id=message.id, timeout=timeout)
 
     async def retry(
         self,
@@ -786,19 +634,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     async def database_game_update(
         self, game_name: str, *, win: bool = False, loss: bool = False, **kw: Any
     ) -> bool:
-        """|coro|
-
-        Updates the game database.
-
-        Parameters
-        -----------
-        game_name: str
-            The name of the game.
-        win: bool
-            Whether the game is won.
-        loss: bool
-            Whether the game is lost.
-        """
         kwargs: Dict[str, Any] = {}
 
         for key, value in kw.items():

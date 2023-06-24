@@ -31,6 +31,10 @@ if TYPE_CHECKING:
     if HAS_TOP_GG:
         from topgg.types import BotVoteData
 
+    from cogs.api import Gist
+
+from tabulate import tabulate
+
 from utilities.config import SUPPORT_SERVER_ID
 
 from .listeners import Sector17Listeners
@@ -43,6 +47,8 @@ MEMBER_ROLE_ID = 1022216700650868916
 GENERAL_CHAT = 1022211381031866459
 RAINBOW_ROLE = 1121978468389896235
 GENERAL_VOICE = 1022337864379404478
+SERVER_MOD = 1022231265409241088
+CORE_MAINTAINER_ROLE = 1022216515598164019
 
 __all__ = ("Sector1729", "Sector17Listeners")
 
@@ -476,3 +482,103 @@ class Sector1729(Cog):
                 )
             except discord.HTTPException:
                 pass
+
+    @sector_17_29.group(name="add")
+    async def sector_17_29_add(self, ctx: Context):
+        """Add something to the server"""
+        if not ctx.invoked_subcommand:
+            await ctx.bot.invoke_help_command(ctx)
+
+    # Thanks
+    #   - `aastha_ok`    (AASTHA#1206 - 925315596818718752)
+    #   - `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
+    @sector_17_29_add.command(name="adjective", aliases=["adj", "adjectives"])
+    @commands.has_any_role(SERVER_MOD, CORE_MAINTAINER_ROLE)
+    @in_support_server()
+    async def sector_17_29_add_adj(self, ctx: Context, *adjs: str):
+        """Add adjective to the server"""
+        if not adjs:
+            return await ctx.bot.invoke_help_command(ctx)
+
+        for adj in adjs:
+            if len(adj) > 20:
+                return await ctx.error(f"Adjective: {adj} is too long")
+
+        for adj in adjs:
+            if adj in self.adjectives:
+                return await ctx.error(f"Adjective: {adj} already exists")
+
+        self.adjectives.extend(list(adjs))
+        self.adjectives = list(set(self.adjectives))
+        await ctx.tick()
+
+        await ctx.reply(f"Adjective added, Total count: {len(self.adjectives)}")
+
+        cog: Gist = self.bot.get_cog("Gist")  # type: ignore
+        table = tabulate(
+            {"Adjectives": self.adjectives}, headers="keys", tablefmt="github"
+        )
+        author = tabulate(
+            {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},
+            headers="keys",
+            tablefmt="github",
+        )
+        message = tabulate(
+            {
+                "Message": [f"`{ctx.message.clean_content}`"],
+                "ID": [ctx.message.id],
+                "Channel": [f"#{ctx.channel.name}"],
+                "Channel ID": [ctx.channel.id],
+                "Guild": [f"{ctx.guild}"],
+            },
+            headers="keys",
+            tablefmt="github",
+        )
+        if cog is not None:
+            body = f"""## Add Adjectives
+
+{table}
+
+In file: `/extra/adjectives.txt`
+
+---
+
+### Author
+
+{author}
+
+---
+
+### Message
+
+{message}
+"""
+            url = await cog.create_issue(title="[Add] Adjective", body=body)
+            await ctx.reply(f"Created issue: {url}")
+
+    @sector_17_29.group(name="remove")
+    async def sector_17_29_remove(self, ctx: Context):
+        """Remove something from the server"""
+        if not ctx.invoked_subcommand:
+            await ctx.bot.invoke_help_command(ctx)
+
+    @sector_17_29_remove.command(name="adjective", aliases=["adj", "adjectives"])
+    @commands.has_any_role(SERVER_MOD, CORE_MAINTAINER_ROLE)
+    @in_support_server()
+    async def sector_17_29_remove_adj(self, ctx: Context, *adjs: str):
+        """Remove adjective from the server"""
+        if not adjs:
+            return await ctx.bot.invoke_help_command(ctx)
+
+        for adj in adjs:
+            if adj not in self.adjectives:
+                return await ctx.error("Adjective do not exists")
+
+        for adj in adjs:
+            try:
+                self.adjectives.remove(adj)
+            except ValueError:
+                pass
+        await ctx.tick()
+
+        await ctx.reply(f"Adjective removed, Total count: {len(self.adjectives)}")

@@ -1,4 +1,4 @@
-# https://github.com/Tom-the-Bomb/Discord-Games/blob/master/discord_games/button_games/number_slider.py
+# https://github.com/Tom-the-Bomb/Discord-Games/
 
 from __future__ import annotations
 
@@ -6,11 +6,12 @@ import asyncio
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
 
+from akinator import Answer
+from akinator import AsyncAkinator as AkinatorGame
+from akinator import CantGoBackAnyFurther, Language, Theme
+
 import discord
 from core import Context, Parrot
-
-from .akinator import CantGoBackAnyFurther
-from .akinator.async_aki import Akinator as AkinatorGame
 
 BACK = "\N{BLACK LEFT-POINTING TRIANGLE}"
 STOP = "\N{BLACK SQUARE FOR STOP}"
@@ -54,9 +55,9 @@ class Akinator:
     def __init__(self) -> None:
         self.aki: AkinatorGame = AkinatorGame()
 
-        self.player: Optional[discord.Member] = None
+        self.player: Optional[Union[discord.User, discord.Member]] = None
         self.win_at: Optional[int] = None
-        self.guess: Optional[Dict[str, Any]] = None
+        self.guess: Optional[dict[str, Any]] = None
         self.message: Optional[discord.Message] = None
 
         self.embed_color: Optional[DiscordColor] = None
@@ -64,9 +65,6 @@ class Akinator:
         self.delete_button: bool = False
 
         self.bar: str = ""
-        self.questions: int = 0
-
-        self.bot: Parrot = None
 
     def build_bar(self) -> str:
         prog = round(self.aki.progression / 8)
@@ -78,7 +76,7 @@ class Akinator:
             title="Guess your character!",
             description=(
                 "```swift\n"
-                f"Question-Number  : {self.questions}\n"
+                f"Question-Number  : {self.aki.step + 1}\n"
                 f"Progression-Level: {self.aki.progression:.2f}\n```\n"
                 f"{self.build_bar()}"
             ),
@@ -98,14 +96,14 @@ class Akinator:
 
         embed = discord.Embed(color=self.embed_color)
         embed.title = "Character Guesser Engine Results"
-        embed.description = f"Total Questions: `{self.questions}`"
+        embed.description = f"Total Questions: `{self.aki.step + 1}`"
 
         embed.add_field(
             name="Character Guessed",
-            value=f"\n**Name:** {self.guess['name']}\n{self.guess['description']}",
+            value=f"\n**Name:** {self.guess.name}\n{self.guess.description}",
         )
 
-        embed.set_image(url=self.guess["absolute_picture_path"])
+        embed.set_image(url=self.guess.absolute_picture_path)
         embed.set_footer(text="Was I correct?")
 
         await self.bot.game_collections.update_one(
@@ -128,55 +126,35 @@ class Akinator:
         embed_color: DiscordColor = DEFAULT_COLOR,
         remove_reaction_after: bool = False,
         win_at: int = 80,
-        timeout: Optional[float] = 120.0,
-        back_button: bool = True,
-        delete_button: bool = True,
-        child_mode: bool = True,
+        timeout: Optional[float] = None,
+        back_button: bool = False,
+        delete_button: bool = False,
+        aki_theme: str = "Characters",
+        aki_language: str = "English",
+        child_mode: bool = False,
     ) -> Optional[discord.Message]:
-        """
-        starts the akinator game
-        Parameters
-        ----------
-        ctx : Context
-            the context of the invokation command
-        embed_color : DiscordColor, optional
-            the color of the game embed, by default DEFAULT_COLOR
-        remove_reaction_after : bool, optional
-            indicates whether to remove the user's reaction after or not, by default False
-        win_at : int, optional
-            indicates when to tell the akinator to make it's guess, by default 80
-        timeout : Optional[float], optional
-            indicates the timeout for when waiting, by default None
-        back_button : bool, optional
-            indicates whether to add a back button, by default False
-        delete_button : bool, optional
-            indicates whether to add a stop button to stop the game, by default False
-        child_mode : bool, optional
-            indicates to filter out NSFW content or not, by default True
-        Returns
-        -------
-        Optional[discord.Message]
-            returns the game message
-        """
-        self.bot = ctx.bot
         self.back_button = back_button
         self.delete_button = delete_button
         self.embed_color = embed_color
         self.player = ctx.author
         self.win_at = win_at
+        self.bot = ctx.bot
 
         if self.back_button:
-            self.instructions += (
-                f"{BACK} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `back`\n"
-            )
+            self.instructions += f"{BACK} 🠒 `back`\n"
 
         if self.delete_button:
-            self.instructions += f"{STOP} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `cancel`\n"
+            self.instructions += f"{STOP} 🠒 `cancel`\n"
 
-        await self.aki.start_game(child_mode=child_mode)
+        self.aki.theme = Theme.from_str(aki_theme)
+        self.aki.language = Language.from_str(aki_language)
+        self.aki.child_mode = child_mode
+        await self.aki.start_game()
 
         embed = self.build_embed()
         self.message = await ctx.send(embed=embed)
+
+        assert self.message is not None
 
         for button in Options:
             await self.message.add_reaction(button.value)
@@ -196,32 +174,19 @@ class Akinator:
                         return bool(Options(emoji))
                     except ValueError:
                         return emoji in (BACK, STOP)
-
-            REACTION_ADD = ctx.wait_for("reaction_add", timeout=timeout, check=check)
-            REACTION_REMOVE = ctx.wait_for(
-                "reaction_remove", timeout=timeout, check=check
-            )
+                return False
 
             try:
-                done, _ = await asyncio.wait(
-                    {REACTION_ADD, REACTION_REMOVE},
-                    return_when=asyncio.FIRST_COMPLETED,
-                    timeout=timeout,
+                reaction, user = await ctx.bot.wait_for(
+                    "reaction_add", timeout=timeout, check=check
                 )
-                for task in done:
-                    reaction, user = task.result()
-                    break
-
             except asyncio.TimeoutError:
                 return
-
-            reaction: discord.Reaction
-            user: discord.User
 
             if remove_reaction_after:
                 try:
                     await self.message.remove_reaction(reaction, user)
-                except discord.Forbidden:
+                except discord.DiscordException:
                     pass
 
             emoji = str(reaction.emoji)
@@ -238,136 +203,11 @@ class Akinator:
                         "I cannot go back any further", delete_after=10
                     )
             else:
-                self.questions += 1
-
-                await self.aki.answer(Options(emoji).name)
+                answer = Answer.from_str(Options(emoji).name)
+                await self.aki.answer(answer)
 
             embed = self.build_embed()
             await self.message.edit(embed=embed)
 
         embed = await self.win()
         return await self.message.edit(embed=embed)
-
-
-class AkiButton(discord.ui.Button["AkiView"]):
-    async def callback(self, interaction: discord.Interaction) -> None:
-        return await self.view.process_input(interaction, self.label.lower())
-
-
-class AkiView(BaseView):
-    OPTIONS: ClassVar[dict[str, discord.ButtonStyle]] = {
-        "yes": discord.ButtonStyle.green,
-        "no": discord.ButtonStyle.red,
-        "idk": discord.ButtonStyle.blurple,
-        "probably": discord.ButtonStyle.gray,
-        "probably not": discord.ButtonStyle.gray,
-    }
-
-    def __init__(self, game: BetaAkinator, *, timeout: float) -> None:
-        super().__init__(timeout=timeout)
-
-        self.embed_color: Optional[DiscordColor] = None
-        self.game = game
-
-        for label, style in self.OPTIONS.items():
-            self.add_item(AkiButton(label=label, style=style))
-
-        if self.game.back_button:
-            delete = AkiButton(label="back", style=discord.ButtonStyle.red, row=1)
-            self.add_item(delete)
-
-        if self.game.delete_button:
-            delete = AkiButton(label="Cancel", style=discord.ButtonStyle.red, row=1)
-            self.add_item(delete)
-
-    async def process_input(
-        self, interaction: discord.Interaction, answer: str
-    ) -> None:
-        game = self.game
-
-        if interaction.user != game.player:
-            return await interaction.response.send_message(
-                content="This isn't your game", ephemeral=True
-            )
-
-        if answer == "cancel":
-            await interaction.message.reply("Session ended", mention_author=True)
-            self.stop()
-            return await interaction.message.delete()
-
-        if answer == "back":
-            try:
-                await game.aki.back()
-                embed = game.build_embed(instructions=False)
-            except CantGoBackAnyFurther:
-                return await interaction.response.send_message(
-                    "I cant go back any further!", ephemeral=True
-                )
-        else:
-            game.questions += 1
-            await game.aki.answer(answer)
-
-            if game.aki.progression >= game.win_at:
-                self.disable_all()
-                embed = await game.win()
-                self.stop()
-            else:
-                embed = game.build_embed(instructions=False)
-
-        return await interaction.response.edit_message(embed=embed, view=self)
-
-
-class BetaAkinator(Akinator):
-    """
-    Akinator(buttons) Game
-    """
-
-    async def start(
-        self,
-        ctx: Context[Parrot],
-        *,
-        back_button: bool = True,
-        delete_button: bool = True,
-        embed_color: DiscordColor = DEFAULT_COLOR,
-        win_at: int = 80,
-        timeout: Optional[float] = None,
-        child_mode: bool = True,
-    ) -> discord.Message:
-        """
-        starts the Akinator(buttons) game
-        Parameters
-        ----------
-        ctx : Context[Parrot]
-            the context of the invokation command
-        back_button : bool, optional
-            indicates whether or not to add a back button, by default False
-        delete_button : bool, optional
-            indicates whether to add a stop button to stop the game, by default False
-        embed_color : DiscordColor, optional
-            the color of the game embed, by default DEFAULT_COLOR
-        win_at : int, optional
-            indicates when to tell the akinator to make it's guess, by default 80
-        timeout : Optional[float], optional
-            the timeout for the view, by default None
-        child_mode : bool, optional
-            indicates to filter out NSFW content or not, by default True
-        Returns
-        -------
-        discord.Message
-            returns the game message
-        """
-        self.back_button = back_button
-        self.delete_button = delete_button
-        self.embed_color = embed_color
-
-        self.player = ctx.author
-        self.win_at = win_at
-        self.view = AkiView(self, timeout=timeout)
-
-        await self.aki.start_game(child_mode=child_mode)
-
-        embed = self.build_embed(instructions=False)
-        self.message = await ctx.send(embed=embed, view=self.view)
-
-        await self.view.wait()
-        return self.message

@@ -30,6 +30,7 @@ from interactions.buttons.__2048 import Twenty48, Twenty48_Button
 from interactions.buttons.__aki import Akinator
 from interactions.buttons.__battleship import BetaBattleShip
 from interactions.buttons.__chess import Chess
+from interactions.buttons.__chimp import ChimpTest
 from interactions.buttons.__constants import (
     _2048_GAME,
     CHOICES,
@@ -888,6 +889,12 @@ class Games(Cog):
         """Country guessing game"""
         cg = BetaCountryGuesser(is_flags=is_flag)
         await cg.start(ctx, timeout=120)
+    
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def chimp(self, ctx: Context):
+        """Chimp Test"""
+        await ChimpTest().start(ctx, timeout=120)
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)

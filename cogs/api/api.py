@@ -55,7 +55,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         self.__internal_token_caching = set()
 
     async def github_request(
-        self, method, url, *, params=None, data=None, headers=None
+        self, method, url, *, params=None, data=None, headers=None, repo=None
     ):
         hdrs = {
             "Accept": "application/vnd.github.inertia-preview+json",
@@ -63,7 +63,10 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
             "Authorization": f"token {self.token}",
         }
 
-        req_url = yarl.URL("https://api.github.com") / url
+        if not repo:
+            req_url = yarl.URL("https://api.github.com") / url
+        else:
+            req_url = yarl.URL("https://api.github.com") / "repos" / repo / url
 
         if headers is not None and isinstance(headers, dict):
             hdrs = {**hdrs, **headers}
@@ -105,6 +108,16 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
 
         js = await self.github_request("POST", "gists", data=data, headers=headers)
         return js["html_url"]
+    
+    async def create_issue(self, title, body):
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+        }
+
+        data = {"title": title, "body": body}
+
+        js = await self.github_request("POST", "issues", data=data, headers=headers, repo="rtk-rnjn/Parrot")
+        return js["url"]
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import math
 import pathlib
 import random
 from typing import TYPE_CHECKING, Optional

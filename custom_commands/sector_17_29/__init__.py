@@ -6,7 +6,7 @@ import random
 import re
 import unicodedata
 from contextlib import suppress
-from datetime import datetime, timezone
+from datetime import datetime
 from time import time
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
@@ -87,6 +87,13 @@ class Sector1729(Cog):
         return ctx.guild is not None and ctx.guild.id == getattr(
             ctx.bot.server, "id", SUPPORT_SERVER_ID
         )
+    
+    async def cog_unload(self) -> None:
+        if self.change_channel_name.is_running():
+            self.change_channel_name.cancel()
+        
+        if self.change_rainbow_role.is_running():
+            self.change_rainbow_role.cancel()
 
     @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(
@@ -295,7 +302,7 @@ class Sector1729(Cog):
         role: discord.Role = self.bot.server.get_role(RAINBOW_ROLE)  # type: ignore
         if role is not None:
             await role.edit(
-                colour=discord.Colour(random.randint(0, 0xFFFFFF)),
+                colour=discord.Colour.random(),
                 reason="Rainbow role update",
             )
 

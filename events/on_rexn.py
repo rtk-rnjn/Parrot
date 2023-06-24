@@ -4,6 +4,8 @@ import datetime
 from time import time
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
 
+import pymongo
+
 import discord
 from core import Cog
 
@@ -60,12 +62,24 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             "starboard_config"
         ].get("can_self_star", False)
 
+        try:
+            locked: bool = self.bot.guild_configurations_cache[payload.guild_id][
+                "starboard_config"
+            ]["is_locked"]
+        except KeyError:
+            return
+
         log.info(
-            "Configurations loaded, CURRENT_TIME=%s MAX_DURATION=%s SELF_STAR=%s",
+            "Configurations loaded, CURRENT_TIME=%s MAX_DURATION=%s SELF_STAR=%s LOCKED=%s",
             CURRENT_TIME,
             max_duration,
             self_star,
+            locked,
         )
+
+        if locked:
+            log.info("Starboard locked")
+            return
 
         msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             payload.channel_id, payload.message_id
@@ -78,24 +92,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             log.info("Self star not allowed %s", payload.user_id)
             return
 
-        collection: Collection = self.bot.starboards
-        data = await collection.find_one_and_update(
-            {
-                "$or": [
-                    {"message_id.bot": payload.message_id},
-                    {"message_id.author": payload.message_id},
-                ]
-            },
-            {"$addToSet": {"starrer": payload.user_id}, "$inc": {"number_of_stars": 1}},
-            return_document=True,
-        )
-        if data:
-            log.info("Starboard post found %s", data)
-            await self.edit_starbord_post(payload, **data)
-            return
-
         func = getattr(self, f"_on_star_reaction_{tp}")
-        await func(payload)
+        await func(payload, author_message=msg)
         return
 
     async def __make_starboard_post(
@@ -169,7 +167,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def star_post(
         self, *, starboard_channel: discord.TextChannel, message: discord.Message
-    ) -> None:
+    ):
         count = await self.get_star_count(message, from_db=True)
 
         embed: discord.Embed = discord.Embed(
@@ -209,7 +207,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
     async def edit_starbord_post(
         self, payload: discord.RawReactionActionEvent, **data: Any
-    ) -> bool:
+    ):
         ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel,
             self.bot.fetch_channel,
@@ -217,7 +215,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         if ch is None:
             log.info("Channel not found %s", data["channel_id"])
-            return False
+            return
 
         try:
             starboard_channel: int = (
@@ -227,7 +225,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 or 0
             )
         except KeyError:
-            return False
+            return
         else:
             starchannel: discord.TextChannel = await self.bot.getch(
                 self.bot.get_channel, self.bot.fetch_channel, starboard_channel
@@ -241,16 +239,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
         if msg and not msg.embeds:
             log.info("Message has no embeds")
-            return False
+            return
 
         embed: discord.Embed = msg.embeds[0]
 
         count = await self.get_star_count(msg, from_db=True)
 
-        if count == 0:
-            await self.bot.starboards.delete_one({"message_id.bot": msg.id})
-            log.info("Deleted starboard post %s", msg.id)
-            await msg.delete(delay=0)
+        if not count:
             return False
 
         embed.color = self.star_gradient_colour(count)
@@ -265,98 +260,137 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         return True
 
     async def _on_star_reaction_remove(
-        self, payload: discord.RawReactionActionEvent
-    ) -> bool:
+        self,
+        payload: discord.RawReactionActionEvent,
+        *,
+        author_message: discord.Message,
+    ):
         if not payload.guild_id:
             return False
 
-        server_config = self.bot.guild_configurations_cache
-        ch: discord.TextChannel = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
-        )
-
-        if not ch:
-            return False
-
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
-            ch, payload.message_id
-        )
+        msg = author_message
         try:
-            limit = server_config[payload.guild_id]["starboard_config"]["limit"] or 0
+            limit = (
+                self.bot.guild_configurations_cache[payload.guild_id][
+                    "starboard_config"
+                ]["limit"]
+                or 0
+            )
         except KeyError:
             return False
+
         count = await self.get_star_count(msg, from_db=True)
+
+        collection: Collection = self.bot.starboards
         if limit > count:
-            collection: Collection = self.bot.starboards
-            data: DocumentType = await collection.find_one_and_delete(
-                {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
+            await self._delete_starboard_post(payload)
+        else:
+            data: DocumentType = await collection.find_one_and_update(
+                {
+                    "$or": [
+                        {"message_id.bot": msg.id},
+                        {"message_id.author": msg.id},
+                    ]
+                },
+                {
+                    "$pull": {"starrer": payload.user_id},
+                    "$inc": {"number_of_stars": -1},
+                },
+                return_document=pymongo.ReturnDocument.AFTER,
             )
             if not data:
                 return False
-            try:
-                channel: int = (
-                    server_config[payload.guild_id]["starboard_config"]["channel"] or 0
-                )
-            except KeyError:
-                return False
+            if not data["starrer"]:
+                await self._delete_starboard_post(payload)
 
-            starboard_channel: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, channel
-            )
-            bot_msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
-                starboard_channel, data["message_id"]["bot"], partial=True
-            )
-            if bot_msg:
-                await bot_msg.delete(delay=0)
-            return True
+            await self.edit_starbord_post(payload, **data)
         return False
 
-    async def _on_star_reaction_add(
+    async def _delete_starboard_post(
         self, payload: discord.RawReactionActionEvent
     ) -> bool:
-        if not payload.guild_id:
+        collection: Collection = self.bot.starboards
+        ch = await self.bot.getch(
+            self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
+        )
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
+            ch, payload.message_id
+        )
+        data: DocumentType = await collection.find_one_and_delete(
+            {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
+        )
+        if not data:
             return False
-
-        data = self.bot.guild_configurations_cache
-
         try:
-            locked: bool = data[payload.guild_id]["starboard_config"]["is_locked"]
+            channel: int = (
+                self.bot.guild_configurations_cache[payload.guild_id][
+                    "starboard_config"
+                ]["channel"]
+                or 0
+            )
         except KeyError:
             return False
 
-        try:
-            channel: int = data[payload.guild_id]["starboard_config"]["channel"]  # type: ignore
-        except KeyError:
-            return False
-
-        channel: discord.TextChannel = await self.bot.getch(
+        starboard_channel: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, channel
         )
 
-        if not locked:
-            try:
-                limit: int = data[payload.guild_id]["starboard_config"]["limit"] or 0
-            except KeyError:
-                return False
+        bot_msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
+            starboard_channel, data["message_id"]["bot"]
+        )
 
-            ch: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
+        if bot_msg:
+            await bot_msg.delete(delay=0)
+        return True
+
+    async def _on_star_reaction_add(
+        self,
+        payload: discord.RawReactionActionEvent,
+        *,
+        author_message: discord.Message,
+    ):
+        if not payload.guild_id:
+            return
+
+        if data := await self.bot.starboards.find_one(
+            {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]}
+        ):
+            await self.edit_starbord_post(payload, **data)
+            return
+
+        msg = author_message
+
+        count = await self.get_star_count(msg)
+
+        try:
+            limit = (
+                self.bot.guild_configurations_cache[payload.guild_id][
+                    "starboard_config"
+                ]["limit"]
+                or 0
             )
-            msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
-                ch, payload.message_id
+        except KeyError:
+            return
+
+        try:
+            channel: int = (
+                self.bot.guild_configurations_cache[payload.guild_id][
+                    "starboard_config"
+                ]["channel"]
+                or 0
             )
-            if msg and msg.author.bot:
-                return False
+        except KeyError:
+            return
+        else:
+            starboard_channel: discord.TextChannel = await self.bot.getch(
+                self.bot.get_channel, self.bot.fetch_channel, channel
+            )
+        if not limit:
+            return
 
-            count = await self.get_star_count(msg)
-
-            if not limit:
-                return False
-
-            if count >= limit and msg:
-                await self.star_post(starboard_channel=channel, message=msg)
-                return True
-        return False
+        if count >= limit and msg:
+            await self.star_post(starboard_channel=starboard_channel, message=msg)
+            return
 
     @Cog.listener()
     async def on_reaction_add(

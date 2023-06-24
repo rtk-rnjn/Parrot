@@ -33,7 +33,7 @@ class ArbitraryEvents(Cog):
         elif entry.target and getattr(entry.target, "id", None) == self.bot.user.id:
             self.bot.dispatch("bot_activity")
 
-    @tasks.loop(seconds=15)
+    @tasks.loop(seconds=12)
     async def bot_activity(self) -> None:
         try:
             await self.bot.wait_for("bot_activity", timeout=10)

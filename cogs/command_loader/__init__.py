@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional
 
-import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.config import JEYY_API_TOKEN

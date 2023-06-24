@@ -352,13 +352,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if not payload.guild_id:
             return
 
+        msg = author_message
+
         if data := await self.bot.starboards.find_one(
             {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]}
         ):
             await self.edit_starbord_post(payload, **data)
             return
-
-        msg = author_message
 
         count = await self.get_star_count(msg)
 

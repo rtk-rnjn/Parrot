@@ -39,9 +39,7 @@ class Client:
         expires: Optional[datetime.datetime] = None,
     ) -> Paste:
         file = File(filename=filename, content=content)
-        data = await self.http.create_paste(
-            file=file, password=password, expires=expires
-        )
+        data = await self.http.create_paste(file=file, password=password, expires=expires)
         return Paste.from_data(data)
 
     async def create_multifile_paste(
@@ -51,9 +49,7 @@ class Client:
         password: Optional[str] = None,
         expires: Optional[datetime.datetime] = None,
     ) -> Paste:
-        data = await self.http.create_paste(
-            files=files, password=password, expires=expires
-        )
+        data = await self.http.create_paste(files=files, password=password, expires=expires)
         return Paste.from_data(data)
 
     @require_authentication
@@ -64,9 +60,7 @@ class Client:
     async def delete_pastes(self, paste_ids: list[str], /) -> None:
         await self.http.delete_pastes(paste_ids=paste_ids)
 
-    async def get_paste(
-        self, paste_id: str, *, password: Optional[str] = None
-    ) -> Paste:
+    async def get_paste(self, paste_id: str, *, password: Optional[str] = None) -> Paste:
         data = await self.http.get_paste(paste_id=paste_id, password=password)
         return Paste.from_data(data)
 

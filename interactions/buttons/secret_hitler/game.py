@@ -213,9 +213,7 @@ class AfterVoteGameState(GameState[T], metaclass=ABCMeta):
     @cached_property
     def vote_summary(self) -> str:
         ja = [player.identifier for player, vote in self.votes.items() if vote is True]
-        nein = [
-            player.identifier for player, vote in self.votes.items() if vote is False
-        ]
+        nein = [player.identifier for player, vote in self.votes.items() if vote is False]
         return format_list("Ja: {0}", *ja) + "\n" + format_list("Nein: {0}", *nein)
 
 
@@ -280,14 +278,10 @@ class PlayerToBeChancellor(SelectGameState[T, Player[T]]):
 
 
 class VoteOnGovernment(VoteGameState[T]):
-    message = (
-        "{0.president} has chosen {0.chancellor} as their chancellor, vote ja! or nein!"
-    )
+    message = "{0.president} has chosen {0.chancellor} as their chancellor, vote ja! or nein!"
     tooltip = "Vote ja! or nein!"
 
-    def __init__(
-        self, game: Game[T], president: Player[T], chancellor: Player[T]
-    ) -> None:
+    def __init__(self, game: Game[T], president: Player[T], chancellor: Player[T]) -> None:
         self.president: Player[T] = president
         self.chancellor: Player[T] = chancellor
         super().__init__(game)
@@ -683,8 +677,7 @@ class Game(Generic[T]):
 
         # Players
         self.players: List[Player[T]] = [
-            Player[T](identifier, role)
-            for identifier, role in zip(identifiers, ROLES[len(identifiers)])
+            Player[T](identifier, role) for identifier, role in zip(identifiers, ROLES[len(identifiers)])
         ]  # flake8: noqa
 
         self.player_count: PlayerCount = len(self.players)  # flake8: noqa
@@ -695,9 +688,7 @@ class Game(Generic[T]):
         # Policies
         liberal_policies = POLICIES[Party.Liberal]
         fascsit_policies = POLICIES[Party.Fascist]
-        self.draw_pile: List[Party] = [Party.Liberal] * liberal_policies + [
-            Party.Fascist
-        ] * fascsit_policies
+        self.draw_pile: List[Party] = [Party.Liberal] * liberal_policies + [Party.Fascist] * fascsit_policies
         self.discard_pile: List[Party] = []
         random.shuffle(self.draw_pile)
 

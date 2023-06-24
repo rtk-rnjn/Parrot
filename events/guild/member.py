@@ -19,9 +19,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):
         try:
-            role = int(
-                self.bot.guild_configurations_cache[member.guild.id]["mute_role"] or 0
-            )
+            role = int(self.bot.guild_configurations_cache[member.guild.id]["mute_role"] or 0)
             role: Optional[discord.Role] = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
@@ -47,9 +45,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         if isinstance(member, discord.User) or member.bot:
             return
         try:
-            role = int(
-                self.bot.guild_configurations_cache[payload.guild_id]["mute_role"] or 0
-            )
+            role = int(self.bot.guild_configurations_cache[payload.guild_id]["mute_role"] or 0)
             role = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.find(lambda m: "muted" in m.name.lower(), member.roles)
@@ -80,9 +76,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             await member.send(error)
 
     async def _get_index(self, guild: discord.Guild) -> int:
-        if data := await self.bot.guild_configurations.find_one(
-            {"_id": guild.id, "hub_temp_channels": {"$exists": True}}
-        ):
+        if data := await self.bot.guild_configurations.find_one({"_id": guild.id, "hub_temp_channels": {"$exists": True}}):
             return len(data["hub_temp_channels"]) + 1
 
         return 1
@@ -98,14 +92,9 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             return
         else:
             perms = member.guild.me.guild_permissions
-            if not all(
-                [perms.manage_permissions, perms.manage_channels, perms.move_members]
-            ):
+            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
                 return
-            if (
-                channel.id
-                == self.bot.guild_configurations_cache[member.guild.id]["hub"]
-            ):
+            if channel.id == self.bot.guild_configurations_cache[member.guild.id]["hub"]:
                 if channel.category:
                     hub_channel = await member.guild.create_voice_channel(
                         f"[#{await self._get_index(member.guild)}] {member.name}",
@@ -145,26 +134,16 @@ class Member(Cog, command_attrs=dict(hidden=True)):
             }
         ):
             perms = member.guild.me.guild_permissions
-            if not all(
-                [perms.manage_permissions, perms.manage_channels, perms.move_members]
-            ):
+            if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):
                 return
             for ch in data["hub_temp_channels"]:
                 if ch["channel_id"] == channel.id and ch["author"] == member.id:
-                    hub_channel = await self.bot.getch(
-                        self.bot.get_channel, self.bot.fetch_channel, channel.id
-                    )
+                    hub_channel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel.id)
                     await self.bot.guild_configurations.update_one(
                         {"_id": member.guild.id},
-                        {
-                            "$pull": {
-                                "hub_temp_channels": {"channel_id": hub_channel.id}
-                            }
-                        },
+                        {"$pull": {"hub_temp_channels": {"channel_id": hub_channel.id}}},
                     )
-                    await hub_channel.delete(
-                        reason=f"{member} ({member.id}) left their Hub"
-                    )
+                    await hub_channel.delete(reason=f"{member} ({member.id}) left their Hub")
                     return
 
     @Cog.listener(name="on_voice_state_update")
@@ -201,9 +180,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
         pass  # nothing can be done, as discord dont gave use presence intent UwU
 
     async def cog_load(self):
-        async for data in self.bot.guild_configurations.find(
-            {"muted": {"$exists": True}}
-        ):
+        async for data in self.bot.guild_configurations.find({"muted": {"$exists": True}}):
             self.muted[data["_id"]] = set(data["muted"])
 
     async def cog_unload(self):

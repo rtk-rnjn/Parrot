@@ -13,6 +13,7 @@ from .endpoints import JEYY_API, JEYY_API_URL
 
 HEADERS = {"Authorization": f"Bearer {JEYY_API_TOKEN}"}
 
+
 class CommandLoader(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

@@ -63,9 +63,7 @@ class LinePaginator(Paginator):
         If `empty` is True, an empty line will be placed after the a given `line`.
         """
         if len(line) > self.max_size - len(self.prefix) - 2:
-            raise RuntimeError(
-                f"Line exceeds maximum page size {self.max_size - len(self.prefix) - 2}"
-            )
+            raise RuntimeError(f"Line exceeds maximum page size {self.max_size - len(self.prefix) - 2}")
 
         if self.max_lines is not None:
             if self._linecount >= self.max_lines:
@@ -132,8 +130,7 @@ class LinePaginator(Paginator):
                         # Reaction is on this message
                         reaction_.message.id == message.id,
                         # Reaction is one of the pagination emotes
-                        str(reaction_.emoji)
-                        in PAGINATION_EMOJI,  # Note: DELETE_EMOJI is a string and not unicode
+                        str(reaction_.emoji) in PAGINATION_EMOJI,  # Note: DELETE_EMOJI is a string and not unicode
                         # Reaction was not made by the Bot
                         user_.id != ctx.bot.user.id,
                         # There were no restrictions
@@ -142,9 +139,7 @@ class LinePaginator(Paginator):
                 )
             )
 
-        paginator = cls(
-            prefix=prefix, suffix=suffix, max_size=max_size, max_lines=max_lines
-        )
+        paginator = cls(prefix=prefix, suffix=suffix, max_size=max_size, max_lines=max_lines)
         current_page = 0
 
         if not lines:
@@ -169,9 +164,7 @@ class LinePaginator(Paginator):
             await ctx.send(embed=embed)
             return
         if footer_text:
-            embed.set_footer(
-                text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
-            )
+            embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
         else:
             embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
 
@@ -185,15 +178,11 @@ class LinePaginator(Paginator):
 
         while True:
             try:
-                reaction, user = await ctx.wait_for(
-                    "reaction_add", timeout=timeout, check=event_check
-                )
+                reaction, user = await ctx.wait_for("reaction_add", timeout=timeout, check=event_check)
             except asyncio.TimeoutError:
                 break  # We're done, no reactions for the last 5 minutes
 
-            if (
-                str(reaction.emoji) == DELETE_EMOJI
-            ):  # Note: DELETE_EMOJI is a string and not unicode
+            if str(reaction.emoji) == DELETE_EMOJI:  # Note: DELETE_EMOJI is a string and not unicode
                 return await message.delete()
 
             if reaction.emoji == FIRST_EMOJI:
@@ -202,13 +191,9 @@ class LinePaginator(Paginator):
 
                 embed.description = paginator.pages[current_page]
                 if footer_text:
-                    embed.set_footer(
-                        text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
-                    )
+                    embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
                 else:
-                    embed.set_footer(
-                        text=f"Page {current_page + 1}/{len(paginator.pages)}"
-                    )
+                    embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
                 await message.edit(embed=embed)
 
             if reaction.emoji == LAST_EMOJI:
@@ -217,13 +202,9 @@ class LinePaginator(Paginator):
 
                 embed.description = paginator.pages[current_page]
                 if footer_text:
-                    embed.set_footer(
-                        text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
-                    )
+                    embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
                 else:
-                    embed.set_footer(
-                        text=f"Page {current_page + 1}/{len(paginator.pages)}"
-                    )
+                    embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
                 await message.edit(embed=embed)
 
             if reaction.emoji == LEFT_EMOJI:
@@ -237,13 +218,9 @@ class LinePaginator(Paginator):
                 embed.description = paginator.pages[current_page]
 
                 if footer_text:
-                    embed.set_footer(
-                        text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
-                    )
+                    embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
                 else:
-                    embed.set_footer(
-                        text=f"Page {current_page + 1}/{len(paginator.pages)}"
-                    )
+                    embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
 
                 await message.edit(embed=embed)
 
@@ -257,13 +234,9 @@ class LinePaginator(Paginator):
                 embed.description = paginator.pages[current_page]
 
                 if footer_text:
-                    embed.set_footer(
-                        text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})"
-                    )
+                    embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
                 else:
-                    embed.set_footer(
-                        text=f"Page {current_page + 1}/{len(paginator.pages)}"
-                    )
+                    embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
 
                 await message.edit(embed=embed)
 
@@ -294,11 +267,7 @@ async def disambiguate(
     choices = (f"{index}: {entry}" for index, entry in enumerate(entries, start=1))
 
     def check(message: discord.Message) -> bool:
-        return (
-            message.content.isdecimal()
-            and message.author == ctx.author
-            and message.channel == ctx.channel
-        )
+        return message.content.isdecimal() and message.author == ctx.author and message.channel == ctx.channel
 
     try:
         if embed is None:
@@ -317,9 +286,7 @@ async def disambiguate(
 
         # wait_for timeout will go to except instead of the wait_for thing as I expected
         futures = [asyncio.ensure_future(coro1), asyncio.ensure_future(coro2)]
-        done, pending = await asyncio.wait(
-            futures, return_when=asyncio.FIRST_COMPLETED, loop=ctx.bot.loop
-        )
+        done, pending = await asyncio.wait(futures, return_when=asyncio.FIRST_COMPLETED, loop=ctx.bot.loop)
 
         # :yert:
         result = list(done)[0].result()
@@ -392,13 +359,9 @@ class Snake(Converter):
             title="Found multiple choices. Please choose the correct one.",
             colour=0x59982F,
         )
-        embed.set_author(
-            name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
-        )
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
 
-        name = await disambiguate(
-            ctx, get_potential(all_names), timeout=timeout, embed=embed
-        )
+        name = await disambiguate(ctx, get_potential(all_names), timeout=timeout, embed=embed)
         return names.get(name, name)
 
     @classmethod
@@ -406,17 +369,11 @@ class Snake(Converter):
         """Build list of snakes from the static snake resources."""
         # Get all the snakes
         if cls.snakes is None:
-            cls.snakes = json.loads(
-                (SNAKE_RESOURCES / "snake_names.json").read_text("utf8")
-            )
+            cls.snakes = json.loads((SNAKE_RESOURCES / "snake_names.json").read_text("utf8"))
         # Get the special cases
         if cls.special_cases is None:
-            special_cases = json.loads(
-                (SNAKE_RESOURCES / "special_snakes.json").read_text("utf8")
-            )
-            cls.special_cases = {
-                snake["name"].lower(): snake for snake in special_cases
-            }
+            special_cases = json.loads((SNAKE_RESOURCES / "special_snakes.json").read_text("utf8"))
+            cls.special_cases = {snake["name"].lower(): snake for snake in special_cases}
 
     @classmethod
     async def random(cls) -> str:

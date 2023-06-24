@@ -60,9 +60,7 @@ class SokobanGame:
     def move_up(self) -> None:
         if self.level[self.player[0] - 1][self.player[1]] in (" ", "."):
             self.level[self.player[0] - 1][self.player[1]] = "@"
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0] - 1, self.player[1]]
             return
 
@@ -73,18 +71,14 @@ class SokobanGame:
             self.level[self.player[0] - 2][self.player[1]] = (
                 "$" if self.level[self.player[0] - 2][self.player[1]] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0] - 1, self.player[1]]
             return
 
     def move_down(self) -> None:
         if self.level[self.player[0] + 1][self.player[1]] in (" ", "."):
             self.level[self.player[0] + 1][self.player[1]] = "@"
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0] + 1, self.player[1]]
             return
 
@@ -95,18 +89,14 @@ class SokobanGame:
             self.level[self.player[0] + 2][self.player[1]] = (
                 "$" if self.level[self.player[0] + 2][self.player[1]] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0] + 1, self.player[1]]
             return
 
     def move_left(self) -> None:
         if self.level[self.player[0]][self.player[1] - 1] in (" ", "."):
             self.level[self.player[0]][self.player[1] - 1] = "@"
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0], self.player[1] - 1]
             return
 
@@ -117,18 +107,14 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1] - 2] = (
                 "$" if self.level[self.player[0]][self.player[1] - 2] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0], self.player[1] - 1]
             return
 
     def move_right(self) -> None:
         if self.level[self.player[0]][self.player[1] + 1] in (" ", "."):
             self.level[self.player[0]][self.player[1] + 1] = "@"
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0], self.player[1] + 1]
             return
 
@@ -139,9 +125,7 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1] + 2] = (
                 "$" if self.level[self.player[0]][self.player[1] + 2] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = (
-                " " if self.player not in self.target else "."
-            )
+            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
             self.player = [self.player[0], self.player[1] + 1]
             return
 
@@ -190,9 +174,7 @@ class SokobanGameView(discord.ui.View):
         embed = (
             discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow())
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            )
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
         embed.description = f"{self.game.display_board()}"
         embed.add_field(
@@ -216,15 +198,11 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            ),
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(
-        emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False
-    )
+    @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.moves += 1
         self.game.move_up()
@@ -235,15 +213,11 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            )
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(
-                embed=self.make_win_embed(), view=None
-            )
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -253,9 +227,7 @@ class SokobanGameView(discord.ui.View):
         style=discord.ButtonStyle.primary,
         disabled=False,
     )
-    async def null_button2(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
+    async def null_button2(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.stop()
         await interaction.message.delete()
 
@@ -276,15 +248,11 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            )
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(
-                embed=self.make_win_embed(), view=None
-            )
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -305,15 +273,11 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            )
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(
-                embed=self.make_win_embed(), view=None
-            )
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -334,15 +298,11 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            )
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
-            await interaction.response.edit_message(
-                embed=self.make_win_embed(), view=None
-            )
+            await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
 
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -354,8 +314,6 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"
-            ),
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"),
             view=self,
         )

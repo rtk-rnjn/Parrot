@@ -57,14 +57,10 @@ class Sports(Cog):
 {extra}
 """
         if data.get("batting"):
-            embed.add_field(
-                name="Batting - Stats", value=f"```\n{table1}```", inline=False
-            )
+            embed.add_field(name="Batting - Stats", value=f"```\n{table1}```", inline=False)
 
         if data.get("bowling"):
-            embed.add_field(
-                name="Bowling - Stats", value=f"```\n{table2}```", inline=False
-            )
+            embed.add_field(name="Bowling - Stats", value=f"```\n{table2}```", inline=False)
 
         embed.add_field(
             name="Recent Commentry",
@@ -79,9 +75,7 @@ class Sports(Cog):
         if ctx.invoked_subcommand is not None:
             return
         if not self.url:
-            await ctx.send(
-                f"{ctx.author.mention} No IPL score page set | Ask for it in support server"
-            )
+            await ctx.send(f"{ctx.author.mention} No IPL score page set | Ask for it in support server")
             return
 
         if self.data is None:

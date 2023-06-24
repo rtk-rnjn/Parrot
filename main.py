@@ -16,6 +16,13 @@ bot: Parrot = Parrot()
 
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+else:
+    try:
+        import uvloop  # type: ignore
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    except ImportError:
+        pass
 
 
 async def main() -> None:

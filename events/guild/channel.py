@@ -22,22 +22,14 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
             and channel.permissions_for(channel.guild.default_role).send_messages
             and channel.permissions_for(channel.guild.me).manage_roles
         ):
-            if role_id := self.bot.guild_configurations_cache[channel.guild.id][
-                "mute_role"
-            ]:
+            if role_id := self.bot.guild_configurations_cache[channel.guild.id]["mute_role"]:
                 if role := channel.guild.get_role(role_id):
-                    await channel.set_permissions(
-                        role, send_messages=False, add_reactions=False
-                    )
+                    await channel.set_permissions(role, send_messages=False, add_reactions=False)
             elif role := discord.utils.get(channel.guild.roles, name="Muted"):
-                await channel.set_permissions(
-                    role, send_messages=False, add_reactions=False
-                )
+                await channel.set_permissions(role, send_messages=False, add_reactions=False)
 
     @Cog.listener()
-    async def on_guild_channel_update(
-        self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel
-    ):
+    async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
         pass
 
     @Cog.listener()
@@ -65,9 +57,7 @@ class GuildChannel(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_raw_integration_delete(
-        self, payload: discord.RawIntegrationDeleteEvent
-    ):
+    async def on_raw_integration_delete(self, payload: discord.RawIntegrationDeleteEvent):
         pass
 
 

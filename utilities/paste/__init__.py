@@ -2,8 +2,7 @@ from typing import Literal, NamedTuple
 
 from .client import Client as Client
 from .errors import *  # noqa: F401, F403  # pylint: disable=unused-wildcard-import
-from .paste import File as File
-from .paste import Paste as Paste
+from .paste import File as File, Paste as Paste
 
 
 class VersionInfo(NamedTuple):
@@ -14,6 +13,4 @@ class VersionInfo(NamedTuple):
     serial: int
 
 
-version_info: VersionInfo = VersionInfo(
-    major=5, minor=1, micro=0, releaselevel="final", serial=0
-)
+version_info: VersionInfo = VersionInfo(major=5, minor=1, micro=0, releaselevel="final", serial=0)

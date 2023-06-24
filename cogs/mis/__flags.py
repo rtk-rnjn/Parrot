@@ -16,9 +16,7 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
     latex: convert_bool = False
 
 
-class SearchFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     c2coff: Optional[int] = 0
     exact_terms: Optional[str] = None
     exclude_terms: Optional[str] = None
@@ -45,12 +43,8 @@ class SearchFlag(
             "yellow",
         ]
     ] = None
-    img_size: Optional[
-        Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"]
-    ] = None
-    img_type: Optional[
-        Literal["face", "photo", "clipart", "lineart", "stock", "animated"]
-    ] = None
+    img_size: Optional[Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"]] = None
+    img_type: Optional[Literal["face", "photo", "clipart", "lineart", "stock", "animated"]] = None
     link_site: Optional[str] = None
     low_range: Optional[str] = None
     lr: Optional[

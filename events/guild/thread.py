@@ -30,9 +30,7 @@ class OnThread(Cog):
         pass
 
     @Cog.listener()
-    async def on_thread_update(
-        self, before: discord.Thread, after: discord.Thread
-    ) -> None:
+    async def on_thread_update(self, before: discord.Thread, after: discord.Thread) -> None:
         pass
 
     @Cog.listener()
@@ -44,9 +42,7 @@ class OnThread(Cog):
         pass
 
     @Cog.listener()
-    async def on_raw_thread_member_remove(
-        self, payload: discord.RawThreadMembersUpdate
-    ) -> None:
+    async def on_raw_thread_member_remove(self, payload: discord.RawThreadMembersUpdate) -> None:
         pass
 
 

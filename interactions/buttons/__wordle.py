@@ -113,23 +113,17 @@ class Wordle:
         embed.description = "`QUIT` to end the game"
         embed.set_image(url="attachment://wordle.png")
 
-        message: discord.Message = await ctx.send(
-            embed=embed, file=discord.File(buf, "wordle.png")
-        )
+        message: discord.Message = await ctx.send(embed=embed, file=discord.File(buf, "wordle.png"))
 
         while True:
 
             def check(m: discord.Message) -> bool:
-                return (
-                    len(m.content) == 5
-                    and m.author == ctx.author
-                    and m.channel == ctx.channel
-                ) or (m.content.lower() == "quit")
+                return (len(m.content) == 5 and m.author == ctx.author and m.channel == ctx.channel) or (
+                    m.content.lower() == "quit"
+                )
 
             try:
-                guess: discord.Message = await ctx.wait_for(
-                    "message", check=check, timeout=900
-                )
+                guess: discord.Message = await ctx.wait_for("message", check=check, timeout=900)
             except asyncio.TimeoutError:
                 return await ctx.send("You took too long to guess the word!")
             content = guess.content.lower()
@@ -156,18 +150,14 @@ class Wordle:
                 embed.set_footer(text=f"{ctx.author}")
                 embed.set_image(url="attachment://wordle.png")
 
-                message = await ctx.send(
-                    embed=embed, file=discord.File(buf, "wordle.png")
-                )
+                message = await ctx.send(embed=embed, file=discord.File(buf, "wordle.png"))
 
                 if won:
                     await ctx.database_game_update("wordle", win=True)
                     return await ctx.send("Game Over! You won!")
                 if len(self.guesses) > 5:
                     await ctx.database_game_update("wordle", loss=True)
-                    return await ctx.send(
-                        f"Game Over! You lose, the word was: **{self.word}**"
-                    )
+                    return await ctx.send(f"Game Over! You lose, the word was: **{self.word}**")
 
 
 class WordInput(discord.ui.Modal, title="Word Input"):
@@ -190,9 +180,7 @@ class WordInput(discord.ui.Modal, title="Word Input"):
         game = self.view.game
 
         if content not in game._valid_words:
-            return await interaction.response.send_message(
-                "That is not a valid word!", ephemeral=True
-            )
+            return await interaction.response.send_message("That is not a valid word!", ephemeral=True)
         won = game.parse_guess(content)
         buf = await game.render_image()
 
@@ -212,18 +200,14 @@ class WordInput(discord.ui.Modal, title="Word Input"):
             self.view.disable_all()
             self.view.stop()
 
-        return await interaction.response.edit_message(
-            embed=embed, attachments=[file], view=self.view
-        )
+        return await interaction.response.edit_message(embed=embed, attachments=[file], view=self.view)
 
 
 class WordInputButton(discord.ui.Button["WordleView"]):
     def __init__(self, *, cancel_button: bool = False):
         super().__init__(
             label="Cancel" if cancel_button else "Make a guess!",
-            style=discord.ButtonStyle.red
-            if cancel_button
-            else discord.ButtonStyle.blurple,
+            style=discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple,
         )
         self.view.game: WordleView
 
@@ -232,14 +216,10 @@ class WordInputButton(discord.ui.Button["WordleView"]):
 
         game = self.view.game
         if interaction.user != game.player:
-            return await interaction.response.send_message(
-                "This isn't your game!", ephemeral=True
-            )
+            return await interaction.response.send_message("This isn't your game!", ephemeral=True)
         if self.label != "Cancel":
             return await interaction.response.send_modal(WordInput(self.view))
-        await interaction.response.send_message(
-            f"Game Over! the word was: **{game.word}**"
-        )
+        await interaction.response.send_message(f"Game Over! the word was: **{game.word}**")
         await interaction.message.delete()
         self.view.stop()
         return

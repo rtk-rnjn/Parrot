@@ -89,9 +89,7 @@ class Twenty48:
 
     def spawn_new(self) -> None:
         board = self.board
-        zeroes = [
-            (j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0
-        ]
+        zeroes = [(j, i) for j, sub in enumerate(board) for i, el in enumerate(sub) if el == 0]
         if not zeroes:
             self.has_empty = False
             return
@@ -169,9 +167,7 @@ class Twenty48_Button(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user == self.user:
             return True
-        await interaction.response.send_message(
-            content="This isn't your game!", ephemeral=True
-        )
+        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
         return False
 
     async def update_to_db(self) -> None:
@@ -202,9 +198,7 @@ class Twenty48_Button(discord.ui.View):
             description=f"{board_string}",
         ).set_footer(text=f"Total Moves: {self._moves}")
         await self.update_to_db()
-        await interaction.response.edit_message(
-            content=f"{interaction.user.mention}", embed=embed, view=self
-        )
+        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
         emoji="\N{UPWARDS BLACK ARROW}",
@@ -226,9 +220,7 @@ class Twenty48_Button(discord.ui.View):
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        await interaction.response.edit_message(
-            content=f"{interaction.user.mention}", embed=embed, view=self
-        )
+        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
         emoji="\N{REGIONAL INDICATOR SYMBOL LETTER Q}",
@@ -236,9 +228,7 @@ class Twenty48_Button(discord.ui.View):
         style=discord.ButtonStyle.primary,
         disabled=False,
     )
-    async def null_button2(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ):
+    async def null_button2(self, interaction: discord.Interaction, _: discord.ui.Button):
         await self.update_to_db()
         self.stop()
         await interaction.message.delete()
@@ -265,9 +255,7 @@ class Twenty48_Button(discord.ui.View):
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
 
-        await interaction.response.edit_message(
-            content=f"{interaction.user.mention}", embed=embed, view=self
-        )
+        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
         emoji="\N{DOWNWARDS BLACK ARROW}",
@@ -290,9 +278,7 @@ class Twenty48_Button(discord.ui.View):
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        await interaction.response.edit_message(
-            content=f"{interaction.user.mention}", embed=embed, view=self
-        )
+        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
         emoji="\N{BLACK RIGHTWARDS ARROW}",
@@ -315,6 +301,4 @@ class Twenty48_Button(discord.ui.View):
                 c.disabled = True
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        await interaction.response.edit_message(
-            content=f"{interaction.user.mention}", embed=embed, view=self
-        )
+        await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)

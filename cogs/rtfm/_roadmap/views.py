@@ -25,10 +25,7 @@ def roadmap_pdf(self, endpoint: str) -> discord.File:
 def get_roadmap_select_view(ls: List[str]) -> discord.ui.Select:
     class DropdownFirstHalf(discord.ui.Select):
         def __init__(self):
-            options = [
-                discord.SelectOption(label=name, description=f"Roadmap for {name}")
-                for name in ls
-            ]
+            options = [discord.SelectOption(label=name, description=f"Roadmap for {name}") for name in ls]
 
             super().__init__(
                 placeholder="Choose Roadmap...",

@@ -20,9 +20,7 @@ class IPCRoutes(Cog):
 
     def _overwrite_to_json(
         self,
-        overwrites: Dict[
-            Union[discord.User, discord.Role], discord.PermissionOverwrite
-        ],
+        overwrites: Dict[Union[discord.User, discord.Role], discord.PermissionOverwrite],
     ) -> Dict[str, Union[str, Optional[bool]]]:
         try:
             return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}  # type: ignore
@@ -52,9 +50,7 @@ class IPCRoutes(Cog):
         update: Dict[str, Any] = getattr(data, "update", {})
         upsert: bool = getattr(data, "upsert", False)
 
-        return await self.bot.mongo[db][collection].update_one(
-            query, update, upsert=upsert
-        )
+        return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
 
     @server.route()
     async def commands(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
@@ -169,12 +165,8 @@ class IPCRoutes(Cog):
     async def users(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
-        elif (name := getattr(data, "name", None)):
-            users = [
-                discord.utils.get(
-                    self.bot.users, name=name
-                )
-            ]
+        elif name := getattr(data, "name", None):
+            users = [discord.utils.get(self.bot.users, name=name)]
         else:
             users = self.bot.users
 
@@ -216,17 +208,13 @@ class IPCRoutes(Cog):
         )
 
     @server.route()
-    async def announce_global(
-        self, data: server.IpcServerResponse
-    ) -> List[Dict[str, str]]:
+    async def announce_global(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
         MESSAGES = []
         async for data in self.bot.guild_configurations.find({}):
             webhook = data["global_chat"]
             if (hook := webhook["webhook"]) and webhook["enable"]:
                 try:
-                    webhook = discord.Webhook.from_url(
-                        f"{hook}", session=self.bot.http_session
-                    )
+                    webhook = discord.Webhook.from_url(f"{hook}", session=self.bot.http_session)
                     msg = await webhook.send(
                         content=data.content[:1990],
                         username=f"{data.author_name}",
@@ -247,9 +235,7 @@ class IPCRoutes(Cog):
         return MESSAGES
 
     @server.route()
-    async def start_wavelink_nodes(
-        self, data: server.IpcServerResponse
-    ) -> Dict[str, str]:
+    async def start_wavelink_nodes(self, data: server.IpcServerResponse) -> Dict[str, str]:
         if self.bot.ON_HEROKU:
             return {"status": "error: cannot start wavelink on heroku"}
         host = data.host
@@ -258,9 +244,7 @@ class IPCRoutes(Cog):
         try:
             async with asyncio.timeout(5):
                 if hasattr(self.bot, "wavelink"):
-                    node: wavelink.Node = wavelink.Node(
-                        uri=f"{host}:{port}", password=password, id="MAIN"
-                    )
+                    node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="MAIN")
                     await self.bot.wavelink.connect(
                         client=self.bot,
                         nodes=[node],
@@ -276,9 +260,7 @@ class IPCRoutes(Cog):
         return {"status": "ok"}
 
     @server.route()
-    async def start_cricket_api(
-        self, data: server.IpcServerResponse
-    ) -> Optional[Dict[str, Any]]:
+    async def start_cricket_api(self, data: server.IpcServerResponse) -> Optional[Dict[str, Any]]:
         url = data.url
         return cricket_api(url) if url else None
 

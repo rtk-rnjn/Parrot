@@ -33,18 +33,12 @@ from black import FileMode, format_str
 from colorama import Fore
 from yapf.yapflib.yapf_api import FormatCode as yapf_format
 
-from ._bandit import BanditConverter
-from ._bandit import validate_flag as bandit_validate_flag
-from ._flake8 import Flake8Converter
-from ._flake8 import validate_flag as flake8_validate_flag
-from ._mypy import MypyConverter
-from ._mypy import validate_flag as mypy_validate_flag
-from ._pylint import PyLintConverter
-from ._pylint import validate_flag as pylint_validate_flag
-from ._pyright import PyrightConverter
-from ._pyright import validate_flag as pyright_validate_flag
-from ._ruff import RuffConverter
-from ._ruff import validate_flag as ruff_validate_flag
+from ._bandit import BanditConverter, validate_flag as bandit_validate_flag
+from ._flake8 import Flake8Converter, validate_flag as flake8_validate_flag
+from ._mypy import MypyConverter, validate_flag as mypy_validate_flag
+from ._pylint import PyLintConverter, validate_flag as pylint_validate_flag
+from ._pyright import PyrightConverter, validate_flag as pyright_validate_flag
+from ._ruff import RuffConverter, validate_flag as ruff_validate_flag
 
 languages = pathlib.Path("extra/lang.txt").read_text()
 GITHUB_API_URL = "https://api.github.com"
@@ -272,9 +266,7 @@ async def lint(cmd: str, filename: str) -> Dict[str, str]:
     filename = f"{Fore.CYAN}{filename}"
 
     complete_cmd_str = f"$ {command} {' '.join(rest)} {filename}"
-    payload = {
-        "main": f"{complete_cmd_str}\n\n{Fore.CYAN}Return Code: {Fore.RED}{proc.returncode}"
-    }
+    payload = {"main": f"{complete_cmd_str}\n\n{Fore.CYAN}Return Code: {Fore.RED}{proc.returncode}"}
     if stdout:
         payload["stdout"] = stdout.decode()
     if stderr:
@@ -384,18 +376,14 @@ class LintCode:
         if data.get("stdout"):
             json_data = json.loads(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
-            pages.add_line(
-                f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{pyright.__version__}\n"
-            )
+            pages.add_line(f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{pyright.__version__}\n")
 
             pages.add_line(
                 f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information"
             )
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
-            await interface.add_line(
-                f"\n{Fore.MAGENTA}Diagnosed completed in {json_data['summary']['timeInSec']} seconds\n"
-            )
+            await interface.add_line(f"\n{Fore.MAGENTA}Diagnosed completed in {json_data['summary']['timeInSec']} seconds\n")
 
             if json_data["generalDiagnostics"]:
                 await interface.add_line(f"{Fore.WHITE}General Diagnostics:\n")
@@ -413,9 +401,7 @@ class LintCode:
                     message = f"{Fore.BLUE}{error['message']}"
                     rule = f"{Fore.WHITE}({Fore.CYAN}{error.get('rule', 'N/A')}{Fore.WHITE})"
 
-                    await interface.add_line(
-                        f"{file}:{line} - {severity} - {message} {rule}"
-                    )
+                    await interface.add_line(f"{file}:{line} - {severity} - {message} {rule}")
 
         if data.get("stderr"):
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
@@ -434,9 +420,7 @@ class LintCode:
         if data.get("stdout"):
             json_data: dict = json.loads(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
-            pages.add_line(
-                f"{Fore.WHITE}Flake8 Version - {Fore.WHITE}{flake8.__version__}\n"
-            )
+            pages.add_line(f"{Fore.WHITE}Flake8 Version - {Fore.WHITE}{flake8.__version__}\n")
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
 
@@ -476,9 +460,7 @@ class LintCode:
             except pkg_resources.DistributionNotFound:
                 ruff_version = "0.0.272"
 
-            pages.add_line(
-                f"{Fore.WHITE}Ruff Version - {Fore.WHITE}{ruff_version}\n"  # TODO: Get version from ruff
-            )
+            pages.add_line(f"{Fore.WHITE}Ruff Version - {Fore.WHITE}{ruff_version}\n")  # TODO: Get version from ruff
 
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
@@ -498,13 +480,9 @@ class LintCode:
                 if result["fix"]:
                     applicability = f'{Fore.CYAN}{result["fix"]["applicability"]}'
                     fix_message = f'{Fore.GREEN}{result["fix"]["message"]}'
-                    await interface.add_line(
-                        f"{Fore.WHITE}Fix: {fix_message} {Fore.WHITE}({applicability}{Fore.WHITE})\n"
-                    )
+                    await interface.add_line(f"{Fore.WHITE}Fix: {fix_message} {Fore.WHITE}({applicability}{Fore.WHITE})\n")
                 else:
-                    await interface.add_line(
-                        f"{Fore.WHITE}Fix: {Fore.RED}No Fix available at this moment\n"
-                    )
+                    await interface.add_line(f"{Fore.WHITE}Fix: {Fore.RED}No Fix available at this moment\n")
                 await interface.add_line(f'{Fore.WHITE}{"-" * 50}\n')
 
         if data.get("stderr"):
@@ -526,9 +504,7 @@ class LintCode:
 
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
 
-            pages.add_line(
-                f"{Fore.WHITE}Pylint Version - {Fore.WHITE}{pylint.__version__}\n"
-            )
+            pages.add_line(f"{Fore.WHITE}Pylint Version - {Fore.WHITE}{pylint.__version__}\n")
 
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
@@ -552,27 +528,19 @@ class LintCode:
         if data.get("stdout"):
             json_data = json.loads(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
-            pages.add_line(
-                f"{Fore.MAGENTA}Bandit Version - {Fore.MAGENTA}{bandit.__version__}\n"
-            )
+            pages.add_line(f"{Fore.MAGENTA}Bandit Version - {Fore.MAGENTA}{bandit.__version__}\n")
 
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
 
             # Generated at: Ex format: 2023-06-11T17:51:53Z
-            generated_at = datetime.strptime(
-                json_data["generated_at"], "%Y-%m-%dT%H:%M:%SZ"
-            ).strftime("%d/%m/%Y %H:%M:%S")
-            await interface.add_line(
-                f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}\n"
-            )
+            generated_at = datetime.strptime(json_data["generated_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y %H:%M:%S")
+            await interface.add_line(f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}\n")
 
             confidence_high = json_data["metrics"]["_totals"]["CONFIDENCE.HIGH"]
             confidence_low = json_data["metrics"]["_totals"]["CONFIDENCE.LOW"]
             confidence_medium = json_data["metrics"]["_totals"]["CONFIDENCE.MEDIUM"]
-            confidence_undefined = json_data["metrics"]["_totals"][
-                "CONFIDENCE.UNDEFINED"
-            ]
+            confidence_undefined = json_data["metrics"]["_totals"]["CONFIDENCE.UNDEFINED"]
 
             await interface.add_line(
                 f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High {Fore.WHITE}- {Fore.YELLOW}{confidence_medium} Medium {Fore.WHITE}- {Fore.GREEN}{confidence_low} Low {Fore.WHITE}- {Fore.CYAN}{confidence_undefined} Undefined"
@@ -630,24 +598,14 @@ class LintCode:
         end = time.perf_counter()
 
         if res == self.source:
-            await ctx.reply(
-                f"```ansi\n{Fore.RED}[No Changes in the code, already formatted]```"
-            )
+            await ctx.reply(f"```ansi\n{Fore.RED}[No Changes in the code, already formatted]```")
             return
         if len(res) > 2000:
-            await ctx.reply(
-                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
-            )
-            await ctx.send(
-                file=discord.File(
-                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
-                )
-            )
+            await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
+            await ctx.send(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
 
-        await ctx.reply(
-            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
-        )
+        await ctx.reply(f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```")
 
     async def run_isort(self, ctx: Context) -> None:
         ini = time.perf_counter()
@@ -659,19 +617,11 @@ class LintCode:
             return
 
         if len(res) > 2000:
-            await ctx.reply(
-                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
-            )
-            await ctx.send(
-                file=discord.File(
-                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
-                )
-            )
+            await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
+            await ctx.send(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
 
-        await ctx.reply(
-            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
-        )
+        await ctx.reply(f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```")
 
     async def run_autopep8(self, ctx: Context) -> None:
         ini = time.perf_counter()
@@ -682,19 +632,11 @@ class LintCode:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
             return
         if len(res) > 2000:
-            await ctx.reply(
-                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
-            )
-            await ctx.send(
-                file=discord.File(
-                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
-                )
-            )
+            await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
+            await ctx.send(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
 
-        await ctx.reply(
-            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
-        )
+        await ctx.reply(f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```")
 
     async def run_yapf(self, ctx: Context) -> None:
         ini = time.perf_counter()
@@ -708,19 +650,11 @@ class LintCode:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
             return
         if len(res) > 2000:
-            await ctx.reply(
-                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
-            )
-            await ctx.send(
-                file=discord.File(
-                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
-                )
-            )
+            await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
+            await ctx.send(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
 
-        await ctx.reply(
-            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
-        )
+        await ctx.reply(f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```")
 
     async def run_isort_with_black(self, ctx: Context) -> None:
         import isort
@@ -736,16 +670,8 @@ class LintCode:
             return
 
         if len(res) > 2000:
-            await ctx.reply(
-                f"```ansi\n{Fore.RED}[The formated code is too long, to display]```"
-            )
-            await ctx.send(
-                file=discord.File(
-                    fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"
-                )
-            )
+            await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
+            await ctx.send(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
 
-        await ctx.reply(
-            f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```"
-        )
+        await ctx.reply(f"```ansi\n{Fore.GREEN}[Formated Code in {int(end-ini)} seconds]``````py\n{res}```")

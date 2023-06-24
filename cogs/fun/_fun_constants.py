@@ -163,9 +163,7 @@ class DynamicQuestionGen:
             random.randint(10, 20),
             random.randint(200, 350),
         )
-        ans = random.randint(
-            0, 9
-        )  # max remainder is 9, since the minimum modulus is 10
+        ans = random.randint(0, 9)  # max remainder is 9, since the minimum modulus is 10
         a = quotient * m + ans - b
 
         question = q_format.format(a, b, m)

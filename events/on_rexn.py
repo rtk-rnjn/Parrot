@@ -29,43 +29,27 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    async def _factory_reactor(
-        self, payload: discord.RawReactionActionEvent, *, tp: Literal["add", "remove"]
-    ) -> None:
+    async def _factory_reactor(self, payload: discord.RawReactionActionEvent, *, tp: Literal["add", "remove"]) -> None:
         log.info("Reaction %sing sequence started, %s", tp, payload)
         if not payload.guild_id:
             return
 
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
-        if (
-            payload.channel_id
-            in self.bot.guild_configurations_cache[payload.guild_id][
-                "starboard_config"
-            ]["ignore_channel"]
-        ):
+        if payload.channel_id in self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["ignore_channel"]:
             log.info("Channel ignored %s", payload.channel_id)
             return
 
-        max_duration = (
-            self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"][
-                "max_duration"
-            ]
-            or TWO_WEEK
-        )
+        max_duration = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["max_duration"] or TWO_WEEK
 
         if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
             log.info("Message too old %s", DATETIME)
             return
 
-        self_star = self.bot.guild_configurations_cache[payload.guild_id][
-            "starboard_config"
-        ].get("can_self_star", False)
+        self_star = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"].get("can_self_star", False)
 
         try:
-            locked: bool = self.bot.guild_configurations_cache[payload.guild_id][
-                "starboard_config"
-            ]["is_locked"]
+            locked: bool = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["is_locked"]
         except KeyError:
             return
 
@@ -114,20 +98,14 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         }
 
         if message.attachments:
-            if (
-                message.attachments[0]
-                .url.lower()
-                .endswith(("png", "jpeg", "jpg", "gif", "webp"))
-            ):
+            if message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp")):
                 post["picture"] = message.attachments[0].url
             else:
                 post["attachment"] = message.attachments[0].url
 
         return post
 
-    async def get_star_count(
-        self, message: Optional[discord.Message] = None, *, from_db: bool = True
-    ) -> int:
+    async def get_star_count(self, message: Optional[discord.Message] = None, *, from_db: bool = True) -> int:
         stars = 0
         if message is None:
             return stars
@@ -165,14 +143,10 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return "\N{GLOWING STAR}"
         return "\N{DIZZY SYMBOL}" if 25 > stars >= 10 else "\N{SPARKLES}"
 
-    async def star_post(
-        self, *, starboard_channel: discord.TextChannel, message: discord.Message
-    ):
+    async def star_post(self, *, starboard_channel: discord.TextChannel, message: discord.Message):
         count = await self.get_star_count(message, from_db=True)
 
-        embed: discord.Embed = discord.Embed(
-            timestamp=message.created_at, color=self.star_gradient_colour(count)
-        )
+        embed: discord.Embed = discord.Embed(timestamp=message.created_at, color=self.star_gradient_colour(count))
         embed.set_footer(text=f"ID: {message.author.id}")
 
         embed.set_author(
@@ -183,11 +157,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if message.content:
             embed.description = message.content
         if message.attachments:
-            if (
-                message.attachments[0]
-                .url.lower()
-                .endswith(("png", "jpeg", "jpg", "gif", "webp"))
-            ):
+            if message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp")):
                 embed.set_image(url=message.attachments[0].url)
             else:
                 embed.add_field(
@@ -205,9 +175,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         post = await self.__make_starboard_post(bot_message=msg, message=message)
         await self.bot.starboards.insert_one(post)
 
-    async def edit_starbord_post(
-        self, payload: discord.RawReactionActionEvent, **data: Any
-    ):
+    async def edit_starbord_post(self, payload: discord.RawReactionActionEvent, **data: Any):
         ch: discord.TextChannel = await self.bot.getch(
             self.bot.get_channel,
             self.bot.fetch_channel,
@@ -219,10 +187,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         try:
             starboard_channel: int = (
-                self.bot.guild_configurations_cache[payload.guild_id][
-                    "starboard_config"
-                ]["channel"]
-                or 0
+                self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["channel"] or 0
             )
         except KeyError:
             return
@@ -231,12 +196,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 self.bot.get_channel, self.bot.fetch_channel, starboard_channel
             )
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(  # type: ignore
-            starchannel, data["message_id"]["bot"]
-        )
-        main_message: discord.Message = await self.bot.get_or_fetch_message(  # type: ignore
-            ch, data["message_id"]["author"]
-        )
+        msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, data["message_id"]["bot"])  # type: ignore
+        main_message: discord.Message = await self.bot.get_or_fetch_message(ch, data["message_id"]["author"])  # type: ignore
         if msg and not msg.embeds:
             log.info("Message has no embeds")
             return
@@ -270,12 +231,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         msg = author_message
         try:
-            limit = (
-                self.bot.guild_configurations_cache[payload.guild_id][
-                    "starboard_config"
-                ]["limit"]
-                or 0
-            )
+            limit = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["limit"] or 0
         except KeyError:
             return False
 
@@ -306,34 +262,21 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self.edit_starbord_post(payload, **data)
         return False
 
-    async def _delete_starboard_post(
-        self, payload: discord.RawReactionActionEvent
-    ) -> bool:
+    async def _delete_starboard_post(self, payload: discord.RawReactionActionEvent) -> bool:
         collection: Collection = self.bot.starboards
-        ch = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, payload.channel_id
-        )
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
-            ch, payload.message_id
-        )
+        ch = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, payload.channel_id)
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(ch, payload.message_id)  # type: ignore
         data: DocumentType = await collection.find_one_and_delete(
             {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
         )
         if not data:
             return False
         try:
-            channel: int = (
-                self.bot.guild_configurations_cache[payload.guild_id][
-                    "starboard_config"
-                ]["channel"]
-                or 0
-            )
+            channel: int = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["channel"] or 0
         except KeyError:
             return False
 
-        starboard_channel: discord.TextChannel = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, channel
-        )
+        starboard_channel: discord.TextChannel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
 
         bot_msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             starboard_channel, data["message_id"]["bot"]
@@ -354,31 +297,19 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         msg = author_message
 
-        if data := await self.bot.starboards.find_one(
-            {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]}
-        ):
+        if data := await self.bot.starboards.find_one({"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]}):
             await self.edit_starbord_post(payload, **data)
             return
 
         count = await self.get_star_count(msg)
 
         try:
-            limit = (
-                self.bot.guild_configurations_cache[payload.guild_id][
-                    "starboard_config"
-                ]["limit"]
-                or 0
-            )
+            limit = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["limit"] or 0
         except KeyError:
             return
 
         try:
-            channel: int = (
-                self.bot.guild_configurations_cache[payload.guild_id][
-                    "starboard_config"
-                ]["channel"]
-                or 0
-            )
+            channel: int = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["channel"] or 0
         except KeyError:
             return
         else:
@@ -393,9 +324,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
 
     @Cog.listener()
-    async def on_reaction_add(
-        self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
-    ):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]):
         if isinstance(user, discord.User):
             return
         if (
@@ -433,9 +362,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self._factory_reactor(payload, tp="add")
 
     @Cog.listener()
-    async def on_reaction_remove(
-        self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]
-    ):
+    async def on_reaction_remove(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]):
         if isinstance(user, discord.User):
             return
         if (
@@ -475,9 +402,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self._factory_reactor(payload, tp="remove")
 
     @Cog.listener()
-    async def on_reaction_clear(
-        self, message: discord.Message, reactions: List[discord.Reaction]
-    ):
+    async def on_reaction_clear(self, message: discord.Message, reactions: List[discord.Reaction]):
         pass
 
     @Cog.listener()
@@ -499,9 +424,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         pass
 
     @Cog.listener()
-    async def on_raw_reaction_clear_emoji(
-        self, payload: discord.RawReactionClearEmojiEvent
-    ):
+    async def on_raw_reaction_clear_emoji(self, payload: discord.RawReactionClearEmojiEvent):
         pass
 
 

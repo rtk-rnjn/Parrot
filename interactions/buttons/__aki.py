@@ -6,9 +6,7 @@ import asyncio
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
 
-from akinator import Answer
-from akinator import AsyncAkinator as AkinatorGame
-from akinator import CantGoBackAnyFurther, Language, Theme
+from akinator import Answer, AsyncAkinator as AkinatorGame, CantGoBackAnyFurther, Language, Theme
 
 import discord
 from core import Context, Parrot
@@ -177,9 +175,7 @@ class Akinator:
                 return False
 
             try:
-                reaction, user = await ctx.bot.wait_for(
-                    "reaction_add", timeout=timeout, check=check
-                )
+                reaction, user = await ctx.bot.wait_for("reaction_add", timeout=timeout, check=check)
             except asyncio.TimeoutError:
                 return
 
@@ -199,9 +195,7 @@ class Akinator:
                 try:
                     await self.aki.back()
                 except CantGoBackAnyFurther:
-                    await self.message.reply(
-                        "I cannot go back any further", delete_after=10
-                    )
+                    await self.message.reply("I cannot go back any further", delete_after=10)
             else:
                 answer = Answer.from_str(Options(emoji).name)
                 await self.aki.answer(answer)

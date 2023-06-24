@@ -4,19 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Coroutine,
-    Final,
-    List,
-    Literal,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Coroutine, Final, List, Literal, Optional, Set, Tuple, TypeVar, Union
 
 import discord
 from core import Context, Parrot
@@ -95,9 +83,7 @@ class BaseView(discord.ui.View):
 
 
 class SlideButton(discord.ui.Button["SlideView"]):
-    def __init__(
-        self, label: Union[int, str], *, style: discord.ButtonStyle, row: int
-    ) -> None:
+    def __init__(self, label: Union[int, str], *, style: discord.ButtonStyle, row: int) -> None:
         super().__init__(
             label=str(label),
             style=style,
@@ -113,9 +99,7 @@ class SlideButton(discord.ui.Button["SlideView"]):
         game = self.view.game
 
         if interaction.user != game.player:
-            return await interaction.response.send_message(
-                "This is not your game!", ephemeral=True
-            )
+            return await interaction.response.send_message("This is not your game!", ephemeral=True)
         num = int(self.label)
 
         if num not in game.beside_blank():
@@ -163,12 +147,7 @@ class NumberSlider:
         self.correct_style: discord.ButtonStyle = discord.ButtonStyle.green
 
     def get_item(self, obj: Optional[int] = None) -> Tuple[int, int]:
-        return next(
-            (x, y)
-            for x, row in enumerate(self.numbers)
-            for y, item in enumerate(row)
-            if item == obj
-        )
+        return next((x, y) for x, row in enumerate(self.numbers) for y, item in enumerate(row) if item == obj)
 
     def beside_blank(self) -> List[Optional[int]]:
         nx, ny = self.get_item()
@@ -180,11 +159,7 @@ class NumberSlider:
             (nx, ny + 1),
         ]
 
-        return [
-            self.numbers[i][j]
-            for i, j in beside_item
-            if i in range(self.count) and j in range(self.count)
-        ]
+        return [self.numbers[i][j] for i, j in beside_item if i in range(self.count) and j in range(self.count)]
 
     async def start(
         self,
@@ -228,9 +203,7 @@ class NumberSlider:
         self.completed = chunk(self.all_numbers + [None], count=self.count)
 
         self.view = SlideView(self, timeout=timeout)
-        self.embed = discord.Embed(
-            description="Slide the tiles back in ascending order!", color=embed_color
-        )
+        self.embed = discord.Embed(description="Slide the tiles back in ascending order!", color=embed_color)
         self.embed.add_field(name="\u200b", value="Moves: `0`")
 
         self.message: discord.Message = await ctx.send(embed=self.embed, view=self.view)

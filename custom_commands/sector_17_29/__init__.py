@@ -84,21 +84,17 @@ class Sector1729(Cog):
         self.change_channel_name.start()
 
     async def cog_check(self, ctx: Context) -> bool:
-        return ctx.guild is not None and ctx.guild.id == getattr(
-            ctx.bot.server, "id", SUPPORT_SERVER_ID
-        )
-    
+        return ctx.guild is not None and ctx.guild.id == getattr(ctx.bot.server, "id", SUPPORT_SERVER_ID)
+
     async def cog_unload(self) -> None:
         if self.change_channel_name.is_running():
             self.change_channel_name.cancel()
-        
+
         if self.change_rainbow_role.is_running():
             self.change_rainbow_role.cancel()
 
     @Cog.listener("on_raw_reaction_add")
-    async def on_raw_reaction_add(
-        self, payload: discord.RawReactionActionEvent
-    ) -> None:
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         if (
             payload.message_id != MESSAGE_ID
             or str(payload.emoji) != EMOJI
@@ -106,13 +102,9 @@ class Sector1729(Cog):
         ):
             return
         user_id: int = payload.user_id
-        user: Optional[discord.User] = await self.bot.getch(
-            self.bot.get_user, self.bot.fetch_user, user_id
-        )
+        user: Optional[discord.User] = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
-        channel: Optional[discord.TextChannel] = self.bot.get_channel(  # type: ignore
-            payload.channel_id
-        )
+        channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)  # type: ignore
 
         if channel is None:
             return
@@ -140,9 +132,7 @@ class Sector1729(Cog):
 
         self._cache[payload.user_id] = time() + 60
 
-        _msg: discord.Message = await channel.send(
-            f"<@{payload.user_id}> deleting messages - 0/50"
-        )
+        _msg: discord.Message = await channel.send(f"<@{payload.user_id}> deleting messages - 0/50")
 
         if user is None or user.bot:
             return
@@ -155,9 +145,7 @@ class Sector1729(Cog):
                 await msg.delete()
             i += 1
             if i % 10 == 0:
-                await _msg.edit(
-                    content=f"<@{payload.user_id}> deleting messages - {i}/50"
-                )
+                await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")
 
         if msg:
             await __remove_reaction(msg)
@@ -169,16 +157,14 @@ class Sector1729(Cog):
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):
         assert self.bot.server is not None
-        member: Optional[
-            Union[discord.Member, discord.User]
-        ] = await self.bot.get_or_fetch_member(self.bot.server, data.user)
+        member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
+            self.bot.server, data.user
+        )
 
         if member is None and not isinstance(member, discord.Member):
             return
 
-        await member.add_roles(  # type: ignore
-            discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg"
-        )
+        await member.add_roles(discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg")  # type: ignore
         await self.__add_to_db(member)  # type: ignore
 
     @Cog.listener("on_member_join")
@@ -186,13 +172,9 @@ class Sector1729(Cog):
         if member.guild.id != SUPPORT_SERVER_ID:
             return
 
-        await member.add_roles(
-            discord.Object(id=MEMBER_ROLE_ID), reason="Member role add"
-        )
+        await member.add_roles(discord.Object(id=MEMBER_ROLE_ID), reason="Member role add")
         if await self.bot.topgg.get_user_vote(member.id):
-            await member.add_roles(
-                discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg"
-            )
+            await member.add_roles(discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg")
 
     @commands.command(name="claimvote", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
@@ -207,9 +189,7 @@ class Sector1729(Cog):
         ) or await self.bot.topgg.get_user_vote(ctx.author.id):
             role = discord.Object(id=VOTER_ROLE_ID)
             await ctx.author.add_roles(role, reason="Voted for the bot on Top.gg")
-            await ctx.send(
-                "You have claimed your vote for the bot on Top.gg. Added Golden Role."
-            )
+            await ctx.send("You have claimed your vote for the bot on Top.gg. Added Golden Role.")
             return
 
         await ctx.send(
@@ -221,12 +201,8 @@ class Sector1729(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @in_support_server()
     async def my_votes(self, ctx: Context):
-        if data := await self.bot.mongo.user_misc.find_one(
-            {"_id": ctx.author.id, "topgg_votes": {"$exists": True}}
-        ):
-            await ctx.send(
-                f"You voted for **{self.bot.user}** for **{len(data['topgg_votes'])}** times on Top.gg"
-            )
+        if data := await self.bot.mongo.user_misc.find_one({"_id": ctx.author.id, "topgg_votes": {"$exists": True}}):
+            await ctx.send(f"You voted for **{self.bot.user}** for **{len(data['topgg_votes'])}** times on Top.gg")
         else:
             await ctx.send("You haven't voted for the bot on Top.gg yet.")
 
@@ -251,15 +227,11 @@ class Sector1729(Cog):
             col: Collection = self.bot.user_collections_ind
             now_plus_12_hours = time() + 43200
 
-            async for doc in col.find(
-                {"topgg_vote_expires": {"$lte": now_plus_12_hours}}
-            ):  # type: ignore
+            async for doc in col.find({"topgg_vote_expires": {"$lte": now_plus_12_hours}}):  # type: ignore
                 guild = self.bot.server
                 role = discord.Object(id=VOTER_ROLE_ID)
 
-                await col.update_one(
-                    {"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}}
-                )  # type: ignore
+                await col.update_one({"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}})  # type: ignore
                 if guild and (member := guild.get_member(doc["_id"])):
                     await member.remove_roles(role, reason="Top.gg vote expired")
 
@@ -326,20 +298,14 @@ class Sector1729(Cog):
             return
 
         seconds = (created - joined).total_seconds()
-        if (
-            seconds >= 86400
-            and isinstance(message.author, discord.Member)
-            and message.author._roles.has(QU_ROLE)
-        ):
+        if seconds >= 86400 and isinstance(message.author, discord.Member) and message.author._roles.has(QU_ROLE):
             with suppress(discord.HTTPException):
                 await message.author.remove_roles(
                     discord.Object(id=QU_ROLE),
                     reason="Account age crosses 1d",
                 )
 
-    @commands.group(
-        name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True
-    )
+    @commands.group(name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True)
     async def sector_17_29(self, ctx: Context):
         """Commands related to SECTOR 17-29"""
         if not ctx.invoked_subcommand:
@@ -365,9 +331,7 @@ class Sector1729(Cog):
 
         assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
 
-        role = discord.utils.get(
-            ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}"
-        )
+        role = discord.utils.get(ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}")
         if role is None:
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
@@ -387,9 +351,7 @@ class Sector1729(Cog):
 
         assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
 
-        role = discord.utils.get(
-            ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}"
-        )
+        role = discord.utils.get(ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}")
         if role is None:
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
@@ -412,9 +374,7 @@ class Sector1729(Cog):
         assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
 
         if not role.name.startswith("[SELF]"):
-            await ctx.error(
-                f"{ctx.author.roles} you don't have permission to assign yourself that role"
-            )
+            await ctx.error(f"{ctx.author.roles} you don't have permission to assign yourself that role")
             return
 
         if ctx.author._roles.has(role.id):
@@ -435,9 +395,7 @@ class Sector1729(Cog):
         assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
 
         if role.id not in self.__assignable_roles:
-            await ctx.error(
-                f"{ctx.author.mention} you don't have permission to unassign yourself that role"
-            )
+            await ctx.error(f"{ctx.author.mention} you don't have permission to unassign yourself that role")
             return
 
         if not ctx.author._roles.has(role.id):
@@ -450,11 +408,7 @@ class Sector1729(Cog):
     @Cog.listener("on_message")
     async def extra_parser_on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
-        if (
-            message.guild is not None
-            and self.bot.server
-            and message.guild.id != self.bot.server.id
-        ):
+        if message.guild is not None and self.bot.server and message.guild.id != self.bot.server.id:
             return
 
         await self.nickname_parser(message)
@@ -465,9 +419,7 @@ class Sector1729(Cog):
             for line in ls:
                 if line.startswith("```"):
                     inside_code_block = not inside_code_block
-                if (
-                    line.startswith("# ") and not inside_code_block
-                ):  # dont let user use markdown syntax
+                if line.startswith("# ") and not inside_code_block:  # dont let user use markdown syntax
                     await message.delete(delay=0)
 
     async def nickname_parser(self, message: discord.Message) -> None:
@@ -480,9 +432,7 @@ class Sector1729(Cog):
 
         if not regex.match(ctx.author.display_name) and ctx.guild:
             try:
-                await ctx.author.edit(
-                    nick="Moderated Nickname", reason="Nickname moderated"
-                )
+                await ctx.author.edit(nick="Moderated Nickname", reason="Nickname moderated")
                 await ctx.author.send(
                     f"Your nickname in {ctx.guild.name} has been moderated because it contained invalid characters, you can still change your nickname.",
                     view=ctx.send_view(),
@@ -523,9 +473,7 @@ class Sector1729(Cog):
         await ctx.reply(f"Adjective added, Total count: {len(self.adjectives)}")
 
         cog: Gist = self.bot.get_cog("Gist")  # type: ignore
-        table = tabulate(
-            {"Adjectives": adjs}, headers="keys", tablefmt="github"
-        )
+        table = tabulate({"Adjectives": adjs}, headers="keys", tablefmt="github")
         author = tabulate(
             {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},
             headers="keys",

@@ -126,9 +126,7 @@ class ImageCaptcha(_Captcha):
     def truefonts(self):
         if self._truefonts:
             return self._truefonts
-        self._truefonts = tuple(
-            truetype(n, s) for n in self._fonts for s in self._font_sizes
-        )
+        self._truefonts = tuple(truetype(n, s) for n in self._fonts for s in self._font_sizes)
 
         return self._truefonts
 
@@ -146,9 +144,7 @@ class ImageCaptcha(_Captcha):
         return image
 
     @staticmethod
-    def create_noise_dots(
-        image: Image.Image, color: Tuple, width: int = 3, number: int = 30
-    ):
+    def create_noise_dots(image: Image.Image, color: Tuple, width: int = 3, number: int = 30):
         draw = Draw(image)
         w, h = image.size
         while number:
@@ -158,9 +154,7 @@ class ImageCaptcha(_Captcha):
             number -= 1
         return image
 
-    def create_captcha_image(
-        self, chars: str, color: Tuple[int, int, int], background: str
-    ) -> Image.Image:
+    def create_captcha_image(self, chars: str, color: Tuple[int, int, int], background: str) -> Image.Image:
         """Create the CAPTCHA image itself.
         :param chars: text to be generated.
         :param color: color of the text.

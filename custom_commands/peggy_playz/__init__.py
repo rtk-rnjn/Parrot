@@ -39,10 +39,7 @@ class PeggyPlayZ(Cog):
         if (
             message.guild
             and message.guild.id == PEGGY_PLAYZ
-            and (
-                isinstance(message.channel, discord.TextChannel)
-                and message.channel.is_news()
-            )
+            and (isinstance(message.channel, discord.TextChannel) and message.channel.is_news())
             and message.channel.id != UPLOAD_CHANNEL_ID
         ):
             await message.publish()

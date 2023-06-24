@@ -204,9 +204,7 @@ class PaginatorView(discord.ui.View):
         custom_id="previous",
         emoji=discord.PartialEmoji(name="\N{BLACK LEFT-POINTING TRIANGLE}"),
     )
-    async def previous(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         page = self.pages.previous_page
         self.update_embed(page)
         self.lock_bro()
@@ -309,9 +307,7 @@ class PaginationView(discord.ui.View):
             self._last.disabled = True
 
         if self.first_function:
-            await discord.utils.maybe_coroutine(
-                self.first_function, interaction, button, self.embed_list
-            )
+            await discord.utils.maybe_coroutine(self.first_function, interaction, button, self.embed_list)
             return
 
         if isinstance(self.embed_list[self.current], discord.Embed):
@@ -331,15 +327,11 @@ class PaginationView(discord.ui.View):
             )
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.green, disabled=True)
-    async def previous(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current = self.current - 1
 
         if len(self.embed_list) >= 1:  # if list consists of 2 pages, if,
-            self._last.disabled = (
-                False  # then `last` and `next` need not to be disabled
-            )
+            self._last.disabled = False  # then `last` and `next` need not to be disabled
             self.next.disabled = False
         else:
             self._last.disabled = True  # else it should be disabled
@@ -356,9 +348,7 @@ class PaginationView(discord.ui.View):
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
         if self.previous_function:
-            await discord.utils.maybe_coroutine(
-                self.previous_function, interaction, button, self.embed_list
-            )
+            await discord.utils.maybe_coroutine(self.previous_function, interaction, button, self.embed_list)
             return
 
         if isinstance(self.embed_list[self.current], discord.Embed):
@@ -403,9 +393,7 @@ class PaginationView(discord.ui.View):
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
         if self.next_function:
-            await discord.utils.maybe_coroutine(
-                self.next_function, interaction, button, self.embed_list
-            )
+            await discord.utils.maybe_coroutine(self.next_function, interaction, button, self.embed_list)
             return
 
         if isinstance(self.embed_list[self.current], discord.Embed):
@@ -440,9 +428,7 @@ class PaginationView(discord.ui.View):
             self.previous.disabled = True
 
         if self.last_function:
-            await discord.utils.maybe_coroutine(
-                self.last_function, interaction, button, self.embed_list
-            )
+            await discord.utils.maybe_coroutine(self.last_function, interaction, button, self.embed_list)
             return
 
         if isinstance(self.embed_list[self.current], discord.Embed):
@@ -480,9 +466,7 @@ class PaginationView(discord.ui.View):
         self.ctx = ctx
         await self.start(ctx)
 
-    async def add_item_to_embed_list(
-        self, item: Union[str, discord.Embed, discord.File]
-    ):
+    async def add_item_to_embed_list(self, item: Union[str, discord.Embed, discord.File]):
         self.embed_list.append(item)
         if hasattr(self, "message"):
             self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

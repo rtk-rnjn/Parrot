@@ -79,9 +79,7 @@ class InTimeCheckFaliure(ParrotCheckFailure):
         super().__init__(error)
 
 
-def seasonal_task(
-    *allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY
-) -> Callable:
+def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY) -> Callable:
     """
     Perform the decorated method periodically in `allowed_months`.
     This provides a convenience wrapper to avoid code repetition where some task shall
@@ -183,9 +181,7 @@ def in_month_command(*allowed_months: Month) -> Callable:
 
         if can_run:
             return True
-        raise InMonthCheckFailure(
-            f"Command can only be used in {human_months(allowed_months)}"
-        )
+        raise InMonthCheckFailure(f"Command can only be used in {human_months(allowed_months)}")
 
     return commands.check(predicate)
 
@@ -202,9 +198,7 @@ def in_day_command(*allowed_day: Day) -> Callable:
 
         if can_run:
             return True
-        raise InDayCheckFailure(
-            f"Command can only be used in {human_days(allowed_day)}"
-        )
+        raise InDayCheckFailure(f"Command can only be used in {human_days(allowed_day)}")
 
     return commands.check(predicate)
 
@@ -216,9 +210,7 @@ def in_time_command(*, past: datetime, future: datetime) -> Callable:
 
         if can_run:
             return True
-        raise InTimeCheckFaliure(
-            f"Command can only be used during {human_time(past, future)}"
-        )
+        raise InTimeCheckFaliure(f"Command can only be used during {human_time(past, future)}")
 
     return commands.check(predicate)
 
@@ -236,9 +228,7 @@ def in_month(*allowed_months: Month) -> Callable:
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(
-                f"Decorated object {callable_} is neither a command nor a listener"
-            )
+            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
 
         return actual_deco(callable_)
 
@@ -258,9 +248,7 @@ def in_day(*allowed_days: Day) -> Callable:
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(
-                f"Decorated object {callable_} is neither a command nor a listener"
-            )
+            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
 
         return actual_deco(callable_)
 
@@ -280,9 +268,7 @@ def in_time(*, past: datetime, future: datetime) -> Callable:
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(
-                f"Decorated object {callable_} is neither a command nor a listener"
-            )
+            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
 
         return actual_deco(callable_)
 
@@ -293,11 +279,7 @@ def with_role(*role_ids: int) -> Callable:
     """Check to see whether the invoking user has any of the roles specified in role_ids."""
 
     async def predicate(ctx: Context) -> bool:
-        return (
-            any(ctx.author._roles.has(role_id) for role_id in role_ids)
-            if ctx.guild
-            else False
-        )
+        return any(ctx.author._roles.has(role_id) for role_id in role_ids) if ctx.guild else False
 
     return commands.check(predicate)
 
@@ -388,9 +370,7 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
     return predicate
 
 
-def whitelist_override(
-    bypass_defaults: bool = False, allow_dm: bool = False, **kwargs: Container[int]
-) -> Callable:
+def whitelist_override(bypass_defaults: bool = False, allow_dm: bool = False, **kwargs: Container[int]) -> Callable:
     """
     Override global whitelist context, with the kwargs specified.
     All arguments from `in_whitelist_check` are supported, with the exception of `fail_silently`.
@@ -420,17 +400,14 @@ def locked() -> Optional[Callable]:
         func.__locks = WeakValueDictionary()
 
         @wraps(func)
-        async def inner(
-            self: Callable, ctx: Context, *args, **kwargs
-        ) -> Optional[Callable]:
+        async def inner(self: Callable, ctx: Context, *args, **kwargs) -> Optional[Callable]:
             lock = func.__locks.setdefault(ctx.author.id, Lock())
             if lock.locked():
                 embed = Embed()
                 embed.colour = Colour.red()
 
                 embed.description = (
-                    "You're already using this command. Please wait until "
-                    "it is done before you use it again."
+                    "You're already using this command. Please wait until " "it is done before you use it again."
                 )
                 embed.title = random.choice(ERROR_REPLIES)
                 await ctx.send(embed=embed)

@@ -20,9 +20,7 @@ class ArbitraryEvents(Cog):
             self.bot.dispatch("bot_activity")
 
     @Cog.listener("on_message_edit")
-    async def on_parrot_message_edit(
-        self, before: discord.Message, after: discord.Message
-    ) -> None:
+    async def on_parrot_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if before.content != after.content and after.author.id == self.bot.user.id:
             self.bot.dispatch("bot_activity")
 

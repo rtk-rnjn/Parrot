@@ -3,9 +3,7 @@ import os
 from ..parse.markdown import ParseMarkdown
 from ..parse.mention import ParseMention
 
-dir_path = os.path.abspath(
-    os.path.join((os.path.dirname(os.path.realpath(__file__))), "..")
-)
+dir_path = os.path.abspath(os.path.join((os.path.dirname(os.path.realpath(__file__))), ".."))
 
 PARSE_MODE_NONE = 0
 PARSE_MODE_NO_MARKDOWN = 1
@@ -62,12 +60,8 @@ end_message = read_file(f"{dir_path}/html/message/end.html")
 # COMPONENTS
 component_button = read_file(f"{dir_path}/html/component/component_button.html")
 component_menu = read_file(f"{dir_path}/html/component/component_menu.html")
-component_menu_options = read_file(
-    f"{dir_path}/html/component/component_menu_options.html"
-)
-component_menu_options_emoji = read_file(
-    f"{dir_path}/html/component/component_menu_options_emoji.html"
-)
+component_menu_options = read_file(f"{dir_path}/html/component/component_menu_options.html")
+component_menu_options_emoji = read_file(f"{dir_path}/html/component/component_menu_options_emoji.html")
 
 # EMBED
 embed_body = read_file(f"{dir_path}/html/embed/body.html")

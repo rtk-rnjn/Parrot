@@ -24,8 +24,7 @@ import discord
 import emojis
 from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
-from discord.ext import boardgames, commands  # type: ignore
-from discord.ext import old_menus as menus  # type: ignore
+from discord.ext import boardgames, commands, old_menus as menus  # type: ignore
 from interactions.buttons.__2048 import Twenty48, Twenty48_Button
 from interactions.buttons.__aki import Akinator
 from interactions.buttons.__battleship import BetaBattleShip
@@ -154,9 +153,7 @@ class Games(Cog):
         user: discord.Member,
     ) -> bool:
         """Predicate checking the criteria for the announcement message."""
-        if self.already_playing(
-            ctx.author
-        ):  # If they've joined a game since requesting a player 2
+        if self.already_playing(ctx.author):  # If they've joined a game since requesting a player 2
             return True  # Is dealt with later on
         if (
             user.id not in (ctx.me.id, ctx.author.id)
@@ -164,28 +161,20 @@ class Games(Cog):
             and reaction.message.id == announcement.id
         ):
             if self.already_playing(user):
-                self.bot.loop.create_task(
-                    ctx.send(f"{user.mention} You're already playing a game!")
-                )
+                self.bot.loop.create_task(ctx.send(f"{user.mention} You're already playing a game!"))
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
             if user in self.waiting:
                 self.bot.loop.create_task(
-                    ctx.send(
-                        f"{user.mention} Please cancel your game first before joining another one."
-                    )
+                    ctx.send(f"{user.mention} Please cancel your game first before joining another one.")
                 )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
             return True
 
-        return (
-            user.id == ctx.author.id
-            and str(reaction.emoji) == CROSS_EMOJI
-            and reaction.message.id == announcement.id
-        )
+        return user.id == ctx.author.id and str(reaction.emoji) == CROSS_EMOJI and reaction.message.id == announcement.id
 
     def already_playing(self, player: discord.Member) -> bool:
         """Check if someone is already in a game."""
@@ -193,9 +182,7 @@ class Games(Cog):
 
     async def _get_opponent(self, ctx: Context) -> Optional[discord.Member]:
         message = await ctx.channel.send(
-            embed=discord.Embed(
-                description=f"{ctx.author.mention} wants to play Tic-Tac-Toe."
-            ).set_footer(
+            embed=discord.Embed(description=f"{ctx.author.mention} wants to play Tic-Tac-Toe.").set_footer(
                 text="react with \N{WHITE HEAVY CHECK MARK} to accept the challenge."
             )
         )
@@ -207,9 +194,7 @@ class Games(Cog):
             return False if user.bot else user != ctx.author
 
         try:
-            _, opponent = await self.bot.wait_for(
-                "reaction_add", check=check, timeout=60
-            )
+            _, opponent = await self.bot.wait_for("reaction_add", check=check, timeout=60)
             return opponent
         except asyncio.TimeoutError:
             pass
@@ -244,9 +229,7 @@ class Games(Cog):
         user: discord.Member,
     ) -> bool:
         """Predicate checking the criteria for the announcement message."""
-        if self.already_playing_cf(
-            ctx.author
-        ):  # If they've joined a game since requesting a player 2
+        if self.already_playing_cf(ctx.author):  # If they've joined a game since requesting a player 2
             return True  # Is dealt with later on
 
         if (
@@ -255,28 +238,20 @@ class Games(Cog):
             and reaction.message.id == announcement.id
         ):
             if self.already_playing_cf(user):
-                self.bot.loop.create_task(
-                    ctx.send(f"{user.mention} You're already playing a game!")
-                )
+                self.bot.loop.create_task(ctx.send(f"{user.mention} You're already playing a game!"))
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
             if user in self.waiting_c4:
                 self.bot.loop.create_task(
-                    ctx.send(
-                        f"{user.mention} Please cancel your game first before joining another one."
-                    )
+                    ctx.send(f"{user.mention} Please cancel your game first before joining another one.")
                 )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
 
             return True
 
-        return (
-            user.id == ctx.author.id
-            and str(reaction.emoji) == CROSS_EMOJI
-            and reaction.message.id == announcement.id
-        )
+        return user.id == ctx.author.id and str(reaction.emoji) == CROSS_EMOJI and reaction.message.id == announcement.id
 
     def already_playing_cf(self, player: discord.Member) -> bool:
         """Check if someone is already in a game."""
@@ -304,9 +279,7 @@ class Games(Cog):
         game = None  # if game fails to intialize in try...except
 
         try:
-            game = GameC4(
-                self.bot, ctx.channel, ctx.author, user, self.tokens, size=board_size
-            )
+            game = GameC4(self.bot, ctx.channel, ctx.author, user, self.tokens, size=board_size)
             self.games_c4.append(game)
             await game.start_game()
             self.games_c4.remove(game)
@@ -324,9 +297,7 @@ class Games(Cog):
         aliases=("4inarow", "connect4", "connectfour", "c4"),
         case_insensitive=True,
     )
-    @commands.bot_has_permissions(
-        manage_messages=True, embed_links=True, add_reactions=True
-    )
+    @commands.bot_has_permissions(manage_messages=True, embed_links=True, add_reactions=True)
     async def connect_four(
         self,
         ctx: Context,
@@ -417,9 +388,7 @@ class Games(Cog):
     @commands.command(aliases=["tic", "tic_tac_toe", "ttt"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def tictactoe(
-        self, ctx: Context, *, opponent: Optional[discord.Member] = None
-    ):
+    async def tictactoe(self, ctx: Context, *, opponent: Optional[discord.Member] = None):
         """Start a Tic-Tac-Toe game!
         `opponent`: Another member of the server to play against. If not is set an open challenge is started.
         """
@@ -441,9 +410,7 @@ class Games(Cog):
 
         game = GameTicTacToe((ctx.author, opponent))
 
-        await ctx.send(
-            f"{game.current_player.mention}'s (X) turn!", view=game
-        )  # flake8: noqa
+        await ctx.send(f"{game.current_player.mention}'s (X) turn!", view=game)  # flake8: noqa
 
     @commands.group(name="minesweeper", aliases=["ms"], invoke_without_command=True)
     async def minesweeper(self, ctx: Context):
@@ -534,9 +501,7 @@ class Games(Cog):
         player_mention = ctx.author.mention
 
         if move not in CHOICES and move not in SHORT_CHOICES:
-            raise commands.BadArgument(
-                f"Invalid move. Please make move from options: {', '.join(CHOICES).upper()}."
-            )
+            raise commands.BadArgument(f"Invalid move. Please make move from options: {', '.join(CHOICES).upper()}.")
 
         bot_move = choice(CHOICES)
         # value of player_result will be from (-1, 0, 1) as (lost, tied, won).
@@ -546,13 +511,9 @@ class Games(Cog):
             message_string = f"{player_mention} You and **{self.bot.user.name}** played {bot_move}, it's a tie."
             await ctx.reply(message_string)
         elif player_result == 1:
-            await ctx.reply(
-                f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!"
-            )
+            await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} won!")
         else:
-            await ctx.reply(
-                f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!"
-            )
+            await ctx.reply(f"{player_mention} **{self.bot.user.name}** {bot_move}! {ctx.author.name} lost!")
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
@@ -567,9 +528,7 @@ class Games(Cog):
             return
         level = level or 1
         if not 10 >= level >= 1:
-            return await ctx.send(
-                f"{ctx.author.mention} for now existing levels are from range 1-10"
-            )
+            return await ctx.send(f"{ctx.author.mention} for now existing levels are from range 1-10")
         async with async_open(f"extra/sokoban/level{level or 1}.txt", "r") as fp:
             lvl_str = await fp.read()
         ls = [list(list(i)) for i in lvl_str.split("\n")]
@@ -599,9 +558,7 @@ class Games(Cog):
         """Classis 2048 Game"""
         boardsize = boardsize or 4
         if boardsize < 4:
-            return await ctx.send(
-                f"{ctx.author.mention} board size must not less than 4"
-            )
+            return await ctx.send(f"{ctx.author.mention} board size must not less than 4")
         if boardsize > 10:
             return await ctx.send(f"{ctx.author.mention} board size must less than 10")
 
@@ -643,9 +600,7 @@ class Games(Cog):
         except asyncio.TimeoutError:
             self.waiting.remove(ctx.author)
             await announcement.delete()
-            await ctx.send(
-                f"{ctx.author.mention} Seems like there's no one here to play..."
-            )
+            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
             return
 
         if str(reaction.emoji) == CROSS_EMOJI:
@@ -684,9 +639,7 @@ class Games(Cog):
         except asyncio.TimeoutError:
             self.waiting.remove(ctx.author)
             await announcement.delete()
-            await ctx.send(
-                f"{ctx.author.mention} Seems like there's no one here to play..."
-            )
+            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
             return
 
         if str(reaction.emoji) == CROSS_EMOJI:
@@ -780,9 +733,7 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def secrethitler(self, ctx: Context) -> None:
         if ctx.channel.id in self.games_hitler:
-            raise commands.BadArgument(
-                "There is already a game running in this channel."
-            )
+            raise commands.BadArgument("There is already a game running in this channel.")
 
         self.games_hitler[ctx.channel.id] = MISSING
         await JoinUI.start(ctx, self.games_hitler)
@@ -799,10 +750,7 @@ class Games(Cog):
         random_template = choice(self.templates)
 
         def author_check(message: discord.Message) -> bool:
-            return (
-                message.channel.id == ctx.channel.id
-                and message.author.id == ctx.author.id
-            )
+            return message.channel.id == ctx.channel.id and message.author.id == ctx.author.id
 
         self.checks.add(author_check)
 
@@ -822,9 +770,7 @@ class Games(Cog):
             await original_message.edit(embed=madlibs_embed)
 
             try:
-                message = await self.bot.wait_for(
-                    "message", check=author_check, timeout=60
-                )
+                message = await self.bot.wait_for("message", check=author_check, timeout=60)
             except TimeoutError:
                 timeout_embed = discord.Embed(
                     description="Uh oh! You took too long to respond!",
@@ -842,10 +788,7 @@ class Games(Cog):
 
             submitted_words[message.id] = message.content
 
-        blanks = [
-            self.edited_content.pop(msg_id, submitted_words[msg_id])
-            for msg_id in submitted_words
-        ]
+        blanks = [self.edited_content.pop(msg_id, submitted_words[msg_id]) for msg_id in submitted_words]
 
         self.checks.remove(author_check)
 
@@ -864,9 +807,7 @@ class Games(Cog):
             color=Colours.bright_green,
         )
 
-        story_embed.set_footer(
-            text=f"Generated for {ctx.author}", icon_url=ctx.author.display_avatar.url
-        )
+        story_embed.set_footer(text=f"Generated for {ctx.author}", icon_url=ctx.author.display_avatar.url)
 
         await ctx.send(embed=story_embed)
 
@@ -889,7 +830,7 @@ class Games(Cog):
         """Country guessing game"""
         cg = BetaCountryGuesser(is_flags=is_flag)
         await cg.start(ctx, timeout=120)
-    
+
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def chimp(self, ctx: Context):
@@ -918,9 +859,7 @@ class Games(Cog):
         except asyncio.TimeoutError:
             self.waiting.remove(ctx.author)
             await announcement.delete()
-            await ctx.send(
-                f"{ctx.author.mention} Seems like there's no one here to play..."
-            )
+            await ctx.send(f"{ctx.author.mention} Seems like there's no one here to play...")
             return
 
         if str(reaction.emoji) == CROSS_EMOJI:
@@ -966,11 +905,7 @@ class Games(Cog):
         """
         user = user or ctx.author
         col: Collection = self.bot.game_collections
-        sort_by = (
-            f"game_twenty48_{flag.sort_by.lower()}"
-            if flag.sort_by
-            else "game_twenty48_played"
-        )
+        sort_by = f"game_twenty48_{flag.sort_by.lower()}" if flag.sort_by else "game_twenty48_played"
         order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
 
         FILTER = {sort_by: {"$exists": True}}
@@ -983,9 +918,7 @@ class Games(Cog):
         entries = []
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
-            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-                ctx.guild, data["_id"], in_guild=False
-            )
+            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
             entries.append(
                 f"""User: `{user or 'NA'}`
 `Games Played`: {data['game_twenty48_played']} games played
@@ -1019,9 +952,7 @@ class Games(Cog):
         `--order_by`: Sort the list either `asc` (ascending) or `desc` (descending)
         `--limit`: To limit the search, default is 100
         """
-        return await self.__guess_stats(
-            game_type="country_guess", ctx=ctx, user=user, flag=flag
-        )
+        return await self.__guess_stats(game_type="country_guess", ctx=ctx, user=user, flag=flag)
 
     @top.command(name="hangman")
     async def hangman_stats(
@@ -1039,9 +970,7 @@ class Games(Cog):
         `--sort_by`: Sort the list either by `win` or `games`
         `--order_by`: Sort the list either `1` (ascending) or `-1` (descending)
         """
-        return await self.__guess_stats(
-            game_type="hangman", ctx=ctx, user=user, flag=flag
-        )
+        return await self.__guess_stats(game_type="hangman", ctx=ctx, user=user, flag=flag)
 
     async def __guess_stats(
         self,
@@ -1060,9 +989,7 @@ class Games(Cog):
         FILTER = {sort_by: {"$exists": True}}
 
         if flag.me and flag._global:
-            return await ctx.send(
-                f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!"
-            )
+            return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
 
         if flag.me:
             FILTER["_id"] = user.id
@@ -1073,9 +1000,7 @@ class Games(Cog):
         entries = []
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
-            user = await self.bot.get_or_fetch_member(
-                ctx.guild, data["_id"], in_guild=False
-            )
+            user = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
             entries.append(
                 f"""User: `{user or 'NA'}`
 `Games Played`: {data[f'game_{game_type}_played']} games played
@@ -1117,20 +1042,14 @@ class Games(Cog):
             {"_id": user.id, "game_chess_played": {"$exists": True}},
         )
         if not data:
-            await ctx.send(
-                f"{f'{ctx.author.mention} you' if user is ctx.author else user} haven't played chess yet!"
-            )
+            await ctx.send(f"{f'{ctx.author.mention} you' if user is ctx.author else user} haven't played chess yet!")
 
             return
         entries = []
         chess_data = data["game_chess_stat"]
         for i in chess_data:
-            user1 = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, i["game_chess_player_1"]
-            )
-            user2 = await self.bot.getch(
-                self.bot.get_user, self.bot.fetch_user, i["game_chess_player_2"]
-            )
+            user1 = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, i["game_chess_player_1"])
+            user2 = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, i["game_chess_player_2"])
             if not user1 and not user2:
                 continue
 
@@ -1176,9 +1095,7 @@ class Games(Cog):
     async def __test_stats(self, game_type: str, ctx: Context, flag: GameCommandFlag):
         entries = []
         i = 1
-        sort_by = f"game_{game_type}_{flag.sort_by or 'played'}".replace(
-            " ", "_"
-        ).lower()
+        sort_by = f"game_{game_type}_{flag.sort_by or 'played'}".replace(" ", "_").lower()
         FILTER = {sort_by: {"$exists": True}}
         if flag.me:
             FILTER["_id"] = ctx.author.id
@@ -1190,9 +1107,7 @@ class Games(Cog):
         async for data in col.find(FILTER).sort(
             sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
         ):
-            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-                ctx.guild, data["_id"], in_guild=False
-            )
+            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
             if user is None:
                 continue
 
@@ -1244,9 +1159,7 @@ class Games(Cog):
             await ctx.send("There's already a game running!")
             return
 
-        (minimum_solutions,) = random.choices(
-            range(len(SOLN_DISTR)), weights=SOLN_DISTR
-        )
+        (minimum_solutions,) = random.choices(range(len(SOLN_DISTR)), weights=SOLN_DISTR)
         game = DuckGame(minimum_solutions=minimum_solutions)
         game.running = True
         self.current_games[ctx.channel.id] = game
@@ -1281,9 +1194,7 @@ class Games(Cog):
                 try:
                     del self.current_games[channel.id]
                     game.scores[msg.author] += CORRECT_GOOSE
-                    await self.end_game(
-                        channel, game, end_message=f"{msg.author.display_name} GOOSED!"
-                    )
+                    await self.end_game(channel, game, end_message=f"{msg.author.display_name} GOOSED!")
                 except KeyError:
                     pass
             else:
@@ -1307,9 +1218,7 @@ class Games(Cog):
         if answer in game.solutions:
             game.claimed_answers[answer] = msg.author
             game.scores[msg.author] += CORRECT_SOLN
-            await self.append_to_found_embed(
-                game, f"{str(answer):12s}  -  {msg.author.display_name}"
-            )
+            await self.append_to_found_embed(game, f"{str(answer):12s}  -  {msg.author.display_name}")
         else:
             await msg.add_reaction(EMOJI_WRONG)
             game.scores[msg.author] += INCORRECT_SOLN
@@ -1344,9 +1253,7 @@ class Games(Cog):
             found_embed.description = f"{old_desc.rstrip()}\n{text}"
             await game.found_msg.edit(embed=found_embed)
 
-    async def end_game(
-        self, channel: discord.TextChannel, game: DuckGame, end_message: str
-    ) -> None:
+    async def end_game(self, channel: discord.TextChannel, game: DuckGame, end_message: str) -> None:
         """Edit the game embed to reflect the end of the game and mark the game as not running."""
         game.running = False
 
@@ -1359,17 +1266,13 @@ class Games(Cog):
             key=lambda item: item[1],
             reverse=True,
         )
-        scoreboard = "Final scores:\n\n" + "\n".join(
-            f"{member.display_name}: {score}" for member, score in scores
-        )
+        scoreboard = "Final scores:\n\n" + "\n".join(f"{member.display_name}: {score}" for member, score in scores)
 
         scoreboard_embed.description = scoreboard
         await channel.send(embed=scoreboard_embed)
 
         if missed := [ans for ans in game.solutions if ans not in game.claimed_answers]:
-            missed_text = "Flights everyone missed:\n" + "\n".join(
-                f"{ans}" for ans in missed
-            )
+            missed_text = "Flights everyone missed:\n" + "\n".join(f"{ans}" for ans in missed)
         else:
             missed_text = "All the flights were found!"
         await self.append_to_found_embed(game, f"\n{missed_text}")
@@ -1400,9 +1303,7 @@ class Games(Cog):
         embed.description = HELP_TEXT
         file = discord.File(HELP_IMAGE_PATH, filename="help.png")
         embed.set_image(url="attachment://help.png")
-        embed.set_footer(
-            text="Tip: using Discord's compact message display mode can help keep the board on the screen"
-        )
+        embed.set_footer(text="Tip: using Discord's compact message display mode can help keep the board on the screen")
         return await ctx.send(file=file, embed=embed)
 
     @commands.command("uno", aliases=["unogame"])
@@ -1410,9 +1311,7 @@ class Games(Cog):
     async def play_uno(self, ctx: Context, /) -> None:
         """Play a game of Uno."""
         if ctx.channel.id in self.uno_games:
-            return await ctx.error(
-                "An instance of UNO is already running in this channel."
-            )
+            return await ctx.error("An instance of UNO is already running in this channel.")
 
         game = UNO(ctx)
         self.uno_games[ctx.channel.id] = game

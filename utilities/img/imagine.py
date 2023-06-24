@@ -47,9 +47,7 @@ def draw_text(
     while True:
         font = ImageFont.truetype(font_name, font_size)
         text_width, _ = cast(Tuple[int, int], draw.textsize(text, font=font))
-        _, _line_height = cast(
-            Tuple[int, int], draw.textsize("\N{FULL BLOCK}", font=font)
-        )
+        _, _line_height = cast(Tuple[int, int], draw.textsize("\N{FULL BLOCK}", font=font))
         text_height = int(_line_height * line_height * len(lines))
 
         if text_width < bounds[0] and text_height < bounds[1]:

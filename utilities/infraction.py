@@ -98,16 +98,12 @@ async def warn(
     return post
 
 
-async def custom_delete_warn(
-    ctx: Context, guild: discord.Guild, **kwargs
-) -> DeleteResult:
+async def custom_delete_warn(ctx: Context, guild: discord.Guild, **kwargs) -> DeleteResult:
     collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     return await collection.delete_one(kwargs)
 
 
-async def delete_warn_by_message_id(
-    ctx: Context, guild: discord.Guild, *, messageID: int
-) -> None:
+async def delete_warn_by_message_id(ctx: Context, guild: discord.Guild, *, messageID: int) -> None:
     collection: Collection = ctx.bot.mongo.warn_db[f"{guild.id}"]
     await collection.delete_one({"message": messageID})
 

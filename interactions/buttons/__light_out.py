@@ -2,16 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Coroutine,
-    Final,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Coroutine, Final, Literal, Optional, TypeVar, Union
 
 import discord
 from core import Context, Parrot
@@ -86,9 +77,7 @@ async def double_wait(
 
 
 class LightsOutButton(discord.ui.Button["LightsOutView"]):
-    def __init__(
-        self, emoji: str, *, style: discord.ButtonStyle, row: int, col: int
-    ) -> None:
+    def __init__(self, emoji: str, *, style: discord.ButtonStyle, row: int, col: int) -> None:
         super().__init__(
             emoji=emoji,
             label="\u200b",
@@ -102,9 +91,7 @@ class LightsOutButton(discord.ui.Button["LightsOutView"]):
         game = self.view.game
 
         if interaction.user != game.player:
-            return await interaction.response.send_message(
-                "This is not your game!", ephemeral=True
-            )
+            return await interaction.response.send_message("This is not your game!", ephemeral=True)
         row, col = self.row, self.col
 
         beside_item = game.beside_item(row, col)
@@ -176,11 +163,7 @@ class LightsOut:
             (row, col + 1),
         ]
 
-        return [
-            (i, j)
-            for i, j in beside
-            if i in range(self.count) and j in range(self.count)
-        ]
+        return [(i, j) for i, j in beside if i in range(self.count) and j in range(self.count)]
 
     async def start(
         self,
@@ -214,9 +197,7 @@ class LightsOut:
         self.tiles = chunk(self.tiles, count=self.count)
 
         self.view = LightsOutView(self, timeout=timeout)
-        self.embed = discord.Embed(
-            description="Turn off all the tiles!", color=embed_color
-        )
+        self.embed = discord.Embed(description="Turn off all the tiles!", color=embed_color)
         self.embed.add_field(name="\u200b", value="Moves: `0`")
 
         self.message = await ctx.send(embed=self.embed, view=self.view)

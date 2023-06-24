@@ -29,9 +29,7 @@ from utilities.time import ShortTime
 from . import fuzzy
 
 
-class AuditFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     guild: typing.Optional[discord.Guild] = None
     limit: typing.Optional[int] = 100
     action: typing.Optional[str] = None
@@ -41,17 +39,13 @@ class AuditFlag(
     user: typing.Union[discord.User, discord.Member, None] = None
 
 
-class BanFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class BanFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     reason: typing.Optional[str] = None
     _global: typing.Union[convert_bool, bool] = commands.flag(name="global", default=False)  # type: ignore
     command: typing.Union[convert_bool, bool] = False  # type: ignore
 
 
-class SubscriptionFlag(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class SubscriptionFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     code: typing.Optional[str] = None
     expiry: typing.Optional[ShortTime] = None
     guild: typing.Optional[discord.Guild] = None
@@ -67,25 +61,17 @@ class nitro(discord.ui.View):
 
     @discord.ui.button(
         custom_id="fun (nitro)",
-        label="\N{BRAILLE PATTERN BLANK}" * 16
-        + "Claim"
-        + "\N{BRAILLE PATTERN BLANK}" * 16,
+        label="\N{BRAILLE PATTERN BLANK}" * 16 + "Claim" + "\N{BRAILLE PATTERN BLANK}" * 16,
         style=discord.ButtonStyle.green,
     )
     async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
         i = discord.Embed()
         i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
-        await interaction.response.send_message(
-            "https://imgur.com/NQinKJB", ephemeral=True
-        )
+        await interaction.response.send_message("https://imgur.com/NQinKJB", ephemeral=True)
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
-        button.label = (  # type: ignore
-            "\N{BRAILLE PATTERN BLANK}" * 16
-            + "Claimed"
-            + "\N{BRAILLE PATTERN BLANK}" * 16,
-        )
+        button.label = ("\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,)  # type: ignore
 
         ni: discord.Embed = discord.Embed(
             title="You received a gift, but...",
@@ -110,12 +96,8 @@ class MongoCollectionView(discord.ui.View):
     async def interaction_check(self, interaction: Interaction[Parrot]) -> bool:
         return interaction.user.id in self.ctx.bot.owner_ids
 
-    @discord.ui.button(
-        label="Paginate", style=discord.ButtonStyle.blurple, emoji="\N{BOOKS}"
-    )
-    async def paginate(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    @discord.ui.button(label="Paginate", style=discord.ButtonStyle.blurple, emoji="\N{BOOKS}")
+    async def paginate(self, interaction: discord.Interaction, button: discord.ui.Button):
         assert self.message is not None
         await interaction.response.defer()
 
@@ -160,9 +142,7 @@ class MongoCollectionView(discord.ui.View):
 
 
 class MongoViewSelect(discord.ui.Select["MongoView"]):
-    def __init__(
-        self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs
-    ):
+    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs):
         self.db_name = kwargs.pop("db_name", "")
         super().__init__(min_values=1, max_values=1, **kwargs)
         self.ctx = ctx
@@ -174,9 +154,7 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         await interaction.response.defer()
         embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
 
-        view = MongoCollectionView(
-            collection=self.values[0], ctx=self.ctx, db=self.db_name
-        )
+        view = MongoCollectionView(collection=self.values[0], ctx=self.ctx, db=self.db_name)
         view.message = await self.view.message.edit(
             embed=embed,
             view=view,
@@ -184,9 +162,7 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         self.view.stop()
 
     @staticmethod
-    async def build_embed(
-        ctx: Context, db_name: str, collection_name: str
-    ) -> discord.Embed:
+    async def build_embed(ctx: Context, db_name: str, collection_name: str) -> discord.Embed:
         db = ctx.bot.mongo[db_name][collection_name]
         document_count = await db.count_documents({})
         full_name = f"{db_name}.{collection_name}"
@@ -268,9 +244,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(
-            name="early_verified_bot_developer", id=892433993537032262
-        )
+        return discord.PartialEmoji(name="early_verified_bot_developer", id=892433993537032262)
 
     @commands.command()
     @commands.is_owner()
@@ -288,9 +262,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(
-                f"[ERROR] Could not create file `{name}.py`: ```py\n{tbe}\n```"
-            )
+            await ctx.send(f"[ERROR] Could not create file `{name}.py`: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] file `{name}.py` created")
 
@@ -299,9 +271,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         except Exception as e:
             tb = traceback.format_exception(type(e), e, e.__traceback__)
             tbe = "".join(tb) + ""
-            await ctx.send(
-                f"[ERROR] Could not load extension {name_cog}.py: ```py\n{tbe}\n```"
-            )
+            await ctx.send(f"[ERROR] Could not load extension {name_cog}.py: ```py\n{tbe}\n```")
         else:
             await ctx.send(f"[SUCCESS] Extension loaded `{name_cog}.py`")
 
@@ -328,9 +298,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self,
         ctx: Context,
         *,
-        target: typing.Union[
-            discord.User, discord.TextChannel, discord.Thread, None
-        ] = None,
+        target: typing.Union[discord.User, discord.TextChannel, discord.Thread, None] = None,
     ):
         """Fun command"""
         await ctx.message.delete(delay=0)
@@ -516,11 +484,9 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({f'<#{str(vc)}>' if vc else None})"
 
             if vc:
-                em.add_field(
-                    name="VC Channel ID", value=str(vc), inline=True
-                ).add_field(name="Suppress?", value=suppress, inline=True).add_field(
-                    name="Self Mute?", value=self_mute, inline=True
-                ).add_field(
+                em.add_field(name="VC Channel ID", value=str(vc), inline=True).add_field(
+                    name="Suppress?", value=suppress, inline=True
+                ).add_field(name="Self Mute?", value=self_mute, inline=True).add_field(
                     name="Self Deaf?", value=self_deaf, inline=True
                 ).add_field(
                     name="Deaf?", value=deaf, inline=True
@@ -564,9 +530,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         kwargs["limit"] = args.limit or 100
         if args.action:
-            kwargs["action"] = getattr(
-                discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None
-            )
+            kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
 
         if args.before:
             kwargs["before"] = args.before.dt
@@ -597,9 +561,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         async for data in self.bot.guild_configurations.find():
             webhook = data["global_chat"]
             if (hook := webhook["webhook"]) and webhook["enable"]:
-                if webhook := discord.Webhook.from_url(
-                    f"{hook}", session=self.bot.http_session
-                ):
+                if webhook := discord.Webhook.from_url(f"{hook}", session=self.bot.http_session):
                     await webhook.send(
                         content=announcement,
                         username="SERVER - SECTOR 17-29",
@@ -623,11 +585,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             PAYLOAD["hash"] = hashlib.sha256("".join(BASIC).encode()).hexdigest()
 
         PAYLOAD["guild"] = args.guild.id if args.guild else ctx.guild.id
-        PAYLOAD["expiry"] = (
-            args.expiry.dt.timestamp()
-            if args.expiry
-            else ShortTime("2d").dt.timestamp()
-        )
+        PAYLOAD["expiry"] = args.expiry.dt.timestamp() if args.expiry else ShortTime("2d").dt.timestamp()
         PAYLOAD["uses"] = args.uses
         PAYLOAD["limit"] = args.limit
         await self.bot.mongo.extra.subscriptions.insert_one(PAYLOAD)
@@ -735,9 +693,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.tick()
 
     @commands.command()
-    async def member_count(
-        self, ctx: Context, guild: typing.Optional[discord.Object] = None
-    ):
+    async def member_count(self, ctx: Context, guild: typing.Optional[discord.Object] = None):
         """Returns member count of the guild
 
         This is equivalent to:
@@ -767,30 +723,22 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         ```
         """
         p_types = {"playing": 0, "streaming": 1, "listening": 2, "watching": 3}
-        await ctx.bot.change_presence(
-            activity=discord.Activity(name=media, type=p_types[ctx.invoked_with])
-        )
+        await ctx.bot.change_presence(activity=discord.Activity(name=media, type=p_types[ctx.invoked_with]))
         await ctx.tick()
 
     @commands.command()
     @commands.is_owner()
-    async def toggle_testing(
-        self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]  # type: ignore
-    ) -> None:
+    async def toggle_testing(self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]) -> None:  # type: ignore
         """Update the cog setting to toggle testing mode"""
         cog: Optional[Cog] = self.bot.get_cog(cog)  # type: ignore
         assert cog is not None
         if hasattr(cog, "ON_TESTING"):
             true_false = toggle if toggle is not None else not cog.ON_TESTING
             cog.ON_TESTING = true_false
-            await ctx.send(
-                f"{ctx.author.mention} successfully toggled cog ({cog.qualified_name}) to {toggle}"
-            )
+            await ctx.send(f"{ctx.author.mention} successfully toggled cog ({cog.qualified_name}) to {toggle}")
             return
         if cog is not None:
-            await ctx.send(
-                f"{ctx.author.mention} cog ({cog.qualified_name}) does not have testing mode"
-            )
+            await ctx.send(f"{ctx.author.mention} cog ({cog.qualified_name}) does not have testing mode")
         else:
             await ctx.send(f"{ctx.author.mention} cog ({cog}) does not exist")
 
@@ -957,13 +905,9 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
         cache = list(self._rtfm_cache[key].items())
 
-        matches = (
-            await ctx.bot.func(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False)
-        )[:8]
+        matches = (await ctx.bot.func(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False))[:8]
 
-        e = discord.Embed(
-            title="Read the Fucking Documentation", timestamp=discord.utils.utcnow()
-        )
+        e = discord.Embed(title="Read the Fucking Documentation", timestamp=discord.utils.utcnow())
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
@@ -1089,9 +1033,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         Members without can search up to 25 messages.
         """
         strategy = self._basic_cleanup_strategy
-        assert isinstance(ctx.author, discord.Member) and isinstance(
-            ctx.me, discord.Member
-        )
+        assert isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
         is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
         if ctx.channel.permissions_for(ctx.me).manage_messages:
             if is_mod:
@@ -1120,9 +1062,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
     async def _complex_cleanup_strategy(self, ctx: Context, search: int):
         assert ctx.guild is not None and isinstance(ctx.channel, discord.TextChannel)
-        prefixes = tuple(
-            await self.bot.get_guild_prefixes(ctx.guild)
-        )  # thanks startswith
+        prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))  # thanks startswith
 
         def check(m: discord.Message):
             return m.author == ctx.me or m.content.startswith(prefixes)
@@ -1136,11 +1076,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m: discord.Message):
-            return (
-                (m.author == ctx.me or m.content.startswith(prefixes))
-                and not m.mentions
-                and not m.role_mentions
-            )
+            return (m.author == ctx.me or m.content.startswith(prefixes)) and not m.mentions and not m.role_mentions
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)

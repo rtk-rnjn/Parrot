@@ -13,12 +13,7 @@ from typing_extensions import Annotated
 import discord
 from cogs.meta.robopage import SimplePages
 from cogs.mod import method as mt
-from cogs.mod.embeds import (
-    MEMBER_EMBED,
-    ROLE_EMBED,
-    TEXT_CHANNEL_EMBED,
-    VOICE_CHANNEL_EMBED,
-)
+from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_CHANNEL_EMBED
 from cogs.mod.flags import WarnFlag
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -270,9 +265,7 @@ class Moderator(Cog):
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(
-        manage_channels=True, manage_permissions=True, manage_roles=True
-    )
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
     async def block(
         self,
@@ -358,16 +351,12 @@ class Moderator(Cog):
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(kick_members=True))
-    @commands.bot_has_permissions(
-        manage_channels=True, manage_permissions=True, manage_roles=True
-    )
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
     async def lock(
         self,
         ctx: Context,
-        channel: commands.Greedy[
-            Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]
-        ],
+        channel: commands.Greedy[Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -395,16 +384,12 @@ class Moderator(Cog):
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))
-    @commands.bot_has_permissions(
-        manage_channels=True, manage_roles=True, manage_permissions=True
-    )
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True, manage_permissions=True)
     @Context.with_type
     async def unlock(
         self,
         ctx: Context,
-        channel: commands.Greedy[
-            Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]
-        ],
+        channel: commands.Greedy[Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -448,16 +433,13 @@ class Moderator(Cog):
             ctx=ctx,
             destination=ctx.channel,
             member=ctx.author,
-            reason=reason
-            or f"Selfmute | {ctx.author} ({ctx.author.id}) | No reason given",
+            reason=reason or f"Selfmute | {ctx.author} ({ctx.author.id}) | No reason given",
             _datetime=duration.dt,
         )
 
     @commands.command(aliases=["mute"])
     @commands.bot_has_permissions(moderate_members=True)
-    @commands.check_any(
-        is_mod(), commands.has_permissions(moderate_members=True, manage_roles=True)
-    )
+    @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True, manage_roles=True))
     @Context.with_type
     async def timeout(
         self,
@@ -542,9 +524,7 @@ class Moderator(Cog):
     @clean.command(name="regex")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _regex(
-        self, ctx: Context, pattern: Optional[str] = None, search: int = 100
-    ):
+    async def _regex(self, ctx: Context, pattern: Optional[str] = None, search: int = 100):
         """Removed messages that matches the regex pattern."""
         pattern = pattern or r".*"
 
@@ -593,9 +573,7 @@ class Moderator(Cog):
         """Removes a bot user's messages and messages with their optional prefix."""
 
         def predicate(m: discord.Message):
-            return (m.webhook_id is None and m.author.bot) or (
-                prefix and m.content.startswith(prefix)
-            )
+            return (m.webhook_id is None and m.author.bot) or (prefix and m.content.startswith(prefix))
 
         await mt.do_removal(ctx, search, predicate)
 
@@ -690,15 +668,9 @@ class Moderator(Cog):
         parser.add_argument("--not", action="store_true", dest="_not")
         parser.add_argument("--emoji", action="store_true")
         parser.add_argument("--bot", action="store_const", const=lambda m: m.author.bot)
-        parser.add_argument(
-            "--embeds", action="store_const", const=lambda m: len(m.embeds)
-        )
-        parser.add_argument(
-            "--files", action="store_const", const=lambda m: len(m.attachments)
-        )
-        parser.add_argument(
-            "--reactions", action="store_const", const=lambda m: len(m.reactions)
-        )
+        parser.add_argument("--embeds", action="store_const", const=lambda m: len(m.embeds))
+        parser.add_argument("--files", action="store_const", const=lambda m: len(m.attachments))
+        parser.add_argument("--reactions", action="store_const", const=lambda m: len(m.reactions))
         parser.add_argument("--search", type=int)
         parser.add_argument("--after", type=int)
         parser.add_argument("--before", type=int)
@@ -743,9 +715,7 @@ class Moderator(Cog):
             predicates.append(lambda m: any(sub in m.content for sub in args.contains))
 
         if args.starts:
-            predicates.append(
-                lambda m: any(m.content.startswith(s) for s in args.starts)
-            )
+            predicates.append(lambda m: any(m.content.startswith(s) for s in args.starts))
 
         if args.ends:
             predicates.append(lambda m: any(m.content.endswith(s) for s in args.ends))
@@ -763,9 +733,7 @@ class Moderator(Cog):
             args.search = 100
 
         args.search = max(0, min(2000, args.search))  # clamp from 0-2000
-        await mt.do_removal(
-            ctx, args.search, predicate, before=args.before, after=args.after
-        )
+        await mt.do_removal(ctx, args.search, predicate, before=args.before, after=args.after)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -791,13 +759,9 @@ class Moderator(Cog):
     @commands.command()
     @commands.check_any(
         is_mod(),
-        commands.has_permissions(
-            manage_permissions=True, manage_roles=True, manage_channels=True
-        ),
+        commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True),
     )
-    @commands.bot_has_permissions(
-        manage_channels=True, manage_permissions=True, manage_roles=True
-    )
+    @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
     async def unblock(
         self,
@@ -866,9 +830,7 @@ class Moderator(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @voice.command(name="mute")
-    @commands.check_any(
-        is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel()
-    )
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_mute(
@@ -889,9 +851,7 @@ class Moderator(Cog):
         )
 
     @voice.command(name="unmute")
-    @commands.check_any(
-        is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel()
-    )
+    @commands.check_any(is_mod(), commands.has_guild_permissions(mute_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(mute_members=True)
     @Context.with_type
     async def voice_unmute(
@@ -928,9 +888,7 @@ class Moderator(Cog):
     ):
         """To give the member voice ban"""
         if member.voice is None:
-            return await ctx.error(
-                f"{ctx.author.mention} {member} is not in Voice Channel"
-            )
+            return await ctx.error(f"{ctx.author.mention} {member} is not in Voice Channel")
         await mt._voice_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -958,9 +916,7 @@ class Moderator(Cog):
     ):
         """To give the member voice unban"""
         if member.voice is None:
-            return await ctx.error(
-                f"{ctx.author.mention} {member} is not in Voice Channel"
-            )
+            return await ctx.error(f"{ctx.author.mention} {member} is not in Voice Channel")
         await mt._voice_unban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -972,9 +928,7 @@ class Moderator(Cog):
         )
 
     @voice.command(name="deafen")
-    @commands.check_any(
-        is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel()
-    )
+    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_deafen(
@@ -995,9 +949,7 @@ class Moderator(Cog):
         )
 
     @voice.command(name="undeafen")
-    @commands.check_any(
-        is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel()
-    )
+    @commands.check_any(is_mod(), commands.has_guild_permissions(deafen_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(deafen_members=True)
     @Context.with_type
     async def voice_undeafen(
@@ -1018,9 +970,7 @@ class Moderator(Cog):
         )
 
     @voice.command(name="kick")
-    @commands.check_any(
-        is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel()
-    )
+    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(move_members=True)
     @Context.with_type
     async def voice_kick(
@@ -1041,9 +991,7 @@ class Moderator(Cog):
         )
 
     @voice.command(name="limit")
-    @commands.check_any(
-        is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel()
-    )
+    @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True), in_temp_channel())
     @commands.bot_has_guild_permissions(manage_channels=True)
     @Context.with_type
     async def voice_limit(
@@ -1055,9 +1003,7 @@ class Moderator(Cog):
     ):
         """To set the VC limit"""
         if not ctx.author.voice:
-            return await ctx.error(
-                f"{ctx.author.mention} you must be in voice channel to use the command"
-            )
+            return await ctx.error(f"{ctx.author.mention} you must be in voice channel to use the command")
         await ctx.author.voice.channel.edit(
             user_limit=limit,
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
@@ -1065,9 +1011,7 @@ class Moderator(Cog):
         if limit:
             await ctx.send(f"{ctx.author.mention} set limit to **{limit}**")
             return
-        await ctx.send(
-            f"{ctx.author.mention} removed the limit from {ctx.author.voice.channel.mention}"
-        )
+        await ctx.send(f"{ctx.author.mention} removed the limit from {ctx.author.voice.channel.mention}")
 
     @voice.command(name="move")
     @commands.check_any(is_mod(), commands.has_guild_permissions(move_members=True))
@@ -1076,22 +1020,16 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[
-            List[discord.abc.Snowflake], commands.Greedy[MemberID]
-        ] = None,
+        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,
         channel: Union[discord.VoiceChannel, None] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """To give the member voice move"""
         if member:
-            member: List[discord.Member] = [
-                i async for i in self.bot.resolve_member_ids(ctx.guild, member)
-            ]
+            member: List[discord.Member] = [i async for i in self.bot.resolve_member_ids(ctx.guild, member)]
 
-        def check(
-            m: discord.Member, b: discord.VoiceState, a: discord.VoiceState
-        ) -> bool:
+        def check(m: discord.Member, b: discord.VoiceState, a: discord.VoiceState) -> bool:
             return m.id == ctx.me.id and (b.channel.id != a.channel.id)
 
         if channel is None:
@@ -1109,12 +1047,8 @@ class Moderator(Cog):
                 )
 
             try:
-                await ctx.send(
-                    f"{ctx.author.mention} move the bot to other channel as to move other users"
-                )
-                _, _, a = await ctx.wait_for(
-                    "voice_state_update", timeout=60, check=check
-                )
+                await ctx.send(f"{ctx.author.mention} move the bot to other channel as to move other users")
+                _, _, a = await ctx.wait_for("voice_state_update", timeout=60, check=check)
             except asyncio.TimeoutError:
                 return await ctx.error(f"{ctx.author.mention} you ran out time")
 
@@ -1125,9 +1059,7 @@ class Moderator(Cog):
                     voice_channel=a.channel,
                     reason=reason,
                 )
-            return await ctx.send(
-                f"{ctx.author.mention} moved **{len(member)}** members"
-            )
+            return await ctx.send(f"{ctx.author.mention} moved **{len(member)}** members")
 
         if not member:
             member = channel.members
@@ -1137,9 +1069,7 @@ class Moderator(Cog):
                 voice_channel=channel,
                 reason=reason,
             )
-        return await ctx.send(
-            f"{ctx.author.mention} moved {len(member)} members to {channel.mention}"
-        )
+        return await ctx.send(f"{ctx.author.mention} moved {len(member)} members to {channel.mention}")
 
     @commands.group(aliases=["emote"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
@@ -1259,9 +1189,7 @@ class Moderator(Cog):
     async def sticker_add(self, ctx: Context, emoji: str, *, description: str):
         """To add sticker"""
         if not ctx.message.stickers:
-            return await ctx.send(
-                f"{ctx.author.mention} You did not provide any sticker"
-            )
+            return await ctx.send(f"{ctx.author.mention} You did not provide any sticker")
 
         await mt._sticker_add(
             guild=ctx.guild,
@@ -1284,9 +1212,7 @@ class Moderator(Cog):
     ):
         """To delete sticker"""
         if not ctx.message.stickers:
-            return await ctx.send(
-                f"{ctx.author.mention} You did not provide any sticker"
-            )
+            return await ctx.send(f"{ctx.author.mention} You did not provide any sticker")
         sticker = sticker or ctx.message.stickers[0]
         await mt._sticker_delete(
             guild=ctx.guild,
@@ -1349,9 +1275,7 @@ class Moderator(Cog):
     async def mod(
         self,
         ctx: Context,
-        target: Union[
-            discord.Member, discord.TextChannel, discord.VoiceChannel, discord.Role
-        ],
+        target: Union[discord.Member, discord.TextChannel, discord.VoiceChannel, discord.Role],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -1368,8 +1292,7 @@ class Moderator(Cog):
         if isinstance(target, discord.Member):
             member_embed = MEMBER_EMBED.copy()
             member_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n"
-                f"Action will be performed on: {target} ({target.id})"
+                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
             )
             member_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon is not None:
@@ -1379,16 +1302,10 @@ class Moderator(Cog):
             await ctx.bulk_add_reactions(msg, *mt.MEMBER_REACTION)
 
             def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                return (
-                    str(reaction.emoji) in mt.MEMBER_REACTION
-                    and user == ctx.author
-                    and reaction.message.id == msg.id
-                )
+                return str(reaction.emoji) in mt.MEMBER_REACTION and user == ctx.author and reaction.message.id == msg.id
 
             try:
-                reaction, _ = await ctx.wait_for(
-                    "reaction_add", timeout=60.0, check=check
-                )
+                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check)
                 reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
@@ -1399,13 +1316,9 @@ class Moderator(Cog):
                 "\N{DOWNWARDS BLACK ARROW}",
                 "\N{UPWARDS BLACK ARROW}",
             }:
-                temp: discord.Message = await ctx.send(
-                    f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]"
-                )
+                temp: discord.Message = await ctx.send(f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]")
                 try:
-                    m: discord.Message = await ctx.wait_for(
-                        "message", timeout=30, check=check_msg
-                    )
+                    m: discord.Message = await ctx.wait_for("message", timeout=30, check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 role = await commands.RoleConverter().convert(ctx, m.content)
@@ -1428,9 +1341,7 @@ class Moderator(Cog):
                     delete_after=30,
                 )
                 try:
-                    m: discord.Message = await ctx.wait_for(
-                        "message", timeout=30, check=check_msg
-                    )
+                    m: discord.Message = await ctx.wait_for("message", timeout=30, check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
 
@@ -1457,8 +1368,7 @@ class Moderator(Cog):
         if isinstance(target, discord.TextChannel):
             tc_embed = TEXT_CHANNEL_EMBED.copy()
             tc_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n"
-                f"Action will be performed on: {target} ({target.id})"
+                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
             )
             tc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon:
@@ -1467,19 +1377,13 @@ class Moderator(Cog):
             await ctx.bulk_add_reactions(msg, *mt.TEXT_REACTION)
 
             def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                return (
-                    str(reaction.emoji) in mt.TEXT_REACTION
-                    and user == ctx.author
-                    and reaction.message.id == msg.id
-                )
+                return str(reaction.emoji) in mt.TEXT_REACTION and user == ctx.author and reaction.message.id == msg.id
 
             def check_msg(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 
             try:
-                reaction, _ = await ctx.wait_for(
-                    "reaction_add", timeout=60.0, check=check
-                )
+                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check)
                 reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
@@ -1494,9 +1398,7 @@ class Moderator(Cog):
                     delete_after=60,
                 )
                 try:
-                    m: discord.Message = await ctx.wait_for(
-                        "message", timeout=60, check=check_msg
-                    )
+                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 await func(
@@ -1529,8 +1431,7 @@ class Moderator(Cog):
         ):
             vc_embed = VOICE_CHANNEL_EMBED
             vc_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n"
-                f"Action will be performed on: {target} ({target.id})"
+                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
             )
             vc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if guild.icon:
@@ -1538,19 +1439,11 @@ class Moderator(Cog):
             msg: discord.Message = await ctx.send(embed=vc_embed)
             await ctx.bulk_add_reactions(msg, *mt.VC_REACTION)
 
-            def check_reaction_vc(
-                reaction: discord.Reaction, user: discord.User
-            ) -> bool:
-                return (
-                    str(reaction.emoji) in mt.VC_REACTION
-                    and user == ctx.author
-                    and reaction.message.id == msg.id
-                )
+            def check_reaction_vc(reaction: discord.Reaction, user: discord.User) -> bool:
+                return str(reaction.emoji) in mt.VC_REACTION and user == ctx.author and reaction.message.id == msg.id
 
             try:
-                reaction, _ = await ctx.wait_for(
-                    "reaction_add", timeout=60.0, check=check_reaction_vc
-                )
+                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check_reaction_vc)
                 reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
@@ -1558,13 +1451,9 @@ class Moderator(Cog):
             func = mt.VC_REACTION[str(reaction.emoji)]
 
             if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-                await ctx.send(
-                    f"{ctx.author.mention} Enter the Channel Name", delete_after=60
-                )
+                await ctx.send(f"{ctx.author.mention} Enter the Channel Name", delete_after=60)
                 try:
-                    m: discord.Message = await ctx.wait_for(
-                        "message", timeout=60, check=check_msg
-                    )
+                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 await func(
@@ -1590,8 +1479,7 @@ class Moderator(Cog):
         if isinstance(target, discord.Role):
             role_embed = ROLE_EMBED
             role_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n"
-                f"Action will be performed on: {target} ({target.id})"
+                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
             )
             role_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
             if ctx.guild.icon:
@@ -1600,16 +1488,10 @@ class Moderator(Cog):
             await ctx.bulk_add_reactions(msg, *mt.ROLE_REACTION)
 
             def check_reaction_role(reaction: discord.Reaction, user: discord.User):
-                return (
-                    str(reaction.emoji) in mt.ROLE_REACTION
-                    and user == ctx.author
-                    and reaction.message.id == msg.id
-                )
+                return str(reaction.emoji) in mt.ROLE_REACTION and user == ctx.author and reaction.message.id == msg.id
 
             try:
-                reaction, _ = await ctx.wait_for(
-                    "reaction_add", timeout=60.0, check=check_reaction_role
-                )
+                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check_reaction_role)
                 reaction: discord.Reaction = reaction
             except asyncio.TimeoutError:
                 return await msg.delete(delay=0)
@@ -1622,9 +1504,7 @@ class Moderator(Cog):
                     delete_after=60,
                 )
                 try:
-                    m: discord.Message = await ctx.wait_for(
-                        "message", timeout=60, check=check_msg
-                    )
+                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 try:
@@ -1644,13 +1524,9 @@ class Moderator(Cog):
                 return await msg.delete(delay=0)
 
             if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-                await ctx.send(
-                    f"{ctx.author.mention} Enter the Role Name", delete_after=60
-                )
+                await ctx.send(f"{ctx.author.mention} Enter the Role Name", delete_after=60)
                 try:
-                    m: discord.Message = await ctx.wait_for(
-                        "message", timeout=60, check=check_msg
-                    )
+                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
                 except asyncio.TimeoutError:
                     return await msg.delete(delay=0)
                 await mt._change_role_name(
@@ -1737,9 +1613,7 @@ class Moderator(Cog):
             payload["warn_id"] = flags.warn_id
 
         await delete_many_warn(ctx, ctx.guild, **payload)
-        await ctx.send(
-            f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`"
-        )
+        await ctx.send(f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`")
         if flags.target:
             target = await self.bot.get_or_fetch_member(ctx.guild, flags.target.id)
             await self.warn_task(target=target, ctx=ctx)
@@ -1785,9 +1659,7 @@ class Moderator(Cog):
         col: Collection = self.bot.mongo.warn_db[f"{ctx.guild.id}"]
         async for data in col.find({"target": target.id}):
             count += 1
-        if data := await self.bot.guild_configurations.find_one(
-            {"_id": ctx.guild.id, "warn_auto.count": count}
-        ):
+        if data := await self.bot.guild_configurations.find_one({"_id": ctx.guild.id, "warn_auto.count": count}):
             for i in data["warn_auto"]:
                 if i["count"] == count:
                     await self.execute_action(

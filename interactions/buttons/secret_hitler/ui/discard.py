@@ -23,8 +23,6 @@ class DiscardUI(PeekUI):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if self.is_finished():
-            await interaction.response.send_message(
-                "You have already chosen a policy to discard", ephemeral=True
-            )
+            await interaction.response.send_message("You have already chosen a policy to discard", ephemeral=True)
             return False
         return True

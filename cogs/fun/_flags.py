@@ -6,16 +6,12 @@ from typing import Literal, Optional
 from discord.ext import commands
 
 
-class TriviaFlag(  # type: ignore
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class TriviaFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):  # type: ignore
     token: Optional[str] = None
     number: Optional[int] = commands.flag(name="number", default=10, aliases=["amount"])
     category: Optional[str] = None
     difficulty: Optional[Literal["easy", "medium", "hard"]] = None
-    _type: Optional[Literal["multiple", "boolean"]] = commands.flag(
-        default="multiple", name="type"
-    )
+    _type: Optional[Literal["multiple", "boolean"]] = commands.flag(default="multiple", name="type")
 
 
 class Category(Enum):

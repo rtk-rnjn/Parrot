@@ -11,15 +11,11 @@ if TYPE_CHECKING:
     from pymongo.collection import Collection
 
 
-async def chat_exporter(
-    channel: discord.TextChannel, limit: Optional[int] = 100
-) -> None:
+async def chat_exporter(channel: discord.TextChannel, limit: Optional[int] = 100) -> None:
     await quick_export(channel)
 
 
-async def log(
-    guild: discord.Guild, channel: discord.TextChannel, description: str, status: str
-) -> None:
+async def log(guild: discord.Guild, channel: discord.TextChannel, description: str, status: str) -> None:
     await channel.send(
         embed=discord.Embed(
             title="Parrot Ticket Bot",
@@ -141,8 +137,7 @@ async def _new(ctx: Context, args: Optional[str] = None) -> None:
             await log(
                 ctx.guild,
                 log_channel,
-                f"**Channel:** #ticket-{data['ticket_number']+1}\n"
-                f"**Opened by:** {ctx.author} ({ctx.author.id})",
+                f"**Channel:** #ticket-{data['ticket_number']+1}\n" f"**Opened by:** {ctx.author} ({ctx.author.id})",
                 "RUNNING",
             )
 
@@ -163,9 +158,7 @@ async def _close(ctx: Context, bot: Parrot) -> None:
             if not a:
                 return
             await ctx.reply(embed=em)
-            await ctx.channel.delete(
-                reason=f"Parrot Ticket bot feature | On request from {ctx.author}"
-            )
+            await ctx.channel.delete(reason=f"Parrot Ticket bot feature | On request from {ctx.author}")
             await ctx.bot.guild_configurations.update_one(
                 {"_id": ctx.guild.id},
                 {"$pull": {"ticket_channel_ids": ctx.channel.id}},
@@ -175,8 +168,7 @@ async def _close(ctx: Context, bot: Parrot) -> None:
                     await log(
                         ctx.guild,
                         log_channel,
-                        f"**Channel:** #{ctx.channel.name}\n"
-                        f"**Closed by:** {ctx.author} ({ctx.author.id})",
+                        f"**Channel:** #{ctx.channel.name}\n" f"**Closed by:** {ctx.author} ({ctx.author.id})",
                         "CLOSED",
                     )
         except asyncio.TimeoutError:
@@ -208,8 +200,7 @@ async def _save(ctx: Context, bot: Parrot, limit: int) -> None:
                     await log(
                         ctx.guild,
                         log_channel,
-                        f"**Channel:** #{ctx.channel.name}\n"
-                        f"**Opened by:** {ctx.author} ({ctx.author.id})",
+                        f"**Channel:** #{ctx.channel.name}\n" f"**Opened by:** {ctx.author} ({ctx.author.id})",
                         "RUNNING",
                     )
 
@@ -278,9 +269,7 @@ async def _addpingedrole(ctx: Context, role: discord.Role) -> None:
 
 
 async def _deladminrole(ctx: Context, role: discord.Role) -> None:
-    await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$pull": {"verified_roles": role.id}}, upsert=True
-    )
+    await ctx.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"verified_roles": role.id}}, upsert=True)
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=f"You have successfully removed `{role.name}` from the list of roles that get pinged when new tickets are created.",
@@ -293,9 +282,7 @@ async def _deladminrole(ctx: Context, role: discord.Role) -> None:
 
 
 async def _delpingedrole(ctx: Context, role: discord.Role) -> None:
-    await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$pull": {"pinged_roles": role.id}}, upsert=True
-    )
+    await ctx.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"pinged_roles": role.id}}, upsert=True)
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=f"You have successfully removed `{role.name}` from the list of roles that get pinged when new tickets are created.",
@@ -308,9 +295,7 @@ async def _delpingedrole(ctx: Context, role: discord.Role) -> None:
 
 
 async def _setcategory(ctx: Context, channel: discord.TextChannel) -> None:
-    await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$set": {"category": channel.id}}, upsert=True
-    )
+    await ctx.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"category": channel.id}}, upsert=True)
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=f"You have successfully added `{channel.name}` where new tickets will be created.",
@@ -323,9 +308,7 @@ async def _setcategory(ctx: Context, channel: discord.TextChannel) -> None:
 
 
 async def _setlog(ctx: Context, channel: discord.TextChannel) -> None:
-    await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$set": {"log": channel.id}}, upsert=True
-    )
+    await ctx.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"log": channel.id}}, upsert=True)
     em = discord.Embed(
         title="Parrot Ticket Bot",
         description=f"You have successfully added `{channel.name}` where tickets action will be logged.",
@@ -338,9 +321,9 @@ async def _setlog(ctx: Context, channel: discord.TextChannel) -> None:
 
 
 async def _auto(ctx: Context, channel: discord.TextChannel, message: str) -> None:
-    embed = discord.Embed(
-        title="Parrot Ticket Bot", description=message, color=discord.Color.blue()
-    ).set_footer(text=f"{ctx.guild.name}")
+    embed = discord.Embed(title="Parrot Ticket Bot", description=message, color=discord.Color.blue()).set_footer(
+        text=f"{ctx.guild.name}"
+    )
 
     message = await channel.send(embed=embed)
     await message.add_reaction("\N{ENVELOPE}")

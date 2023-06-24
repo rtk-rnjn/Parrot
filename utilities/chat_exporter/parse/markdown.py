@@ -83,9 +83,7 @@ class ParseMarkdown:
             match = re.search(p, self.content)
             while match is not None:
                 emoji_id = match[1]
-                self.content = self.content.replace(
-                    self.content[match.start() : match.end()], r % emoji_id
-                )
+                self.content = self.content.replace(self.content[match.start() : match.end()], r % emoji_id)
                 match = re.search(p, self.content)
 
     def parse_normal_markdown(
@@ -110,9 +108,7 @@ class ParseMarkdown:
             match = re.search(pattern, self.content)
             while match is not None:
                 affected_text = match[1]
-                self.content = self.content.replace(
-                    self.content[match.start() : match.end()], r % affected_text
-                )
+                self.content = self.content.replace(self.content[match.start() : match.end()], r % affected_text)
                 match = re.search(pattern, self.content)
 
         # > quote
@@ -297,9 +293,7 @@ class ParseMarkdown:
             match = re.search(pattern, content)
             while match is not None:
                 affected_text = match[1]
-                content = content.replace(
-                    content[match.start() : match.end()], r % affected_text
-                )
+                content = content.replace(content[match.start() : match.end()], r % affected_text)
                 match = re.search(pattern, content)
 
         pattern = re.compile(r'<a href="(.*?)">(.*?)</a>')
@@ -313,9 +307,7 @@ class ParseMarkdown:
                     f"[{affected_text}]({affected_url})",
                 )
             else:
-                content = content.replace(
-                    content[match.start() : match.end()], f"{affected_url}"
-                )
+                content = content.replace(content[match.start() : match.end()], f"{affected_url}")
             match = re.search(pattern, content)
 
         return content.lstrip().rstrip()
@@ -324,9 +316,7 @@ class ParseMarkdown:
         self,
     ):
         def remove_silent_link(url: str):
-            return (
-                url[1:-1] if url.startswith("&lt;<") and url.endswith(">&gt;") else url
-            )
+            return url[1:-1] if url.startswith("&lt;<") and url.endswith(">&gt;") else url
 
         # Escaping < >
         self.content = self.content.replace("<", "&lt;").replace(">", "&gt;")

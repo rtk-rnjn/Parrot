@@ -42,24 +42,16 @@ class EventCustom(Cog):
         target: int = kw.get("member") or kw.get("target") or kw.get("user")  # type: ignore
 
         if action.upper() == "UNBAN":
-            with contextlib.suppress(
-                discord.NotFound, discord.HTTPException, discord.Forbidden
-            ):
+            with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
                 await guild.unban(discord.Object(target), reason=kw.get("reason"))
         if action.upper() == "BAN":
-            with contextlib.suppress(
-                discord.NotFound, discord.HTTPException, discord.Forbidden
-            ):
+            with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
         if action.upper() == "KICK":
-            member: Optional[
-                Union[discord.Member, discord.User]
-            ] = await self.bot.get_or_fetch_member(guild, target)
+            member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(guild, target)
             if member is None:
                 return
-            with contextlib.suppress(
-                discord.NotFound, discord.HTTPException, discord.Forbidden
-            ):
+            with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
                 await guild.kick(member, reason=kw.get("reason"))
 
     @Cog.listener("on_timer_complete")
@@ -101,9 +93,7 @@ class EventCustom(Cog):
             return
 
     @Cog.listener("on_timer_complete")
-    async def extra_parser(
-        self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any
-    ) -> None:
+    async def extra_parser(self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -115,9 +105,7 @@ class EventCustom(Cog):
             await self.extra_action_parser(name, **main)
 
     @Cog.listener("on_set_afk_timer_complete")
-    async def extra_parser_set_afk(
-        self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any
-    ) -> None:
+    async def extra_parser_set_afk(self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -127,9 +115,7 @@ class EventCustom(Cog):
             self.bot.afk_users.add(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_remove_afk_timer_complete")
-    async def extra_parser_remove_afk(
-        self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any
-    ) -> None:
+    async def extra_parser_remove_afk(self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -139,9 +125,7 @@ class EventCustom(Cog):
             self.bot.afk_users.remove(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_giveaway_timer_complete")
-    async def extra_parser_giveaway(
-        self, extra: Optional[Dict[str, Any]] = None, **kw: Any
-    ) -> None:
+    async def extra_parser_giveaway(self, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -199,9 +183,7 @@ class EventCustom(Cog):
 
         joiner = ">, <@".join([str(i) for i in member_ids])
 
-        await channel.send(
-            f"Congrats <@{joiner}> you won {kw.get('prize')}\n" f"> {msg_link}"
-        )
+        await channel.send(f"Congrats <@{joiner}> you won {kw.get('prize')}\n" f"> {msg_link}")
 
 
 async def setup(bot: Parrot) -> None:

@@ -36,7 +36,7 @@ from PIL import Image
 
 import discord
 from discord.ext import commands
-from utilities.converters import ToAsync
+from utilities.converters import ToAsync, ToImage, emoji_to_url
 from utilities.emotes import emojis
 
 CONFIRM_REACTIONS: Tuple = (
@@ -85,9 +85,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         super().__init__(*args, **kwargs)
 
         if self.guild is not None:
-            self.guild_collection: MongoCollection = self.bot.guild_level_db[
-                f"{self.guild.id}"
-            ]
+            self.guild_collection: MongoCollection = self.bot.guild_level_db[f"{self.guild.id}"]
         self.user_collection: MongoCollection = self.bot.user_db[f"{self.author.id}"]
 
     def __repr__(self) -> str:
@@ -100,18 +98,14 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     def session(self) -> "aiohttp.ClientSession":
         return self.bot.http_session
 
-    async def tick(
-        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None
-    ) -> None:
+    async def tick(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None) -> None:
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
 
     async def ok(self) -> None:
         log.debug("Adding ok reaction to message %s", self.message.id)
         return await self.tick()
 
-    async def wrong(
-        self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None
-    ) -> None:
+    async def wrong(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None) -> None:
         log.debug("Adding wrong reaction to message %s", self.message.id)
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
 
@@ -144,7 +138,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         if channel := getattr(self.author.voice, "channel"):
             # channel: discord.VoiceChannel
-            members = sum(not m.bot for m in channel.members)  # type: ignore  # channel is surely the voice channel
+            members = sum(not m.bot for m in channel.members)  # channel is surely the voice channel
             if members <= 3:
                 return self.guild.default_role
 
@@ -152,9 +146,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if perms.manage_guild or perms.manage_channels:
             return self.guild.default_role
         try:
-            dj_role = self.guild.get_role(
-                self.bot.guild_configurations_cache[self.guild.id]["dj_role"] or 0
-            )
+            dj_role = self.guild.get_role(self.bot.guild_configurations_cache[self.guild.id]["dj_role"] or 0)
             author_dj_role = discord.utils.find(
                 lambda r: r.name.lower() == "dj",
                 self.author.roles,
@@ -165,9 +157,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             )
             return dj_role or author_dj_role or server_dj_role
         except KeyError:
-            if data := await self.bot.guild_configurations.find_one(
-                {"_id": self.guild.id}
-            ):
+            if data := await self.bot.guild_configurations.find_one({"_id": self.guild.id}):
                 return self.guild.get_role(data.get("dj_role") or 0)
         return None
 
@@ -177,23 +167,15 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
         try:
-            author_muted = discord.utils.find(
-                lambda m: m.name.lower() == "muted", self.author.roles
-            )
-            global_muted = discord.utils.find(
-                lambda m: m.name.lower() == "muted", self.guild.roles
-            )
+            author_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.author.roles)
+            global_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.guild.roles)
             return (
-                self.guild.get_role(
-                    self.bot.guild_configurations_cache[self.guild.id]["mute_role"] or 0
-                )
+                self.guild.get_role(self.bot.guild_configurations_cache[self.guild.id]["mute_role"] or 0)
                 or global_muted
                 or author_muted
             )
         except KeyError:
-            if data := await self.bot.guild_configurations.find_one(
-                {"_id": self.guild.id}
-            ):
+            if data := await self.bot.guild_configurations.find_one({"_id": self.guild.id}):
                 return self.guild.get_role(data["mute_role"] or 0)
         return None
 
@@ -203,13 +185,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
         try:
-            return self.guild.get_role(
-                self.bot.guild_configurations_cache[self.guild.id]["mod_role"] or 0
-            )
+            return self.guild.get_role(self.bot.guild_configurations_cache[self.guild.id]["mod_role"] or 0)
         except KeyError:
-            if data := await self.bot.guild_configurations.find_one(
-                {"_id": self.guild.id}
-            ):
+            if data := await self.bot.guild_configurations.find_one({"_id": self.guild.id}):
                 return self.guild.get_role(data["mod_role"] or 0)
         return None
 
@@ -257,9 +235,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             content = f"*{content}*"
         if underline:
             content = f"__{content}__"
-        embeds: Union[discord.Embed, List[discord.Embed], None] = kwargs.get(
-            "embed"
-        ) or kwargs.get("embeds")
+        embeds: Union[discord.Embed, List[discord.Embed], None] = kwargs.get("embed") or kwargs.get("embeds")
 
         def __set_embed_defaults(embed: discord.Embed, /):
             if not embed.color:
@@ -283,13 +259,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         log.debug("Sending message to channel `%s` (%s)", self.channel, self.channel.id)
         return await super().send(str(content)[:1990] if content else None, **kwargs)
 
-    async def reply(
-        self, content: Optional[str] = None, **kwargs: Any
-    ) -> Optional[discord.Message]:
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Optional[discord.Message]:
         try:
-            return await self.send(
-                content, reference=kwargs.get("reference") or self.message, **kwargs
-            )
+            return await self.send(content, reference=kwargs.get("reference") or self.message, **kwargs)
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
@@ -317,18 +289,14 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 return await msg.delete(delay=0)
         return msg
 
-    async def entry_to_code(
-        self, entries: List[Tuple[Any, Any]]
-    ) -> Optional[discord.Message]:
+    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"{name:<{width}}: {entry}" for name, entry in entries)
         output.append("```")
         return await self.send("\n".join(output))
 
-    async def indented_entry_to_code(
-        self, entries: List[Tuple[Any, Any]]
-    ) -> Optional[discord.Message]:
+    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"\u200b{name:>{width}}: {entry}" for name, entry in entries)
@@ -371,9 +339,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         else:
             await asyncio.sleep(_for or 0, result)
 
-    async def safe_send(
-        self, content: str, *, escape_mentions: bool = True, **kwargs: Any
-    ) -> Optional[discord.Message]:
+    async def safe_send(self, content: str, *, escape_mentions: bool = True, **kwargs: Any) -> Optional[discord.Message]:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
 
@@ -393,15 +359,10 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         if message is None or not isinstance(message, discord.Message):
             message: discord.Message = self.message
 
-        tasks: "List[asyncio.Task[None]]" = [
-            asyncio.create_task(message.add_reaction(reaction))
-            for reaction in reactions
-        ]
+        tasks: "List[asyncio.Task[None]]" = [asyncio.create_task(message.add_reaction(reaction)) for reaction in reactions]
         await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
-    async def get_or_fetch_message(
-        self, *args: Any, **kwargs: Any
-    ) -> Union[discord.PartialMessage, discord.Message, None]:
+    async def get_or_fetch_message(self, *args: Any, **kwargs: Any) -> Union[discord.PartialMessage, discord.Message, None]:
         """Shortcut for bot.get_or_fetch_message(...)"""
         return await self.bot.get_or_fetch_message(*args, **kwargs)
 
@@ -414,15 +375,12 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         delete_after: bool = False,
         **kwargs: Any,
     ) -> Optional[bool]:
-
         message: Optional[discord.Message] = await channel.send(*args, **kwargs)
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
         def check(payload: discord.RawReactionActionEvent) -> bool:
             return (
-                payload.message_id == message.id
-                and payload.user_id == user.id
-                and str(payload.emoji) in CONFIRM_REACTIONS
+                payload.message_id == message.id and payload.user_id == user.id and str(payload.emoji) in CONFIRM_REACTIONS
             )
 
         try:
@@ -458,12 +416,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             *args,
         ) -> bool:
             """Main check function"""
-            convert_pred = [
-                (attrgetter(k.replace("__", ".")), v) for k, v in kw.items()
-            ]
+            convert_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kw.items()]
             return operator(
-                all(pred(i) == val for i in args if __suppress_attr_error(pred, i))
-                for pred, val in convert_pred
+                all(pred(i) == val for i in args if __suppress_attr_error(pred, i)) for pred, val in convert_pred
             )
 
         return __internal_check
@@ -543,21 +498,16 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def multiple_wait_for(
         self,
-        events: Union[
-            List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]
-        ],
+        events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
         *,
-        return_when: Literal[
-            "FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"
-        ] = "FIRST_COMPLETED",
+        return_when: Literal["FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"] = "FIRST_COMPLETED",
         timeout: Optional[float] = None,
     ) -> List[Any]:
         if isinstance(events, dict):
             events = list(events.items())
 
         _events: "Set[asyncio.Task[Any]]" = {
-            self.bot.loop.create_task(self.wait_for(event, check=check))
-            for event, check in events
+            self.bot.loop.create_task(self.wait_for(event, check=check)) for event, check in events
         }
 
         completed, pendings = await asyncio.wait(
@@ -574,9 +524,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
     async def wait_for_till(
         self,
-        events: Union[
-            List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]
-        ],
+        events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
         *,
         _for: Union[float, int, None] = None,
         after: Union[float, int, None] = None,
@@ -594,15 +542,11 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 done_result.append(task.result())
 
         while discord.utils.utcnow().timestamp() <= now:
-            done = await self.multiple_wait_for(
-                events, return_when="FIRST_COMPLETED", **kwargs
-            )
+            done = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
             __internal_appender(done)
 
         if not _for:
-            done = await self.multiple_wait_for(
-                events, return_when="FIRST_COMPLETED", **kwargs
-            )
+            done = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
             __internal_appender(done)
 
         return done_result
@@ -631,9 +575,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         raise errors[retry]
 
-    async def database_game_update(
-        self, game_name: str, *, win: bool = False, loss: bool = False, **kw: Any
-    ) -> bool:
+    async def database_game_update(self, game_name: str, *, win: bool = False, loss: bool = False, **kw: Any) -> bool:
         kwargs: Dict[str, Any] = {}
 
         for key, value in kw.items():
@@ -705,34 +647,30 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 }
             }
 
-        update_result_cmd_user: UpdateResult = (
-            await self.bot.command_collections.update_one(
-                {"_id": self.author.id},
-                {
-                    "$inc": {
-                        f"command_{cmd}_used": 1,
-                        f"command_{cmd}_success": 1 if success else 0,
-                    },
-                    "$set": {"type": "user"},
-                    **kwargs,
+        update_result_cmd_user: UpdateResult = await self.bot.command_collections.update_one(
+            {"_id": self.author.id},
+            {
+                "$inc": {
+                    f"command_{cmd}_used": 1,
+                    f"command_{cmd}_success": 1 if success else 0,
                 },
-                upsert=True,
-            )
+                "$set": {"type": "user"},
+                **kwargs,
+            },
+            upsert=True,
         )
 
-        update_result_cmd_guild: UpdateResult = (
-            await self.bot.command_collections.update_one(
-                {"_id": self.guild.id},
-                {
-                    "$inc": {
-                        f"command_{cmd}_used": 1,
-                        f"command_{cmd}_success": 1 if success else 0,
-                    },
-                    "$set": {"type": "guild"},
-                    **kwargs,
+        update_result_cmd_guild: UpdateResult = await self.bot.command_collections.update_one(
+            {"_id": self.guild.id},
+            {
+                "$inc": {
+                    f"command_{cmd}_used": 1,
+                    f"command_{cmd}_success": 1 if success else 0,
                 },
-                upsert=True,
-            )
+                "$set": {"type": "guild"},
+                **kwargs,
+            },
+            upsert=True,
         )
 
         return {
@@ -752,17 +690,13 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         try:
             Image.open(buffer)
         except PIL.UnidentifiedImageError as e:
-            raise commands.BadArgument(
-                "Could not open provided image. Make sure it is a valid image types"
-            ) from e
+            raise commands.BadArgument("Could not open provided image. Make sure it is a valid image types") from e
         finally:
             buffer.seek(0)
 
         return buffer
 
-    async def to_image(self, entity: Any = None) -> BytesIO:
-        from utilities.converters import ToImage, emoji_to_url
-
+    async def to_image(self, entity: Any = None) -> BytesIO:  # type: ignore
         if self.message.attachments:
             buf = BytesIO(await self.message.attachments[0].read())
             buf.seek(0)
@@ -781,31 +715,25 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         ):
             return await ToImage().convert(self, image.url)  # type: ignore
 
-        if (
-            (ref := self.message.reference)
-            and (content := ref.resolved.content)  # type: ignore
-            and entity is None
-        ):
+        if (ref := self.message.reference) and (content := ref.resolved.content) and entity is None:  # type: ignore
             return await ToImage().convert(self, content)
 
-        if (stickers := self.message.stickers) and stickers[
-            0
-        ].format != discord.StickerFormatType.lottie:
+        if (stickers := self.message.stickers) and stickers[0].format != discord.StickerFormatType.lottie:
             response = await self.bot.http_session.get(self.message.stickers[0].url)
             buf = BytesIO(await response.read())
             buf.seek(0)
             return buf
 
         if entity is None:
-            entity = BytesIO(await self.author.display_avatar.read())
+            entity: BytesIO = BytesIO(await self.author.display_avatar.read())
             entity.seek(0)
         elif isinstance(entity, int):
             return await ToImage().convert(self, str(entity))
         elif isinstance(entity, (discord.Emoji, discord.PartialEmoji)):
-            entity = BytesIO(await entity.read())
+            entity: BytesIO = BytesIO(await entity.read())
             entity.seek(0)
         elif isinstance(entity, (discord.User, discord.Member)):
-            entity = BytesIO(await entity.display_avatar.read())
+            entity: BytesIO = BytesIO(await entity.display_avatar.read())
             entity.seek(0)
         else:
             url = LINKS_RE.findall(entity)
@@ -813,9 +741,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 url = await emoji_to_url(entity)
                 url = LINKS_RE.findall(url)
             if not url:
-                raise commands.BadArgument(
-                    "Could not convert input to Emoji, Member, or Image URL"
-                )
+                raise commands.BadArgument("Could not convert input to Emoji, Member, or Image URL")
 
             url = url[0]
 
@@ -859,9 +785,7 @@ class ConfirmationView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
-        await interaction.response.send_message(
-            "This confirmation dialog is not for you.", ephemeral=True
-        )
+        await interaction.response.send_message("This confirmation dialog is not for you.", ephemeral=True)
         return False
 
     async def on_timeout(self) -> None:
@@ -872,9 +796,7 @@ class ConfirmationView(discord.ui.View):
             await self.message.delete(delay=0)
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
-    async def confirm(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ) -> None:
+    async def confirm(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         self.value = True
         await interaction.response.defer()
         if self.delete_after:
@@ -882,9 +804,7 @@ class ConfirmationView(discord.ui.View):
         self.stop()
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.red)
-    async def cancel(
-        self, interaction: discord.Interaction, _: discord.ui.Button
-    ) -> None:
+    async def cancel(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         self.value = False
         await interaction.response.defer()
         if self.delete_after:
@@ -893,9 +813,7 @@ class ConfirmationView(discord.ui.View):
 
 
 class SentFromView(discord.ui.View):
-    def __init__(
-        self, ctx: Context, *, timeout: float | None = 180, label: Optional[str] = None
-    ):
+    def __init__(self, ctx: Context, *, timeout: float | None = 180, label: Optional[str] = None):
         super().__init__(timeout=timeout)
         self.ctx = ctx
 

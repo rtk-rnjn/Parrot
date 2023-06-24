@@ -74,9 +74,7 @@ class Sector17Listeners(Cog):
             self.owo_pray_curse(message, content),
         )
 
-    def _get_command_list(
-        self, data: Dict[str, Union[List[str], str]]
-    ) -> Tuple[str, ...]:
+    def _get_command_list(self, data: Dict[str, Union[List[str], str]]) -> Tuple[str, ...]:
         ls = []
 
         for key, value in data.items():
@@ -111,17 +109,13 @@ class Sector17Listeners(Cog):
         log.debug("Command list: %s", ls)
         return tuple(set(ls))
 
-    async def change_owo_prefix(
-        self, message: discord.Message, content: str
-    ) -> Optional[bool]:
+    async def change_owo_prefix(self, message: discord.Message, content: str) -> Optional[bool]:
         if not content.startswith(self._get_command_list({"prefix": "prefix"})):
             return
 
         owo_message = await self.wait_for_owo(message, startswith="**\N{GEAR}")
 
-        if owo_message is not None and (
-            ls := re.findall(r"`(.+)`", owo_message.content)
-        ):
+        if owo_message is not None and (ls := re.findall(r"`(.+)`", owo_message.content)):
             self.__current_owo_prefix = ls[0]
             log.info("owo prefix changed to %s", self.__current_owo_prefix)
             await owo_message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
@@ -136,9 +130,7 @@ class Sector17Listeners(Cog):
         if owo_message is not None:
             await asyncio.sleep(14.5)
 
-            await message.channel.send(
-                f"{message.author.mention} Battle", reference=owo_message
-            )
+            await message.channel.send(f"{message.author.mention} Battle", reference=owo_message)
 
     async def owo_hunt(self, message: discord.Message, content: str):
         if not content.startswith(self._get_command_list({"hunt": "h"})):
@@ -147,22 +139,14 @@ class Sector17Listeners(Cog):
         if owo_message is not None:
             await asyncio.sleep(14.5)
 
-            await message.channel.send(
-                f"{message.author.mention} Hunt", reference=owo_message
-            )
+            await message.channel.send(f"{message.author.mention} Hunt", reference=owo_message)
 
     async def owo_hunt_bot(self, message: discord.Message, content: str):
-        if not content.startswith(
-            self._get_command_list({"huntbot": ["autohunt", "hb", "ah"]})
-        ):
+        if not content.startswith(self._get_command_list({"huntbot": ["autohunt", "hb", "ah"]})):
             return
         owo_message = await self.wait_for_owo(message)
 
-        if (
-            owo_message is not None
-            and "BEEP BOOP" not in owo_message.content
-            and "YOU SPENT" not in owo_message.content
-        ):
+        if owo_message is not None and "BEEP BOOP" not in owo_message.content and "YOU SPENT" not in owo_message.content:
             return
 
         if owo_message is not None and owo_message.embeds:
@@ -170,9 +154,7 @@ class Sector17Listeners(Cog):
 
         try:
             if owo_message is not None:
-                main = owo_message.content.split("\n")[1].split(" ")[
-                    7
-                ]  # get time # TODO: fix this temp solution
+                main = owo_message.content.split("\n")[1].split(" ")[7]  # get time # TODO: fix this temp solution
             else:
                 main = "0M"
         except IndexError:
@@ -200,13 +182,9 @@ class Sector17Listeners(Cog):
     async def owo_pray_curse(self, message: discord.Message, content: str):
         if not content.startswith(self._get_command_list({"pray": "curse"})):
             return
-        owo_message = await self.wait_for_owo(
-            message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}")
-        )
+        owo_message = await self.wait_for_owo(message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}"))
 
         if owo_message is not None:
             await asyncio.sleep(300)
 
-            await message.channel.send(
-                f"{message.author.mention} Pray/Curse", reference=owo_message
-            )
+            await message.channel.send(f"{message.author.mention} Pray/Curse", reference=owo_message)

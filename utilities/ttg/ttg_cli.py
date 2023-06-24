@@ -16,9 +16,7 @@ def clielement():
         "--propositions",
         help="List of propositions e. g. \"['p or q', 'p and q']\"",
     )  # NOQA long line
-    parser.add_argument(
-        "-i", "--ints", default="True", help="True for 0 and 1; False for words"
-    )
+    parser.add_argument("-i", "--ints", default="True", help="True for 0 and 1; False for words")
     parser.add_argument(
         "-a",
         "--ascending",

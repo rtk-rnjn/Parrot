@@ -98,9 +98,7 @@ class Card:
         return hash((self.color, self.type, self.value))
 
     def __repr__(self) -> str:
-        return (
-            f"<Card color={self.color.name} type={self.type.name} value={self.value}>"
-        )
+        return f"<Card color={self.color.name} type={self.type.name} value={self.value}>"
 
     def __eq__(self: E, other: E) -> bool:
         return (
@@ -136,9 +134,7 @@ class Card:
         return self.type in (CardType.wild, CardType.plus_4)
 
     def match(self: E, other: E, /) -> bool:
-        return (
-            other.color is self.color or other.is_wild() or self.stackable_with(other)
-        )
+        return other.color is self.color or other.is_wild() or self.stackable_with(other)
 
     def stackable_with(self: E, other: E, /) -> bool:
         return (

@@ -64,42 +64,28 @@ from ._fun_utils import AnagramGame, file_safe_name, replace_many, suppress_link
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"
 
-with open(
-    Path("extra/truth.txt"), "r", encoding="utf-8", errors="ignore"
-) as f:  # noqa: E741
+with open(Path("extra/truth.txt"), "r", encoding="utf-8", errors="ignore") as f:  # noqa: E741
     _truth = f.read()
 
-with open(
-    Path("extra/dare.txt"), "r", encoding="utf-8", errors="ignore"
-) as g:  # noqa: E741
+with open(Path("extra/dare.txt"), "r", encoding="utf-8", errors="ignore") as g:  # noqa: E741
     _dare = g.read()
 
 with open(Path("extra/lang.json"), "r", encoding="utf-8", errors="ignore") as lang:
     lg = json.load(lang)
 
-with open(
-    Path("extra/wyr.txt"), "r", encoding="utf-8", errors="ignore"
-) as h:  # noqa: E741
+with open(Path("extra/wyr.txt"), "r", encoding="utf-8", errors="ignore") as h:  # noqa: E741
     _wyr = h.read()
 
-with open(
-    Path("extra/nhi.txt"), "r", encoding="utf-8", errors="ignore"
-) as i:  # noqa: E741
+with open(Path("extra/nhi.txt"), "r", encoding="utf-8", errors="ignore") as i:  # noqa: E741
     _nhi = i.read()
 
-with open(
-    Path("extra/twister.txt"), "r", encoding="utf-8", errors="ignore"
-) as k:  # noqa: E741
+with open(Path("extra/twister.txt"), "r", encoding="utf-8", errors="ignore") as k:  # noqa: E741
     _twister = k.read()
 
-with open(
-    Path("extra/anagram.json"), "r", encoding="utf-8", errors="ignore"
-) as l:  # noqa: E741
+with open(Path("extra/anagram.json"), "r", encoding="utf-8", errors="ignore") as l:  # noqa: E741
     ANAGRAMS_ALL = json.load(l)
 
-with open(
-    Path("extra/random_sentences.txt"), "r", encoding="utf-8", errors="ignore"
-) as m:
+with open(Path("extra/random_sentences.txt"), "r", encoding="utf-8", errors="ignore") as m:
     _random_sentences = m.read().split("\n")
 
 
@@ -107,9 +93,7 @@ T = TypeVar("T")
 
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
-GENDER_OPTIONS: Dict[str, Any] = json.loads(
-    Path(r"extra/gender_options.json").read_text("utf8")
-)
+GENDER_OPTIONS: Dict[str, Any] = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
 
 
 class Fun(Cog):
@@ -118,14 +102,10 @@ class Fun(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-        self.game_status: Dict[
-            int, bool
-        ] = {}  # A variable to store the game status: either running or not running.
+        self.game_status: Dict[int, bool] = {}  # A variable to store the game status: either running or not running.
         self.game_owners: Dict[
             int, discord.Member
-        ] = (
-            {}
-        )  # A variable to store the person's ID who started the quiz game in a channel.
+        ] = {}  # A variable to store the person's ID who started the quiz game in a channel.
         with open(Path(r"extra/ryanzec_colours.json")) as f:
             self.colour_mapping: dict = json.load(f)
             del self.colour_mapping["_"]  # Delete source credit entry
@@ -133,9 +113,7 @@ class Fun(Cog):
         self.question_limit = 0
         self.games: Dict[int, AnagramGame] = {}
 
-        self.player_scores = defaultdict(
-            int
-        )  # A variable to store all player's scores for a bot session.
+        self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
         self.game_player_scores: Dict[
             int, Dict[discord.Member, int]
         ] = {}  # A variable to store temporary game player's scores.
@@ -154,9 +132,7 @@ class Fun(Cog):
 
         self.ON_TESTING = False
 
-    async def send_colour_response(
-        self, ctx: Context, rgb: Tuple[int, int, int]
-    ) -> None:
+    async def send_colour_response(self, ctx: Context, rgb: Tuple[int, int, int]) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
         try:
@@ -202,9 +178,7 @@ class Fun(Cog):
 
         colour_embed.set_thumbnail(url="attachment://colour.png")
 
-        msg: Optional[discord.Message] = await ctx.send(
-            file=thumbnail_file, embed=colour_embed
-        )
+        msg: Optional[discord.Message] = await ctx.send(file=thumbnail_file, embed=colour_embed)
 
         assert msg is not None
 
@@ -212,19 +186,13 @@ class Fun(Cog):
             await msg.add_reaction("\N{HAMMER AND PICK}")
 
         def check(r: discord.Reaction, u: discord.User) -> bool:
-            return (
-                u.id == ctx.author.id
-                and str(r.emoji) == "\N{HAMMER AND PICK}"
-                and r.message.id == msg.id
-            )
+            return u.id == ctx.author.id and str(r.emoji) == "\N{HAMMER AND PICK}" and r.message.id == msg.id
 
         try:
             await ctx.wait_for("reaction_add", timeout=30, check=check)
             res = await ctx.prompt("Do you want to create a role of that color?")
             if res and colour_embed.title is not None:
-                await self._create_role_on_clr(
-                    ctx=ctx, rgb=rgb, color_name=colour_embed.title
-                )
+                await self._create_role_on_clr(ctx=ctx, rgb=rgb, color_name=colour_embed.title)
             else:
                 return
         except asyncio.TimeoutError:
@@ -285,11 +253,7 @@ class Fun(Cog):
                 choices=self.colour_mapping.values(),
                 score_cutoff=80,
             )
-            colour_name = [
-                name
-                for name, hex_code in self.colour_mapping.items()
-                if hex_code == match
-            ][0]
+            colour_name = [name for name, hex_code in self.colour_mapping.items() if hex_code == match][0]
         except TypeError:
             colour_name = None
         return colour_name
@@ -326,18 +290,14 @@ class Fun(Cog):
             name=f"You've guessed `{user_guess}` so far.",
             value="Guess the word by sending a message with a letter!",
         )
-        hangman_embed.set_footer(
-            text=f"Tries remaining: {tries} | You have 60s to guess."
-        )
+        hangman_embed.set_footer(text=f"Tries remaining: {tries} | You have 60s to guess.")
         return hangman_embed
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="fun", id=892432619374014544)
 
-    async def _get_discord_message(
-        self, ctx: Context, text: str
-    ) -> Union[discord.Message, str, None]:
+    async def _get_discord_message(self, ctx: Context, text: str) -> Union[discord.Message, str, None]:
         """
         Attempts to convert a given `text` to a discord Message object and return it.
         Conversion will succeed if given a discord Message ID or link.
@@ -350,19 +310,14 @@ class Fun(Cog):
             return msg if msg is not None else text  # type: ignore
         return msg
 
-    async def _get_text_and_embed(
-        self, ctx: Context, text: str
-    ) -> Tuple[str, Optional[discord.Embed]]:
+    async def _get_text_and_embed(self, ctx: Context, text: str) -> Tuple[str, Optional[discord.Embed]]:
         embed = None
 
         assert isinstance(ctx.author, discord.Member)
 
         msg = await self._get_discord_message(ctx, text)
         # Ensure the user has read permissions for the channel the message is in
-        if (
-            isinstance(msg, discord.Message)
-            and msg.channel.permissions_for(ctx.author).read_messages
-        ):
+        if isinstance(msg, discord.Message) and msg.channel.permissions_for(ctx.author).read_messages:
             text = msg.clean_content
             # Take first embed because we can't send multiple embeds
             if msg.embeds:
@@ -408,14 +363,10 @@ class Fun(Cog):
         wiki_questions = []
         # trivia_quiz.json follows a pattern, every new category starts with the next century.
         start_id = 501
-        yesterday = datetime.datetime.strftime(
-            datetime.datetime.now() - datetime.timedelta(1), "%Y/%m/%d"
-        )
+        yesterday = datetime.datetime.strftime(datetime.datetime.now() - datetime.timedelta(1), "%Y/%m/%d")
 
         while error_fetches < MAX_ERROR_FETCH_TRIES:
-            async with self.bot.http_session.get(
-                url=WIKI_FEED_API_URL.format(date=yesterday)
-            ) as r:
+            async with self.bot.http_session.get(url=WIKI_FEED_API_URL.format(date=yesterday)) as r:
                 if r.status != 200:
                     error_fetches += 1
                     continue
@@ -486,9 +437,7 @@ class Fun(Cog):
         embed.colour = Colours.soft_red
 
         if comic and (comic := re.match(COMIC_FORMAT, comic)) is None:
-            embed.description = (
-                "Comic parameter should either be an integer or 'latest'."
-            )
+            embed.description = "Comic parameter should either be an integer or 'latest'."
             await ctx.send(embed=embed)
             return
 
@@ -497,16 +446,12 @@ class Fun(Cog):
         if comic == "latest":
             info = self.latest_comic_info
         else:
-            async with self.bot.http_session.get(
-                f"{BASE_URL}/{comic}/info.0.json"
-            ) as resp:
+            async with self.bot.http_session.get(f"{BASE_URL}/{comic}/info.0.json") as resp:
                 if resp.status == 200:
                     info = await resp.json()
                 else:
                     embed.title = f"XKCD comic #{comic}"
-                    embed.description = (
-                        f"{resp.status}: Could not retrieve xkcd comic #{comic}."
-                    )
+                    embed.description = f"{resp.status}: Could not retrieve xkcd comic #{comic}."
                     await ctx.send(embed=embed)
                     return
 
@@ -582,13 +527,9 @@ class Fun(Cog):
             return
 
     async def __issue_trivia_token(self, ctx: Context) -> Optional[str]:
-        request_token = await self.bot.http_session.get(
-            "https://opentdb.com/api_token.php?command=request"
-        )
+        request_token = await self.bot.http_session.get("https://opentdb.com/api_token.php?command=request")
         if request_token.status != 200:
-            await ctx.send(
-                f"{ctx.author.mention} Could not get a token from the API. Please try again later"
-            )
+            await ctx.send(f"{ctx.author.mention} Could not get a token from the API. Please try again later")
             return None
         _data = await request_token.json()
         token = _data["token"]
@@ -603,9 +544,7 @@ class Fun(Cog):
                 view=ctx.send_view(label=f"Sent from {ctx.guild}"),
             )
         except discord.Forbidden:
-            await ctx.send(
-                f"{ctx.author.mention} Could not send you a message. Please check your privacy settings."
-            )
+            await ctx.send(f"{ctx.author.mention} Could not send you a message. Please check your privacy settings.")
             return None
 
         return token
@@ -665,16 +604,12 @@ class Fun(Cog):
             },
         )
         if res.status != 200:
-            return await ctx.error(
-                f"{ctx.author.mention} Could not get a question from the API. Please try again later"
-            )
+            return await ctx.error(f"{ctx.author.mention} Could not get a question from the API. Please try again later")
 
         data = await res.json()
         if data["response_code"] in {3, 4}:
             # token expired or invalid
-            return await ctx.error(
-                f"{ctx.author.mention} Token expired or invalid. Please try again."
-            )
+            return await ctx.error(f"{ctx.author.mention} Token expired or invalid. Please try again.")
 
         if data["response_code"] in {1, 2}:
             # invalid parameter(s) or no questions found
@@ -733,17 +668,13 @@ class Fun(Cog):
                     break
 
                 embed = discord.Embed(
-                    title="Correct answere is `{}`".format(
-                        question_data["correct_answer"]
-                    ),
+                    title="Correct answere is `{}`".format(question_data["correct_answer"]),
                 )
                 await ctx.send(embed=embed)
                 continue
 
             embed: discord.Embed = discord.Embed(
-                title="You got it! The correct answer is `{}`".format(
-                    question_data["correct_answer"]
-                )
+                title="You got it! The correct answer is `{}`".format(question_data["correct_answer"])
             )
             if ctx.channel.id in self.game_player_scores:
                 if msg.author in self.game_player_scores[ctx.channel.id]:
@@ -759,15 +690,11 @@ class Fun(Cog):
                 self.player_scores[msg.author] = 100
 
             await ctx.send(embed=embed)
-            await ctx.send(
-                f"{msg.author.mention} got the correct answer :tada: 100 points!"
-            )
+            await ctx.send(f"{msg.author.mention} got the correct answer :tada: 100 points!")
             await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
             await ctx.release()
         else:
-            await self.declare_winner(
-                ctx.channel, self.game_player_scores[ctx.channel.id]
-            )
+            await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
 
         self.game_status[ctx.channel.id] = False
         self.game_player_scores[ctx.channel.id] = {}
@@ -785,17 +712,11 @@ class Fun(Cog):
         )
         data = await res.json()
         if data is None:
-            await ctx.error(
-                f"{ctx.author.mention} Could not reset token. Please try again later"
-            )
+            await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
         if data["response_code"] == 0:
-            await ctx.send(
-                f"{ctx.author.mention} Token reset successfully. You can now use it in the quiz."
-            )
+            await ctx.send(f"{ctx.author.mention} Token reset successfully. You can now use it in the quiz.")
         else:
-            await ctx.error(
-                f"{ctx.author.mention} Could not reset token. Please try again later"
-            )
+            await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
 
     @triva_quiz.command(name="new_token", aliases=["new", "new-token", "token"])
     async def new_trivia_token(self, ctx: Context) -> None:
@@ -856,8 +777,7 @@ class Fun(Cog):
             if questions > topic_length:
                 await ctx.send(
                     embed=self.make_error_embed(
-                        f"This category only has {topic_length} questions. "
-                        "Please input a lower value!"
+                        f"This category only has {topic_length} questions. " "Please input a lower value!"
                     )
                 )
                 return
@@ -890,9 +810,7 @@ class Fun(Cog):
             # Exit quiz if number of questions for a round are already sent.
             if len(done_questions) == self.question_limit and hint_no == 0:
                 await ctx.send("The round has ended.")
-                await self.declare_winner(
-                    ctx.channel, self.game_player_scores[ctx.channel.id]
-                )
+                await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 self.game_status[ctx.channel.id] = False
                 del self.game_owners[ctx.channel.id]
@@ -913,15 +831,11 @@ class Fun(Cog):
                 if "dynamic_id" not in question_dict:
                     quiz_entry = QuizEntry(
                         question_dict["question"],
-                        quiz_answers
-                        if isinstance(quiz_answers := question_dict["answer"], list)
-                        else [quiz_answers],
+                        quiz_answers if isinstance(quiz_answers := question_dict["answer"], list) else [quiz_answers],
                         STANDARD_VARIATION_TOLERANCE,
                     )
                 else:
-                    format_func = DYNAMIC_QUESTIONS_FORMAT_FUNCS[
-                        question_dict["dynamic_id"]
-                    ]
+                    format_func = DYNAMIC_QUESTIONS_FORMAT_FUNCS[question_dict["dynamic_id"]]
                     quiz_entry = format_func(
                         question_dict["question"],
                         question_dict["answer"],
@@ -940,15 +854,12 @@ class Fun(Cog):
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and any(
-                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower())
-                    > quiz_entry.var_tol
+                    rapidfuzz.fuzz.ratio(answer.lower(), m.content.lower()) > quiz_entry.var_tol
                     for answer in quiz_entry.answers
                 )
 
             try:
-                msg: discord.Message = await ctx.wait_for(
-                    "message", check=check, timeout=10
-                )
+                msg: discord.Message = await ctx.wait_for("message", check=check, timeout=10)
             except asyncio.TimeoutError:
                 # In case of TimeoutError and the game has been stopped, then do nothing.
                 if not self.game_status[ctx.channel.id]:
@@ -985,9 +896,7 @@ class Fun(Cog):
 
                     hint_no = 0  # Reset the hint counter so that on the next round, it's in the initial state
 
-                    await self.send_score(
-                        ctx.channel, self.game_player_scores[ctx.channel.id]
-                    )
+                    await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
                     await ctx.release(2)
             else:
                 if self.game_status[ctx.channel.id] is False:
@@ -1007,9 +916,7 @@ class Fun(Cog):
 
                 hint_no = 0
 
-                await ctx.send(
-                    f"{msg.author.mention} got the correct answer :tada: {points} points!"
-                )
+                await ctx.send(f"{msg.author.mention} got the correct answer :tada: {points} points!")
 
                 await self.send_answer(
                     ctx.channel,
@@ -1018,18 +925,14 @@ class Fun(Cog):
                     question_dict,
                     self.question_limit - len(done_questions),
                 )
-                await self.send_score(
-                    ctx.channel, self.game_player_scores[ctx.channel.id]
-                )
+                await self.send_score(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 await ctx.release(2)
             await ctx.release()
 
     def make_start_embed(self, category: str) -> discord.Embed:
         """Generate a starting/introduction embed for the quiz."""
-        rules = "\n".join(
-            [f"{index}: {rule}" for index, rule in enumerate(RULES, start=1)]
-        )
+        rules = "\n".join([f"{index}: {rule}" for index, rule in enumerate(RULES, start=1)])
 
         start_embed = discord.Embed(
             title="Quiz game Starting!!",
@@ -1075,8 +978,7 @@ class Fun(Cog):
         filtered_words = [
             word
             for word in ALL_WORDS
-            if min_length < len(word) < max_length
-            and min_unique_letters < len(set(word)) < max_unique_letters
+            if min_length < len(word) < max_length and min_unique_letters < len(set(word)) < max_unique_letters
         ]
 
         if not filtered_words:
@@ -1085,9 +987,7 @@ class Fun(Cog):
                 description="No words could be found that fit all filters specified.",
                 color=Colours.soft_red,
             )
-            await ctx.send(
-                content=f"{ctx.author.mention}", embed=filter_not_found_embed
-            )
+            await ctx.send(content=f"{ctx.author.mention}", embed=filter_not_found_embed)
             return
 
         word = choice(filtered_words)
@@ -1103,9 +1003,7 @@ class Fun(Cog):
 
         original_message: discord.Message = await ctx.send(
             content=f"{ctx.author.mention}",
-            embed=discord.Embed(
-                title="Hangman", description="Loading game...", color=Colours.soft_green
-            ),
+            embed=discord.Embed(title="Hangman", description="Loading game...", color=Colours.soft_green),
         )
 
         # Game loop
@@ -1117,18 +1015,14 @@ class Fun(Cog):
             )
 
             try:
-                message: discord.Message = await ctx.wait_for(
-                    "message", timeout=60.0, check=check
-                )
+                message: discord.Message = await ctx.wait_for("message", timeout=60.0, check=check)
             except asyncio.TimeoutError:
                 timeout_embed = discord.Embed(
                     title=choice(NEGATIVE_REPLIES),
                     description="Looks like the bot timed out! You must send a letter within 60 seconds.",
                     color=Colours.soft_red,
                 )
-                await original_message.edit(
-                    content=f"{ctx.author.mention}", embed=timeout_embed
-                )
+                await original_message.edit(content=f"{ctx.author.mention}", embed=timeout_embed)
                 return
 
             # If the user enters a capital letter as their guess, it is automatically converted to a lowercase letter
@@ -1140,9 +1034,7 @@ class Fun(Cog):
                     description="You can only send one letter at a time, try again!",
                     color=Colours.dark_green,
                 )
-                await ctx.send(
-                    content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4
-                )
+                await ctx.send(content=f"{ctx.author.mention}", embed=letter_embed, delete_after=4)
                 continue
 
             # Checks for repeated guesses
@@ -1161,16 +1053,9 @@ class Fun(Cog):
 
             # Checks for correct guesses from the user
             if normalized_content in word:
-                positions = {
-                    idx
-                    for idx, letter in enumerate(pretty_word)
-                    if letter == normalized_content
-                }
+                positions = {idx for idx, letter in enumerate(pretty_word) if letter == normalized_content}
                 user_guess = "".join(
-                    [
-                        normalized_content if index in positions else dash
-                        for index, dash in enumerate(user_guess)
-                    ]
+                    [normalized_content if index in positions else dash for index, dash in enumerate(user_guess)]
                 )
 
             else:
@@ -1193,9 +1078,7 @@ class Fun(Cog):
             guessed_letters.add(normalized_content)
 
         # The loop exited meaning that the user has guessed the word
-        await original_message.edit(
-            content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess)
-        )
+        await original_message.edit(content=f"{ctx.author.mention}", embed=self.create_embed(tries, user_guess))
         win_embed = discord.Embed(
             title="You won!",
             description=f"The word was `{word}`.",
@@ -1218,14 +1101,10 @@ class Fun(Cog):
                     self.game_player_scores[ctx.channel.id] = {}
 
                     await ctx.send("Quiz stopped.")
-                    await self.declare_winner(
-                        ctx.channel, self.game_player_scores[ctx.channel.id]
-                    )
+                    await self.declare_winner(ctx.channel, self.game_player_scores[ctx.channel.id])
 
                 else:
-                    await ctx.send(
-                        f"{ctx.author.mention}, you are not authorised to stop this game :ghost:!"
-                    )
+                    await ctx.send(f"{ctx.author.mention}, you are not authorised to stop this game :ghost:!")
             else:
                 await ctx.send("No quiz running.")
         except KeyError:
@@ -1250,9 +1129,7 @@ class Fun(Cog):
         )
         embed.set_thumbnail(url=TRIVIA_QUIZ_ICON)
 
-        sorted_dict = sorted(
-            player_data.items(), key=operator.itemgetter(1), reverse=True
-        )
+        sorted_dict = sorted(player_data.items(), key=operator.itemgetter(1), reverse=True)
         for item in sorted_dict:
             embed.description += f"{item[0]}: {item[1]}\n"  # type: ignore
 
@@ -1294,14 +1171,10 @@ class Fun(Cog):
             description="",
         )
 
-        embed.set_footer(
-            text="If a category is not chosen, a random one will be selected."
-        )
+        embed.set_footer(text="If a category is not chosen, a random one will be selected.")
 
         for cat, description in self.categories.items():
-            embed.description += (
-                f"**- {cat.capitalize()}**\n" f"{description.capitalize()}\n"
-            )
+            embed.description += f"**- {cat.capitalize()}**\n" f"{description.capitalize()}\n"
 
         return embed
 
@@ -1321,8 +1194,7 @@ class Fun(Cog):
         embed = discord.Embed(
             color=Colours.bright_green,
             title=(
-                ("You got it! " if answer_is_correct else "")
-                + f"The correct answer{plurality} **`{', '.join(answers)}`**\n"
+                ("You got it! " if answer_is_correct else "") + f"The correct answer{plurality} **`{', '.join(answers)}`**\n"
             ),
             description="",
         )
@@ -1331,9 +1203,7 @@ class Fun(Cog):
         if info:
             embed.description += f"**Information**\n{info}\n\n"
 
-        embed.description += (
-            "Let's move to the next question." if q_left > 0 else ""
-        ) + f"\nRemaining questions: {q_left}"
+        embed.description += ("Let's move to the next question." if q_left > 0 else "") + f"\nRemaining questions: {q_left}"
         await channel.send(embed=embed)
 
     @commands.command(name="8ball")
@@ -1341,9 +1211,7 @@ class Fun(Cog):
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question: commands.clean_content):
         """8ball Magic, nothing to say much"""
-        await ctx.reply(
-            f"Question: **{question}**\nAnswer: **{random.choice(RESPONSES)}**"
-        )
+        await ctx.reply(f"Question: **{question}**\nAnswer: **{random.choice(RESPONSES)}**")
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1354,9 +1222,7 @@ class Fun(Cog):
         options = options.split(",")
         await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
 
-    async def _create_role_on_clr(
-        self, *, ctx: Context, rgb: Tuple[int, int, int], color_name: str
-    ):
+    async def _create_role_on_clr(self, *, ctx: Context, rgb: Tuple[int, int, int], color_name: str):
         if ctx.author.guild_permissions.manage_roles:
             await ctx.guild.create_role(
                 name=f"COLOR {color_name.upper()}",
@@ -1366,9 +1232,7 @@ class Fun(Cog):
             )
             await ctx.tick()
         else:
-            await ctx.error(
-                f"{ctx.author.mention} you don't have permission to create role"
-            )
+            await ctx.error(f"{ctx.author.mention} you don't have permission to create role")
 
     @commands.group(aliases=("color",), invoke_without_command=True)
     async def colour(self, ctx: Context, *, colour_input: Optional[str] = None) -> None:
@@ -1400,9 +1264,7 @@ class Fun(Cog):
     @colour.command()
     async def hsv(self, ctx: Context, hue: int, saturation: int, value: int) -> None:
         """Create an embed from an HSV input."""
-        if (hue not in range(361)) or any(
-            c not in range(101) for c in (saturation, value)
-        ):
+        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, value}`."
@@ -1411,13 +1273,9 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
-    async def hsl(
-        self, ctx: Context, hue: int, saturation: int, lightness: int
-    ) -> None:
+    async def hsl(self, ctx: Context, hue: int, saturation: int, lightness: int) -> None:
         """Create an embed from an HSL input."""
-        if (hue not in range(361)) or any(
-            c not in range(101) for c in (saturation, lightness)
-        ):
+        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, lightness}`."
@@ -1426,9 +1284,7 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
-    async def cmyk(
-        self, ctx: Context, cyan: int, magenta: int, yellow: int, key: int
-    ) -> None:
+    async def cmyk(self, ctx: Context, cyan: int, magenta: int, yellow: int, key: int) -> None:
         """Create an embed from a CMYK input."""
         if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
             raise commands.BadArgument(
@@ -1445,9 +1301,7 @@ class Fun(Cog):
         if hex_code[0] != "#":
             hex_code = f"#{hex_code}"
 
-        if len(hex_code) not in (4, 5, 7, 9) or any(
-            digit not in string.hexdigits for digit in hex_code[1:]
-        ):
+        if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
             raise commands.BadArgument(
                 message=f"Cannot convert `{hex_code}` to a recognizable Hex format. "
                 "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
@@ -1455,9 +1309,7 @@ class Fun(Cog):
 
         hex_tuple = ImageColor.getrgb(hex_code)
         if len(hex_tuple) == 4:
-            hex_tuple = hex_tuple[
-                :-1
-            ]  # Colour must be RGB. If RGBA, we remove the alpha value
+            hex_tuple = hex_tuple[:-1]  # Colour must be RGB. If RGBA, we remove the alpha value
         await self.send_colour_response(ctx, hex_tuple)
 
     @colour.command()
@@ -1495,9 +1347,7 @@ class Fun(Cog):
             sample_string_bytes = base64.b64decode(base64_bytes)
             sample_string = sample_string_bytes.decode("ascii")
         except (UnicodeEncodeError, UnicodeDecodeError, binascii.Error):
-            await ctx.send(
-                f"{ctx.author.mention} The string you entered is not valid Base64. Please try again."
-            )
+            await ctx.send(f"{ctx.author.mention} The string you entered is not valid Base64. Please try again.")
             return
 
         await ctx.reply(f"{ctx.author.mention} {sample_string}")
@@ -1533,9 +1383,7 @@ class Fun(Cog):
         ):
             return
         fact_url = f"https://some-random-api.ml/facts/{animal}"
-        image_url = (
-            f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
-        )
+        image_url = f"https://some-random-api.ml/img/{'birb' if animal == 'bird' else animal}"
 
         async with request("GET", image_url, headers={}) as response:
             if response.status == 200:
@@ -1555,9 +1403,7 @@ class Fun(Cog):
                     embed.set_image(url=image_link)
                     return await ctx.reply(embed=embed)
 
-                return await ctx.reply(
-                    f"{ctx.author.mention} API returned a {response.status} status."
-                )
+                return await ctx.reply(f"{ctx.author.mention} API returned a {response.status} status.")
 
             return await ctx.reply(
                 f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
@@ -1570,9 +1416,7 @@ class Fun(Cog):
         """Insult your enemy, Ugh!"""
         member = member or ctx.author
 
-        response = await self.bot.http_session.get(
-            "https://insult.mattbas.org/api/insult"
-        )
+        response = await self.bot.http_session.get("https://insult.mattbas.org/api/insult")
         insult = await response.text()
         await ctx.reply(f"**{member.name}** {insult}")
 
@@ -1590,17 +1434,13 @@ class Fun(Cog):
         ) as itssostupid:  # get users avatar as png with 1024 size
             imageData = io.BytesIO(await itssostupid.read())  # read the image/bytes
 
-            await ctx.reply(
-                file=discord.File(imageData, "itssostupid.png")
-            )  # replying the file
+            await ctx.reply(file=discord.File(imageData, "itssostupid.png"))  # replying the file
 
     @commands.command(name="meme")
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def meme(
-        self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"
-    ):
+    async def meme(self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"):
         """Random meme generator."""
         link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(subreddit, count)
 
@@ -1621,9 +1461,7 @@ class Fun(Cog):
             ups = res["ups"]
             sub = res["subreddit"]
 
-            embed = discord.Embed(
-                title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow()
-            )
+            embed = discord.Embed(title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow())
             embed.set_image(url=res["url"])
             embed.set_footer(text=f"Upvotes: {ups}")
             return embed
@@ -1697,9 +1535,7 @@ class Fun(Cog):
             headers=HEADER,
         )
         if res.status != 200:
-            return await ctx.error(
-                f"{ctx.author.mention} somthing not right! Please try again later or check the `model`"
-            )
+            return await ctx.error(f"{ctx.author.mention} somthing not right! Please try again later or check the `model`")
 
         data = await res.json()
         for i in data.get("translations", []):
@@ -1735,9 +1571,7 @@ class Fun(Cog):
         else:
             return
         if not res["list"]:
-            return await ctx.reply(
-                f"{ctx.author.mention} **{t}** means nothings. Try something else"
-            )
+            return await ctx.reply(f"{ctx.author.mention} **{t}** means nothings. Try something else")
         em_list = []
         for i in range(len(res["list"])):
             _def = res["list"][i]["definition"]
@@ -1755,9 +1589,7 @@ class Fun(Cog):
             )
             embed.add_field(name="Example", value=f"{example[:250:]}...")
             embed.set_author(name=f"Author: {author}")
-            embed.set_footer(
-                text=f"\N{THUMBS UP SIGN} {thumbs_up} \N{BULLET} \N{THUMBS DOWN SIGN} {thumbs_down}"
-            )
+            embed.set_footer(text=f"\N{THUMBS UP SIGN} {thumbs_up} \N{BULLET} \N{THUMBS DOWN SIGN} {thumbs_down}")
             em_list.append(embed)
 
         await PaginationView(em_list).start(ctx=ctx)
@@ -1777,9 +1609,7 @@ class Fun(Cog):
         ) as ytcomment:  # get users avatar as png with 1024 size
             imageData = io.BytesIO(await ytcomment.read())  # read the image/bytes
 
-            await ctx.reply(
-                file=discord.File(imageData, "ytcomment.png")
-            )  # replying the file
+            await ctx.reply(file=discord.File(imageData, "ytcomment.png"))  # replying the file
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -1900,9 +1730,7 @@ class Fun(Cog):
         """To understand HTTP Errors, try: `http 404`"""
         if not ctx.invoked_subcommand:
             await ctx.reply(
-                embed=discord.Embed(
-                    timestamp=discord.utils.utcnow(), color=ctx.author.color
-                )
+                embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
                 .set_image(url=f"https://http.cat/{status_code}")
                 .set_footer(text=f"{ctx.author}")
             )
@@ -1914,9 +1742,7 @@ class Fun(Cog):
     async def http_dog(self, ctx: Context, *, status_code: int):
         """To understand HTTP Errors, in dog format"""
         await ctx.reply(
-            embed=discord.Embed(
-                timestamp=discord.utils.utcnow(), color=ctx.author.color
-            )
+            embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
             .set_image(url=f"https://httpstatusdogs.com/img/{status_code}.jpg")
             .set_footer(text=f"{ctx.author}")
         )
@@ -1925,18 +1751,12 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def shear(
-        self, ctx: Context, member: discord.Member = None, axis: str = None
-    ):
+    async def shear(self, ctx: Context, member: discord.Member = None, axis: str = None):
         """Shear image generation"""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url, "axis": axis or "X"}
-        r = await self.bot.http_session.get(
-            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
-        )
-        file_obj = discord.File(
-            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
-        )
+        r = await self.bot.http_session.get(f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif")
         await ctx.reply(file=file_obj)
 
     @commands.command()
@@ -1946,12 +1766,8 @@ class Fun(Cog):
     async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
         """ScrapBook Text image generation"""
         params = {"text": text[:20:]}
-        r = await self.bot.http_session.get(
-            f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params
-        )
-        file_obj = discord.File(
-            io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif"
-        )
+        r = await self.bot.http_session.get(f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params)
+        file_obj = discord.File(io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif")
         await ctx.reply(file=file_obj)
 
     @commands.command()
@@ -1960,9 +1776,7 @@ class Fun(Cog):
     @Context.with_type
     async def uwuify(self, ctx: Context, *, text: commands.clean_content):
         """Converts a given `text` into it's uwu equivalent."""
-        conversion_func = functools.partial(
-            replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True
-        )
+        conversion_func = functools.partial(replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True)
         text, embed = await self._get_text_and_embed(ctx, text)
         # Convert embed if it exists
         if embed is not None:
@@ -2001,9 +1815,7 @@ class Fun(Cog):
             "\N{HUNDRED POINTS SYMBOL}",
             "\N{GEM STONE}",
         ]
-        e = discord.PartialEmoji(
-            name="SlotsEmoji", id=923478531873325076, animated=True
-        )
+        e = discord.PartialEmoji(name="SlotsEmoji", id=923478531873325076, animated=True)
         msg: discord.Message = await ctx.send(
             f"""{ctx.author.mention} your slots results:
 > {e} {e} {e}"""
@@ -2080,9 +1892,7 @@ class Fun(Cog):
         If no text is provided, the user's profile picture will be reversed.
         """
         if text:
-            await ctx.send(
-                f"> {text[::-1]}", allowed_mentions=discord.AllowedMentions.none()
-            )
+            await ctx.send(f"> {text[::-1]}", allowed_mentions=discord.AllowedMentions.none())
             return
 
         async with ctx.typing():
@@ -2094,9 +1904,7 @@ class Fun(Cog):
             image_bytes = await user.display_avatar.replace(size=1024).read()
             filename = file_safe_name("reverse_avatar", ctx.author.display_name)
 
-            file = await self.bot.func(
-                PfpEffects.apply_effect, image_bytes, PfpEffects.flip_effect, filename
-            )
+            file = await self.bot.func(PfpEffects.apply_effect, image_bytes, PfpEffects.flip_effect, filename)
 
             embed = discord.Embed(
                 title="Your reversed avatar.",
@@ -2172,9 +1980,7 @@ class Fun(Cog):
         await ctx.send(file=file, embed=embed)
 
     @staticmethod
-    async def send_pride_image(
-        ctx: Context, image_bytes: bytes, pixels: int, flag: str, option: str
-    ):
+    async def send_pride_image(ctx: Context, image_bytes: bytes, pixels: int, flag: str, option: str):
         """Gets and sends the image in an embed. Used by the pride commands."""
         async with ctx.typing():
             file_name = file_safe_name("pride_avatar", ctx.author.display_name)
@@ -2280,9 +2086,7 @@ class Fun(Cog):
     async def activity(self, ctx: Context, *, name: str):
         """To create embed activity within your server"""
         if not ctx.author.voice:
-            return await ctx.error(
-                f"{ctx.author.mention} you must be in the voice channel to use the activity"
-            )
+            return await ctx.error(f"{ctx.author.mention} you must be in the voice channel to use the activity")
 
         INT = EmbeddedActivity.get(name.lower().replace(" ", "_"))
         if INT is None:
@@ -2314,9 +2118,7 @@ class Fun(Cog):
                 return
 
             if not 1 <= squares <= MAX_SQUARES:
-                raise commands.BadArgument(
-                    f"Squares must be a positive number less than or equal to {MAX_SQUARES:,}."
-                )
+                raise commands.BadArgument(f"Squares must be a positive number less than or equal to {MAX_SQUARES:,}.")
 
             sqrt = math.sqrt(squares)
 
@@ -2345,9 +2147,7 @@ class Fun(Cog):
                 title = "Your mosaic avatar"
                 description = f"Here is your avatar. I think it looks a bit *puzzling*\nMade with {squares} squares."
 
-            embed = discord.Embed(
-                title=title, description=description, colour=Colours.blue
-            )
+            embed = discord.Embed(title=title, description=description, colour=Colours.blue)
 
             embed.set_image(url=f"attachment://{file_name}")
             embed.set_footer(
@@ -2428,9 +2228,7 @@ class Fun(Cog):
     @commands.command(name="virus", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def fun_animation_virus(
-        self, ctx: Context, user: discord.Member = None, virus: str = "trojan"
-    ):
+    async def fun_animation_virus(self, ctx: Context, user: discord.Member = None, virus: str = "trojan"):
         """Insert a virus to yourself or someone else"""
         m = await ctx.send("...")
         user = user or ctx.author
@@ -2576,15 +2374,11 @@ class Fun(Cog):
         ctx: Context,
     ):
         """Test your typing skills"""
-        confirm: discord.Message = await ctx.send(
-            f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start"
-        )
+        confirm: discord.Message = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
         def check1(r: discord.Reaction, u: discord.User):
-            return (
-                u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
-            )
+            return u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
         try:
             await ctx.wait_for("reaction_add", check=check1, timeout=60)
@@ -2593,9 +2387,7 @@ class Fun(Cog):
 
         line = random.choice(_random_sentences)
         main = "\u200b".join(line)
-        await ctx.send(
-            f"{ctx.author.mention} typing test started. Type the following phrase: ```ini\n[{main}]```"
-        )
+        await ctx.send(f"{ctx.author.mention} typing test started. Type the following phrase: ```ini\n[{main}]```")
 
         def check2(m: discord.Message) -> bool:
             return (
@@ -2607,9 +2399,7 @@ class Fun(Cog):
         ini = time.perf_counter()
 
         try:
-            msg: discord.Message = await ctx.wait_for(
-                "message", check=check2, timeout=300
-            )
+            msg: discord.Message = await ctx.wait_for("message", check=check2, timeout=300)
         except asyncio.TimeoutError:
             return await ctx.message.add_reaction("\N{ALARM CLOCK}")
         fin = time.perf_counter()
@@ -2619,9 +2409,7 @@ class Fun(Cog):
         accuracy = rapidfuzz.fuzz.ratio(msg.content, line)
         wpm = round(len(fakecontent.split(" ")) / (fin - ini) * 60, 2)
 
-        await ctx.database_game_update(
-            "typing_test", set={"speed": fin - ini, "accuracy": accuracy, "wpm": wpm}
-        )
+        await ctx.database_game_update("typing_test", set={"speed": fin - ini, "accuracy": accuracy, "wpm": wpm})
         await ctx.send(
             f"{ctx.author.mention} your accuracy is `{accuracy}`%. "
             f"You typed in `{round(fin - ini, 2)}` seconds. "
@@ -2636,15 +2424,11 @@ class Fun(Cog):
         """Reaction test, REACT AS FAST AS POSSIBLE"""
         EMOJIS: List[Emoji] = random.sample(EMOJI_DB, 5)
         emoji = random.choice(EMOJIS)
-        confirm: discord.Message = await ctx.send(
-            f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start."
-        )
+        confirm: discord.Message = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start.")
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
         def check_1(r: discord.Reaction, u: discord.User):
-            return (
-                u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
-            )
+            return u.id == ctx.author.id and str(r.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
         try:
             await ctx.wait_for("reaction_add", check=check_1, timeout=60)
@@ -2653,15 +2437,11 @@ class Fun(Cog):
 
         await ctx.bulk_add_reactions(confirm, *[e.emoji for e in EMOJIS])
         await ctx.release(random.uniform(1.5, 2.5))
-        await confirm.edit(
-            content=f"{ctx.author.mention} React as fast as possible on {emoji.emoji} **NOW**."
-        )
+        await confirm.edit(content=f"{ctx.author.mention} React as fast as possible on {emoji.emoji} **NOW**.")
 
         def check_2(reaction: discord.Reaction, user: discord.Member) -> bool:
             return (
-                (str(reaction.emoji) == emoji.emoji)
-                and (reaction.message.id == confirm.id)
-                and (user.id == ctx.author.id)
+                (str(reaction.emoji) == emoji.emoji) and (reaction.message.id == confirm.id) and (user.id == ctx.author.id)
             )
 
         start = time.perf_counter()

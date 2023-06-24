@@ -3,19 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 import time
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Coroutine,
-    Final,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Final, List, Optional, Set, Tuple, TypeVar, Union
 
 from pymongo.collection import Collection
 
@@ -134,14 +122,8 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
             else:
                 self.view.opened = None
 
-                if all(
-                    button.disabled
-                    for button in self.view.children
-                    if isinstance(button, discord.ui.Button)
-                ):
-                    await interaction.message.edit(
-                        content="Game Over, Congrats!", view=self.view
-                    )
+                if all(button.disabled for button in self.view.children if isinstance(button, discord.ui.Button)):
+                    await interaction.message.edit(content="Game Over, Congrats!", view=self.view)
                     await self.update_to_db()
                     return self.view.stop()
 
@@ -228,9 +210,7 @@ class MemoryView(BaseView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.ctx.author.id:
-            await interaction.response.send_message(
-                "You can't interact with this game!", ephemeral=True
-            )
+            await interaction.response.send_message("You can't interact with this game!", ephemeral=True)
             return False
         return True
 
@@ -279,9 +259,7 @@ class MemoryGame:
         if items is None:
             items = []
         self.embed_color = embed_color
-        self.embed = discord.Embed(
-            description="**Memory Game**", color=self.embed_color
-        )
+        self.embed = discord.Embed(description="**Memory Game**", color=self.embed_color)
         self.embed.add_field(name="\u200b", value="Moves: `0`")
 
         self.view = MemoryView(

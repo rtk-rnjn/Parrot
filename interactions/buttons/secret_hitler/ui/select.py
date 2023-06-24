@@ -46,9 +46,7 @@ class SelectUI(InputUI, Generic[T], metaclass=ABCMeta):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         player = self.game.game.get_player(interaction.user)
         if player is not self.target:
-            await interaction.response.send_message(
-                "You cannot make a selection.", ephemeral=True
-            )
+            await interaction.response.send_message("You cannot make a selection.", ephemeral=True)
             return False
         return True
 

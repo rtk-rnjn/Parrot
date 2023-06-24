@@ -10,9 +10,7 @@ from discord.ext.ipc.errors import (
 )
 from discord.ext.ipc.server import Server
 
-_VersionInfo = collections.namedtuple(
-    "_VersionInfo", "major minor micro release serial"
-)
+_VersionInfo = collections.namedtuple("_VersionInfo", "major minor micro release serial")
 
 __all__ = (
     "Client",

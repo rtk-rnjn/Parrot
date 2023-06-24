@@ -111,9 +111,7 @@ class MessageConstruct:
             return
 
         try:
-            message: discord.Message = await self.message.channel.fetch_message(
-                self.message.reference.message_id
-            )
+            message: discord.Message = await self.message.channel.fetch_message(self.message.reference.message_id)
         except (discord.NotFound, discord.HTTPException) as e:
             self.message.reference = ""
             if isinstance(e, discord.NotFound):
@@ -126,11 +124,7 @@ class MessageConstruct:
         if not message.content:
             message.content = "Click to see attachment"
 
-        attachment_icon = (
-            DiscordUtils.reference_attachment_icon
-            if message.embeds or message.attachments
-            else ""
-        )
+        attachment_icon = DiscordUtils.reference_attachment_icon if message.embeds or message.attachments else ""
 
         _, message_edited_at = self.set_time(message)
 
@@ -170,7 +164,9 @@ class MessageConstruct:
 
         if sticker_image_url.endswith(".json"):
             sticker = await self.message.stickers[0].fetch()
-            sticker_image_url = f"https://cdn.jsdelivr.net/gh/mahtoid/DiscordUtils@master/stickers/{sticker.pack_id}/{sticker.id}.gif"
+            sticker_image_url = (
+                f"https://cdn.jsdelivr.net/gh/mahtoid/DiscordUtils@master/stickers/{sticker.pack_id}/{sticker.id}.gif"
+            )
 
         self.message.content = await fill_out(
             self.guild,
@@ -221,8 +217,7 @@ class MessageConstruct:
             or self.message.reference != ""
             or self.previous_message.author.id != self.message.author.id
             or self.message.webhook_id is not None
-            or self.message.created_at
-            > (self.previous_message.created_at + timedelta(minutes=4))
+            or self.message.created_at > (self.previous_message.created_at + timedelta(minutes=4))
         )
 
     async def generate_message_divider(self, channel_audit=False):
@@ -234,9 +229,7 @@ class MessageConstruct:
                 return
 
             is_bot = _gather_user_bot(self.message.author)
-            avatar_url = (
-                self.message.author.display_avatar or DiscordUtils.default_avatar
-            )
+            avatar_url = self.message.author.display_avatar or DiscordUtils.default_avatar
 
             self.message_html += await fill_out(
                 self.guild,
@@ -322,9 +315,7 @@ class MessageConstruct:
 
     async def _gather_user_colour(self, author: discord.Member):
         member = await self._gather_member(author)
-        user_colour = (
-            member.colour if member and str(member.colour) != "#000000" else "#FFFFFF"
-        )
+        user_colour = member.colour if member and str(member.colour) != "#000000" else "#FFFFFF"
         return f"color: {user_colour};"
 
     async def _gather_user_icon(self, author: discord.Member):
@@ -342,9 +333,7 @@ class MessageConstruct:
     def set_time(self, message: Optional[discord.Message] = None):
         message = message or self.message
         created_at_str = self.to_local_time_str(message.created_at)
-        edited_at_str = (
-            self.to_local_time_str(message.edited_at) if message.edited_at else ""
-        )
+        edited_at_str = self.to_local_time_str(message.edited_at) if message.edited_at else ""
 
         return created_at_str, edited_at_str
 

@@ -64,9 +64,7 @@ def solve_phrase(phrase):
             return OPERATIONS[phrase[0]](solve_phrase(phrase[1]))
         # double operand operation
         else:
-            return OPERATIONS[phrase[1]](
-                solve_phrase(phrase[0]), solve_phrase([phrase[2]])
-            )
+            return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
 
 
 def group_operations(phrase):
@@ -126,9 +124,7 @@ class Truths:
 
         # used for parsing logical operations and parenthesis
         self.to_match = pyparsing.Word(pyparsing.alphanums)
-        for item in itertools.chain(
-            self.bases, [key for key, val in OPERATIONS.items()]
-        ):
+        for item in itertools.chain(self.bases, [key for key, val in OPERATIONS.items()]):
             self.to_match |= item
         self.parens = pyparsing.nestedExpr("(", ")", content=self.to_match)
 
@@ -141,9 +137,7 @@ class Truths:
         eval_phrases = []
         for phrase in self.phrases:
             # substitute bases in phrase with boolean values as strings
-            phrase = self.p.sub(
-                lambda match: str(bools[match.group(0)]), phrase
-            )  # NOQA long line
+            phrase = self.p.sub(lambda match: str(bools[match.group(0)]), phrase)  # NOQA long line
             # wrap phrase in parens
             phrase = "(" + phrase + ")"
             # parse the expression using pyparsing
@@ -190,8 +184,7 @@ class Truths:
             headers="keys",
             tablefmt=table_format,
             showindex=index,
-            colalign=[align]
-            * (len(Truths.as_pandas(self).columns) + index),  # NOQA long
+            colalign=[align] * (len(Truths.as_pandas(self).columns) + index),  # NOQA long
         )
 
     def valuation(self, col_number=-1):

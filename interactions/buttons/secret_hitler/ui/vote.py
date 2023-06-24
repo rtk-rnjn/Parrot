@@ -43,9 +43,7 @@ class VoteUI(InputUI):
     def content(self) -> str:
         if not isinstance(self.game.game.state, VoteGameState):
             raise AssertionError
-        return format_list(
-            self.game.game.state.tooltip + "\nCurrently: {0} {1} voted.", *self.votes
-        )
+        return format_list(self.game.game.state.tooltip + "\nCurrently: {0} {1} voted.", *self.votes)
 
     @property
     def votes(self) -> Dict[Player[User], bool]:
@@ -56,14 +54,10 @@ class VoteUI(InputUI):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         player = self.game.game.get_player(interaction.user)
         if player not in self.voters:
-            await interaction.response.send_message(
-                "You cannot participate in this vote.", ephemeral=True
-            )
+            await interaction.response.send_message("You cannot participate in this vote.", ephemeral=True)
             return False
         if player in self.votes:
-            await interaction.response.send_message(
-                "You have already voted.", ephemeral=True
-            )
+            await interaction.response.send_message("You have already voted.", ephemeral=True)
             return False
         return True
 
@@ -81,13 +75,9 @@ class VoteUI(InputUI):
         await interaction.message.edit(content=self.content, view=self)
 
     @discord.ui.button(label="ja!", style=discord.ButtonStyle.danger)
-    async def ja(
-        self, item: discord.ui.Button, interation: discord.Interaction
-    ) -> None:
+    async def ja(self, item: discord.ui.Button, interation: discord.Interaction) -> None:
         return await self.vote(interation, True)
 
     @discord.ui.button(label="nein!", style=discord.ButtonStyle.primary)
-    async def nein(
-        self, item: discord.ui.Button, interation: discord.Interaction
-    ) -> None:
+    async def nein(self, item: discord.ui.Button, interation: discord.Interaction) -> None:
         return await self.vote(interation, False)

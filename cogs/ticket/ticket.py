@@ -21,9 +21,7 @@ class Ticket(Cog):
 
     @commands.command(hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(
-        manage_channels=True, embed_links=True, manage_roles=True
-    )
+    @commands.bot_has_permissions(manage_channels=True, embed_links=True, manage_roles=True)
     @Context.with_type
     async def new(self, ctx: Context, *, args: Optional[str] = None):
         """This creates a new ticket.

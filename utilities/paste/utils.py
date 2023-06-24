@@ -34,17 +34,13 @@ class _MissingSentinel:
 MISSING: Any = _MissingSentinel()
 
 
-def require_authentication(
-    func: Callable[Concatenate[C, B], T]
-) -> Callable[Concatenate[C, B], T]:
+def require_authentication(func: Callable[Concatenate[C, B], T]) -> Callable[Concatenate[C, B], T]:
     """A decorator to assure the `self` parameter of decorated methods has authentication set."""
 
     @wraps(func)
     def wrapper(item: C, *args: B.args, **kwargs: B.kwargs) -> T:
         if not item.http._authenticated:
-            raise AuthenticationRequired(
-                "This method requires you to be authenticated to the API."
-            )
+            raise AuthenticationRequired("This method requires you to be authenticated to the API.")
 
         return func(item, *args, **kwargs)
 

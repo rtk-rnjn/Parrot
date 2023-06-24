@@ -37,9 +37,7 @@ class ViewMenu(old_menus.Menu):
 
         view = discord.ui.View(timeout=self.timeout)
         for i, (emoji, button) in enumerate(self.buttons.items()):
-            item = discord.ui.Button(
-                style=discord.ButtonStyle.secondary, emoji=emoji, row=i // 5
-            )
+            item = discord.ui.Button(style=discord.ButtonStyle.secondary, emoji=emoji, row=i // 5)
             item.callback = make_callback(button)
             view.add_item(item)
 

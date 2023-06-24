@@ -63,8 +63,7 @@ WIKI_PARAMS = {
     "origin": "*",
 }
 WIKI_THUMBNAIL = (
-    "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg"
-    "/330px-Wikipedia-logo-v2.svg.png"
+    "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg" "/330px-Wikipedia-logo-v2.svg.png"
 )
 WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
 WIKI_SEARCH_RESULT = "**[{name}]({url})**\n{description}\n"
@@ -176,9 +175,7 @@ def _create_qr(
     return discord.File(out, filename="qr.png")
 
 
-class QRCodeFlags(
-    commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "
-):
+class QRCodeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     board_size: Optional[int] = 10
     border: Optional[int] = 4
     module_drawer: Optional[str] = None
@@ -240,18 +237,14 @@ class Misc(Cog):
             raw_data = await resp.json()
 
             if not raw_data.get("query"):
-                raise commands.BadArgument(
-                    f"Wikipedia API: {resp.status} {raw_data.get('errors')}"
-                )
+                raise commands.BadArgument(f"Wikipedia API: {resp.status} {raw_data.get('errors')}")
 
             lines = []
             if raw_data["query"]["searchinfo"]["totalhits"]:
                 for article in raw_data["query"]["search"]:
                     line = WIKI_SEARCH_RESULT.format(
                         name=article["title"],
-                        description=unescape(
-                            re.sub(WIKI_SNIPPET_REGEX, "", article["snippet"])
-                        ),
+                        description=unescape(re.sub(WIKI_SNIPPET_REGEX, "", article["snippet"])),
                         url=f"https://en.wikipedia.org/?curid={article['pageid']}",
                     )
                     lines.append(line)
@@ -267,9 +260,7 @@ class Misc(Cog):
     async def _generate_image(self, query: str, out_file: BinaryIO) -> None:
         """Make an API request and save the generated image to cache."""
         payload = {"code": query, "format": "png"}
-        async with self.bot.http_session.post(
-            LATEX_API_URL, data=payload, raise_for_status=True
-        ) as response:
+        async with self.bot.http_session.post(LATEX_API_URL, data=payload, raise_for_status=True) as response:
             response_json = await response.json()
         if response_json["status"] != "success":
             raise InvalidLatexError(logs=response_json.get("log"))
@@ -280,16 +271,12 @@ class Misc(Cog):
 
     async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
-        post = await self.bot.http_session.post(
-            "https://hastebin.com/documents", data=text
-        )
+        post = await self.bot.http_session.post("https://hastebin.com/documents", data=text)
 
         if post.status == 200:
             response = await post.text()
             return f"https://hastebin.com/{response[8:-2]}"
-        post = await self.bot.http_session.post(
-            "https://bin.readthedocs.fr/new", data={"code": text, "lang": lang}
-        )
+        post = await self.bot.http_session.post("https://bin.readthedocs.fr/new", data={"code": text, "lang": lang})
 
         return str(post.url) if post.status == 200 else None
 
@@ -304,9 +291,7 @@ class Misc(Cog):
             if not image_path.exists():
                 try:
                     with open(image_path, "wb") as out_file:
-                        await self._generate_image(
-                            TEMPLATE.substitute(text=query), out_file
-                        )
+                        await self._generate_image(TEMPLATE.substitute(text=query), out_file)
                 except InvalidLatexError as err:
                     embed = discord.Embed(title="Failed to render input.")
                     if err.logs is None:
@@ -417,9 +402,7 @@ class Misc(Cog):
         if r.status == 200:
             res = await r.json()
         else:
-            return await ctx.error(
-                f"{ctx.author.mention} invalid **{expression}** or either **{operation}**"
-            )
+            return await ctx.error(f"{ctx.author.mention} invalid **{expression}** or either **{operation}**")
         result = res["result"]
         embed = discord.Embed(
             title="Calculated!!",
@@ -440,9 +423,7 @@ class Misc(Cog):
         """
         NEWS_KEY = os.environ["NEWSKEY"]
         if not get_country_code(nat):
-            return await ctx.reply(
-                f"{ctx.author.mention} **{nat}** is not a valid country code."
-            )
+            return await ctx.reply(f"{ctx.author.mention} **{nat}** is not a valid country code.")
         link = f"http://newsapi.org/v2/top-headlines?country={nat}&apiKey={NEWS_KEY}"
         r = await self.bot.http_session.get(link)
         res = await r.json()
@@ -472,9 +453,7 @@ class Misc(Cog):
 
         await PaginationView(em_list).start(ctx=ctx)
 
-    @commands.group(
-        name="search", aliases=["googlesearch", "google"], invoke_without_command=True
-    )
+    @commands.group(name="search", aliases=["googlesearch", "google"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -490,9 +469,7 @@ class Misc(Cog):
         response = await self.bot.http_session.get(url)
         json_ = await response.json()
         if response.status != 200:
-            return await ctx.error(
-                f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
-            )
+            return await ctx.error(f"{ctx.author.mention} No results found. `{json_['error']['message']}`")
 
         pages = []
 
@@ -508,9 +485,7 @@ class Misc(Cog):
 """
             )
         if not pages:
-            return await ctx.error(
-                f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
-            )
+            return await ctx.error(f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`")
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 
@@ -533,9 +508,7 @@ class Misc(Cog):
 
         json_ = await response.json()
         if response.status != 200:
-            return await ctx.error(
-                f"{ctx.author.mention} No results found. `{json_['error']['message']}`"
-            )
+            return await ctx.error(f"{ctx.author.mention} No results found. `{json_['error']['message']}`")
         pages = []
 
         for item in json_.get("items", []):
@@ -550,9 +523,7 @@ class Misc(Cog):
 """
             )
         if not pages:
-            return await ctx.error(
-                f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`"
-            )
+            return await ctx.error(f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`")
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 
@@ -567,21 +538,13 @@ class Misc(Cog):
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
         emb = discord.Embed()
         if isinstance(snipe, (list, Iterable)):  # edit snipe
-            emb.set_author(
-                name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url
-            )
+            emb.set_author(name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url)
             emb.colour = snipe[0].author.colour
-            emb.add_field(
-                name="Before", value=self.sanitise(snipe[0].content), inline=False
-            )
-            emb.add_field(
-                name="After", value=self.sanitise(snipe[1].content), inline=False
-            )
+            emb.add_field(name="Before", value=self.sanitise(snipe[0].content), inline=False)
+            emb.add_field(name="After", value=self.sanitise(snipe[1].content), inline=False)
             emb.timestamp = snipe[0].created_at
         else:  # delete snipe
-            emb.set_author(
-                name=str(snipe.author), icon_url=snipe.author.display_avatar.url
-            )
+            emb.set_author(name=str(snipe.author), icon_url=snipe.author.display_avatar.url)
             emb.description = f"{self.sanitise(snipe.content)}"  # fuck you pycord
             emb.colour = snipe.author.colour
             emb.timestamp = snipe.created_at
@@ -614,9 +577,7 @@ class Misc(Cog):
             flags.con.split(","),
             ascending=flags.ascending,
         )
-        main = table.as_tabulate(
-            index=False, table_format=flags.table_format, align=flags.align
-        )
+        main = table.as_tabulate(index=False, table_format=flags.table_format, align=flags.align)
         await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 
     @commands.command(aliases=["w"])
@@ -634,9 +595,7 @@ class Misc(Cog):
         if r.status == 200:
             res = await r.json()
         else:
-            return await ctx.reply(
-                f"{ctx.author.mention} no location named, **{location}**"
-            )
+            return await ctx.reply(f"{ctx.author.mention} no location named, **{location}**")
 
         embed: discord.Embed = discord.Embed()
 
@@ -678,9 +637,7 @@ class Misc(Cog):
         embed.add_field(name="Sunset", value=f"{sunset.strftime('%H:%M')}")
         embed.add_field(name="Country", value=f"{country}")
         embed.add_field(name="Name", value=f"{name}")
-        embed.set_footer(
-            text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url
-        )
+        embed.set_footer(text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url)
         embed.set_author(name=f"{name}: {_id}", icon_url=ctx.author.display_avatar.url)
 
         await ctx.reply(embed=embed)
@@ -700,9 +657,7 @@ class Misc(Cog):
             page = SimplePages(entries=contents, ctx=ctx, per_page=3)
             await page.start()
         else:
-            await ctx.error(
-                "Sorry, we could not find a wikipedia article using that search term."
-            )
+            await ctx.error("Sorry, we could not find a wikipedia article using that search term.")
 
     @commands.command(aliases=["yt"])
     @commands.bot_has_permissions(embed_links=True)
@@ -769,13 +724,9 @@ class Misc(Cog):
             try:
                 await channel.send(embed=discord.Embed.from_dict(json.loads(str(data))))
             except Exception as e:
-                await ctx.error(
-                    f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}"
-                )
+                await ctx.error(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
         else:
-            await ctx.error(
-                f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}"
-            )
+            await ctx.error(f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -809,19 +760,13 @@ class Misc(Cog):
             color=ctx.author.color,
             timestamp=discord.utils.utcnow(),
         )
-        embed.add_field(
-            name="Type", value=f"`{target.__class__.__name__}`", inline=True
-        )
+        embed.add_field(name="Type", value=f"`{target.__class__.__name__}`", inline=True)
         embed.add_field(
             name="Created At",
-            value=f"{discord.utils.format_dt(target.created_at)}"
-            if target.created_at is not None
-            else "None",
+            value=f"{discord.utils.format_dt(target.created_at)}" if target.created_at is not None else "None",
             inline=True,
         )
-        embed.add_field(
-            name="ID", value=f"`{getattr(target, 'id', 'NA')}`", inline=True
-        )
+        embed.add_field(name="ID", value=f"`{getattr(target, 'id', 'NA')}`", inline=True)
         embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.reply(embed=embed)
 
@@ -888,12 +833,8 @@ class Misc(Cog):
         options: List[str] = options.split(",")
         data = {"poll": {"title": question, "answers": options, "only_reg": True}}
         if len(options) > 10:
-            return await ctx.error(
-                f"{ctx.author.mention} can not provide more than 10 options"
-            )
-        poll = await self.bot.http_session.post(
-            BASE_URL, json=data, headers={"API-KEY": os.environ["STRAW_POLL"]}
-        )
+            return await ctx.error(f"{ctx.author.mention} can not provide more than 10 options")
+        poll = await self.bot.http_session.post(BASE_URL, json=data, headers={"API-KEY": os.environ["STRAW_POLL"]})
 
         data = await poll.json()
         _exists = await self.bot.user_collections_ind.find_one_and_update(
@@ -902,12 +843,8 @@ class Misc(Cog):
             upsert=True,
         )
 
-        msg = await ctx.reply(
-            f"Poll created: <https://strawpoll.com/{data['content_id']}>"
-        )
-        await msg.reply(
-            f"{ctx.author.mention} your poll content id is: {data['content_id']}"
-        )
+        msg = await ctx.reply(f"Poll created: <https://strawpoll.com/{data['content_id']}>")
+        await msg.reply(f"{ctx.author.mention} your poll content id is: {data['content_id']}")
 
     @poll.command(name="get")
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -916,9 +853,7 @@ class Misc(Cog):
         """To get the poll data"""
         URL = f"https://strawpoll.com/api/poll/{content_id}"
 
-        poll = await self.bot.http_session.get(
-            URL, headers={"API-KEY": os.environ["STRAW_POLL"]}
-        )
+        poll = await self.bot.http_session.get(URL, headers={"API-KEY": os.environ["STRAW_POLL"]})
         try:
             data = await poll.json()
         except (json.decoder.JSONDecodeError, aiohttp.ContentTypeError):
@@ -930,9 +865,7 @@ class Misc(Cog):
             color=ctx.author.color,
         )
         for temp in data["content"]["poll"]["poll_answers"]:
-            embed.add_field(
-                name=temp["answer"], value=f"Votes: **{temp['votes']}**", inline=True
-            )
+            embed.add_field(name=temp["answer"], value=f"Votes: **{temp['votes']}**", inline=True)
         embed.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=embed)
 
@@ -945,9 +878,7 @@ class Misc(Cog):
             {"_id": ctx.author.id, "content_id": content_id}
         )
         if not _exists:
-            return await ctx.reply(
-                f"{ctx.author.mention} you can only delete your own polls. Content id didn't match"
-            )
+            return await ctx.reply(f"{ctx.author.mention} you can only delete your own polls. Content id didn't match")
         URL = "https://strawpoll.com/api/content/delete"
         await self.bot.http_session.delete(
             URL,
@@ -1009,9 +940,7 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def mine_server_status(
-        self, ctx: Context, address: str, bedrock: Optional[convert_bool] = False
-    ):
+    async def mine_server_status(self, ctx: Context, address: str, bedrock: Optional[convert_bool] = False):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"
@@ -1066,12 +995,8 @@ class Misc(Cog):
     async def exchangerate(self, ctx: Context, currency: str):
         """To see the currencies notations with names"""
         if len(currency) != 3:
-            return await ctx.send(
-                f"{ctx.author.mention} please provide a **valid currency!**"
-            )
-        obj = await self.bot.http_session.get(
-            f"https://api.coinbase.com/v2/exchange-rates?currency={currency}"
-        )
+            return await ctx.send(f"{ctx.author.mention} please provide a **valid currency!**")
+        obj = await self.bot.http_session.get(f"https://api.coinbase.com/v2/exchange-rates?currency={currency}")
         data: dict = await obj.json()
 
         entries = [f"`{i}` `{j}`" for i, j in data["data"]["rates"].items()]
@@ -1085,6 +1010,4 @@ class Misc(Cog):
         query = query.lower()
         if data := await self.bot.dictionary.find_one({query: {"$exists": True}}):
             return await ctx.send(f"**{query.title()}**: {data[query]}")
-        return await ctx.error(
-            "No word found, if you think its a mistake then contact the owner."
-        )
+        return await ctx.error("No word found, if you think its a mistake then contact the owner.")

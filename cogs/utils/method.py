@@ -35,25 +35,15 @@ IGNORE = [
 ]
 
 
-async def _show_tag(
-    bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None
-):
+async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None):
     collection: Collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
-        if (
-            not data["nsfw"]
-            and msg_ref is not None
-            or data["nsfw"]
-            and ctx.channel.nsfw
-            and msg_ref is not None
-        ):
+        if not data["nsfw"] and msg_ref is not None or data["nsfw"] and ctx.channel.nsfw and msg_ref is not None:
             await msg_ref.reply(data["text"])
         elif not data["nsfw"] or ctx.channel.nsfw:
             await ctx.send(data["text"])
         else:
-            await ctx.reply(
-                f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
-            )
+            await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
     await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
@@ -67,9 +57,7 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
         if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:
             await ctx.safe_send(main)
         else:
-            await ctx.reply(
-                f"{ctx.author.mention} this tag can only be called in NSFW marked channel"
-            )
+            await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
@@ -77,19 +65,13 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
 async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
     collection: Collection = ctx.guild_collection
     if tag in IGNORE:
-        return await ctx.error(
-            f"{ctx.author.mention} the name `{tag}` is reserved word."
-        )
+        return await ctx.error(f"{ctx.author.mention} the name `{tag}` is reserved word.")
     if _ := await collection.find_one({"id": tag}):
         return await ctx.error(f"{ctx.author.mention} the name `{tag}` already exists")
 
-    val = await ctx.prompt(
-        f"{ctx.author.mention} do you want to make the tag as NSFW marked channels"
-    )
+    val = await ctx.prompt(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels")
     if val is None:
-        return await ctx.error(
-            f"{ctx.author.mention} you did not responds on time. Considering as non NSFW"
-        )
+        return await ctx.error(f"{ctx.author.mention} you did not responds on time. Considering as non NSFW")
     nsfw = bool(val)
     await collection.insert_one(
         {
@@ -119,9 +101,7 @@ async def _delete_tag(bot: Parrot, ctx: Context, tag: str):
 async def _name_edit(bot: Parrot, ctx: Context, tag: str, name: str):
     collection: Collection = ctx.guild_collection
     if _ := await collection.find_one({"id": name}):
-        await ctx.error(
-            f"{ctx.author.mention} that name already exists in the database"
-        )
+        await ctx.error(f"{ctx.author.mention} that name already exists in the database")
     elif data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
             await collection.update_one({"id": tag}, {"$set": {"id": name}})
@@ -170,9 +150,7 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.M
             await ctx.error(f"{ctx.author.mention} you did not responds on time")
         elif val:
             await collection.update_one({"id": tag}, {"$set": {"owner": member.id}})
-            await ctx.reply(
-                f"{ctx.author.mention} tag ownership successfully transfered to **{member}**"
-            )
+            await ctx.reply(f"{ctx.author.mention} tag ownership successfully transfered to **{member}**")
         else:
             await ctx.error(f"{ctx.author.mention} ok! reverting the process!")
     else:
@@ -186,9 +164,7 @@ async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
         nsfw = not data["nsfw"]
         await collection.update_one({"id": tag}, {"$set": {"nsfw": nsfw}})
-        await ctx.reply(
-            f"{ctx.author.mention} NSFW status of tag named `{tag}` is set to **{nsfw}**"
-        )
+        await ctx.reply(f"{ctx.author.mention} NSFW status of tag named `{tag}` is set to **{nsfw}**")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
@@ -204,9 +180,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
     try:
         return await ctx.paginate(entries, _type="SimplePages")
     except IndexError:
-        await ctx.reply(
-            f"{ctx.author.mention} you don't have any tags registered with your name"
-        )
+        await ctx.reply(f"{ctx.author.mention} you don't have any tags registered with your name")
 
 
 async def _show_all_tags(bot: Parrot, ctx: Context):
@@ -251,9 +225,7 @@ async def _view_tag(bot: Parrot, ctx: Context, tag: str):
 async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
     collection: Collection = ctx.user_collection
     if data := await collection.find_one({"id": name}):
-        await ctx.reply(
-            f"{ctx.author.mention} `{name}` already exists as your TODO list"
-        )
+        await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
     else:
         await collection.insert_one(
             {
@@ -278,9 +250,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
                 view=ctx.send_view(),
             )
         except Exception as e:
-            return await ctx.error(
-                f"{ctx.author.mention} seems that your DM are blocked for the bot. Error: {e}"
-            )
+            return await ctx.error(f"{ctx.author.mention} seems that your DM are blocked for the bot. Error: {e}")
         finally:
             await collection.update_one({"_id": name}, {"$set": post})
             await bot.create_timer(
@@ -293,40 +263,28 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
                 is_todo=True,
             )
     else:
-        await ctx.reply(
-            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
-        )
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name: str, new_name: str):
     collection: Collection = ctx.user_collection
     if _ := await collection.find_one({"id": name}):
         if _ := await collection.find_one({"id": new_name}):
-            await ctx.reply(
-                f"{ctx.author.mention} `{new_name}` already exists as your TODO list"
-            )
+            await ctx.reply(f"{ctx.author.mention} `{new_name}` already exists as your TODO list")
         else:
             await collection.update_one({"id": name}, {"$set": {"id": new_name}})
-            await ctx.reply(
-                f"{ctx.author.mention} name changed from `{name}` to `{new_name}`"
-            )
+            await ctx.reply(f"{ctx.author.mention} name changed from `{name}` to `{new_name}`")
     else:
-        await ctx.reply(
-            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
-        )
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 
 async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
     collection: Collection = ctx.user_collection
     if _ := await collection.find_one({"id": name}):
         await collection.update_one({"id": name}, {"$set": {"text": text}})
-        await ctx.reply(
-            f"{ctx.author.mention} TODO list of name `{name}` has been updated"
-        )
+        await ctx.reply(f"{ctx.author.mention} TODO list of name `{name}` has been updated")
     else:
-        await ctx.reply(
-            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
-        )
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 
 async def _list_todo(bot: Parrot, ctx: Context):
@@ -345,13 +303,9 @@ async def _list_todo(bot: Parrot, ctx: Context):
 async def _show_todo(bot: Parrot, ctx: Context, name: str):
     collection: Collection = ctx.user_collection
     if data := await collection.find_one({"id": name}):
-        await ctx.reply(
-            f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>"
-        )
+        await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
     else:
-        await ctx.reply(
-            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
-        )
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 
 async def _delete_todo(bot: Parrot, ctx: Context, name: str):
@@ -360,9 +314,7 @@ async def _delete_todo(bot: Parrot, ctx: Context, name: str):
         await collection.delete_one({"id": name})
         await ctx.reply(f"{ctx.author.mention} delete `{name}` task")
     else:
-        await ctx.reply(
-            f"{ctx.author.mention} you don't have any TODO list with name `{name}`"
-        )
+        await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 
 async def _create_giveaway_post(
@@ -398,9 +350,7 @@ async def _create_giveaway_post(
 
 
 async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
-    channel: discord.TextChannel = await bot.getch(
-        bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel")
-    )
+    channel: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
     msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"])
 
@@ -436,9 +386,7 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
 
         _ = [__item__remove(reactors, i) for i in real_winners]  # flake8: noqa
 
-        await __update_giveaway_reactors(
-            bot=bot, reactors=reactors, message_id=kw.get("message_id")
-        )
+        await __update_giveaway_reactors(bot=bot, reactors=reactors, message_id=kw.get("message_id"))
 
         if not real_winners and not reactors:
             # requirement do not statisfied and we are out of reactors
@@ -470,22 +418,16 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
             __item__remove(real_winners, member)
 
         if required_level:
-            level = await bot.guild_level_db[f"{current_guild.id}"].find_one(
-                {"_id": member.id}
-            )
+            level = await bot.guild_level_db[f"{current_guild.id}"].find_one({"_id": member.id})
             if level < required_level:
                 __item__remove(real_winners, member)
 
     return real_winners
 
 
-async def __update_giveaway_reactors(
-    *, bot: Parrot, reactors: List[int], message_id: int
-) -> None:
+async def __update_giveaway_reactors(*, bot: Parrot, reactors: List[int], message_id: int) -> None:
     collection: Collection = bot.giveaways
-    await collection.update_one(
-        {"message_id": message_id}, {"$set": {"reactors": reactors}}
-    )
+    await collection.update_one({"message_id": message_id}, {"$set": {"reactors": reactors}})
 
 
 def __item__remove(ls: List[Any], item: Any) -> Optional[List[Any]]:
@@ -526,9 +468,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     for index, question in enumerate(quest, start=1):
         if index == 1:
             await ctx.reply(embed=discord.Embed(description=question))
-            channel = await commands.TextChannelConverter().convert(
-                ctx, argument=(await __wait_for__message(ctx))
-            )
+            channel = await commands.TextChannelConverter().convert(ctx, argument=(await __wait_for__message(ctx)))
             CHANNEL = channel
             payload["giveaway_channel"] = channel.id
 
@@ -544,9 +484,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
 
         elif index == 4:
             await ctx.reply(embed=discord.Embed(description=question))
-            winners = __is_int(
-                await __wait_for__message(ctx), "Winner must be a whole number"
-            )
+            winners = __is_int(await __wait_for__message(ctx), "Winner must be a whole number")
             payload["winners"] = winners
 
         elif index == 5:
@@ -560,16 +498,12 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
 
         elif index == 6:
             await ctx.reply(embed=discord.Embed(description=question))
-            level = __is_int(
-                await __wait_for__message(ctx), "Level must be a whole number"
-            )
+            level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
             payload["required_level"] = level
 
         elif index == 7:
             await ctx.reply(embed=discord.Embed(description=question))
-            server = __is_int(
-                await __wait_for__message(ctx), "Server must be a whole number"
-            )
+            server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
             payload["required_guild"] = server
 
     embed = discord.Embed(
@@ -584,26 +518,18 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 > Ends in: <t:{int(payload['endtime'])}:R>
 """
-    embed.set_footer(
-        text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url
-    )
+    embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     CHANNEL = CHANNEL or ctx.channel
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     bot.message_cache[msg.id] = msg
-    main_post = await _create_giveaway_post(
-        message=msg, **payload
-    )  # flake8: noqa  # type: ignore
+    main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa  # type: ignore
 
-    await bot.giveaways.insert_one(
-        {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
-    )
+    await bot.giveaways.insert_one({**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"})
     return main_post
 
 
-async def _make_giveaway_drop(
-    ctx: Context, *, duration: ShortTime, winners: int, prize: str
-):
+async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int, prize: str):
     payload = {
         "giveaway_channel": ctx.channel.id,
         "endtime": duration.dt.timestamp(),
@@ -626,16 +552,12 @@ async def _make_giveaway_drop(
 > Hosted by: {ctx.author.mention} (`{ctx.author.id}`)
 > Ends: <t:{int(payload['endtime'])}:R>
 """
-    embed.set_footer(
-        text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url
-    )
+    embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
     msg: discord.Message = await ctx.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
 
-    await ctx.bot.giveaways.insert_one(
-        {**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"}
-    )
+    await ctx.bot.giveaways.insert_one({**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"})
     return main_post
 
 

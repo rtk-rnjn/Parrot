@@ -22,9 +22,7 @@ class StarError(CustomError):
 
 class TimeError(ParrotCheckFailure):
     def __init__(self):
-        super().__init__(
-            "Make sure you use the proper syntax. Ex. `1h30m` or `3600s` or just `45`"
-        )
+        super().__init__("Make sure you use the proper syntax. Ex. `1h30m` or `3600s` or just `45`")
 
 
 class NoModRole(ParrotCheckFailure):
@@ -34,9 +32,7 @@ class NoModRole(ParrotCheckFailure):
 
 class NoVerifiedRoleTicket(ParrotCheckFailure):
     def __init__(self):
-        super().__init__(
-            "You are missing Ticket Verified role or the required permission to use this command"
-        )
+        super().__init__("You are missing Ticket Verified role or the required permission to use this command")
 
 
 class InHubVoice(ParrotCheckFailure):
@@ -80,9 +76,7 @@ class NotInSupportServer(ParrotCheckFailure):
 
 class NotSameVoice(ParrotCheckFailure):
     def __init__(self):
-        super().__init__(
-            "You must be in same voice channel as the bot to use the this command."
-        )
+        super().__init__("You must be in same voice channel as the bot to use the this command.")
 
 
 class NotGuildOwner(ParrotCheckFailure):
@@ -92,9 +86,7 @@ class NotGuildOwner(ParrotCheckFailure):
 
 class NotMe(ParrotCheckFailure):
     def __init__(self):
-        super().__init__(
-            "I don't know how you reach this error. Thing is, you can't use this command"
-        )
+        super().__init__("I don't know how you reach this error. Thing is, you can't use this command")
 
 
 # command disabled

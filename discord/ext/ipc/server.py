@@ -116,8 +116,7 @@ class Server:
         method_list = [
             getattr(cog, func)
             for func in dir(cog)
-            if callable(getattr(cog, func))
-            and getattr(getattr(cog, func), "__ipc_route__", None)
+            if callable(getattr(cog, func)) and getattr(getattr(cog, func), "__ipc_route__", None)
         ]
 
         # Reset endpoints for this class
@@ -178,9 +177,7 @@ class Server:
             headers = request.get("headers")
 
             if not headers or headers.get("Authorization") != self.secret_key:
-                log.info(
-                    "Received unauthorized request (Invalid or no token provided)."
-                )
+                log.info("Received unauthorized request (Invalid or no token provided).")
                 response = {"error": "Invalid or no token provided.", "code": 403}
             else:
                 if not endpoint or endpoint not in self.endpoints:
@@ -201,9 +198,7 @@ class Server:
                         self.bot.dispatch("ipc_error", endpoint, error)
 
                         response = {
-                            "error": "IPC route raised error of type {}".format(
-                                type(error).__name__
-                            ),
+                            "error": "IPC route raised error of type {}".format(type(error).__name__),
                             "code": 500,
                         }
 
@@ -211,9 +206,7 @@ class Server:
                 await websocket.send_json(response)
                 log.debug("IPC Server > %r", response)
             except TypeError as error:
-                if str(error).startswith("Object of type") and str(error).endswith(
-                    "is not JSON serializable"
-                ):
+                if str(error).startswith("Object of type") and str(error).endswith("is not JSON serializable"):
                     error_response = (
                         "IPC route returned values which are not able to be sent over sockets."
                         " If you are trying to send a discord.py object,"

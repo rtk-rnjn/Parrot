@@ -99,9 +99,7 @@ def extract_one(query, choices, *, scorer=quick_ratio, score_cutoff=0):
 
 
 def extract_or_exact(query, choices, *, limit=None, scorer=quick_ratio, score_cutoff=0):
-    matches = extract(
-        query, choices, scorer=scorer, score_cutoff=score_cutoff, limit=limit
-    )
+    matches = extract(query, choices, scorer=scorer, score_cutoff=score_cutoff, limit=limit)
     if len(matches) == 0:
         return []
 
@@ -116,9 +114,7 @@ def extract_or_exact(query, choices, *, limit=None, scorer=quick_ratio, score_cu
 
 
 def extract_matches(query, choices, *, scorer=quick_ratio, score_cutoff=0):
-    matches = extract(
-        query, choices, scorer=scorer, score_cutoff=score_cutoff, limit=None
-    )
+    matches = extract(query, choices, scorer=scorer, score_cutoff=score_cutoff, limit=None)
     if len(matches) == 0:
         return []
 

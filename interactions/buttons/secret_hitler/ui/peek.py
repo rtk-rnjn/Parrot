@@ -27,9 +27,7 @@ class PeekButton(SelectButton[Party, "PeekUI"]):
     disabled: ClassVar[bool] = True
 
     def __init__(self, item: Party):
-        super().__init__(
-            item, style=POLICY_STYLE[item], label=item.name, disabled=self.disabled
-        )
+        super().__init__(item, style=POLICY_STYLE[item], label=item.name, disabled=self.disabled)
 
 
 class PeekUI(SelectUI):

@@ -52,18 +52,12 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def earth(
-        self, ctx: Context, longitute: float, latitude: float, date: date_parser
-    ):
+    async def earth(self, ctx: Context, longitute: float, latitude: float, date: date_parser):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
         if not -90 <= latitude <= 90:
-            return await ctx.reply(
-                f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90"
-            )
+            return await ctx.reply(f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90")
         if not -180 <= latitude <= 180:
-            return await ctx.reply(
-                f"{ctx.author.mention} Invalid longitude range, must be between -180 to 180"
-            )
+            return await ctx.reply(f"{ctx.author.mention} Invalid longitude range, must be between -180 to 180")
         link = f"https://api.nasa.gov/planetary/earth/imagery?lon={longitute}&lat={latitude}&date={date}&dim=0.15&api_key={NASA_KEY}"
 
         embed = discord.Embed(
@@ -76,9 +70,7 @@ class NASA(Cog):
         embed.set_image(
             url="attachment://earth.jpg",
         )
-        embed.set_thumbnail(
-            url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-        )
+        embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
         embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed, file=file)
@@ -111,9 +103,7 @@ class NASA(Cog):
         if res["media_type"] == "image":
             image = res["url"]
             embed.set_image(url=f"{image}")
-        embed.set_thumbnail(
-            url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-        )
+        embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
         embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed)
@@ -147,9 +137,7 @@ class NASA(Cog):
             )
             embed.set_image(url=f"{link}")
             embed.set_footer(text=f"Page {index+1}/{len(res)} | {ctx.author.name}")
-            embed.set_thumbnail(
-                url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-            )
+            embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
             em_list.append(embed)
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
@@ -176,30 +164,16 @@ class NASA(Cog):
                 name_end = res["near_earth_objects"][date][index]["name"]
                 id_end = res["near_earth_objects"][date][index]["neo_reference_id"]
                 dia = round(
-                    float(
-                        res["near_earth_objects"][date][index]["estimated_diameter"][
-                            "meters"
-                        ]["estimated_diameter_min"]
-                    )
+                    float(res["near_earth_objects"][date][index]["estimated_diameter"]["meters"]["estimated_diameter_min"])
                 )
-                danger = res["near_earth_objects"][date][index][
-                    "is_potentially_hazardous_asteroid"
+                danger = res["near_earth_objects"][date][index]["is_potentially_hazardous_asteroid"]
+                approach_date = res["near_earth_objects"][date][index]["close_approach_data"][0]["close_approach_date"]
+                velocity = res["near_earth_objects"][date][index]["close_approach_data"][0]["relative_velocity"][
+                    "kilometers_per_hour"
                 ]
-                approach_date = res["near_earth_objects"][date][index][
-                    "close_approach_data"
-                ][0]["close_approach_date"]
-                velocity = res["near_earth_objects"][date][index][
-                    "close_approach_data"
-                ][0]["relative_velocity"]["kilometers_per_hour"]
-                miss_dist = res["near_earth_objects"][date][index][
-                    "close_approach_data"
-                ][0]["miss_distance"]["kilometers"]
-                orbiting = res["near_earth_objects"][date][index][
-                    "close_approach_data"
-                ][0]["orbiting_body"]
-                is_sentry_object = res["near_earth_objects"][date][index][
-                    "is_sentry_object"
-                ]
+                miss_dist = res["near_earth_objects"][date][index]["close_approach_data"][0]["miss_distance"]["kilometers"]
+                orbiting = res["near_earth_objects"][date][index]["close_approach_data"][0]["orbiting_body"]
+                is_sentry_object = res["near_earth_objects"][date][index]["is_sentry_object"]
 
                 embed = discord.Embed(
                     title=f"At: {date}",
@@ -209,26 +183,14 @@ class NASA(Cog):
                 )
                 embed.add_field(name="Asteroid Name:", value=f"{name_end}", inline=True)
                 embed.add_field(name="Asteroid ID:", value=f"{id_end}", inline=True)
-                embed.add_field(
-                    name="Estimated Diameter:", value=f"{dia} M", inline=True
-                )
+                embed.add_field(name="Estimated Diameter:", value=f"{dia} M", inline=True)
                 embed.add_field(name="Is Danger?", value=f"{danger}", inline=True)
-                embed.add_field(
-                    name="Approach Date:", value=f"{approach_date}", inline=True
-                )
-                embed.add_field(
-                    name="Relative velocity:", value=f"{velocity} KM/hr", inline=True
-                )
-                embed.add_field(
-                    name="Miss Distance:", value=f"{miss_dist} KM", inline=True
-                )
+                embed.add_field(name="Approach Date:", value=f"{approach_date}", inline=True)
+                embed.add_field(name="Relative velocity:", value=f"{velocity} KM/hr", inline=True)
+                embed.add_field(name="Miss Distance:", value=f"{miss_dist} KM", inline=True)
                 embed.add_field(name="Orbiting:", value=f"{orbiting}", inline=True)
-                embed.add_field(
-                    name="Is sentry?", value=f"{is_sentry_object}", inline=True
-                )
-                embed.set_thumbnail(
-                    url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-                )
+                embed.add_field(name="Is sentry?", value=f"{is_sentry_object}", inline=True)
+                embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
                 embed.set_footer(text=f"Page {index+1}/{len(date)} | {ctx.author.name}")
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
@@ -256,9 +218,7 @@ class NASA(Cog):
         orbitaldata = res["orbital_data"]["orbit_class"]["orbit_class_description"]
         orbital_ran = res["orbital_data"]["orbit_class"]["orbit_class_range"]
         last_obs = res["orbital_data"]["last_observation_date"]
-        orbit_sp = res["close_approach_data"][0]["relative_velocity"][
-            "kilometers_per_hour"
-        ]
+        orbit_sp = res["close_approach_data"][0]["relative_velocity"]["kilometers_per_hour"]
         orbital_p = res["close_approach_data"][0]["orbiting_body"]
         embed = discord.Embed(
             title=f"Asteroid Name: {name}",
@@ -268,14 +228,10 @@ class NASA(Cog):
         embed.add_field(name="Estimated Diameter:", value=f"{dia} M", inline=True)
         embed.add_field(name="Is Danger?", value=f"{danger}", inline=True)
         embed.add_field(name="Is sentry?", value=f"{sentry}", inline=True)
-        embed.add_field(
-            name="Relative velocity:", value=f"{orbit_sp} KM/hr", inline=True
-        )
+        embed.add_field(name="Relative velocity:", value=f"{orbit_sp} KM/hr", inline=True)
         embed.add_field(name="Orbiting:", value=f"{orbital_p}", inline=True)
         embed.add_field(name="Last observation date:", value=f"{last_obs}", inline=True)
-        embed.set_thumbnail(
-            url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-        )
+        embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
         embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed)
@@ -308,9 +264,7 @@ class NASA(Cog):
             )
             embed.set_image(url=f"{img}")
             embed.set_footer(text=f"Requested by {ctx.author}")
-            embed.set_thumbnail(
-                url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-            )
+            embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
             em_list.append(embed)
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
@@ -321,9 +275,7 @@ class NASA(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def nasasearch(
-        self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content
-    ):
+    async def nasasearch(self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content):
         """NASA Image and Video Library"""
         link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)
@@ -335,9 +287,7 @@ class NASA(Cog):
         res = await r.json()
 
         if not res["collection"]["items"]:
-            await ctx.reply(
-                f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library."
-            )
+            await ctx.reply(f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.")
         em_list: List[discord.Embed] = []
         for index in range(len(res["collection"]["items"])):
             if data := res["collection"]["items"][index]:
@@ -350,9 +300,7 @@ class NASA(Cog):
                 except KeyError:
                     continue
                 else:
-                    r = await self.bot.http_session.get(
-                        media_url, headers={"User-Agent": AGENT}
-                    )
+                    r = await self.bot.http_session.get(media_url, headers={"User-Agent": AGENT})
                     media = await r.json() if r.status == 200 else None
                     img, vid, srt = [], [], []
                     if media:
@@ -376,21 +324,13 @@ class NASA(Cog):
                     if render == "image":
                         embed.set_image(url=f"{preview}")
                     if img:
-                        embed.add_field(
-                            name="Images", value=f"{', '.join(img[:5])}", inline=False
-                        )
+                        embed.add_field(name="Images", value=f"{', '.join(img[:5])}", inline=False)
                     if vid:
-                        embed.add_field(
-                            name="Videos", value=f"{', '.join(vid[:5])}", inline=False
-                        )
+                        embed.add_field(name="Videos", value=f"{', '.join(vid[:5])}", inline=False)
                     if srt:
-                        embed.add_field(
-                            name="Srt", value=f"{', '.join(srt)}", inline=False
-                        )
+                        embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
                     embed.set_footer(text=f"Requested by {ctx.author}")
-                    embed.set_thumbnail(
-                        url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png"
-                    )
+                    embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
                     em_list.append(embed)
             if index >= limit:
                 break
@@ -418,9 +358,7 @@ class NASA(Cog):
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(url, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find CME in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find CME in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -437,9 +375,7 @@ class NASA(Cog):
             active_region_num = data["activeRegionNum"]
             link = data["link"]
             data["note"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
 
             em.description = f"""
 Activity ID: {activity_id}
@@ -463,9 +399,7 @@ Instuments: {instruments}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find GST in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find GST in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -493,9 +427,7 @@ Link: {link}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find IPS in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find IPS in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -509,9 +441,7 @@ Link: {link}
             location = data["location"]
             eventTime = data["eventTime"]
             link = data["link"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
             em.description = f"""
 Catalog: {catalog}
 Activity ID: {activityID}
@@ -533,9 +463,7 @@ Instuments: {instruments}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find FLR in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find FLR in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -545,18 +473,14 @@ Instuments: {instruments}
         for data in res:
             em = discord.Embed()
             flrID = data["flrID"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
             beginTime = data["beginTime"]
             peakTime = data["peakTime"]
             endTime = data["endTime"]
             classType = data["classType"]
             sourceLocation = data["sourceLocation"]
             activeRegionNum = data["activeRegionNum"]
-            linkedEvents = ", ".join(
-                i["activityID"] for i in data.get("linkedEvents", [])
-            )
+            linkedEvents = ", ".join(i["activityID"] for i in data.get("linkedEvents", []))
             link = data["link"]
             em.description = f"""
 FLR ID: {flrID}
@@ -583,9 +507,7 @@ Link: {link}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find SEP in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find SEP in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -595,14 +517,10 @@ Link: {link}
         for data in res:
             em = discord.Embed()
             sepID = data["sepID"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
             eventTime = data["eventTime"]
 
-            linkedEvents = ", ".join(
-                i["activityID"] for i in data.get("linkedEvents", [])
-            )
+            linkedEvents = ", ".join(i["activityID"] for i in data.get("linkedEvents", []))
             link = data["link"]
             em.description = f"""
 SEP ID: {sepID}
@@ -624,9 +542,7 @@ Link: {link}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find MPC in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find MPC in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -637,9 +553,7 @@ Link: {link}
             em = discord.Embed()
             mpcID = data["mpcID"]
             eventTime = data["eventTime"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
             link = data["link"]
             em.description = f"""
 MPC ID: {mpcID}
@@ -660,9 +574,7 @@ Instuments: {instruments}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find RBE in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find RBE in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -673,9 +585,7 @@ Instuments: {instruments}
             em = discord.Embed()
             rbeID = data["rbeID"]
             eventTime = data["eventTime"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
             link = data["link"]
             em.description = f"""
 RBE ID: {rbeID}
@@ -696,9 +606,7 @@ Instuments: {instruments}
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} could not find HHS in DONKI | Http status: {r.status}"
-            )
+            return await ctx.reply(f"{ctx.author.mention} could not find HHS in DONKI | Http status: {r.status}")
         res = await r.json()
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
@@ -709,9 +617,7 @@ Instuments: {instruments}
             em = discord.Embed()
             hhsID = data["hhsID"]
             eventTime = data["eventTime"]
-            instruments = ", ".join(
-                i["displayName"] for i in data.get("instruments", [])
-            )
+            instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
             link = data["link"]
             em.description = f"""
 HHS ID: {hhsID}

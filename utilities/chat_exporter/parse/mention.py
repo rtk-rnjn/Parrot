@@ -73,9 +73,7 @@ class ParseMention:
                     replacement = "#deleted-channel"
                 else:
                     replacement = f'<span class="mention" title="{channel.id}">#{channel.name}</span>'
-                self.content = self.content.replace(
-                    self.content[match.start() : match.end()], replacement
-                )
+                self.content = self.content.replace(self.content[match.start() : match.end()], replacement)
 
                 match = re.search(regex, self.content)
 
@@ -99,9 +97,7 @@ class ParseMention:
                             role.color.b,
                         )
                     replacement = f'<span style="color: {colour};">@{role.name}</span>'
-                self.content = self.content.replace(
-                    self.content[match.start() : match.end()], replacement
-                )
+                self.content = self.content.replace(self.content[match.start() : match.end()], replacement)
 
                 match = re.search(regex, self.content)
 
@@ -123,8 +119,6 @@ class ParseMention:
                     replacement = f'<span class="mention" title="{member_id}">@{str(member_name)}</span>'
                 else:
                     replacement = f'<span class="mention" title="{member_id}">&lt;@{member_id}></span>'
-                self.content = self.content.replace(
-                    self.content[match.start() : match.end()], replacement
-                )
+                self.content = self.content.replace(self.content[match.start() : match.end()], replacement)
 
                 match = re.search(regex, self.content)

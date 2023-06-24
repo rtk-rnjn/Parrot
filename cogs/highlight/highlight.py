@@ -19,9 +19,7 @@ log = logging.getLogger("cogs.highlight.highlight")
 CACHED_WORDS_HINT = Dict[int, List[Dict[str, Union[str, int]]]]
 _CACHED_SETTINGS_HINT = Dict[str, Union[str, int, List[Any]]]
 CACHED_SETTINGS_HINT = Dict[int, _CACHED_SETTINGS_HINT]
-ENTITY_HINT = Union[
-    discord.Member, discord.User, discord.TextChannel, discord.CategoryChannel
-]
+ENTITY_HINT = Union[discord.Member, discord.User, discord.TextChannel, discord.CategoryChannel]
 
 
 def format_join(iterable, *, seperator=", ", last="or"):
@@ -70,9 +68,7 @@ class Highlight(Cog):
         user_id = find_one_data["highlight_settings"].get("user_id", user_id)
         disabled = find_one_data["highlight_settings"].get("disabled", False)
         blocked_users = find_one_data["highlight_settings"].get("blocked_users", [])
-        blocked_channels = find_one_data["highlight_settings"].get(
-            "blocked_channels", []
-        )
+        blocked_channels = find_one_data["highlight_settings"].get("blocked_channels", [])
         return {
             "user_id": user_id,
             "disabled": disabled,
@@ -87,15 +83,11 @@ class Highlight(Cog):
 
     async def cog_load(self):
         log.info("Getting all the highlight settings")
-        async for data in self.bot.user_collections_ind.find(
-            {"highlight_settings": {"$exists": True}}
-        ):
+        async for data in self.bot.user_collections_ind.find({"highlight_settings": {"$exists": True}}):
             self.cached_settings[data["_id"]] = data["highlight_settings"]
 
         log.info("Getting all the highlight words")
-        async for data in self.bot.user_collections_ind.find(
-            {"highlight_words": {"$exists": True}}
-        ):
+        async for data in self.bot.user_collections_ind.find({"highlight_words": {"$exists": True}}):
             self.cached_words[data["_id"]] = data["highlight_words"]
 
     @commands.Cog.listener("on_message")
@@ -107,11 +99,7 @@ class Highlight(Cog):
         possible_words = []
 
         for _id, words in self.cached_words.items():
-            possible_words.extend(
-                {**word, "user_id": _id}
-                for word in words
-                if word["guild_id"] == message.guild.id
-            )
+            possible_words.extend({**word, "user_id": _id} for word in words if word["guild_id"] == message.guild.id)
 
         # Go through all possible messages
         for possible_word in possible_words:
@@ -149,27 +137,22 @@ class Highlight(Cog):
         self.bot.dispatch("user_activity", reaction.message.channel, user)
 
     @commands.Cog.listener()
-    async def on_highlight(
-        self, message: discord.Message, word: Dict[str, Union[str, int]], text: str
-    ):
+    async def on_highlight(self, message: discord.Message, word: Dict[str, Union[str, int]], text: str):
         assert message.guild is not None
 
-        member: Optional[
-            Union[discord.Member, discord.User]
-        ] = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
+        member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
+            message.guild, word["user_id"]
+        )
 
         if member is None:
-            log.info(
-                "Unknown user ID %s (guild ID %s)", word["user_id"], word["guild_id"]
-            )
+            log.info("Unknown user ID %s (guild ID %s)", word["user_id"], word["guild_id"])
             return
 
         # Wait for any activity
         try:
             await self.bot.wait_for(
                 "user_activity",
-                check=lambda channel, user: message.channel == channel
-                and user == member,
+                check=lambda channel, user: message.channel == channel and user == member,
                 timeout=15,
             )
             return
@@ -202,8 +185,7 @@ class Highlight(Cog):
                 or message.author.id in settings.get("blocked_users", [])  # type: ignore
                 or (
                     message.channel.category
-                    and message.channel.category.id
-                    in settings.get("blocked_channels", [])  # type: ignore
+                    and message.channel.category.id in settings.get("blocked_channels", [])  # type: ignore
                 )
             )
         ):
@@ -286,9 +268,7 @@ class Highlight(Cog):
                 )
             )
         except discord.Forbidden:
-            log.warning(
-                "Forbidden to DM user ID %s (guild ID %s)", member.id, message.guild.id
-            )
+            log.warning("Forbidden to DM user ID %s (guild ID %s)", member.id, message.guild.id)
 
     @commands.group(name="highlight", description="Manage your highlight settings")
     async def highlight(self, ctx: Context):
@@ -309,9 +289,7 @@ class Highlight(Cog):
         word = word.lower()
 
         if discord.utils.escape_mentions(word) != word:
-            await ctx.send(
-                "Your highlight word cannot contain any mentions.", delete_after=5
-            )
+            await ctx.send("Your highlight word cannot contain any mentions.", delete_after=5)
         elif len(word) < 2:
             await ctx.send(
                 "Your highlight word must contain at least 2 characters.",
@@ -326,9 +304,7 @@ class Highlight(Cog):
             data = await self.bot.user_collections_ind.update_one(
                 {"_id": ctx.author.id},
                 {
-                    "$addToSet": {
-                        "highlight_words": {"guild_id": ctx.guild.id, "word": word}
-                    },
+                    "$addToSet": {"highlight_words": {"guild_id": ctx.guild.id, "word": word}},
                 },
                 upsert=True,
             )
@@ -342,17 +318,13 @@ class Highlight(Cog):
             if self.cached_words.get(ctx.author.id) is None:
                 self.cached_words[ctx.author.id] = []
 
-            self.cached_words[ctx.author.id].append(
-                {"user_id": ctx.author.id, "guild_id": ctx.guild.id, "word": word}
-            )
+            self.cached_words[ctx.author.id].append({"user_id": ctx.author.id, "guild_id": ctx.guild.id, "word": word})
             await ctx.send(
                 f":white_check_mark: Added `{word}` to your highlight list.",
                 delete_after=5,
             )
 
-    @highlight.command(
-        name="remove", description="Remove a word from your highlight word list"
-    )
+    @highlight.command(name="remove", description="Remove a word from your highlight word list")
     async def remove(self, ctx: Context, *, word: str):
         word = word.lower()
 
@@ -374,9 +346,7 @@ class Highlight(Cog):
             )
 
         # Remove word from the cache, so we don't trigger deleted highlights
-        self.cached_words[ctx.author.id].remove(
-            {"user_id": ctx.author.id, "guild_id": ctx.guild.id, "word": word}
-        )
+        self.cached_words[ctx.author.id].remove({"user_id": ctx.author.id, "guild_id": ctx.guild.id, "word": word})
 
     @highlight.command(
         name="show",
@@ -386,11 +356,7 @@ class Highlight(Cog):
     async def show(self, ctx: Context):
         ls = self.cached_words.get(ctx.author.id, [])
 
-        words = [
-            word["word"]
-            for word in ls
-            if word["guild_id"] == ctx.guild.id and word["word"]
-        ]
+        words = [word["word"] for word in ls if word["guild_id"] == ctx.guild.id and word["word"]]
         if not ls:
             await ctx.send(
                 "You have no highlight words in this server.",
@@ -398,20 +364,14 @@ class Highlight(Cog):
             )
         else:
             em = discord.Embed(title="Highlight Words", color=discord.Color.blurple())
-            em.set_author(
-                name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
-            )
+            em.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
 
             em.description = "`" + "`, `".join(words) + "`"
 
             await ctx.send(embed=em, delete_after=10)
 
-    @highlight.command(
-        name="clear", description="Clear your highlight words in this server"
-    )
-    async def clear(
-        self, ctx: Context, toggle: Literal["--all", "--guild-only"] = "--guild-only"
-    ):
+    @highlight.command(name="clear", description="Clear your highlight words in this server")
+    async def clear(self, ctx: Context, toggle: Literal["--all", "--guild-only"] = "--guild-only"):
         if toggle == "--all":
             result = await self.bot.user_collections_ind.update_one(
                 {"_id": ctx.author.id},
@@ -442,9 +402,7 @@ class Highlight(Cog):
             self.cached_words[ctx.author.id] = []
         elif toggle == "--guild-only":
             self.cached_words[ctx.author.id] = [
-                word
-                for word in self.cached_words[ctx.author.id]
-                if word["guild_id"] != ctx.guild.id
+                word for word in self.cached_words[ctx.author.id] if word["guild_id"] != ctx.guild.id
             ]
 
     @highlight.command(
@@ -487,18 +445,14 @@ class Highlight(Cog):
                     "$addToSet": {
                         "highlight_words": {
                             "$each": [
-                                word
-                                for word in self.cached_words.get(ctx.author.id, [])
-                                if word["guild_id"] == from_guild
+                                word for word in self.cached_words.get(ctx.author.id, []) if word["guild_id"] == from_guild
                             ]
                         },
                     },
                 },
             ),
         ]
-        data: pymongo.results.BulkWriteResult = (
-            await self.bot.user_collections_ind.bulk_write(operations)
-        )
+        data: pymongo.results.BulkWriteResult = await self.bot.user_collections_ind.bulk_write(operations)
 
         if data.modified_count == 0:
             return await ctx.send(
@@ -507,16 +461,11 @@ class Highlight(Cog):
             )
 
         words_in_current_guild = [
-            word["word"]
-            for word in self.cached_words.get(ctx.author.id, [])
-            if word["guild_id"] == ctx.guild.id
+            word["word"] for word in self.cached_words.get(ctx.author.id, []) if word["guild_id"] == ctx.guild.id
         ]
         to_transfer = []
         for word in self.cached_words.get(ctx.author.id, []):
-            if (
-                word["guild_id"] == from_guild
-                and word["word"] not in words_in_current_guild
-            ):
+            if word["guild_id"] == from_guild and word["word"] not in words_in_current_guild:
                 word["guild_id"] = ctx.guild.id
                 to_transfer.append(word)
 
@@ -526,9 +475,7 @@ class Highlight(Cog):
                 delete_after=5,
             )
         else:
-            await ctx.send(
-                "You have no words to transfer from this server.", delete_after=5
-            )
+            await ctx.send("You have no words to transfer from this server.", delete_after=5)
 
         for transfered in to_transfer:
             self.cached_words[ctx.author.id].append(transfered)
@@ -585,9 +532,7 @@ class Highlight(Cog):
             )
             return f":white_check_mark: Unblocked {entity.mention}."
 
-    async def get_entity(
-        self, ctx: Context, entity: ENTITY_HINT
-    ) -> Optional[ENTITY_HINT]:
+    async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> Optional[ENTITY_HINT]:
         converters: List = [
             commands.MemberConverter,
             commands.UserConverter,
@@ -611,18 +556,13 @@ class Highlight(Cog):
         invoke_without_command=True,
     )
     @commands.guild_only()
-    async def block(
-        self, ctx: Context, *, entity: Union[discord.Member, discord.TextChannel]
-    ):
+    async def block(self, ctx: Context, *, entity: Union[discord.Member, discord.TextChannel]):
         converted_entity = await self.get_entity(ctx, entity)
 
         if not converted_entity or (
-            isinstance(converted_entity, discord.TextChannel)
-            and ctx.author not in converted_entity.members
+            isinstance(converted_entity, discord.TextChannel) and ctx.author not in converted_entity.members
         ):
-            return await ctx.send(
-                f"User or channel `{entity}` not found.", delete_after=5
-            )
+            return await ctx.send(f"User or channel `{entity}` not found.", delete_after=5)
 
         result = await self.do_block(ctx.author.id, converted_entity)
         await ctx.send(result, delete_after=5)
@@ -634,15 +574,11 @@ class Highlight(Cog):
         aliases=["unmute"],
         invoke_without_command=True,
     )
-    async def unblock(
-        self, ctx: Context, *, entity: Union[discord.Member, discord.TextChannel]
-    ):
+    async def unblock(self, ctx: Context, *, entity: Union[discord.Member, discord.TextChannel]):
         converted_entity = await self.get_entity(ctx, entity)
 
         if not converted_entity:
-            return await ctx.send(
-                f"User or channel `{entity}` not found.", delete_after=5
-            )
+            return await ctx.send(f"User or channel `{entity}` not found.", delete_after=5)
 
         result = await self.do_unblock(ctx.author.id, converted_entity)
         await ctx.send(result, delete_after=5)
@@ -656,17 +592,13 @@ class Highlight(Cog):
         settings = await self.get_user_settings(ctx.author.id)
 
         em = discord.Embed(description="", color=discord.Color.blurple())
-        em.set_author(
-            name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url
-        )
+        em.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
 
         users = []
         for user_id in settings["blocked_users"]:
             user = await self.bot.fetch_user(user_id)
             guilds = [
-                f"`{guild.name}`"
-                for guild in self.bot.guilds
-                if user in guild.members and ctx.author in guild.members
+                f"`{guild.name}`" for guild in self.bot.guilds if user in guild.members and ctx.author in guild.members
             ]
 
             if user and guilds:
@@ -683,9 +615,7 @@ class Highlight(Cog):
                 channels.append(f"{channel.mention} - `{channel.guild.name}`")
 
         if channels:
-            em.add_field(
-                name="Blocked Channels", value="\n".join(channels), inline=False
-            )
+            em.add_field(name="Blocked Channels", value="\n".join(channels), inline=False)
 
         if settings["disabled"]:
             em.description = ":no_entry_sign: Highlight is currently disabled.\n\n"
@@ -714,17 +644,13 @@ class Highlight(Cog):
                 delete_after=5,
             )
 
-        await ctx.send(
-            ":white_check_mark: Your blocked users and channels have been cleared."
-        )
+        await ctx.send(":white_check_mark: Your blocked users and channels have been cleared.")
 
     @highlight.command(name="enable", description="Enable highlight for yourself")
     async def enable(self, ctx: Context):
         settings = await self.get_user_settings(ctx.author.id)
         if not settings["disabled"]:
-            return await ctx.send(
-                "You already have highlight enabled.", delete_after=5, ephemeral=True
-            )
+            return await ctx.send("You already have highlight enabled.", delete_after=5, ephemeral=True)
 
         await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id},
@@ -738,16 +664,12 @@ class Highlight(Cog):
             ephemeral=True,
         )
 
-    @highlight.command(
-        name="disable", description="Disable highlight for yourself", aliases=["dnd"]
-    )
+    @highlight.command(name="disable", description="Disable highlight for yourself", aliases=["dnd"])
     @commands.guild_only()
     async def disable(self, ctx: Context):
         settings = await self.get_user_settings(ctx.author.id)
         if settings["disabled"]:
-            return await ctx.send(
-                "You already have highlight disabled.", delete_after=5, ephemeral=True
-            )
+            return await ctx.send("You already have highlight disabled.", delete_after=5, ephemeral=True)
 
         await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id},

@@ -35,9 +35,7 @@ def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
 
             image.paste(corner, (0, 0), corner)
             image.paste(corner.rotate(90), (0, my - radius), corner.rotate(90))
-            image.paste(
-                corner.rotate(180), (mx - radius, my - radius), corner.rotate(180)
-            )
+            image.paste(corner.rotate(180), (mx - radius, my - radius), corner.rotate(180))
             image.paste(corner.rotate(270), (mx - radius, 0), corner.rotate(270))
 
         draw = ImageDraw.Draw(image)

@@ -19,9 +19,7 @@ NAMES: dict = json.loads(Path(r"extra/pride/drag_queen_names.json").read_text("u
 VIDEOS: dict = json.loads(Path(r"extra/pride/anthems.json").read_text("utf8"))
 FACTS: dict = json.loads(Path(r"extra/pride/facts.json").read_text("utf8"))
 
-PRIDE_RESOURCE: dict = json.loads(
-    Path(r"extra/pride/prideleader.json").read_text("utf8")
-)
+PRIDE_RESOURCE: dict = json.loads(Path(r"extra/pride/prideleader.json").read_text("utf8"))
 MINIMUM_FUZZ_RATIO = 40
 
 
@@ -36,24 +34,18 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         now = discord.utils.utcnow()
         previous_years_facts = (y for x, y in FACTS.items() if int(x) < now.year)
         current_year_facts = FACTS.get(str(now.year), [])[: now.day]
-        previous_facts = current_year_facts + [
-            x for y in previous_years_facts for x in y
-        ]
+        previous_facts = current_year_facts + [x for y in previous_years_facts for x in y]
         try:
             await ctx.send(embed=self.make_embed(random.choice(previous_facts)))
         except IndexError:
             await ctx.error("No facts available")
 
-    async def send_select_fact(
-        self, target: discord.abc.Messageable, _date: Union[str, datetime]
-    ) -> None:
+    async def send_select_fact(self, target: discord.abc.Messageable, _date: Union[str, datetime]) -> None:
         """Provides the fact for the specified day, if the day is today, or is in the past."""
         now = discord.utils.utcnow()
         if isinstance(_date, str):
             try:
-                date = dateutil.parser.parse(
-                    _date, dayfirst=False, yearfirst=False, fuzzy=True
-                )
+                date = dateutil.parser.parse(_date, dayfirst=False, yearfirst=False, fuzzy=True)
             except (ValueError, OverflowError) as err:
                 await target.send(f"Error parsing date: {err}")
                 return
@@ -61,9 +53,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
             date = _date
         if date.year < now.year or (date.year == now.year and date.day <= now.day):
             try:
-                await target.send(
-                    embed=self.make_embed(FACTS[str(date.year)][date.day - 1])
-                )
+                await target.send(embed=self.make_embed(FACTS[str(date.year)][date.day - 1]))
             except KeyError:
                 await target.send(f"The year {date.year} is not yet supported")
                 return
@@ -139,11 +129,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         """
         embed = discord.Embed(color=Colours.soft_red)
         pride_leader = pride_leader.title()
-        valid_names = [
-            name
-            for name in PRIDE_RESOURCE
-            if fuzz.ratio(pride_leader, name) >= MINIMUM_FUZZ_RATIO
-        ]
+        valid_names = [name for name in PRIDE_RESOURCE if fuzz.ratio(pride_leader, name) >= MINIMUM_FUZZ_RATIO]
 
         if not valid_names:
             valid_names = ", ".join(PRIDE_RESOURCE)
@@ -153,39 +139,25 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
             error_msg = "Did you mean?"
 
         embed.description = f"{error_msg}\n```\n{valid_names}\n```"
-        embed.set_footer(
-            text="To add more pride leaders, feel free to open a pull request!"
-        )
+        embed.set_footer(text="To add more pride leaders, feel free to open a pull request!")
 
         return embed
 
     def embed_builder(self, pride_leader: dict) -> discord.Embed:
         """Generate an Embed with information about a pride leader."""
-        name = [name for name, info in PRIDE_RESOURCE.items() if info == pride_leader][
-            0
-        ]
+        name = [name for name, info in PRIDE_RESOURCE.items() if info == pride_leader][0]
 
-        embed = discord.Embed(
-            title=name, description=pride_leader["About"], color=Colours.blue
-        )
+        embed = discord.Embed(title=name, description=pride_leader["About"], color=Colours.blue)
         embed.add_field(name="Known for", value=pride_leader["Known for"], inline=False)
-        embed.add_field(
-            name="D.O.B and Birth place", value=pride_leader["Born"], inline=False
-        )
-        embed.add_field(
-            name="Awards and honors", value=pride_leader["Awards"], inline=False
-        )
-        embed.add_field(
-            name="For More Information", value=f"Do `$wiki {name}`", inline=False
-        )
+        embed.add_field(name="D.O.B and Birth place", value=pride_leader["Born"], inline=False)
+        embed.add_field(name="Awards and honors", value=pride_leader["Awards"], inline=False)
+        embed.add_field(name="For More Information", value=f"Do `$wiki {name}`", inline=False)
         embed.set_thumbnail(url=pride_leader["url"])
         return embed
 
     @in_month(Month.JUNE)
     @commands.command(aliases=("pl", "prideleader"))
-    async def pride_leader(
-        self, ctx: Context, *, pride_leader_name: Optional[str]
-    ) -> None:
+    async def pride_leader(self, ctx: Context, *, pride_leader_name: Optional[str]) -> None:
         """
         Information about a Pride Leader.
         Returns information about the specified pride leader

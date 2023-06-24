@@ -12,8 +12,7 @@ from typing import Dict, List, Literal, NamedTuple, Optional
 
 import discord
 from core import Cog, Context, Parrot
-from discord.ext import commands
-from discord.ext import old_menus as menus
+from discord.ext import commands, old_menus as menus
 
 from .parser import View
 
@@ -176,9 +175,7 @@ class Position(NamedTuple):
 
 
 class Board:
-    def __init__(
-        self, *, size: int = ORIGINAL, base: int = 10, board=None, magic_number=None
-    ):
+    def __init__(self, *, size: int = ORIGINAL, base: int = 10, board=None, magic_number=None):
         self.size = size
         self.base = base
 
@@ -186,11 +183,7 @@ class Board:
             board = DIE[self.base][self.size].copy()
             random.shuffle(board)
             board = [
-                [
-                    random.choice(board[row * self.size + column])
-                    for column in range(self.size)
-                ]
-                for row in range(self.size)
+                [random.choice(board[row * self.size + column]) for column in range(self.size)] for row in range(self.size)
             ]
         if magic_number is None:
             magic_number = random.randint(00, base**2 - 1)
@@ -198,9 +191,7 @@ class Board:
         self.columns = board
         self.number = magic_number
 
-    def board_contains(
-        self, numbers: str, pos: Position = None, passed: List[Position] = None
-    ) -> bool:
+    def board_contains(self, numbers: str, pos: Position = None, passed: List[Position] = None) -> bool:
         if passed is None:
             passed = []
         # Empty numberss
@@ -229,12 +220,7 @@ class Board:
                         new_pos = Position(pos.col + x, pos.row + y)
 
                         # don't check out of bounds
-                        if (
-                            new_pos.col < 0
-                            or new_pos.col >= self.size
-                            or new_pos.row < 0
-                            or new_pos.row >= self.size
-                        ):
+                        if new_pos.col < 0 or new_pos.col >= self.size or new_pos.row < 0 or new_pos.row >= self.size:
                             continue
 
                         if self.board_contains(numbers[1:], new_pos, [*passed, pos]):
@@ -282,10 +268,7 @@ class Game(menus.Menu):
         state = ""
 
         for row in range(self.board.size):
-            emoji = [
-                NUMBER_EMOJI[self.board.columns[column][row]]
-                for column in range(self.board.size)
-            ]
+            emoji = [NUMBER_EMOJI[self.board.columns[column][row]] for column in range(self.board.size)]
             state = " ".join(emoji) + "\n" + state
 
         number = self.board.number
@@ -296,17 +279,13 @@ class Game(menus.Menu):
             number = bin(number)
         state += f"\n\n The magic number is **{number}**!"
 
-        return discord.Embed(title=self.name, description=state).set_footer(
-            text=self.footer
-        )
+        return discord.Embed(title=self.name, description=state).set_footer(text=self.footer)
 
     def setup(self):
         raise NotImplementedError
 
     async def send_initial_message(self, ctx, channel):
-        return await channel.send(
-            content="Foggle game started, you have 3 minutes!", embed=self.state
-        )
+        return await channel.send(content="Foggle game started, you have 3 minutes!", embed=self.state)
 
     async def start(self, *args, **kwargs):
         await super().start(*args, **kwargs)
@@ -362,25 +341,17 @@ class ShuffflingGame(Game):
                 "1 minute",
                 "30 seconds",
             ][i]
-            await self.message.edit(
-                content=f"Board Updated! You have {time} left!", embed=self.state
-            )
+            await self.message.edit(content=f"Board Updated! You have {time} left!", embed=self.state)
 
     async def start(self, *args, **kwargs):
         await super().start(*args, **kwargs)
         self.bot.loop.create_task(self.shuffle_task())
 
     def get_points(self, equations: Iterable[str]) -> int:
-        return sum(
-            max(board.points(equation) for board in self.boards)
-            for equation in equations
-        )
+        return sum(max(board.points(equation) for board in self.boards) for equation in equations)
 
     def get_correct(self, equations: Iterable[str]):
-        return sum(
-            max(board.is_legal(equation) for board in self.boards)
-            for equation in equations
-        )
+        return sum(max(board.is_legal(equation) for board in self.boards) for equation in equations)
 
 
 class DiscordGame(Game):
@@ -394,9 +365,7 @@ class DiscordGame(Game):
         i = 0
         old = None
 
-        for user, equations in sorted(
-            self.equations.items(), key=lambda v: self.get_points(v[1]), reverse=True
-        ):
+        for user, equations in sorted(self.equations.items(), key=lambda v: self.get_points(v[1]), reverse=True):
             points = self.get_points(equations)
             correct = self.get_correct(equations)
 
@@ -449,19 +418,12 @@ class DiscordGame(Game):
 
 class FlipGame(ShuffflingGame, DiscordGame):
     name = "Flip Foggle"
-    footer = (
-        "Find equations as fast as you can, rows will flip positions every 30 seconds."
-    )
+    footer = "Find equations as fast as you can, rows will flip positions every 30 seconds."
 
     def shuffle(self):
-        rows = [
-            [self.board.columns[x][y] for x in range(self.board.size)]
-            for y in range(self.board.size)
-        ]
+        rows = [[self.board.columns[x][y] for x in range(self.board.size)] for y in range(self.board.size)]
         random.shuffle(rows)
-        new_board = [
-            [rows[x][y] for x in range(self.board.size)] for y in range(self.board.size)
-        ]
+        new_board = [[rows[x][y] for x in range(self.board.size)] for y in range(self.board.size)]
         self.board = Board(
             size=self.board.size,
             base=self.board.base,
@@ -475,16 +437,9 @@ class FoggleGame(ShuffflingGame, DiscordGame):
     footer = "Find equations as fast as you can, letters will shuffle positions every 30 seconds."
 
     def shuffle(self):
-        letters = [
-            self.board.columns[y][x]
-            for x in range(self.board.size)
-            for y in range(self.board.size)
-        ]
+        letters = [self.board.columns[y][x] for x in range(self.board.size) for y in range(self.board.size)]
         random.shuffle(letters)
-        new_board = [
-            letters[x * self.board.size : x * self.board.size + self.board.size]
-            for x in range(self.board.size)
-        ]
+        new_board = [letters[x * self.board.size : x * self.board.size + self.board.size] for x in range(self.board.size)]
         self.board = Board(
             size=self.board.size,
             base=self.board.base,
@@ -514,9 +469,7 @@ def foggle_game(game_type: type[Game]):
 
             # Raise if game already running
             if ctx.channel in self.games:
-                raise commands.CheckFailure(
-                    "There is already a game running in this channel."
-                )
+                raise commands.CheckFailure("There is already a game running in this channel.")
 
             # Start the game
             self.games[ctx.channel] = game = game_type(size=check_size(ctx), base=base)
@@ -587,9 +540,7 @@ class Foggle(Cog):
     async def foggle_rules(self, ctx: Context, type: str = "discord"):
         """Displays information about a given foggle game type."""
         embed = discord.Embed(title="About Foggle:", description=FOGGLE_RULES)
-        embed.set_image(
-            url="https://cdn.discordapp.com/attachments/336642776609456130/809275615676334100/pic127783.png"
-        )
+        embed.set_image(url="https://cdn.discordapp.com/attachments/336642776609456130/809275615676334100/pic127783.png")
         await ctx.send(embed=embed)
 
     @commands.Cog.listener()

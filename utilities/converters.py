@@ -4,17 +4,7 @@ import asyncio
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generic,
-    List,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union
 
 from aiohttp import ClientSession
 from lru import LRU
@@ -59,9 +49,7 @@ class ToAsync:
     def __call__(self, blocking) -> Callable[..., Any]:
         @wraps(blocking)
         async def wrapper(*args, **kwargs) -> Any:
-            return await asyncio.get_event_loop().run_in_executor(
-                self.executor, partial(blocking, *args, **kwargs)
-            )
+            return await asyncio.get_event_loop().run_in_executor(self.executor, partial(blocking, *args, **kwargs))
 
         return wrapper
 
@@ -78,9 +66,7 @@ class BannedMember(commands.Converter):
                 ban_entry = await ctx.guild.fetch_ban(discord.Object(id=member_id))
                 return ban_entry.user
             except discord.NotFound:
-                raise commands.BadArgument(
-                    "User Not Found! Probably this member has not been banned before."
-                ) from None
+                raise commands.BadArgument("User Not Found! Probably this member has not been banned before.") from None
 
         async for entry in ctx.guild.bans():
             if argument in (entry.user.name, str(entry.user)):
@@ -88,9 +74,7 @@ class BannedMember(commands.Converter):
             if str(entry.user) == argument:
                 return entry.user
 
-        raise commands.BadArgument(
-            "User Not Found! Probably this member has not been banned before."
-        ) from None
+        raise commands.BadArgument("User Not Found! Probably this member has not been banned before.") from None
 
 
 class WrappedMessageConverter(commands.MessageConverter):
@@ -107,9 +91,7 @@ class WrappedMessageConverter(commands.MessageConverter):
         return await super().convert(ctx, argument)
 
 
-def can_execute_action(
-    ctx: Context, user: discord.Member, target: discord.Member
-) -> bool:
+def can_execute_action(ctx: Context, user: discord.Member, target: discord.Member) -> bool:
     return (
         user.id in ctx.bot.owner_ids  # type: ignore # owner_ids can not be None
         or user == ctx.guild.owner  # type: ignore # guild can not be None and owner can not be None
@@ -124,20 +106,14 @@ class MemberID(commands.Converter):
         """Convert a user mention or ID to a member object."""
         assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         try:
-            m: Optional[discord.Member] = await commands.MemberConverter().convert(
-                ctx, argument
-            )
+            m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
             except ValueError:
-                raise commands.BadArgument(
-                    f"{argument} is not a valid member or member ID."
-                ) from None
+                raise commands.BadArgument(f"{argument} is not a valid member or member ID.") from None
             else:
-                m: Optional[
-                    Union[discord.Member, discord.User]
-                ] = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
+                m: Optional[Union[discord.Member, discord.User]] = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:
                     # hackban case
                     return type(  # type: ignore
@@ -168,9 +144,7 @@ class Cache(Generic[KT, VT]):
     ) -> None:
         self.cache_size: int = cache_size or LRU_CACHE
         self.bot = bot
-        self.__internal_cache: "LRU" = LRU(
-            self.cache_size, callback=callback or lru_callback
-        )
+        self.__internal_cache: "LRU" = LRU(self.cache_size, callback=callback or lru_callback)
 
         self.items: Callable[[], List[Tuple[int, Any]]] = self.__internal_cache.items  # type: ignore
         self.peek_first_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item  # type: ignore
@@ -216,9 +190,7 @@ class Cache(Generic[KT, VT]):
         return iter(self.__internal_cache)
 
 
-def text_to_list(
-    text: str, *, number_of_lines: int, prefix: str = "```\n", suffix: str = "\n```"
-) -> List[str]:
+def text_to_list(text: str, *, number_of_lines: int, prefix: str = "```\n", suffix: str = "\n```") -> List[str]:
     texts = text.split("\n")
     ls = []
     temp = ""
@@ -242,9 +214,7 @@ CHARACTER_VALUES = {
 }
 # fmt: on
 
-SECTION_SEPERATOR = (
-    "\N{WHITE RIGHT POINTING BACKHAND INDEX}\N{WHITE LEFT POINTING BACKHAND INDEX}"
-)
+SECTION_SEPERATOR = "\N{WHITE RIGHT POINTING BACKHAND INDEX}\N{WHITE LEFT POINTING BACKHAND INDEX}"
 
 
 def to_bottom(text: str) -> str:
@@ -267,9 +237,7 @@ def from_bottom(text: str) -> str:
     out = bytearray()
     text = text.strip().removesuffix(SECTION_SEPERATOR)
 
-    if any(
-        c not in CHARACTER_VALUES.values() for c in text.replace(SECTION_SEPERATOR, "")
-    ):
+    if any(c not in CHARACTER_VALUES.values() for c in text.replace(SECTION_SEPERATOR, "")):
         raise TypeError(f"Invalid bottom text: {text}")
 
     for char in text.split(SECTION_SEPERATOR):

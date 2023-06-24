@@ -5,13 +5,7 @@ from collections.abc import Container, Iterable
 from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias, Union
 
 from discord.ext.commands import Command  # type: ignore
-from discord.ext.commands import (
-    BucketType,
-    Cog,
-    CommandOnCooldown,
-    Cooldown,
-    CooldownMapping,
-)
+from discord.ext.commands import BucketType, Cog, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
 
 import discord
@@ -57,9 +51,7 @@ def in_server(guild_id: int) -> Check[Context]:
         if ctx.guild.id == guild.id:
             return True
 
-        raise ex.CustomError(
-            f"You must be in server: `{guild.name}`, to use the command"
-        )
+        raise ex.CustomError(f"You must be in server: `{guild.name}`, to use the command")
 
     return commands.check(predicate)  # type: ignore
 
@@ -129,9 +121,7 @@ def is_mod() -> Check[Context]:
 
         bot: Parrot = ctx.bot
         try:
-            role = (
-                bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0
-            )  # role could be `None`
+            role = bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0  # role could be `None`
             if true := ctx.author._roles.has(role):
                 return true
             raise ex.NoModRole()
@@ -156,9 +146,7 @@ def in_temp_channel() -> Check[Context]:
         if _ := await ctx.bot.guild_configurations.find_one(
             {
                 "_id": ctx.guild.id,
-                "hub_temp_channels.channel_id": getattr(
-                    ctx.author.voice.channel, "id", 0
-                ),
+                "hub_temp_channels.channel_id": getattr(ctx.author.voice.channel, "id", 0),
                 "hub_temp_channels.author": ctx.author.id,
             }
         ):
@@ -201,9 +189,7 @@ def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
 def guild_premium() -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is premium."""
-        if ctx.guild is not None and ctx.bot.guild_configurations[ctx.guild.id].get(
-            "premium", False
-        ):
+        if ctx.guild is not None and ctx.bot.guild_configurations[ctx.guild.id].get("premium", False):
             return True
 
         raise ex.NotPremiumServer()
@@ -235,11 +221,7 @@ def in_voice() -> Check[Context]:
 
 def same_voice() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        assert (
-            ctx.guild is not None
-            and isinstance(ctx.author, discord.Member)
-            and isinstance(ctx.me, discord.Member)
-        )
+        assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
         if ctx.me.voice is None:
             raise ex.NotBotInVoice()
         if ctx.author.voice is None:
@@ -278,9 +260,7 @@ def cooldown_with_role_bypass(
             return
 
         # Cooldown logic, taken from discord.py internals.
-        current = ctx.message.created_at.replace(
-            tzinfo=datetime.timezone.utc
-        ).timestamp()
+        current = ctx.message.created_at.replace(tzinfo=datetime.timezone.utc).timestamp()
         bucket = buckets.get_bucket(ctx.message)
         if bucket is None:
             return
@@ -309,18 +289,14 @@ def cooldown_with_role_bypass(
 
 def without_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user does not have any of the roles in role_ids."""
-    assert isinstance(ctx.guild, discord.Guild) and isinstance(
-        ctx.author, discord.Member
-    )
+    assert isinstance(ctx.guild, discord.Guild) and isinstance(ctx.author, discord.Member)
     author_roles = [role.id for role in ctx.author.roles]
     return all(role not in author_roles for role in role_ids)
 
 
 def with_role_check(ctx: Context, *role_ids: int) -> bool:
     """Returns True if the user has any one of the roles in role_ids."""
-    assert isinstance(ctx.guild, discord.Guild) and isinstance(
-        ctx.author, discord.Member
-    )
+    assert isinstance(ctx.guild, discord.Guild) and isinstance(ctx.author, discord.Member)
 
     return any(role.id in role_ids for role in ctx.author.roles) if ctx.guild else False
 
@@ -358,11 +334,7 @@ def in_whitelist_check(
         return True
 
     # Only check the category id if we have a category whitelist and the channel has a `category_id`
-    if (
-        categories
-        and hasattr(ctx.channel, "category_id")
-        and ctx.channel.category_id in categories
-    ):
+    if categories and hasattr(ctx.channel, "category_id") and ctx.channel.category_id in categories:
         return True
 
     # category = getattr(ctx.channel, "category", None)
@@ -387,9 +359,7 @@ class InWhitelistCheckFailure(ex.ParrotCheckFailure):
         self.redirect_channel = redirect_channel
 
         if redirect_channel:
-            redirect_message = (
-                f" here. Please use the <#{redirect_channel}> channel instead"
-            )
+            redirect_message = f" here. Please use the <#{redirect_channel}> channel instead"
         else:
             redirect_message = ""
 

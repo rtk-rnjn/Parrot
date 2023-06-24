@@ -8,9 +8,7 @@ from discord.ext import commands
 POSSIBLE_RUFF_CODE = re.compile(r"([A-Z]\d{2,4})")
 
 
-class RuffConverter(
-    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
-):
+class RuffConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     ignore: Optional[str] = None
     select: Optional[str] = None

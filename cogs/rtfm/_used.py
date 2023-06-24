@@ -174,9 +174,7 @@ async def execute_run(
         link = await bot.mystbin.create_paste(filename="output.txt", content=result)
 
         if link is None:
-            output = (
-                "Your output was too long, but I couldn't make an online bin out of it."
-            )
+            output = "Your output was too long, but I couldn't make an online bin out of it."
         else:
             output = f"Output was too long (more than 2000 characters or 40 lines) so I put it here: {link.url}"
 
@@ -202,9 +200,7 @@ def get_raw(link: str) -> str:
     )
 
     if not any(link.startswith(url) for url in authorized):
-        raise commands.BadArgument(
-            f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http')."
-        )
+        raise commands.BadArgument(f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http').")
 
     domain = link.split("/")[2]
 

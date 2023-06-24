@@ -6,9 +6,7 @@ from discord.ext import commands
 from utilities.converters import convert_bool
 
 
-class MypyConverter(
-    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
-):
+class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     # Import Discovery
     no_namespace_packages: Optional[convert_bool] = None

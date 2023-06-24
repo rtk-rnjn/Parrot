@@ -29,19 +29,12 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.send(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
 
-    soup = BeautifulSoup(
-        str(await response.text()), HTML_PARSER
-    )  # icantinstalllxmlinheroku
+    soup = BeautifulSoup(str(await response.text()), HTML_PARSER)  # icantinstalllxmlinheroku
 
     def soup_match(tag):
-        return (
-            all(string in tag.text for string in text.strip().split())
-            and tag.name == "li"
-        )
+        return all(string in tag.text for string in text.strip().split()) and tag.name == "li"
 
     elements = await ctx.bot.func(soup.find_all, soup_match, limit=10)
     links = [tag.select_one("li > a") for tag in elements]
@@ -50,9 +43,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     if not links:
         return await ctx.send(f"{ctx.author.mention} no results")
 
-    content = [
-        f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links
-    ]
+    content = [f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links]
 
     emb = discord.Embed(title="Python 3 docs")
     emb.set_thumbnail(
@@ -63,23 +54,17 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     return await ctx.send(embed=emb)
 
 
-async def _cppreference(
-    language: str, ctx: Context, text: str
-) -> Optional[discord.Message]:
+async def _cppreference(language: str, ctx: Context, text: str) -> Optional[discord.Message]:
     """Search something on cppreference"""
     text = text.strip("`")
 
-    base_url = (
-        f"https://cppreference.com/w/cpp/index.php?title=Special:Search&search={text}"
-    )
+    base_url = f"https://cppreference.com/w/cpp/index.php?title=Special:Search&search={text}"
 
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.send(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
 
     soup = BeautifulSoup(await response.text(), HTML_PARSER)
     uls = await ctx.bot.func(soup.find_all, "ul", class_="mw-search-results")
@@ -89,9 +74,7 @@ async def _cppreference(
 
     if language == "C":
         wanted = "w/c/"
-        url = (
-            "https://wikiprogramming.org/wp-content/uploads/2015/05/c-logo-150x150.png"
-        )
+        url = "https://wikiprogramming.org/wp-content/uploads/2015/05/c-logo-150x150.png"
     else:
         wanted = "w/cpp/"
         url = "https://isocpp.org/files/img/cpp_logo.png"
@@ -101,9 +84,7 @@ async def _cppreference(
             links = elem.find_all("a", limit=10)
             break
 
-    content = [
-        f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links
-    ]
+    content = [f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links]
     emb = discord.Embed(title=f"{language} docs")
     emb.set_thumbnail(url=url)
 
@@ -127,17 +108,11 @@ async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.send(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
 
-    results = BeautifulSoup(await response.text(), HTML_PARSER).find(
-        "div", class_="searchresults"
-    )
+    results = BeautifulSoup(await response.text(), HTML_PARSER).find("div", class_="searchresults")
 
-    if results.find("p", class_="mw-search-nonefound") or not results.find(
-        "span", id="Page_title_matches"
-    ):
+    if results.find("p", class_="mw-search-nonefound") or not results.find("span", id="Page_title_matches"):
         return await ctx.send(f"{ctx.author.mention} no results")
 
     # Page_title_matches is first

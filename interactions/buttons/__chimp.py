@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import List, Optional, Any
+from typing import Any, List, Optional
 
 import discord
+from core import Context, Parrot
 
-
-from core import Parrot, Context
 
 def chunk(iterable: List[Any], *, count: int) -> List[List[Any]]:
     return [iterable[i : i + count] for i in range(0, len(iterable), count)]
@@ -45,9 +44,7 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
             if game.step == len(game.coordinates):
                 self.view.disable_all()
                 self.view.stop()
-                return await interaction.response.edit_message(
-                    content="Congratulations, you won!", view=self.view
-                )
+                return await interaction.response.edit_message(content="Congratulations, you won!", view=self.view)
             else:
                 await interaction.response.edit_message(
                     content=f"Click the buttons in order! **[Lives: {game.lives}]**",
@@ -64,9 +61,7 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
                 self.view.disable_all()
                 self.style = discord.ButtonStyle.red
 
-                await interaction.response.edit_message(
-                    content="You Lose!", view=self.view
-                )
+                await interaction.response.edit_message(content="You Lose!", view=self.view)
                 return self.view.stop()
             else:
                 self.style = discord.ButtonStyle.red
@@ -96,7 +91,6 @@ class ChimpView(discord.ui.View):
                 button.disabled = not item
                 self.add_item(button)
 
-    
     def disable_all(self) -> None:
         for button in self.children:
             if isinstance(button, discord.ui.Button):
@@ -104,7 +98,7 @@ class ChimpView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         return self.stop()
-    
+
     def update_view(
         self,
         style: discord.ButtonStyle,
@@ -209,12 +203,12 @@ class ChimpTest:
                     content=f"Click the buttons in order! **[Lives: {self.lives}]**",
                     view=self.view,
                 )
-        
+
         await asyncio.wait(
             [
                 ctx.bot.loop.create_task(self.view.wait()),
                 ctx.bot.loop.create_task(ctx.wait_for_delete(self.message)),
             ],
-            return_when=asyncio.FIRST_COMPLETED
+            return_when=asyncio.FIRST_COMPLETED,
         )
         return self.message

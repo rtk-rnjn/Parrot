@@ -43,9 +43,7 @@ async def send_embed(
     """Generate & send a response embed with Wolfram as the author."""
     embed = Embed(colour=colour)
     embed.description = f"{message_txt}"  # well, fuck you pycord
-    embed.set_author(
-        name="Wolfram Alpha", icon_url=WOLF_IMAGE, url="https://www.wolframalpha.com/"
-    )
+    embed.set_author(name="Wolfram Alpha", icon_url=WOLF_IMAGE, url="https://www.wolframalpha.com/")
     if footer:
         embed.set_footer(text=footer)
 
@@ -68,9 +66,7 @@ def custom_cooldown(*ignore: int) -> Callable:
             guild_cooldown = guildcd.get_bucket(ctx.message).get_tokens() != 0
             # check the message is in a guild, and check user bucket if user is not ignored
             if ctx.guild and all(r.id not in ignore for r in ctx.author.roles):
-                return (
-                    guild_cooldown and usercd.get_bucket(ctx.message).get_tokens() != 0
-                )
+                return guild_cooldown and usercd.get_bucket(ctx.message).get_tokens() != 0
             return guild_cooldown
 
         user_bucket = usercd.get_bucket(ctx.message)
@@ -80,15 +76,8 @@ def custom_cooldown(*ignore: int) -> Callable:
 
             if user_rate:
                 # Can't use api; cause: member limit
-                cooldown = (
-                    arrow.utcnow()
-                    .shift(seconds=int(user_rate))
-                    .humanize(only_distance=True)
-                )
-                message = (
-                    "You've used up your limit for Wolfram|Alpha requests.\n"
-                    f"Cooldown: {cooldown}"
-                )
+                cooldown = arrow.utcnow().shift(seconds=int(user_rate)).humanize(only_distance=True)
+                message = "You've used up your limit for Wolfram|Alpha requests.\n" f"Cooldown: {cooldown}"
                 await send_embed(ctx, message)
                 return False
 
@@ -99,10 +88,7 @@ def custom_cooldown(*ignore: int) -> Callable:
 
         if guild_rate:
             # Can't use api; cause: guild limit
-            message = (
-                "The max limit of requests for the server has been reached for today.\n"
-                f"Cooldown: {int(guild_rate)}"
-            )
+            message = "The max limit of requests for the server has been reached for today.\n" f"Cooldown: {int(guild_rate)}"
             await send_embed(ctx, message)
             return False
 
@@ -111,9 +97,7 @@ def custom_cooldown(*ignore: int) -> Callable:
     return check(predicate)
 
 
-async def get_pod_pages(
-    ctx: Context, bot: Parrot, query: str
-) -> Optional[List[Tuple[str, str]]]:
+async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> Optional[List[Tuple[str, str]]]:
     """Get the Wolfram API pod pages for the provided query."""
     async with ctx.typing():
         params = {
@@ -191,9 +175,7 @@ class Wolfram(Cog):  # type: ignore
 
         # Give feedback that the bot is working.
         async with ctx.typing():
-            async with self.bot.http_session.get(
-                url=request_url, params=params
-            ) as response:
+            async with self.bot.http_session.get(url=request_url, params=params) as response:
                 status = response.status
                 image_bytes = await response.read()
 
@@ -270,9 +252,7 @@ class Wolfram(Cog):  # type: ignore
 
         # Give feedback that the bot is working.
         async with ctx.typing():
-            async with self.bot.http_session.get(
-                url=request_url, params=params
-            ) as response:
+            async with self.bot.http_session.get(url=request_url, params=params) as response:
                 status = response.status
                 response_text = await response.text()
 

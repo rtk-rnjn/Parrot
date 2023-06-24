@@ -30,14 +30,10 @@ HEART_EMOJIS = [
     ":sparkling_heart:",
     ":two_hearts:",
 ]
-VALENTINES_DATES = json.loads(
-    Path("extra/valentines/date_ideas.json").read_text("utf8")
-)
+VALENTINES_DATES = json.loads(Path("extra/valentines/date_ideas.json").read_text("utf8"))
 PICKUP_LINES = json.loads(Path("extra/valentines/pickup_lines.json").read_text("utf8"))
 STATES = json.loads(Path("extra/valentines/valenstates.json").read_text("utf8"))
-LOVE_DATA: dict = json.loads(
-    Path("extra/valentines/love_matches.json").read_text("utf8")
-)
+LOVE_DATA: dict = json.loads(Path("extra/valentines/love_matches.json").read_text("utf8"))
 LOVE_DATA = sorted((int(key), value) for key, value in LOVE_DATA.items())
 
 
@@ -114,9 +110,7 @@ class Love(Cog):
     def _extracted_from_zodiac_build_embed_6(self, zodiac: str, embed: discord.Embed):
         embed.title = f"__{zodiac}__"
         embed.description = self.zodiac_fact[zodiac]["About"]
-        embed.add_field(
-            name="__Motto__", value=self.zodiac_fact[zodiac]["Motto"], inline=False
-        ).add_field(
+        embed.add_field(name="__Motto__", value=self.zodiac_fact[zodiac]["Motto"], inline=False).add_field(
             name="__Strengths__",
             value=self.zodiac_fact[zodiac]["Strengths"],
             inline=False,
@@ -138,11 +132,7 @@ class Love(Cog):
             (
                 zodiac_name
                 for zodiac_name, zodiac_data in self.zodiac_fact.items()
-                if (
-                    zodiac_data["start_at"].date()
-                    <= query_date.date()
-                    <= zodiac_data["end_at"].date()
-                )
+                if (zodiac_data["start_at"].date() <= query_date.date() <= zodiac_data["end_at"].date())
             ),
             None,
         )
@@ -186,9 +176,7 @@ class Love(Cog):
 
     @in_month(Month.FEBRUARY)
     @zodiac.command(name="date")
-    async def date_and_month(
-        self, ctx: Context, date: int, month: Union[int, str]
-    ) -> None:
+    async def date_and_month(self, ctx: Context, date: int, month: Union[int, str]) -> None:
         """Provides information about zodiac sign by taking month and date as input."""
         if isinstance(month, str):
             month = month.capitalize()
@@ -202,15 +190,11 @@ class Love(Cog):
             final_embed = self.zodiac_build_embed(zodiac)
         else:
             try:
-                zodiac_sign_based_on_date = self.zodiac_date_verifier(
-                    datetime(2020, month, date)
-                )
+                zodiac_sign_based_on_date = self.zodiac_date_verifier(datetime(2020, month, date))
 
             except ValueError as e:
                 final_embed = discord.Embed(color=self.bot.color)
-                final_embed.description = (
-                    f"Zodiac sign could not be found because.\n```\n{e}\n```"
-                )
+                final_embed.description = f"Zodiac sign could not be found because.\n```\n{e}\n```"
 
             else:
                 final_embed = self.zodiac_build_embed(zodiac_sign_based_on_date)  # type: ignore
@@ -291,18 +275,13 @@ class Love(Cog):
         embed_title = "But there are more!"
         if len(matches) > 1:
             leftovers = f"{', '.join(matches[:-2])}, and {matches[-1]}"
-            embed_text = (
-                f"You have {len(matches)} more matches, these being {leftovers}."
-            )
+            embed_text = f"You have {len(matches)} more matches, these being {leftovers}."
         elif len(matches) == 1:
             embed_title = "But there's another one!"
             embed_text = f"You have another match, this being {matches[0]}."
         else:
             embed_title = "You have a true match!"
-            embed_text = (
-                "This state is your true Valenstate! There are no states that would suit"
-                " you better"
-            )
+            embed_text = "This state is your true Valenstate! There are no states that would suit" " you better"
 
         embed = discord.Embed(
             title=f"Your Valenstate is {valenstate} \u2764",
@@ -316,9 +295,7 @@ class Love(Cog):
     @in_month(Month.FEBRUARY)
     @commands.command(aliases=("love_calculator", "love_calc"))
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
-    async def love(
-        self, ctx: Context, who: Member, whom: Optional[Member] = None
-    ) -> None:
+    async def love(self, ctx: Context, who: Member, whom: Optional[Member] = None) -> None:
         """
         Tells you how much the two love each other.
         This command requires at least one member as input, if two are given love will be calculated between

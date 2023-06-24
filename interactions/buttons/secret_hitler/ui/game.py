@@ -40,9 +40,7 @@ class ResendMessageButton(discord.ui.Button["GameUI"]):
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.view.host:
-            await interaction.response.send_message(
-                "Only the host can re-send the game message.", ephemeral=True
-            )
+            await interaction.response.send_message("Only the host can re-send the game message.", ephemeral=True)
             return
 
         await self.view.resend()
@@ -55,21 +53,15 @@ class ResendViewButton(discord.ui.Button["GameUI"]):
 
     async def callback(self, interaction: discord.Interaction):
         if not isinstance(self.view.view, PeekUI):
-            await interaction.response.send_message(
-                "There is currently not a hidden menu.", ephemeral=True
-            )
+            await interaction.response.send_message("There is currently not a hidden menu.", ephemeral=True)
             return
 
         player = self.view.game.get_player(interaction.user)
         if player is not self.view.view.target:
-            await interaction.response.send_message(
-                "Only the hidden menu target can refresh the menu.", ephemeral=True
-            )
+            await interaction.response.send_message("Only the hidden menu target can refresh the menu.", ephemeral=True)
             return
 
-        await interaction.response.send_message(
-            self.view.view.tooltip, view=self.view.view, ephemeral=True
-        )
+        await interaction.response.send_message(self.view.view.tooltip, view=self.view.view, ephemeral=True)
 
 
 class StopGameButton(discord.ui.Button["GameUI"]):
@@ -78,9 +70,7 @@ class StopGameButton(discord.ui.Button["GameUI"]):
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.view.host:
-            await interaction.response.send_message(
-                "Only the host can stop the game.", ephemeral=True
-            )
+            await interaction.response.send_message("Only the host can stop the game.", ephemeral=True)
             return
 
         self.view.cancel()
@@ -89,9 +79,7 @@ class StopGameButton(discord.ui.Button["GameUI"]):
 
 class BlankButton(discord.ui.Button["GameUI"]):
     def __init__(self) -> None:
-        super().__init__(
-            style=discord.ButtonStyle.secondary, label="\u200b", disabled=True
-        )
+        super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", disabled=True)
 
 
 class GameUI(discord.ui.View):
@@ -147,13 +135,9 @@ class GameUI(discord.ui.View):
     async def send_view(self) -> None:
         if isinstance(self.view, SelectUI) and isinstance(self.view, PeekUI):
             interaction = self.interactions.pop(self.view.target.identifier)
-            await interaction.followup.send(
-                self.view.tooltip, view=self.view, ephemeral=True
-            )
+            await interaction.followup.send(self.view.tooltip, view=self.view, ephemeral=True)
         elif isinstance(self.view, (SelectUI, VoteUI)):
-            await self.channel.send(
-                self.view.tooltip, reference=self.message, view=self.view
-            )
+            await self.channel.send(self.view.tooltip, reference=self.message, view=self.view)
 
     async def update(self) -> None:
         state = self.game.state

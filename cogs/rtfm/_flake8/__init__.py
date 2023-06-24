@@ -12,9 +12,7 @@ from utilities.converters import convert_bool
 POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,4})")
 
 
-class Flake8Converter(
-    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
-):
+class Flake8Converter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     ignore: Optional[str] = None
     select: Optional[str] = None

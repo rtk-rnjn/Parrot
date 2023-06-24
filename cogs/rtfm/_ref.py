@@ -40,16 +40,12 @@ async def _process_mozilla_doc(ctx: Context, url: str):
     if response.status == 404:
         return await ctx.error("No results")
     if response.status != 200:
-        return await ctx.error(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.error(f"An error occurred (status code: {response.status}). Retry later.")
 
     body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
 
     contents = body.find(id="wikiArticle").find(lambda x: x.name == "p" and x.text)
-    return markdownify(contents).replace(
-        "(/en-US/docs", "(https://developer.mozilla.org/en-US/docs"
-    )
+    return markdownify(contents).replace("(/en-US/docs", "(https://developer.mozilla.org/en-US/docs")
 
 
 async def html_ref(ctx: Context, text: str):
@@ -83,9 +79,7 @@ async def _http_ref(part, ctx: Context, text: str):
 
     emb = discord.Embed(title=text, description=output, url=url)
     emb.set_author(name="HTTP protocol")
-    emb.set_thumbnail(
-        url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/HTTP_logo.svg/1280px-HTTP_logo.svg.png"
-    )
+    emb.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/HTTP_logo.svg/1280px-HTTP_logo.svg.png")
 
     await ctx.send(embed=emb)
 
@@ -111,9 +105,7 @@ async def _git_main_ref(part: str, ctx: Context, text: str):
 
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.error(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.error(f"An error occurred (status code: {response.status}). Retry later.")
     if str(response.url) == "https://git-scm.com/docs":
         # Website redirects to home page
         return await ctx.error("No results")
@@ -128,9 +120,7 @@ async def _git_main_ref(part: str, ctx: Context, text: str):
     emb.set_thumbnail(url="https://git-scm.com/images/logo@2x.png")
 
     for tag in sectors[1:]:
-        content = "\n".join(
-            [markdownify(p) for p in tag.find_all(lambda x: x.name in ["p", "pre"])]
-        )
+        content = "\n".join([markdownify(p) for p in tag.find_all(lambda x: x.name in ["p", "pre"])])
         emb.add_field(name=tag.find("h2").text, value=content[:1024])
 
     await ctx.send(embed=emb)
@@ -150,9 +140,7 @@ async def sql_ref(ctx: Context, text: str):
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
     response = await ctx.bot.http_session.get(url)
     if response.status != 200:
-        return await ctx.error(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.error(f"An error occurred (status code: {response.status}). Retry later.")
 
     body = BeautifulSoup(await response.text(), HTML_PARSER).find("body")
     intro = body.find(lambda x: x.name == "h2" and "Introduction to " in x.string)
@@ -183,9 +171,7 @@ async def haskell_ref(ctx: Context, text: str):
     if response.status == 404:
         return await ctx.error(f"No results for `{text}`")
     if response.status != 200:
-        return await ctx.error(
-            f"An error occurred (status code: {response.status}). Retry later."
-        )
+        return await ctx.error(f"An error occurred (status code: {response.status}). Retry later.")
 
     soup = BeautifulSoup(await response.text(), HTML_PARSER).find("div", id="content")
 
@@ -194,8 +180,7 @@ async def haskell_ref(ctx: Context, text: str):
         [
             markdownify(p)
             for p in soup.find_all(
-                lambda x: x.name in ["p", "li"]
-                and tuple(x.parents)[1].name not in ("td", "li"),
+                lambda x: x.name in ["p", "li"] and tuple(x.parents)[1].name not in ("td", "li"),
                 limit=6,
             )
         ]

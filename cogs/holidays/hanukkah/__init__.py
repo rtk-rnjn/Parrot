@@ -61,8 +61,7 @@ class Hanukkah(Cog, command_attrs=dict(hidden=True)):
                 hanukkah_start_hour = 18
                 if hours < hanukkah_start_hour:
                     embed.description = (
-                        "Hanukkah hasnt started yet, "
-                        f"it will start in about {hanukkah_start_hour - hours} hour/s."
+                        "Hanukkah hasnt started yet, " f"it will start in about {hanukkah_start_hour - hours} hour/s."
                     )
                     await ctx.send(embed=embed)
                     return
@@ -77,19 +76,12 @@ class Hanukkah(Cog, command_attrs=dict(hidden=True)):
             number_suffixes = ["st", "nd", "rd", "th"]
             suffix = number_suffixes[festival_day - 1 if festival_day <= 3 else 3]
             message = ":menorah:" * festival_day
-            embed.description = (
-                f"It is the {festival_day}{suffix} day of Hanukkah!\n{message}"
-            )
+            embed.description = f"It is the {festival_day}{suffix} day of Hanukkah!\n{message}"
         elif today < start_day:
             format_start = start_day.strftime("%d of %B")
-            embed.description = (
-                "Hanukkah has not started yet. "
-                f"Hanukkah will start at sundown on {format_start}."
-            )
+            embed.description = "Hanukkah has not started yet. " f"Hanukkah will start at sundown on {format_start}."
         else:
             format_end = end_day.strftime("%d of %B")
-            embed.description = (
-                "Looks like you missed Hanukkah! " f"Hanukkah ended on {format_end}."
-            )
+            embed.description = "Looks like you missed Hanukkah! " f"Hanukkah ended on {format_end}."
 
         await ctx.send(embed=embed)

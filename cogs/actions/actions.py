@@ -24,29 +24,20 @@ class Actions(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(
-            name="Lights_Camera_Action__Emoticon__", id=892434144364220497
-        )
+        return discord.PartialEmoji(name="Lights_Camera_Action__Emoticon__", id=892434144364220497)
 
     def _try_from_cache(self, ctx: Context) -> Optional[str]:
         return choice(self.cached_images.get(ctx.command.qualified_name, [None]))
 
     async def send_message(self, ctx: Context, *, url: str = None) -> None:
-        if (
-            random() > 0.5
-            and len(self.cached_images.get(ctx.command.qualified_name, [])) >= 10
-        ):
+        if random() > 0.5 and len(self.cached_images.get(ctx.command.qualified_name, [])) >= 10:
             url = url or choice(self.cached_images[ctx.command.qualified_name])
         else:
-            response = await self.bot.http_session.get(
-                url or f"{self.url}/{ctx.command.name}"
-            )
+            response = await self.bot.http_session.get(url or f"{self.url}/{ctx.command.name}")
             if response.status != 200:
                 url = self._try_from_cache(ctx)
                 if url is None:
-                    await ctx.send(
-                        f"{ctx.author.mention} Something went wrong, try again later"
-                    )
+                    await ctx.send(f"{ctx.author.mention} Something went wrong, try again later")
                     return
             else:
                 data = await response.json()
@@ -59,9 +50,7 @@ class Actions(Cog):
         )
 
         embed.set_image(url=url)
-        embed.set_footer(
-            text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url
-        )
+        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url)
 
         if ctx.command.qualified_name not in self.cached_images:
             self.cached_images[ctx.command.qualified_name] = set()

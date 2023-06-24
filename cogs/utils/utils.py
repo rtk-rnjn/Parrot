@@ -71,9 +71,7 @@ class Utils(Cog):
         self,
         ctx: Context,
         *,
-        when: Annotated[
-            FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
-        ],
+        when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
     ) -> None:
         """Reminds you of something after a certain amount of time.
 
@@ -109,9 +107,7 @@ class Utils(Cog):
                 content=when.arg,
                 message=ctx.message,
             )
-            log.info(
-                "Created a reminder for %s. reminder exipres at %s", ctx.author, seconds
-            )
+            log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, seconds)
 
     @remindme.command(name="list", aliases=["all"])
     @Context.with_type
@@ -143,13 +139,9 @@ class Utils(Cog):
             self.bot.timer_task.cancel()
             self.bot.timer_task = self.bot.loop.create_task(self.bot.dispatch_timers())
         if delete_result.deleted_count == 0:
-            await ctx.reply(
-                f"{ctx.author.mention} failed to delete reminder of ID: **{message}**"
-            )
+            await ctx.reply(f"{ctx.author.mention} failed to delete reminder of ID: **{message}**")
         else:
-            await ctx.reply(
-                f"{ctx.author.mention} deleted reminder of ID: **{message}**"
-            )
+            await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
 
     @remindme.command(name="dm")
     @Context.with_type
@@ -157,9 +149,7 @@ class Utils(Cog):
         self,
         ctx: Context,
         *,
-        when: Annotated[
-            FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
-        ],
+        when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
     ) -> None:
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
         seconds = when.dt.timestamp()
@@ -183,9 +173,7 @@ class Utils(Cog):
             message=ctx.message,
             dm_notify=True,
         )
-        log.info(
-            "Created a reminder for %s. reminder exipres at %s", ctx.author, seconds
-        )
+        log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, seconds)
 
     @remindme.command(name="loop", aliases=["repeat"])
     @Context.with_type
@@ -193,9 +181,7 @@ class Utils(Cog):
         self,
         ctx: Context,
         *,
-        when: Annotated[
-            FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")
-        ],
+        when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
     ):
         """Same as remind me but you will get reminder on every given time.
 
@@ -205,9 +191,7 @@ class Utils(Cog):
         seconds = when.dt.timestamp()
         now = discord.utils.utcnow().timestamp()
         if seconds - now <= 300:
-            return await ctx.reply(
-                f"{ctx.author.mention} You can't set reminder for less than 5 minutes"
-            )
+            return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
 
         post = {
             "_id": ctx.message.id,
@@ -323,9 +307,7 @@ class Utils(Cog):
 
     @commands.command()
     @commands.has_permissions(manage_messages=True, add_reactions=True)
-    @commands.bot_has_permissions(
-        embed_links=True, add_reactions=True, read_message_history=True
-    )
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
     @Context.with_type
     async def quickpoll(self, ctx: Context, *questions_and_choices: str):
         """
@@ -417,9 +399,7 @@ class Utils(Cog):
                 "after",
                 "custom",
             ):
-                return await ctx.send(
-                    f"{ctx.author.mention} you can't set afk reason reserved words."
-                )
+                return await ctx.send(f"{ctx.author.mention} you can't set afk reason reserved words.")
             post = {
                 "_id": ctx.message.id,
                 "messageURL": ctx.message.jump_url,
@@ -455,9 +435,7 @@ class Utils(Cog):
         self.bot.afk_users.add(ctx.author.id)
 
     @afk.command(name="for")
-    async def afk_till(
-        self, ctx: Context, till: ShortTime, *, text: commands.clean_content = None
-    ):
+    async def afk_till(self, ctx: Context, till: ShortTime, *, text: commands.clean_content = None):
         """To set the AFK time"""
         if till.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
             return await ctx.send(f"{ctx.author.mention} time must be above 120s")
@@ -487,9 +465,7 @@ class Utils(Cog):
         )
 
     @afk.command(name="after")
-    async def afk_after(
-        self, ctx: Context, after: ShortTime, *, text: commands.clean_content = None
-    ):
+    async def afk_after(self, ctx: Context, after: ShortTime, *, text: commands.clean_content = None):
         """To set the AFK future time"""
         if after.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
             return await ctx.send(f"{ctx.author.mention} time must be above 120s")
@@ -522,9 +498,7 @@ class Utils(Cog):
         payload = {
             "_id": ctx.message.id,
             "text": flags.text or "AFK",
-            "ignoredChannel": (
-                [c.id for c in flags.ignore_channel] if flags.ignore_channel else []
-            ),
+            "ignoredChannel": ([c.id for c in flags.ignore_channel] if flags.ignore_channel else []),
             "global": flags._global,
             "at": ctx.message.created_at.timestamp(),
             "guild": ctx.guild.id,
@@ -535,9 +509,7 @@ class Utils(Cog):
         }
 
         if flags.after and flags._for:
-            return await ctx.send(
-                f"{ctx.author.mention} can not have both `after` and `for` argument"
-            )
+            return await ctx.send(f"{ctx.author.mention} can not have both `after` and `for` argument")
 
         if flags.after:
             await self.create_timer(
@@ -578,17 +550,11 @@ class Utils(Cog):
         """To get the level of the user"""
         member = member or ctx.author
         try:
-            enable = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"][
-                "enable"
-            ]
+            enable = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"]["enable"]
             if not enable:
-                return await ctx.send(
-                    f"{ctx.author.mention} leveling system is disabled in this server"
-                )
+                return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
         except KeyError:
-            return await ctx.send(
-                f"{ctx.author.mention} leveling system is disabled in this server"
-            )
+            return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
         else:
             collection: Collection = self.bot.guild_level_db[f"{member.guild.id}"]
             if data := await collection.find_one_and_update(
@@ -612,12 +578,8 @@ class Utils(Cog):
                 await ctx.reply(file=file)
                 return
             if ctx.author.id == member.id:
-                return await ctx.reply(
-                    f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages"
-                )
-            return await ctx.reply(
-                f"{ctx.author.mention} **{member}** don't have any xp yet."
-            )
+                return await ctx.reply(f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages")
+            return await ctx.reply(f"{ctx.author.mention} **{member}** don't have any xp yet.")
 
     @commands.command(aliases=["leaderboard"])
     @commands.bot_has_permissions(embed_links=True)
@@ -625,13 +587,9 @@ class Utils(Cog):
         """To display the Leaderboard"""
         limit = limit or 10
         collection = self.bot.guild_level_db[f"{ctx.guild.id}"]
-        entries = await self.__get_entries(
-            collection=collection, limit=limit, guild=ctx.guild
-        )
+        entries = await self.__get_entries(collection=collection, limit=limit, guild=ctx.guild)
         if not entries:
-            return await ctx.send(
-                f"{ctx.author.mention} there is no one in the leaderboard"
-            )
+            return await ctx.send(f"{ctx.author.mention} there is no one in the leaderboard")
         pages = SimplePages(entries, ctx=ctx, per_page=10)
         await pages.start()
 
@@ -653,22 +611,16 @@ class Utils(Cog):
             if data["_id"] == member.id:
                 return countr
 
-    async def __get_entries(
-        self, *, collection: Collection, limit: int, guild: discord.Guild
-    ):
+    async def __get_entries(self, *, collection: Collection, limit: int, guild: discord.Guild):
         ls = []
         async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
             if member := await self.bot.get_or_fetch_member(guild, data["_id"]):
                 ls.append(f"{member} (`{member.id}`)")
         return ls
 
-    async def __fetch_suggestion_channel(
-        self, guild: discord.Guild
-    ) -> Optional[discord.TextChannel]:
+    async def __fetch_suggestion_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
         try:
-            ch_id: Optional[int] = self.bot.guild_configurations_cache[guild.id][
-                "suggestion_channel"
-            ]
+            ch_id: Optional[int] = self.bot.guild_configurations_cache[guild.id]["suggestion_channel"]
         except KeyError as e:
             raise commands.BadArgument("No suggestion channel is setup") from e
         else:
@@ -689,22 +641,16 @@ class Utils(Cog):
         except KeyError:
             if channel is None:
                 try:
-                    channel_id = self.bot.guild_configurations_cache[guild.id][
-                        "suggestion_channel"
-                    ]
+                    channel_id = self.bot.guild_configurations_cache[guild.id]["suggestion_channel"]
                 except KeyError as e:
                     raise commands.BadArgument("No suggestion channel is setup") from e
-            msg = await self.__fetch_message_from_channel(
-                message=msg_id, channel=self.bot.get_channel(channel_id)
-            )
+            msg = await self.__fetch_message_from_channel(message=msg_id, channel=self.bot.get_channel(channel_id))
         else:
             msg = self.message[msg_id]["message"]
 
         return msg if msg.author.id == self.bot.user.id else None
 
-    async def __fetch_message_from_channel(
-        self, *, message: int, channel: discord.TextChannel
-    ):
+    async def __fetch_message_from_channel(self, *, message: int, channel: discord.TextChannel):
         async for msg in channel.history(
             limit=1,
             before=discord.Object(message + 1),
@@ -713,12 +659,8 @@ class Utils(Cog):
             payload = {
                 "message_author": msg.author,
                 "message": msg,
-                "message_downvote": self.__get_emoji_count_from__msg(
-                    msg, emoji="\N{DOWNWARDS BLACK ARROW}"
-                ),
-                "message_upvote": self.__get_emoji_count_from__msg(
-                    msg, emoji="\N{UPWARDS BLACK ARROW}"
-                ),
+                "message_downvote": self.__get_emoji_count_from__msg(msg, emoji="\N{DOWNWARDS BLACK ARROW}"),
+                "message_upvote": self.__get_emoji_count_from__msg(msg, emoji="\N{UPWARDS BLACK ARROW}"),
             }
             self.message[message] = payload
             return msg
@@ -741,13 +683,9 @@ class Utils(Cog):
         ctx: Context,
         file: Optional[discord.File] = None,
     ) -> Optional[discord.Message]:
-        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(
-            ctx.guild
-        )
+        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(ctx.guild)
         if channel is None:
-            raise commands.BadArgument(
-                f"{ctx.author.mention} error fetching suggestion channel"
-            )
+            raise commands.BadArgument(f"{ctx.author.mention} error fetching suggestion channel")
 
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
@@ -764,9 +702,7 @@ class Utils(Cog):
         self.message[msg.id] = payload
         return msg
 
-    async def __notify_on_suggestion(
-        self, ctx: Context, *, message: discord.Message
-    ) -> None:
+    async def __notify_on_suggestion(self, ctx: Context, *, message: discord.Message) -> None:
         jump_url: str = message.jump_url
         _id: int = message.id
         content = (
@@ -816,12 +752,8 @@ class Utils(Cog):
         """Suggest something. Abuse of the command may result in required mod actions"""
 
         if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6
-            )
-            embed.set_author(
-                name=str(ctx.author), icon_url=ctx.author.display_avatar.url
-            )
+            embed = discord.Embed(description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6)
+            embed.set_author(name=str(ctx.author), icon_url=ctx.author.display_avatar.url)
             embed.set_footer(
                 text=f"Author ID: {ctx.author.id}",
                 icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url),
@@ -830,9 +762,7 @@ class Utils(Cog):
             file: Optional[discord.File] = None
 
             if ctx.message.attachments and (
-                ctx.message.attachments[0]
-                .url.lower()
-                .endswith(("png", "jpeg", "jpg", "gif", "webp"))
+                ctx.message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp"))
             ):
                 _bytes = await ctx.message.attachments[0].read(use_cached=True)
                 file = discord.File(io.BytesIO(_bytes), "image.jpg")
@@ -848,9 +778,7 @@ class Utils(Cog):
     async def suggest_delete(self, ctx: Context, *, messageID: int):
         """To delete the suggestion you suggested"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            messageID, guild=ctx.guild
-        )
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -862,9 +790,7 @@ class Utils(Cog):
             return
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send(
-                f"{ctx.author.mention} You don't own that 'suggestion'"
-            )
+            return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
         await msg.delete(delay=0)
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
@@ -874,9 +800,7 @@ class Utils(Cog):
     async def suggest_status(self, ctx: Context, *, messageID: int):
         """To get the statistics os the suggestion"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            messageID, guild=ctx.guild
-        )
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -904,18 +828,12 @@ class Utils(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_resolved(self, ctx: Context, *, thread_id: int):
         """To mark the suggestion as resolved"""
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            thread_id, guild=ctx.guild
-        )
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(thread_id, guild=ctx.guild)
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
-            return await ctx.send(
-                f"{ctx.author.mention} You don't own that 'suggestion'"
-            )
+            return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
-        thread: discord.Thread = await self.bot.getch(
-            ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id
-        )
+        thread: discord.Thread = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id)
         if not msg or not thread:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid"
@@ -931,9 +849,7 @@ class Utils(Cog):
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, messageID: int, *, remark: str):
         """To add a note in suggestion embed"""
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            messageID, guild=ctx.guild
-        )
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -960,9 +876,7 @@ class Utils(Cog):
     ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            messageID, guild=ctx.guild
-        )
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -993,9 +907,7 @@ class Utils(Cog):
         - DUPLICATE
         """
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(
-            messageID, guild=ctx.guild
-        )
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
@@ -1014,9 +926,7 @@ class Utils(Cog):
         embed.color = payload["color"]
 
         user_id = int(embed.footer.text.split(":")[1])
-        user: Optional[discord.Member] = await self.bot.get_or_fetch_member(
-            ctx.guild, user_id
-        )
+        user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, user_id)
         await self.__notify_user(ctx, user, message=msg, remark="")
 
         content = f"Flagged: {flag} | {payload['emoji']}"
@@ -1052,9 +962,7 @@ class Utils(Cog):
         await self.suggest(context, suggestion=message.content)
 
     @Cog.listener()
-    async def on_message_edit(
-        self, before: discord.Message, after: discord.Message
-    ) -> None:
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if after.id in self.message:
             self.message[after.id]["message"] = after
 
@@ -1096,9 +1004,7 @@ class Utils(Cog):
             context: Context = await self.bot.get_context(message, cls=Context)
             # cmd: commands.Command = self.bot.get_command("suggest flag")
 
-            msg: Union[
-                discord.Message, discord.DeletedReferencedMessage
-            ] = message.reference.resolved
+            msg: Union[discord.Message, discord.DeletedReferencedMessage] = message.reference.resolved
 
             if not isinstance(msg, discord.Message):
                 return
@@ -1141,12 +1047,8 @@ class Utils(Cog):
     ):
         """To create giveaway in quick format"""
         if not prize:
-            return await ctx.send(
-                f"{ctx.author.mention} you didn't give the prize argument"
-            )
-        post = await mt._make_giveaway_drop(
-            ctx, duration=duration, winners=winners, prize=prize
-        )
+            return await ctx.send(f"{ctx.author.mention} you didn't give the prize argument")
+        post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
         await self.create_timer(_event_name="giveaway", **post)
 
     @giveaway.command(name="end")
@@ -1175,9 +1077,7 @@ class Utils(Cog):
         """To end the giveaway"""
         if data := await self.bot.giveaways.find_one({"message_id": messageID}):
             if data["status"].upper() == "ONGOING":
-                return await ctx.send(
-                    f"{ctx.author.mention} can not reroll the ongoing giveaway"
-                )
+                return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
 
             data["winners"] = winners
 
@@ -1193,9 +1093,7 @@ class Utils(Cog):
                 f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
             )
             return
-        await ctx.send(
-            f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`"
-        )
+        await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`")
 
     @tasks.loop(seconds=600)
     async def server_stats_updater(self):
@@ -1211,9 +1109,7 @@ class Utils(Cog):
                 "categories": len(guild.categories),
             }
             try:
-                stats_channels: Dict[str, Any] = self.bot.guild_configurations_cache[
-                    guild.id
-                ]["stats_channels"]
+                stats_channels: Dict[str, Any] = self.bot.guild_configurations_cache[guild.id]["stats_channels"]
             except KeyError:
                 pass
             else:

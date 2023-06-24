@@ -171,3 +171,4 @@ wsproto
 yapf
 yarl
 youtube-dl
+uvloop

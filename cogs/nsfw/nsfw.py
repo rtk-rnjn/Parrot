@@ -39,9 +39,7 @@ class NSFW(Cog):
         if random() > 0.5 and len(self.cached_images.get(type_str, [])) >= 10:
             url = choice(self.cached_images[type_str])
         else:
-            response = await self.bot.http_session.get(
-                self.url, params={"type": type_str}
-            )
+            response = await self.bot.http_session.get(self.url, params={"type": type_str})
             if response.status > 300:
                 url = self._try_from_cache(type_str)
                 if url is None:
@@ -76,9 +74,7 @@ class NSFW(Cog):
                         )
                     )
                 else:
-                    await ctx.reply(
-                        f"{ctx.author.mention} something not right? This is not us but the API"
-                    )
+                    await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
 
             self.bot.add_command(callback)
 
@@ -133,11 +129,7 @@ class NSFW(Cog):
             )
             if r.status == 200:
                 res = await r.json()
-                em_list.append(
-                    discord.Embed(timestamp=discord.utils.utcnow()).set_image(
-                        url=res["url"]
-                    )
-                )
+                em_list.append(discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]))
             await ctx.release(0)
             i += 1
 

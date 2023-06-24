@@ -9,9 +9,7 @@ from utilities.converters import convert_bool
 POSSIBLE_BANDIT_CODE = re.compile(r"([A-Z]\d{2,3})")
 
 
-class BanditConverter(
-    commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"
-):
+class BanditConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     read: Optional[convert_bool] = None
     verbose: Optional[convert_bool] = None

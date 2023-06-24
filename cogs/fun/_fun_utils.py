@@ -16,9 +16,7 @@ def replace_many(
     match_case: bool = False,
 ) -> str:
     if ignore_case:
-        replacements = {
-            word.lower(): replacement for word, replacement in replacements.items()
-        }
+        replacements = {word.lower(): replacement for word, replacement in replacements.items()}
 
     words_to_replace = sorted(replacements, key=lambda s: (-len(s), s))
 
@@ -55,9 +53,7 @@ def file_safe_name(effect: str, display_name: str) -> str:
     file_name = file_name.replace(" ", "_")
 
     # Normalize unicode characters
-    cleaned_filename = (
-        unicodedata.normalize("NFKD", file_name).encode("ASCII", "ignore").decode()
-    )
+    cleaned_filename = unicodedata.normalize("NFKD", file_name).encode("ASCII", "ignore").decode()
 
     # Remove invalid filename characters
     cleaned_filename = "".join(c for c in cleaned_filename if c in valid_filename_chars)

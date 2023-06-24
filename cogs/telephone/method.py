@@ -12,12 +12,8 @@ from discord.ext import commands
 cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
 
-async def telephone_update(
-    ctx: Context, *, guild_id: int, event: str, value: Any
-) -> None:
-    await ctx.bot.guild_configurations.update_one(
-        {"_id": guild_id}, {"$set": {f"telephone.{event}": value}}, upsert=True
-    )
+async def telephone_update(ctx: Context, *, guild_id: int, event: str, value: Any) -> None:
+    await ctx.bot.guild_configurations.update_one({"_id": guild_id}, {"$set": {f"telephone.{event}": value}}, upsert=True)
 
 
 async def get_guild(ctx: Context, guild_id: int) -> Optional[dict]:
@@ -27,22 +23,16 @@ async def get_guild(ctx: Context, guild_id: int) -> Optional[dict]:
     return await ctx.bot.guild_configurations.find_one({"_id": guild_id})
 
 
-def outer_check_pickup_hangup(
-    channel: discord.TextChannel, target_channel: discord.TextChannel
-) -> Callable:
+def outer_check_pickup_hangup(channel: discord.TextChannel, target_channel: discord.TextChannel) -> Callable:
     def check_pickup_hangup(m: discord.Message) -> bool:
         return (
-            (m.content.lower() in ("pickup", "hangup"))
-            and (m.channel in (channel, target_channel))
-            and (not m.author.bot)
+            (m.content.lower() in ("pickup", "hangup")) and (m.channel in (channel, target_channel)) and (not m.author.bot)
         )
 
     return check_pickup_hangup
 
 
-async def dial(
-    bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False
-) -> None:
+async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False) -> None:
     if server.id == ctx.guild.id:
         return await ctx.send("Can't make a self call")
 
@@ -67,20 +57,12 @@ async def dial(
 
     target_channel = bot.get_channel(target_guild.get("channel"))
     if not target_channel:
-        return await ctx.send(
-            "Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission."
-        )
+        return await ctx.send("Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission.")
 
-    if (target_guild["_id"] in self_guild.get("blocked", [])) or (
-        self_guild["_id"] in target_guild.get("blocked", [])
-    ):
-        return await ctx.send(
-            "Calling failed! Possible reasons: They blocked You, You blocked Them."
-        )
+    if (target_guild["_id"] in self_guild.get("blocked", [])) or (self_guild["_id"] in target_guild.get("blocked", [])):
+        return await ctx.send("Calling failed! Possible reasons: They blocked You, You blocked Them.")
 
-    await ctx.send(
-        f"Calling to **{number} ({bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ..."
-    )
+    await ctx.send(f"Calling to **{number} ({bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ...")
 
     await target_channel.send(
         f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
@@ -114,20 +96,14 @@ async def dial(
         return
 
     if _talk.content.lower() == "hangup":
-        await ctx.send(
-            f"Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**"
-        )
-        await target_channel.send(
-            f"Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**"
-        )
+        await ctx.send(f"Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**")
+        await target_channel.send(f"Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**")
 
     elif _talk.content.lower() == "pickup":
         await telephone_update(ctx.guild.id, "is_line_busy", True)
         await telephone_update(number, "is_line_busy", True)
         await ctx.send(f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
-        await target_channel.send(
-            f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**"
-        )
+        await target_channel.send(f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
 
         ini = discord.utils.utcnow().timestamp() + 120
         while ini > discord.utils.utcnow().timestamp():
@@ -136,9 +112,7 @@ async def dial(
                 return False if m.author.bot else m.channel in (target_channel, channel)
 
             try:
-                talk_message = await bot.wait_for(
-                    "message", check=check_in_channel, timeout=60.0
-                )
+                talk_message = await bot.wait_for("message", check=check_in_channel, timeout=60.0)
             except asyncio.TimeoutError:
                 await asyncio.sleep(0.5)
                 await target_channel.send(
@@ -175,9 +149,7 @@ async def dial(
                 await target_channel.send(f"**{talk_message.author}** {TALK}")
 
         await channel.send("Disconnected. Call duration reached its maximum limit")
-        await target_channel.send(
-            "Disconnected. Call duration reached its maximum limit"
-        )
+        await target_channel.send("Disconnected. Call duration reached its maximum limit")
 
     await telephone_update(ctx.guild.id, "is_line_busy", False)
     await telephone_update(number, "is_line_busy", False)

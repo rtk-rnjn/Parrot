@@ -144,15 +144,12 @@ class DuckGame:
         if self._solutions is None:
             self._solutions = set()
             for idx_a, card_a in enumerate(self.board):
-                for idx_b, card_b in enumerate(
-                    self.board[idx_a + 1 :], start=idx_a + 1
-                ):
+                for idx_b, card_b in enumerate(self.board[idx_a + 1 :], start=idx_a + 1):
                     # Two points determine a line, and there are exactly 3 points per line in {0,1,2}^4.
                     # The completion of a line will only be a duplicate point if the other two points are the same,
                     # which is prevented by the triangle iteration.
                     completion = tuple(
-                        feat_a if feat_a == feat_b else 3 - feat_a - feat_b
-                        for feat_a, feat_b in zip(card_a, card_b)
+                        feat_a if feat_a == feat_b else 3 - feat_a - feat_b for feat_a, feat_b in zip(card_a, card_b)
                     )
                     try:
                         idx_c = self.board.index(completion)

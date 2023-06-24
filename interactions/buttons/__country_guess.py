@@ -130,16 +130,10 @@ class CountryGuesser:
     ) -> Optional[tuple[discord.Message, str]]:
         def check(m: discord.Message) -> bool:
             if length:
-                return (
-                    m.channel == ctx.channel
-                    and m.author == ctx.author
-                    and len(m.content) == length
-                )
+                return m.channel == ctx.channel and m.author == ctx.author and len(m.content) == length
             return m.channel == ctx.channel and m.author == ctx.author
 
-        message: discord.Message = await ctx.wait_for(
-            "message", timeout=self.timeout, check=check
-        )
+        message: discord.Message = await ctx.wait_for("message", timeout=self.timeout, check=check)
         content = message.content.strip().lower()
 
         if options and content not in options:
@@ -185,24 +179,18 @@ class CountryGuesser:
 
         while not ctx.bot.is_closed():
             try:
-                msg, response = await self.wait_for_response(
-                    ctx, length=self.accepted_length
-                )
+                msg, response = await self.wait_for_response(ctx, length=self.accepted_length)
             except asyncio.TimeoutError:
                 break
 
             if response == self.country:
-                await msg.reply(
-                    f"That is correct! The country was `{self.country.title()}`"
-                )
+                await msg.reply(f"That is correct! The country was `{self.country.title()}`")
                 break
             else:
                 self.guesses -= 1
 
                 if not self.guesses:
-                    await msg.reply(
-                        f"Game Over! you lost, The country was `{self.country.title()}`"
-                    )
+                    await msg.reply(f"Game Over! you lost, The country was `{self.country.title()}`")
                     break
 
                 acc = self.get_accuracy(response)
@@ -219,18 +207,14 @@ class CountryGuesser:
                     )
 
                     try:
-                        hint_msg, resp = await self.wait_for_response(
-                            ctx, options=("y", "n")
-                        )
+                        hint_msg, resp = await self.wait_for_response(ctx, options=("y", "n"))
                     except asyncio.TimeoutError:
                         break
                     else:
                         if resp == "y":
                             hint = self.get_hint()
                             self.hints -= 1
-                            await hint_msg.reply(
-                                f"Here is your hint: `{hint}`", mention_author=False
-                            )
+                            await hint_msg.reply(f"Here is your hint: `{hint}`", mention_author=False)
                         else:
                             await hint_msg.reply(
                                 f"Okay continue guessing! You have **{self.guesses}** guesses left.",
@@ -265,9 +249,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
 
         if guess == game.country:
             game.update_guesslog("+ GAME OVER, you won! +")
-            await interaction.response.send_message(
-                f"That is correct! The country was `{game.country.title()}`"
-            )
+            await interaction.response.send_message(f"That is correct! The country was `{game.country.title()}`")
 
             self.view.disable_all()
             game.embed.description = f"```fix\n{game.country.title()}\n```"
@@ -282,9 +264,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
                 game.update_guesslog("- GAME OVER, you lost -")
 
                 await interaction.message.edit(embed=game.embed, view=self.view)
-                await interaction.response.send_message(
-                    f"Game Over! you lost, The country was `{game.country.title()}`"
-                )
+                await interaction.response.send_message(f"Game Over! you lost, The country was `{game.country.title()}`")
                 await self.view.ctx.database_game_update("country_guess", loss=True)
                 return self.view.stop()
             else:
@@ -314,9 +294,7 @@ class CountryView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user == self.user:
             return True
-        await interaction.response.send_message(
-            "This is not your game!", ephemeral=True
-        )
+        await interaction.response.send_message("This is not your game!", ephemeral=True)
 
         return False
 
@@ -333,14 +311,10 @@ class CountryView(discord.ui.View):
         return await interaction.response.send_modal(CountryInput(self))
 
     @discord.ui.button(label="hint", style=discord.ButtonStyle.green)
-    async def hint_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ) -> None:
+    async def hint_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         hint = self.game.get_hint()
         self.game.hints -= 1
-        await interaction.response.send_message(
-            f"Here is your hint: `{hint}`", ephemeral=True
-        )
+        await interaction.response.send_message(f"Here is your hint: `{hint}`", ephemeral=True)
 
         if not self.game.hints:
             button.disabled = True
@@ -353,9 +327,7 @@ class CountryView(discord.ui.View):
         self.game.embed.description = f"```fix\n{self.game.country.title()}\n```"
         self.game.update_guesslog("- GAME OVER, CANCELLED -")
 
-        await interaction.response.send_message(
-            f"Game Over! The country was `{self.game.country.title()}`"
-        )
+        await interaction.response.send_message(f"Game Over! The country was `{self.game.country.title()}`")
         await interaction.message.edit(view=self, embed=self.game.embed)
         await self.ctx.database_game_update("country_guess")
         return self.stop()
@@ -370,9 +342,7 @@ class BetaCountryGuesser(CountryGuesser):
 
     def update_guesslog(self, entry: str) -> None:
         self.guesslog += entry + "\n"
-        self.embed.set_field_at(
-            1, name="Guess Log", value=f"```diff\n{self.guesslog}\n```"
-        )
+        self.embed.set_field_at(1, name="Guess Log", value=f"```diff\n{self.guesslog}\n```")
 
     async def start(
         self,
@@ -405,9 +375,7 @@ class BetaCountryGuesser(CountryGuesser):
 
         self.embed_color = embed_color
         self.embed = self.get_embed()
-        self.embed.add_field(
-            name="Guess Log", value="```diff\n\u200b\n```", inline=False
-        )
+        self.embed.add_field(name="Guess Log", value="```diff\n\u200b\n```", inline=False)
 
         self.view = CountryView(self, user=ctx.author, timeout=timeout, ctx=ctx)
         self.message = await ctx.send(embed=self.embed, file=file, view=self.view)

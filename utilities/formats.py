@@ -99,9 +99,7 @@ def suppress_links(message: str) -> str:
     return message
 
 
-def get_flag(
-    ls: list, ann: Any, *, deli: Any, pref: Any, alis: Any, default: bool
-) -> list:
+def get_flag(ls: list, ann: Any, *, deli: Any, pref: Any, alis: Any, default: bool) -> list:
     for flag in ann.get_flags().values():
         if flag.required:
             ls.append(f"<{pref}{flag.name}{'|'.join(alis)}{deli}>")

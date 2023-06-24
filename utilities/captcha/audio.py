@@ -24,8 +24,7 @@ __all__ = ["AudioCaptcha"]
 
 WAVE_SAMPLE_RATE = 8000  # HZ
 WAVE_HEADER = bytearray(
-    b"RIFF\x00\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00"
-    b"@\x1f\x00\x00@\x1f\x00\x00\x01\x00\x08\x00data"
+    b"RIFF\x00\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00" b"@\x1f\x00\x00@\x1f\x00\x00\x01\x00\x08\x00data"
 )
 WAVE_HEADER_LENGTH = len(WAVE_HEADER) - 4
 DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")

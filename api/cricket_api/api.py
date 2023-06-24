@@ -33,9 +33,7 @@ async def _cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
     async with aiohttp.ClientSession() as session:
         response = await session.get(url, headers={"User-Agent": random.choice(AGENTS)})
         if response.status != 200:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid URL - Status Code: {response.status}"
-            )
+            raise HTTPException(status_code=400, detail=f"Invalid URL - Status Code: {response.status}")
 
         html = await response.text()
 

@@ -13,9 +13,7 @@ from utilities.paginator import ParrotPaginator
 
 
 class ChessView(discord.ui.View):
-    def __init__(
-        self, *, game: Chess, ctx: Context = None, timeout: float = 300.0, **kwargs: Any
-    ):
+    def __init__(self, *, game: Chess, ctx: Context = None, timeout: float = 300.0, **kwargs: Any):
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
         self.ctx = ctx
@@ -23,9 +21,7 @@ class ChessView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user in (self.game.white, self.game.black):
             return True
-        await interaction.response.send_message(
-            content="This isn't your game!", ephemeral=True
-        )
+        await interaction.response.send_message(content="This isn't your game!", ephemeral=True)
         return False
 
     @discord.ui.button(
@@ -34,9 +30,7 @@ class ChessView(discord.ui.View):
         style=discord.ButtonStyle.gray,
         disabled=False,
     )
-    async def show_moves(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def show_moves(self, interaction: discord.Interaction, button: discord.ui.Button):
         menu = ParrotPaginator(
             self.game.ctx,
             title="Legal Moves",
@@ -46,9 +40,7 @@ class ChessView(discord.ui.View):
         for i in self.game.legal_moves():
             menu.add_line(i)
         await menu.start(start=False)
-        await interaction.response.send_message(
-            embed=menu.embed, view=menu.view, ephemeral=True
-        )
+        await interaction.response.send_message(embed=menu.embed, view=menu.view, ephemeral=True)
 
     @discord.ui.button(
         emoji="\N{BLACK CHESS PAWN}",
@@ -56,9 +48,7 @@ class ChessView(discord.ui.View):
         style=discord.ButtonStyle.danger,
         disabled=False,
     )
-    async def show_fen(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def show_fen(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
             f"**{interaction.user}** board FEN: `{self.game.board.board_fen()}`",
             ephemeral=True,
@@ -101,20 +91,14 @@ class Chess:
         def check(m: discord.Message) -> bool:
             if m.content.lower() in ("exit", "quit", "resign", "abort", "draw"):
                 return True
-            return (
-                (self.ctx.channel.id == m.channel.id)
-                and (m.author == self.turn)
-                and (m.content in LEGAL_MOVES)
-            )
+            return (self.ctx.channel.id == m.channel.id) and (m.author == self.turn) and (m.content in LEGAL_MOVES)
 
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=self.timeout)
             return msg
         except asyncio.TimeoutError:
             if not self.game_stop:
-                await self.ctx.send(
-                    f"**{self.turn}** did not responded on time! Game Over!"
-                )
+                await self.ctx.send(f"**{self.turn}** did not responded on time! Game Over!")
                 self.game_stop = True
                 return None
         return None
@@ -146,9 +130,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 """
         embed.set_footer(text=f"Turn: {self.alternate_turn} | Having 5m to make move")
         await self.game_message.delete()
-        self.game_message = await self.ctx.send(
-            content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx)
-        )
+        self.game_message = await self.ctx.send(content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx))
         await self.game_over()
 
     async def game_over(
@@ -156,9 +138,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
     ) -> bool:
         if not self.game_stop:
             if self.board.is_checkmate():
-                await self.ctx.send(
-                    f"**Game over! **{self.turn}** wins by check-mate**"
-                )
+                await self.ctx.send(f"**Game over! **{self.turn}** wins by check-mate**")
                 self.game_stop = True
                 await self.add_db(winner=self.turn.id, draw=False)
             elif self.board.is_stalemate():
@@ -166,9 +146,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 self.game_stop = True
                 await self.add_db(winner=None, draw=True)
             elif self.board.is_insufficient_material():
-                await self.ctx.send(
-                    "**Game over! Insfficient material left to continue the game! Draw**!"
-                )
+                await self.ctx.send("**Game over! Insfficient material left to continue the game! Draw**!")
                 self.game_stop = True
                 await self.add_db(winner=None, draw=True)
             elif self.board.is_seventyfive_moves():
@@ -197,9 +175,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
 ```
 """
         embed.set_footer(text=f"Turn: {self.turn} | Having 5m to make move")
-        self.game_message = await self.ctx.send(
-            content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx)
-        )
+        self.game_message = await self.ctx.send(content=content, embed=embed, view=ChessView(game=self, ctx=self.ctx))
         while not self.game_stop:
             msg = await self.wait_for_move()
             if msg is None:
@@ -237,9 +213,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             if msg.content.lower() == "draw":
                 value = await self.ctx.prompt(
                     f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`",
-                    author_id=self.turn.id
-                    if self.turn.id != msg.author.id
-                    else self.alternate_turn.id,
+                    author_id=self.turn.id if self.turn.id != msg.author.id else self.alternate_turn.id,
                 )
                 if value:
                     msg_ = await self.ctx.send(
@@ -270,20 +244,12 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                             "game_chess_won": 1 if _id == kwargs["winner"] else 0,
                             "game_chess_draw": 1 if kwargs["draw"] else 0,
                         },
-                        "$addToSet": {
-                            "game_chess_opponent": {
-                                "$each": [self.white.id, self.black.id].pop(_id)
-                            }
-                        },
+                        "$addToSet": {"game_chess_opponent": {"$each": [self.white.id, self.black.id].pop(_id)}},
                         "$push": {
                             "game_chess_stat": {
                                 "game_chess_winner": kwargs["winner"],
-                                "game_chess_player_1": _id
-                                if _id == self.white.id
-                                else self.black.id,
-                                "game_chess_player_2": _id
-                                if _id == self.black.id
-                                else self.white.id,
+                                "game_chess_player_1": _id if _id == self.white.id else self.black.id,
+                                "game_chess_player_2": _id if _id == self.black.id else self.white.id,
                             }
                         },
                     },

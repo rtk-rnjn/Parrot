@@ -141,10 +141,7 @@ CARD = {
     "top": Image.open("extra/snakes/snake_cards/card_top.png"),
     "frame": Image.open("extra/snakes/snake_cards/card_frame.png"),
     "bottom": Image.open("extra/snakes/snake_cards/card_bottom.png"),
-    "backs": [
-        Image.open(f"extra/snakes/snake_cards/backs/{file}")
-        for file in os.listdir("extra/snakes/snake_cards/backs")
-    ],
+    "backs": [Image.open(f"extra/snakes/snake_cards/backs/{file}") for file in os.listdir("extra/snakes/snake_cards/backs")],
     "font": ImageFont.truetype("extra/snakes/snake_cards/expressway.ttf", 20),
 }
 # endregion
@@ -291,14 +288,10 @@ class Snakes(Cog):
             if letter.islower():
                 message = message.replace(letter, letter * random.randint(2, 4))
             else:
-                message = message.replace(
-                    letter, (letter * random.randint(2, 4)).title()
-                )
+                message = message.replace(letter, (letter * random.randint(2, 4)).title())
 
         for fricative in complex_fricatives:
-            message = message.replace(
-                fricative, fricative[0] + fricative[1] * random.randint(2, 4)
-            )
+            message = message.replace(fricative, fricative[0] + fricative[1] * random.randint(2, 4))
 
         return message
 
@@ -423,19 +416,15 @@ class Snakes(Cog):
         """Gets a random snake name."""
         return random.choice(self.snake_names)
 
-    async def _validate_answer(
-        self, ctx: Context, message: Message, answer: str, options: Dict[str, str]
-    ) -> None:
+    async def _validate_answer(self, ctx: Context, message: Message, answer: str, options: Dict[str, str]) -> None:
         """Validate the answer using a reaction event loop."""
 
         def predicate(reaction: Reaction, user: Member) -> bool:
             """Test if the the answer is valid and can be evaluated."""
             return (
-                reaction.message.id
-                == message.id  # The reaction is attached to the question we asked.
+                reaction.message.id == message.id  # The reaction is attached to the question we asked.
                 and user == ctx.author  # It's the user who triggered the quiz.
-                and str(reaction.emoji)
-                in ANSWERS_EMOJI.values()  # The reaction is one of the options.
+                and str(reaction.emoji) in ANSWERS_EMOJI.values()  # The reaction is one of the options.
             )
 
         for emoji in ANSWERS_EMOJI.values():
@@ -443,24 +432,16 @@ class Snakes(Cog):
 
         # Validate the answer
         try:
-            reaction, _ = await ctx.wait_for(
-                "reaction_add", timeout=45.0, check=predicate
-            )
+            reaction, _ = await ctx.wait_for("reaction_add", timeout=45.0, check=predicate)
         except asyncio.TimeoutError:
-            await ctx.send(
-                f"You took too long. The correct answer was **{options[answer]}**."
-            )
+            await ctx.send(f"You took too long. The correct answer was **{options[answer]}**.")
             await message.clear_reactions()
             return
 
         if str(reaction.emoji) == ANSWERS_EMOJI[answer]:
-            await ctx.send(
-                f"{random.choice(CORRECT_GUESS)} The correct answer was **{options[answer]}**."
-            )
+            await ctx.send(f"{random.choice(CORRECT_GUESS)} The correct answer was **{options[answer]}**.")
         else:
-            await ctx.send(
-                f"{random.choice(INCORRECT_GUESS)} The correct answer was **{options[answer]}**."
-            )
+            await ctx.send(f"{random.choice(INCORRECT_GUESS)} The correct answer was **{options[answer]}**.")
 
         await message.clear_reactions()
 
@@ -516,9 +497,7 @@ class Snakes(Cog):
         win = False
 
         antidote_embed = Embed(color=SNAKE_COLOR, title="Antidote")
-        antidote_embed.set_author(
-            name=ctx.author.name, icon_url=ctx.author.display_avatar.url
-        )
+        antidote_embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
 
         # Generate answer
         antidote_answer = list(ANTIDOTE_EMOJI)  # Duplicate list, not reference it
@@ -527,15 +506,9 @@ class Snakes(Cog):
 
         # Begin initial board building
         for i in range(10):
-            page_guess_list.append(
-                f"{HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI}"
-            )
-            page_result_list.append(
-                f"{CROSS_EMOJI} {CROSS_EMOJI} {CROSS_EMOJI} {CROSS_EMOJI}"
-            )
-            board.append(
-                f"`{i+1:02d}` " f"{page_guess_list[i]} - " f"{page_result_list[i]}"
-            )
+            page_guess_list.append(f"{HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI}")
+            page_result_list.append(f"{CROSS_EMOJI} {CROSS_EMOJI} {CROSS_EMOJI} {CROSS_EMOJI}")
+            board.append(f"`{i+1:02d}` " f"{page_guess_list[i]} - " f"{page_result_list[i]}")
             board.append(EMPTY_UNICODE)
         antidote_embed.add_field(name="10 guesses remaining", value="\n".join(board))
         board_id = await ctx.send(embed=antidote_embed)  # Display board
@@ -547,9 +520,7 @@ class Snakes(Cog):
         # Begin main game loop
         while not win and antidote_tries < 10:
             try:
-                reaction, user = await ctx.wait_for(
-                    "reaction_add", timeout=300, check=predicate
-                )
+                reaction, user = await ctx.wait_for("reaction_add", timeout=300, check=predicate)
             except asyncio.TimeoutError:
                 break  # We're done, no reactions for the last 5 minutes
 
@@ -576,11 +547,7 @@ class Snakes(Cog):
                     # Rebuild the board
                     board = []
                     for i in range(10):
-                        board.append(
-                            f"`{i+1:02d}` "
-                            f"{page_guess_list[i]} - "
-                            f"{page_result_list[i]}"
-                        )
+                        board.append(f"`{i+1:02d}` " f"{page_guess_list[i]} - " f"{page_result_list[i]}")
                         board.append(EMPTY_UNICODE)
 
                     # Remove Reactions
@@ -605,32 +572,20 @@ class Snakes(Cog):
         # Winning / Ending Screen
         if win:
             antidote_embed = Embed(color=SNAKE_COLOR, title="Antidote")
-            antidote_embed.set_author(
-                name=ctx.author.name, icon_url=ctx.author.display_avatar.url
-            )
-            antidote_embed.set_image(
-                url="https://i.makeagif.com/media/7-12-2015/Cj1pts.gif"
-            )
+            antidote_embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
+            antidote_embed.set_image(url="https://i.makeagif.com/media/7-12-2015/Cj1pts.gif")
             antidote_embed.add_field(
                 name="You have created the snake antidote!",
-                value=f"The solution was: {' '.join(antidote_answer)}\n"
-                f"You had {10 - antidote_tries} tries remaining.",
+                value=f"The solution was: {' '.join(antidote_answer)}\n" f"You had {10 - antidote_tries} tries remaining.",
             )
             await board_id.edit(embed=antidote_embed)
         else:
             antidote_embed = Embed(color=SNAKE_COLOR, title="Antidote")
-            antidote_embed.set_author(
-                name=ctx.author.name, icon_url=ctx.author.display_avatar.url
-            )
-            antidote_embed.set_image(
-                url="https://media.giphy.com/media/ceeN6U57leAhi/giphy.gif"
-            )
+            antidote_embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
+            antidote_embed.set_image(url="https://media.giphy.com/media/ceeN6U57leAhi/giphy.gif")
             antidote_embed.add_field(
                 name=EMPTY_UNICODE,
-                value=(
-                    f"Sorry you didnt make the antidote in time.\n"
-                    f"The formula was {' '.join(antidote_answer)}"
-                ),
+                value=(f"Sorry you didnt make the antidote in time.\n" f"The formula was {' '.join(antidote_answer)}"),
             )
             await board_id.edit(embed=antidote_embed)
 
@@ -712,11 +667,7 @@ class Snakes(Cog):
 
             emoji = "https://emojipedia-us.s3.amazonaws.com/thumbs/60/google/3/snake_1f40d.png"
 
-            _iter = (
-                url
-                for url in data["image_list"]
-                if url.endswith(self.valid_image_extensions)
-            )
+            _iter = (url for url in data["image_list"] if url.endswith(self.valid_image_extensions))
             image = next(_iter, emoji)
 
             embed.set_image(url=image)
@@ -741,18 +692,12 @@ class Snakes(Cog):
 
                 data = await self._get_snek(snake)
 
-                _iter = (
-                    url
-                    for url in data["image_list"]
-                    if url.endswith(self.valid_image_extensions)
-                )
+                _iter = (url for url in data["image_list"] if url.endswith(self.valid_image_extensions))
                 image = next(_iter, None)
 
             embed = Embed(
                 title="Which of the following is the snake in the image?",
-                description="\n".join(
-                    f"{'ABCD'[snakes.index(snake)]}: {snake}" for snake in snakes
-                ),
+                description="\n".join(f"{'ABCD'[snakes.index(snake)]}: {snake}" for snake in snakes),
                 colour=SNAKE_COLOR,
             )
             embed.set_image(url=image)
@@ -772,9 +717,7 @@ class Snakes(Cog):
         snake_image = snakes[snake_name]
 
         # Hatch the snake
-        message = await ctx.send(
-            embed=Embed(description="Hatching your snake :snake:...")
-        )
+        message = await ctx.send(embed=Embed(description="Hatching your snake :snake:..."))
         await asyncio.sleep(1)
 
         for stage in stages:
@@ -785,13 +728,9 @@ class Snakes(Cog):
         await message.delete()
 
         # Build and send the embed.
-        my_snake_embed = Embed(
-            description=":tada: Congrats! You hatched: **{0}**".format(snake_name)
-        )
+        my_snake_embed = Embed(description=":tada: Congrats! You hatched: **{0}**".format(snake_name))
         my_snake_embed.set_thumbnail(url=snake_image)
-        my_snake_embed.set_footer(
-            text=" Owner: {0}".format(ctx.author)
-        )
+        my_snake_embed.set_footer(text=" Owner: {0}".format(ctx.author))
 
         await ctx.send(embed=my_snake_embed)
 
@@ -812,9 +751,7 @@ class Snakes(Cog):
         embed = Embed(
             color=SNAKE_COLOR,
             title=question["question"],
-            description="\n".join(
-                [f"**{key.upper()}**: {answer}" for key, answer in options.items()]
-            ),
+            description="\n".join([f"**{key.upper()}**: {answer}" for key, answer in options.items()]),
         )
 
         quiz = await ctx.send(embed=embed)
@@ -894,9 +831,7 @@ class Snakes(Cog):
         """
         # Check if there is already a game in this channel
         if ctx.channel in self.active_sal:
-            await ctx.send(
-                f"{ctx.author.mention} A game is already in progress in this channel."
-            )
+            await ctx.send(f"{ctx.author.mention} A game is already in progress in this channel.")
             return
 
         game = SnakeAndLaddersGame(snakes=self, context=ctx)
@@ -947,9 +882,7 @@ class Snakes(Cog):
         async with ctx.typing():
             stream = BytesIO()
             async with async_timeout.timeout(10):
-                async with self.bot.http_session.get(
-                    content["image_list"][0]
-                ) as response:
+                async with self.bot.http_session.get(content["image_list"][0]) as response:
                     stream.write(await response.read())
 
             stream.seek(0)

@@ -10,9 +10,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot = bot
 
-    async def log(
-        self, guild, channel: discord.TextChannel, description: str, status: str
-    ) -> Optional[discord.Message]:
+    async def log(self, guild, channel: discord.TextChannel, description: str, status: str) -> Optional[discord.Message]:
         await channel.send(
             embed=discord.Embed(
                 title="Parrot Ticket Bot",
@@ -63,9 +61,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             ticket_number = data["ticket_counter"] + 1
             cat = guild.get_channel(data["category"])
 
-            ticket_channel = await guild.create_text_channel(
-                f"ticket-{ticket_number}", category=cat
-            )
+            ticket_channel = await guild.create_text_channel(f"ticket-{ticket_number}", category=cat)
 
             await ticket_channel.set_permissions(
                 guild.get_role(guild.id),
@@ -106,9 +102,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
             )
 
             await ticket_channel.send(embed=em, content=f"{member.mention}")
-            await ticket_channel.send(
-                "To close the ticket, type `[p]close`\nTo save the ticket transcript, type `[p]save`"
-            )
+            await ticket_channel.send("To close the ticket, type `[p]close`\nTo save the ticket transcript, type `[p]save`")
             non_mentionable_roles = []
             if data["pinged_roles"]:
                 pinged_msg_content = ""
@@ -129,9 +123,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 "ticket_config.ticket_counter": ticket_number,
                 "ticket_config.ticket_channel_ids": ticket_channel_ids,
             }
-            await self.bot.guild_configurations.update_one(
-                {"_id": guild.id}, {"$set": post}
-            )
+            await self.bot.guild_configurations.update_one({"_id": guild.id}, {"$set": post})
 
             log_channel = guild.get_channel(data["log"])
             await self.log(

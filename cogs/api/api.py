@@ -13,9 +13,7 @@ import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 
-TOKEN_REGEX = re.compile(
-    r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}"
-)
+TOKEN_REGEX = re.compile(r"[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27,}")
 DISCORD_PY_ID = 336642139381301249
 
 
@@ -54,9 +52,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
 
         self.__internal_token_caching = set()
 
-    async def github_request(
-        self, method, url, *, params=None, data=None, headers=None, repo=None
-    ):
+    async def github_request(self, method, url, *, params=None, data=None, headers=None, repo=None):
         hdrs = {
             "Accept": "application/vnd.github.inertia-preview+json",
             "User-Agent": f"Discord Bot: {self.bot.user} {self.bot.github}",
@@ -73,9 +69,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
 
         await self._req_lock.acquire()
         try:
-            async with self.bot.http_session.request(
-                method, req_url, params=params, json=data, headers=hdrs
-            ) as r:
+            async with self.bot.http_session.request(method, req_url, params=params, json=data, headers=hdrs) as r:
                 remaining = r.headers.get("X-Ratelimit-Remaining")
                 js = await r.json()
                 if r.status == 429 or remaining == "0":
@@ -83,9 +77,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
                     delta = discord.utils._parse_ratelimit_header(r)
                     await asyncio.sleep(delta)
                     self._req_lock.release()
-                    return await self.github_request(
-                        method, url, params=params, data=data, headers=headers
-                    )
+                    return await self.github_request(method, url, params=params, data=data, headers=headers)
                 if 300 > r.status >= 200:
                     return js
                 raise commands.CommandError(js["message"])
@@ -93,9 +85,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
             if self._req_lock.locked():
                 self._req_lock.release()
 
-    async def create_gist(
-        self, content, *, description=None, filename=None, public=True
-    ):
+    async def create_gist(self, content, *, description=None, filename=None, public=True):
         headers = {
             "Accept": "application/vnd.github.v3+json",
         }
@@ -108,7 +98,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
 
         js = await self.github_request("POST", "gists", data=data, headers=headers)
         return js["html_url"]
-    
+
     async def create_issue(self, title, body):
         headers = {
             "Accept": "application/vnd.github.v3+json",
@@ -124,19 +114,13 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         if not message.guild or message.guild.id == DISCORD_PY_ID:
             return
 
-        tokens = [
-            token
-            for token in TOKEN_REGEX.findall(message.content)
-            if validate_token(token)
-        ]
+        tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
 
         if all(token in self.__internal_token_caching for token in tokens):
             return
 
         if tokens and message.author.id != self.bot.user.id:
-            url = await self.create_gist(
-                "\n".join(tokens), description="Discord tokens detected"
-            )
+            url = await self.create_gist("\n".join(tokens), description="Discord tokens detected")
             msg = f"{message.author.mention}, I have found tokens and sent them to <{url}> to be invalidated for you."
             self.__internal_token_caching.update(set(tokens))
             with suppress(discord.HTTPException):

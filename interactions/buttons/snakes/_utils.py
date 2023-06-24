@@ -206,9 +206,7 @@ class PerlinNoiseFactory:
                 self.gradient[grid_point] = self._generate_gradient()
             gradient = self.gradient[grid_point]
 
-            dot = sum(
-                gradient[i] * (point[i] - grid_point[i]) for i in range(self.dimension)
-            )
+            dot = sum(gradient[i] * (point[i] - grid_point[i]) for i in range(self.dimension))
             dots.append(dot)
 
         # Interpolate all those dot products together.  The interpolation is
@@ -295,15 +293,11 @@ def create_snek_frame(
 
     for index in range(snake_length):
         angle = (
-            perlin_factory.get_plain_noise(
-                ((1 / (snake_length + 1)) * (index + 1)) + perlin_lookup_vertical_shift
-            )
+            perlin_factory.get_plain_noise(((1 / (snake_length + 1)) * (index + 1)) + perlin_lookup_vertical_shift)
             * ANGLE_RANGE
         )
         current_point = points[index]
-        segment_length = random.randint(
-            segment_length_range[0], segment_length_range[1]
-        )
+        segment_length = random.randint(segment_length_range[0], segment_length_range[1])
         points.append(
             (
                 current_point[X] + segment_length * math.cos(angle),
@@ -391,18 +385,13 @@ class SnakeAndLaddersGame:
         Listen for reactions until players have joined, and the game has been started.
         """
 
-        def startup_event_check(
-            reaction_: Reaction, user_: Union[User, Member]
-        ) -> bool:
+        def startup_event_check(reaction_: Reaction, user_: Union[User, Member]) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             return all(
                 (
-                    reaction_.message.id
-                    == startup.id,  # Reaction is on startup message
-                    reaction_.emoji
-                    in STARTUP_SCREEN_EMOJI,  # Reaction is one of the startup emotes
-                    user_.id
-                    != self.ctx.bot.user.id,  # Reaction was not made by the bot
+                    reaction_.message.id == startup.id,  # Reaction is on startup message
+                    reaction_.emoji in STARTUP_SCREEN_EMOJI,  # Reaction is one of the startup emotes
+                    user_.id != self.ctx.bot.user.id,  # Reaction was not made by the bot
                 )
             )
 
@@ -419,8 +408,7 @@ class SnakeAndLaddersGame:
             ),
         )
         startup = await self.channel.send(
-            f"Press {JOIN_EMOJI} to participate, and press "
-            f"{START_EMOJI} to start the game"
+            f"Press {JOIN_EMOJI} to participate, and press " f"{START_EMOJI} to start the game"
         )
         for emoji in STARTUP_SCREEN_EMOJI:
             await startup.add_reaction(emoji)
@@ -429,15 +417,11 @@ class SnakeAndLaddersGame:
 
         while not self.started:
             try:
-                reaction, user = await self.ctx.wait_for(
-                    "reaction_add", timeout=300, check=startup_event_check
-                )
+                reaction, user = await self.ctx.wait_for("reaction_add", timeout=300, check=startup_event_check)
                 if reaction.emoji == JOIN_EMOJI:
                     await self.player_join(user)
                 elif reaction.emoji == CANCEL_EMOJI:
-                    if user == self.author or (
-                        self._is_moderator(user) and user not in self.players
-                    ):
+                    if user == self.author or (self._is_moderator(user) and user not in self.players):
                         # Allow game author or non-playing moderation staff to cancel a waiting game
                         await self.cancel_game()
                         return
@@ -459,12 +443,8 @@ class SnakeAndLaddersGame:
         self.players.append(user)
         self.player_tiles[user.id] = 1
 
-        avatar_bytes = await user.display_avatar.replace(
-            size=PLAYER_ICON_IMAGE_SIZE
-        ).read()
-        im = Image.open(io.BytesIO(avatar_bytes)).resize(
-            (BOARD_PLAYER_SIZE, BOARD_PLAYER_SIZE)
-        )
+        avatar_bytes = await user.display_avatar.replace(size=PLAYER_ICON_IMAGE_SIZE).read()
+        im = Image.open(io.BytesIO(avatar_bytes)).resize((BOARD_PLAYER_SIZE, BOARD_PLAYER_SIZE))
         self.avatar_images[user.id] = im
 
     async def player_join(self, user: Union[User, Member]) -> None:
@@ -475,19 +455,13 @@ class SnakeAndLaddersGame:
         """
         for p in self.players:
             if user == p:
-                await self.channel.send(
-                    f"{user.mention} You are already in the game.", delete_after=10
-                )
+                await self.channel.send(f"{user.mention} You are already in the game.", delete_after=10)
                 return
         if self.state != "waiting":
-            await self.channel.send(
-                f"{user.mention} You cannot join at this time.", delete_after=10
-            )
+            await self.channel.send(f"{user.mention} You cannot join at this time.", delete_after=10)
             return
         if len(self.players) == MAX_PLAYERS:
-            await self.channel.send(
-                f"{user.mention} The game is full!", delete_after=10
-            )
+            await self.channel.send(f"{user.mention} The game is full!", delete_after=10)
             return
 
         await self._add_player(user)
@@ -504,9 +478,7 @@ class SnakeAndLaddersGame:
         If the number of players reaches 0, the game is terminated. In this case, a sentinel boolean
         is returned True to prevent a game from continuing after it's destroyed.
         """
-        is_surrendered = (
-            False  # Sentinel value to assist with stopping a surrendered game
-        )
+        is_surrendered = False  # Sentinel value to assist with stopping a surrendered game
         for p in self.players:
             if user == p:
                 self.players.remove(p)
@@ -518,17 +490,13 @@ class SnakeAndLaddersGame:
                 )
 
                 if self.state != "waiting" and len(self.players) == 0:
-                    await self.channel.send(
-                        "**Snakes and Ladders**: The game has been surrendered!"
-                    )
+                    await self.channel.send("**Snakes and Ladders**: The game has been surrendered!")
                     is_surrendered = True
                     self._destruct()
 
                 return is_surrendered
 
-        await self.channel.send(
-            f"{user.mention} You are not in the match.", delete_after=10
-        )
+        await self.channel.send(f"{user.mention} You are not in the match.", delete_after=10)
         return is_surrendered
 
     async def cancel_game(self) -> None:
@@ -557,9 +525,7 @@ class SnakeAndLaddersGame:
 
         self.state = "starting"
         player_list = ", ".join(user.mention for user in self.players)
-        await self.channel.send(
-            "**Snakes and Ladders**: The game is starting!\nPlayers: " + player_list
-        )
+        await self.channel.send("**Snakes and Ladders**: The game is starting!\nPlayers: " + player_list)
         await self.start_round()
 
     async def start_round(self) -> None:
@@ -569,12 +535,9 @@ class SnakeAndLaddersGame:
             """Make sure that this reaction is what we want to operate on."""
             return all(
                 (
-                    reaction_.message.id
-                    == self.positions.id,  # Reaction is on positions message
-                    reaction_.emoji
-                    in GAME_SCREEN_EMOJI,  # Reaction is one of the game emotes
-                    user_.id
-                    != self.ctx.bot.user.id,  # Reaction was not made by the bot
+                    reaction_.message.id == self.positions.id,  # Reaction is on positions message
+                    reaction_.emoji in GAME_SCREEN_EMOJI,  # Reaction is one of the game emotes
+                    user_.id != self.ctx.bot.user.id,  # Reaction was not made by the bot
                 )
             )
 
@@ -589,19 +552,14 @@ class SnakeAndLaddersGame:
             tile_coordinates = self._board_coordinate_from_index(tile)
             x_offset = BOARD_MARGIN[0] + tile_coordinates[0] * BOARD_TILE_SIZE
             y_offset = BOARD_MARGIN[1] + (
-                (10 * BOARD_TILE_SIZE)
-                - (9 - tile_coordinates[1]) * BOARD_TILE_SIZE
-                - BOARD_PLAYER_SIZE
+                (10 * BOARD_TILE_SIZE) - (9 - tile_coordinates[1]) * BOARD_TILE_SIZE - BOARD_PLAYER_SIZE
             )
             x_offset += BOARD_PLAYER_SIZE * (i % player_row_size)
             y_offset -= BOARD_PLAYER_SIZE * math.floor(i / player_row_size)
             board_img.paste(self.avatar_images[player.id], box=(x_offset, y_offset))
 
         board_file = File(frame_to_png_bytes(board_img), filename="Board.jpg")
-        player_list = "\n".join(
-            f"{user.mention}: Tile {str(self.player_tiles[user.id])}"
-            for user in self.players
-        )
+        player_list = "\n".join(f"{user.mention}: Tile {str(self.player_tiles[user.id])}" for user in self.players)
 
         # Store and send new messages
         temp_board = await self.channel.send(
@@ -633,9 +591,7 @@ class SnakeAndLaddersGame:
         is_surrendered = False
         while True:
             try:
-                reaction, user = await self.ctx.wait_for(
-                    "reaction_add", timeout=300, check=game_event_check
-                )
+                reaction, user = await self.ctx.wait_for("reaction_add", timeout=300, check=game_event_check)
 
                 if reaction.emoji == ROLL_EMOJI:
                     await self.player_roll(user)
@@ -664,21 +620,15 @@ class SnakeAndLaddersGame:
     async def player_roll(self, user: Union[User, Member]) -> None:
         """Handle the player's roll."""
         if user.id not in self.player_tiles:
-            await self.channel.send(
-                f"{user.mention} You are not in the match.", delete_after=10
-            )
+            await self.channel.send(f"{user.mention} You are not in the match.", delete_after=10)
             return
         if self.state != "roll":
-            await self.channel.send(
-                f"{user.mention} You may not roll at this time.", delete_after=10
-            )
+            await self.channel.send(f"{user.mention} You may not roll at this time.", delete_after=10)
             return
         if self.round_has_rolled[user.id]:
             return
         roll = random.randint(1, 6)
-        self.rolls.append(
-            await self.channel.send(f"{user.mention} rolled a **{roll}**!")
-        )
+        self.rolls.append(await self.channel.send(f"{user.mention} rolled a **{roll}**!"))
         next_tile = self.player_tiles[user.id] + roll
 
         # apply snakes and ladders
@@ -690,9 +640,7 @@ class SnakeAndLaddersGame:
                     delete_after=15,
                 )
             else:
-                await self.channel.send(
-                    f"{user.mention} climbs a ladder to **{target}**", delete_after=15
-                )
+                await self.channel.send(f"{user.mention} climbs a ladder to **{target}**", delete_after=15)
             next_tile = target
 
         self.player_tiles[user.id] = min(100, next_tile)
@@ -710,9 +658,7 @@ class SnakeAndLaddersGame:
             return
 
         # announce winner and exit
-        await self.channel.send(
-            f"**Snakes and Ladders**: {winner.mention} has won the game! :tada:"
-        )
+        await self.channel.send(f"**Snakes and Ladders**: {winner.mention} has won the game! :tada:")
         self._destruct()
 
     def _check_winner(self) -> Union[User, Member]:

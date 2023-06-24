@@ -76,11 +76,7 @@ class Embed:
             )
 
     async def build_description(self):
-        self.description = (
-            self.embed.description
-            if self.embed.description != self.check_against
-            else ""
-        )
+        self.description = self.embed.description if self.embed.description != self.check_against else ""
 
         if self.description:
             self.description = await fill_out(
@@ -117,11 +113,7 @@ class Embed:
                 )
 
     async def build_author(self):
-        self.author = (
-            self.embed.author.name
-            if self.embed.author.name != self.check_against
-            else ""
-        )
+        self.author = self.embed.author.name if self.embed.author.name != self.check_against else ""
 
         self.author = (
             f'<a class="chatlog__embed-author-name-link" href="{self.embed.author.url}">{self.author}</a>'
@@ -143,9 +135,7 @@ class Embed:
         )
 
         if author_icon == "" and self.author != "":
-            self.author = await fill_out(
-                self.guild, embed_author, [("AUTHOR", self.author, PARSE_MODE_NONE)]
-            )
+            self.author = await fill_out(self.guild, embed_author, [("AUTHOR", self.author, PARSE_MODE_NONE)])
         else:
             self.author = author_icon
 
@@ -172,16 +162,8 @@ class Embed:
         )
 
     async def build_footer(self):
-        self.footer = (
-            self.embed.footer.text
-            if self.embed.footer.text != self.check_against
-            else ""
-        )
-        footer_icon = (
-            self.embed.footer.icon_url
-            if self.embed.footer.icon_url != self.check_against
-            else None
-        )
+        self.footer = self.embed.footer.text if self.embed.footer.text != self.check_against else ""
+        footer_icon = self.embed.footer.icon_url if self.embed.footer.icon_url != self.check_against else None
 
         if not self.footer:
             return

@@ -74,9 +74,7 @@ class TranscriptDAO:
 class Transcript(TranscriptDAO):
     async def export(self):
         if not self.messages:
-            self.messages = [
-                message async for message in self.channel.history(limit=self.limit)
-            ]
+            self.messages = [message async for message in self.channel.history(limit=self.limit)]
         self.messages.reverse()
 
         try:

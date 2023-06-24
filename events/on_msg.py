@@ -9,18 +9,7 @@ import re
 import textwrap
 import urllib.parse
 from contextlib import suppress
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Coroutine,
-    Dict,
-    List,
-    Optional,
-    Pattern,
-    Tuple,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Pattern, Tuple, Union
 from urllib.parse import quote_plus
 
 import aiohttp  # type: ignore
@@ -104,12 +93,8 @@ class Delete(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True if self.user.bot else self.user.id == interaction.user.id
 
-    @discord.ui.button(
-        label="Delete", style=discord.ButtonStyle.red, emoji="\N{WASTEBASKET}"
-    )
-    async def confirm(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red, emoji="\N{WASTEBASKET}")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         assert interaction.message is not None
 
         await interaction.message.delete()
@@ -128,9 +113,7 @@ class Delete(discord.ui.View):
 class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def __init__(self, bot: Parrot):
         self.bot: Parrot = bot
-        self.cd_mapping = commands.CooldownMapping.from_cooldown(
-            3, 5, commands.BucketType.channel
-        )
+        self.cd_mapping = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.channel)
         self.pattern_handlers: List[Tuple[Pattern[str], Callable]] = [
             (GITHUB_RE, self._fetch_github_snippet),
             (GITHUB_GIST_RE, self._fetch_github_gist_snippet),
@@ -150,13 +133,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         self.__scam_link_cache: Dict[str, bool] = {}
 
-    async def _fetch_response(
-        self, url: str, response_format: str, **kwargs: Any
-    ) -> Union[str, Dict[str, Any], None]:
+    async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Union[str, Dict[str, Any], None]:
         """Makes http requests using aiohttp."""
-        async with self.bot.http_session.get(
-            url, raise_for_status=True, **kwargs
-        ) as response:
+        async with self.bot.http_session.get(url, raise_for_status=True, **kwargs) as response:
             if response_format == "text":
                 return await response.text()
             if response_format == "json":
@@ -189,9 +168,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "json",
             headers=GITHUB_HEADERS,
         )
-        tags = await self._fetch_response(
-            f"https://api.github.com/repos/{repo}/tags", "json", headers=GITHUB_HEADERS
-        )
+        tags = await self._fetch_response(f"https://api.github.com/repos/{repo}/tags", "json", headers=GITHUB_HEADERS)
         refs = branches + tags
         ref, file_path = self._find_ref(path, refs)
 
@@ -200,9 +177,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "text",
             headers=GITHUB_HEADERS,
         )
-        return self._snippet_to_codeblock(
-            file_contents, file_path, start_line, end_line
-        )
+        return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
     async def _fetch_github_gist_snippet(
         self,
@@ -229,9 +204,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     gist_json["files"][gist_file]["raw_url"],
                     "text",
                 )
-                return self._snippet_to_codeblock(
-                    file_contents, gist_file, start_line, end_line
-                )
+                return self._snippet_to_codeblock(file_contents, gist_file, start_line, end_line)
         return ""
 
     async def _fetch_gitlab_snippet(
@@ -245,12 +218,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         enc_repo = quote_plus(repo)
 
         # Searches the GitLab API for the specified branch
-        branches = await self._fetch_response(
-            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/branches", "json"
-        )
-        tags = await self._fetch_response(
-            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/tags", "json"
-        )
+        branches = await self._fetch_response(f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/branches", "json")
+        tags = await self._fetch_response(f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/tags", "json")
         refs = branches + tags
         ref, file_path = self._find_ref(path, refs)
         enc_ref = quote_plus(ref)
@@ -260,21 +229,15 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}",
             "text",
         )
-        return self._snippet_to_codeblock(
-            file_contents, file_path, start_line, end_line
-        )
+        return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
-    async def _fetch_bitbucket_snippet(
-        self, repo: str, ref: str, file_path: str, start_line: str, end_line: str
-    ) -> str:
+    async def _fetch_bitbucket_snippet(self, repo: str, ref: str, file_path: str, start_line: str, end_line: str) -> str:
         """Fetches a snippet from a BitBucket repo."""
         file_contents = await self._fetch_response(
             f"https://bitbucket.org/{quote_plus(repo)}/raw/{quote_plus(ref)}/{quote_plus(file_path)}",
             "text",
         )
-        return self._snippet_to_codeblock(
-            file_contents, file_path, start_line, end_line
-        )
+        return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
     def _snippet_to_codeblock(
         self,
@@ -349,16 +312,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def _check_gitlink_req(self, message: discord.Message):
         assert message.guild is not None
 
-        return self.bot.guild_configurations_cache[message.guild.id]["opts"][
-            "gitlink_enabled"
-        ]
+        return self.bot.guild_configurations_cache[message.guild.id]["opts"]["gitlink_enabled"]
 
     def _check_equation_req(self, message: discord.Message):
         assert message.guild is not None
 
-        return self.bot.guild_configurations_cache[message.guild.id]["opts"][
-            "equation_enabled"
-        ]
+        return self.bot.guild_configurations_cache[message.guild.id]["opts"]["equation_enabled"]
 
     async def query_ddg(self, query: str) -> Optional[str]:
         link = f"https://api.duckduckgo.com/?q={query}&format=json&pretty=1"
@@ -391,10 +350,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     def refrain_message(self, msg: str):
         if "chod" in msg.replace(",", "").split(" "):
             return False
-        return all(
-            bad_word.lower() not in msg.replace(",", "").split(" ")
-            for bad_word in bad_dict
-        )
+        return all(bad_word.lower() not in msg.replace(",", "").split(" ") for bad_word in bad_dict)
 
     def is_banned(self, member: Union[discord.User, discord.Member]) -> bool:
         # return True if member is banned else False
@@ -435,9 +391,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             "sqrt",
             "^",
         ]
-        message.content = message.content.replace(
-            "\N{MULTIPLICATION SIGN}", "*"
-        ).replace("\N{DIVISION SIGN}", "/")
+        message.content = message.content.replace("\N{MULTIPLICATION SIGN}", "*").replace("\N{DIVISION SIGN}", "/")
 
         if message.author.bot:
             return
@@ -457,9 +411,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             with suppress(discord.Forbidden, discord.NotFound):
                 await message.add_reaction("\N{SPIRAL NOTE PAD}")
                 try:
-                    r, _ = await self.bot.wait_for(
-                        "reaction_add", check=check, timeout=30
-                    )
+                    r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=30)
                 except asyncio.TimeoutError:
                     return
                 if r.emoji == "\N{SPIRAL NOTE PAD}":
@@ -553,16 +505,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         if message.author._roles.has(role_id):
             return
 
-        if message.content.startswith(
-            ("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")
-        ):
+        if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")):
             return
 
         if LINKS_NO_PROTOCOLS.search(message.content):
             await message.delete(delay=0)
-            await message.channel.send(
-                f"{message.author.mention} | URLs aren't allowed.", delete_after=5
-            )
+            await message.channel.send(f"{message.author.mention} | URLs aren't allowed.", delete_after=5)
             return
 
         if len(message.content.split("\n")) > 4:
@@ -605,9 +553,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
 
         await message.delete(delay=2)
         __functions: list = []
-        async for webhook in self.bot.guild_configurations.find(
-            {"global_chat.enable": True}
-        ):
+        async for webhook in self.bot.guild_configurations.find({"global_chat.enable": True}):
             if hook := webhook["global_chat"]["webhook"]:
                 __functions.append(__internal_funtion(hook=hook, message=message))
 
@@ -617,11 +563,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.bot.wait_until_ready()
-        if (
-            before.content != after.content
-            and after.guild is not None
-            and after.author.id == self.bot.user.id
-        ):
+        if before.content != after.content and after.guild is not None and after.author.id == self.bot.user.id:
             AWAITABLES: List[Coroutine] = [
                 self._on_message_passive(after),
                 self._scam_detection(after),
@@ -641,9 +583,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            enable: bool = self.bot.guild_configurations_cache[message.guild.id][
-                "leveling"
-            ]["enable"]
+            enable: bool = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["enable"]
         except KeyError:
             return
 
@@ -651,12 +591,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            role: List[int] = (
-                self.bot.guild_configurations_cache[message.guild.id]["leveling"][
-                    "ignore_role"
-                ]
-                or []
-            )
+            role: List[int] = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_role"] or []
         except KeyError:
             role = []
 
@@ -664,29 +599,17 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             return
 
         try:
-            ignore_channel: List = (
-                self.bot.guild_configurations_cache[message.guild.id]["leveling"][
-                    "ignore_channel"
-                ]
-                or []
-            )
+            ignore_channel: List = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_channel"] or []
         except KeyError:
             ignore_channel = []
 
         if message.channel.id in ignore_channel:
             return
 
-        await self.__add_xp(
-            member=message.author, xp=random.randint(10, 15), msg=message
-        )
+        await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
 
         try:
-            announce_channel: int = (
-                self.bot.guild_configurations_cache[message.guild.id]["leveling"][
-                    "channel"
-                ]
-                or 0
-            )
+            announce_channel: int = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["channel"] or 0
         except KeyError:
             return
         else:
@@ -745,9 +668,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                 )
             return True
 
-        if match_list and all(
-            not self.__scam_link_cache.get(i, True) for i in set(match_list)
-        ):
+        if match_list and all(not self.__scam_link_cache.get(i, True) for i in set(match_list)):
             return False
 
         with suppress(aiohttp.ClientOSError):
@@ -863,16 +784,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             ):
                 name = message.author.display_name[5:]
                 if len(name) != 0 or name not in (" ", ""):
-                    await message.author.edit(
-                        nick=name, reason=f"{message.author} came after AFK"
-                    )
+                    await message.author.edit(nick=name, reason=f"{message.author} came after AFK")
         except discord.Forbidden:
             pass
 
         await self.bot.delete_timer(**{"_id": data["_id"]})
-        self.bot.afk_users = set(
-            await self.bot.afk_collection.distinct("messageAuthor")
-        )
+        self.bot.afk_users = set(await self.bot.afk_collection.distinct("messageAuthor"))
 
     async def _on_message_passive_afk_user_mention(self, message: discord.Message):
         if message.guild is None:
@@ -904,25 +821,17 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
                     delete_after=5,
                     # Thanks `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
                 )
-        self.bot.afk_users = set(
-            await self.bot.afk_collection.distinct("messageAuthor")
-        )
+        self.bot.afk_users = set(await self.bot.afk_collection.distinct("messageAuthor"))
 
-    async def _what_is_this(
-        self, message: Union[discord.Message, str], *, channel: discord.TextChannel
-    ) -> None:
-        if match := QUESTION_REGEX.fullmatch(
-            message.content if isinstance(message, discord.Message) else message
-        ):
+    async def _what_is_this(self, message: Union[discord.Message, str], *, channel: discord.TextChannel) -> None:
+        if match := QUESTION_REGEX.fullmatch(message.content if isinstance(message, discord.Message) else message):
             word = replace_many(
                 match.string,
                 {"means": "", "what is": "", " ": "", "?": "", ".": ""},
                 ignore_case=True,
             )
             if data := await self.bot.dictionary.find_one({"word": word}):
-                await channel.send(
-                    f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}"
-                )
+                await channel.send(f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}")
             return
 
     # Internal Message Cache Updater Events
@@ -939,30 +848,22 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
             del self.bot.message_cache[message.author.id]
 
     @Cog.listener("on_message_edit")
-    async def on_message_edit_updater(
-        self, before: discord.Message, after: discord.Message
-    ) -> None:
+    async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
         if before.author.id in self.bot.message_cache:
             self.bot.message_cache[before.author.id] = after
 
     @Cog.listener("on_reaction_add")
-    async def on_reaction_add_updater(
-        self, reaction: discord.Reaction, _: discord.User
-    ) -> None:
+    async def on_reaction_add_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
         if reaction.message.id in self.bot.message_cache:
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_remove")
-    async def on_reaction_remove_updater(
-        self, reaction: discord.Reaction, _: discord.User
-    ) -> None:
+    async def on_reaction_remove_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
         if reaction.message.id in self.bot.message_cache:
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_clear")
-    async def on_reaction_clear_updater(
-        self, message: discord.Message, _: List[discord.Reaction]
-    ) -> None:
+    async def on_reaction_clear_updater(self, message: discord.Message, _: List[discord.Reaction]) -> None:
         if message.id in self.bot.message_cache:
             self.bot.message_cache[message.id] = message
 

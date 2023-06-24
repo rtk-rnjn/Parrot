@@ -57,9 +57,7 @@ class View:
         self.strip_ws()
         return e
 
-    def parse_prec_lvl(
-        self, ops: Tuple[str, ...], below: Callable[[], Optional[int]]
-    ) -> Callable[[], Optional[int]]:
+    def parse_prec_lvl(self, ops: Tuple[str, ...], below: Callable[[], Optional[int]]) -> Callable[[], Optional[int]]:
         def parser():
             e = below()
             if e is None:
@@ -79,9 +77,7 @@ class View:
         return parser
 
     def parse_expr(self) -> Optional[int]:
-        return self.parse_prec_lvl(
-            ("+", "-"), self.parse_prec_lvl(("*", "/"), self.parse_base_expr)
-        )()
+        return self.parse_prec_lvl(("+", "-"), self.parse_prec_lvl(("*", "/"), self.parse_base_expr))()
 
     def parse_full(self) -> Optional[int]:
         self.strip_ws()

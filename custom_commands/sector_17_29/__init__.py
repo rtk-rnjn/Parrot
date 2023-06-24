@@ -494,6 +494,7 @@ class Sector1729(Cog):
     #   - `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
     @sector_17_29_add.command(name="adjective", aliases=["adj", "adjectives"])
     @commands.has_any_role(SERVER_MOD, CORE_MAINTAINER_ROLE)
+    @commands.cooldown(1, 300, commands.BucketType.guild)
     @in_support_server()
     async def sector_17_29_add_adj(self, ctx: Context, *adjs: str):
         """Add adjective to the server"""
@@ -516,7 +517,7 @@ class Sector1729(Cog):
 
         cog: Gist = self.bot.get_cog("Gist")  # type: ignore
         table = tabulate(
-            {"Adjectives": self.adjectives}, headers="keys", tablefmt="github"
+            {"Adjectives": adjs}, headers="keys", tablefmt="github"
         )
         author = tabulate(
             {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},
@@ -539,7 +540,7 @@ class Sector1729(Cog):
 
 {table}
 
-In file: `/extra/adjectives.txt`
+**In file: [`/extra/adjectives.txt`](https://github.com/rtk-rnjn/Parrot/blob/main/extra/adjectives.txt)**
 
 ---
 
@@ -553,7 +554,7 @@ In file: `/extra/adjectives.txt`
 
 {message}
 """
-            url = await cog.create_issue(title="[Add] Adjective", body=body)
+            url = await cog.create_issue(title="[Bot] Add Adjective", body=body)
             await ctx.reply(f"Created issue: {url}")
 
     @sector_17_29.group(name="remove")

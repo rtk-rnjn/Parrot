@@ -117,7 +117,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
         data = {"title": title, "body": body}
 
         js = await self.github_request("POST", "issues", data=data, headers=headers, repo="rtk-rnjn/Parrot")
-        return js["url"]
+        return js["html_url"]
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

@@ -310,8 +310,6 @@ class Parrot(commands.AutoShardedBot):
         self.__app_commands_global: Dict[int, app_commands.AppCommand] = {}
         self.__app_commands_guild: Dict[int, Dict[int, app_commands.AppCommand]] = {}
 
-        self.loop.set_debug(True)
-
     def init_db(self) -> None:
         # MongoDB Database variables
         # Main DB

@@ -29,13 +29,6 @@ class Options(Enum):
     pn = "\N{CONFUSED FACE}"
 
 
-class BaseView(discord.ui.View):
-    def disable_all(self) -> None:
-        for button in self.children:
-            if isinstance(button, discord.ui.Button):
-                button.disabled = True
-
-
 class Akinator:
     """
     Akinator Game, utilizes reactions

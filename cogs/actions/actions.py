@@ -50,7 +50,6 @@ class Actions(Cog):
         )
 
         embed.set_image(url=url)
-        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url)
 
         if ctx.command.qualified_name not in self.cached_images:
             self.cached_images[ctx.command.qualified_name] = set()

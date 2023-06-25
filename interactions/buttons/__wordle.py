@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Dict, Final, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -18,7 +18,8 @@ from core import Context, Parrot
 from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
-DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
+
+from .utils import BaseView, DEFAULT_COLOR
 
 BORDER = 40
 SQ = 100
@@ -35,12 +36,6 @@ LGRAY = (198, 201, 205)
 with open(r"extra/5_words.txt", "r", encoding="utf-8", errors="ignore") as f:
     VALID_WORDS = tuple(f.read().splitlines())
 
-
-class BaseView(discord.ui.View):
-    def disable_all(self) -> None:
-        for button in self.children:
-            if isinstance(button, discord.ui.Button):
-                button.disabled = True
 
 
 class Wordle:

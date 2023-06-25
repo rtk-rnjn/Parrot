@@ -99,7 +99,7 @@ class NSFW(Cog):
         img = res["image"]
 
         em = discord.Embed(timestamp=discord.utils.utcnow())
-        em.set_footer(text=f"{ctx.author.name}")
+
         em.set_image(url=img)
 
         await ctx.reply(embed=em)

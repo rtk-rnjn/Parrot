@@ -33,6 +33,7 @@ SHIPS: Dict[str, Tuple[int, Tuple[int, int, int]]] = {
     "patrol boat": (2, (190, 190, 190)),
 }
 
+from .utils import BaseView
 
 class Ship:
     def __init__(
@@ -404,13 +405,6 @@ class BattleShip:
         return self.message1, self.message2
 
 
-class BaseView(discord.ui.View):
-    def disable_all(self) -> None:
-        for button in self.children:
-            if isinstance(button, discord.ui.Button):
-                button.disabled = True
-
-
 class Player:
     def __init__(self, player: discord.User, *, game: BetaBattleShip) -> None:
         self.game = game
@@ -517,6 +511,8 @@ class CoordButton(discord.ui.Button["BattleshipView"]):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        assert self.view is not None
+
         game = self.view.game
 
         if self.label.isdigit():

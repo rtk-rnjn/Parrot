@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import asyncio
 import random
-from typing import TYPE_CHECKING, Any, Coroutine, Final, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Final, Literal, Optional, TypeVar, List
 
 import discord
 from core import Context, Parrot
@@ -18,63 +17,11 @@ if TYPE_CHECKING:
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
 
-    Board: TypeAlias = list[list[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
+    Board: TypeAlias = List[List[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
 
 BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
 
-
-def chunk(iterable: list[int], *, count: int) -> list[list[int]]:
-    return [iterable[i : i + count] for i in range(0, len(iterable), count)]
-
-
-async def wait_for_delete(
-    ctx: Context[Parrot],
-    message: discord.Message,
-    *,
-    emoji: str = "\N{BLACK SQUARE FOR STOP}",
-    bot: Optional[Parrot] = None,
-    user: Optional[Union[discord.User, tuple[discord.User, ...]]] = None,
-    timeout: Optional[float] = None,
-) -> bool:
-    if not user:
-        user = ctx.author
-    try:
-        await message.add_reaction(emoji)
-    except discord.DiscordException:
-        pass
-
-    def check(reaction: discord.Reaction, _user: discord.User) -> bool:
-        if reaction.emoji == emoji and reaction.message == message:
-            return _user in user if isinstance(user, tuple) else _user == user
-        return False
-
-    bot: Optional[Parrot] = bot or ctx.bot
-    try:
-        await bot.wait_for("reaction_add", timeout=timeout, check=check)
-    except asyncio.TimeoutError:
-        return False
-    else:
-        await message.delete()
-        return True
-
-
-async def double_wait(
-    task1: Coroutine[Any, Any, A],
-    task2: Coroutine[Any, Any, B],
-    *,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
-) -> tuple[set[asyncio.Task[Union[A, B]]], set[asyncio.Task[Union[A, B]]],]:
-    if not loop:
-        loop = asyncio.get_event_loop()
-
-    return await asyncio.wait(
-        [
-            loop.create_task(task1),
-            loop.create_task(task2),
-        ],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
-
+from .utils import double_wait, wait_for_delete, chunk
 
 class LightsOutButton(discord.ui.Button["LightsOutView"]):
     def __init__(self, emoji: str, *, style: discord.ButtonStyle, row: int, col: int) -> None:
@@ -88,6 +35,9 @@ class LightsOutButton(discord.ui.Button["LightsOutView"]):
         self.col = col
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        
+        assert self.view is not None
+
         game = self.view.game
 
         if interaction.user != game.player:

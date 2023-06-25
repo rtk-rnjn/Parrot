@@ -71,7 +71,6 @@ class NASA(Cog):
             url="attachment://earth.jpg",
         )
         embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
-        embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed, file=file)
 
@@ -104,7 +103,6 @@ class NASA(Cog):
             image = res["url"]
             embed.set_image(url=f"{image}")
         embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
-        embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed)
 
@@ -232,7 +230,6 @@ class NASA(Cog):
         embed.add_field(name="Orbiting:", value=f"{orbital_p}", inline=True)
         embed.add_field(name="Last observation date:", value=f"{last_obs}", inline=True)
         embed.set_thumbnail(url="https://assets.stickpng.com/images/58429400a6515b1e0ad75acc.png")
-        embed.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=embed)
 

@@ -219,7 +219,6 @@ async def _addaccess(ctx: Context, role: discord.Role) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -234,7 +233,6 @@ async def _delaccess(ctx: Context, role: discord.Role) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -249,7 +247,6 @@ async def _addadimrole(ctx: Context, role: discord.Role) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -264,7 +261,6 @@ async def _addpingedrole(ctx: Context, role: discord.Role) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -277,7 +273,6 @@ async def _deladminrole(ctx: Context, role: discord.Role) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -290,7 +285,6 @@ async def _delpingedrole(ctx: Context, role: discord.Role) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -303,7 +297,6 @@ async def _setcategory(ctx: Context, channel: discord.TextChannel) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 
@@ -316,7 +309,6 @@ async def _setlog(ctx: Context, channel: discord.TextChannel) -> None:
         timestamp=discord.utils.utcnow(),
     )
 
-    em.set_footer(text=f"{ctx.author.name}")
     await ctx.reply(embed=em)
 
 

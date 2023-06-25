@@ -5,7 +5,6 @@ from typing import Any, List, Optional
 
 import chess
 from pymongo import UpdateOne
-from pymongo.collection import Collection
 
 import discord
 from core import Context, Parrot
@@ -192,7 +191,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 await msg_.add_reaction("\N{HANDSHAKE}")
                 self.game_stop = True
 
-                col: Collection = self.bot.game_collections
+                col = self.bot.game_collections
                 await col.bulk_write(
                     [
                         UpdateOne(
@@ -233,7 +232,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 self.switch()
 
     async def add_db(self, **kwargs):
-        col: Collection = self.bot.game_collections
+        col = self.bot.game_collections
         await col.bulk_write(
             [
                 UpdateOne(

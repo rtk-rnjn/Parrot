@@ -332,10 +332,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
         # No pagination necessary for a single command.
         embed = discord.Embed(colour=discord.Color.blue(), timestamp=discord.utils.utcnow())
         embed.set_thumbnail(url=self.context.me.display_avatar.url)
-        embed.set_footer(
-            text=f"{self.context.author}",
-            icon_url=self.context.author.display_avatar.url,
-        )
         self.common_command_formatting(embed, command, message=self.context.message)
         await self.context.send(embed=embed)
 
@@ -411,10 +407,7 @@ class Meta(Cog):
         buffer = io.BytesIO(await response.read())
 
         embed.set_image(url="attachment://avatar.gif")
-        embed.set_footer(
-            text=f"Requested by {ctx.author}",
-            icon_url=ctx.author.display_avatar.url,
-        )
+
         await ctx.reply(embed=embed, file=discord.File(buffer, "avatar.gif"))
 
     @commands.command(name="owner")
@@ -449,7 +442,7 @@ class Meta(Cog):
         guild = ctx.guild
         embed = discord.Embed(timestamp=discord.utils.utcnow())
         embed.set_image(url=guild.icon.url)
-        embed.set_footer(text=f"{ctx.author.name}")
+
         await ctx.reply(embed=embed)
 
     @commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])

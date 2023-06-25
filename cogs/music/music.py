@@ -827,7 +827,7 @@ class Music(Cog):
             return await ctx.error(f"{ctx.author.mention} There are no songs in the queue.")
 
         entries = []
-        for track in vc.queue._queue:  # type: ignore
+        for track in vc.queue._queue:
             if hasattr(track, "uri"):
                 entries.append(f"[{track.title} - {track.author}]({track.uri})")
             else:

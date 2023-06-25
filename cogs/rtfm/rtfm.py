@@ -901,7 +901,7 @@ class RTFM(Cog):
 
         await ctx.send(embed=embed)
 
-    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks ``willdn`` (will.#0021 - 211756205721255947)
     async def github_repo_info(self, ctx: Context, *repo: str) -> None:
         """
         Fetches a repositories' GitHub information.
@@ -992,7 +992,7 @@ class RTFM(Cog):
             await ctx.send(embed=home_page_embed)
             return
 
-        if not 1 <= amount <= 5:
+        if not 1 <= (amount or 5) <= 5:
             await ctx.send(f"{ctx.author.mention} `amount` must be between 1 and 5 (inclusive).")
             return
 
@@ -1122,7 +1122,7 @@ class RTFM(Cog):
 
             is_embed, description = self.result_fmt(
                 URL.format(
-                    search=search_string,  # type: ignore
+                    search=search_string
                 ),
                 result,
             )
@@ -1258,7 +1258,7 @@ class RTFM(Cog):
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
         codewars.com API to use.
         """
-        async with self.bot.http_session.get(search_link, params=params) as response:  # type: ignore
+        async with self.bot.http_session.get(search_link, params=params) as response:
             if response.status != 200:
                 return discord.Embed(
                     title=choice(NEGATIVE_REPLIES),

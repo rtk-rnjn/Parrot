@@ -131,9 +131,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
 
         return True
 
-    async def dj_role(
-        self,
-    ) -> Optional[discord.Role]:
+    async def dj_role(self) -> Optional[discord.Role]:
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
         if channel := getattr(self.author.voice, "channel"):
@@ -161,9 +159,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 return self.guild.get_role(data.get("dj_role") or 0)
         return None
 
-    async def muterole(
-        self,
-    ) -> Optional[discord.Role]:
+    async def muterole(self) -> Optional[discord.Role]:
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
         try:
@@ -179,9 +175,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
                 return self.guild.get_role(data["mute_role"] or 0)
         return None
 
-    async def modrole(
-        self,
-    ) -> Optional[discord.Role]:
+    async def modrole(self) -> Optional[discord.Role]:
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
         try:
@@ -201,7 +195,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     @staticmethod
     def with_type(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def wrapped(*args: Any, **kwargs: Any) -> Any:
+        async def wrapped(*args: Any, **kwargs: Any) -> Optional[discord.Message]:
             context = args[0] if isinstance(args[0], commands.Context) else args[1]
             async with context.typing():
                 return await func(*args, **kwargs)
@@ -218,6 +212,7 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         **kwargs: Any,
     ) -> Optional[discord.Message]:
         assert isinstance(self.me, discord.Member)
+
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
@@ -235,26 +230,6 @@ class Context(commands.Context[commands.Bot], Generic[T]):
             content = f"*{content}*"
         if underline:
             content = f"__{content}__"
-        embeds: Union[discord.Embed, List[discord.Embed], None] = kwargs.get("embed") or kwargs.get("embeds")
-
-        def __set_embed_defaults(embed: discord.Embed, /):
-            if not embed.color:
-                embed.color = self.bot.color
-            if not embed.timestamp:
-                embed.timestamp = discord.utils.utcnow()
-            if not embed.footer:
-                embed.set_footer(
-                    text=f"Requested by {self.author}",
-                    icon_url=self.author.display_avatar.url,
-                )
-
-        if isinstance(embeds, (list, tuple)):
-            for embed in embeds:
-                if isinstance(embed, discord.Embed):
-                    __set_embed_defaults(embed)
-        else:
-            if isinstance(embeds, discord.Embed):
-                __set_embed_defaults(embeds)
 
         log.debug("Sending message to channel `%s` (%s)", self.channel, self.channel.id)
         return await super().send(str(content)[:1990] if content else None, **kwargs)
@@ -681,6 +656,9 @@ class Context(commands.Context[commands.Bot], Generic[T]):
     def send_view(self, **kw: Any) -> SentFromView:
         return SentFromView(self, **kw)
 
+    def link_view(self, *, url: str, label: str) -> LinkView:
+        return LinkView(url=url, label=label)
+
     def check_buffer(self, buffer: BytesIO) -> BytesIO:
         if (size := buffer.getbuffer().nbytes) > 15000000:
             raise commands.BadArgument(
@@ -813,7 +791,7 @@ class ConfirmationView(discord.ui.View):
 
 
 class SentFromView(discord.ui.View):
-    def __init__(self, ctx: Context, *, timeout: float | None = 180, label: Optional[str] = None):
+    def __init__(self, ctx: Context, *, timeout: Optional[float] = 180, label: Optional[str] = None):
         super().__init__(timeout=timeout)
         self.ctx = ctx
 
@@ -825,3 +803,11 @@ class SentFromView(discord.ui.View):
                 disabled=True,
             )
         )
+
+
+class LinkView(discord.ui.View):
+    def __init__(self, *, timeout: Optional[float] = 180, url: str, label: str = "Link"):
+        super().__init__(timeout=timeout)
+        self.url = url
+
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.url, label=label, url=url))

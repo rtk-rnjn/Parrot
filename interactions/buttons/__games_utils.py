@@ -891,6 +891,8 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
             self.label = "X"
 
     async def callback(self, interaction: discord.Interaction):
+        assert self.view is not None
+
         self.view.board = self.view.board.move(self.r, self.c)
         self.view.update()
 

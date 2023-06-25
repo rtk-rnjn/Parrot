@@ -40,9 +40,9 @@ from discord import Embed
 from discord.ext import commands
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
+from utilities.regex import INVITE_RE, LINKS_RE
 from utilities.ttg import Truths
 from utilities.youtube_search import YoutubeSearch
-from utilities.regex import LINKS_RE, INVITE_RE
 
 from .__embed_view import EmbedBuilder, EmbedCancel, EmbedSend
 from .__flags import SearchFlag, TTFlag
@@ -335,7 +335,6 @@ class Misc(Cog):
                 description=f"```ini\n[Answer is: {await r.text()}]```",
                 timestamp=discord.utils.utcnow(),
             )
-            embed.set_footer(text=f"{ctx.author.name}")
 
             await ctx.reply(embed=embed)
         else:
@@ -354,7 +353,9 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def firstmessage(self, ctx: Context, *, channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None):
+    async def firstmessage(
+        self, ctx: Context, *, channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None
+    ):
         """To get the first message of the specified channel"""
         channel = channel or ctx.channel  # type: ignore
 
@@ -565,6 +566,8 @@ class Misc(Cog):
                 emb.set_image(url=snipe.content)
             elif isinstance(ref, discord.Message):
                 emb.description = f"- **Replied to: [`{ref.author}`]({ref.jump_url})**\n\n{self.sanitise(snipe.content)}"
+            else:
+                emb.description = self.sanitise(snipe.content)
 
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
@@ -639,20 +642,29 @@ class Misc(Cog):
         _id = res["id"]
         name = res["name"]
 
-        embed.add_field(name="Temperature", value=f"{temp:.2f}°C")
-        embed.add_field(name="Feels Like", value=f"{feels_like:.2f}°C")
-        embed.add_field(name="Humidity", value=f"{humidity}%")
-        embed.add_field(name="Pressure", value=f"{pressure}hPa")
-        embed.add_field(name="Wind Speed", value=f"{wind_speed}m/s")
-        embed.add_field(name="Wind Direction", value=f"{wind_deg}°")
-        embed.add_field(name="Cloudiness", value=f"{cloudiness}%")
-        embed.add_field(name="Visibility", value=f"{visibliity}m")
-        embed.add_field(name="Sunrise", value=f"{sunrise.strftime('%H:%M')}")
-        embed.add_field(name="Sunset", value=f"{sunset.strftime('%H:%M')}")
-        embed.add_field(name="Country", value=f"{country}")
-        embed.add_field(name="Name", value=f"{name}")
-        embed.set_footer(text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url)
-        embed.set_author(name=f"{name}: {_id}", icon_url=ctx.author.display_avatar.url)
+        embed.add_field(name="Temperature", value=f"{temp:.2f}°C").add_field(
+            name="Feels Like", value=f"{feels_like:.2f}°C"
+        ).add_field(name="Humidity", value=f"{humidity}%").add_field(name="Pressure", value=f"{pressure}hPa").add_field(
+            name="Wind Speed", value=f"{wind_speed}m/s"
+        ).add_field(
+            name="Wind Direction", value=f"{wind_deg}°"
+        ).add_field(
+            name="Cloudiness", value=f"{cloudiness}%"
+        ).add_field(
+            name="Visibility", value=f"{visibliity}m"
+        ).add_field(
+            name="Sunrise", value=f"{sunrise.strftime('%H:%M')}"
+        ).add_field(
+            name="Sunset", value=f"{sunset.strftime('%H:%M')}"
+        ).add_field(
+            name="Country", value=f"{country}"
+        ).add_field(
+            name="Name", value=f"{name}"
+        ).set_footer(
+            text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url
+        ).set_author(
+            name=f"{name}: {_id}", icon_url=ctx.author.display_avatar.url
+        )
 
         await ctx.reply(embed=embed)
 
@@ -693,23 +705,25 @@ class Misc(Cog):
             _1_urlsu = "https://www.youtube.com" + str(main["videos"][i]["url_suffix"])
             _1_durat = main["videos"][i]["duration"]
             _1_thunb = str(main["videos"][i]["thumbnails"][0])
-            embed = discord.Embed(
-                title=f"YouTube search results: {query}",
-                description=f"{_1_urlsu}",
-                colour=discord.Colour.red(),
-                url=_1_urlsu,
+            embed = (
+                discord.Embed(
+                    title=f"YouTube search results: {query}",
+                    description=f"{_1_urlsu}",
+                    colour=discord.Colour.red(),
+                    url=_1_urlsu,
+                )
+                .add_field(
+                    name=f"Video title:`{_1_title}`\n",
+                    value=f"Channel:```\n{_1_chann}\n```\nDescription:```\n{_1_descr}\n```\nViews:```\n{_1_views}\n```\nDuration:```\n{_1_durat}\n```",
+                    inline=False,
+                )
+                .set_thumbnail(
+                    url="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social"
+                    "-youtube-circle-512.png"
+                )
+                .set_image(url=f"{_1_thunb}")
+                .set_footer(text=f"{ctx.author.name}")
             )
-            embed.add_field(
-                name=f"Video title:`{_1_title}`\n",
-                value=f"Channel:```\n{_1_chann}\n```\nDescription:```\n{_1_descr}\n```\nViews:```\n{_1_views}\n```\nDuration:```\n{_1_durat}\n```",
-                inline=False,
-            )
-            embed.set_thumbnail(
-                url="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social"
-                "-youtube-circle-512.png"
-            )
-            embed.set_image(url=f"{_1_thunb}")
-            embed.set_footer(text=f"{ctx.author.name}")
             em_list.append(embed)
 
         await PaginationView(em_list).start(ctx=ctx)
@@ -781,7 +795,6 @@ class Misc(Cog):
             inline=True,
         )
         embed.add_field(name="ID", value=f"`{getattr(target, 'id', 'NA')}`", inline=True)
-        embed.set_footer(text=f"Requested by {ctx.author}")
         await ctx.reply(embed=embed)
 
     @commands.command()

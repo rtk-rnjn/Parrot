@@ -30,20 +30,20 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         self.bot = bot
 
     async def _factory_reactor(self, payload: discord.RawReactionActionEvent, *, tp: Literal["add", "remove"]) -> None:
-        log.info("Reaction %sing sequence started, %s", tp, payload)
+        log.debug("Reaction %sing sequence started, %s", tp, payload)
         if not payload.guild_id:
             return
 
         CURRENT_TIME = time()
         DATETIME: datetime.datetime = discord.utils.snowflake_time(payload.message_id)
         if payload.channel_id in self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["ignore_channel"]:
-            log.info("Channel ignored %s", payload.channel_id)
+            log.debug("Channel ignored %s", payload.channel_id)
             return
 
         max_duration = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["max_duration"] or TWO_WEEK
 
         if (CURRENT_TIME - DATETIME.timestamp()) > max_duration:
-            log.info("Message too old %s", DATETIME)
+            log.debug("Message too old %s", DATETIME)
             return
 
         self_star = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"].get("can_self_star", False)
@@ -53,7 +53,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         except KeyError:
             return
 
-        log.info(
+        log.debug(
             "Configurations loaded, CURRENT_TIME=%s MAX_DURATION=%s SELF_STAR=%s LOCKED=%s",
             CURRENT_TIME,
             max_duration,
@@ -62,18 +62,18 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         )
 
         if locked:
-            log.info("Starboard locked")
+            log.debug("Starboard locked")
             return
 
         msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
             payload.channel_id, payload.message_id
         )
         if not msg:
-            log.info("Message not found %s-%s", payload.channel_id, payload.message_id)
+            log.debug("Message not found %s-%s", payload.channel_id, payload.message_id)
             return  # rare case
 
         if payload.user_id == msg.author.id and not self_star:
-            log.info("Self star not allowed %s", payload.user_id)
+            log.debug("Self star not allowed %s", payload.user_id)
             return
 
         func = getattr(self, f"_on_star_reaction_{tp}")
@@ -182,7 +182,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             data["channel_id"],
         )
         if ch is None:
-            log.info("Channel not found %s", data["channel_id"])
+            log.debug("Channel not found %s", data["channel_id"])
             return
 
         try:
@@ -199,7 +199,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, data["message_id"]["bot"])  # type: ignore
         main_message: discord.Message = await self.bot.get_or_fetch_message(ch, data["message_id"]["author"])  # type: ignore
         if msg and not msg.embeds:
-            log.info("Message has no embeds")
+            log.debug("Message has no embeds")
             return
 
         embed: discord.Embed = msg.embeds[0]

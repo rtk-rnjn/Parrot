@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import TYPE_CHECKING, Any, List, Optional, TypeAlias
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import discord
 from core import Parrot
 
 if TYPE_CHECKING:
     from pymongo.collection import Collection
+    from typing_extensions import TypeAlias
 
     MongoCollection: TypeAlias = Collection
 

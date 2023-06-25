@@ -3,9 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 import time
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Final, List, Optional, Set, Tuple, TypeVar, Union
-
-from pymongo.collection import Collection
+from typing import TYPE_CHECKING, ClassVar, List, Optional, TypeVar, Union
 
 import discord
 from core import Context, Parrot
@@ -21,70 +19,7 @@ if TYPE_CHECKING:
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
 
-DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
-
-
-def chunk(iterable: List[int], *, count: int) -> List[List[int]]:
-    return [iterable[i : i + count] for i in range(0, len(iterable), count)]
-
-
-async def wait_for_delete(
-    ctx: Context[Parrot],
-    message: discord.Message,
-    *,
-    emoji: str = "\N{BLACK SQUARE FOR STOP}",
-    _bot: Optional[Parrot] = None,
-    user: Optional[Union[discord.User, Tuple[discord.User, ...]]] = None,
-    timeout: Optional[float] = None,
-) -> bool:
-    if not user:
-        user = ctx.author
-    try:
-        await message.add_reaction(emoji)
-    except discord.DiscordException:
-        pass
-
-    def check(reaction: discord.Reaction, _user: discord.User) -> bool:
-        if reaction.emoji == emoji and reaction.message == message:
-            return _user in user if isinstance(user, tuple) else _user == user
-        return False
-
-    bot: Parrot = _bot or ctx.bot
-    try:
-        await bot.wait_for("reaction_add", timeout=timeout, check=check)
-    except asyncio.TimeoutError:
-        return False
-    else:
-        await message.delete()
-        return True
-
-
-async def double_wait(
-    task1: Coroutine[Any, Any, A],
-    task2: Coroutine[Any, Any, B],
-    *,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
-) -> Tuple[Set[asyncio.Task[Union[A, B]]], Set[asyncio.Task[Union[A, B]]],]:
-    if not loop:
-        loop = asyncio.get_event_loop()
-
-    return await asyncio.wait(
-        [
-            loop.create_task(task1),
-            loop.create_task(task2),
-        ],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
-
-
-class BaseView(discord.ui.View):
-    def disable_all(self) -> None:
-        for button in self.children:
-            if isinstance(button, discord.ui.Button):
-                button.disabled = True
-
-    async def on_timeout(self) -> None:
-        return self.stop()
+from .utils import DEFAULT_COLOR, BaseView, chunk, double_wait, wait_for_delete
 
 
 class MemoryButton(discord.ui.Button["MemoryView"]):
@@ -138,7 +73,7 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
         time_taken = time.perf_counter() - self.view.ini
 
         bot: Parrot = self.view.ctx.bot
-        col: Collection = bot.game_collections
+        col = bot.game_collections
 
         await col.update_one(
             {
@@ -234,28 +169,8 @@ class MemoryGame:
         pause_time: float = 0.7,
         button_style: discord.ButtonStyle = discord.ButtonStyle.gray,
         timeout: Optional[float] = None,
-    ) -> discord.Message:
-        """
-        starts the memory game
-        Parameters
-        ----------
-        ctx : Context
-            the context of the invokation command
-        embed_color : DiscordColor, optional
-            the color of the game embed, by default DEFAULT_COLOR
-        items : List[str], optional
-            items to use for the game tiles, by default []
-        pause_time : float, optional
-            specifies the duration to pause for before hiding the tiles again, by default 0.7
-        button_style : discord.ButtonStyle, optional
-            the primary button style to use, by default discord.ButtonStyle.red
-        timeout : Optional[float], optional
-            the timeout for the view, by default None
-        Returns
-        -------
-        discord.Message
-            returns the game message
-        """
+    ) -> Optional[discord.Message]:
+
         if items is None:
             items = []
         self.embed_color = embed_color

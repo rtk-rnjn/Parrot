@@ -6,8 +6,8 @@ import asyncio
 import os
 import socket
 
-from aiohttp import AsyncResolver, ClientSession, TCPConnector  # type: ignore
-from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
+from aiohttp import AsyncResolver, ClientSession, TCPConnector
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from core import Parrot
 from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION

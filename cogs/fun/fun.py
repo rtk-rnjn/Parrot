@@ -647,7 +647,6 @@ class Fun(Cog):
                     value=_value_str,
                     inline=False,
                 )
-                .set_footer(text=f"{ctx.author.name}")
                 .set_thumbnail(url=TRIVIA_QUIZ_ICON)
             )
             await ctx.send(embed=embed)
@@ -1510,7 +1509,6 @@ class Fun(Cog):
         em.add_field(name="Age", value=f"{age}", inline=False)
         em.set_thumbnail(url=pic)
         em.add_field(name="Phone", value=f"{phone}", inline=False)
-        em.set_footer(text=f"{ctx.author.name}")
 
         await ctx.reply(embed=em)
 
@@ -1631,7 +1629,6 @@ class Fun(Cog):
                 timestamp=discord.utils.utcnow(),
             )
 
-        em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
     @commands.command(aliases=["wyr"])
@@ -1653,7 +1650,6 @@ class Fun(Cog):
                 timestamp=discord.utils.utcnow(),
             )
 
-        em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
     @commands.command(aliases=["nhie"])
@@ -1675,7 +1671,6 @@ class Fun(Cog):
                 timestamp=discord.utils.utcnow(),
             )
 
-        em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
     @commands.command()
@@ -1697,7 +1692,6 @@ class Fun(Cog):
                 description=f"{random.choice(t)}",
                 timestamp=discord.utils.utcnow(),
             )
-        em.set_footer(text=f"{ctx.author.name}")
         await ctx.reply(embed=em)
 
     @commands.command()
@@ -1719,7 +1713,6 @@ class Fun(Cog):
                 description=f"{random.choice(t)}",
                 timestamp=discord.utils.utcnow(),
             )
-        em.set_footer(text=f"{ctx.author}")
         await ctx.reply(embed=em)
 
     @commands.group(aliases=["https"], invoke_without_command=True)
@@ -1732,7 +1725,6 @@ class Fun(Cog):
             await ctx.reply(
                 embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
                 .set_image(url=f"https://http.cat/{status_code}")
-                .set_footer(text=f"{ctx.author}")
             )
 
     @http.command(name="dog")
@@ -1744,7 +1736,6 @@ class Fun(Cog):
         await ctx.reply(
             embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
             .set_image(url=f"https://httpstatusdogs.com/img/{status_code}.jpg")
-            .set_footer(text=f"{ctx.author}")
         )
 
     @commands.command()
@@ -2098,12 +2089,12 @@ class Fun(Cog):
             max_age=120,
             reason=f"Activity requested by: {ctx.author} ({ctx.author.id})",
         )
-        await ctx.send(
+        await ctx.reply(
             embed=discord.Embed(
                 title="Activity",
                 description=f"{ctx.author.mention} [Click Here]({inv}). **The invite link will be expired in 120 seconds**",
                 timestamp=ctx.message.created_at,
-            ).set_footer(text=f"Requested by: {ctx.author}")
+            )
         )
 
     @commands.command(

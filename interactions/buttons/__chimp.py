@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Any, List, Optional
+from typing import Optional
 
 import discord
 from core import Context, Parrot
 
-
-def chunk(iterable: List[Any], *, count: int) -> List[List[Any]]:
-    return [iterable[i : i + count] for i in range(0, len(iterable), count)]
+from .utils import chunk
 
 
 class ChimpButton(discord.ui.Button["ChimpView"]):

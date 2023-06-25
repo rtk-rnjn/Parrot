@@ -211,8 +211,8 @@ class Highlight(Cog):
         )
 
         def esc(string: str) -> str:
-            st = discord.utils.escape_markdown(discord.utils.escape_mentions(string))
-            st = st.replace(f"{word['word']}", f"**{word['word']}**")
+            st = discord.utils.escape_markdown(string)
+            st = string.replace(f"{word['word']}", f"**{word['word']}**")
             return st
 
         if len(message.content) > 2000:
@@ -226,7 +226,7 @@ class Highlight(Cog):
         # Add some history
         try:
             async for ms in message.channel.history(limit=3, before=message):
-                content = esc(ms.clean_content)
+                content = esc(ms.content)
                 timestamp = int(ms.created_at.timestamp())
 
                 text = f"<t:{timestamp}:T> {ms.author.mention}: {esc(content)}\n"

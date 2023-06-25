@@ -35,19 +35,19 @@ from typing import (
 )
 
 import aiohttp
-import jishaku  # type: ignore  # noqa: F401  # pylint: disable=unused-import
+import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
 from aiohttp import ClientSession
 from colorama import Fore
-from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
+from motor.motor_asyncio import AsyncIOMotorClient
 
 import discord
 from discord import app_commands
 from discord.ext import commands, ipc, tasks  # type: ignore
 
 try:
-    import topgg  # type: ignore
+    import topgg
 
     HAS_TOP_GG = True
 except ImportError:
@@ -101,8 +101,8 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 intents = discord.Intents.default()
-intents.members = True  # type: ignore
-intents.message_content = True  # type: ignore
+intents.members = True
+intents.message_content = True
 
 dbl_token = os.environ["TOPGG"]
 
@@ -112,12 +112,13 @@ DEFAULT_PREFIX: Literal["$"] = "$"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-handler = logging.handlers.RotatingFileHandler(
-    filename=".discord.log",
-    encoding="utf-8",
-    maxBytes=1 * 1024 * 1024,  # 1 MiB
-    backupCount=1,  # Rotate through 1 files
-)
+def hander(filename: str) -> logging.handlers.RotatingFileHandler:
+    return logging.handlers.RotatingFileHandler(
+        filename=filename,
+        encoding="utf-8",
+        maxBytes=1 * 1024 * 1024,  # 1 MiB
+        backupCount=1,  # Rotate through 1 files
+    )
 DT_FMT = "%Y-%m-%d %H:%M:%S"
 
 
@@ -156,9 +157,10 @@ formatter = CustomFormatter()
 
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
-handler.setFormatter(formatter)
+hndlr = hander(".log")
+hndlr.setFormatter(formatter)
 logger.addHandler(stream_handler)
-logger.addHandler(handler)
+logger.addHandler(hndlr)
 
 log = logging.getLogger("core.parrot")
 
@@ -269,6 +271,7 @@ class Parrot(commands.AutoShardedBot):
         self.message_cache: Dict[int, discord.Message] = {}
         self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
         self.afk_users: "Set[int]" = set()
+        self.channel_message_cache: "Dict[int, asyncio.Queue[discord.Message]]" = {}
 
         self.func: Callable[..., Any] = func
 
@@ -306,6 +309,8 @@ class Parrot(commands.AutoShardedBot):
 
         self.__app_commands_global: Dict[int, app_commands.AppCommand] = {}
         self.__app_commands_guild: Dict[int, Dict[int, app_commands.AppCommand]] = {}
+
+        self.loop.set_debug(True)
 
     def init_db(self) -> None:
         # MongoDB Database variables
@@ -947,7 +952,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def get_or_fetch_message(
         self,
-        channel: Union[discord.Object, int, discord.PartialMessageable],  # type: ignore
+        channel: Union[discord.Object, int, discord.PartialMessageable],
         message: Union[int, str],
         *,
         fetch: bool = True,

@@ -13,18 +13,18 @@ from html import unescape
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
 
-import aiohttp  # type: ignore
-import qrcode  # type: ignore
+import aiohttp
+import qrcode
 from PIL import Image
-from qrcode.image.styledpil import StyledPilImage  # type: ignore
-from qrcode.image.styles.colormasks import (  # type: ignore
+from qrcode.image.styledpil import StyledPilImage
+from qrcode.image.styles.colormasks import (
     HorizontalGradiantColorMask,
     RadialGradiantColorMask,
     SolidFillColorMask,
     SquareGradiantColorMask,
     VerticalGradiantColorMask,
 )
-from qrcode.image.styles.moduledrawers import (  # type: ignore
+from qrcode.image.styles.moduledrawers import (
     CircleModuleDrawer,
     GappedSquareModuleDrawer,
     HorizontalBarsDrawer,
@@ -42,12 +42,10 @@ from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
 from utilities.ttg import Truths
 from utilities.youtube_search import YoutubeSearch
+from utilities.regex import LINKS_RE, INVITE_RE
 
 from .__embed_view import EmbedBuilder, EmbedCancel, EmbedSend
 from .__flags import SearchFlag, TTFlag
-
-invitere = r"(?:https?:\/\/)?discord(?:\.gg|app\.com\/invite)?\/(?:#\/)([a-zA-Z0-9-]*)"
-invitere2 = r"(http[s]?:\/\/)*discord((app\.com\/invite)|(\.gg))\/(invite\/)?(#\/)?([A-Za-z0-9\-]+)(\/)?"
 
 google_key: str = os.environ["GOOGLE_KEY"]
 cx: str = os.environ["GOOGLE_CX"]
@@ -161,9 +159,9 @@ def _create_qr(
 ) -> discord.File:
     qr = qrcode.QRCode(
         version=version,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=board_size,
-        border=border,
+        error_correction=qrcode.ERROR_CORRECT_L,
+        box_size=board_size or 10,
+        border=border or 4,
     )
     qr.add_data(text)
     qr.make(fit=True)
@@ -253,9 +251,8 @@ class Misc(Cog):
 
     def sanitise(self, st: str) -> str:
         if len(st) > 1024:
-            st = f"{st[:1021]}..."
-        st = re.sub(invitere2, "[INVITE REDACTED]", st)
-        return st
+            st = f"{st[:980]}..."
+        return INVITE_RE.sub("[INVITE REDACTED]", st)
 
     async def _generate_image(self, query: str, out_file: BinaryIO) -> None:
         """Make an API request and save the generated image to cache."""
@@ -357,9 +354,10 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def firstmessage(self, ctx: Context, *, channel: discord.TextChannel = None):
+    async def firstmessage(self, ctx: Context, *, channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None):
         """To get the first message of the specified channel"""
-        channel = channel or ctx.channel
+        channel = channel or ctx.channel  # type: ignore
+
         async for msg in channel.history(limit=1, oldest_first=True):
             return await ctx.send(
                 embed=discord.Embed(
@@ -463,7 +461,7 @@ class Misc(Cog):
         if ctx.invoked_subcommand:
             return
         search = urllib.parse.quote(search)
-        safe = "off" if ctx.channel.nsfw else "active"
+        safe = "off" if ctx.channel.nsfw else "active"  # type: ignore
         url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
 
         response = await self.bot.http_session.get(url)
@@ -500,7 +498,7 @@ class Misc(Cog):
         for k, v in _SEACH_FLAG_CONVERTERS.items():
             if hasattr(search, k):
                 PAYLOAD[v] = getattr(search, k)
-        if not ctx.channel.nsfw:
+        if not ctx.channel.nsfw:  # type: ignore
             PAYLOAD["safe"] = "active"
 
         url = "https://www.googleapis.com/customsearch/v1"
@@ -537,21 +535,37 @@ class Misc(Cog):
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
         emb = discord.Embed()
+
         if isinstance(snipe, (list, Iterable)):  # edit snipe
             emb.set_author(name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url)
             emb.colour = snipe[0].author.colour
             emb.add_field(name="Before", value=self.sanitise(snipe[0].content), inline=False)
             emb.add_field(name="After", value=self.sanitise(snipe[1].content), inline=False)
             emb.timestamp = snipe[0].created_at
+
         else:  # delete snipe
-            emb.set_author(name=str(snipe.author), icon_url=snipe.author.display_avatar.url)
-            emb.description = f"{self.sanitise(snipe.content)}"  # fuck you pycord
+            emb.set_author(name=snipe.author, icon_url=snipe.author.display_avatar.url)
             emb.colour = snipe.author.colour
             emb.timestamp = snipe.created_at
             emb.set_footer(
                 text=f"Message sniped by {str(ctx.author)}",
                 icon_url=ctx.author.display_avatar.url,
             )
+            if snipe.attachments:
+                url = snipe.attachments[0].proxy_url
+                if url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                    emb.set_image(url=url)
+
+            # check if the snipe.content is url and ends with ("png", "jpeg", "jpg", "gif", "webp")
+
+            ref = snipe.reference.resolved if snipe.reference else None
+            if len(LINKS_RE.findall(snipe.content)) == 1 and snipe.content.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                if isinstance(ref, discord.Message):
+                    emb.description = f"Replied to: **[{ref.author}]({ref.jump_url})**"
+                emb.set_image(url=snipe.content)
+            elif isinstance(ref, discord.Message):
+                emb.description = f"- **Replied to: [`{ref.author}`]({ref.jump_url})**\n\n{self.sanitise(snipe.content)}"
+
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None
 
@@ -715,14 +729,14 @@ class Misc(Cog):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in.
         You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
         """
-        channel = channel or ctx.channel
-        if channel.permissions_for(ctx.author).embed_links:
+        channel = channel or ctx.channel  # type: ignore
+        if channel.permissions_for(ctx.author).embed_links:  # type: ignore
             if not data:
-                view = EmbedBuilder(ctx, items=[EmbedSend(channel), EmbedCancel()])
+                view = EmbedBuilder(ctx, items=[EmbedSend(channel), EmbedCancel()])  # type: ignore
                 await view.rendor()
                 return
             try:
-                await channel.send(embed=discord.Embed.from_dict(json.loads(str(data))))
+                await channel.send(embed=discord.Embed.from_dict(json.loads(str(data))))  # type: ignore
             except Exception as e:
                 await ctx.error(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
         else:

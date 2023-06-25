@@ -37,8 +37,6 @@ from tabulate import tabulate
 
 from utilities.config import SUPPORT_SERVER_ID
 
-from .listeners import Sector17Listeners
-
 EMOJI = "\N{WASTEBASKET}"
 MESSAGE_ID = 1025455601398075535
 VOTER_ROLE_ID = 836492413312040990
@@ -50,7 +48,7 @@ GENERAL_VOICE = 1022337864379404478
 SERVER_MOD = 1022231265409241088
 CORE_MAINTAINER_ROLE = 1022216515598164019
 
-__all__ = ("Sector1729", "Sector17Listeners")
+__all__ = ("Sector1729",)
 
 
 with open("extra/adjectives.txt", "r", encoding="utf-8", errors="ignore") as f:
@@ -92,6 +90,9 @@ class Sector1729(Cog):
 
         if self.change_rainbow_role.is_running():
             self.change_rainbow_role.cancel()
+
+        if self.vote_reseter.is_running():
+            self.vote_reseter.cancel()
 
     @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
@@ -281,9 +282,6 @@ class Sector1729(Cog):
     @vote_reseter.before_loop
     async def before_vote_reseter(self):
         await self.bot.wait_until_ready()
-
-    async def cog_unload(self) -> None:
-        self.vote_reseter.cancel()
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

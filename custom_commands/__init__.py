@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from core import Parrot
 
+from .listeners import Sector17Listeners
 from .peggy_playz import PeggyPlayZ
-from .sector_17_29 import Sector17Listeners, Sector1729
+from .sector_17_29 import Sector1729
 
 
 async def setup(bot: Parrot) -> None:

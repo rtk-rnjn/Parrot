@@ -227,3 +227,6 @@ worrisome
 wrong
 zany
 zealous
+impressive
+thunder
+dedicated

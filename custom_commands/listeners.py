@@ -10,9 +10,12 @@ from core import Cog, Parrot
 from utilities.time import ShortTime
 
 OWO_BOT = 408785106942164992
-BOT_SPAM_CHANNEL = 1022374324511985715
+SECTOR_BOT_SPAM_CHANNEL = 1022374324511985715
+QUOTIENT_HQ_PLAYGROUND = 829953394499780638
+QUOTIENT_HQ = 746337818388987967
 
-log = logging.getLogger("custom_commands.sector_17_29.listeners")
+
+log = logging.getLogger("custom_commands.listeners")
 
 
 class Sector17Listeners(Cog):
@@ -20,7 +23,7 @@ class Sector17Listeners(Cog):
         self.bot = bot
         self.__current_owo_prefix = "owo"
 
-        self.allowed_channels = {BOT_SPAM_CHANNEL}
+        self.allowed_channels = {SECTOR_BOT_SPAM_CHANNEL, QUOTIENT_HQ_PLAYGROUND}
         self.allowed_guilds = set()
 
     async def cog_load(self) -> None:
@@ -58,12 +61,31 @@ class Sector17Listeners(Cog):
 
     @Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
-        if message.guild and message.guild.id == self.bot.server.id:  # type: ignore
+        if message.guild is None:
+            return
+
+        if message.guild.id == self.bot.server.id:  # type: ignore
             self.bot.dispatch("sector_17_19_message", message)
+
+        if message.guild.id == QUOTIENT_HQ:
+            self.bot.dispatch("quotient_hq_message", message)
+
+    @Cog.listener("on_quotient_hq_message")
+    async def on_quotient_hq_message(self, message: discord.Message) -> None:
+        if message.channel.id != QUOTIENT_HQ_PLAYGROUND:
+            return
+
+        if message.author.bot:
+            return
+
+        await self.__owo_parser(message)
 
     @Cog.listener("on_sector_17_19_message")  # why not?
     async def on_owo_message(self, message: discord.Message) -> None:
         # remove extra spaces
+        await self.__owo_parser(message)
+
+    async def __owo_parser(self, message: discord.Message) -> None:
         content = re.sub(r" +", " ", message.content.strip()).lower()
 
         await asyncio.gather(
@@ -82,8 +104,8 @@ class Sector17Listeners(Cog):
                 for v in value:
                     ls.extend(
                         (
-                            f"{self.__current_owo_prefix}{v}",
-                            f"{self.__current_owo_prefix} {v}",
+                            # f"{self.__current_owo_prefix}{v}",
+                            # f"{self.__current_owo_prefix} {v}",
                             f"owo{v}",
                             f"owo {v}",
                         )
@@ -91,16 +113,16 @@ class Sector17Listeners(Cog):
             else:
                 ls.extend(
                     (
-                        f"{self.__current_owo_prefix}{value}",
-                        f"{self.__current_owo_prefix} {value}",
+                        # f"{self.__current_owo_prefix}{value}",
+                        # f"{self.__current_owo_prefix} {value}",
                         f"owo{value}",
                         f"owo {value}",
                     )
                 )
             ls.extend(
                 (
-                    f"{self.__current_owo_prefix}{key}",
-                    f"{self.__current_owo_prefix} {key}",
+                    # f"{self.__current_owo_prefix}{key}",
+                    # f"{self.__current_owo_prefix} {key}",
                     f"owo{key}",
                     f"owo {key}",
                 )

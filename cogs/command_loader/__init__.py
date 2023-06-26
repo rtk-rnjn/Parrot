@@ -37,7 +37,7 @@ class CommandLoader(Cog):
             async def callback(ctx: Context, *, user: Optional[Union[discord.User, discord.Member]] = None) -> None:
                 user = user or ctx.author
                 response = await ctx.bot.http_session.get(
-                    f"{JEYY_API_URL}/v2/image/{endpoint}",
+                    f"{JEYY_API_URL}/v2/image/{ctx.command.name}",
                     headers=HEADERS,
                     params={"image_url": user.display_avatar.url},
                 )

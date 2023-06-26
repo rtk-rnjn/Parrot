@@ -38,7 +38,7 @@ class CommandLoader(Cog):
                 user = user or ctx.author
                 response = await ctx.bot.http_session.get(
                     f"{JEYY_API_URL}/v2/image/{endpoint}",
-                    headers={**HEADERS, **self.bot.GLOBAL_HEADERS},
+                    headers=HEADERS,
                     params={"image_url": user.display_avatar.url},
                 )
                 buf = io.BytesIO(await response.read())

@@ -777,7 +777,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
         )
         if not data:
             return
-        await message.channel.send(f"{message.author.mention} welcome back!")
+        # Thanks `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
+        await message.channel.send(f"{message.author.mention} welcome back!", delete_after=5)
         try:
             if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")) and (
                 isinstance(message.author, discord.Member)

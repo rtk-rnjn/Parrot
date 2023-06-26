@@ -383,6 +383,8 @@ class Utils(Cog):
         If provided permissions, bot will add `[AFK]` as the prefix in nickname.
         The deafult AFK is on Server Basis
         """
+        # Thanks `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
+        await ctx.message.delete(delay=5)
         try:
             nick = f"[AFK] {ctx.author.display_name}"
             if len(nick) <= 32:  # discord limitation
@@ -409,7 +411,7 @@ class Utils(Cog):
                 "text": text or "AFK",
                 "ignoredChannel": [],
             }
-            await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}")
+            await ctx.send(f"{ctx.author.mention} AFK: {text or 'AFK'}", delete_after=5)
             await self.bot.afk_collection.insert_one(post)
             self.bot.afk_users.add(ctx.author.id)
 

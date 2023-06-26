@@ -5,8 +5,6 @@ import random
 from time import time
 from typing import Any, Dict, List, Optional
 
-from pymongo.collection import Collection
-
 import discord
 from core import Context, Parrot
 from discord.ext import commands
@@ -36,7 +34,7 @@ IGNORE = [
 
 
 async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
         if not data["nsfw"] and msg_ref is not None or data["nsfw"] and ctx.channel.nsfw and msg_ref is not None:
             await msg_ref.reply(data["text"])
@@ -50,7 +48,7 @@ async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[disco
 
 
 async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"_id": tag}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mentions(first)
@@ -63,7 +61,7 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if tag in IGNORE:
         return await ctx.error(f"{ctx.author.mention} the name `{tag}` is reserved word.")
     if _ := await collection.find_one({"id": tag}):
@@ -87,7 +85,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
 
 
 async def _delete_tag(bot: Parrot, ctx: Context, tag: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
             await collection.delete_one({"id": tag})
@@ -99,7 +97,7 @@ async def _delete_tag(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _name_edit(bot: Parrot, ctx: Context, tag: str, name: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if _ := await collection.find_one({"id": name}):
         await ctx.error(f"{ctx.author.mention} that name already exists in the database")
     elif data := await collection.find_one({"id": tag}):
@@ -113,7 +111,7 @@ async def _name_edit(bot: Parrot, ctx: Context, tag: str, name: str):
 
 
 async def _text_edit(bot: Parrot, ctx: Context, tag: str, text: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
         if data["owner"] == ctx.author.id:
             await collection.update_one({"id": tag}, {"$set": {"text": text}})
@@ -125,7 +123,7 @@ async def _text_edit(bot: Parrot, ctx: Context, tag: str, text: str):
 
 
 async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
         member = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         if member:
@@ -139,7 +137,7 @@ async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.Member):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.error(f"{ctx.author.mention} you don't own this tag")
@@ -158,7 +156,7 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.M
 
 
 async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     if data := await collection.find_one({"id": tag}):
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
@@ -170,7 +168,7 @@ async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _show_tag_mine(bot: Parrot, ctx: Context):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     i = 1
     entries: List[str] = []
 
@@ -184,7 +182,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
 
 
 async def _show_all_tags(bot: Parrot, ctx: Context):
-    collection: Collection = ctx.guild_collection
+    collection = ctx.guild_collection
     i = 1
     entries: List[str] = []
     async for data in collection.find({}):
@@ -223,7 +221,7 @@ async def _view_tag(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     if data := await collection.find_one({"id": name}):
         await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
     else:
@@ -240,7 +238,7 @@ async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
 
 
 async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     if _ := await collection.find_one({"id": name}):
         post = {"deadline": timestamp}
         try:
@@ -267,7 +265,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
 
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name: str, new_name: str):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     if _ := await collection.find_one({"id": name}):
         if _ := await collection.find_one({"id": new_name}):
             await ctx.reply(f"{ctx.author.mention} `{new_name}` already exists as your TODO list")
@@ -279,7 +277,7 @@ async def _update_todo_name(bot: Parrot, ctx: Context, name: str, new_name: str)
 
 
 async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     if _ := await collection.find_one({"id": name}):
         await collection.update_one({"id": name}, {"$set": {"text": text}})
         await ctx.reply(f"{ctx.author.mention} TODO list of name `{name}` has been updated")
@@ -288,7 +286,7 @@ async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
 
 
 async def _list_todo(bot: Parrot, ctx: Context):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     i = 1
     entries: List[str] = []
     async for data in collection.find({}):
@@ -301,7 +299,7 @@ async def _list_todo(bot: Parrot, ctx: Context):
 
 
 async def _show_todo(bot: Parrot, ctx: Context, name: str):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     if data := await collection.find_one({"id": name}):
         await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
     else:
@@ -309,7 +307,7 @@ async def _show_todo(bot: Parrot, ctx: Context, name: str):
 
 
 async def _delete_todo(bot: Parrot, ctx: Context, name: str):
-    collection: Collection = ctx.user_collection
+    collection = ctx.user_collection
     if _ := await collection.find_one({"id": name}):
         await collection.delete_one({"id": name})
         await ctx.reply(f"{ctx.author.mention} delete `{name}` task")
@@ -426,7 +424,7 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
 
 
 async def __update_giveaway_reactors(*, bot: Parrot, reactors: List[int], message_id: int) -> None:
-    collection: Collection = bot.giveaways
+    collection = bot.giveaways
     await collection.update_one({"message_id": message_id}, {"$set": {"reactors": reactors}})
 
 

@@ -44,6 +44,7 @@ class CommandLoader(Cog):
                 buf = io.BytesIO(await response.read())
                 await ctx.reply(file=discord.File(buf, filename=f"{endpoint}.png"))
 
+        self.bot.add_command(jeyy)
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(CommandLoader(bot))

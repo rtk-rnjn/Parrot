@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 import weakref
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Literal, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Literal, Optional, Type, TypeVar, Union, List, Dict
 from urllib.parse import quote as _uriquote
 
 import aiohttp
@@ -38,7 +38,7 @@ def _clean_dt(dt: datetime.datetime) -> str:
     return dt.isoformat()
 
 
-async def json_or_text(response: aiohttp.ClientResponse, /) -> Union[dict[str, Any], str]:
+async def json_or_text(response: aiohttp.ClientResponse, /) -> Union[Dict[str, Any], str]:
     """A quick method to parse a `aiohttp.ClientResponse` and test if it's json or text."""
     text = await response.text(encoding="utf-8")
     try:
@@ -218,13 +218,13 @@ class HTTPClient:
         self,
         *,
         file: Optional[File] = None,
-        files: Optional[list[File]] = None,
+        files: Optional[List[File]] = None,
         password: Optional[str],
         expires: Optional[datetime.datetime],
     ) -> Response[PasteResponse]:
         route = Route("PUT", "/paste")
 
-        json_: dict[str, Any] = {}
+        json_: Dict[str, Any] = {}
         if file:
             json_["files"] = [file.to_dict()]
         elif files:
@@ -240,7 +240,7 @@ class HTTPClient:
     def delete_paste(self, *, paste_id: str) -> Response[None]:
         return self.delete_pastes(paste_ids=[paste_id])
 
-    def delete_pastes(self, *, paste_ids: list[str]) -> Response[None]:
+    def delete_pastes(self, *, paste_ids: List[str]) -> Response[None]:
         route = Route("DELETE", "/paste")
         return self.request(route=route, json={"pastes": paste_ids})
 
@@ -261,7 +261,7 @@ class HTTPClient:
     ) -> Response[EditPasteResponse]:
         route = Route("PATCH", "/paste/{paste_id}", paste_id=paste_id)
 
-        json_: dict[str, Any] = {}
+        json_: Dict[str, Any] = {}
 
         if new_content != MISSING:
             json_["new_content"] = new_content
@@ -274,7 +274,7 @@ class HTTPClient:
 
         return self.request(route, json=json_)
 
-    def get_my_pastes(self, *, limit: int) -> Response[list[PasteResponse]]:
+    def get_my_pastes(self, *, limit: int) -> Response[List[PasteResponse]]:
         route = Route("GET", "/pastes/@me")
 
         return self.request(route, params={limit: limit})

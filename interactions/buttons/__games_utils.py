@@ -42,8 +42,9 @@ from .__constants import (
     SUPER_BIG,
     BoardState,
     Coordinate,
-    Emojis as emojis,
 )
+
+import emojis
 
 with open("extra/boggle.txt", encoding="utf-8", errors="ignore") as f:
     DICTIONARY = set(f.read().splitlines())
@@ -494,8 +495,8 @@ class GameC4:
         self,
         bot: Parrot,
         channel: discord.TextChannel,
-        player1: discord.Member,
-        player2: Optional[discord.Member],
+        player1: Union[discord.Member, discord.User],
+        player2: Optional[Union[discord.Member, discord.User]],
         tokens: list,
         size: int = 7,
     ):
@@ -510,10 +511,10 @@ class GameC4:
 
         self.unicode_numbers = [emojis.encode(i) for i in NUMBERS[: self.grid_size]]
 
-        self.message: discord.Message = None
+        self.message: Optional[discord.Message] = None
 
-        self.player_active: Union[AI_C4, discord.Member, None] = None
-        self.player_inactive: Union[AI_C4, discord.Member, None] = None
+        self.player_active: Union[AI_C4, Union[discord.Member, discord.User], None] = None
+        self.player_inactive: Union[AI_C4, Union[discord.Member, discord.User], None] = None
 
     @staticmethod
     def generate_board(size: int) -> List[List[int]]:
@@ -538,7 +539,7 @@ class GameC4:
             await self.message.add_reaction(CROSS_EMOJI)
             await self.message.edit(content=None, embed=embed)
 
-    async def game_over(self, action: str, player1: discord.User, player2: discord.User) -> None:
+    async def game_over(self, action: str, player1: Union[discord.User, discord.Member, discord.ClientUser], player2: Union[discord.User, discord.Member, discord.ClientUser]) -> None:
         """Announces to public chat."""
         if action == "win":
             await self.channel.send(f"Game Over! {player1.mention} won against {player2.mention}")
@@ -989,7 +990,7 @@ class Game(boardgames.Board[Cell]):
     def __init__(self, size_x=10, size_y=7):
         super().__init__(size_x, size_y)
         self.record = None
-        self.last_state = None
+        self.last_state: Optional[discord.Message] = None
 
         self._state = [[Cell(self, y, x) for x in range(self.size_x)] for y in range(self.size_y)]
 

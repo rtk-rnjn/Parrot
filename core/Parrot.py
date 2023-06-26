@@ -41,6 +41,8 @@ import wavelink
 from aiohttp import ClientSession
 from colorama import Fore
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.errors import ConnectionFailure, DuplicateKeyError
+from pymongo.results import DeleteResult, InsertOneResult
 
 import discord
 from discord import app_commands
@@ -112,6 +114,7 @@ DEFAULT_PREFIX: Literal["$"] = "$"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 def hander(filename: str) -> logging.handlers.RotatingFileHandler:
     return logging.handlers.RotatingFileHandler(
         filename=filename,
@@ -119,6 +122,8 @@ def hander(filename: str) -> logging.handlers.RotatingFileHandler:
         maxBytes=1 * 1024 * 1024,  # 1 MiB
         backupCount=1,  # Rotate through 1 files
     )
+
+
 DT_FMT = "%Y-%m-%d %H:%M:%S"
 
 
@@ -424,12 +429,15 @@ class Parrot(commands.AutoShardedBot):
             # thing is you cant run localhost inside docker container
             # so we need to check if we are running inside docker container
             # just by checking if starting the server fails, and raises OSError
+            if discord.utils.is_docker():
+                self.ON_DOCKER = True
+                log.debug("Running on docker container")
             try:
-                await self.ipc_server.start()
-                log.debug("IPC server started")
+                if not self.ON_DOCKER:
+                    await self.ipc_server.start()
+                    log.debug("IPC server started")
             except OSError as e:
                 log.warn("Failed to start IPC server", exc_info=e)
-                self.ON_DOCKER = True
 
             if not self.ON_DOCKER:
                 try:
@@ -1046,7 +1054,7 @@ class Parrot(commands.AutoShardedBot):
                 prefix = DEFAULT_PREFIX  # default prefix
                 try:
                     await self.guild_configurations.insert_one(FAKE_POST)
-                except pymongo.errors.DuplicateKeyError:  # type: ignore
+                except DuplicateKeyError:
                     return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
                 self.guild_configurations_cache[message.guild.id] = FAKE_POST
 
@@ -1140,7 +1148,7 @@ class Parrot(commands.AutoShardedBot):
             FAKE_POST["_id"] = guild_id
             try:
                 await self.guild_configurations.insert_one(FAKE_POST)
-            except pymongo.errors.DuplicateKeyError:  # type: ignore
+            except DuplicateKeyError:
                 pass
             finally:
                 self.guild_configurations_cache[guild_id] = FAKE_POST
@@ -1205,7 +1213,7 @@ class Parrot(commands.AutoShardedBot):
                 await self.call_timer(self.timers, **timers)
 
                 await asyncio.sleep(0)
-        except (OSError, discord.ConnectionClosed, pymongo.errors.ConnectionFailure):  # type: ignore
+        except (OSError, discord.ConnectionClosed, ConnectionFailure):
             if self.timer_task:
                 self.timer_task.cancel()
                 self.timer_task = self.loop.create_task(self.dispatch_timers())
@@ -1215,7 +1223,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def call_timer(self, collection: MongoCollection, **data: Any):
         log.debug("Calling timer: %s", data)
-        deleted: pymongo.results.DeleteResult = await collection.delete_one({"_id": data["_id"]})  # type: ignore
+        deleted: DeleteResult = await collection.delete_one({"_id": data["_id"]})
 
         log.debug("Deleted timer: %s", deleted)
         if deleted.deleted_count == 0:
@@ -1247,7 +1255,7 @@ class Parrot(commands.AutoShardedBot):
         is_todo: bool = False,
         extra: Optional[Dict[str, Any]] = None,
         **kw,
-    ) -> pymongo.results.InsertOneResult:  # type: ignore
+    ) -> InsertOneResult:
         """|coro|
 
         Master Function to register Timers.
@@ -1314,7 +1322,7 @@ class Parrot(commands.AutoShardedBot):
 
         return insert_data
 
-    async def delete_timer(self, **kw: Any) -> pymongo.results.DeleteResult:  # type: ignore
+    async def delete_timer(self, **kw: Any) -> DeleteResult:
         collection: MongoCollection = self.timers
         data = await collection.delete_one({"_id": kw["_id"]})
         delete_count = data.deleted_count
@@ -1327,6 +1335,13 @@ class Parrot(commands.AutoShardedBot):
             self.timer_task.cancel()
             self.timer_task = self.loop.create_task(self.dispatch_timers())
         return data
+
+    async def restart_timer(self) -> bool:
+        if self.timer_task:
+            self.timer_task.cancel()
+            self.timer_task = self.loop.create_task(self.dispatch_timers())
+            return True
+        return False
 
     @overload
     async def get_app_command(

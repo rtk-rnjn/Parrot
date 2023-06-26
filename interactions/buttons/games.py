@@ -12,13 +12,11 @@ import re
 from functools import partial, wraps
 from pathlib import Path
 from random import choice, sample
-from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 import pymongo
 from aiofile import async_open
 from discord.utils import MISSING
-from pymongo import ReturnDocument
-from pymongo.collection import Collection
 
 import discord
 import emojis
@@ -65,6 +63,7 @@ from interactions.buttons.__games_utils import (
     GameTicTacToe,
     MadlibsTemplate,
     MetaGameUI,
+    GameBoogle,
     boggle_game,
     fenPass,
     is_game,
@@ -75,11 +74,13 @@ from interactions.buttons.__memory_game import MemoryGame
 from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
 from interactions.buttons.__wordle import BetaWordle
+from interactions.buttons.__verbal_memory import VerbalMemory
+from interactions.buttons.__number_memory import NumberMemory
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.uno.game import UNO
-
+from utilities.converters import ToAsync
 from .__command_flags import GameCommandFlag
 
 emoji = emojis  # Idk
@@ -92,11 +93,11 @@ class Games(Cog):
         self.bot = bot
         self.ON_TESTING = False
         self.games: List[Game] = []
-        self.waiting: List[discord.Member] = []
-        self._games: Dict[discord.TextChannel, Game] = {}
+        self.waiting: List[Union[discord.Member, discord.User]] = []
+        self._games: Dict[Union[discord.TextChannel, discord.abc.Messageable], Game] = {}
         self.games_c4: List[GameC4] = []
-        self.waiting_c4: List[discord.Member] = []
-        self.games_boogle: Dict[discord.TextChannel, Game] = {}
+        self.waiting_c4: List[Union[discord.Member, discord.User]] = []
+        self.games_boogle: Dict[discord.TextChannel, GameBoogle] = {}
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
         self.games_hitler: Dict[int, discord.ui.View] = {}
         self.chess_games: List[int] = []
@@ -176,7 +177,7 @@ class Games(Cog):
 
         return user.id == ctx.author.id and str(reaction.emoji) == CROSS_EMOJI and reaction.message.id == announcement.id
 
-    def already_playing(self, player: discord.Member) -> bool:
+    def already_playing(self, player: Union[discord.Member, discord.User]) -> bool:
         """Check if someone is already in a game."""
         return any(player in (game.p1.user, game.p2.user) for game in self.games)
 
@@ -253,7 +254,7 @@ class Games(Cog):
 
         return user.id == ctx.author.id and str(reaction.emoji) == CROSS_EMOJI and reaction.message.id == announcement.id
 
-    def already_playing_cf(self, player: discord.Member) -> bool:
+    def already_playing_cf(self, player: Union[discord.Member, discord.User]) -> bool:
         """Check if someone is already in a game."""
         return any(player in (game.player1, game.player2) for game in self.games_c4)
 
@@ -322,7 +323,7 @@ class Games(Cog):
         if not check_author_result:
             return
 
-        announcement = await ctx.send(
+        announcement: discord.Message = await ctx.send(  # type: ignore
             "**Connect Four**: A new game is about to start!\n"
             f"Press {Emojis.hand_raised} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)"
@@ -582,7 +583,7 @@ class Games(Cog):
         """Chess game. In testing"""
         if ctx.invoked_subcommand:
             return
-        announcement: discord.Message = await ctx.send(
+        announcement: discord.Message = await ctx.send(  # type: ignore
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)"
@@ -621,7 +622,7 @@ class Games(Cog):
     @chess.command()
     async def custom_chess(self, ctx: Context, board: fenPass):  # type: ignore
         """To play chess, from a custom FEN notation"""
-        announcement: discord.Message = await ctx.send(
+        announcement: discord.Message = await ctx.send(  # type: ignore
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)"
@@ -703,7 +704,7 @@ class Games(Cog):
     @boggle_classic.error
     @boggle_flip.error
     @boggle_boggle.error
-    async def on_boggle_error(self, ctx, error):
+    async def on_boggle_error(self, ctx: Context, error: commands.CommandError):
         if not isinstance(error, commands.CheckFailure) and ctx.channel in self.games:
             del self.games[ctx.channel]
 
@@ -726,7 +727,7 @@ class Games(Cog):
             return
 
         if isinstance(message.channel, discord.TextChannel):
-            game: Game = self.games_boogle[message.channel]
+            game: GameBoogle = self.games_boogle[message.channel]
             await game.check_message(message)
 
     @commands.command(aliases=["umbrogus", "secret_hitler", "secret-hitler"])
@@ -759,7 +760,7 @@ class Games(Cog):
             description="Loading your Madlibs game...",
             color=Colours.python_blue,
         )
-        original_message = await ctx.send(embed=loading_embed)
+        original_message: discord.Message = await ctx.send(embed=loading_embed)  # type: ignore
 
         submitted_words = {}
 
@@ -841,7 +842,7 @@ class Games(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def battleship(self, ctx: Context):
         """Solo Battleship Game"""
-        announcement: discord.Message = await ctx.send(
+        announcement: discord.Message = await ctx.send(  # type: ignore
             "**Battleship**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)"
@@ -904,7 +905,7 @@ class Games(Cog):
         `--limit`: To limit the search, default is 100
         """
         user = user or ctx.author
-        col: Collection = self.bot.game_collections
+        col = self.bot.game_collections
         sort_by = f"game_twenty48_{flag.sort_by.lower()}" if flag.sort_by else "game_twenty48_played"
         order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
 
@@ -977,11 +978,11 @@ class Games(Cog):
         *,
         game_type: str,
         ctx: Context,
-        user: Optional[discord.User] = None,
+        user: Optional[Union[discord.User, discord.Member]] = None,
         flag: GameCommandFlag,
     ):
         user = user or ctx.author
-        col: Collection = self.bot.game_collections
+        col = self.bot.game_collections
 
         sort_by = f"game_{game_type}_{flag.sort_by or 'played'}"
         order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
@@ -1034,7 +1035,7 @@ class Games(Cog):
         `--limit`: Limit the list to the top `limit` entries.
         """
         user = user or ctx.author
-        col: Collection = self.bot.game_collections
+        col = self.bot.game_collections
 
         sort_by = flag.sort_by
 
@@ -1103,11 +1104,11 @@ class Games(Cog):
             FILTER["_id"] = {"$in": [m.id for m in ctx.guild.members]}
 
         LIMIT = flag.limit or float("inf")
-        col: Collection = self.bot.game_collections
+        col = self.bot.game_collections
         async for data in col.find(FILTER).sort(
             sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
         ):
-            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
+            user: Optional[discord.User] = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)  # type: ignore
             if user is None:
                 continue
 
@@ -1223,7 +1224,8 @@ class Games(Cog):
             await msg.add_reaction(EMOJI_WRONG)
             game.scores[msg.author] += INCORRECT_SOLN
 
-    async def send_board_embed(self, ctx: Context, game: DuckGame) -> discord.Message:
+    @ToAsync()
+    def send_board_embed(self, ctx: Context, game: DuckGame) -> discord.Message:
         """Create and send an embed to display the board."""
         image = assemble_board_image(game.board, game.rows, game.columns)
         with io.BytesIO() as image_stream:
@@ -1234,7 +1236,7 @@ class Games(Cog):
             title="Duck Duck Duck Goose!",
             color=discord.Color.dark_purple(),
         ).set_image(url="attachment://board.png")
-        return await ctx.send(embed=embed, file=file)
+        return await ctx.send(embed=embed, file=file)  # type: ignore
 
     async def send_found_embed(self, ctx: Context) -> discord.Message:
         """Create and send an embed to display claimed answers. This will be edited as the game goes on."""
@@ -1243,7 +1245,7 @@ class Games(Cog):
             title="Flights Found",
             color=discord.Color.dark_purple(),
         )
-        return await ctx.send(embed=embed)
+        return await ctx.send(embed=embed)  # type: ignore
 
     async def append_to_found_embed(self, game: DuckGame, text: str) -> None:
         """Append text to the claimed answers embed."""
@@ -1304,11 +1306,11 @@ class Games(Cog):
         file = discord.File(HELP_IMAGE_PATH, filename="help.png")
         embed.set_image(url="attachment://help.png")
         embed.set_footer(text="Tip: using Discord's compact message display mode can help keep the board on the screen")
-        return await ctx.send(file=file, embed=embed)
+        return await ctx.send(file=file, embed=embed)  # type: ignore
 
     @commands.command("uno", aliases=["unogame"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def play_uno(self, ctx: Context, /) -> None:
+    async def play_uno(self, ctx: Context):
         """Play a game of Uno."""
         if ctx.channel.id in self.uno_games:
             return await ctx.error("An instance of UNO is already running in this channel.")
@@ -1323,3 +1325,17 @@ class Games(Cog):
             del self.uno_games[ctx.channel.id]
         except KeyError:
             pass
+
+    @commands.command()
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def verbalmemory(self, ctx: Context):
+        """Verbal Memory game."""
+        game = VerbalMemory()
+        await game.start(ctx)
+    
+    @commands.command()
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def numbermemory(self, ctx: Context):
+        """Number Memory game."""
+        game = NumberMemory()
+        await game.start(ctx)

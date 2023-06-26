@@ -58,7 +58,7 @@ The second flight is valid because there are no 2:1 splits; each feature is eith
 """
 
 
-def assemble_board_image(board: List[Tuple[int]], rows: int, columns: int) -> Image:
+def assemble_board_image(board: List[Tuple[int]], rows: int, columns: int) -> Image.Image:
     """Cut and paste images representing the given cards into an image representing the board."""
     new_im = Image.new("RGBA", (CARD_WIDTH * columns, CARD_HEIGHT * rows))
     draw = ImageDraw.Draw(new_im)
@@ -76,7 +76,7 @@ def assemble_board_image(board: List[Tuple[int]], rows: int, columns: int) -> Im
     return new_im
 
 
-def get_card_image(card: Tuple[int]) -> Image:
+def get_card_image(card: Tuple[int]) -> Image.Image:
     """Slice the image containing all the cards to get just this card."""
     # The master card image file should have 9x9 cards,
     # arranged such that their features can be interpreted as ordered trinary.
@@ -139,7 +139,7 @@ class DuckGame:
         self._board = val
 
     @property
-    def solutions(self) -> None:
+    def solutions(self):
         """Calculate valid solutions and cache to avoid redoing work."""
         if self._solutions is None:
             self._solutions = set()

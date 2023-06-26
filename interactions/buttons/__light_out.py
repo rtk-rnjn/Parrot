@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Final, Literal, Optional, TypeVar, List
+from typing import TYPE_CHECKING, Final, Literal, Optional, TypeVar, List, Tuple
 
 import discord
 from core import Context, Parrot
@@ -105,7 +105,7 @@ class LightsOut:
     def toggle(self, row: int, col: int) -> None:
         self.tiles[row][col] = BULB if self.tiles[row][col] is None else None
 
-    def beside_item(self, row: int, col: int) -> list[tuple[int, int]]:
+    def beside_item(self, row: int, col: int) -> List[Tuple[int, int]]:
         beside = [
             (row - 1, col),
             (row, col - 1),

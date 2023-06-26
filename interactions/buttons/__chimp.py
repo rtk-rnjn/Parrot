@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Optional
+from typing import Optional, List
 
 import discord
 from core import Context, Parrot
@@ -137,7 +137,7 @@ class ChimpTest:
 
         self.step: int = 0
         self.first_clicked: bool = False
-        self.wrong_guesses: list[ChimpButton] = []
+        self.wrong_guesses: List[ChimpButton] = []
 
     async def start(
         self,
@@ -149,32 +149,6 @@ class ChimpTest:
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
         timeout: Optional[float] = None,
     ) -> discord.Message:
-        """
-        starts the chimpanzee memory game test
-
-        Parameters
-        ----------
-        ctx : commands.Context
-            the context of the invokation command
-        lives : int
-            the amount of errors that are allowed by the player, by default 1
-        highlight_tiles : bool, optional
-            specifies whether or not to highlight the tiles where there are numbers
-            with the specified `button_style`, by default True
-        initial_sleep : float, optional
-            specifies the initial time the player gets to look at the non-hidden tiles in `seconds`,
-            if `False`, there is no set time and thbe game will start as soon as the user clicks on a button,
-            by default False
-        button_style : discord.ButtonStyle, optional
-            the button style to use for highlighting all the numeric tiles, by default discord.ButtonStyle.blurple
-        timeout : Optional[float], optional
-            the timeout for the view, by default None
-
-        Returns
-        -------
-        discord.Message
-            returns the game message
-        """
         self.lives = lives
         self.initial_sleep = initial_sleep
         self.highlight_tiles = highlight_tiles

@@ -5,7 +5,7 @@ import difflib
 import os
 import random
 from io import BytesIO
-from typing import TYPE_CHECKING, Final, Optional, Union
+from typing import TYPE_CHECKING, Final, Optional, Union, Tuple
 
 from PIL import Image, ImageFilter, ImageOps
 
@@ -125,9 +125,9 @@ class CountryGuesser:
         self,
         ctx: Context[Parrot],
         *,
-        options: tuple[str, ...] = (),
+        options: Tuple[str, ...] = (),
         length: Optional[int] = None,
-    ) -> Optional[tuple[discord.Message, str]]:
+    ) -> Optional[Tuple[discord.Message, str]]:
         def check(m: discord.Message) -> bool:
             if length:
                 return m.channel == ctx.channel and m.author == ctx.author and len(m.content) == length

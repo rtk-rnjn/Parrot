@@ -560,14 +560,14 @@ class Misc(Cog):
             # check if the snipe.content is url and ends with ("png", "jpeg", "jpg", "gif", "webp")
 
             ref = snipe.reference.resolved if snipe.reference else None
-            if len(LINKS_RE.findall(snipe.content)) == 1 and snipe.content.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+            if LINKS_RE.fullmatch(snipe.content) and snipe.content.endswith(("png", "jpeg", "jpg", "gif", "webp")):
                 if isinstance(ref, discord.Message):
                     emb.description = f"Replied to: **[{ref.author}]({ref.jump_url})**"
                 emb.set_image(url=snipe.content)
             elif isinstance(ref, discord.Message):
                 emb.description = f"- **Replied to: [`{ref.author}`]({ref.jump_url})**\n\n{self.sanitise(snipe.content)}"
-            else:
-                emb.description = self.sanitise(snipe.content)
+
+            emb.description = self.sanitise(snipe.content)
 
         await ctx.reply(embed=emb)
         self.snipes[ctx.channel.id] = None

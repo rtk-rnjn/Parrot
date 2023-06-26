@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import discord
 from core import Context
@@ -21,7 +21,7 @@ class SokobanGame:
 
     # Do not DM me or mail me how this works
     # Thing is, I myself forget
-    def __init__(self, level: List[str]):
+    def __init__(self, level: List[List[str]]):
         self.level = level
         self.player = []
         self.blocks = []
@@ -60,10 +60,7 @@ class SokobanGame:
     def move_up(self) -> None:
         if self.level[self.player[0] - 1][self.player[1]] in (" ", "."):
             self.level[self.player[0] - 1][self.player[1]] = "@"
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0] - 1, self.player[1]]
-            return
-
+            return self._extracted_from_move_up_4()
         if (self.level[self.player[0] - 1][self.player[1]] in ("$", "x")) and (
             self.level[self.player[0] - 2][self.player[1]] in (" ", ".")
         ):
@@ -71,17 +68,18 @@ class SokobanGame:
             self.level[self.player[0] - 2][self.player[1]] = (
                 "$" if self.level[self.player[0] - 2][self.player[1]] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0] - 1, self.player[1]]
-            return
+            return self._extracted_from_move_up_4()
+
+    # TODO Rename this here and in `move_up`
+    def _extracted_from_move_up_4(self):
+        self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
+        self.player = [self.player[0] - 1, self.player[1]]
+        return
 
     def move_down(self) -> None:
         if self.level[self.player[0] + 1][self.player[1]] in (" ", "."):
             self.level[self.player[0] + 1][self.player[1]] = "@"
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0] + 1, self.player[1]]
-            return
-
+            return self._extracted_from_move_down_4()
         if (self.level[self.player[0] + 1][self.player[1]] in ("$", "x")) and (
             self.level[self.player[0] + 2][self.player[1]] in (" ", ".")
         ):
@@ -89,17 +87,18 @@ class SokobanGame:
             self.level[self.player[0] + 2][self.player[1]] = (
                 "$" if self.level[self.player[0] + 2][self.player[1]] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0] + 1, self.player[1]]
-            return
+            return self._extracted_from_move_down_4()
+
+    # TODO Rename this here and in `move_down`
+    def _extracted_from_move_down_4(self):
+        self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
+        self.player = [self.player[0] + 1, self.player[1]]
+        return
 
     def move_left(self) -> None:
         if self.level[self.player[0]][self.player[1] - 1] in (" ", "."):
             self.level[self.player[0]][self.player[1] - 1] = "@"
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0], self.player[1] - 1]
-            return
-
+            return self._extracted_from_move_left_4()
         if (self.level[self.player[0]][self.player[1] - 1] in ("$", "x")) and (
             self.level[self.player[0]][self.player[1] - 2] in (" ", ".")
         ):
@@ -107,17 +106,18 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1] - 2] = (
                 "$" if self.level[self.player[0]][self.player[1] - 2] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0], self.player[1] - 1]
-            return
+            return self._extracted_from_move_left_4()
+
+    # TODO Rename this here and in `move_left`
+    def _extracted_from_move_left_4(self):
+        self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
+        self.player = [self.player[0], self.player[1] - 1]
+        return
 
     def move_right(self) -> None:
         if self.level[self.player[0]][self.player[1] + 1] in (" ", "."):
             self.level[self.player[0]][self.player[1] + 1] = "@"
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0], self.player[1] + 1]
-            return
-
+            return self._extracted_from_move_right_4()
         if (self.level[self.player[0]][self.player[1] + 1] in ("$", "x")) and (
             self.level[self.player[0]][self.player[1] + 2] in (" ", ".")
         ):
@@ -125,9 +125,13 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1] + 2] = (
                 "$" if self.level[self.player[0]][self.player[1] + 2] == " " else "x"
             )
-            self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
-            self.player = [self.player[0], self.player[1] + 1]
-            return
+            return self._extracted_from_move_right_4()
+
+    # TODO Rename this here and in `move_right`
+    def _extracted_from_move_right_4(self):
+        self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
+        self.player = [self.player[0], self.player[1] + 1]
+        return
 
     def is_game_over(self) -> bool:
         self.player = []
@@ -145,7 +149,7 @@ class SokobanGameView(discord.ui.View):
     def __init__(
         self,
         game: SokobanGame,
-        user: discord.Member,
+        user: Union[discord.Member, discord.User],
         ctx: Context,
         level: Optional[int] = None,
         *,
@@ -198,7 +202,7 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"),
+            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -229,7 +233,8 @@ class SokobanGameView(discord.ui.View):
     )
     async def null_button2(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.stop()
-        await interaction.message.delete()
+        if interaction.message:
+            await interaction.message.delete(delay=0)
 
     @discord.ui.button(
         emoji="\N{LEFTWARDS BLACK ARROW}",

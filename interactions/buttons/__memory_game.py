@@ -16,8 +16,6 @@ if TYPE_CHECKING:
     P = ParamSpec("P")
     T = TypeVar("T")
 
-    A = TypeVar("A", bool)
-    B = TypeVar("B", bool)
 
 from .utils import DEFAULT_COLOR, BaseView, chunk, double_wait, wait_for_delete
 
@@ -62,7 +60,9 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
                     await self.update_to_db()
                     return self.view.stop()
 
-            return await interaction.message.edit(view=self.view, embed=game.embed)
+            if interaction.message:
+                await interaction.message.edit(view=self.view, embed=game.embed)
+                return
         else:
             self.emoji = self.value
             self.view.opened = self
@@ -70,6 +70,8 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
             return await interaction.response.edit_message(view=self.view)
 
     async def update_to_db(self):
+        assert self.view is not None
+
         time_taken = time.perf_counter() - self.view.ini
 
         bot: Parrot = self.view.ctx.bot

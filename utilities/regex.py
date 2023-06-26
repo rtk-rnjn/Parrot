@@ -8,7 +8,7 @@ INVITE_RE = re.compile(
 TIME_REGEX = re.compile(r"(?:\d{1,5}[h|s|m|d])+?", flags=re.IGNORECASE)
 
 LINKS_RE = re.compile(
-    r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)",
+    r"((http|https)\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*",
     flags=re.IGNORECASE,
 )
 LINKS_NO_PROTOCOLS = re.compile(

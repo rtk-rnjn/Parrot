@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import discord
 from core import Parrot
@@ -135,7 +135,7 @@ class Twenty48_Button(discord.ui.View):
     def __init__(
         self,
         game: Twenty48,
-        user: discord.Member,
+        user: Union[discord.Member, discord.User],
         timeout: float = 60.0,
         *,
         bot: Parrot,

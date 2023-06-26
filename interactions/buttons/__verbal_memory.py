@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import random
-from typing import Optional
+from typing import Optional, Tuple, List
 
 from english_words import get_english_words_set
 
 import discord
-from discord.ext import commands
+from core import Context, Parrot
 
 from .utils import BaseView
 
@@ -72,7 +72,7 @@ class VerbalView(BaseView):
 
 
 class VerbalMemory:
-    def __init__(self, word_set: Optional[list[str]] = None, sample_size: Optional[int] = 300) -> None:
+    def __init__(self, word_set: Optional[List[str]] = None, sample_size: Optional[int] = 300) -> None:
         self.lives: int = 0
         self.embed: Optional[discord.Embed] = None
 
@@ -95,7 +95,7 @@ class VerbalMemory:
         assert self.word_set
 
         self.score: int = 0
-        self.seen: list[str] = []
+        self.seen: List[str] = []
         self.word = self.choose_word()
 
     def choose_word(self) -> str:
@@ -117,13 +117,13 @@ class VerbalMemory:
 
     async def start(
         self,
-        ctx: commands.Context[commands.Bot],
+        ctx: Context[Parrot],
         *,
         lives: int = 3,
-        weights: tuple[float, float] = (0.7, 0.3),
+        weights: Tuple[float, float] = (0.7, 0.3),
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
         timeout: Optional[float] = None,
-    ) -> discord.Message:
+    ) -> Optional[discord.Message]:
         self.weights = weights
         self.lives = lives
         self.embed = discord.Embed(

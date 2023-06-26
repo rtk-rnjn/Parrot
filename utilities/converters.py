@@ -78,10 +78,10 @@ class BannedMember(commands.Converter):
 
 
 class WrappedMessageConverter(commands.MessageConverter):
-    """A converter that handles embed-suppressed links like <http://example.com>."""
+    """A converter that handles embed-suppressed  like <http://example.com>."""
 
     async def convert(self, ctx: Context, argument: str) -> discord.Message:
-        """Wrap the commands.MessageConverter to handle <> delimited message links."""
+        """Wrap the commands.MessageConverter to handle <> delimited message ."""
         # It's possible to wrap a message in [<>] as well, and it's supported because its easy
         if argument.startswith("[") and argument.endswith("]"):
             argument = argument[1:-1]
@@ -146,18 +146,18 @@ class Cache(Generic[KT, VT]):
         self.bot = bot
         self.__internal_cache: "LRU" = LRU(self.cache_size, callback=callback or lru_callback)
 
-        self.items: Callable[[], List[Tuple[int, Any]]] = self.__internal_cache.items  # type: ignore
-        self.peek_first_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item  # type: ignore
-        self.peek_last_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_last_item  # type: ignore
-        self.get_size: Callable[[], int] = self.__internal_cache.get_size  # type: ignore
-        self.set_size: Callable[[int], None] = self.__internal_cache.set_size  # type: ignore
-        self.has_key: Callable[[object], bool] = self.__internal_cache.has_key  # type: ignore
-        self.values: Callable[[], List[Any]] = self.__internal_cache.values  # type: ignore
-        self.keys: Callable[[], List[Any]] = self.__internal_cache.keys  # type: ignore
+        self.items: Callable[[], List[Tuple[int, Any]]] = self.__internal_cache.items
+        self.peek_first_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item
+        self.peek_last_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_last_item
+        self.get_size: Callable[[], int] = self.__internal_cache.get_size
+        self.set_size: Callable[[int], None] = self.__internal_cache.set_size
+        self.has_key: Callable[[object], bool] = self.__internal_cache.has_key
+        self.values: Callable[[], List[Any]] = self.__internal_cache.values
+        self.keys: Callable[[], List[Any]] = self.__internal_cache.keys
         self.get: Callable[[object, ...], Any] = self.__internal_cache.get  # type: ignore
         self.pop: Callable[[object, ...], Any] = self.__internal_cache.pop  # type: ignore
-        self.get_stats: Callable[[], Tuple[int, int]] = self.__internal_cache.get_stats  # type: ignore
-        self.set_callback: Callable[[Callable[[KT, VT], Any]], None] = self.__internal_cache.set_callback  # type: ignore
+        self.get_stats: Callable[[], Tuple[int, int]] = self.__internal_cache.get_stats
+        self.set_callback: Callable[[Callable[[KT, VT], Any]], None] = self.__internal_cache.set_callback
 
     def __repr__(self) -> str:
         return repr(self.__internal_cache)

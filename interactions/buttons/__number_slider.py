@@ -135,7 +135,7 @@ class NumberSlider:
 
 
 class SlideView(BaseView):
-    def __init__(self, game: NumberSlider, *, timeout: float) -> None:
+    def __init__(self, game: NumberSlider, *, timeout: Optional[float]) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game

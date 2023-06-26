@@ -13,9 +13,9 @@ import typing
 import urllib.parse
 import zlib
 from collections import Counter
-from typing import Optional
+from typing import Optional, LIst
 
-from aiofile import async_open  # type: ignore
+from aiofile import async_open
 from discord.interactions import Interaction
 
 import discord
@@ -183,7 +183,7 @@ class MongoView(discord.ui.View):
         self.ctx = ctx
 
     async def init(self):
-        names: list[str] = await self.ctx.bot.mongo.list_database_names()
+        names: List[str] = await self.ctx.bot.mongo.list_database_names()
 
         def to_emoji(c):
             return chr(127462 + c)

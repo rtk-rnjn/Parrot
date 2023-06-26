@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from typing import Optional
-from io import BytesIO
-import random
-import string
 import asyncio
 import datetime
-import pathlib
+import random
+import string
+from io import BytesIO
+from typing import Optional
+
+from PIL import Image, ImageDraw, ImageFont
 
 import discord
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFont
 
 from .utils import *
 
@@ -33,9 +33,7 @@ class NumModal(discord.ui.Modal, title="Answer"):
         assert game.embed
 
         if not value.isdigit():
-            return await interaction.response.send_message(
-                f"`{value}` is not a valid number!", ephemeral=True
-            )
+            return await interaction.response.send_message(f"`{value}` is not a valid number!", ephemeral=True)
 
         if value == game.number:
             game.level += 1
@@ -45,28 +43,19 @@ class NumModal(discord.ui.Modal, title="Answer"):
             self.view.answer.disabled = True
 
             files = [game.file] if game.file else discord.utils.MISSING
-            await interaction.response.edit_message(
-                attachments=files, embed=game.embed, view=self.view
-            )
+            await interaction.response.edit_message(attachments=files, embed=game.embed, view=self.view)
 
             await asyncio.sleep(game.pause_time)
             await game.update_embed(hide=True)
 
             if interaction.message:
-                await interaction.message.edit(
-                    attachments=[], embed=game.embed, view=self.view
-                )
+                await interaction.message.edit(attachments=[], embed=game.embed, view=self.view)
         else:
             game.embed.description = (
-                "You Lost!\n\n```diff\nCorrect Number:\n"
-                f"+ {game.number}\n"
-                "Your Guess:\n"
-                f"- {value}\n```"
+                "You Lost!\n\n```diff\nCorrect Number:\n" f"+ {game.number}\n" "Your Guess:\n" f"- {value}\n```"
             )
             self.view.disable_all()
-            await interaction.response.edit_message(
-                attachments=[], embed=game.embed, view=self.view
-            )
+            await interaction.response.edit_message(attachments=[], embed=game.embed, view=self.view)
             return self.view.stop()
 
 
@@ -114,10 +103,7 @@ class NumberMemory:
         self.number = self.generate_number()
 
         self._text_size = font_size
-        parent = pathlib.Path(__file__).parent.parent
-        self._font = ImageFont.truetype(
-            str(parent / "assets/ClearSans-Bold.ttf"), self._text_size
-        )
+        self._font = ImageFont.truetype("extra/ClearSans-Bold.ttf", self._text_size)
 
     @executor()
     def generate_image(self) -> BytesIO:
@@ -126,9 +112,7 @@ class NumberMemory:
         w, h = self._font.getsize(self.number)
         with Image.new("RGBA", (w + MARGIN * 2, h + MARGIN * 2), 0) as img:
             draw = ImageDraw.Draw(img)
-            draw.text(
-                (MARGIN, MARGIN), self.number, font=self._font, color=(255, 255, 255)
-            )
+            draw.text((MARGIN, MARGIN), self.number, font=self._font, color=(255, 255, 255))
             buf = BytesIO()
             img.save(buf, "PNG")
         buf.seek(0)
@@ -143,9 +127,7 @@ class NumberMemory:
             self.embed.description = "```yml\nGuess!\n```"
             self.file = discord.utils.MISSING
         else:
-            time = discord.utils.utcnow() + datetime.timedelta(
-                seconds=self.pause_time + 1
-            )
+            time = discord.utils.utcnow() + datetime.timedelta(seconds=self.pause_time + 1)
             pause = discord.utils.format_dt(time, style="R")
             file = await self.generate_image()
             file = discord.File(file, "number.png")

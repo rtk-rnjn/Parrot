@@ -25,6 +25,7 @@ from typing import (
 from discord.utils import MISSING
 
 import discord
+import emojis
 from core import Context, Parrot
 from discord.ext import boardgames, commands, old_menus as menus  # type: ignore
 
@@ -43,8 +44,6 @@ from .__constants import (
     BoardState,
     Coordinate,
 )
-
-import emojis
 
 with open("extra/boggle.txt", encoding="utf-8", errors="ignore") as f:
     DICTIONARY = set(f.read().splitlines())
@@ -539,7 +538,12 @@ class GameC4:
             await self.message.add_reaction(CROSS_EMOJI)
             await self.message.edit(content=None, embed=embed)
 
-    async def game_over(self, action: str, player1: Union[discord.User, discord.Member, discord.ClientUser], player2: Union[discord.User, discord.Member, discord.ClientUser]) -> None:
+    async def game_over(
+        self,
+        action: str,
+        player1: Union[discord.User, discord.Member, discord.ClientUser],
+        player2: Union[discord.User, discord.Member, discord.ClientUser],
+    ) -> None:
         """Announces to public chat."""
         if action == "win":
             await self.channel.send(f"Game Over! {player1.mention} won against {player2.mention}")

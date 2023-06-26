@@ -5,7 +5,7 @@ import difflib
 import os
 import random
 from io import BytesIO
-from typing import TYPE_CHECKING, Final, Optional, Union, Tuple
+from typing import TYPE_CHECKING, Final, Optional, Tuple, Union
 
 from PIL import Image, ImageFilter, ImageOps
 

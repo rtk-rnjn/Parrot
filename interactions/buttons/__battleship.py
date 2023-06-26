@@ -35,6 +35,7 @@ SHIPS: Dict[str, Tuple[int, Tuple[int, int, int]]] = {
 
 from .utils import BaseView
 
+
 class Ship:
     def __init__(
         self,

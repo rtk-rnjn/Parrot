@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Final, Literal, Optional, TypeVar, List, Tuple
+from typing import TYPE_CHECKING, Final, List, Literal, Optional, Tuple, TypeVar
 
 import discord
 from core import Context, Parrot
@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 
 BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
 
-from .utils import double_wait, wait_for_delete, chunk
+from .utils import chunk, double_wait, wait_for_delete
+
 
 class LightsOutButton(discord.ui.Button["LightsOutView"]):
     def __init__(self, emoji: str, *, style: discord.ButtonStyle, row: int, col: int) -> None:
@@ -35,7 +36,6 @@ class LightsOutButton(discord.ui.Button["LightsOutView"]):
         self.col = col
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        
         assert self.view is not None
 
         game = self.view.game

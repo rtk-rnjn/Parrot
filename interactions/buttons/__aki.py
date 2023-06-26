@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union, Dict
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
 
 from akinator import Answer, AsyncAkinator as AkinatorGame, CantGoBackAnyFurther, Language, Theme
 

@@ -19,7 +19,7 @@ from utilities.converters import ToAsync
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
 
-from .utils import BaseView, DEFAULT_COLOR
+from .utils import DEFAULT_COLOR, BaseView
 
 BORDER = 40
 SQ = 100
@@ -35,7 +35,6 @@ LGRAY = (198, 201, 205)
 
 with open(r"extra/5_words.txt", "r", encoding="utf-8", errors="ignore") as f:
     VALID_WORDS = tuple(f.read().splitlines())
-
 
 
 class Wordle:

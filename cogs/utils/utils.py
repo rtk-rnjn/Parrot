@@ -118,8 +118,8 @@ class Utils(Cog):
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
             guild = self.bot.get_guild(data.get("guild", 0))
             ls.append(
-                f"<t:{int(data['expires_at'])}:R> - Where To? {guild.name if guild else 'Failed to get Guild Name'}\n"
-                f"> [{data['content']}]({data['messageURL']})"
+                f"<t:{int(data['expires_at'])}:R> - {data['messageURL']}\n"
+                f"> {data['content']}"
             )
             if len(ls) == 10:
                 break
@@ -134,10 +134,8 @@ class Utils(Cog):
     async def delremind(self, ctx: Context, message: int) -> None:
         """To delete the reminder"""
         log.info("Deleting reminder of message id %s", message)
+        delete_result = await self.bot.delete_timer(_id=message)
         delete_result = await self.delete_timer(_id=message)
-        if self.bot._current_timer and self.bot._current_timer["_id"] == message:
-            self.bot.timer_task.cancel()
-            self.bot.timer_task = self.bot.loop.create_task(self.bot.dispatch_timers())
         if delete_result.deleted_count == 0:
             await ctx.reply(f"{ctx.author.mention} failed to delete reminder of ID: **{message}**")
         else:

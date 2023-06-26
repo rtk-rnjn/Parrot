@@ -172,7 +172,6 @@ class MemoryGame:
         button_style: discord.ButtonStyle = discord.ButtonStyle.gray,
         timeout: Optional[float] = None,
     ) -> Optional[discord.Message]:
-
         if items is None:
             items = []
         self.embed_color = embed_color

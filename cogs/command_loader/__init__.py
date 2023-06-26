@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Optional
+import io
+from typing import Optional, Union
 
+import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.config import JEYY_API_TOKEN
@@ -17,8 +19,9 @@ HEADERS = {"Authorization": f"Bearer {JEYY_API_TOKEN}"}
 class CommandLoader(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self.loader()
 
-    def loader(self, **kw) -> None:
+    def loader(self) -> None:
         @commands.group(
             name="jeyy",
             aliases=["jeyy.xyz", "j"],
@@ -31,14 +34,16 @@ class CommandLoader(Cog):
         for endpoint in JEYY_API:
 
             @jeyy.command(name=endpoint)
-            async def callback(ctx: Context, *, entity: Optional[ToImage] = None) -> None:
-                buf = entity or await ToImage().none(ctx)
+            async def callback(ctx: Context, *, user: Optional[Union[discord.User, discord.Member]] = None) -> None:
+                user = user or ctx.author
+                response = await ctx.bot.http_session.get(
+                    f"{JEYY_API_URL}/v2/image/{endpoint}",
+                    headers={**HEADERS, **self.bot.GLOBAL_HEADERS},
+                    params={"image_url": user.display_avatar.url},
+                )
+                buf = io.BytesIO(await response.read())
+                await ctx.reply(file=discord.File(buf, filename=f"{endpoint}.png"))
 
-                if buf is not None:
-                    response = await ctx.bot.http_session.get(
-                        f"{JEYY_API_URL}/v2/image/{endpoint}",
-                        headers={**HEADERS, **self.bot.GLOBAL_HEADERS},
-                        data={"image": buf.read()},  # type: ignore
-                    )
-                    if response.status == 200:
-                        ...
+
+async def setup(bot: Parrot) -> None:
+    await bot.add_cog(CommandLoader(bot))

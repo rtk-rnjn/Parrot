@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Optional, List
+from typing import List, Optional
 
 import discord
 from core import Context, Parrot

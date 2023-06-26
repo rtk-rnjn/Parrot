@@ -59,11 +59,11 @@ from interactions.buttons.__games_utils import (
     DiscordGame,
     FlipGame,
     Game,
+    GameBoogle,
     GameC4,
     GameTicTacToe,
     MadlibsTemplate,
     MetaGameUI,
-    GameBoogle,
     boggle_game,
     fenPass,
     is_game,
@@ -71,15 +71,16 @@ from interactions.buttons.__games_utils import (
 )
 from interactions.buttons.__light_out import LightsOut
 from interactions.buttons.__memory_game import MemoryGame
+from interactions.buttons.__number_memory import NumberMemory
 from interactions.buttons.__number_slider import NumberSlider
 from interactions.buttons.__sokoban import SokobanGame, SokobanGameView
-from interactions.buttons.__wordle import BetaWordle
 from interactions.buttons.__verbal_memory import VerbalMemory
-from interactions.buttons.__number_memory import NumberMemory
+from interactions.buttons.__wordle import BetaWordle
 from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.uno.game import UNO
+
 from .__command_flags import GameCommandFlag
 
 emoji = emojis  # Idk
@@ -890,7 +891,7 @@ class Games(Cog):
     async def twenty_four_eight_stats(
         self,
         ctx: Context,
-        user: Optional[discord.User] = None,
+        user: Optional[Union[discord.User, discord.Member]] = None,  # type: ignore
         *,
         flag: GameCommandFlag,
     ):
@@ -1330,7 +1331,7 @@ class Games(Cog):
         """Verbal Memory game."""
         game = VerbalMemory()
         await game.start(ctx)
-    
+
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.user)
     async def numbermemory(self, ctx: Context):

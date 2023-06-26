@@ -13,7 +13,7 @@ import typing
 import urllib.parse
 import zlib
 from collections import Counter
-from typing import Optional, LIst
+from typing import List, Literal, Optional
 
 from aiofile import async_open
 from discord.interactions import Interaction
@@ -713,7 +713,14 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
     @commands.is_owner()
-    async def playing(self, ctx: Context, media: str):
+    async def playing(
+        self,
+        ctx: Context[Parrot],
+        shard: Optional[int],
+        status: Optional[Literal["online", "dnd", "offline", "idle"]] = "dnd",
+        *,
+        media: str,
+    ):
         """Update bot presence accordingly to invoke command
 
         This is equivalent to:
@@ -722,8 +729,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.bot.change_presence(discord.Activity(name=media, type=p_types[ctx.invoked_with]))
         ```
         """
-        p_types = {"playing": 0, "streaming": 1, "listening": 2, "watching": 3}
-        await ctx.bot.change_presence(activity=discord.Activity(name=media, type=p_types[ctx.invoked_with]))
+        p_types = {"playing": 0, "streaming": 1, "listening": 2, "watching": 3, None: 0}
+        await ctx.bot.change_presence(
+            activity=discord.Activity(name=media, type=p_types[ctx.invoked_with]),
+            shard_id=shard,
+            status=discord.Status(status),
+        )
         await ctx.tick()
 
     @commands.command()

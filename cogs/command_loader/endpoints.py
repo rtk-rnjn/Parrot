@@ -1,4 +1,4 @@
-JEYY_API_URL = "https://jeyy.xyz/api"
+JEYY_API_URL = "https://jeyy.xyz"
 JEYY_API = [
     "abstract",
     "ads",

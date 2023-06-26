@@ -11,12 +11,10 @@ import string
 import traceback
 import typing
 import urllib.parse
-import zlib
 from collections import Counter
 from typing import List, Literal, Optional
 
 from aiofile import async_open
-from discord.interactions import Interaction
 
 import discord
 from cogs.meta.robopage import SimplePages
@@ -27,210 +25,9 @@ from utilities.paginator import PaginationView
 from utilities.time import ShortTime
 
 from . import fuzzy
-
-
-class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    guild: typing.Optional[discord.Guild] = None
-    limit: typing.Optional[int] = 100
-    action: typing.Optional[str] = None
-    before: typing.Optional[ShortTime] = None
-    after: typing.Optional[ShortTime] = None
-    oldest_first: typing.Union[convert_bool, bool] = False  # type: ignore
-    user: typing.Union[discord.User, discord.Member, None] = None
-
-
-class BanFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    reason: typing.Optional[str] = None
-    _global: typing.Union[convert_bool, bool] = commands.flag(name="global", default=False)  # type: ignore
-    command: typing.Union[convert_bool, bool] = False  # type: ignore
-
-
-class SubscriptionFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    code: typing.Optional[str] = None
-    expiry: typing.Optional[ShortTime] = None
-    guild: typing.Optional[discord.Guild] = None
-    uses: typing.Optional[int] = 0
-    limit: typing.Optional[int] = 1
-
-
-class nitro(discord.ui.View):
-    def __init__(self, ctx: Context):
-        super().__init__(timeout=None)
-        self.ctx: Context = ctx
-        self.bot: Parrot = ctx.bot
-
-    @discord.ui.button(
-        custom_id="fun (nitro)",
-        label="\N{BRAILLE PATTERN BLANK}" * 16 + "Claim" + "\N{BRAILLE PATTERN BLANK}" * 16,
-        style=discord.ButtonStyle.green,
-    )
-    async def func(self, interaction: discord.Interaction, button: discord.ui.Button):
-        i = discord.Embed()
-        i.set_image(url="https://c.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif")
-        await interaction.response.send_message("https://imgur.com/NQinKJB", ephemeral=True)
-
-        button.disabled = True
-        button.style = discord.ButtonStyle.grey
-        button.label = ("\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,)  # type: ignore
-
-        ni: discord.Embed = discord.Embed(
-            title="You received a gift, but...",
-            description="The gift link has either expired or has been\nrevoked.",
-        )
-        ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
-        try:
-            await interaction.message.edit(embed=ni, view=self)  # type: ignore
-        except AttributeError:
-            pass
-
-
-class MongoCollectionView(discord.ui.View):
-    message: typing.Optional[discord.Message] = None
-
-    def __init__(self, *, timeout: float = 20, db: str, collection: str, ctx: Context):
-        super().__init__(timeout=timeout)
-        self.collection = collection
-        self.db = db
-        self.ctx = ctx
-
-    async def interaction_check(self, interaction: Interaction[Parrot]) -> bool:
-        return interaction.user.id in self.ctx.bot.owner_ids
-
-    @discord.ui.button(label="Paginate", style=discord.ButtonStyle.blurple, emoji="\N{BOOKS}")
-    async def paginate(self, interaction: discord.Interaction, button: discord.ui.Button):
-        assert self.message is not None
-        await interaction.response.defer()
-
-        collection = self.ctx.bot.mongo[self.db][self.collection]
-
-        view = PaginationView([])
-        view._str_prefix = "```json\n"
-        view._str_suffix = "\n```"
-        await view.start(self.ctx)
-
-        index = 0
-        async for data in collection.find():
-            _id = data.pop("_id")
-            data["_id"] = str(_id)
-
-            data = json.dumps(data, indent=4).split("\n")
-            new_data = []
-            for ind, line in enumerate(data):
-                if ind == 20:
-                    break
-                new_data.append(line)
-            new_data.append("...")
-
-            await view.add_item_to_embed_list("\n".join(new_data))
-
-            if index == 100:
-                break
-
-            index += 1
-        await view._update_message()
-
-    async def disable_all(self):
-        assert self.message is not None
-        for child in self.children:
-            if isinstance(child, discord.ui.Button):
-                child.disabled = True
-                child.style = discord.ButtonStyle.grey
-        await self.message.edit(view=self)
-
-    async def on_timeout(self) -> None:
-        await self.disable_all()
-
-
-class MongoViewSelect(discord.ui.Select["MongoView"]):
-    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs):
-        self.db_name = kwargs.pop("db_name", "")
-        super().__init__(min_values=1, max_values=1, **kwargs)
-        self.ctx = ctx
-        self.timeout = timeout
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        assert self.view is not None and self.view.message is not None
-
-        await interaction.response.defer()
-        embed = await self.build_embed(self.ctx, self.db_name, self.values[0])
-
-        view = MongoCollectionView(collection=self.values[0], ctx=self.ctx, db=self.db_name)
-        view.message = await self.view.message.edit(
-            embed=embed,
-            view=view,
-        )
-        self.view.stop()
-
-    @staticmethod
-    async def build_embed(ctx: Context, db_name: str, collection_name: str) -> discord.Embed:
-        db = ctx.bot.mongo[db_name][collection_name]
-        document_count = await db.count_documents({})
-        full_name = f"{db_name}.{collection_name}"
-        return (
-            discord.Embed(title="MongoDB - Collection - Lookup")
-            .add_field(name="Total documents", value=document_count)
-            .add_field(name="Full Name", value=full_name)
-            .add_field(name="Database", value=db_name)
-        )
-
-
-class MongoView(discord.ui.View):
-    message: typing.Optional[discord.Message] = None
-
-    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs):
-        super().__init__(timeout=timeout)
-
-        self.ctx = ctx
-
-    async def init(self):
-        names: List[str] = await self.ctx.bot.mongo.list_database_names()
-
-        def to_emoji(c):
-            return chr(127462 + c)
-
-        embed = discord.Embed(
-            title="MongoDB  - Database - Lookup",
-        )
-
-        for i, name in enumerate(names):
-            embed.add_field(name=f"{to_emoji(i)} {name}", value="\u200b")
-            collections = await self.ctx.bot.mongo[name].list_collection_names()
-            if not collections:
-                continue
-
-            options = [
-                discord.SelectOption(
-                    label=collection,
-                    value=collection,
-                    emoji=chr(0x1F1E6 + j),
-                )
-                for j, collection in enumerate(collections)
-            ]
-            self.add_item(
-                MongoViewSelect(
-                    self.ctx,
-                    timeout=60.0,
-                    options=options,
-                    row=i,
-                    placeholder=f"Database - {name}",
-                    db_name=name,
-                )
-            )
-
-        self.message = await self.ctx.send(embed=embed, view=self)
-
-    async def disable_all(self) -> None:
-        assert self.message is not None
-        for child in self.children:
-            if isinstance(child, discord.ui.Button):
-                child.disabled = True
-                child.style = discord.ButtonStyle.grey
-
-    async def on_timeout(self) -> None:
-        await self.disable_all()
-
-    async def interaction_check(self, interaction: Interaction[Parrot]) -> bool:
-        return interaction.user.id in self.ctx.bot.owner_ids
+from .flags import AuditFlag, BanFlag, SubscriptionFlag
+from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
+from .utils import SphinxObjectFileReader
 
 
 class Owner(Cog, command_attrs=dict(hidden=True)):
@@ -246,8 +43,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="early_verified_bot_developer", id=892433993537032262)
 
+    async def cog_check(self, ctx: Context) -> bool:
+        return await self.bot.is_owner(ctx.author)
+
     @commands.command()
-    @commands.is_owner()
     @Context.with_type
     async def gitload(self, ctx: Context, *, link: str) -> None:
         """To load the cog extension from github"""
@@ -278,7 +77,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         self.count += 1
 
     @commands.command()
-    @commands.is_owner()
     @Context.with_type
     async def makefile(self, ctx: Context, name: str, *, text: str) -> None:
         """To make a file in ./temp/ directly"""
@@ -293,7 +91,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await ctx.send(f"[SUCCESS] File `{name}` created")
 
     @commands.command(aliases=["nitroscam", "nitro-scam"])
-    @commands.is_owner()
     async def nitro_scam(
         self,
         ctx: Context,
@@ -309,11 +106,10 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
                 timestamp=discord.utils.utcnow(),
             ).set_thumbnail(url="https://i.imgur.com/w9aiD6F.png"),
-            view=nitro(ctx),
+            view=NitroView(ctx),
         )
 
     @commands.command()
-    @commands.is_owner()
     @Context.with_type
     async def leave_guild(self, ctx: Context, *, guild: discord.Guild):
         """To leave the guild"""
@@ -321,7 +117,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await guild.leave()
 
     @commands.command()
-    @commands.is_owner()
     @Context.with_type
     async def ban_user(
         self,
@@ -348,7 +143,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await ctx.send("User banned, unable to DM as their DMs are locked")
 
     @commands.command()
-    @commands.is_owner()
     @Context.with_type
     async def unban_user(
         self,
@@ -381,7 +175,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         hidden=True,
         invoke_without_command=True,
     )
-    @commands.is_owner()
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
         """Image Search. Anything"""
@@ -410,14 +203,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await page.start(ctx)
 
     @commands.command(name="delete-reference", aliases=["dr"])
-    @commands.is_owner()
     async def dr(self, ctx: Context):
         """To delete the message reference"""
         await ctx.message.delete(delay=0)
         await ctx.message.reference.resolved.delete(delay=0)  # type: ignore
 
     @commands.command()
-    @commands.is_owner()
     async def spy_server(
         self,
         ctx: Context,
@@ -501,7 +292,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await PaginationView(em_list_member).start(ctx=ctx)
 
     @commands.command()
-    @commands.is_owner()
     async def removebg(self, ctx: Context, *, url: str):
         """To remove the background from image"""
         async with self.bot.http_session.get(url) as img:
@@ -517,7 +307,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
-    @commands.is_owner()
     async def auditlog(self, ctx: Context, *, args: AuditFlag):
         """To get the audit log of the server, in nice format"""
         ls = []
@@ -556,7 +345,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await p.start()
 
     @commands.command()
-    @commands.is_owner()
     async def announce_global(self, ctx: Context, *, announcement: str):
         async for data in self.bot.guild_configurations.find():
             webhook = data["global_chat"]
@@ -571,7 +359,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.tick()
 
     @commands.command()
-    @commands.is_owner()
     async def create_code(self, ctx: Context, *, args: SubscriptionFlag):
         """To create a code for the bot premium"""
         PAYLOAD = {}
@@ -601,7 +388,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         )
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def gateway(self, ctx: Context):
         """Gateway related stats."""
 
@@ -678,7 +464,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.is_owner()
     async def maintenance(
         self,
         ctx: Context,
@@ -712,7 +497,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         )
 
     @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
-    @commands.is_owner()
     async def playing(
         self,
         ctx: Context[Parrot],
@@ -738,9 +522,14 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await ctx.tick()
 
     @commands.command()
-    @commands.is_owner()
     async def toggle_testing(self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]) -> None:  # type: ignore
-        """Update the cog setting to toggle testing mode"""
+        """Update the cog setting to toggle testing mode
+        
+        ```py
+        if hasattr(cog, "ON_TESTING"):
+            cog.ON_TESTING = not cog.ON_TESTING
+        ```
+        """
         cog: Optional[Cog] = self.bot.get_cog(cog)  # type: ignore
         assert cog is not None
         if hasattr(cog, "ON_TESTING"):
@@ -764,7 +553,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         return objectify(data)
 
     @commands.command()
-    @commands.is_owner()
     async def mongo(
         self,
         ctx: Context,
@@ -780,39 +568,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
         view = MongoView(ctx)
         await view.init()
-
-
-class SphinxObjectFileReader:
-    # Inspired by Sphinx's InventoryFileReader
-    BUFSIZE = 16 * 1024
-
-    def __init__(self, buffer):
-        self.stream = io.BytesIO(buffer)
-
-    def readline(self):
-        return self.stream.readline().decode("utf-8")
-
-    def skipline(self):
-        self.stream.readline()
-
-    def read_compressed_chunks(self):
-        decompressor = zlib.decompressobj()
-        while True:
-            chunk = self.stream.read(self.BUFSIZE)
-            if len(chunk) == 0:
-                break
-            yield decompressor.decompress(chunk)
-        yield decompressor.flush()
-
-    def read_compressed_lines(self):
-        buf = b""
-        for chunk in self.read_compressed_chunks():
-            buf += chunk
-            pos = buf.find(b"\n")
-            while pos != -1:
-                yield buf[:pos].decode("utf-8")
-                buf = buf[pos + 1 :]
-                pos = buf.find(b"\n")
 
 
 class DiscordPy(Cog, command_attrs=dict(hidden=True)):
@@ -985,7 +740,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await self.do_rtfm(ctx, "pymongo", obj)
 
     @rtfd.command(name="showall", aliases=["show"])
-    @commands.is_owner()
     async def rtfd_showall(
         self,
         ctx: Context,
@@ -997,7 +751,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(f"```json\n{json.dumps(data, indent=4)}```")
 
     @rtfd.command(name="add")
-    @commands.is_owner()
     async def rtfd_add(self, ctx: Context, name: str, *, link: str):
         """To add the links in docs"""
         async with async_open(r"extra/docs_links.json") as f:
@@ -1011,7 +764,6 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(f"{ctx.author.mention} done!")
 
     @rtfd.command(name="del")
-    @commands.is_owner()
     async def rtfd_del(
         self,
         ctx: Context,

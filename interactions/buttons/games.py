@@ -80,7 +80,6 @@ from interactions.buttons.secret_hitler.ui.join import JoinUI
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.uno.game import UNO
-from utilities.converters import ToAsync
 from .__command_flags import GameCommandFlag
 
 emoji = emojis  # Idk
@@ -1224,12 +1223,11 @@ class Games(Cog):
             await msg.add_reaction(EMOJI_WRONG)
             game.scores[msg.author] += INCORRECT_SOLN
 
-    @ToAsync()
-    def send_board_embed(self, ctx: Context, game: DuckGame) -> discord.Message:
+    async def send_board_embed(self, ctx: Context, game: DuckGame) -> discord.Message:
         """Create and send an embed to display the board."""
         image = assemble_board_image(game.board, game.rows, game.columns)
         with io.BytesIO() as image_stream:
-            image.save(image_stream, format="png")
+            await ctx.bot.func(image.save, image_stream, format="png")
             image_stream.seek(0)
             file = discord.File(fp=image_stream, filename="board.png")
         embed = discord.Embed(

@@ -125,13 +125,14 @@ class EventCustom(Cog):
             self.bot.afk_users.remove(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_giveaway_timer_complete")
-    async def extra_parser_giveaway(self, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser_giveaway(self, **kw: Any) -> None:
+        extra = kw.get("extra")
         if not extra:
             return
 
         name = extra.get("name")
-        if name == "GIVEAWAY_END":
-            await self._parse_giveaway(**kw)
+        if name == "GIVEAWAY_END" and (main := extra.get("main")):
+            await self._parse_giveaway(**main)
 
     async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "SET_TIMER":

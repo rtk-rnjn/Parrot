@@ -351,6 +351,7 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
     channel: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
     msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)
+    await bot.delete_timer(_id=kw["message_id"])
 
     embed = msg.embeds[0]
     embed.color = 0xFF000

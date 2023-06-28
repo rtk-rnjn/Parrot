@@ -51,11 +51,14 @@ class EmbedCancel(discord.ui.Button):
 class ParrotColor:
     @classmethod
     async def convert(cls, ctx: Context, arg: str):
+        match, check = None, False
+
         with suppress(AttributeError):
             match = re.match(r"\(?(\d+),?\s*(\d+),?\s*(\d+)\)?", arg)
-            check = all(0 <= int(x) <= 255 for x in match.groups())
+            if match:
+                check = all(0 <= int(x) <= 255 for x in match.groups())
         if match and check:
-            return discord.Color.from_rgb([int(i) for i in match.groups()])
+            return discord.Color.from_rgb(*[int(i) for i in match.groups()])
         _converter = commands.ColorConverter()
         result = None
         try:
@@ -326,13 +329,13 @@ class EmbedBuilder(ParrotView):
 
     async def refresh_view(self, to_del: T.Optional[discord.Message] = None):
         if to_del is not None:
-            await self.ctx.safe_delete(to_del)
+            await to_del.delete(delay=0.5)
 
         with suppress(discord.HTTPException):
             self.message = await self.message.edit(content=self.content, embed=self.embed, view=self)
 
     async def rendor(self, **kwargs: T.Any):
-        self.message: discord.Message = await self.ctx.send(
+        self.message: discord.Message = await self.ctx.send(  # type: ignore
             kwargs.get("content", "\u200b"),
             embed=kwargs.get("embed", self.help_embed),
             view=self,

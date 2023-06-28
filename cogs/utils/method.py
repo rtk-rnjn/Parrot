@@ -34,25 +34,25 @@ IGNORE = [
 
 
 async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
-        if not data["nsfw"] and msg_ref is not None or data["nsfw"] and ctx.channel.nsfw and msg_ref is not None:
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag}):
+        if not data["nsfw"] and msg_ref is not None or data["nsfw"] and ctx.channel.nsfw and msg_ref is not None:  # type: ignore
             await msg_ref.reply(data["text"])
-        elif not data["nsfw"] or ctx.channel.nsfw:
+        elif not data["nsfw"] or ctx.channel.nsfw:  # type: ignore
             await ctx.send(data["text"])
         else:
             await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
-    await collection.update_one({"id": tag}, {"$inc": {"count": 1}})
+    await collection.update_one({"tag_id": tag}, {"$inc": {"count": 1}})
 
 
 async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
-    collection = ctx.guild_collection
+    collection = ctx.bot.tags_collection
     if data := await collection.find_one({"_id": tag}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mentions(first)
-        if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:
+        if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:  # type: ignore
             await ctx.safe_send(main)
         else:
             await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
@@ -61,10 +61,10 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
-    collection = ctx.guild_collection
+    collection = ctx.bot.tags_collection
     if tag in IGNORE:
         return await ctx.error(f"{ctx.author.mention} the name `{tag}` is reserved word.")
-    if _ := await collection.find_one({"id": tag}):
+    if _ := await collection.find_one({"tag_id": tag}):
         return await ctx.error(f"{ctx.author.mention} the name `{tag}` already exists")
 
     val = await ctx.prompt(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels")
@@ -85,10 +85,10 @@ async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
 
 
 async def _delete_tag(bot: Parrot, ctx: Context, tag: str):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         if data["owner"] == ctx.author.id:
-            await collection.delete_one({"id": tag})
+            await collection.delete_one({"tag_id": tag})
             await ctx.reply(f"{ctx.author.mention} tag deleted successfully")
         else:
             await ctx.error(f"{ctx.author.mention} you don't own this tag")
@@ -97,12 +97,12 @@ async def _delete_tag(bot: Parrot, ctx: Context, tag: str):
 
 
 async def _name_edit(bot: Parrot, ctx: Context, tag: str, name: str):
-    collection = ctx.guild_collection
-    if _ := await collection.find_one({"id": name}):
+    collection = ctx.bot.tags_collection
+    if _ := await collection.find_one({"tag_id": name, "guild_id": ctx.guild.id}):  # type: ignore
         await ctx.error(f"{ctx.author.mention} that name already exists in the database")
-    elif data := await collection.find_one({"id": tag}):
+    elif data := await collection.find_one({"tag_id": tag}):
         if data["owner"] == ctx.author.id:
-            await collection.update_one({"id": tag}, {"$set": {"id": name}})
+            await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"tag_id": name}})  # type: ignore
             await ctx.reply(f"{ctx.author.mention} tag name successfully changed")
         else:
             await ctx.error(f"{ctx.author.mention} you don't own this tag")
@@ -111,10 +111,10 @@ async def _name_edit(bot: Parrot, ctx: Context, tag: str, name: str):
 
 
 async def _text_edit(bot: Parrot, ctx: Context, tag: str, text: str):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         if data["owner"] == ctx.author.id:
-            await collection.update_one({"id": tag}, {"$set": {"text": text}})
+            await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"text": text}})  # type: ignore
             await ctx.reply(f"{ctx.author.mention} tag content successfully changed")
         else:
             await ctx.error(f"{ctx.author.mention} you don't own this tag")
@@ -123,22 +123,22 @@ async def _text_edit(bot: Parrot, ctx: Context, tag: str, text: str):
 
 
 async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
-        member = await bot.get_or_fetch_member(ctx.guild, data["owner"])
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
+        member = await bot.get_or_fetch_member(ctx.guild, data["owner"])  # type: ignore
         if member:
             return await ctx.error(
                 f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server"
             )
-        await collection.update_one({"id": tag}, {"$set": {"owner": ctx.author.id}})
+        await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"owner": ctx.author.id}})  # type: ignore
         await ctx.reply(f"{ctx.author.mention} ownership of tag `{tag}` claimed!")
     else:
         await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.Member):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         if data["owner"] != ctx.author.id:
             return await ctx.error(f"{ctx.author.mention} you don't own this tag")
         val = await ctx.prompt(
@@ -147,7 +147,7 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.M
         if val is None:
             await ctx.error(f"{ctx.author.mention} you did not responds on time")
         elif val:
-            await collection.update_one({"id": tag}, {"$set": {"owner": member.id}})
+            await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"owner": member.id}})  # type: ignore
             await ctx.reply(f"{ctx.author.mention} tag ownership successfully transfered to **{member}**")
         else:
             await ctx.error(f"{ctx.author.mention} ok! reverting the process!")
@@ -156,47 +156,47 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.M
 
 
 async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         if data["owner"] != ctx.author.id:
             return await ctx.reply(f"{ctx.author.mention} you don't own this tag")
         nsfw = not data["nsfw"]
-        await collection.update_one({"id": tag}, {"$set": {"nsfw": nsfw}})
+        await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"nsfw": nsfw}})  # type: ignore
         await ctx.reply(f"{ctx.author.mention} NSFW status of tag named `{tag}` is set to **{nsfw}**")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
 
 
 async def _show_tag_mine(bot: Parrot, ctx: Context):
-    collection = ctx.guild_collection
+    collection = ctx.bot.tags_collection
     i = 1
     entries: List[str] = []
 
-    async for data in collection.find({"owner": ctx.author.id}):
+    async for data in collection.find({"owner": ctx.author.id, "guild_id": ctx.guild.id}):  # type: ignore
         entries.append(f"`{i}` {data['_id']}")
         i += 1
     try:
-        return await ctx.paginate(entries, _type="SimplePages")
+        return await ctx.paginate(entries, module="SimplePages")
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} you don't have any tags registered with your name")
 
 
 async def _show_all_tags(bot: Parrot, ctx: Context):
-    collection = ctx.guild_collection
+    collection = ctx.bot.tags_collection
     i = 1
     entries: List[str] = []
-    async for data in collection.find({}):
+    async for data in collection.find({"guild_id": ctx.guild.id}):  # type: ignore
         entries.append(f"`{i}` {data['id']}")
         i += 1
     try:
-        return await ctx.paginate(entries, _type="SimplePages")
+        return await ctx.paginate(entries, module="SimplePages")
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} this server don't have any tags")
 
 
 async def _view_tag(bot: Parrot, ctx: Context, tag: str):
-    collection = ctx.guild_collection
-    if data := await collection.find_one({"id": tag}):
+    collection = ctx.bot.tags_collection
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         text_len = len(data["text"])
         owner = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         nsfw = data["nsfw"]
@@ -293,7 +293,7 @@ async def _list_todo(bot: Parrot, ctx: Context):
         entries.append(f"[`{i}`]({data['msglink']}) {data['id']}")
         i += 1
     try:
-        return await ctx.paginate(entries, _type="SimplePages")
+        return await ctx.paginate(entries, module="SimplePages")
     except IndexError:
         await ctx.reply(f"{ctx.author.mention} you do not have task to do")
 

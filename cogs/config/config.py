@@ -1317,5 +1317,5 @@ class Configuration(Cog):
     async def on_command(self, ctx: Context):
         assert ctx.guild is not None
 
-        if ctx.cog and ctx.cog.qualified_name.lower() == self.__class__.__name__.lower():
+        if ctx.cog and ctx.cog.qualified_name.lower() == "Configurations".lower():
             self.bot.update_server_config_cache.start(ctx.guild.id)

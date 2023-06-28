@@ -77,6 +77,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
             "text": text,
             "count": 0,
             "owner": ctx.author.id,
+            "guild_id": ctx.guild.id,  # type: ignore
             "nsfw": nsfw,
             "created_at": int(time()),
         }
@@ -215,7 +216,6 @@ async def _view_tag(bot: Parrot, ctx: Context, tag: str):
             .add_field(name="Is NSFW?", value=nsfw)
             .add_field(name="Tag Used", value=count)
             .add_field(name="Can Claim?", value=claimable)
-            .set_footer(text=f"{ctx.author}")
         )
         await ctx.reply(embed=em)
 
@@ -350,7 +350,7 @@ async def _create_giveaway_post(
 async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
     channel: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
-    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"])
+    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)
 
     embed = msg.embeds[0]
     embed.color = 0xFF000
@@ -501,7 +501,7 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
 
         elif index == 7:
             await ctx.reply(embed=discord.Embed(description=question))
-            server = __is_int(await __wait_for__message(ctx), "Server must be a whole number")
+            server = __is_int(await __wait_for__message(ctx), "Server ID must be a whole number")
             payload["required_guild"] = server
 
     embed = discord.Embed(
@@ -521,9 +521,10 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     msg = await CHANNEL.send(embed=embed)
     await msg.add_reaction("\N{PARTY POPPER}")
     bot.message_cache[msg.id] = msg
-    main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa  # type: ignore
+    main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
 
     await bot.giveaways.insert_one({**main_post["extra"]["main"], "reactors": [], "status": "ONGOING"})
+    await ctx.reply(embed=discord.Embed(description="Giveaway has been created!"))
     return main_post
 
 

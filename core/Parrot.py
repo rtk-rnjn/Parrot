@@ -1434,3 +1434,10 @@ class Parrot(commands.AutoShardedBot):
             return discord.utils.get(commands.values(), **kwargs)
 
         return None
+
+    async def wait_and_run_task(self, function: tasks.Loop, sleep: float = 0, *args, **kwargs) -> None:
+        if not function.is_running():
+            return await function(*args, **kwargs)
+        await asyncio.sleep(sleep)
+        sleep += 2
+        return await self.wait_and_run_task(function, sleep)

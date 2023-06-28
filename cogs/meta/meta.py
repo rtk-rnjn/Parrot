@@ -803,7 +803,6 @@ class Meta(Cog):
             ("Require Colons?", emoji.require_colons, True),
         ]
 
-        em.set_footer(text=f"{ctx.author}")
         em.set_thumbnail(url=emoji.url)
         for name, value, inline in data:
             em.add_field(name=name, value=f"{value}", inline=inline)
@@ -824,24 +823,26 @@ class Meta(Cog):
             discord.StageChannel,
         ] = None,
     ):
-        channel = channel or ctx.channel
+        channel = channel or ctx.channel  # type: ignore
         id_ = channel.id
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
         type_ = str(channel.type).capitalize()
-        embed = discord.Embed(
-            title="Channel Info",
-            color=ctx.author.color,
-            timestamp=discord.utils.utcnow(),
+        embed = (
+            discord.Embed(
+                title="Channel Info",
+                color=ctx.author.color,
+                timestamp=discord.utils.utcnow(),
+            )
+            .add_field(name="Name", value=channel.name)
+            .add_field(name="ID", value=f"{id_}")
+            .add_field(name="Created At", value=created_at)
+            .add_field(name="Mention", value=mention)
+            .add_field(name="Position", value=position)
+            .add_field(name="Type", value=type_)
+            .set_footer(text=f"{ctx.author}")
         )
-        embed.add_field(name="Name", value=channel.name)
-        embed.add_field(name="ID", value=f"{id_}")
-        embed.add_field(name="Created At", value=created_at)
-        embed.add_field(name="Mention", value=mention)
-        embed.add_field(name="Position", value=position)
-        embed.add_field(name="Type", value=type_)
-        embed.set_footer(text=f"{ctx.author}")
         if ctx.guild.icon:
             embed.set_thumbnail(url=ctx.guild.icon.url)
         await ctx.send(embed=embed)
@@ -933,7 +934,7 @@ class Meta(Cog):
         if (not invite.guild) or (not invite):
             return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
-        fields: List[Tuple[str, str, bool]] = [
+        fields: List[Tuple[str, Optional[str], bool]] = [  # type: ignore
             ("Member count?", invite.approximate_member_count, True),
             ("Presence Count?", invite.approximate_presence_count, True),
             ("Channel", f"<#{invite.channel.id}>", True),

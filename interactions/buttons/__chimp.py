@@ -89,6 +89,15 @@ class ChimpView(discord.ui.View):
                 button.disabled = not item
                 self.add_item(button)
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.game.message.author.id:
+            await interaction.response.send_message(
+                "You cannot play this game as you are not the author of the message.",
+                ephemeral=True,
+            )
+            return False
+        return True
+    
     def disable_all(self) -> None:
         for button in self.children:
             if isinstance(button, discord.ui.Button):

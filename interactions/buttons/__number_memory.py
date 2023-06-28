@@ -67,6 +67,9 @@ class NumButton(discord.ui.Button["NumView"]):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        if interaction.user.id != self.view.game.message.author.id:
+            return await interaction.response.send_message("You are not allowed to use this button!", ephemeral=True)
+
         assert self.view
 
         if self.label != "Cancel" or not interaction.message:

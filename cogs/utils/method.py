@@ -11,7 +11,7 @@ from discord.ext import commands
 from utilities.exceptions import ParrotCheckFailure, ParrotTimeoutError
 from utilities.time import ShortTime
 
-IGNORE = [
+IGNORE = {
     "all",
     "delete",
     "del",
@@ -30,7 +30,7 @@ IGNORE = [
     "give",
     "transfer",
     "raw",
-]
+}
 
 
 async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None):
@@ -44,12 +44,12 @@ async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[disco
             await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
     else:
         await ctx.reply(f"{ctx.author.mention} No tag with named `{tag}`")
-    await collection.update_one({"tag_id": tag}, {"$inc": {"count": 1}})
+    await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$inc": {"count": 1}})
 
 
 async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
     collection = ctx.bot.tags_collection
-    if data := await collection.find_one({"_id": tag}):
+    if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mentions(first)
         if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:  # type: ignore
@@ -64,7 +64,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
     collection = ctx.bot.tags_collection
     if tag in IGNORE:
         return await ctx.error(f"{ctx.author.mention} the name `{tag}` is reserved word.")
-    if _ := await collection.find_one({"tag_id": tag}):
+    if _ := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         return await ctx.error(f"{ctx.author.mention} the name `{tag}` already exists")
 
     val = await ctx.prompt(f"{ctx.author.mention} do you want to make the tag as NSFW marked channels")
@@ -73,7 +73,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
     nsfw = bool(val)
     await collection.insert_one(
         {
-            "id": tag,
+            "tag_id": tag,
             "text": text,
             "count": 0,
             "owner": ctx.author.id,
@@ -199,6 +199,7 @@ async def _view_tag(bot: Parrot, ctx: Context, tag: str):
     collection = ctx.bot.tags_collection
     if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):  # type: ignore
         text_len = len(data["text"])
+        assert ctx.guild
         owner = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         nsfw = data["nsfw"]
         count = data["count"]
@@ -222,10 +223,10 @@ async def _view_tag(bot: Parrot, ctx: Context, tag: str):
 
 async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
     collection = ctx.user_collection
-    if data := await collection.find_one({"id": name}):
+    if data := await collection.find_one({"id": name}):  # type: ignore
         await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
     else:
-        await collection.insert_one(
+        await collection.insert_one(  # type: ignore
             {
                 "id": name,
                 "text": text,
@@ -239,7 +240,7 @@ async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
 
 async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float):
     collection = ctx.user_collection
-    if _ := await collection.find_one({"id": name}):
+    if _ := await collection.find_one({"id": name}):  # type: ignore
         post = {"deadline": timestamp}
         try:
             await ctx.author.send(
@@ -250,7 +251,7 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
         except Exception as e:
             return await ctx.error(f"{ctx.author.mention} seems that your DM are blocked for the bot. Error: {e}")
         finally:
-            await collection.update_one({"_id": name}, {"$set": post})
+            await collection.update_one({"_id": name}, {"$set": post})  # type: ignore
             await bot.create_timer(
                 _event_name="todo",
                 expires_at=timestamp,
@@ -266,11 +267,11 @@ async def _set_timer_todo(bot: Parrot, ctx: Context, name: str, timestamp: float
 
 async def _update_todo_name(bot: Parrot, ctx: Context, name: str, new_name: str):
     collection = ctx.user_collection
-    if _ := await collection.find_one({"id": name}):
-        if _ := await collection.find_one({"id": new_name}):
+    if _ := await collection.find_one({"id": name}):  # type: ignore
+        if _ := await collection.find_one({"id": new_name}):  # type: ignore
             await ctx.reply(f"{ctx.author.mention} `{new_name}` already exists as your TODO list")
         else:
-            await collection.update_one({"id": name}, {"$set": {"id": new_name}})
+            await collection.update_one({"id": name}, {"$set": {"id": new_name}})  # type: ignore
             await ctx.reply(f"{ctx.author.mention} name changed from `{name}` to `{new_name}`")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
@@ -278,8 +279,8 @@ async def _update_todo_name(bot: Parrot, ctx: Context, name: str, new_name: str)
 
 async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
     collection = ctx.user_collection
-    if _ := await collection.find_one({"id": name}):
-        await collection.update_one({"id": name}, {"$set": {"text": text}})
+    if _ := await collection.find_one({"id": name}):  # type: ignore
+        await collection.update_one({"id": name}, {"$set": {"text": text}})  # type: ignore
         await ctx.reply(f"{ctx.author.mention} TODO list of name `{name}` has been updated")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
@@ -289,7 +290,7 @@ async def _list_todo(bot: Parrot, ctx: Context):
     collection = ctx.user_collection
     i = 1
     entries: List[str] = []
-    async for data in collection.find({}):
+    async for data in collection.find({}):  # type: ignore
         entries.append(f"[`{i}`]({data['msglink']}) {data['id']}")
         i += 1
     try:
@@ -300,7 +301,7 @@ async def _list_todo(bot: Parrot, ctx: Context):
 
 async def _show_todo(bot: Parrot, ctx: Context, name: str):
     collection = ctx.user_collection
-    if data := await collection.find_one({"id": name}):
+    if data := await collection.find_one({"id": name}):  # type: ignore
         await ctx.reply(f"> **{data['id']}**\n\nDescription: {data['text']}\n\nCreated At: <t:{data['time']}>")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
@@ -308,8 +309,8 @@ async def _show_todo(bot: Parrot, ctx: Context, name: str):
 
 async def _delete_todo(bot: Parrot, ctx: Context, name: str):
     collection = ctx.user_collection
-    if _ := await collection.find_one({"id": name}):
-        await collection.delete_one({"id": name})
+    if _ := await collection.find_one({"id": name}):  # type: ignore
+        await collection.delete_one({"id": name})  # type: ignore
         await ctx.reply(f"{ctx.author.mention} delete `{name}` task")
     else:
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
@@ -331,7 +332,7 @@ async def _create_giveaway_post(
         "author_id": message.author.id,
         "channel_id": message.channel.id,
         "giveaway_channel": giveaway_channel,
-        "guild_id": message.guild.id,
+        "guild_id": message.guild.id,  # type: ignore
         "created_at": message.created_at.timestamp(),
         "prize": prize,
         "winners": winners,
@@ -350,7 +351,7 @@ async def _create_giveaway_post(
 async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
     channel: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
-    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)
+    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)  # type: ignore
     await bot.delete_timer(_id=kw["message_id"])
 
     embed = msg.embeds[0]
@@ -399,15 +400,16 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
 
 async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
     # vars
-    real_winners: List[int] = kw.get("winners")
+    real_winners: List[int] = kw.get("winners", [])
 
     current_guild: discord.Guild = bot.get_guild(kw.get("guild_id"))
-    required_guild: discord.Guild = bot.get_guild(kw.get("required_guild"))
+    required_guild: Optional[discord.Guild] = bot.get_guild(kw.get("required_guild", 0))
     required_role: int = kw.get("required_role", 0)
     required_level: int = kw.get("required_level", 0)
 
-    for member in kw.get("winners"):
+    for member in kw.get("winners", []):
         member = await bot.get_or_fetch_member(current_guild, member)
+        assert isinstance(member, discord.Member)
         if required_guild:
             is_member_none = await bot.get_or_fetch_member(required_guild, member.id)
             if is_member_none is None:
@@ -553,7 +555,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
 > Ends: <t:{int(payload['endtime'])}:R>
 """
     embed.set_footer(text=f"ID: {ctx.message.id}", icon_url=ctx.author.display_avatar.url)
-    msg: discord.Message = await ctx.send(embed=embed)
+    msg: discord.Message = await ctx.send(embed=embed)  # type: ignore
     await msg.add_reaction("\N{PARTY POPPER}")
     main_post = await _create_giveaway_post(message=msg, **payload)  # flake8: noqa
 

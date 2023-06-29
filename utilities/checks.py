@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Container, Iterable
-from typing import TYPE_CHECKING, Callable, Dict, Optional, TypeAlias, Union
-
-from discord.ext.commands import Command  # type: ignore
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
+from typing_extensions import TypeAlias
+from discord.ext.commands import Command
 from discord.ext.commands import BucketType, Cog, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
 

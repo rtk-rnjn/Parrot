@@ -187,7 +187,7 @@ async def _show_all_tags(bot: Parrot, ctx: Context):
     i = 1
     entries: List[str] = []
     async for data in collection.find({"guild_id": ctx.guild.id}):  # type: ignore
-        entries.append(f"`{i}` {data['id']}")
+        entries.append(f"`{i}` - {data['tag_id']}")
         i += 1
     try:
         return await ctx.paginate(entries, module="SimplePages")

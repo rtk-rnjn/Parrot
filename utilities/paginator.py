@@ -145,6 +145,7 @@ class PaginatorView(discord.ui.View):
         self.show_page_count = show_page_count
         self.check_other_ids = check_other_ids
         if self.pages.cur_page == 1:
+
             self.children[0].disabled = False
             self.children[1].disabled = False
 
@@ -155,7 +156,8 @@ class PaginatorView(discord.ui.View):
             self._extracted_from_lock_bro_4()
         elif 1 < self.pages.cur_page < self.pages.total:
             for b in self.children:
-                b.disabled = False
+                if isinstance(b, discord.ui.Button):
+                    b.disabled = False
 
     # TODO Rename this here and in `lock_bro`
     def _extracted_from_lock_bro_4(self):

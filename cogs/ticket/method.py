@@ -1,18 +1,39 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Optional
+import io
+from typing import TYPE_CHECKING, List, Optional
 
 import discord
 from core import Context, Parrot
-from utilities.chat_exporter import quick_export
 
 if TYPE_CHECKING:
     from pymongo.collection import Collection
 
 
 async def chat_exporter(channel: discord.TextChannel, limit: Optional[int] = 100) -> None:
-    await quick_export(channel)
+    msg = await channel.send("Please wait, exporting chat...")
+    messages: List[discord.Message] = []
+    async for message in channel.history(limit=limit, oldest_first=True):
+        messages.append(message)
+
+    data = ""
+
+    for message in messages:
+        data += f"{message.author} ({message.author.id}): "
+        if message.content:
+            data += f"{message.content} "
+        if message.embeds:
+            json_like_embed = [e.to_dict() for e in message.embeds]
+            data += f"{json_like_embed} "
+        if message.attachments:
+            attachments = [a.url for a in message.attachments]
+            data += f"{attachments} "
+        data += "\n"
+
+    file = discord.File(io.BytesIO(data.encode("utf-8")), filename=f"{channel.name}.txt")
+    await msg.delete()
+    await channel.send(file=file)
 
 
 async def log(guild: discord.Guild, channel: discord.TextChannel, description: str, status: str) -> None:

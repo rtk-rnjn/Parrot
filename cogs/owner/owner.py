@@ -26,8 +26,8 @@ from utilities.time import ShortTime
 
 from . import fuzzy
 from .flags import AuditFlag, BanFlag, SubscriptionFlag
-from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
 from .utils import SphinxObjectFileReader
+from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
 
 
 class Owner(Cog, command_attrs=dict(hidden=True)):
@@ -524,7 +524,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     async def toggle_testing(self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]) -> None:  # type: ignore
         """Update the cog setting to toggle testing mode
-        
+
         ```py
         if hasattr(cog, "ON_TESTING"):
             cog.ON_TESTING = not cog.ON_TESTING
@@ -579,6 +579,9 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="dpy", id=596577034537402378)
+
+    async def cog_load(self) -> None:
+        self.bot.loop.create_task(self.build_rtfm_lookup_table(self.page_types))
 
     def parse_object_inv(self, stream, url):
         # key: URL

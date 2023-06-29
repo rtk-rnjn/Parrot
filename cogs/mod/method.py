@@ -679,16 +679,7 @@ async def _unblock(
                 await destination.send(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
             else:
                 overwrite = channel.overwrites
-                if member_overwrite := overwrite.get(member):
-                    member_overwrite.update(
-                        send_messages=False,
-                        view_channel=False,
-                    )
-                else:
-                    overwrite[member] = discord.PermissionOverwrite(
-                        send_messages=False,
-                        view_channel=False,
-                    )
+                overwrite.pop(member, None)
                 await channel.edit(overwrites=overwrite, reason=reason)
             await destination.send(f"{ctx.author.mention} overwrite permission(s) for **{member}** has been deleted!")
         except Exception as e:
@@ -1127,7 +1118,7 @@ async def _sticker_add(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    sticker: discord.StickerItem,
+    sticker: discord.GuildSticker,
     reason: str,
     **kwargs: Any,
 ):

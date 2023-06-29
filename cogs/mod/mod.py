@@ -356,7 +356,7 @@ class Moderator(Cog):
     async def lock(
         self,
         ctx: Context,
-        channel: commands.Greedy[Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]],
+        channel: commands.Greedy[Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):

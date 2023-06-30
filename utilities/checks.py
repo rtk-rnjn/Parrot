@@ -3,10 +3,10 @@ from __future__ import annotations
 import datetime
 from collections.abc import Container, Iterable
 from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
-from typing_extensions import TypeAlias
-from discord.ext.commands import Command
-from discord.ext.commands import BucketType, Cog, CommandOnCooldown, Cooldown, CooldownMapping
+
+from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
+from typing_extensions import TypeAlias
 
 import discord
 from core import Context, Parrot
@@ -163,7 +163,7 @@ def _can_run(ctx: Context) -> Optional[bool]:
 
     for cmd in ctx.bot.guild_configurations_cache[ctx.guild.id]["cmd_config"]:
         if (
-            cmd["cmd"] == ctx.command.qualified_name
+            cmd["cmd"] == getattr(ctx.command, "qualified_name", None)
             or cmd["cmd"] == "all"
             or (getattr(ctx.command.cog, "qualified_name", None) == cmd["cmd"])
         ):

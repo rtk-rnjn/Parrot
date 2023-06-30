@@ -751,6 +751,29 @@ class Parrot(commands.AutoShardedBot):
         log.debug("Shard %s has resumed", shard_id)
         self.resumes[shard_id].append(discord.utils.utcnow())
 
+    async def __bot_under_maintenance_message(self, ctx: Context) -> None:
+        log.info("Bot is under maintenance, ignoring command. Context %s", ctx)
+        await ctx.send(
+            embed=discord.Embed(
+                title="Bot under maintenance!",
+                description=self.UNDER_MAINTENANCE_REASON or "N/A",
+            )
+            .add_field(
+                name="ETA?",
+                value=discord.utils.format_dt(self.UNDER_MAINTENANCE_OVER, "R") if self.UNDER_MAINTENANCE_OVER else "N/A",
+            )
+            .add_field(name="Message From?", value=self.author_name)
+            .add_field(
+                name="Have Question?",
+                value=f"[Join Support Server]({self.support_server})",
+            )
+            .set_author(
+                name=ctx.author,
+                icon_url=ctx.author.display_avatar.url,
+                url=self.support_server,
+            )
+        )
+
     async def process_commands(self, message: discord.Message) -> None:
         ctx: Context = await self.get_context(message, cls=Context)
 
@@ -758,55 +781,27 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.UNDER_MAINTENANCE:
-            log.debug("Bot is under maintenance, ignoring command. Context %s", ctx)
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Bot under maintenance!",
-                    description=self.UNDER_MAINTENANCE_REASON or "N/A",
-                )
-                .add_field(
-                    name="ETA?",
-                    value=discord.utils.format_dt(self.UNDER_MAINTENANCE_OVER, "R")
-                    if self.UNDER_MAINTENANCE_OVER
-                    else "N/A",
-                )
-                .add_field(name="Message From?", value=self.author_name)
-                .add_field(
-                    name="Have Question?",
-                    value=f"[Join Support Server]({self.support_server})",
-                )
-                .set_author(
-                    name=ctx.author,
-                    icon_url=ctx.author.display_avatar.url,
-                    url=self.support_server,
-                )
-            )
-            return
+            return await self.__bot_under_maintenance_message(ctx)
 
         if bucket := self.spam_control.get_bucket(message):
-            current = message.created_at.timestamp()
-            retry_after: Optional[float] = bucket.update_rate_limit(current)
-            author_id = message.author.id
-            if retry_after:
-                self._auto_spam_count[author_id] += 1
-                if self._auto_spam_count[author_id] >= 3:
-                    log.debug("Auto spam detected, ignoring command. Context %s", ctx)
+            if bucket.update_rate_limit(message.created_at.timestamp()):
+                self._auto_spam_count[message.author.id] += 1
+                if self._auto_spam_count[message.author.id] >= 3:
+                    log.info("Auto spam detected, ignoring command. Context %s", ctx)
                     return
             else:
-                self._auto_spam_count.pop(author_id, None)
+                self._auto_spam_count.pop(message.author.id, None)
 
         if ctx.command is not None:
             if not self.banned_users:
                 await self.update_banned_members.start()
             try:
-                self.banned_users[ctx.author.id]
+                if self.banned_users[ctx.author.id]["command"]:
+                    return
             except KeyError:
                 pass
-            else:
-                if self.banned_users[ctx.author.id].get("command"):
-                    return
-            can_run: Optional[bool] = _can_run(ctx)
-            if can_run is False:
+
+            if _can_run(ctx) is False:  # this is intentional
                 log.debug(
                     "User %s is blacklisted or command is blocked, ignoring command. Context %s",
                     ctx,
@@ -820,7 +815,7 @@ class Parrot(commands.AutoShardedBot):
                     ),
                 )
                 await ctx.reply(
-                    f"{ctx.author.mention} `{ctx.command.qualified_name}` is being disabled in **{ctx.channel.mention}** by the staff!",
+                    f"{ctx.author.mention} `{ctx.invoked_with}` is being disabled in **{ctx.channel.mention}** by the staff!",
                     delete_after=10.0,
                 )
                 return

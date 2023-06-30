@@ -46,21 +46,22 @@ CONFIRM_REACTIONS: Tuple = (
 from utilities.regex import LINKS_RE
 
 if TYPE_CHECKING:
-    from motor.motor_asyncio import AsyncIOMotorCollection as Collection
     from pymongo.results import UpdateResult
-    from typing_extensions import ParamSpec, TypeAlias
+    from typing_extensions import ParamSpec
+
+    from .Parrot import Parrot
 
     P = ParamSpec("P")
+    BotT = TypeVar("BotT", bound="Parrot")
 
     MaybeAwaitableFunc = Callable[P, "MaybeAwaitable[T]"]
-    MongoCollection: TypeAlias = Type[type(Collection)]  # type: ignore
-
+else:
+    BotT = TypeVar("BotT", bound="commands.Bot")
 
 T = TypeVar("T")
 MaybeAwaitable = Union[T, Awaitable[T]]
 
 Callback = MaybeAwaitable
-# BotT = TypeVar("BotT", bound=commands.Bot)
 
 # VOTER_ROLE_ID = 836492413312040990
 log = logging.getLogger("core.context")
@@ -73,7 +74,7 @@ except ImportError:
     HTML_PARSER = "html.parser"
 
 
-class Context(commands.Context[commands.Bot], Generic[T]):
+class Context(commands.Context[commands.Bot], Generic[BotT]):
     """A custom implementation of commands.Context class."""
 
     if TYPE_CHECKING:
@@ -85,8 +86,8 @@ class Context(commands.Context[commands.Bot], Generic[T]):
         super().__init__(*args, **kwargs)
 
         if self.guild is not None:
-            self.guild_collection: MongoCollection = self.bot.guild_level_db[f"{self.guild.id}"]
-        self.user_collection: MongoCollection = self.bot.user_db[f"{self.author.id}"]
+            self.guild_collection = self.bot.guild_level_db[f"{self.guild.id}"]
+        self.user_collection = self.bot.user_db[f"{self.author.id}"]
 
     def __repr__(self) -> str:
         return (

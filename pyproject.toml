@@ -10,7 +10,7 @@ line_length = 125
 
 [tool.pyright]
 reportUnnecessaryTypeIgnoreComment = "warning"
-pythonVersion = "3.8"
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 strictParameterNoneValue = false
 include = [

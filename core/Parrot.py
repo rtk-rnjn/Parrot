@@ -184,7 +184,7 @@ LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
 TOPGG_PORT = 1019
 
-__all__ = ("Parrot",)
+__all__ = ("Parrot", "CustomFormatter")
 
 
 class Parrot(commands.AutoShardedBot):

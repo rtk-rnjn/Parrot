@@ -81,6 +81,9 @@ class Sector1729(Cog):
         self.change_rainbow_role.start()
         self.change_channel_name.start()
 
+        self._is_locked = True
+        self.__locked_channels = set()
+
     async def cog_check(self, ctx: Context) -> bool:
         return ctx.guild is not None and ctx.guild.id == getattr(ctx.bot.server, "id", SUPPORT_SERVER_ID)
 
@@ -241,8 +244,11 @@ class Sector1729(Cog):
         if not self._updating_channel:
             return
 
+        if self._is_locked:
+            return
+
         try:
-            await self.bot.wait_for("on_bot_idle", timeout=60)
+            await self.bot.wait_for("on_bot_idle", timeout=300)
         except asyncio.TimeoutError:
             await self.bot.wait_until_ready()
 
@@ -267,17 +273,23 @@ class Sector1729(Cog):
         if not self._updating_rainbow:
             return
 
+        if self._is_locked:
+            return
+
         try:
-            await self.bot.wait_for("on_bot_idle", timeout=60)
+            await self.bot.wait_for("on_bot_idle", timeout=300)
         except asyncio.TimeoutError:
             await self.bot.wait_until_ready()
 
         role: discord.Role = self.bot.server.get_role(RAINBOW_ROLE)  # type: ignore
         if role is not None:
-            await role.edit(
-                colour=discord.Colour.random(),
-                reason="Rainbow role update",
-            )
+            try:
+                await role.edit(
+                    colour=discord.Colour.random(),
+                    reason="Rainbow role update",
+                )
+            except discord.HTTPException:
+                pass
 
     @vote_reseter.before_loop
     async def before_vote_reseter(self):
@@ -444,6 +456,59 @@ class Sector1729(Cog):
         if not ctx.invoked_subcommand:
             await ctx.bot.invoke_help_command(ctx)
 
+    @sector_17_29.command(name="lock")
+    @commands.has_permissions(manage_channels=True)
+    async def lock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
+        """Lock updating general chat and railway role. And all messagable channels"""
+        self._is_locked = True
+
+        assert ctx.guild is not None
+
+        if reason is not None:
+            for channel in ctx.guild.channels:
+                if (
+                    isinstance(channel, discord.abc.Messageable)
+                    and channel.permissions_for(ctx.guild.default_role).send_messages
+                ):
+                    await channel.set_permissions(ctx.guild.default_role, send_messages=False, reason=reason)
+                    await channel.send(f"Server On Lockdown: {reason}")
+                    self.__locked_channels.add(channel.id)
+
+                if (
+                    isinstance(channel, (discord.VoiceChannel, discord.StageChannel))
+                    and channel.permissions_for(ctx.guild.default_role).connect
+                ):
+                    await channel.set_permissions(ctx.guild.default_role, connect=False, reason=reason)
+                    self.__locked_channels.add(channel.id)
+
+        await ctx.send("Locked")
+
+    @sector_17_29.command(name="unlock", aliases=["release"])
+    @commands.has_permissions(manage_channels=True)
+    async def unlock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
+        """Unlock updating general chat and railway role. And unlock all messagable channels"""
+        self._is_locked = False
+
+        assert ctx.guild is not None
+
+        if reason is not None:
+            for channel in ctx.guild.channels:
+                if channel.id in self.__locked_channels:
+                    if (
+                        isinstance(channel, discord.abc.Messageable)
+                        and not channel.permissions_for(ctx.guild.default_role).send_messages
+                    ):
+                        await channel.set_permissions(ctx.guild.default_role, send_messages=None, reason=reason)
+                        await channel.send(f"Server Unlocked: {reason}")
+                    if (
+                        isinstance(channel, (discord.VoiceChannel, discord.StageChannel))
+                        and not channel.permissions_for(ctx.guild.default_role).connect
+                    ):
+                        await channel.set_permissions(ctx.guild.default_role, connect=None, reason=reason)
+                    self.__locked_channels.remove(channel.id)
+
+        await ctx.send("Unlocked")
+
     # Thanks
     #   - `aastha_ok`    (AASTHA#1206 - 925315596818718752)
     #   - `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
@@ -481,7 +546,7 @@ class Sector1729(Cog):
             {
                 "Message": [f"`{ctx.message.clean_content}`"],
                 "ID": [ctx.message.id],
-                "Channel": [f"#{ctx.channel.name}"],
+                "Channel": [f"#{ctx.channel.name}"],  # type: ignore
                 "Channel ID": [ctx.channel.id],
                 "Guild": [f"{ctx.guild}"],
             },

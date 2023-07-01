@@ -21,3 +21,6 @@ exclude = [
     "build",
     "dist"
 ]
+
+[tool.ruff]
+line_length = 150

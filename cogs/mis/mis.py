@@ -214,12 +214,14 @@ class Misc(Cog):
 
         @bot.listen("on_message_delete")
         async def on_message_delete(msg: discord.Message):
+            await self.bot.wait_until_ready()
             if msg.author.bot:
                 return
             self.snipes[msg.channel.id] = msg
 
         @bot.listen("on_message_edit")
         async def on_message_edit(before: discord.Message, after: discord.Message):
+            await self.bot.wait_until_ready()
             if before.author.bot or after.author.bot:
                 return
             if before.content != after.content:

@@ -518,6 +518,7 @@ class Fun(Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Check a message for an anagram attempt and pass to an ongoing game."""
+        await self.bot.wait_until_ready()
         if message.author.bot or not message.guild:
             return
 

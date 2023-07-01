@@ -21,6 +21,7 @@ class PeggyPlayZ(Cog):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         if message.channel.id == UPLOAD_CHANNEL_ID and message.author.id == PINGCORD:
             with contextlib.suppress(discord.HTTPException):
                 await message.publish()
@@ -35,6 +36,7 @@ class PeggyPlayZ(Cog):
 
     @Cog.listener("on_message")
     async def on_announcement_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         await asyncio.sleep(5)
         if (
             message.guild

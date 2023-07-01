@@ -92,6 +92,7 @@ class Highlight(Cog):
 
     @commands.Cog.listener("on_message")
     async def check_highlights(self, message: discord.Message):
+        await self.bot.wait_until_ready()
         if not message.guild or message.author.bot:
             return
 
@@ -121,6 +122,7 @@ class Highlight(Cog):
     # This way the user has time to indicate that they saw the message and we do not need to highlight them
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        await self.bot.wait_until_ready()
         self.bot.dispatch("user_activity", message.channel, message.author)
 
     @commands.Cog.listener()

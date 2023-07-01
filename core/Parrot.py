@@ -821,7 +821,7 @@ class Parrot(commands.AutoShardedBot):
                 return
 
         if not getattr(ctx.cog, "ON_TESTING", False):
-            log.debug("Processing command %s. Context %s", ctx.command, ctx)
+            await ctx.bot.wait_until_ready()
             await self.invoke(ctx)
 
         return

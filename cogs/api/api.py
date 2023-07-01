@@ -111,6 +111,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         if not message.guild or message.guild.id == DISCORD_PY_ID:
             return
 

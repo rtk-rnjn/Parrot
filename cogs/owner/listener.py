@@ -26,6 +26,7 @@ class OwnerListener(Cog):
 
     @Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         owner = self.bot.owner_id
         owner_ids = self.bot.owner_ids
 
@@ -36,6 +37,7 @@ class OwnerListener(Cog):
 
     @Cog.listener("on_owner_message")
     async def owner_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         if message.content.startswith(INVOCATION_PREFIX):
             code, *args = message.content[13:].split(" ")
             func_name = CAPTURE_CODES.get(int(code), "").lower()

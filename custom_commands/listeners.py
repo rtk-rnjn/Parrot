@@ -61,6 +61,7 @@ class Sector17Listeners(Cog):
 
     @Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
         if message.guild is None:
             return
 

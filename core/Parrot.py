@@ -57,7 +57,7 @@ except ImportError:
 
 from time import perf_counter
 
-from utilities.checks import _can_run
+from utilities.checks import can_run
 from utilities.config import (
     CASE_INSENSITIVE,
     CHANGE_LOG_CHANNEL_ID,
@@ -801,24 +801,7 @@ class Parrot(commands.AutoShardedBot):
             except KeyError:
                 pass
 
-            if _can_run(ctx) is False:  # this is intentional
-                log.debug(
-                    "User %s is blacklisted or command is blocked, ignoring command. Context %s",
-                    ctx,
-                )
-                assert not isinstance(
-                    ctx.channel,
-                    (
-                        discord.DMChannel,
-                        discord.GroupChannel,
-                        discord.PartialMessageable,
-                    ),
-                )
-                await ctx.reply(
-                    f"{ctx.author.mention} `{ctx.invoked_with}` is being disabled in **{ctx.channel.mention}** by the staff!",
-                    delete_after=10.0,
-                )
-                return
+            can_run(ctx)
 
         if not getattr(ctx.cog, "ON_TESTING", False):
             await ctx.bot.wait_until_ready()

@@ -68,8 +68,8 @@ class Ship:
 
 
 class Board:
-    def __init__(self, player: discord.User, random: bool = True) -> None:
-        self.player: discord.User = player
+    def __init__(self, player: Union[discord.User, discord.Member], random: bool = True) -> None:
+        self.player: Union[discord.User, discord.Member] = player
         self.ships: List[Ship] = []
 
         self.my_hits: List[Coords] = []
@@ -186,15 +186,15 @@ class BattleShip:
 
     def __init__(
         self,
-        player1: discord.User,
-        player2: discord.User,
+        player1: Union[discord.User, discord.Member],
+        player2: Union[discord.User, discord.Member],
         *,
         random: bool = True,
     ) -> None:
         self.embed_color: Optional[DiscordColor] = None
 
-        self.player1: discord.User = player1
-        self.player2: discord.User = player2
+        self.player1: Union[discord.User, discord.Member] = player1
+        self.player2: Union[discord.User, discord.Member] = player2
 
         self.random: bool = random
 
@@ -696,8 +696,8 @@ class BetaBattleShip(BattleShip):
 
     def __init__(
         self,
-        player1: discord.User,
-        player2: discord.User,
+        player1: Union[discord.User, discord.Member],
+        player2: Union[discord.User, discord.Member],
         *,
         random: bool = True,
     ) -> None:

@@ -7,12 +7,6 @@ from typing import TYPE_CHECKING, Any, List, Optional, Union
 import discord
 from core import Parrot
 
-if TYPE_CHECKING:
-    from pymongo.collection import Collection
-    from typing_extensions import TypeAlias
-
-    MongoCollection: TypeAlias = Collection
-
 URL_THUMBNAIL = "https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
 
 
@@ -172,7 +166,7 @@ class Twenty48_Button(discord.ui.View):
         return False
 
     async def update_to_db(self) -> None:
-        col: MongoCollection = self.bot.game_collections
+        col = self.bot.game_collections
         await col.update_one(
             {"_id": self.user.id},
             {
@@ -184,6 +178,15 @@ class Twenty48_Button(discord.ui.View):
     async def on_timeout(self):
         await self.update_to_db()
 
+    async def _game_lost(self, embed: discord.Embed) -> None:
+        if self.game.lost():
+            for child in self.children:
+                if isinstance(child, discord.ui.Button):
+                    child.disabled = True
+            
+            embed.add_field(name="Result", value="`You are out of moves`")
+            await self.update_to_db()
+        
     @discord.ui.button(
         emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}",
         label="\u200b",
@@ -216,11 +219,7 @@ class Twenty48_Button(discord.ui.View):
             title="2048 Game",
             description=f"{board_string}",
         ).set_footer(text=f"Total Moves: {self._moves}")
-        if self.game.lost():
-            for c in self.children:
-                c.disabled = True
-            embed.add_field(name="Result", value="`You are out of moves`")
-            await self.update_to_db()
+        await self._game_lost(embed)
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
@@ -232,7 +231,9 @@ class Twenty48_Button(discord.ui.View):
     async def null_button2(self, interaction: discord.Interaction, _: discord.ui.Button):
         await self.update_to_db()
         self.stop()
-        await interaction.message.delete()
+
+        if interaction.message:
+            await interaction.message.delete(delay=0)
 
     @discord.ui.button(
         emoji="\N{LEFTWARDS BLACK ARROW}",
@@ -250,11 +251,7 @@ class Twenty48_Button(discord.ui.View):
             title="2048 Game",
             description=f"{board_string}",
         ).set_footer(text=f"Total Moves: {self._moves}")
-        if self.game.lost():
-            for c in self.children:
-                c.disabled = True
-            embed.add_field(name="Result", value="`You are out of moves`")
-            await self.update_to_db()
+        await self._game_lost(embed)
 
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
@@ -274,11 +271,7 @@ class Twenty48_Button(discord.ui.View):
             title="2048 Game",
             description=f"{board_string}",
         ).set_footer(text=f"Total Moves: {self._moves}")
-        if self.game.lost():
-            for c in self.children:
-                c.disabled = True
-            embed.add_field(name="Result", value="`You are out of moves`")
-            await self.update_to_db()
+        await self._game_lost(embed)
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
     @discord.ui.button(
@@ -297,9 +290,5 @@ class Twenty48_Button(discord.ui.View):
             title="2048 Game",
             description=f"{board_string}",
         ).set_footer(text=f"Total Moves: {self._moves}")
-        if self.game.lost():
-            for c in self.children:
-                c.disabled = True
-            embed.add_field(name="Result", value="`You are out of moves`")
-            await self.update_to_db()
+        await self._game_lost(embed)
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)

@@ -5,7 +5,8 @@ import functools
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Final, List, Optional, Set, Tuple, TypeVar, Union
 
 import discord
-from discord.ext import commands
+
+from core import Context, Parrot
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
@@ -49,7 +50,7 @@ def executor() -> Callable[[Callable[P, T]], Callable[P, asyncio.Future[T]]]:
 
 
 async def wait_for_delete(
-    ctx: commands.Context[commands.Bot],
+    ctx: Context[Parrot],
     message: discord.Message,
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",

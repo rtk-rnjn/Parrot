@@ -1724,8 +1724,9 @@ class Fun(Cog):
         """To understand HTTP Errors, try: `http 404`"""
         if not ctx.invoked_subcommand:
             await ctx.reply(
-                embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
-                .set_image(url=f"https://http.cat/{status_code}")
+                embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color).set_image(
+                    url=f"https://http.cat/{status_code}"
+                )
             )
 
     @http.command(name="dog")
@@ -1735,8 +1736,9 @@ class Fun(Cog):
     async def http_dog(self, ctx: Context, *, status_code: int):
         """To understand HTTP Errors, in dog format"""
         await ctx.reply(
-            embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color)
-            .set_image(url=f"https://httpstatusdogs.com/img/{status_code}.jpg")
+            embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color).set_image(
+                url=f"https://httpstatusdogs.com/img/{status_code}.jpg"
+            )
         )
 
     @commands.command()

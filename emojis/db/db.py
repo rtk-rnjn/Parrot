@@ -10,13 +10,9 @@ Emoji = namedtuple("Emoji", ["aliases", "emoji", "tags", "category", "unicode_ve
 EMOJI_DB = [
     Emoji(["grinning"], "😀", ["smile", "happy"], "Smileys & Emotion", "6.1"),
     Emoji(["smiley"], "😃", ["happy", "joy", "haha"], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["smile"], "😄", ["happy", "joy", "laugh", "pleased"], "Smileys & Emotion", "6.0"
-    ),
+    Emoji(["smile"], "😄", ["happy", "joy", "laugh", "pleased"], "Smileys & Emotion", "6.0"),
     Emoji(["grin"], "😁", [], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["laughing", "satisfied"], "😆", ["happy", "haha"], "Smileys & Emotion", "6.0"
-    ),
+    Emoji(["laughing", "satisfied"], "😆", ["happy", "haha"], "Smileys & Emotion", "6.0"),
     Emoji(["sweat_smile"], "😅", ["hot"], "Smileys & Emotion", "6.0"),
     Emoji(["rofl"], "🤣", ["lol", "laughing"], "Smileys & Emotion", "9.0"),
     Emoji(["joy"], "😂", ["tears"], "Smileys & Emotion", "6.0"),
@@ -25,9 +21,7 @@ EMOJI_DB = [
     Emoji(["wink"], "😉", ["flirt"], "Smileys & Emotion", "6.0"),
     Emoji(["blush"], "😊", ["proud"], "Smileys & Emotion", "6.0"),
     Emoji(["innocent"], "😇", ["angel"], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["smiling_face_with_three_hearts"], "🥰", ["love"], "Smileys & Emotion", "11.0"
-    ),
+    Emoji(["smiling_face_with_three_hearts"], "🥰", ["love"], "Smileys & Emotion", "11.0"),
     Emoji(["heart_eyes"], "😍", ["love", "crush"], "Smileys & Emotion", "6.0"),
     Emoji(["star_struck"], "🤩", ["eyes"], "Smileys & Emotion", "11.0"),
     Emoji(["kissing_heart"], "😘", ["flirt"], "Smileys & Emotion", "6.0"),
@@ -85,9 +79,7 @@ EMOJI_DB = [
     Emoji(["dizzy_face"], "😵", [], "Smileys & Emotion", "6.0"),
     Emoji(["exploding_head"], "🤯", ["mind", "blown"], "Smileys & Emotion", "11.0"),
     Emoji(["cowboy_hat_face"], "🤠", [], "Smileys & Emotion", "9.0"),
-    Emoji(
-        ["partying_face"], "🥳", ["celebration", "birthday"], "Smileys & Emotion", "11.0"
-    ),
+    Emoji(["partying_face"], "🥳", ["celebration", "birthday"], "Smileys & Emotion", "11.0"),
     Emoji(["disguised_face"], "🥸", [], "Smileys & Emotion", "13.0"),
     Emoji(["sunglasses"], "😎", ["cool"], "Smileys & Emotion", "6.0"),
     Emoji(["nerd_face"], "🤓", ["geek", "glasses"], "Smileys & Emotion", "8.0"),
@@ -133,13 +125,9 @@ EMOJI_DB = [
     Emoji(["angry"], "😠", ["mad", "annoyed"], "Smileys & Emotion", "6.0"),
     Emoji(["cursing_face"], "🤬", ["foul"], "Smileys & Emotion", "11.0"),
     Emoji(["smiling_imp"], "😈", ["devil", "evil", "horns"], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["imp"], "👿", ["angry", "devil", "evil", "horns"], "Smileys & Emotion", "6.0"
-    ),
+    Emoji(["imp"], "👿", ["angry", "devil", "evil", "horns"], "Smileys & Emotion", "6.0"),
     Emoji(["skull"], "💀", ["dead", "danger", "poison"], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["skull_and_crossbones"], "☠️", ["danger", "pirate"], "Smileys & Emotion", ""
-    ),
+    Emoji(["skull_and_crossbones"], "☠️", ["danger", "pirate"], "Smileys & Emotion", ""),
     Emoji(["hankey", "poop", "shit"], "💩", ["crap"], "Smileys & Emotion", "6.0"),
     Emoji(["clown_face"], "🤡", [], "Smileys & Emotion", "9.0"),
     Emoji(["japanese_ogre"], "👹", ["monster"], "Smileys & Emotion", "6.0"),
@@ -157,13 +145,9 @@ EMOJI_DB = [
     Emoji(["scream_cat"], "🙀", ["horror"], "Smileys & Emotion", "6.0"),
     Emoji(["crying_cat_face"], "😿", ["sad", "tear"], "Smileys & Emotion", "6.0"),
     Emoji(["pouting_cat"], "😾", [], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["see_no_evil"], "🙈", ["monkey", "blind", "ignore"], "Smileys & Emotion", "6.0"
-    ),
+    Emoji(["see_no_evil"], "🙈", ["monkey", "blind", "ignore"], "Smileys & Emotion", "6.0"),
     Emoji(["hear_no_evil"], "🙉", ["monkey", "deaf"], "Smileys & Emotion", "6.0"),
-    Emoji(
-        ["speak_no_evil"], "🙊", ["monkey", "mute", "hush"], "Smileys & Emotion", "6.0"
-    ),
+    Emoji(["speak_no_evil"], "🙊", ["monkey", "mute", "hush"], "Smileys & Emotion", "6.0"),
     Emoji(["kiss"], "💋", ["lipstick"], "Smileys & Emotion", "6.0"),
     Emoji(["love_letter"], "💌", ["email", "envelope"], "Smileys & Emotion", "6.0"),
     Emoji(["cupid"], "💘", ["love", "heart"], "Smileys & Emotion", "6.0"),
@@ -221,9 +205,7 @@ EMOJI_DB = [
     Emoji(["+1", "thumbsup"], "👍", ["approve", "ok"], "People & Body", "6.0"),
     Emoji(["-1", "thumbsdown"], "👎", ["disapprove", "bury"], "People & Body", "6.0"),
     Emoji(["fist_raised", "fist"], "✊", ["power"], "People & Body", "6.0"),
-    Emoji(
-        ["fist_oncoming", "facepunch", "punch"], "👊", ["attack"], "People & Body", "6.0"
-    ),
+    Emoji(["fist_oncoming", "facepunch", "punch"], "👊", ["attack"], "People & Body", "6.0"),
     Emoji(["fist_left"], "🤛", [], "People & Body", "9.0"),
     Emoji(["fist_right"], "🤜", [], "People & Body", "9.0"),
     Emoji(["clap"], "👏", ["praise", "applause"], "People & Body", "6.0"),
@@ -235,9 +217,7 @@ EMOJI_DB = [
     Emoji(["writing_hand"], "✍️", [], "People & Body", ""),
     Emoji(["nail_care"], "💅", ["beauty", "manicure"], "People & Body", "6.0"),
     Emoji(["selfie"], "🤳", [], "People & Body", "9.0"),
-    Emoji(
-        ["muscle"], "💪", ["flex", "bicep", "strong", "workout"], "People & Body", "6.0"
-    ),
+    Emoji(["muscle"], "💪", ["flex", "bicep", "strong", "workout"], "People & Body", "6.0"),
     Emoji(["mechanical_arm"], "🦾", [], "People & Body", "12.0"),
     Emoji(["mechanical_leg"], "🦿", [], "People & Body", "12.0"),
     Emoji(["leg"], "🦵", [], "People & Body", "11.0"),
@@ -530,17 +510,11 @@ EMOJI_DB = [
     Emoji(["swimming_man"], "🏊‍♂️", [], "People & Body", "11.0"),
     Emoji(["swimming_woman"], "🏊‍♀️", [], "People & Body", "6.0"),
     Emoji(["bouncing_ball_person"], "⛹️", ["basketball"], "People & Body", "5.2"),
-    Emoji(
-        ["bouncing_ball_man", "basketball_man"], "⛹️‍♂️", [], "People & Body", "11.0"
-    ),
-    Emoji(
-        ["bouncing_ball_woman", "basketball_woman"], "⛹️‍♀️", [], "People & Body", "7.0"
-    ),
+    Emoji(["bouncing_ball_man", "basketball_man"], "⛹️‍♂️", [], "People & Body", "11.0"),
+    Emoji(["bouncing_ball_woman", "basketball_woman"], "⛹️‍♀️", [], "People & Body", "7.0"),
     Emoji(["weight_lifting"], "🏋️", ["gym", "workout"], "People & Body", "7.0"),
     Emoji(["weight_lifting_man"], "🏋️‍♂️", ["gym", "workout"], "People & Body", "11.0"),
-    Emoji(
-        ["weight_lifting_woman"], "🏋️‍♀️", ["gym", "workout"], "People & Body", "6.0"
-    ),
+    Emoji(["weight_lifting_woman"], "🏋️‍♀️", ["gym", "workout"], "People & Body", "6.0"),
     Emoji(["bicyclist"], "🚴", [], "People & Body", "6.0"),
     Emoji(["biking_man"], "🚴‍♂️", [], "People & Body", "11.0"),
     Emoji(["biking_woman"], "🚴‍♀️", [], "People & Body", "6.0"),
@@ -567,9 +541,7 @@ EMOJI_DB = [
     Emoji(["lotus_position_woman"], "🧘‍♀️", ["meditation"], "People & Body", "11.0"),
     Emoji(["bath"], "🛀", ["shower"], "People & Body", "6.0"),
     Emoji(["sleeping_bed"], "🛌", [], "People & Body", "7.0"),
-    Emoji(
-        ["people_holding_hands"], "🧑‍🤝‍🧑", ["couple", "date"], "People & Body", "12.0"
-    ),
+    Emoji(["people_holding_hands"], "🧑‍🤝‍🧑", ["couple", "date"], "People & Body", "12.0"),
     Emoji(["two_women_holding_hands"], "👭", ["couple", "date"], "People & Body", "6.0"),
     Emoji(["couple"], "👫", ["date"], "People & Body", "6.0"),
     Emoji(["two_men_holding_hands"], "👬", ["couple", "date"], "People & Body", "6.0"),
@@ -609,9 +581,7 @@ EMOJI_DB = [
     Emoji(["family_woman_girl_girl"], "👩‍👧‍👧", [], "People & Body", "6.0"),
     Emoji(["speaking_head"], "🗣️", [], "People & Body", "7.0"),
     Emoji(["bust_in_silhouette"], "👤", ["user"], "People & Body", "6.0"),
-    Emoji(
-        ["busts_in_silhouette"], "👥", ["users", "group", "team"], "People & Body", "6.0"
-    ),
+    Emoji(["busts_in_silhouette"], "👥", ["users", "group", "team"], "People & Body", "6.0"),
     Emoji(["people_hugging"], "🫂", [], "People & Body", "13.0"),
     Emoji(["footprints"], "👣", ["feet", "tracks"], "People & Body", "6.0"),
     Emoji(["monkey_face"], "🐵", [], "Animals & Nature", "6.0"),
@@ -864,9 +834,7 @@ EMOJI_DB = [
     Emoji(["teapot"], "🫖", [], "Food & Drink", "13.0"),
     Emoji(["tea"], "🍵", ["green", "breakfast"], "Food & Drink", "6.0"),
     Emoji(["sake"], "🍶", [], "Food & Drink", "6.0"),
-    Emoji(
-        ["champagne"], "🍾", ["bottle", "bubbly", "celebration"], "Food & Drink", "8.0"
-    ),
+    Emoji(["champagne"], "🍾", ["bottle", "bubbly", "celebration"], "Food & Drink", "8.0"),
     Emoji(["wine_glass"], "🍷", [], "Food & Drink", "6.0"),
     Emoji(["cocktail"], "🍸", ["drink"], "Food & Drink", "6.0"),
     Emoji(["tropical_drink"], "🍹", ["summer", "vacation"], "Food & Drink", "6.0"),
@@ -1426,9 +1394,7 @@ EMOJI_DB = [
     Emoji(["test_tube"], "🧪", [], "Objects", "11.0"),
     Emoji(["petri_dish"], "🧫", [], "Objects", "11.0"),
     Emoji(["dna"], "🧬", [], "Objects", "11.0"),
-    Emoji(
-        ["microscope"], "🔬", ["science", "laboratory", "investigate"], "Objects", "6.0"
-    ),
+    Emoji(["microscope"], "🔬", ["science", "laboratory", "investigate"], "Objects", "6.0"),
     Emoji(["telescope"], "🔭", [], "Objects", "6.0"),
     Emoji(["satellite"], "📡", ["signal"], "Objects", "6.0"),
     Emoji(["syringe"], "💉", ["health", "hospital", "needle"], "Objects", "6.0"),

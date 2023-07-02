@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 MongoCollection: TypeAlias = Collection
 __all__ = (
-    "_can_run",
+    "can_run",
     "cooldown_with_role_bypass",
     "guild_premium",
     "guild_premium",
@@ -157,33 +157,53 @@ def in_temp_channel() -> Check[Context]:
     return commands.check(predicate)  # type: ignore
 
 
-def _can_run(ctx: Context) -> Optional[bool]:
+def can_run(ctx: Context) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
-    assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
+    assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and ctx.command is not None
 
-    for cmd in ctx.bot.guild_configurations_cache[ctx.guild.id]["cmd_config"]:
-        if (
-            cmd["cmd"] == getattr(ctx.command, "qualified_name", None)
-            or cmd["cmd"] == "all"
-            or (getattr(ctx.command.cog, "qualified_name", None) == cmd["cmd"])
-        ):
-            return __internal_cmd_checker_parser(ctx=ctx, data=cmd)
+    cmd = ctx.command.qualified_name.replace(' ', '_')
+    cog = getattr(ctx.cog, "qualified_name", "").replace(' ', '_')
+
+    cmd_config = ctx.bot.guild_configurations_cache[ctx.guild.id].get("command_config", {})
+
+    for cmd_cog in {cmd, cog}:
+        return _can_run(cmd_cog, cmd_config, cmd, ctx)
+
+
+def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional[bool]:
+    CMD_GLOBAL_ENABLE_ = f"CMD_GLOBAL_ENABLE_{cmd_cog}".upper()
+    CMD_ROLE_ENABLE_ = f"CMD_ROLE_ENABLE_{cmd_cog}".upper()
+    CMD_ROLE_DISABLE_ = f"CMD_ROLE_DISABLE_{cmd_cog}".upper()
+    CMD_CHANNEL_ENABLE_ = f"CMD_CHANNEL_ENABLE_{cmd_cog}".upper()
+    CMD_CHANNEL_DISABLE_ = f"CMD_CHANNEL_DISABLE_{cmd_cog}".upper()
+    CMD_CATEGORY_ENABLE_ = f"CMD_CATEGORY_ENABLE_{cmd_cog}".upper()
+    CMD_CATEGORY_DISABLE_ = f"CMD_CATEGORY_DISABLE_{cmd_cog}".upper()
+
+    if cmd_config.get(CMD_GLOBAL_ENABLE_) is not None:
+        if cmd_config.get(CMD_GLOBAL_ENABLE_) is True:
+            return True
+        else:
+            raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled globally.")
+
+    if any(r.id in cmd_config.get(CMD_ROLE_ENABLE_, []) for r in ctx.author.roles):
+        return True
+
+    if ctx.channel.id in cmd_config.get(CMD_CHANNEL_ENABLE_, []):
+        return True
+
+    if ctx.channel.id in cmd_config.get(CMD_CATEGORY_ENABLE_, []):
+        return True
+
+    if any(r.id in cmd_config.get(CMD_ROLE_DISABLE_, []) for r in ctx.author.roles):
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
+
+    if ctx.channel.id in cmd_config.get(CMD_CHANNEL_DISABLE_, []):
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
+
+    if ctx.channel.id in cmd_config.get(CMD_CATEGORY_DISABLE_, []):
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
 
     return True
-
-
-def __internal_cmd_checker_parser(*, ctx: Context, data: Dict) -> bool:
-    assert isinstance(ctx.author, discord.Member)
-    roles = set(ctx.author.roles)
-    if ctx.channel.id in data["channel_in"]:
-        return True
-    if any(role.id in data["role_in"] for role in roles):
-        return True
-    if any(role.id in data["role_out"] for role in roles):
-        return False
-    if ctx.channel.id in data["channel_out"]:
-        return False
-    return not data["cmd_enable"]
 
 
 def guild_premium() -> Check[Context]:

@@ -1082,55 +1082,21 @@ class Parrot(commands.AutoShardedBot):
         *,
         force_fetch: bool = True,
     ) -> Any:
-        log.debug(
-            "Force fetch (%s), to get (%s). Functions: %s | %s",
-            force_fetch,
-            _id,
-            get_function.__name__,
-            fetch_function.__name__,  # type: ignore
-        )
         if _id is None:
             something = None
             if not callable(get_function):
                 something = get_function
             if isinstance(fetch_function, Awaitable) and something is None and force_fetch:
-                log.debug(
-                    "Fetching data. function: %s",
-                    fetch_function.__name__,  # type: ignore
-                )
                 return await fetch_function
-
-            log.debug(
-                "Returning data (%s). function: %s | %s",
-                something,
-                get_function.__name__,
-                fetch_function.__name__,  # type: ignore
-            )
             return something
 
         with suppress(discord.HTTPException):
             _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
             if something is None and force_fetch and callable(fetch_function):
-                log.debug(
-                    "Fetching data. function: %s",
-                    fetch_function.__name__,
-                )
                 return await fetch_function(_id)
-            log.debug(
-                "Returning data (%s). functions: %s | %s",
-                something,
-                get_function.__name__,
-                fetch_function.__name__,  # type: ignore
-            )
             return something
 
-        log.debug(
-            "Returning data (%s). function: %s | %s",
-            None,
-            get_function.__name__,
-            fetch_function.__name__,  # type: ignore
-        )
         return None
 
     @tasks.loop(count=1)

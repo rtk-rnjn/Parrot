@@ -183,10 +183,10 @@ class Twenty48_Button(discord.ui.View):
             for child in self.children:
                 if isinstance(child, discord.ui.Button):
                     child.disabled = True
-            
+
             embed.add_field(name="Result", value="`You are out of moves`")
             await self.update_to_db()
-        
+
     @discord.ui.button(
         emoji="\N{REGIONAL INDICATOR SYMBOL LETTER R}",
         label="\u200b",

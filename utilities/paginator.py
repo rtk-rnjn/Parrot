@@ -145,7 +145,6 @@ class PaginatorView(discord.ui.View):
         self.show_page_count = show_page_count
         self.check_other_ids = check_other_ids
         if self.pages.cur_page == 1:
-
             self.children[0].disabled = False
             self.children[1].disabled = False
 

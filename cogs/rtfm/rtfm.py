@@ -1121,9 +1121,7 @@ class RTFM(Cog):
                 result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
             is_embed, description = self.result_fmt(
-                URL.format(
-                    search=search_string
-                ),
+                URL.format(search=search_string),
                 result,
             )
             if is_embed:

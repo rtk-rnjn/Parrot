@@ -7,9 +7,7 @@ from datetime import datetime
 import aiohttp
 
 GEMOJI_RELEASE_URL = "https://api.github.com/repos/github/gemoji/releases"
-GEMOJI_JSON_DB_URL = (
-    "https://raw.githubusercontent.com/github/gemoji/{tag}/db/emoji.json"
-)
+GEMOJI_JSON_DB_URL = "https://raw.githubusercontent.com/github/gemoji/{tag}/db/emoji.json"
 
 session = aiohttp.ClientSession()
 
@@ -41,9 +39,7 @@ async def generate(path: str, dbname: str):
         file.write("\n")
         file.write("from collections import namedtuple\n")
         file.write("\n")
-        file.write(
-            'Emoji = namedtuple("Emoji", ["aliases", "emoji", "tags", "category", "unicode_version"])\n'
-        )
+        file.write('Emoji = namedtuple("Emoji", ["aliases", "emoji", "tags", "category", "unicode_version"])\n')
         file.write("\n")
         file.write("EMOJI_DB = [\n")
 

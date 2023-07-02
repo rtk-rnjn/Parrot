@@ -97,7 +97,7 @@ class ChimpView(discord.ui.View):
             )
             return False
         return True
-    
+
     def disable_all(self) -> None:
         for button in self.children:
             if isinstance(button, discord.ui.Button):

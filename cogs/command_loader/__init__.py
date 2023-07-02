@@ -46,5 +46,6 @@ class CommandLoader(Cog):
 
         self.bot.add_command(jeyy)
 
+
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(CommandLoader(bot))

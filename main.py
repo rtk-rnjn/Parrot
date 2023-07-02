@@ -25,7 +25,6 @@ else:
         pass
 
 
-
 async def main() -> None:
     async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as http_session:
         async with bot:

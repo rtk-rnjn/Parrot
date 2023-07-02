@@ -105,16 +105,15 @@ post: Dict[str, Any] = {
         "member_ping": None,
         "blocked": [],
     },
-    "cmd_config": [
-        # {
-        #     "cmd_enable": False,
-        #     "cmd_name": None,
-        #     "role_out": [],
-        #     "channel_out": [],
-        #     "role_in": [],
-        #     "channel_in": [],
-        # }
-    ],
+    "cmd_config": {
+        # "CMD_GLOBAL_ENABLE_{CMD_NAME}": BOOL,
+        # "CMD_ROLE_ENABLE_{CMD_NAME}": [],
+        # "CMD_ROLE_DISABLE_{CMD_NAME}": [],
+        # "CMD_CHANNEL_ENABLE_{CMD_NAME}": [],
+        # "CMD_CHANNEL_DISABLE_{CMD_NAME}": [],
+        # "CMD_CATEGORY_ENABLE_{CMD_NAME}": [],
+        # "CMD_CATEGORY_DISABLE_{CMD_NAME}": [],
+    },
     "opts": {
         "gitlink_enabled": True,
         "equation_enabled": True,

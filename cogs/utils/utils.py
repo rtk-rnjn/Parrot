@@ -117,10 +117,7 @@ class Utils(Cog):
         log.info("Fetching reminders for %s from database.", ctx.author)
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
             guild = self.bot.get_guild(data.get("guild", 0))
-            ls.append(
-                f"<t:{int(data['expires_at'])}:R> - {data['messageURL']}\n"
-                f"> {data['content']}"
-            )
+            ls.append(f"<t:{int(data['expires_at'])}:R> - {data['messageURL']}\n" f"> {data['content']}")
             if len(ls) == 10:
                 break
         if not ls:

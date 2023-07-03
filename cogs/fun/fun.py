@@ -39,7 +39,7 @@ from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
 from utilities.converters import from_bottom, to_bottom
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
-
+from .pour_puzzle import PourView
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
 from ._fun_constants import (
@@ -2470,3 +2470,27 @@ class Fun(Cog):
             await ctx.reply(text[:2000])
         else:
             await ctx.reply(text)
+
+    @commands.command(name="pour", aliases=["pourpuzzle"])
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def _pour(self, ctx: Context, *, level: int = 1):
+        """Pour puzzle"""
+        if level > 50:
+            return await ctx.reply("Level must be between 1 and 50")
+
+        view = PourView(ctx, level)
+        img_buf = await view.draw_image()
+        embed = discord.Embed(
+            title="Pour puzzle",
+            description=f"Level: {level}",
+        )
+
+        file = discord.File(img_buf, filename="image.png")
+        embed.set_image(url="attachment://image.png")
+
+        embed.set_footer(
+            text=f"Game played by: {ctx.author}",
+            icon_url=ctx.author.display_avatar.url,
+        )
+        view.msg = await ctx.reply(file=file, embed=embed, view=view)  # type: ignore

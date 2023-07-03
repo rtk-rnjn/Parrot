@@ -39,7 +39,7 @@ from utilities.constants import NEGATIVE_REPLIES, Colours, EmbeddedActivity
 from utilities.converters import from_bottom, to_bottom
 from utilities.img import imagine, timecard
 from utilities.paginator import PaginationView
-from .pour_puzzle import PourView
+
 from ._effects import PfpEffects
 from ._flags import Category, TriviaFlag
 from ._fun_constants import (
@@ -60,6 +60,7 @@ from ._fun_constants import (
     QuizEntry,
 )
 from ._fun_utils import AnagramGame, file_safe_name, replace_many, suppress_links
+from .pour_puzzle import PourView
 
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"

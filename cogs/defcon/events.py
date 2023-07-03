@@ -24,8 +24,11 @@ class DefconListeners(Cog):
         if not channel:
             return
 
-        embed = discord.Embed(title=f"DEFCON {level}", description=message, color=discord.Color.red())
-        embed.set_footer(text="DEFCON is active")
+        if isinstance(message, str):
+            embed = discord.Embed(title=f"DEFCON {level}", description=message, color=discord.Color.red())
+            embed.set_footer(text="DEFCON is active")
+        else:
+            embed = message
         await self.bot.wait_until_ready()
         await channel.send(embed=embed)  # type: ignore
 
@@ -64,7 +67,10 @@ class DefconListeners(Cog):
             if getattr(invite.inviter, "id", 0) in trusted_users:
                 return
 
-        if not trustables.get("members_with_admin", True) and getattr(invite.inviter, "guild_permissions", discord.Permissions()).administrator:
+        if (
+            not trustables.get("members_with_admin", True)
+            and getattr(invite.inviter, "guild_permissions", discord.Permissions()).administrator
+        ):
             return
 
         try:

@@ -39,6 +39,7 @@ all_extensions:
   - jishaku
   - custom_commands
   - cogs.highlight
+  - cogs.defcon
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

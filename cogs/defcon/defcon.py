@@ -55,7 +55,7 @@ class Defcon(Cog):
                 "It allows you to lock down your server in a variety of ways, such as locking channels, preventing"
                 "users from joining, and more."
                 "\n\n"
-                "> :warning: **WARNING** :warning:"
+                "> :warning: **WARNING** :warning:\n"
                 f"> - {self.bot.user.name} is highly tested, but there is always a chance that it may fail to lock down your server.\n"
                 "> - Make sure you trust your moderators, as they can bypass defcon.\n"
                 f"> - {self.bot.user.name} will work more properly if it has a higher role.\n"
@@ -289,7 +289,7 @@ class Defcon(Cog):
 
     @defcon.command(name="set")
     @commands.has_permissions(manage_guild=True)
-    async def defcon_setup(self, ctx: Context, *, level: int = 0) -> None:
+    async def _defcon_set(self, ctx: Context, *, level: int = 0) -> None:
         """Set the level of defcon"""
         if level > 5 or level < 0:
             await ctx.reply("Defcon level must be between 0 and 5 (inclusive).")
@@ -313,6 +313,29 @@ class Defcon(Cog):
         )
         if msg:
             await msg.edit(content="Defcon set.", delete_after=5)
+
+    @defcon.command(name="reset")
+    @commands.has_permissions(manage_guild=True)
+    async def _defcon_reset(self, ctx: Context, *, level: int = 0) -> None:
+        """Reset the defcon level"""
+        if level > 5 or level < 0:
+            await ctx.reply("Defcon level must be between 0 and 5 (inclusive).")
+            return
+
+        prompt = await ctx.prompt("**Are you sure you want to reset defcon?**", timeout=60)
+        if not prompt:
+            await ctx.reply("Cancelled.")
+            return
+
+        msg = await ctx.reply("Resetting defcon...")
+        await self.defcon_reset(ctx, level)
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id},
+            {"$unset": {"default_defcon": ""}},
+            upsert=True,
+        )
+        if msg:
+            await msg.edit(content="Defcon reset.", delete_after=5)
 
     @defcon.command(name="settings")
     @commands.has_permissions(manage_guild=True)

@@ -184,7 +184,7 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional
         if cmd_config.get(CMD_GLOBAL_ENABLE_) is True:
             return True
         else:
-            raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled globally.")
+            raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled globally.") from None
 
     if any(r.id in cmd_config.get(CMD_ROLE_ENABLE_, []) for r in ctx.author.roles):
         return True
@@ -196,16 +196,16 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional
         return True
 
     if any(r.id in cmd_config.get(CMD_ROLE_DISABLE_, []) for r in ctx.author.roles):
-        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.") from None
 
     if ctx.channel.id in cmd_config.get(CMD_CHANNEL_DISABLE_, []):
-        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.") from None
 
     if ctx.channel.id in cmd_config.get(CMD_CATEGORY_DISABLE_, []):
-        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.") from None
 
     if cmd_config.get(CMD_ENABLE_) is False:
-        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for this server.")
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for this server.") from None
 
     return True
 

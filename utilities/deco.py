@@ -10,7 +10,7 @@ from functools import wraps
 from typing import Callable, Optional, Set, Union
 from weakref import WeakValueDictionary
 
-from discord.ext.commands import Command  # type: ignore
+from discord.ext.commands import Command
 
 import discord
 from core import Context

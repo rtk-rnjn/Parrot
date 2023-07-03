@@ -65,7 +65,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             log.debug("Starboard locked")
             return
 
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(
             payload.channel_id, payload.message_id
         )
         if not msg:
@@ -265,7 +265,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
     async def _delete_starboard_post(self, payload: discord.RawReactionActionEvent) -> bool:
         collection: Collection = self.bot.starboards
         ch = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, payload.channel_id)
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(ch, payload.message_id)  # type: ignore
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(ch, payload.message_id)
         data: DocumentType = await collection.find_one_and_delete(
             {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
         )

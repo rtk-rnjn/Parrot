@@ -5,7 +5,7 @@ from random import choice, randint
 from PIL import Image, ImageOps
 
 
-def inversion(im: Image) -> Image:
+def inversion(im: Image.Image) -> Image.Image:
     """
     Inverts the image.
     Returns an inverted image when supplied with an Image object.
@@ -14,7 +14,7 @@ def inversion(im: Image) -> Image:
     return ImageOps.invert(im)
 
 
-def pentagram(im: Image) -> Image:
+def pentagram(im: Image.Image) -> Image.Image:
     """Adds pentagram to the image."""
     im = im.convert("RGB")
     wt, ht = im.size
@@ -24,7 +24,7 @@ def pentagram(im: Image) -> Image:
     return im
 
 
-def bat(im: Image) -> Image:
+def bat(im: Image.Image) -> Image.Image:
     """
     Adds a bat silhoutte to the image.
     The bat silhoutte is of a size at least one-fifths that of the original image and may be rotated

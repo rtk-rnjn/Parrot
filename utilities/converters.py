@@ -93,8 +93,8 @@ class WrappedMessageConverter(commands.MessageConverter):
 
 def can_execute_action(ctx: Context, user: discord.Member, target: discord.Member) -> bool:
     return (
-        user.id in ctx.bot.owner_ids  # type: ignore # owner_ids can not be None
-        or user == ctx.guild.owner  # type: ignore # guild can not be None and owner can not be None
+        user.id in ctx.bot.owner_ids
+        or user == ctx.guild.owner
         or user.top_role > target.top_role
     )
 
@@ -106,7 +106,7 @@ class MemberID(commands.Converter):
         """Convert a user mention or ID to a member object."""
         assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         try:
-            m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)
+            m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)  # type: ignore
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
@@ -122,11 +122,11 @@ class MemberID(commands.Converter):
                         {"id": member_id, "__str__": lambda s: f"Member ID {s.id}"},
                     )()
 
-        if not can_execute_action(ctx, ctx.author, m):  # type: ignore
+        if not can_execute_action(ctx, ctx.author, m):
             raise commands.BadArgument(
                 f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
             )
-        return m  # type: ignore
+        return m 
 
 
 def lru_callback(key: KT, value: VT) -> None:  # type: ignore
@@ -154,8 +154,8 @@ class Cache(Generic[KT, VT]):
         self.has_key: Callable[[object], bool] = self.__internal_cache.has_key
         self.values: Callable[[], List[Any]] = self.__internal_cache.values
         self.keys: Callable[[], List[Any]] = self.__internal_cache.keys
-        self.get: Callable[[object, ...], Any] = self.__internal_cache.get  # type: ignore
-        self.pop: Callable[[object, ...], Any] = self.__internal_cache.pop  # type: ignore
+        self.get: Callable[[object], Any] = self.__internal_cache.get
+        self.pop: Callable[[object], Any] = self.__internal_cache.pop
         self.get_stats: Callable[[], Tuple[int, int]] = self.__internal_cache.get_stats
         self.set_callback: Callable[[Callable[[KT, VT], Any]], None] = self.__internal_cache.set_callback
 

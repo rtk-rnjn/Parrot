@@ -208,7 +208,7 @@ class Parrot(commands.AutoShardedBot):
     tree: app_commands.CommandTree
 
     owner_id: Optional[int]
-    owner_ids: Optional[Collection[int]]
+    owner_ids: Collection[int]
 
     voice_clients: List[discord.VoiceProtocol]
 
@@ -894,6 +894,31 @@ class Parrot(commands.AutoShardedBot):
                 for member in members:
                     yield member
 
+    @overload
+    async def get_or_fetch_member(
+        self,
+        guild: ...,
+        member_id: Union[int, str],
+    ) -> Optional[discord.Member]:
+        ...
+
+    @overload
+    async def get_or_fetch_member(
+        self,
+        guild: ...,
+        member_id: discord.Object,
+    ) -> Optional[discord.Member]:
+        ...
+    
+    @overload
+    async def get_or_fetch_member(
+        self,
+        guild: ...,
+        member_id: ...,
+        in_guild: bool = ...,
+    ) -> Optional[Union[discord.Member, discord.User]]:
+        ...
+
     async def get_or_fetch_member(
         self,
         guild: discord.Guild,
@@ -934,87 +959,6 @@ class Parrot(commands.AutoShardedBot):
 
         members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
         return members[0] if members else None
-
-    async def get_or_fetch_message(
-        self,
-        channel: Union[discord.Object, int, discord.PartialMessageable],
-        message: Union[int, str],
-        *,
-        fetch: bool = True,
-        cache: bool = True,
-        partial: bool = False,
-        force_fetch: bool = False,
-        dm_allowed: bool = False,
-    ) -> Union[discord.Message, discord.PartialMessage, None]:
-        """|coro|
-
-        Get message from cache. Fetches if not found, and stored in cache
-
-        Parameters
-        -----------
-        channel: discord.TextChannel
-            The channel to look in.
-        message: int
-            The message ID to search for.
-        fetch: bool
-            To fetch the message from channel or not.
-        cache: bool
-            To get message from internal cache.
-        partaial: bool
-            If found nothing from cache, it will give the discord.PartialMessage
-
-        Returns
-        ---------
-        Optional[discord.Message]
-            The Message or None if not found.
-        """
-
-        message = int(message)
-
-        if isinstance(channel, int):
-            if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
-            else:
-                channel = self.get_channel(channel)  # type: ignore
-        elif isinstance(channel, (discord.Object, discord.PartialMessageable)):
-            if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
-            else:
-                channel = self.get_channel(channel.id)  # type: ignore
-
-        if channel is None:
-            return None
-
-        if isinstance(channel, discord.DMChannel) and not dm_allowed:
-            raise ValueError("DMChannel is not allowed")
-
-        if force_fetch:
-            msg = await channel.fetch_message(message)  # type: ignore
-            self.message_cache[message] = msg
-            return msg
-
-        if cache and (msg := self._connection._get_message(message)):
-            self.message_cache[message] = msg
-            return msg
-
-        if partial:
-            return channel.get_partial_message(message)  # type: ignore
-
-        try:
-            msg = self.message_cache[message]
-            log.debug("Got message from cache %s", msg)
-            return msg
-        except KeyError:
-            if fetch:
-                async for msg in channel.history(  # type: ignore
-                    limit=1,
-                    before=discord.Object(message + 1),
-                    after=discord.Object(message - 1),
-                ):
-                    self.message_cache[message] = msg
-                    return msg
-
-        return None
 
     async def get_prefix(self, message: discord.Message) -> Union[str, Callable, List[str]]:
         """Dynamic prefixing"""
@@ -1379,9 +1323,120 @@ class Parrot(commands.AutoShardedBot):
 
         return None
 
-    async def wait_and_run_task(self, function: tasks.Loop, sleep: float = 0, *args, **kwargs) -> None:
+    async def wait_and_run_task(self, function: tasks.Loop, sleep: float = 0, *args, **kwargs) -> "asyncio.Task[None]":
         if not function.is_running():
-            return await function(*args, **kwargs)
+            return function.start(*args, **kwargs)
         await asyncio.sleep(sleep)
         sleep += 2
         return await self.wait_and_run_task(function, sleep)
+
+    @overload
+    async def get_or_fetch_message(
+        self,
+        channel: ...,
+        message: int,
+    ) -> Optional[discord.Message]:
+        ...
+
+    @overload
+    async def get_or_fetch_message(
+        self,
+        channel: ...,
+        message: str,
+    ) -> Optional[discord.Message]:
+        ...
+
+    @overload
+    async def get_or_fetch_message(
+        self,
+        channel: ...,
+        message: ...,
+        *,
+        fetch: bool = ...,
+        cache: bool = ...,
+        partial: bool = ...,
+        force_fetch: bool = ...,
+        dm_allowed: bool = ...,
+    ) -> Optional[Union[discord.Message, discord.PartialMessage]]:
+        ...
+
+    async def get_or_fetch_message(
+        self,
+        channel: Union[discord.Object, int, discord.PartialMessageable],
+        message: Union[int, str],
+        *,
+        fetch: bool = True,
+        cache: bool = True,
+        partial: bool = False,
+        force_fetch: bool = False,
+        dm_allowed: bool = False,
+    ) -> Union[discord.Message, discord.PartialMessage, None]:
+        """|coro|
+
+        Get message from cache. Fetches if not found, and stored in cache
+
+        Parameters
+        -----------
+        channel: discord.TextChannel
+            The channel to look in.
+        message: int
+            The message ID to search for.
+        fetch: bool
+            To fetch the message from channel or not.
+        cache: bool
+            To get message from internal cache.
+        partaial: bool
+            If found nothing from cache, it will give the discord.PartialMessage
+
+        Returns
+        ---------
+        Optional[discord.Message]
+            The Message or None if not found.
+        """
+
+        message = int(message)
+
+        if isinstance(channel, int):
+            if force_fetch:
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
+            else:
+                channel = self.get_channel(channel)  # type: ignore
+        elif isinstance(channel, (discord.Object, discord.PartialMessageable)):
+            if force_fetch:
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
+            else:
+                channel = self.get_channel(channel.id)  # type: ignore
+
+        if channel is None:
+            return None
+
+        if isinstance(channel, discord.DMChannel) and not dm_allowed:
+            raise ValueError("DMChannel is not allowed")
+
+        if force_fetch:
+            msg = await channel.fetch_message(message)  # type: ignore
+            self.message_cache[message] = msg
+            return msg
+
+        if cache and (msg := self._connection._get_message(message)):
+            self.message_cache[message] = msg
+            return msg
+
+        if partial:
+            return channel.get_partial_message(message)  # type: ignore
+
+        try:
+            msg = self.message_cache[message]
+            log.debug("Got message from cache %s", msg)
+            return msg
+        except KeyError:
+            if fetch:
+                async for msg in channel.history(  # type: ignore
+                    limit=1,
+                    before=discord.Object(message + 1),
+                    after=discord.Object(message - 1),
+                ):
+                    self.message_cache[message] = msg
+                    return msg
+
+        return None

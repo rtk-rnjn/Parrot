@@ -20,7 +20,7 @@
 """
 
 import sys
-from typing import Any, Dict, List, Self, TypeVar
+from typing import Any, Dict, List, Optional, Self, TypeVar
 
 __version__ = "2.0.2"
 VERSION = tuple(map(int, __version__.split(".")))

@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-import re
 from typing import Any, Dict, List, Literal, Optional, Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection, AsyncIOMotorDatabase
@@ -11,7 +10,6 @@ from tabulate import tabulate
 
 import discord
 from cogs.config import method as mt_
-from cogs.meta.robopage import SimplePages
 from cogs.ticket import method as mt
 from core import Cog, Context, Parrot
 from discord.ext import commands

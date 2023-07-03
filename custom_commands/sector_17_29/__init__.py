@@ -113,7 +113,7 @@ class Sector1729(Cog):
         if channel is None:
             return
 
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)  # type: ignore
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
 
         async def __remove_reaction(msg: discord.Message) -> None:
             for reaction in msg.reactions:

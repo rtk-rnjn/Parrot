@@ -81,6 +81,8 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         from .Parrot import Parrot
 
     bot: Parrot
+    guild: discord.Guild
+    command: commands.Command
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

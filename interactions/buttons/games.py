@@ -891,7 +891,7 @@ class Games(Cog):
     async def twenty_four_eight_stats(
         self,
         ctx: Context,
-        user: Optional[Union[discord.User, discord.Member]] = None,  # type: ignore
+        user: Optional[Union[discord.User, discord.Member]] = None,
         *,
         flag: GameCommandFlag,
     ):
@@ -919,7 +919,7 @@ class Games(Cog):
         entries = []
         i = 0
         async for data in col.find(FILTER).sort(sort_by, order_by):
-            user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
+            user = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
             entries.append(
                 f"""User: `{user or 'NA'}`
 `Games Played`: {data['game_twenty48_played']} games played
@@ -1108,7 +1108,7 @@ class Games(Cog):
         async for data in col.find(FILTER).sort(
             sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
         ):
-            user: Optional[discord.User] = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)  # type: ignore
+            user = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
             if user is None:
                 continue
 

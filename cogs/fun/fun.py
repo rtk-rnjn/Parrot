@@ -2486,8 +2486,8 @@ class Fun(Cog):
             description=f"Level: {level}",
         )
 
-        file = discord.File(img_buf, filename="image.png")
-        embed.set_image(url="attachment://image.png")
+        file = discord.File(img_buf, filename="pour_game.png")
+        embed.set_image(url="attachment://pour_game.png")
 
         embed.set_footer(
             text=f"Game played by: {ctx.author}",

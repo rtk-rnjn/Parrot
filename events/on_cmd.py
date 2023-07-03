@@ -88,13 +88,13 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             else:
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = f"Please provide the following permission(s) to the bot.```\n{fmt}```"
-            ERROR_EMBED.set_footer(text=(f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"))
+            ERROR_EMBED.set_author(name=(f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"))
 
         elif isinstance(error, commands.CommandOnCooldown):
             now = discord.utils.utcnow() + datetime.timedelta(seconds=error.retry_after)
             discord_time = discord.utils.format_dt(now, "R")
             ERROR_EMBED.description = f"You are on command cooldown, please retry **{discord_time}**"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}")
 
         elif isinstance(error, commands.MissingPermissions):
             missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in error.missing_permissions]
@@ -103,7 +103,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             else:
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}")
             ctx.command.reset_cooldown(ctx)
 
         elif isinstance(error, commands.MissingRole):
@@ -113,7 +113,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             else:
                 fmt = " and ".join(missing)  # type: ignore
             ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
             ctx.command.reset_cooldown(ctx)
 
         elif isinstance(error, commands.MissingAnyRole):
@@ -123,12 +123,12 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             else:
                 fmt = " and ".join(missing)  # type: ignore
             ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
             ctx.command.reset_cooldown(ctx)
 
         elif isinstance(error, commands.NSFWChannelRequired):
             ERROR_EMBED.description = "This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}")
             ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
             ctx.command.reset_cooldown(ctx)
 
@@ -136,30 +136,30 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ctx.command.reset_cooldown(ctx)
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = "Message ID/Link you provied is either invalid or deleted"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}")
 
             elif isinstance(error, commands.MemberNotFound):
                 ERROR_EMBED.description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}")
 
             elif isinstance(error, commands.UserNotFound):
                 ERROR_EMBED.description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} User Not Found {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} User Not Found {QUESTION_MARK}")
 
             elif isinstance(error, commands.ChannelNotFound):
                 ERROR_EMBED.description = "Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}")
 
             elif isinstance(error, commands.RoleNotFound):
                 ERROR_EMBED.description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}")
 
             elif isinstance(error, commands.EmojiNotFound):
                 ERROR_EMBED.description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}")
             else:
                 ERROR_EMBED.description = f"{error}"
-                ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}")
+                ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}")
 
         elif isinstance(
             error,
@@ -173,45 +173,45 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases or '')} {command.signature}```"
 
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}")
 
         elif isinstance(error, commands.BadLiteralArgument):
             ERROR_EMBED.description = (
                 f"Please use proper Literals. "
                 f"Literal should be any one of the following: `{'`, `'.join(str(i) for i in error.literals)}`"
             )
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}")
 
         elif isinstance(error, commands.MaxConcurrencyReached):
             ERROR_EMBED.description = (
                 "This command is already running in this server/channel by you. You have wait for it to finish"
             )
-            ERROR_EMBED.set_footer(text=(f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"))
+            ERROR_EMBED.set_author(name=(f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"))
 
         elif isinstance(error, ParrotCheckFailure):
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
 
         elif isinstance(error, commands.CheckAnyFailure):
             ctx.command.reset_cooldown(ctx)
             ERROR_EMBED.description = " or\n".join([error.__str__().format(ctx=ctx) for error in error.errors])
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
 
         elif isinstance(error, commands.CheckFailure):
             ctx.command.reset_cooldown(ctx)
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
             ERROR_EMBED.description = "You don't have the required permissions to use this command."
 
         elif isinstance(error, asyncio.TimeoutError):
             ERROR_EMBED.description = "Command took too long to respond"
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}")
 
         else:
             ERROR_EMBED.description = (
                 f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
             )
-            ERROR_EMBED.set_footer(text=f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}")
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}")
             TO_RAISE_ERROR = True
 
         msg: Optional[discord.Message] = await ctx.reply(

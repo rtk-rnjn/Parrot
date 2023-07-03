@@ -50,18 +50,20 @@ async def _enable(
     if not target:
         if force:
             await update_db(ctx=ctx, key="CMD_GLOBAL_ENABLE", cmd=cmd_cog, value=True, op="$set")
+        else:
+            await update_db(ctx=ctx, key="CMD_ENABLE", cmd=cmd_cog, value=False, op="$set")
 
     elif isinstance(target, discord.abc.GuildChannel):
         if force:
-            await update_db(ctx=ctx, key="CMD_CHANNEL_ENABLE_", cmd=cmd_cog, value=ctx.channel.id, op="$addToSet")
+            await update_db(ctx=ctx, key="CMD_CHANNEL_ENABLE", cmd=cmd_cog, value=ctx.channel.id, op="$addToSet")
         else:
-            await update_db(ctx=ctx, key="CMD_CHANNEL_DISABLE_", cmd=cmd_cog, value=ctx.channel.id, op="$pull")
+            await update_db(ctx=ctx, key="CMD_CHANNEL_DISABLE", cmd=cmd_cog, value=ctx.channel.id, op="$pull")
 
     elif isinstance(target, discord.Role):
         if force:
-            await update_db(ctx=ctx, key="CMD_ROLE_ENABLE_", cmd=cmd_cog, value=target.id, op="$addToSet")
+            await update_db(ctx=ctx, key="CMD_ROLE_ENABLE", cmd=cmd_cog, value=target.id, op="$addToSet")
         else:
-            await update_db(ctx=ctx, key="CMD_ROLE_DISABLE_", cmd=cmd_cog, value=target.id, op="$pull")
+            await update_db(ctx=ctx, key="CMD_ROLE_DISABLE", cmd=cmd_cog, value=target.id, op="$pull")
 
     await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, force=force, target=target, tp='enable'))
 
@@ -80,14 +82,14 @@ async def _disable(
 
     elif isinstance(target, discord.abc.GuildChannel):
         if force:
-            await update_db(ctx=ctx, key="CMD_CHANNEL_DISABLE_", cmd=cmd_cog, value=ctx.channel.id, op="$addToSet")
+            await update_db(ctx=ctx, key="CMD_CHANNEL_DISABLE", cmd=cmd_cog, value=ctx.channel.id, op="$addToSet")
         else:
-            await update_db(ctx=ctx, key="CMD_CHANNEL_ENABLE_", cmd=cmd_cog, value=ctx.channel.id, op="$pull")
+            await update_db(ctx=ctx, key="CMD_CHANNEL_ENABLE", cmd=cmd_cog, value=ctx.channel.id, op="$pull")
 
     elif isinstance(target, discord.Role):
         if force:
-            await update_db(ctx=ctx, key="CMD_ROLE_DISABLE_", cmd=cmd_cog, value=target.id, op="$addToSet")
+            await update_db(ctx=ctx, key="CMD_ROLE_DISABLE", cmd=cmd_cog, value=target.id, op="$addToSet")
         else:
-            await update_db(ctx=ctx, key="CMD_ROLE_ENABLE_", cmd=cmd_cog, value=target.id, op="$pull")
+            await update_db(ctx=ctx, key="CMD_ROLE_ENABLE", cmd=cmd_cog, value=target.id, op="$pull")
 
     await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, force=force, target=target, tp='disable'))

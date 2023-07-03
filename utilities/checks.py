@@ -178,6 +178,7 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional
     CMD_CHANNEL_DISABLE_ = f"CMD_CHANNEL_DISABLE_{cmd_cog}".upper()
     CMD_CATEGORY_ENABLE_ = f"CMD_CATEGORY_ENABLE_{cmd_cog}".upper()
     CMD_CATEGORY_DISABLE_ = f"CMD_CATEGORY_DISABLE_{cmd_cog}".upper()
+    CMD_ENABLE_ = f"CMD_ENABLE_{cmd_cog}".upper()
 
     if cmd_config.get(CMD_GLOBAL_ENABLE_) is not None:
         if cmd_config.get(CMD_GLOBAL_ENABLE_) is True:
@@ -202,6 +203,9 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional
 
     if ctx.channel.id in cmd_config.get(CMD_CATEGORY_DISABLE_, []):
         raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for you in this channel.")
+
+    if cmd_config.get(CMD_ENABLE_) is False:
+        raise ex.ParrotCheckFailure(f"Command `{cmd}` is disabled for this server.")
 
     return True
 

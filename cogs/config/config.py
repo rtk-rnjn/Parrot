@@ -880,8 +880,8 @@ class Configuration(Cog):
         self,
         ctx: Context,
         command: commands.clean_content,
-        target: Union[discord.TextChannel, discord.Role] = None,
-        force: str = None,
+        target: Optional[Union[discord.TextChannel, discord.Role]] = None,
+        force: Optional[convert_bool] = None,
     ):
         """To enable the command"""
         cmd = self.bot.get_command(command)
@@ -902,8 +902,8 @@ class Configuration(Cog):
         self,
         ctx: Context,
         command: commands.clean_content,
-        target: Union[discord.TextChannel, discord.Role] = None,
-        force: str = None,
+        target: Optional[Union[discord.TextChannel, discord.Role]] = None,
+        force: Optional[convert_bool] = None,
     ):
         """To disable the command"""
         cmd = self.bot.get_command(command)
@@ -920,30 +920,77 @@ class Configuration(Cog):
     @cmdconfig.command(name="list")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def cmd_config_list(self, ctx: Context):
+    async def cmd_config_list(self, ctx: Context, *, cmd: str):
         """To view what all configuation are being made with command"""
-        data = self.bot.guild_configurations_cache[ctx.guild.id]["cmd_config"]
-        main = f"\N{BULLET} Command/Cog: {data['_id']}"
-        if data.get("channel_in"):
-            main += f"\n`Channel In :` <#{'>, <#'.join([(str(c) for c in data['channel_in'])])}>"
-        if data.get("channel_out"):
-            main += f"\n`Channel Out:` <#{'>, <#'.join([(str(c) for c in data['channel_out'])])}>"
-        if data.get("role_in"):
-            main += f"\n`Role In    :` <@&{'>, <@&'.join([(str(c) for c in data['role_in'])])}>"
-        if data.get("role_out"):
-            main += f"\n`Role Out   :` <@&{'>, <@&'.join([(str(c) for c in data['role_out'])])}>"
-        if data.get("cmd_enable"):
-            main += f"\n`Server Wide:` {data['cmd_enable']}"
-        em_lis = [main]
-        p = SimplePages(em_lis, ctx=ctx, per_page=3)
-        await p.start()
+        data = self.bot.guild_configurations_cache[ctx.guild.id].get("cmd_config", {})
+        CMD_GLOBAL_ENABLE_ = f"CMD_GLOBAL_ENABLE_{cmd}".upper()
+        CMD_ROLE_ENABLE_ = f"CMD_ROLE_ENABLE_{cmd}".upper()
+        CMD_ROLE_DISABLE_ = f"CMD_ROLE_DISABLE_{cmd}".upper()
+        CMD_CHANNEL_ENABLE_ = f"CMD_CHANNEL_ENABLE_{cmd}".upper()
+        CMD_CHANNEL_DISABLE_ = f"CMD_CHANNEL_DISABLE_{cmd}".upper()
+        CMD_CATEGORY_ENABLE_ = f"CMD_CATEGORY_ENABLE_{cmd}".upper()
+        CMD_CATEGORY_DISABLE_ = f"CMD_CATEGORY_DISABLE_{cmd}".upper()
+        CMD_ENABLE_ = f"CMD_ENABLE_{cmd}".upper()
+
+        embed = (
+            discord.Embed(
+                title=f"Command Configuration for {cmd}",
+                description=f"**Global Enable**: {data.get(CMD_GLOBAL_ENABLE_, 'N/A')}\n",
+            )
+            .add_field(
+                name="Role Enable",
+                value="<@&" + ">, <@&".join(data.get(CMD_ROLE_ENABLE_, [0])) + ">" if data.get(CMD_ROLE_ENABLE_) else "N/A",
+                inline=False,
+            )
+            .add_field(
+                name="Role Disable",
+                value="<@&" + ">, <@&".join(data.get(CMD_ROLE_DISABLE_, [0])) + ">"
+                if data.get(CMD_ROLE_DISABLE_)
+                else "N/A",
+                inline=False,
+            )
+            .add_field(
+                name="Channel Enable",
+                value="<#" + ">, <#".join(data.get(CMD_CHANNEL_ENABLE_, [0])) + ">"
+                if data.get(CMD_CHANNEL_ENABLE_)
+                else "N/A",
+                inline=False,
+            )
+            .add_field(
+                name="Channel Disable",
+                value="<#" + ">, <#".join(data.get(CMD_CHANNEL_DISABLE_, [0])) + ">"
+                if data.get(CMD_CHANNEL_DISABLE_)
+                else "N/A",
+                inline=False,
+            )
+            .add_field(
+                name="Category Enable",
+                value="<#" + ">, <#".join(data.get(CMD_CATEGORY_ENABLE_, [0])) + ">"
+                if data.get(CMD_CATEGORY_ENABLE_)
+                else "N/A",
+                inline=False,
+            )
+            .add_field(
+                name="Category Disable",
+                value="<#" + ">, <#".join(data.get(CMD_CATEGORY_DISABLE_, [0])) + ">"
+                if data.get(CMD_CATEGORY_DISABLE_)
+                else "N/A",
+                inline=False,
+            )
+            .add_field(
+                name="Command Enable",
+                value=data.get(CMD_ENABLE_, "N/A"),
+                inline=False,
+            )
+        )
+        await ctx.reply(embed=embed)
 
     @cmdconfig.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def clear(self, ctx: Context):
         """To clear all overrides"""
-        await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"cmd_config": []}})
+        await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"cmd_config": {}}})
         await ctx.send(f"{ctx.author.mention} reseted everything!")
 
     @commands.command(name="autowarn")

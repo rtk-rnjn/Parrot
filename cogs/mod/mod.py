@@ -19,7 +19,6 @@ from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID
-from utilities.infraction import custom_delete_warn, delete_many_warn, show_warn, warn
 from utilities.time import FutureTime, ShortTime
 
 
@@ -1551,124 +1550,6 @@ class Moderator(Cog):
             )
 
         return await msg.delete(delay=0)
-
-    @commands.command(name="warn")
-    @commands.bot_has_permissions(embed_links=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warnuser(
-        self,
-        ctx: Context,
-        user: discord.Member,
-        duration: Optional[ShortTime] = None,
-        *,
-        reason: str,
-    ):
-        """To warn the user"""
-        try:
-            await user.send(
-                f"{user.mention} you are being in **{ctx.guild.name}** warned for: **{reason}**",
-                view=ctx.send_view(),
-            )
-        except discord.Forbidden:
-            pass
-        else:
-            await warn(
-                ctx.guild,
-                user,
-                reason,
-                moderator=ctx,
-                message=ctx.message,
-                at=ctx.message.created_at.timestamp(),
-                ctx=ctx,
-                expires_at=duration.dt.timestamp() if duration else None,
-            )
-            await ctx.send(f"{ctx.author.mention} **{user}** warned")
-        finally:
-            await self.warn_task(target=user, ctx=ctx)
-
-    @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def delwarn(self, ctx: Context, warn_id: int):
-        """To delete warn of user by ID"""
-        somthing = await custom_delete_warn(ctx, ctx.guild, warn_id=warn_id)
-        if somthing:
-            await ctx.send(f"{ctx.author.mention} deleted the warn ID: {warn_id}")
-
-    @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
-    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def delwarns(self, ctx: Context, *, flags: WarnFlag):
-        """To delete warn of user by ID"""
-        payload = {}
-        if flags.target:
-            payload["target"] = flags.target.id
-        if flags.moderator:
-            payload["moderator"] = flags.moderator.id
-        if flags.message:
-            payload["message"] = flags.message
-        if flags.channel:
-            payload["channel"] = flags.channel.id
-        if flags.message:
-            payload["warn_id"] = flags.warn_id
-
-        await delete_many_warn(ctx, ctx.guild, **payload)
-        await ctx.send(f"{ctx.author.mention} deleted all warns matching: `{'`, `'.join(payload)}`")
-        if flags.target:
-            target = await self.bot.get_or_fetch_member(ctx.guild, flags.target.id)
-            await self.warn_task(target=target, ctx=ctx)
-
-    @commands.command()
-    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
-    async def warns(self, ctx: Context, *, flags: WarnFlag):
-        """To display warning in the server"""
-        payload = {}
-        if flags.target:
-            payload["target"] = flags.target.id
-        if flags.moderator:
-            payload["moderator"] = flags.moderator.id
-        if flags.message:
-            payload["message"] = flags.message
-        if flags.channel:
-            payload["channel"] = flags.channel.id
-        if flags.message:
-            payload["warn_id"] = flags.warn_id
-        data = await show_warn(ctx, ctx.guild, **payload)
-        # page = RoboPages(TextPageSource(data, max_size=1000), ctx=ctx)
-        page = SimplePages(data, ctx=ctx)
-        await page.start()
-
-    async def warn_task(
-        self,
-        *,
-        ctx: Context,
-        target: Union[discord.Member, discord.User],
-    ):
-        """|coro|
-
-        Main system to warn
-
-        Parameters
-        -----------
-        target: Member
-            Target, which will be issued warn
-        ctx: Context
-            commands.Context instance
-        """
-        count = 0
-        col: Collection = self.bot.mongo.warn_db[f"{ctx.guild.id}"]
-        async for data in col.find({"target": target.id}):
-            count += 1
-        if data := await self.bot.guild_configurations.find_one({"_id": ctx.guild.id, "warn_auto.count": count}):
-            for i in data["warn_auto"]:
-                if i["count"] == count:
-                    await self.execute_action(
-                        action=i["action"].lower(),
-                        duration=i.get("duration"),
-                        mod=ctx,
-                        ctx=ctx,
-                        target=target,
-                    )
 
     async def execute_action(self, *, ctx: Context, action: str, duration: str, **kw):
         target: Union[discord.Member, discord.User] = kw.get("target")

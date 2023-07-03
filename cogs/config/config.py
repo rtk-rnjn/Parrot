@@ -17,10 +17,7 @@ from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
-from utilities.paginator import PaginationView
 from utilities.time import ShortTime
-
-from .flags import AutoWarn, WarnConfig
 
 with open(r"cogs/config/events.json", encoding="utf-8", errors="ignore") as f:
     events = json.load(f)
@@ -280,104 +277,6 @@ class Configuration(Cog):
             return
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"suggestion_channel": None}})
         await ctx.reply(f"{ctx.author.mention} removed suggestion channel")
-
-    @config.group(name="warn", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def config_warn(self, ctx: Context):
-        """To set the warning configuration of the server"""
-        if not ctx.invoked_subcommand:
-            await self.bot.invoke_help_command(ctx)
-
-    @config_warn.command(name="add")
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def warnadd(self, ctx: Context, count: int, action: str, duration: str = None):
-        """To add warn settings in server. This is configuration is applicable when used `warn` command"""
-        ACTIONS = [
-            "ban",
-            "tempban",
-            "kick",
-            "timeout",
-            "mute",
-        ]
-        if action.lower() not in ACTIONS:
-            return await ctx.error(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
-        if duration:
-            ShortTime(duration)  # type: ignore
-        if _ := await self.bot.guild_configurations.find_one({"_id": ctx.guild.id, "warn_auto.count": count}):
-            return await ctx.error(f"{ctx.author.mention} warn count {count} already exists.")
-        await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id},
-            {
-                "$addToSet": {
-                    "warn_auto": {
-                        "count": count,
-                        "action": action.lower(),
-                        "duration": duration or None,
-                    }
-                }
-            },
-        )
-
-        await ctx.send(f"{ctx.author.mention} updated")
-
-    @config_warn.command(name="del", aliases=["remove", "delete"])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def warndel(self, ctx: Context, *, flags: WarnConfig):
-        """To delete warn settings. This is configuration is applicable when used `warn` command"""
-        ACTIONS: List[str] = [
-            "ban",
-            "tempban",
-            "kick",
-            "timeout",
-            "mute",
-            "block",
-        ]
-        payload = {}
-        if flags.action:
-            if flags.action.lower() not in ACTIONS:
-                return await ctx.error(f"{ctx.author.mention} invalid action. Available actions: `{'`, `'.join(ACTIONS)}`")
-            payload["action"] = flags.action.lower()
-        if flags.count:
-            payload["count"] = flags.count
-        if flags.duration:
-            payload["duration"] = flags.duration
-        await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"warn_auto": {**payload}}})
-        await ctx.send(f"{ctx.author.mention} updated")
-
-    @config_warn.command(name="expiry", aliases=["expire"])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def warnexpiry(self, ctx: Context, *, duration: str):
-        """To set the expiry duration of warns"""
-        ShortTime(duration)
-        await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"warn_expiry": duration}})
-
-    @config_warn.command(name="list", aliases=["show"])
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def warnlist(self, ctx: Context):
-        """To list warn settings. This is configuration is applicable when used `warn` command"""
-        data: Dict[str, List[Dict[str, Union[int, str]]]] = await self.bot.guild_configurations.find_one(
-            {"_id": ctx.guild.id, "warn_auto": {"$exists": True}},
-            {"warn_auto": 1, "_id": 0},
-        )
-
-        if not data["warn_auto"]:
-            return await ctx.error(f"{ctx.author.mention} no warn settings")
-
-        entries: List[str] = []
-
-        for _data in data["warn_auto"]:
-            count = _data.get("count")
-            action = _data.get("action")
-            duration = _data.get("duration")
-            entries.append(f"""Count: {count} | Action: {action} | Duration: {duration}""")
-
-        p = SimplePages(entries, ctx=ctx, per_page=10)
-        await p.start()
 
     @config.command(aliases=["mute-role"])
     @commands.has_permissions(administrator=True)
@@ -992,59 +891,6 @@ class Configuration(Cog):
         """To clear all overrides"""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"cmd_config": {}}})
         await ctx.send(f"{ctx.author.mention} reseted everything!")
-
-    @commands.command(name="autowarn")
-    @commands.has_permissions(administrator=True)
-    @Context.with_type
-    async def autowarn(self, ctx: Context, action: str, *, flags: AutoWarn):
-        """Autowarn management of the server on automod"""
-        PUNISH = [
-            "ban",
-            "tempban",
-            "kick",
-            "timeout",
-            "mute",
-            "block",
-        ]
-        ACTIONS = ["antilinks", "profanity", "spam", "emoji", "caps"]
-
-        if action.lower() not in ACTIONS:
-            await ctx.send(f"{ctx.author.mention} invalid event! Available event: **{'**, **'.join(ACTIONS)}**")
-            return
-
-        if flags.duration:
-            ShortTime(flags.duration)  # flake8: noqa
-
-        _PUNISH = str(flags.punish).lower()
-        if _PUNISH not in PUNISH:
-            _PUNISH = None
-
-        _DURATION = str(flags.punish).lower()
-        if _PUNISH in {"kick", "ban"}:
-            _DURATION = None
-
-        data = {
-            "enable": flags.enable,
-            "count": flags.count,
-            "to_delete": flags.delete,
-            "punish": {
-                "type": _PUNISH,
-                "duration": _DURATION,
-            },
-        }
-        await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id},
-            {"$set": {f"automod.{action.lower()}.autowarn": data}},
-        )
-        await ctx.send(
-            f"""{ctx.author.mention} configuration you set:
-`Warn Enabed`: {data.get('enabled')}
-`Warn Count `: {data.get('warn_count')}
-`To delete  `: {data.get('to_delete')}
-`Punish Type`: {data['punish']['type']}
-`Duration   `: {data['punish']['duration']}
-"""
-        )
 
     @config.group(name="serverstats", aliases=["sstats"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)

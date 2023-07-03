@@ -18,7 +18,6 @@ from pymongo import ReturnDocument, UpdateOne
 
 import discord
 import emojis
-from cogs.fun.fun import replace_many
 from discord.ext import commands
 from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, LINKS_NO_PROTOCOLS
@@ -243,8 +242,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self,
         file_contents: Optional[Any],
         file_path: str,
-        start_line: Union[str, int],
-        end_line: Union[str, int],
+        start_line: Union[str, int, None],
+        end_line: Union[str, int, None],
     ) -> str:
         """
         Given the entire file contents and target lines, creates a code block.
@@ -256,9 +255,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         """
         # Parse start_line and end_line into integers
         if end_line is None:
-            start_line = end_line = int(start_line)
+            start_line = end_line = int(start_line or 0)
         else:
-            start_line = int(start_line)
+            start_line = int(start_line or 0)
             end_line = int(end_line)
 
         split_file_contents = file_contents.splitlines() if file_contents else []
@@ -352,7 +351,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return False
         return all(bad_word.lower() not in msg.replace(",", "").split(" ") for bad_word in bad_dict)
 
-    def is_banned(self, member: Union[discord.User, discord.Member]) -> bool:
+    def is_banned(self, member: Union[discord.User, discord.Member]) -> Optional[bool]:
         # return True if member is banned else False
         if not hasattr(member, "guild"):
             return
@@ -650,7 +649,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if message.author.id == self.bot.user.id:
             return False
 
-        if not message.channel.permissions_for(message.guild.me).send_messages:  # type: ignore
+        if not message.channel.permissions_for(message.guild.me).send_messages:
             return
 
         API = "https://anti-fish.bitflow.dev/check"
@@ -825,7 +824,13 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         self.bot.afk_users = set(await self.bot.afk_collection.distinct("messageAuthor"))
 
     async def _what_is_this(self, message: Union[discord.Message, str], *, channel: discord.TextChannel) -> None:
+        try:
+            from cogs.fun.fun import replace_many
+        except ImportError:
+            return
+
         if match := QUESTION_REGEX.fullmatch(message.content if isinstance(message, discord.Message) else message):
+
             word = replace_many(
                 match.string,
                 {"means": "", "what is": "", " ": "", "?": "", ".": ""},

@@ -801,13 +801,13 @@ class Parrot(commands.AutoShardedBot):
             except KeyError:
                 pass
 
-            can_run(ctx)
+            if can_run(ctx) is False:
+                log.debug("Command %s cannot be run in this context", ctx.command)
+                return
 
         if not getattr(ctx.cog, "ON_TESTING", False):
             await ctx.bot.wait_until_ready()
             await self.invoke(ctx)
-
-        return
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1

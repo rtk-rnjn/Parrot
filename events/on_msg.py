@@ -12,8 +12,8 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Pattern, Tuple, Union
 from urllib.parse import quote_plus
 
-import aiohttp  # type: ignore
-from aiohttp import ClientResponseError  # type: ignore
+import aiohttp
+from aiohttp import ClientResponseError
 from pymongo import ReturnDocument, UpdateOne
 
 import discord
@@ -110,7 +110,7 @@ class Delete(discord.ui.View):
         self.stop()
 
 
-class OnMsg(Cog, command_attrs=dict(hidden=True)):  # type: ignore
+class OnMsg(Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Parrot):
         self.bot: Parrot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.channel)

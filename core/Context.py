@@ -83,6 +83,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     bot: Parrot
     guild: discord.Guild
     command: commands.Command
+    author: discord.Member
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -163,8 +164,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         return None
 
     async def muterole(self) -> Optional[discord.Role]:
-        assert self.guild is not None and isinstance(self.author, discord.Member)
-
         try:
             author_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.author.roles)
             global_muted = discord.utils.find(lambda m: m.name.lower() == "muted", self.guild.roles)
@@ -179,8 +178,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         return None
 
     async def modrole(self) -> Optional[discord.Role]:
-        assert self.guild is not None and isinstance(self.author, discord.Member)
-
         try:
             return self.guild.get_role(self.bot.guild_configurations_cache[self.guild.id]["mod_role"] or 0)
         except KeyError:
@@ -608,8 +605,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     async def database_command_update(
         self, *, success: bool = False, error: Optional[str] = None, **kwargs: Any
     ) -> Dict[str, Any]:
-        assert self.guild is not None
-
         if self.command is None:
             return {}
 

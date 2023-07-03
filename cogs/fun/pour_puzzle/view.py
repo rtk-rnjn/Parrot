@@ -115,7 +115,7 @@ class PourView(discord.ui.View):
         self.ctx = ctx
         self.level = level
         self.state = 0
-        self.selected = None
+        self.selected: BottleButton = None  # type: ignore
         self.msg: discord.Message = None  # type: ignore
         self.next_btn = None
 
@@ -180,7 +180,7 @@ class PourView(discord.ui.View):
 
         return all(checks)
 
-    async def interaction_check(self, interaction):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
             await interaction.response.send_message("You can't use this button!", ephemeral=True)
             return False
@@ -200,7 +200,7 @@ class PourView(discord.ui.View):
     @discord.ui.button(label="Reset", style=discord.ButtonStyle.danger, custom_id="reset_btn", row=0)
     async def reset_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.state = 0
-        self.selected = None
+        self.selected = None  # type: ignore
 
         for btn in self.children:
             if isinstance(btn, discord.ui.Button) and btn.custom_id == "cancel_btn":
@@ -252,13 +252,13 @@ class PourView(discord.ui.View):
                     btn.disabled = True
 
         button.disabled = True
-        self.selected = None
+        self.selected = None  # type: ignore
         self.state = 0
         await interaction.response.edit_message(view=self)
 
-    async def next_button_callback(self, interaction):
+    async def next_button_callback(self, interaction: discord.Interaction):
         self.state = 0
-        self.selected = None
+        self.selected = None  # type: ignore
 
         for btn in self.children[:]:
             if isinstance(btn, discord.ui.Button):

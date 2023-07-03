@@ -164,7 +164,7 @@ def can_run(ctx: Context) -> Optional[bool]:
     cmd = ctx.command.qualified_name.replace(' ', '_')
     cog = getattr(ctx.cog, "qualified_name", "").replace(' ', '_')
 
-    cmd_config = ctx.bot.guild_configurations_cache[ctx.guild.id].get("command_config", {})
+    cmd_config = ctx.bot.guild_configurations_cache[ctx.guild.id].get("cmd_config", {})
 
     for cmd_cog in {cmd, cog}:
         return _can_run(cmd_cog, cmd_config, cmd, ctx)

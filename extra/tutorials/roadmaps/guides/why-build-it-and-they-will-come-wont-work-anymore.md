@@ -1,13 +1,13 @@
 ---
 title: 'Build it and they will come?'
-description: 'Why “build it and they will come” alone won’t work anymore'
+description: 'Why “build it and they will come” alone won't work anymore'
 author:
   name: 'Peter Thaleikis'
   url: 'https://twitter.com/spekulatius1984'
   imageUrl: '/authors/spekulatius.jpg'
 seo:
   title: 'Build it and they will come? - roadmap.sh'
-  description: 'Why “build it and they will come” alone won’t work anymore'
+  description: 'Why “build it and they will come” alone won't work anymore'
 isNew: false
 type: 'textual'
 date: 2021-05-04

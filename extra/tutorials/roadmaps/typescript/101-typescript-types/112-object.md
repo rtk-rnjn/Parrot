@@ -2,7 +2,7 @@
 
 To define an `object` type, we simply list its properties and their types.
 
-For example, here’s a function that takes a point-like object:
+For example, here's a function that takes a point-like object:
 
 ```typescript
 // The parameter's type annotation is an object type

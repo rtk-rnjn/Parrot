@@ -6,7 +6,7 @@ Concurrency refers to the execution of multiple threads at the same time. It occ
 
 Visit the following resources to learn more:
 
-- [What’s the Diff: Programs, Processes and Threads](https://www.backblaze.com/blog/whats-the-diff-programs-processes-and-threads/)
+- [What's the Diff: Programs, Processes and Threads](https://www.backblaze.com/blog/whats-the-diff-programs-processes-and-threads/)
 - [Concurrency in Operating System](https://www.javatpoint.com/concurrency-in-operating-system)
 - [Intro to Processes & Threads](https://www.youtube.com/watch?v=exbKr6fnoUw)
 - [Introduction to Concurrency](https://www.youtube.com/watch?v=iKtvNJQoCNw)

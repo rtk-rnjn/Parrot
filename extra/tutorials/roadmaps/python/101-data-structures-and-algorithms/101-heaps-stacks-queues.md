@@ -1,6 +1,6 @@
 # Heaps Stacks and Queues
 
-**Stacks:** Operations are performed LIFO (last in, first out), which means that the last element added will be the first one removed. A stack can be implemented using an array or a linked list. If the stack runs out of memory, it’s called a stack overflow.
+**Stacks:** Operations are performed LIFO (last in, first out), which means that the last element added will be the first one removed. A stack can be implemented using an array or a linked list. If the stack runs out of memory, it's called a stack overflow.
 
 **Queue:** Operations are performed FIFO (first in, first out), which means that the first element added will be the first one removed. A queue can be implemented using an array.
 

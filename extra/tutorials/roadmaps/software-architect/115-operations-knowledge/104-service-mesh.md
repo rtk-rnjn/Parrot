@@ -1,6 +1,6 @@
 # Service Mesh
 
-A Service Mesh is a dedicated infrastructure layer for handling service-to-service communication. It’s responsible for the reliable delivery of requests through the complex topology of services that comprise a modern, cloud native application. In layman's terms, it's a tool which helps you to control how different services communicate with each other.
+A Service Mesh is a dedicated infrastructure layer for handling service-to-service communication. It's responsible for the reliable delivery of requests through the complex topology of services that comprise a modern, cloud native application. In layman's terms, it's a tool which helps you to control how different services communicate with each other.
 
 Visit the following resources to learn more:
 

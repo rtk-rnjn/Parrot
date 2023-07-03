@@ -28,6 +28,6 @@ There isn't a foolproof solution to protect against deauth attacks, particularly
 
 - **Monitor your network for suspicious activity:** Utilize a network monitoring tool or Wi-Fi analyzer to detect anomalies and possible deauth attack attempts.
 
-- **Secure your access points:** Regularly update your router’s firmware and configure its settings to disable remote management access, applying strong access credentials to minimize unauthorized access.
+- **Secure your access points:** Regularly update your router's firmware and configure its settings to disable remote management access, applying strong access credentials to minimize unauthorized access.
 
 As an author of this guide, I advise you to stay diligent and follow the best practices in order to safeguard your network from deauth attacks and other security threats.

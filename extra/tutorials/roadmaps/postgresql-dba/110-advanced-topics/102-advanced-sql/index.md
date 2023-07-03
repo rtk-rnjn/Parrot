@@ -14,7 +14,7 @@ Here are the main topics we'll cover in this Advanced SQL section:
 
 - **Advanced Joins**: We'll dive deeper into SQL joins by exploring various types of joins such as Self Joins, Lateral Joins, and CROSS JOIN.
 
-- **Full-Text Search**: Full-text search allows you to query natural language documents stored in your database. We'll look at using PostgreSQL’s built-in text search features, including the tsvector and tsquery data types, as well as text search functions and operators.
+- **Full-Text Search**: Full-text search allows you to query natural language documents stored in your database. We'll look at using PostgreSQL's built-in text search features, including the tsvector and tsquery data types, as well as text search functions and operators.
 
 - **Triggers**: Triggers are a way to automatically execute a specified function whenever certain events occur, such as INSERT, UPDATE, DELETE or TRUNCATE operations. We will look at creating triggers and understanding their use cases.
 

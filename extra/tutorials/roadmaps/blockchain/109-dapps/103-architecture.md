@@ -1,6 +1,6 @@
 # Architecture
 
-Unlike Web2 applications, in Web3 there’s no centralized database that stores the application state or user identity, and there’s no centralized web server where the backend logic resides.
+Unlike Web2 applications, in Web3 there's no centralized database that stores the application state or user identity, and there's no centralized web server where the backend logic resides.
 
 Visit the following resources to learn more:
 

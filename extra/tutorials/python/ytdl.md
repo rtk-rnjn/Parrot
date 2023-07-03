@@ -4,7 +4,7 @@ The following restrictions apply to your use of the Service. You are not allowed
 
 1. access, reproduce, download, distribute, transmit, broadcast, display, sell, license, alter, modify or otherwise use any part of the Service or any Content except: (a) as specifically permitted by the Service;  (b) with prior written permission from YouTube and, if applicable, the respective rights holders; or (c) as permitted by applicable law;
 
-3. access the Service using any automated means (such as robots, botnets or scrapers) except: (a) in the case of public search engines, in accordance with YouTube’s robots.txt file; (b) with YouTube’s prior written permission; or (c) as permitted by applicable law;
+3. access the Service using any automated means (such as robots, botnets or scrapers) except: (a) in the case of public search engines, in accordance with YouTube's robots.txt file; (b) with YouTube's prior written permission; or (c) as permitted by applicable law;
 
 9. use the Service to view or listen to Content other than for personal, non-commercial use (for example, you may not publicly screen videos or stream music from the Service)
 ```

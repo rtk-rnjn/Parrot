@@ -1,4 +1,4 @@
-# BJ Fogg’s Behavior Grid
+# BJ Fogg's Behavior Grid
 
 The BJ Fogg Behavior Grid is a framework that helps UX designers, product managers, and marketers understand and identify different types of behavior change. Created by Stanford University professor B.J. Fogg, the grid consists of 15 behavior types based on the combination of three dimensions: Duration, Frequency, and Intensity.
 

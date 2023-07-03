@@ -1,6 +1,6 @@
 # Hugo
 
-Hugo is the world’s fastest static website engine. It’s written in Go (aka Golang) and developed by bep, spf13 and friends.
+Hugo is the world's fastest static website engine. It's written in Go (aka Golang) and developed by bep, spf13 and friends.
 
 Visit the following resources to learn more:
 

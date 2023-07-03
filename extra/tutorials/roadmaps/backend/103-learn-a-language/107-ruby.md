@@ -7,4 +7,4 @@ Visit the following resources to learn more:
 - [Ruby Website](https://www.ruby-lang.org/en/)
 - [Learn Ruby in 20 minutes](https://www.ruby-lang.org/en/documentation/quickstart/)
 - [Learn Ruby | Codecademy](https://www.codecademy.com/learn/learn-ruby)
-- [Ruby, An Introduction to a Programmer’s Best Friend](https://thenewstack.io/ruby-a-programmers-best-friend/)
+- [Ruby, An Introduction to a Programmer's Best Friend](https://thenewstack.io/ruby-a-programmers-best-friend/)

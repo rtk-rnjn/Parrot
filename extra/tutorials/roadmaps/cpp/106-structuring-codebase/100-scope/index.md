@@ -27,7 +27,7 @@ void localExample() {
 
 int main() {
     localExample();
-    // std::cout << localVar << std::endl; //error: ‘localVar’ was not declared in this scope
+    // std::cout << localVar << std::endl; //error: ‘localVar' was not declared in this scope
 }
 ```
 

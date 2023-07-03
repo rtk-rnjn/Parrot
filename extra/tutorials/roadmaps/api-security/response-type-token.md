@@ -1,6 +1,6 @@
 # Avoid Implicit Grant Flow
 
-> Avoid `response_type=token’ and try to exchange for code instead.
+> Avoid `response_type=token' and try to exchange for code instead.
 
 In OAuth, `response_type=token` is a method for obtaining an access token directly from the authorization endpoint, without using an authorization code. This method is known as the implicit grant flow.
 

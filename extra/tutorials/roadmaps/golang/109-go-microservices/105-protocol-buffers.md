@@ -1,6 +1,6 @@
 # Protocol buffers
 
-Protocol Buffers(Protobuf) is a free, open-source, language-neutral, platform-neutral, extensible data format used to serialize structured data. It’s like JSON, except it's smaller and faster, and it generates native language bindings.
+Protocol Buffers(Protobuf) is a free, open-source, language-neutral, platform-neutral, extensible data format used to serialize structured data. It's like JSON, except it's smaller and faster, and it generates native language bindings.
 
 Some of the advantages of using protocol buffers include:
 

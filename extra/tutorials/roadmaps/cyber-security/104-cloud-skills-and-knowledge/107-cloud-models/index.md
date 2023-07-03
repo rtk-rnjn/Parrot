@@ -1,6 +1,6 @@
 # Cloud Models
 
-Cloud computing offers various deployment models and types of services that can be tailored to the specific needs of an organization. Understanding these cloud models is vital for making well-informed decisions about adopting and managing cloud services. In this section, we’ll discuss the three primary cloud deployment models and the service models provided under each.
+Cloud computing offers various deployment models and types of services that can be tailored to the specific needs of an organization. Understanding these cloud models is vital for making well-informed decisions about adopting and managing cloud services. In this section, we'll discuss the three primary cloud deployment models and the service models provided under each.
 
 ## Cloud Deployment Models
 

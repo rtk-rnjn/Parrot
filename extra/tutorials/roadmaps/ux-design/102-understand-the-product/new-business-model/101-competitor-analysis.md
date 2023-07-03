@@ -14,7 +14,7 @@ By conducting a thorough competitor analysis, you can gain valuable insights int
 
 - **Evaluate their marketing strategies:** Analyze their communication channels and promotional activities, such as email campaigns, social media presence, and content marketing efforts. Take note of any strategies that seem particularly successful or unique.
 
-- **Examine customer reviews and feedback:** Collect and analyze customer reviews and feedback from popular review platforms, social media, and forums. This information can help you understand common pain points and areas for improvement in your competitors’ offerings.
+- **Examine customer reviews and feedback:** Collect and analyze customer reviews and feedback from popular review platforms, social media, and forums. This information can help you understand common pain points and areas for improvement in your competitors' offerings.
 
 - **Identify opportunities and niches:** Based on your research, identify weaknesses in your competitors' strategies or markets, where potential opportunities exist for your business to be successful.
 

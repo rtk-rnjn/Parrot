@@ -1,6 +1,6 @@
 # Prompt Debiasing
 
-Debiasing is the process of reducing bias in the development and performance of AI language models, such as OpenAI’s GPT-3. When constructing prompts, it's important to address existing biases and assumptions that may be inadvertently incorporated into the model due to training data or other factors. By considering debiasing, we aim to promote fairness, neutrality, and inclusiveness in AI-generated responses.
+Debiasing is the process of reducing bias in the development and performance of AI language models, such as OpenAI's GPT-3. When constructing prompts, it's important to address existing biases and assumptions that may be inadvertently incorporated into the model due to training data or other factors. By considering debiasing, we aim to promote fairness, neutrality, and inclusiveness in AI-generated responses.
 
 ## Why is Debiasing Important?
 

@@ -1,6 +1,6 @@
 # Ngrx
 
-Ngrx is a group of Angular libraries for reactive extensions that implements the Redux pattern and it’s supercharged with RXJS.
+Ngrx is a group of Angular libraries for reactive extensions that implements the Redux pattern and it's supercharged with RXJS.
 Visit the following resources to learn more:
 
 - [What is NGRX ? - ngrx.io ](https://ngrx.io/)

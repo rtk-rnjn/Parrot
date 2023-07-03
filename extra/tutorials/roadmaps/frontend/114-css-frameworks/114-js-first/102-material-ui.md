@@ -1,6 +1,6 @@
 # Material UI
 
-Material-UI is an open-source framework that features React components that implement Google’s Material Design.
+Material-UI is an open-source framework that features React components that implement Google's Material Design.
 
 Visit the following resources to learn more:
 

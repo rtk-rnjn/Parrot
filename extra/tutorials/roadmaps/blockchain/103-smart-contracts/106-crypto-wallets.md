@@ -5,4 +5,4 @@ A cryptocurrency wallet is a device, physical medium, program, or service which 
 Visit the following resources to learn more:
 
 - [What is a crypto wallet?](https://www.coinbase.com/learn/crypto-basics/what-is-a-crypto-wallet)
-- [What is a Crypto Wallet? A Beginner’s Guide](https://crypto.com/university/crypto-wallets)
+- [What is a Crypto Wallet? A Beginner's Guide](https://crypto.com/university/crypto-wallets)

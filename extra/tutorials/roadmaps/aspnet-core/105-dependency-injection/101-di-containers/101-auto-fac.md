@@ -6,6 +6,6 @@ Autofac uses a technique called "component registration" to define the objects a
 
 Visit the following resources for more information:
 
-- [Autofac’s Documentation](https://autofac.readthedocs.io/en/latest/)
+- [Autofac's Documentation](https://autofac.readthedocs.io/en/latest/)
 - [Getting started with Autofac](https://autofac.org/)
 - [Dependency Injection with Autofac](https://www.codeproject.com/Articles/25380/Dependency-Injection-with-Autofac)

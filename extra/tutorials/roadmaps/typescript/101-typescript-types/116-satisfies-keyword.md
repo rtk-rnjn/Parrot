@@ -20,7 +20,7 @@ const redComponent = palette.red.at(0);
 const greenNormalized = palette.green.toUpperCase();
 ```
 
-Notice that we’ve written `bleu`, whereas we probably should have written `blue`. We could try to catch that `bleu` typo by using a type annotation on palette, but we’d lose the information about each property.
+Notice that we've written `bleu`, whereas we probably should have written `blue`. We could try to catch that `bleu` typo by using a type annotation on palette, but we'd lose the information about each property.
 
 ```typescript
 type Colors = 'red' | 'green' | 'blue';

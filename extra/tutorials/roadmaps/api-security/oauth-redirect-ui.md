@@ -1,6 +1,6 @@
 # redirect_uri
 
-> Validate `redirect_uri’ on server-side to prevent open redirect attacks.
+> Validate `redirect_uri' on server-side to prevent open redirect attacks.
 
 In OAuth, `redirect_uri` is a parameter that specifies the URI (Uniform Resource Identifier) that the authorization server should redirect the user to after authentication is complete. The `redirect_uri` is often used in the OAuth flow to return an authorization code or access token to the client application.
 

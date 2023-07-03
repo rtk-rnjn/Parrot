@@ -1,6 +1,6 @@
 # Deployment
 
-Unlike other software, smart contracts don’t run on a local computer or a remote server: they live on the blockchain. Thus, interacting with them is different from more traditional applications.
+Unlike other software, smart contracts don't run on a local computer or a remote server: they live on the blockchain. Thus, interacting with them is different from more traditional applications.
 
 Visit the following resources to learn more:
 

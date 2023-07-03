@@ -71,7 +71,7 @@ We have also listed down some free resources which you can use for the items lis
 - [Algorithms and Data Structures in Kotlin](https://github.com/bmaslakov/kotlin-algorithm-club)
 - [Gradle](https://docs.gradle.org/current/userguide/what_is_gradle.html)
 - [Getting started with Gradle](https://docs.gradle.org/current/userguide/getting_started.html)
-  Note: Android Studio comes with a working installation of Gradle, so you don’t need to install Gradle separately in that case.
+  Note: Android Studio comes with a working installation of Gradle, so you don't need to install Gradle separately in that case.
 
 ## Version Control Systems
 
@@ -107,7 +107,7 @@ To learn more about the items listed in the image above, here are the links to t
 
 ## Jetpack Compose
 
-Jetpack Compose is Android’s modern toolkit for building native UI. It simplifies and accelerates UI development on Android. Quickly bring your app to life with less code, powerful tools, and intuitive Kotlin APIs.
+Jetpack Compose is Android's modern toolkit for building native UI. It simplifies and accelerates UI development on Android. Quickly bring your app to life with less code, powerful tools, and intuitive Kotlin APIs.
 
 - [Jetpack Compose](https://developer.android.com/jetpack/compose/documentation)
 - [Material Design 3](https://m3.material.io/)

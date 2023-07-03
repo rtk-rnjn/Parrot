@@ -1,4 +1,4 @@
-# Nir Eyal’s Hook Model
+# Nir Eyal's Hook Model
 
 The Hook Model is a concept developed by Nir Eyal, a writer and entrepreneur. It is a framework designed to help create habit-forming products and services by engaging users on a deeper level. Eyal's model is based on four key components, which are meant to encourage user interactions and repeat usage, ultimately leading to user addiction. These components are:
 

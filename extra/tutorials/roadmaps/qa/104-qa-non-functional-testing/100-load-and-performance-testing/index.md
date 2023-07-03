@@ -1,6 +1,6 @@
 # Load and Performance Testing
 
-Performance Testing is a subset of Performance Engineering. It is a process of evaluating a system’s behavior under various extreme conditions. The main intent of performance testing is to monitor and improve key performance indicators such as response time, throughput, memory, CPU utilization, and more.
+Performance Testing is a subset of Performance Engineering. It is a process of evaluating a system's behavior under various extreme conditions. The main intent of performance testing is to monitor and improve key performance indicators such as response time, throughput, memory, CPU utilization, and more.
 
 There are three objectives (three S) of Performance testing to observe and evaluate: `Speed`, `Scalability` and `Stability`. Following are the commonly used performance testing types, but not limited to:
 

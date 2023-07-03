@@ -1,6 +1,6 @@
 # Stakeholders
 
-Building an effective design system is not an individual responsibility, you need more than just designers. Here’s a quick list of the disciplines that can be represented in your team to create an effective design system:
+Building an effective design system is not an individual responsibility, you need more than just designers. Here's a quick list of the disciplines that can be represented in your team to create an effective design system:
 
 - **Designers:** to define the visual elements of the system
 - **Frontend Developers:** To create modular efficient code

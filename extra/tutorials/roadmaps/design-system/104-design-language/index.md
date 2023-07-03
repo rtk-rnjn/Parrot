@@ -1,6 +1,6 @@
 # Design Language
 
-Like any language, a design language is a methodical way of communicating with your audience through your approach to product design. It’s the cornerstone of consistent customer experiences.
+Like any language, a design language is a methodical way of communicating with your audience through your approach to product design. It's the cornerstone of consistent customer experiences.
 
 Visit the following resources to learn more:
 

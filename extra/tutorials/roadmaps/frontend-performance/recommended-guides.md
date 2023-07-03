@@ -3,7 +3,7 @@
 > Optimize the critical rendering path:
 
 - [Critical CSS? Not So Fast!](https://csswizardry.com/2022/09/critical-css-not-so-fast/)
-- [Priority Hints - What Your Browser Doesn’t Know (Yet)](https://www.etsy.com/codeascraft/priority-hints-what-your-browser-doesnt-know-yet)
+- [Priority Hints - What Your Browser Doesn't Know (Yet)](https://www.etsy.com/codeascraft/priority-hints-what-your-browser-doesnt-know-yet)
 - [Optimizing resource loading with Priority Hints](https://web.dev/priority-hints/)
 - [Chrome Resource Priorities and Scheduling](https://docs.google.com/document/d/1bCDuq9H1ih9iNjgzyAL0gpwNFiEP4TZS-YLRp_RuMlc/edit?usp=sharing)
 - [How To Optimize CSS for Peak Site Performance](https://kinsta.com/blog/optimize-css/)
@@ -25,7 +25,7 @@
 - [Prefer DEFER Over ASYNC](https://calendar.perfplanet.com/2016/prefer-defer-over-async/)
 - [A comprehensive guide to font loading strategies](https://www.zachleat.com/web/comprehensive-webfonts/)
 - [Understanding the critical rendering path, rendering pages in 1 second](https://medium.com/@luisvieira_gmr/understanding-the-critical-rendering-path-rendering-pages-in-1-second-735c6e45b47a)
-- [More Weight Doesn’t Mean More Wait](https://www.filamentgroup.com/lab/weight-wait.html)
+- [More Weight Doesn't Mean More Wait](https://www.filamentgroup.com/lab/weight-wait.html)
 
 > JavaScript Rendering Performance
 
@@ -49,7 +49,7 @@
 - [The State Of Web Workers In 2021](https://www.smashingmagazine.com/2021/06/web-workers-2021/)
 - [Techniques for developing high-performance animations](https://web.dev/animations/)
 - [Building a Faster Web Experience with the postTask Scheduler](https://medium.com/airbnb-engineering/building-a-faster-web-experience-with-the-posttask-scheduler-276b83454e91), Callie (Airbnb Engineering & Data Science)
-- [Don’t attach tooltips to document.body – Learn how the browser works – Debug forced reflow](https://atfzl.com/don-t-attach-tooltips-to-document-body)
+- [Don't attach tooltips to document.body – Learn how the browser works – Debug forced reflow](https://atfzl.com/don-t-attach-tooltips-to-document-body)
 - [How to Create and Fix Memory Leaks With Chrome DevTools](https://betterprogramming.pub/build-me-an-angular-app-with-memory-leaks-please-36302184e658)
 - [JavaScript performance beyond bundle size](https://nolanlawson.com/2021/02/23/javascript-performance-beyond-bundle-size/)
 - [The Import On Interaction Pattern](https://addyosmani.com/blog/import-on-interaction/)

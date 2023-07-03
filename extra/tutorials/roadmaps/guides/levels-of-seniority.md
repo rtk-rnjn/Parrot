@@ -57,7 +57,7 @@ Being a Junior developer in the team is not necessarily a bad thing; since you a
 - Have respect for the code that was written before you. Be generous when passing judgment on the architecture or the design decisions made in the codebase. Understand that code is often ugly and weird for a reason other than incompetence. Learning to live with and thrive with legacy code is a great skill. Never assume anybody is stupid. Instead, figure out how these intelligent, well-intentioned and experienced people have come to a decision that is stupid now. Approach inheriting legacy code with an "opportunity mindset" rather than a complaining one.
 - It's okay to not know things. You don't need to be ashamed of not knowing things already. There are no stupid questions, ask however many questions that would allow you to work effectively.
 - Don't let yourself be limited by the job title that you have. Keep working on your self-improvement.
-- Do your homework. Predict what’s coming down the pipe. Be involved in the team discussions. Even if you are wrong, you will learn something.
+- Do your homework. Predict what's coming down the pipe. Be involved in the team discussions. Even if you are wrong, you will learn something.
 - Learn about the domain that you are working with. Understand the product end-to-end as an end-user. Do not assume things, ask questions and get things cleared when in doubt.
 - Learn to communicate effectively - soft skills matter. Learn how to write good emails, how to present your work, how to phrase your questions in a thoughtful manner.
 - Sit with the senior developers, watch them work, find a mentor. No one likes a know-it-all. Get hold of your ego and be humble enough to take lessons from experienced people.

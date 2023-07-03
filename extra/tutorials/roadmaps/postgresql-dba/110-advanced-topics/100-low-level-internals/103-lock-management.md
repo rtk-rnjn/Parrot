@@ -12,8 +12,8 @@ There are various types of lock modes available, such as `AccessShareLock`, `Row
 
 Some common lock modes in PostgreSQL include:
 
-- **AccessShareLock**: It’s the least restrictive lock and allows other transactions to read the locked object but not modify it.
-- **RowShareLock**: It’s used when a transaction wants to read and lock specific rows of a table.
+- **AccessShareLock**: It's the least restrictive lock and allows other transactions to read the locked object but not modify it.
+- **RowShareLock**: It's used when a transaction wants to read and lock specific rows of a table.
 - **RowExclusiveLock**: This lock mode is a bit more restrictive, allowing other transactions to read the locked object but not update or lock it.
 - **ShareLock**: This mode allows other transactions to read the locked object but not update, delete, or acquire another share lock on it.
 - **ShareRowExclusiveLock**: It is used when a transaction wants to lock an object in shared mode but also prevent other transactions from locking it in shared mode.

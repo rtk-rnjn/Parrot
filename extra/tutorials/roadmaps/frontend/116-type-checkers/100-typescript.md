@@ -11,5 +11,5 @@ Visit the following resources to learn more:
 - [Scrimba — TypeScript Basics](https://scrimba.com/learn/typescript)
 - [TypeScript for Beginners](https://www.youtube.com/watch?v=BwuLxPH8IDs)
 - [What Is TypeScript?](https://thenewstack.io/what-is-typescript/)
-- [TypeScript Tutorial: Go beyond ‘Hello, World!’](https://thenewstack.io/typescript-tutorial-go-beyond-hello-world/)
+- [TypeScript Tutorial: Go beyond ‘Hello, World!'](https://thenewstack.io/typescript-tutorial-go-beyond-hello-world/)
 - [TypeScript Tutorial: A Guide to Using the Programming Language](https://thenewstack.io/typescript-tutorial-a-guide-to-using-the-programming-language/)

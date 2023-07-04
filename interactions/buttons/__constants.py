@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 from string import ascii_uppercase
 from typing import Dict, List, Optional, Tuple, Union
 
 import discord
+from PIL import Image
+
 
 REGIONAL_INDICATOR_EMOJI = (
     "\N{REGIONAL INDICATOR SYMBOL LETTER A}",
@@ -277,3 +281,256 @@ DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 
 
 EmojiSet = Dict[Tuple[bool, bool], str]
+
+grass = Image.open("extra/minecraft/grass64x.png").convert("RGBA")
+water = Image.open("extra/minecraft/water64x.png").convert("RGBA")
+sand = Image.open("extra/minecraft/sand64x.png").convert("RGBA")
+stone = Image.open("extra/minecraft/stone64x.png").convert("RGBA")
+plank = Image.open("extra/minecraft/plank64x.png").convert("RGBA")
+glass = Image.open("extra/minecraft/glass64x.png").convert("RGBA")
+red = Image.open("extra/minecraft/red64x.png").convert("RGBA")
+iron = Image.open("extra/minecraft/iron64x.png").convert("RGBA")
+brick = Image.open("extra/minecraft/brick64x.png").convert("RGBA")
+gold = Image.open("extra/minecraft/gold64x.png").convert("RGBA")
+pur = Image.open("extra/minecraft/pur64x.png").convert("RGBA")
+leaf = Image.open("extra/minecraft/leaf64x.png").convert("RGBA")
+log = Image.open("extra/minecraft/log64x.png").convert("RGBA")
+coal = Image.open("extra/minecraft/coal64x.png").convert("RGBA")
+dia = Image.open("extra/minecraft/diamond64x.png").convert("RGBA")
+lava = Image.open("extra/minecraft/lava64x.png").convert("RGBA")
+hay = Image.open("extra/minecraft/hay64x.png").convert("RGBA")
+snowy = Image.open("extra/minecraft/snowy64x.png").convert("RGBA")
+layer = Image.open("extra/minecraft/layer64x.png").convert("RGBA")
+loff = Image.open("extra/minecraft/lamp_off64x.png").convert("RGBA")
+lon = Image.open("extra/minecraft/lamp_on64x.png").convert("RGBA")
+fence = Image.open("extra/minecraft/fence64x.png").convert("RGBA")
+man = Image.open("extra/minecraft/man.png").convert("RGBA")
+cake = Image.open("extra/minecraft/cake64x.png").convert("RGBA")
+pop = Image.open("extra/minecraft/poppy64x.png").convert("RGBA")
+lapis = Image.open("extra/minecraft/lapis64x.png").convert("RGBA")
+wfull = Image.open("extra/minecraft/water_full64x.png").convert("RGBA")
+lfull = Image.open("extra/minecraft/lava_full64x.png").convert("RGBA")
+wfullmid = Image.open("extra/minecraft/water_full_mid64x.png").convert("RGBA")
+lfullmid = Image.open("extra/minecraft/lava_full_mid64x.png").convert("RGBA")
+wmid = Image.open("extra/minecraft/water_mid64x.png").convert("RGBA")
+lmid = Image.open("extra/minecraft/lava_mid64x.png").convert("RGBA")
+
+fenu = Image.open("extra/minecraft/fence_u64x.png").convert("RGBA")
+fent = Image.open("extra/minecraft/fence_t64x.png").convert("RGBA")
+fens = Image.open("extra/minecraft/fence_s64x.png").convert("RGBA")
+fenb = Image.open("extra/minecraft/fence_b64x.png").convert("RGBA")
+fenbu = Image.open("extra/minecraft/fence_bu64x.png").convert("RGBA")
+fensb = Image.open("extra/minecraft/fence_sb64x.png").convert("RGBA")
+fentb = Image.open("extra/minecraft/fence_tb64x.png").convert("RGBA")
+fents = Image.open("extra/minecraft/fence_ts64x.png").convert("RGBA")
+fentsb = Image.open("extra/minecraft/fence_tsb64x.png").convert("RGBA")
+fenus = Image.open("extra/minecraft/fence_us64x.png").convert("RGBA")
+fenusb = Image.open("extra/minecraft/fence_usb64x.png").convert("RGBA")
+fenut = Image.open("extra/minecraft/fence_ut64x.png").convert("RGBA")
+fenutb = Image.open("extra/minecraft/fence_utb64x.png").convert("RGBA")
+fenuts = Image.open("extra/minecraft/fence_uts64x.png").convert("RGBA")
+fenutsb = Image.open("extra/minecraft/fence_utsb64x.png").convert("RGBA")
+
+won = Image.open("extra/minecraft/wire_on64x.png").convert("RGBA")
+wonu = Image.open("extra/minecraft/wire_on_u64x.png").convert("RGBA")
+wont = Image.open("extra/minecraft/wire_on_t64x.png").convert("RGBA")
+wons = Image.open("extra/minecraft/wire_on_s64x.png").convert("RGBA")
+wonb = Image.open("extra/minecraft/wire_on_b64x.png").convert("RGBA")
+wonbu = Image.open("extra/minecraft/wire_on_bu64x.png").convert("RGBA")
+wonsb = Image.open("extra/minecraft/wire_on_sb64x.png").convert("RGBA")
+wontb = Image.open("extra/minecraft/wire_on_tb64x.png").convert("RGBA")
+wonts = Image.open("extra/minecraft/wire_on_ts64x.png").convert("RGBA")
+wontsb = Image.open("extra/minecraft/wire_on_tsb64x.png").convert("RGBA")
+wonus = Image.open("extra/minecraft/wire_on_us64x.png").convert("RGBA")
+wonusb = Image.open("extra/minecraft/wire_on_usb64x.png").convert("RGBA")
+wonut = Image.open("extra/minecraft/wire_on_ut64x.png").convert("RGBA")
+wonutb = Image.open("extra/minecraft/wire_on_utb64x.png").convert("RGBA")
+wonuts = Image.open("extra/minecraft/wire_on_uts64x.png").convert("RGBA")
+wonutsb = Image.open("extra/minecraft/wire_on_utsb64x.png").convert("RGBA")
+
+woff = Image.open("extra/minecraft/wire_off64x.png").convert("RGBA")
+woffu = Image.open("extra/minecraft/wire_off_u64x.png").convert("RGBA")
+wofft = Image.open("extra/minecraft/wire_off_t64x.png").convert("RGBA")
+woffs = Image.open("extra/minecraft/wire_off_s64x.png").convert("RGBA")
+woffb = Image.open("extra/minecraft/wire_off_b64x.png").convert("RGBA")
+woffbu = Image.open("extra/minecraft/wire_off_bu64x.png").convert("RGBA")
+woffsb = Image.open("extra/minecraft/wire_off_sb64x.png").convert("RGBA")
+wofftb = Image.open("extra/minecraft/wire_off_tb64x.png").convert("RGBA")
+woffts = Image.open("extra/minecraft/wire_off_ts64x.png").convert("RGBA")
+wofftsb = Image.open("extra/minecraft/wire_off_tsb64x.png").convert("RGBA")
+woffus = Image.open("extra/minecraft/wire_off_us64x.png").convert("RGBA")
+woffusb = Image.open("extra/minecraft/wire_off_usb64x.png").convert("RGBA")
+woffut = Image.open("extra/minecraft/wire_off_ut64x.png").convert("RGBA")
+woffutb = Image.open("extra/minecraft/wire_off_utb64x.png").convert("RGBA")
+woffuts = Image.open("extra/minecraft/wire_off_uts64x.png").convert("RGBA")
+woffutsb = Image.open("extra/minecraft/wire_off_utsb64x.png").convert("RGBA")
+
+leoff = Image.open("extra/minecraft/lever_off64x.png").convert("RGBA")
+leon = Image.open("extra/minecraft/lever_on64x.png").convert("RGBA")
+
+selector_back = Image.open("extra/minecraft/selector_back.png").convert("RGBA")
+selector_front = Image.open("extra/minecraft/selector_front.png").convert("RGBA")
+
+code_dict = {
+    "1": grass,
+    "2": water,
+    "3": sand,
+    "4": stone,
+    "5": plank,
+    "6": glass,
+    "7": red,
+    "8": iron,
+    "9": brick,
+    "g": gold,
+    "p": pur,
+    "l": leaf,
+    "o": log,
+    "c": coal,
+    "d": dia,
+    "v": lava,
+    "h": hay,
+    "s": layer,
+    "k": cake,
+    "y": pop,
+    "r": loff,
+    "b": lapis,
+    "%": lon,
+    "f": fence,
+    "w": woff,
+    "$": won,
+    "e": leoff,
+    "#": leon,
+    "┌": woffut,
+    "┐": woffts,
+    "└": woffbu,
+    "┘": woffsb,
+    "│": wofftb,
+    "─": woffus,
+    "┬": woffuts,
+    "┤": wofftsb,
+    "┴": woffusb,
+    "├": woffutb,
+    "┼": woffutsb,
+    "╌": woffu,
+    "╎": wofft,
+    "╍": woffs,
+    "╏": woffb,
+    "┏": wonut,
+    "┓": wonts,
+    "┗": wonbu,
+    "┛": wonsb,
+    "┃": wontb,
+    "━": wonus,
+    "┳": wonuts,
+    "┫": wontsb,
+    "┻": wonusb,
+    "┣": wonutb,
+    "╋": wonutsb,
+    "┄": wonu,
+    "┆": wont,
+    "┅": wons,
+    "┇": wonb,
+    "╔": fenut,
+    "╗": fents,
+    "╚": fenbu,
+    "╝": fensb,
+    "║": fentb,
+    "═": fenus,
+    "╦": fenuts,
+    "╣": fentsb,
+    "╩": fenusb,
+    "╠": fenutb,
+    "╬": fenutsb,
+    "╶": fenu,
+    "╷": fent,
+    "╴": fens,
+    "╵": fenb,
+    "░": wfull,
+    "▒": lfull,
+    "▓": wfullmid,
+    "∙": wmid,
+    "█": lfullmid,
+    "·": lmid,
+}
+
+codes = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "g",
+    "p",
+    "l",
+    "o",
+    "c",
+    "d",
+    "v",
+    "h",
+    "s",
+    "k",
+    "y",
+    "r",
+    "b",
+    "%",
+    "f",
+    "w",
+    "$",
+    "e",
+    "#",
+    "┌",
+    "┐",
+    "└",
+    "┘",
+    "│",
+    "─",
+    "┬",
+    "┤",
+    "┴",
+    "├",
+    "┼",
+    "╌",
+    "╎",
+    "╍",
+    "╏",
+    "┏",
+    "┓",
+    "┗",
+    "┛",
+    "┃",
+    "━",
+    "┳",
+    "┫",
+    "┻",
+    "┣",
+    "╋",
+    "┄",
+    "┆",
+    "┅",
+    "┇",
+    "╔",
+    "╗",
+    "╚",
+    "╝",
+    "║",
+    "═",
+    "╩",
+    "╠",
+    "╦",
+    "╣",
+    "╬",
+    "╴",
+    "╶",
+    "╵",
+    "╷",
+    "░",
+    "▒",
+    "▓",
+    "█",
+    "∙",
+    "·",
+]

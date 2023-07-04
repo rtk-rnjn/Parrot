@@ -109,12 +109,12 @@ class Defcon(Cog):
                     except discord.Forbidden:
                         log.warning(f"Failed to hide channel {channel.id} in guild {ctx.guild.id}")
 
-            if channel_hidded:
-                await self.bot.guild_configurations.update_one(
-                    {"_id": ctx.guild.id},
-                    {"$set": {"default_defcon.hidden_channels": channel_hidded}},
-                    upsert=True,
-                )
+        if channel_hidded:
+            await self.bot.guild_configurations.update_one(
+                {"_id": ctx.guild.id},
+                {"$set": {"default_defcon.hidden_channels": channel_hidded}},
+                upsert=True,
+            )
 
         channel_locked = []
         if settings.get("LOCK_VOICE_CHANNELS"):
@@ -289,9 +289,9 @@ class Defcon(Cog):
 
     @defcon.command(name="set")
     @commands.has_permissions(manage_guild=True)
-    async def _defcon_set(self, ctx: Context, *, level: int = 0) -> None:
+    async def _defcon_set(self, ctx: Context, *, level: int = 1) -> None:
         """Set the level of defcon"""
-        if level > 5 or level < 0:
+        if level > 5 or level < 1:
             await ctx.reply("Defcon level must be between 0 and 5 (inclusive).")
             return
 

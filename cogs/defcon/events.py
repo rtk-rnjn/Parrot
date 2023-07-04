@@ -14,13 +14,19 @@ class DefconListeners(Cog):
         self.settings = bot.guild_configurations_cache
 
     async def defcon_broadcast(self, message: Union[str, discord.Embed], *, guild: discord.Guild, level: int) -> None:
+        if self.has_defcon_in(guild) is False:
+            await self.bot.guild_configurations.update_one(
+                {"_id": guild.id}, {"$set": {"default_defcon.level": level}}, upsert=True
+            )
+            self.settings[guild.id]["default_defcon"] = {"level": level, "broadcast": {"enabled": True, "channel": None}}
+
         if "broadcast" not in self.settings[guild.id]["default_defcon"]:
             return
 
         if not self.settings[guild.id]["default_defcon"]["broadcast"]["enabled"]:
             return
 
-        channel = guild.get_channel(self.settings[guild.id]["default_defcon"]["broadcast"]["channel"])
+        channel = guild.get_channel(self.settings[guild.id]["default_defcon"]["broadcast"]["channel"] or 0)
         if not channel:
             return
 

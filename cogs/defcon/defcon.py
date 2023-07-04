@@ -316,10 +316,13 @@ class Defcon(Cog):
 
     @defcon.command(name="reset")
     @commands.has_permissions(manage_guild=True)
-    async def _defcon_reset(self, ctx: Context, *, level: int = 0) -> None:
+    async def _defcon_reset(self, ctx: Context) -> None:
         """Reset the defcon level"""
-        if level > 5 or level < 0:
-            await ctx.reply("Defcon level must be between 0 and 5 (inclusive).")
+        
+        default_defcon = self.bot.guild_configurations_cache[ctx.guild.id].get("default_defcon", {})
+        level = default_defcon.get("level", -1)
+        if level == -1:
+            await ctx.reply("Defcon is not set.")
             return
 
         prompt = await ctx.prompt("**Are you sure you want to reset defcon?**", timeout=60)

@@ -143,9 +143,9 @@ class PourView(discord.ui.View):
                     draw.rectangle(
                         (
                             btn.bottle.num * 50 - 20,
-                            150 - i * 20,
-                            16 + btn.bottle.num * 50,
                             130 - i * 20,
+                            16 + btn.bottle.num * 50,
+                            150 - i * 20,
                         ),
                         liquid.color,
                     )

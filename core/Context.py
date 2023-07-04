@@ -66,12 +66,12 @@ Callback = MaybeAwaitable
 # VOTER_ROLE_ID = 836492413312040990
 log = logging.getLogger("core.context")
 
-try:
-    import lxml
+import importlib.util
 
+HTML_PARSER = "html.parser"
+
+if importlib.util.find_spec("lxml") is not None:
     HTML_PARSER = "lxml"
-except ImportError:
-    HTML_PARSER = "html.parser"
 
 
 class Context(commands.Context[commands.Bot], Generic[BotT]):

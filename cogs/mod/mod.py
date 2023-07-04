@@ -7,14 +7,11 @@ import shlex
 from typing import List, Optional, Union
 
 import wavelink
-from pymongo.collection import Collection
 from typing_extensions import Annotated
 
 import discord
-from cogs.meta.robopage import SimplePages
 from cogs.mod import method as mt
 from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_CHANNEL_EMBED
-from cogs.mod.flags import WarnFlag
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod

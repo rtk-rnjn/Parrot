@@ -7,6 +7,7 @@ import discord
 from core import Context, Parrot
 
 from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
+from .utils import chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
@@ -20,8 +21,6 @@ if TYPE_CHECKING:
     Board: TypeAlias = List[List[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
 
 BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
-
-from .utils import chunk, double_wait, wait_for_delete
 
 
 class LightsOutButton(discord.ui.Button["LightsOutView"]):

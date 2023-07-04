@@ -17,9 +17,10 @@ import discord
 from core import Context, Parrot
 from utilities.converters import ToAsync
 
+from .utils import DEFAULT_COLOR, BaseView
+
 DiscordColor: TypeAlias = Union[discord.Color, int]
 
-from .utils import DEFAULT_COLOR, BaseView
 
 BORDER = 40
 SQ = 100

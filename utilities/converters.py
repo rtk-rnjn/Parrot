@@ -92,11 +92,7 @@ class WrappedMessageConverter(commands.MessageConverter):
 
 
 def can_execute_action(ctx: Context, user: discord.Member, target: discord.Member) -> bool:
-    return (
-        user.id in ctx.bot.owner_ids
-        or user == ctx.guild.owner
-        or user.top_role > target.top_role
-    )
+    return user.id in ctx.bot.owner_ids or user == ctx.guild.owner or user.top_role > target.top_role
 
 
 class MemberID(commands.Converter):
@@ -126,7 +122,7 @@ class MemberID(commands.Converter):
             raise commands.BadArgument(
                 f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
             )
-        return m 
+        return m
 
 
 def lru_callback(key: KT, value: VT) -> None:  # type: ignore

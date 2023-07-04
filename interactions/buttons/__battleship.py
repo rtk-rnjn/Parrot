@@ -16,6 +16,7 @@ from core import Context, Parrot
 from utilities.converters import ToAsync
 
 from .__wordle import WordInputButton
+from .utils import BaseView
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -32,8 +33,6 @@ SHIPS: Dict[str, Tuple[int, Tuple[int, int, int]]] = {
     "submarine": (3, (95, 245, 80)),
     "patrol boat": (2, (190, 190, 190)),
 }
-
-from .utils import BaseView
 
 
 class Ship:

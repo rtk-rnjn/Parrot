@@ -3,9 +3,9 @@ from __future__ import annotations
 from string import ascii_uppercase
 from typing import Dict, List, Optional, Tuple, Union
 
-import discord
 from PIL import Image
 
+import discord
 
 REGIONAL_INDICATOR_EMOJI = (
     "\N{REGIONAL INDICATOR SYMBOL LETTER A}",

@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 import weakref
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Literal, Optional, Type, TypeVar, Union, List, Dict
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Literal, Optional, Type, TypeVar, Union
 from urllib.parse import quote as _uriquote
 
 import aiohttp

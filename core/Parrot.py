@@ -909,7 +909,7 @@ class Parrot(commands.AutoShardedBot):
         member_id: discord.Object,
     ) -> Optional[discord.Member]:
         ...
-    
+
     @overload
     async def get_or_fetch_member(
         self,

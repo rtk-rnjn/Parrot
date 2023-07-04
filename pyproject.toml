@@ -23,4 +23,10 @@ exclude = [
 ]
 
 [tool.ruff]
-line_length = 150
+line-length = 150
+ignore = [
+    "E501",  # Line too long
+    "F403",  # Import star used
+    "F405",  # Undefined name
+    "E741",  # Ambiguous variable name
+]

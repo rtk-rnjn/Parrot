@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 import discord
 from core import Parrot

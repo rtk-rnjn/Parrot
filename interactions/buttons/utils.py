@@ -5,7 +5,6 @@ import functools
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Final, List, Optional, Set, Tuple, TypeVar, Union
 
 import discord
-
 from core import Context, Parrot
 
 if TYPE_CHECKING:

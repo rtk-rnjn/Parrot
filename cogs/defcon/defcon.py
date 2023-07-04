@@ -318,7 +318,7 @@ class Defcon(Cog):
     @commands.has_permissions(manage_guild=True)
     async def _defcon_reset(self, ctx: Context) -> None:
         """Reset the defcon level"""
-        
+
         default_defcon = self.bot.guild_configurations_cache[ctx.guild.id].get("default_defcon", {})
         level = default_defcon.get("level", -1)
         if level == -1:

@@ -1,14 +1,14 @@
 from collections import namedtuple
 from io import BytesIO
 
+from PIL import Image, ImageDraw, ImageFont
+
 import discord
 from utilities.converters import ToAsync
 
-Liquid = namedtuple("Liquid", "color")
-
-from PIL import Image, ImageDraw, ImageFont
-
 from .levels import levels
+
+Liquid = namedtuple("Liquid", "color")
 
 
 class Bottle:

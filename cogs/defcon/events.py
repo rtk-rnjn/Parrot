@@ -117,6 +117,10 @@ class DefconListeners(Cog):
         if defcon is False:
             return
 
+        settings = DEFCON_SETTINGS[defcon]["SETTINGS"]
+        if settings.get("LOCK_ASSIGN_ROLES", False):
+            return
+
         mod = await self.bot.get_or_fetch_member(entry.guild, entry.user_id)
         if mod is None:
             return
@@ -147,6 +151,12 @@ class DefconListeners(Cog):
                 )
             except discord.Forbidden:
                 pass
+            else:
+                await self.defcon_broadcast(
+                    f"Roles added to **{entry.target}** (`{getattr(entry.target, 'id', 'ID Not Found')}`) were removed for DEFCON level {defcon}",
+                    guild=entry.guild,
+                    level=defcon,
+                )
 
         if removed:
             try:
@@ -155,6 +165,28 @@ class DefconListeners(Cog):
                 )
             except discord.Forbidden:
                 pass
+            else:
+                await self.defcon_broadcast(
+                    f"Roles removed from **{entry.target}** (`{getattr(entry.target, 'id', 'ID Not Found')}`) were added back for DEFCON level {defcon}",
+                    guild=entry.guild,
+                    level=defcon,
+                )
+
+    async def defon_role_create(self, role: discord.Role, level: int) -> None:
+        settings = DEFCON_SETTINGS[level]["SETTINGS"]
+        if settings.get("ALLOW_CREATE_ROLE", True):
+            return
+
+        try:
+            await role.delete(reason=f"DEFCON is active and does not allow role creation. LEVEL {level}")
+        except discord.Forbidden:
+            pass
+        else:
+            await self.defcon_broadcast(
+                f"Role created by **{role}** (`{getattr(role, 'id', 'ID Not Found')}`) was deleted for DEFCON level {level}",
+                guild=role.guild,
+                level=level,
+            )
 
     @Cog.listener("on_audit_log_entry_create")
     async def audit_role_create(self, entry: discord.AuditLogEntry) -> None:
@@ -175,10 +207,7 @@ class DefconListeners(Cog):
         if not isinstance(entry.target, discord.Role):
             return
 
-        try:
-            await entry.target.delete(reason=f"DEFCON is active and does not allow role creation. LEVEL {defcon}")
-        except discord.Forbidden:
-            pass
+        await self.defon_role_create(entry.target, defcon)
 
     @Cog.listener()
     async def on_invite_create(self, invite: discord.Invite) -> None:

@@ -812,7 +812,7 @@ class Games(Cog):
 
     @commands.command(aliases=["lightsout"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def lightout(self, ctx: Context, count: int = 4):
+    async def lightout(self, ctx: Context, count: Literal[1, 2, 3, 4, 5] = 4):
         """Light Out Game"""
         lg = LightsOut(count)
         await lg.start(ctx, timeout=120)
@@ -979,7 +979,7 @@ class Games(Cog):
         sort_by = f"game_{game_type}_{flag.sort_by or 'played'}"
         order_by = pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
 
-        FILTER = {sort_by: {"$exists": True}}
+        FILTER: dict = {sort_by: {"$exists": True}}
 
         if flag.me and flag._global:
             return await ctx.send(f"{ctx.author.mention} you can't use both `--me` and `--global` at the same time!")
@@ -1026,7 +1026,7 @@ class Games(Cog):
         `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
-        user = user or ctx.author
+        user = user or ctx.author  # type: ignore
         col = self.bot.game_collections
 
         sort_by = flag.sort_by
@@ -1089,7 +1089,7 @@ class Games(Cog):
         entries = []
         i = 1
         sort_by = f"game_{game_type}_{flag.sort_by or 'played'}".replace(" ", "_").lower()
-        FILTER = {sort_by: {"$exists": True}}
+        FILTER: dict = {sort_by: {"$exists": True}}
         if flag.me:
             FILTER["_id"] = ctx.author.id
         elif not flag._global:
@@ -1349,4 +1349,3 @@ class Games(Cog):
             view=interactive_view,
             mention_author=False,
         )
-        await game.start(ctx)

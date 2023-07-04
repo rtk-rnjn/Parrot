@@ -15,7 +15,7 @@ with contextlib.suppress(ImportError):
 with open("config.yml", encoding="utf-8", errors="ignore") as f:
     data: Dict[str, Any] = yaml.safe_load(f.read())
 
-VERSION = "v5.0-alpha.3"
+VERSION = "v5.0.0"
 
 HEROKU: bool = True
 
@@ -57,7 +57,7 @@ SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")  # type: ignore
 
-LRU_CACHE = 128 if HEROKU else 256
+LRU_CACHE = 64 if HEROKU else 256
 TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
 # TO_LOAD_IPC: bool = True
 

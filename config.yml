@@ -2,7 +2,7 @@ all_extensions:
   - cogs.actions
   - cogs.api
   - cogs.config
-  - cogs.fun
+  # - cogs.fun
   - cogs.holidays
   - cogs.holidays.easter
   - cogs.ipc
@@ -15,11 +15,11 @@ all_extensions:
   - cogs.nsfw
   - cogs.owner
   - cogs.rtfm
-  - cogs.sports
-  - cogs.telephone
+  # - cogs.sports
+  # - cogs.telephone
   - cogs.ticket
   - cogs.utils
-  - cogs.wolfram
+  # - cogs.wolfram
   - events.custom_events
   - events.guild.channel
   - events.guild.extra
@@ -31,15 +31,15 @@ all_extensions:
   - events.on_msg
   - events.on_rexn
   - events.user
-  - events.arbitrary_events
-  - interactions.buttons
-  - interactions.buttons.foggle
-  - interactions.buttons.snakes
+  # - events.arbitrary_events
+  # - interactions.buttons
+  # - interactions.buttons.foggle
+  # - interactions.buttons.snakes
   - interactions.slash
   - jishaku
   - custom_commands
-  - cogs.highlight
-  - cogs.defcon
+  # - cogs.highlight
+  # - cogs.defcon
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

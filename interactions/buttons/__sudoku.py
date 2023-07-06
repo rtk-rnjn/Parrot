@@ -8,8 +8,6 @@ import discord
 
 T = TypeVar("T")
 
-## Project under development
-
 
 class Sudoku:
     def __init__(self, base: int = 3):
@@ -45,8 +43,22 @@ class Sudoku:
         line3 = "  " + self.expand_line("╠═══╪═══╬═══╣")
         line4 = "  " + self.expand_line("╚═══╧═══╩═══╝")
 
-        symbol = " 123456789" if self.base <= 3 else " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        nums = [[""] + [f"({symbol[-n]})" if n < 0 else f" {symbol[n]} " for n in row] for row in self.board]
+        symbol = " 123456789"
+        nums = []
+        for row_index, row in enumerate(self.board):
+            temp = []
+            for col_index, n in enumerate(row):
+                if (self._current_row, self._current_col) == (row_index, col_index):
+                    if n < 0:
+                        temp.append(f"[{symbol[-n]}]")
+                    else:
+                        temp.append(f"[{symbol[n]}]")
+                if n < 0:
+                    temp.append("   ")
+                else:
+                    temp.append(f" {symbol[n]} ")
+            nums.append([""] + temp)
+
         coord = "   " + "".join(f" {s}  " for s in symbol[1 : self.side + 1])
         lines = [coord, line0]
         board = ""
@@ -159,6 +171,11 @@ class Sudoku:
     def cursor_position(self, position: Tuple[int, int]) -> None:
         self._current_row, self._current_col = position
 
+    def erase_current_position(self) -> None:
+        if (self._current_row, self._current_col) in self._changeable_positions:
+            return
+        self.board[self._current_row][self._current_col] = 0
+
 
 class SudokuButton(discord.ui.Button["SudokuView"]):
     def __init__(**kwargs: Any):
@@ -169,6 +186,9 @@ class SudokuButton(discord.ui.Button["SudokuView"]):
 
         if self.view.game.is_current_number_empty and self.label:
             self.view.game.place_number(int(self.label))
+            await interaction.response.edit_message(content=self.view.game.display_board("discord"), view=self.view)
+        else:
+            await interaction.response.defer()
 
 
 class SudokuView(discord.ui.View):
@@ -186,7 +206,7 @@ class SudokuView(discord.ui.View):
                 SudokuButton(
                     label=str(i),
                     custom_id=f"sudoku_{i}",
-                    row=2,
+                    row=3,
                 )
             )
 
@@ -195,7 +215,7 @@ class SudokuView(discord.ui.View):
                 SudokuButton(
                     label=str(j),
                     custom_id=f"sudoku_{j}",
-                    row=3,
+                    row=4,
                 )
             )
 
@@ -212,7 +232,8 @@ class SudokuView(discord.ui.View):
         style=discord.ButtonStyle.secondary,
     )
     async def up_button(self, interaction: discord.Interaction, _: discord.ui.Button):
-        pass
+        self.game.move_cursor_up()
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
 
     @discord.ui.button(
         label="\u200b",
@@ -228,15 +249,18 @@ class SudokuView(discord.ui.View):
         row=1,
     )
     async def left_button(self, interaction: discord.Interaction, _: discord.ui.Button):
-        pass
+        self.game.move_cursor_left()
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
 
     @discord.ui.button(
         emoji="\N{MEMO}",
         style=discord.ButtonStyle.secondary,
         disabled=True,
+        row=1,
     )
     async def erase(self, interaction: discord.Interaction, _: discord.ui.Button):
-        pass
+        self.game.erase_current_position()
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
 
     @discord.ui.button(
         emoji="\N{BLACK RIGHTWARDS ARROW}",
@@ -244,12 +268,14 @@ class SudokuView(discord.ui.View):
         row=1,
     )
     async def right_button(self, interaction: discord.Interaction, _: discord.ui.Button):
-        pass
+        self.game.move_cursor_right()
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
 
     @discord.ui.button(
         label="\u200b",
         style=discord.ButtonStyle.secondary,
         disabled=True,
+        row=2,
     )
     async def __null_4(self, interaction: discord.Interaction, _: discord.ui.Button):
         return
@@ -257,14 +283,17 @@ class SudokuView(discord.ui.View):
     @discord.ui.button(
         emoji="\N{DOWNWARDS BLACK ARROW}",
         style=discord.ButtonStyle.secondary,
+        row=2,
     )
     async def down_button(self, interaction: discord.Interaction, _: discord.ui.Button):
-        pass
+        self.game.move_cursor_down()
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
 
     @discord.ui.button(
         label="\u200b",
         style=discord.ButtonStyle.secondary,
         disabled=True,
+        row=2,
     )
     async def __null_5(self, interaction: discord.Interaction, _: discord.ui.Button):
         return

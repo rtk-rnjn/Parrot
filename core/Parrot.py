@@ -80,6 +80,7 @@ from utilities.config import (
 )
 from utilities.converters import Cache, ToAsync
 from utilities.paste import Client
+from utilities.regex import LINKS_RE
 
 from .__template import post as POST
 from .Context import Context
@@ -1335,7 +1336,7 @@ class Parrot(commands.AutoShardedBot):
     @overload
     async def get_or_fetch_message(
         self,
-        channel: ...,
+        channel: Union[discord.Object, discord.PartialMessageable],
         message: int,
     ) -> Optional[discord.Message]:
         ...
@@ -1354,18 +1355,24 @@ class Parrot(commands.AutoShardedBot):
         channel: ...,
         message: ...,
         *,
-        fetch: bool = ...,
         cache: bool = ...,
         partial: bool = ...,
         force_fetch: bool = ...,
         dm_allowed: bool = ...,
     ) -> Optional[Union[discord.Message, discord.PartialMessage]]:
         ...
+    
+    @overload
+    async def get_or_fetch_message(
+        self,
+        channel: Union[str, int],
+    ) -> Optional[discord.Message]:
+        ...
 
     async def get_or_fetch_message(
         self,
-        channel: Union[discord.Object, int, discord.PartialMessageable],
-        message: Union[int, str],
+        channel: Union[discord.Object, str, int, discord.PartialMessageable],
+        message: Optional[Union[int, str]] = None,
         *,
         fetch: bool = True,
         cache: bool = True,
@@ -1384,7 +1391,7 @@ class Parrot(commands.AutoShardedBot):
         message: int
             The message ID to search for.
         fetch: bool
-            To fetch the message from channel or not.
+            [Deprecated]
         cache: bool
             To get message from internal cache.
         partaial: bool
@@ -1395,6 +1402,17 @@ class Parrot(commands.AutoShardedBot):
         Optional[discord.Message]
             The Message or None if not found.
         """
+        if message is None:
+            dummy_message = str(channel)
+            if link := LINKS_RE.match(dummy_message):
+                dummy_message_id = int(link.string.split("/")[-1])
+                if dummy_message_id in self.message_cache:
+                    return self.message_cache[dummy_message_id]
+            
+            try:
+                return self.message_cache[int(dummy_message)]
+            except (ValueError, KeyError):
+                return None
 
         message = int(message)
 
@@ -1432,14 +1450,13 @@ class Parrot(commands.AutoShardedBot):
             log.debug("Got message from cache %s", msg)
             return msg
         except KeyError:
-            if fetch:
-                async for msg in channel.history(  # type: ignore
-                    limit=1,
-                    before=discord.Object(message + 1),
-                    after=discord.Object(message - 1),
-                ):
-                    self.message_cache[message] = msg
-                    return msg
+            async for msg in channel.history(  # type: ignore
+                limit=1,
+                before=discord.Object(message + 1),
+                after=discord.Object(message - 1),
+            ):
+                self.message_cache[message] = msg
+                return msg
 
         return None
 

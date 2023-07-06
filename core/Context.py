@@ -210,20 +210,20 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         italic: bool = False,
         underline: bool = False,
         **kwargs: Any,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message:
         assert isinstance(self.me, discord.Member)
 
         perms: discord.Permissions = self.channel.permissions_for(self.me)
         if not (perms.send_messages and perms.embed_links):
             with suppress(discord.Forbidden):
-                await self.author.send(
+                return await self.author.send(
                     (
                         "Bot don't have either Embed Links/Send Messages permission in that channel. "
                         "Please give sufficient permissions to the bot."
                     ),
                     view=self.send_view(),
                 )
-                return None
+
         if bold:
             content = f"**{content}**"
         if italic:
@@ -231,16 +231,15 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         if underline:
             content = f"__{content}__"
 
-        log.debug("Sending message to channel `%s` (%s)", self.channel, self.channel.id)
         return await super().send(str(content)[:1990] if content else None, **kwargs)
 
-    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Optional[discord.Message]:
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> discord.Message:
         try:
             return await self.send(content, reference=kwargs.get("reference") or self.message, **kwargs)
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
-    async def error(self, *args: Any, **kwargs: Any) -> Optional[discord.Message]:
+    async def error(self, *args: Any, **kwargs: Any) -> discord.Message:
         """Similar to send, but if the original message is deleted, it will delete the error message as well."""
         embed: Optional[discord.Embed] = kwargs.get("embed")
         if isinstance(embed, discord.Embed) and not embed.color:
@@ -261,17 +260,17 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             except asyncio.TimeoutError:
                 return msg
             else:
-                return await msg.delete(delay=0)
+                await msg.delete(delay=0)
         return msg
 
-    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
+    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> discord.Message:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"{name:<{width}}: {entry}" for name, entry in entries)
         output.append("```")
         return await self.send("\n".join(output))
 
-    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> Optional[discord.Message]:
+    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> discord.Message:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"\u200b{name:>{width}}: {entry}" for name, entry in entries)
@@ -350,7 +349,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         delete_after: bool = False,
         **kwargs: Any,
     ) -> Optional[bool]:
-        message: Optional[discord.Message] = await channel.send(*args, **kwargs)
+        message: discord.Message = await channel.send(*args, **kwargs)
         await self.bulk_add_reactions(message, *CONFIRM_REACTIONS)
 
         def check(payload: discord.RawReactionActionEvent) -> bool:
@@ -496,6 +495,16 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             log.info(f"Cancelled pending task {pending}")
 
         return [r.result() for r in completed]
+
+    async def wait_for_message(self, *, timeout: Optional[float] = None) -> discord.Message:
+        try:
+            return await self.bot.wait_for(
+                "message",
+                timeout=timeout,
+                check=lambda m: m.author == self.author and m.channel == self.channel,
+            )
+        except asyncio.TimeoutError as e:
+            raise commands.BadArgument("You took too long to respond.") from e
 
     async def wait_for_till(
         self,

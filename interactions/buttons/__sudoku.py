@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import Any, List, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, TypeVar
 
 import discord
+
+if TYPE_CHECKING:
+    from core import Context
 
 T = TypeVar("T")
 
@@ -178,9 +181,6 @@ class Sudoku:
 
 
 class SudokuButton(discord.ui.Button["SudokuView"]):
-    def __init__(**kwargs: Any):
-        super().__init__(style=discord.ButtonStyle.secondary, **kwargs)
-
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
 
@@ -218,6 +218,12 @@ class SudokuView(discord.ui.View):
                     row=4,
                 )
             )
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id == self.message.author.id:
+            return True
+        await interaction.response.send_message("You cannot interact with this message.", ephemeral=True)
+        return False
 
     @discord.ui.button(
         label="\u200b",
@@ -297,3 +303,10 @@ class SudokuView(discord.ui.View):
     )
     async def __null_5(self, interaction: discord.Interaction, _: discord.ui.Button):
         return
+
+    async def start(
+        self,
+        ctx: Context,
+    ) -> None:
+        self.init()
+        self.message = await ctx.send(self.game.display_board("discord"), view=self)  # type: ignore

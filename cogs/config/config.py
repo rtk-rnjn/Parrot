@@ -777,18 +777,18 @@ class Configuration(Cog):
         self,
         ctx: Context,
         command: commands.clean_content,
-        target: Optional[Union[discord.TextChannel, discord.Role]] = None,
-        force: Optional[convert_bool] = None,
+        *,
+        target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
     ):
         """To enable the command"""
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
-            await mt_._enable(self.bot, ctx, cmd.qualified_name, target, force)
+            await mt_._enable(ctx, cmd.qualified_name, target)
         elif cog is not None:
-            await mt_._enable(self.bot, ctx, cog.qualified_name, target, force)
+            await mt_._enable(ctx, cog.qualified_name, target)
         elif command == "all":
-            await mt_._enable(self.bot, ctx, "all", target, force)
+            await mt_._enable(ctx, "all", target)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
 
@@ -799,18 +799,18 @@ class Configuration(Cog):
         self,
         ctx: Context,
         command: commands.clean_content,
-        target: Optional[Union[discord.TextChannel, discord.Role]] = None,
-        force: Optional[convert_bool] = None,
+        *,
+        target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
     ):
         """To disable the command"""
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
-            await mt_._disable(self.bot, ctx, cmd.qualified_name, target, force)
+            await mt_._disable(ctx, cmd.qualified_name, target)
         elif cog is not None:
-            await mt_._disable(self.bot, ctx, cog.qualified_name, target, force)
+            await mt_._disable(ctx, cog.qualified_name, target)
         elif command == "all":
-            await mt_._disable(self.bot, ctx, "all", target, force)
+            await mt_._disable(ctx, "all", target)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
 

@@ -234,7 +234,6 @@ class Parrot(commands.AutoShardedBot):
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
-        self._CogMixin__cogs = commands.core._CaseInsensitiveDict()  # pycord be like
         self._seen_messages: int = 0
         self._change_log: List[discord.Message] = []
 
@@ -1028,6 +1027,9 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
+        await self.__update_server_config_cache(guild_id)
+
+    async def __update_server_config_cache(self, guild_id: int):
         log.debug("Updating server config cache for guild %s", guild_id)
         if data := await self.guild_configurations.find_one({"_id": guild_id}):
             self.guild_configurations_cache[guild_id] = data
@@ -1440,3 +1442,9 @@ class Parrot(commands.AutoShardedBot):
                     return msg
 
         return None
+
+    async def ensure_guild_cache(self, guild: discord.Guild):
+        if guild.id in self.guild_configurations_cache:
+            return
+
+        await self.__update_server_config_cache(guild.id)

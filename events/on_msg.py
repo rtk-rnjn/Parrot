@@ -435,6 +435,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if message.guild is None:
             return
 
+        await self.bot.ensure_guild_cache(message.guild)
+
         if message.guild.me.id == message.author.id:
             return
 
@@ -488,15 +490,16 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         data = data["global_chat"]
 
         bucket = self.cd_mapping.get_bucket(message)
-        if retry_after := bucket.update_rate_limit():
-            await message.channel.send(
-                (
-                    f"{message.author.mention} Chill out | You reached the limit | \n"
-                    f"Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**"
-                ),
-                delete_after=10,
-            )
-            return
+        if bucket:
+            if retry_after := bucket.update_rate_limit():
+                await message.channel.send(
+                    (
+                        f"{message.author.mention} Chill out | You reached the limit | \n"
+                        f"Continous spam may leads to ban from global-chat | **Send message after {round(retry_after, 3)}s**"
+                    ),
+                    delete_after=10,
+                )
+                return
 
         guild = data
         role_id = guild.get("ignore_role") or 0
@@ -742,7 +745,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             await member.add_roles(role, reason=reason)
 
     async def _on_message_passive(self, message: discord.Message):
-        if message.guild is None or message.author.bot:
+        if message.guild is None:
             return
 
         await asyncio.gather(
@@ -752,7 +755,12 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _on_message_passive_afk_user_message(self, message: discord.Message):
         # code - when the AFK user messages
-        if message.author.id not in self.bot.afk_users:
+        if message.author.bot and message.interaction is not None:
+            interacted_user = message.interaction.user
+        else:
+            interacted_user = message.author
+
+        if interacted_user.id not in self.bot.afk_users:
             return
 
         data = await self.bot.afk_collection.find_one_and_delete(
@@ -761,11 +769,11 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     {
                         "$or": [
                             {
-                                "messageAuthor": message.author.id,
+                                "messageAuthor": interacted_user.id,
                                 "guild": message.guild.id,
                             },
                             {
-                                "messageAuthor": message.author.id,
+                                "messageAuthor": interacted_user.id,
                                 "global": True,
                             },
                         ]
@@ -777,14 +785,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if not data:
             return
         # Thanks `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
-        await message.channel.send(f"{message.author.mention} welcome back!", delete_after=5)
+        await message.channel.send(f"{interacted_user.mention} welcome back!", delete_after=5)
         try:
-            if str(message.author.display_name).startswith(("[AFK]", "[AFK] ")) and (
-                isinstance(message.author, discord.Member)
+            if str(interacted_user.display_name).startswith(("[AFK]", "[AFK] ")) and (
+                isinstance(interacted_user, discord.Member)
             ):
-                name = message.author.display_name[5:]
+                name = interacted_user.display_name[5:]
                 if len(name) != 0 or name not in (" ", ""):
-                    await message.author.edit(nick=name, reason=f"{message.author} came after AFK")
+                    await interacted_user.edit(nick=name, reason=f"{interacted_user} came after AFK")
         except discord.Forbidden:
             pass
 
@@ -830,7 +838,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         if match := QUESTION_REGEX.fullmatch(message.content if isinstance(message, discord.Message) else message):
-
             word = replace_many(
                 match.string,
                 {"means": "", "what is": "", " ": "", "?": "", ".": ""},

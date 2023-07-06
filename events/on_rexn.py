@@ -65,9 +65,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             log.debug("Starboard locked")
             return
 
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(
-            payload.channel_id, payload.message_id
-        )
+        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
         if not msg:
             log.debug("Message not found %s-%s", payload.channel_id, payload.message_id)
             return  # rare case

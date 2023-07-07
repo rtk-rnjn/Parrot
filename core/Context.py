@@ -313,7 +313,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         else:
             await asyncio.sleep(_for or 0, result)
 
-    async def safe_send(self, content: str, *, escape_mentions: bool = True, **kwargs: Any) -> Optional[discord.Message]:
+    async def safe_send(self, content: str, *, escape_mentions: bool = True, **kwargs: Any) -> discord.Message:
         if escape_mentions:
             content = discord.utils.escape_mentions(content)
 

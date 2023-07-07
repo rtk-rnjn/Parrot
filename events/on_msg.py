@@ -905,7 +905,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             "_id": message.author.id,
         }
         update = {
-            "pull": {
+            "$pull": {
                 "messageCollection.timestamp": discord.utils.utcnow().timestamp() - 60 * 60 * 24 * 30, # 30 days 
             },
         }
@@ -921,17 +921,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             "_id": message.author.id,
         }
         update = {
-            "$inc": {
-                "messageCount": 1,
-            },
-            "$set": {
-                "lastMessage": {
-                    "content": message.content,
-                    "channel": message.channel.id,
-                    "guild": getattr(message.guild, "id", None),
-                    "timestamp": message.created_at.timestamp(),
-                },
-            },
             "$addToSet": {
                 "messageCollection": self.get_raw_message(message),
             },

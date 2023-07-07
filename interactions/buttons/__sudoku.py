@@ -95,7 +95,7 @@ class Sudoku:
         self.board[row][col] = number
 
     def place_number(self, number: int) -> None:
-        if (self._current_row, self._current_col) in self._changeable_positions:
+        if (self._current_row, self._current_col) not in self._changeable_positions:
             return
         self.board[self._current_row][self._current_col] = number
 
@@ -175,7 +175,8 @@ class Sudoku:
         self._current_row, self._current_col = position
 
     def erase_current_position(self) -> None:
-        if (self._current_row, self._current_col) in self._changeable_positions:
+        if (self._current_row, self._current_col) not in self._changeable_positions:
+            print("You can't erase this number!")
             return
         self.board[self._current_row][self._current_col] = 0
 

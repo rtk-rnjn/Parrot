@@ -108,6 +108,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if message is None:
             return stars
 
+
         if data := await self.bot.starboards.find_one(
             {
                 "$or": [
@@ -142,7 +143,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         return "\N{DIZZY SYMBOL}" if 25 > stars >= 10 else "\N{SPARKLES}"
 
     async def star_post(self, *, starboard_channel: discord.TextChannel, message: discord.Message):
-        count = await self.get_star_count(message, from_db=True)
+        count = await self.get_star_count(message)
 
         embed: discord.Embed = discord.Embed(timestamp=message.created_at, color=self.star_gradient_colour(count))
         embed.set_footer(text=f"ID: {message.author.id}")

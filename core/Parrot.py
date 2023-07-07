@@ -112,7 +112,7 @@ dbl_token = os.environ["TOPGG"]
 CHANGE_LOG_ID = CHANGE_LOG_CHANNEL_ID
 DEFAULT_PREFIX: Literal["$"] = "$"
 
-logger = logging.getLogger()
+logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
 
 
@@ -229,9 +229,9 @@ class Parrot(commands.AutoShardedBot):
             allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=1,
-            max_messages=5000,
+            max_messages=1000 if HEROKU else 5000,
             chunk_guilds_at_startup=False,
-            enable_debug_events=True,
+            enable_debug_events=False,
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
@@ -314,6 +314,9 @@ class Parrot(commands.AutoShardedBot):
 
         self.__app_commands_global: Dict[int, app_commands.AppCommand] = {}
         self.__app_commands_guild: Dict[int, Dict[int, app_commands.AppCommand]] = {}
+
+        self.__global_write_data: Dict[str, List[pymongo.UpdateOne]] = {}
+        # {"database.collection": [pymongo.UpdateOne(), ...]}
 
     def init_db(self) -> None:
         # MongoDB Database variables
@@ -462,6 +465,7 @@ class Parrot(commands.AutoShardedBot):
                     traceback.print_exc()
 
         self.timer_task = self.loop.create_task(self.dispatch_timers())
+        self.global_write_data.start()
 
         async def __laod_cache():
             log.debug("Fetching guild configurations from database")
@@ -646,6 +650,9 @@ class Parrot(commands.AutoShardedBot):
 
         if self.timer_task is not None and not self.timer_task.cancelled():
             self.timer_task.cancel()
+        
+        if self.global_write_data.is_running():
+            self.global_write_data.stop()
 
         return await super().close()
 
@@ -1361,7 +1368,7 @@ class Parrot(commands.AutoShardedBot):
         dm_allowed: bool = ...,
     ) -> Optional[Union[discord.Message, discord.PartialMessage]]:
         ...
-    
+
     @overload
     async def get_or_fetch_message(
         self,
@@ -1408,7 +1415,7 @@ class Parrot(commands.AutoShardedBot):
                 dummy_message_id = int(link.string.split("/")[-1])
                 if dummy_message_id in self.message_cache:
                     return self.message_cache[dummy_message_id]
-            
+
             try:
                 return self.message_cache[int(dummy_message)]
             except (ValueError, KeyError):
@@ -1465,3 +1472,21 @@ class Parrot(commands.AutoShardedBot):
             return
 
         await self.__update_server_config_cache(guild.id)
+
+    @tasks.loop(minutes=5)
+    async def global_write_data(self):
+        async with self.lock:
+            for db_col in self.__global_write_data:
+                db, col = db_col.split(".")
+                await self.mongo[db][col].bulk_write(self.__global_write_data[db_col])
+            self.__global_write_data = {}
+
+    def add_global_write_data(
+        self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True
+    ) -> None:
+        if db is None:
+            db = self.mongo["mainDB"]
+        db_col = f"{db}.{col}"
+        if db_col not in self.__global_write_data:
+            self.__global_write_data[db_col] = []
+        self.__global_write_data[db_col].append(pymongo.UpdateOne(query, update, upsert=upsert))

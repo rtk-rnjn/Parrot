@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import functools
+import importlib.util
 import io
 import logging
 from contextlib import suppress
@@ -38,12 +39,12 @@ import discord
 from discord.ext import commands
 from utilities.converters import ToAsync, ToImage, emoji_to_url
 from utilities.emotes import emojis
+from utilities.regex import LINKS_RE
 
 CONFIRM_REACTIONS: Tuple = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
-from utilities.regex import LINKS_RE
 
 if TYPE_CHECKING:
     from pymongo.results import UpdateResult
@@ -66,7 +67,6 @@ Callback = MaybeAwaitable
 # VOTER_ROLE_ID = 836492413312040990
 log = logging.getLogger("core.context")
 
-import importlib.util
 
 HTML_PARSER = "html.parser"
 

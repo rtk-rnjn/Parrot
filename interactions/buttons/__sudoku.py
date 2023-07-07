@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, List, Optional, Tuple, TypeVar
 
 import discord
 
@@ -56,8 +56,8 @@ class Sudoku:
                         temp.append(f"[{symbol[-n]}]")
                     else:
                         temp.append(f"[{symbol[n]}]")
-                if n < 0:
-                    temp.append("   ")
+                elif n < 0:
+                    temp.append(f" {symbol[-n]} ")
                 else:
                     temp.append(f" {symbol[n]} ")
             nums.append([""] + temp)
@@ -76,7 +76,7 @@ class Sudoku:
 
         if view == "discord":
             head = "- - - - - - - - S U D O K U - - - - - - - -"
-            board = f"```\n{head}\n\n{board}\n``` Location: `{self._current_row + 1}, {self._current_col + 1}`"
+            board = f"```css\n{head}\n\n{board}\n``` Location: `{self._current_row + 1}, {self._current_col + 1}`"
 
         if view == "pretty":
             print(*lines, sep="\n")
@@ -95,7 +95,7 @@ class Sudoku:
         self.board[row][col] = number
 
     def place_number(self, number: int) -> None:
-        if (self._current_row, self._current_col) not in self._changeable_positions:
+        if (self._current_row, self._current_col) in self._changeable_positions:
             return
         self.board[self._current_row][self._current_col] = number
 
@@ -193,8 +193,8 @@ class SudokuButton(discord.ui.Button["SudokuView"]):
 
 class SudokuView(discord.ui.View):
     message: discord.Message
-
-    def __init__(self, timeout: Optional[float] = None) -> None:
+    ctx: Context
+    def __init__(self, timeout: Optional[float] = 300) -> None:
         super().__init__(timeout=timeout)
 
         self.game = Sudoku()
@@ -220,7 +220,7 @@ class SudokuView(discord.ui.View):
             )
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id == self.message.author.id:
+        if interaction.user.id == self.ctx.author.id:
             return True
         await interaction.response.send_message("You cannot interact with this message.", ephemeral=True)
         return False
@@ -261,7 +261,6 @@ class SudokuView(discord.ui.View):
     @discord.ui.button(
         emoji="\N{MEMO}",
         style=discord.ButtonStyle.secondary,
-        disabled=True,
         row=1,
     )
     async def erase(self, interaction: discord.Interaction, _: discord.ui.Button):
@@ -309,4 +308,5 @@ class SudokuView(discord.ui.View):
         ctx: Context,
     ) -> None:
         self.init()
-        self.message = await ctx.send(self.game.display_board("discord"), view=self)  # type: ignore
+        self.ctx = ctx
+        self.message = await ctx.send(self.game.display_board("discord"), view=self)

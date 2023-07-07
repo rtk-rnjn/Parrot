@@ -38,7 +38,7 @@ from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
-from utilities.converters import convert_bool
+from utilities.converters import convert_bool, ToAsync
 from utilities.paginator import PaginationView
 from utilities.regex import INVITE_RE, LINKS_RE
 from utilities.ttg import Truths
@@ -132,7 +132,7 @@ def _prepare_input(text: str) -> str:
         return match.group("code")
     return text
 
-
+@ToAsync()
 def _process_image(data: bytes, out_file: BinaryIO) -> None:
     image = Image.open(io.BytesIO(data)).convert("RGBA")
     width, height = image.size
@@ -266,7 +266,7 @@ class Misc(Cog):
         async with self.bot.http_session.get(
             f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True
         ) as response:
-            _process_image(await response.read(), out_file)
+            await _process_image(await response.read(), out_file)
 
     async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> Optional[str]:
         """Uploads `text` to the paste service, returning the url if successful."""
@@ -281,30 +281,30 @@ class Misc(Cog):
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
+    @Context.with_type
     async def latex(self, ctx: Context, *, query: str) -> None:
         """Renders the text in latex and sends the image."""
         query = _prepare_input(query)
         query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec
         image_path = CACHE_DIRECTORY / f"{query_hash}.png"
-        async with ctx.typing():
-            if not image_path.exists():
-                try:
-                    with open(image_path, "wb") as out_file:
-                        await self._generate_image(TEMPLATE.substitute(text=query), out_file)
-                except InvalidLatexError as err:
-                    embed = discord.Embed(title="Failed to render input.")
-                    if err.logs is None:
-                        embed.description = "No logs available"
+        if not image_path.exists():
+            try:
+                with open(image_path, "wb") as out_file:
+                    await self._generate_image(TEMPLATE.substitute(text=query), out_file)
+            except InvalidLatexError as err:
+                embed = discord.Embed(title="Failed to render input.")
+                if err.logs is None:
+                    embed.description = "No logs available"
+                else:
+                    logs_paste_url = await self._upload_to_pastebin(err.logs)
+                    if logs_paste_url:
+                        embed.description = f"[View Logs]({logs_paste_url})"
                     else:
-                        logs_paste_url = await self._upload_to_pastebin(err.logs)
-                        if logs_paste_url:
-                            embed.description = f"[View Logs]({logs_paste_url})"
-                        else:
-                            embed.description = "Couldn't upload logs."
-                    await ctx.send(embed=embed)
-                    image_path.unlink()
-                    return
-            await ctx.send(file=discord.File(image_path, "latex.png"))
+                        embed.description = "Couldn't upload logs."
+                await ctx.send(embed=embed)
+                image_path.unlink()
+                return
+        await ctx.send(file=discord.File(image_path, "latex.png"))
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

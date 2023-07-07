@@ -34,13 +34,13 @@ from qrcode.image.styles.moduledrawers import (
 )
 
 import discord
-from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
-from utilities.converters import convert_bool, ToAsync
+from utilities.converters import ToAsync, convert_bool
 from utilities.paginator import PaginationView
 from utilities.regex import INVITE_RE, LINKS_RE
+from utilities.robopages import SimplePages
 from utilities.ttg import Truths
 from utilities.youtube_search import YoutubeSearch
 
@@ -131,6 +131,7 @@ def _prepare_input(text: str) -> str:
     if match := FORMATTED_CODE_REGEX.match(text):
         return match.group("code")
     return text
+
 
 @ToAsync()
 def _process_image(data: bytes, out_file: BinaryIO) -> None:

@@ -23,11 +23,11 @@ from bs4.element import NavigableString
 from rapidfuzz.process import extractOne
 
 import discord
-from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord import app_commands
 from discord.ext import commands, tasks
 from utilities.converters import WrappedMessageConverter
+from utilities.robopages import SimplePages
 
 from . import _doc, _ref
 from ._used import execute_run, get_raw, prepare_payload, wrapping

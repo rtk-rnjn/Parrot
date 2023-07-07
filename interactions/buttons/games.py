@@ -20,11 +20,11 @@ from discord.utils import MISSING
 
 import discord
 import emojis
-from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord.ext import boardgames, commands, old_menus as menus  # type: ignore
 from utilities.constants import Colours
 from utilities.converters import convert_bool
+from utilities.robopages import SimplePages
 from utilities.uno.game import UNO
 
 from .__2048 import Twenty48, Twenty48_Button

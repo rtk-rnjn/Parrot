@@ -11,7 +11,6 @@ from pymongo import ReturnDocument  # type: ignore
 from typing_extensions import Annotated
 
 import discord
-from cogs.meta.robopage import SimplePages
 from cogs.utils import method as mt
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
@@ -19,6 +18,7 @@ from utilities.checks import is_mod
 from utilities.converters import convert_bool
 from utilities.formats import TabularData
 from utilities.rankcard import rank_card
+from utilities.robopages import SimplePages
 from utilities.time import FriendlyTimeResult, ShortTime, UserFriendlyTime
 
 log = logging.getLogger("cogs.utils.utils")

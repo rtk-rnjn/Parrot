@@ -18,7 +18,6 @@ from discord.ext import commands
 from utilities.config import SUPPORT_SERVER, SUPPORT_SERVER_ID, VERSION
 
 
-
 class Meta(Cog):
     """Commands for utilities related to Discord or the Bot itself."""
 

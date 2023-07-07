@@ -17,11 +17,11 @@ from typing import Literal, Optional
 from aiofile import async_open
 
 import discord
-from cogs.meta.robopage import SimplePages
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
+from utilities.robopages import SimplePages
 from utilities.time import ShortTime
 
 from . import fuzzy

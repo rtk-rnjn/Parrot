@@ -433,7 +433,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             raise commands.BadArgument("Cannot paginate an empty list.")
 
         if module == "SimplePages":
-            from cogs.meta.robopage import SimplePages
+            from utilities.robopages import SimplePages
 
             assert isinstance(entries, list)
 

@@ -82,7 +82,7 @@ class Sudoku:
             print(*lines, sep="\n")
             return ""
 
-        return board
+        return str(board)
 
     def generate_board(self) -> None:
         squares = self.side * self.side
@@ -237,7 +237,7 @@ class SudokuView(discord.ui.View):
                 )
             )
 
-    async def timeout(self):
+    async def on_timeout(self):
         for item in self.children:
             if isinstance(item, discord.ui.Button):
                 item.disabled = True

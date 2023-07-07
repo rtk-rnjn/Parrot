@@ -10,7 +10,7 @@ import pymongo
 from pymongo import UpdateMany, UpdateOne
 
 import discord
-from core import Cog, Context, Parrot
+from core import Cog, Context, Parrot, ParrotLinkView
 from discord.ext import commands, tasks
 from utilities.formats import plural
 
@@ -33,10 +33,9 @@ def format_join(iterable, *, seperator=", ", last="or"):
     return f"{seperator.join(iterable[:-1])}{seperator}{last} {iterable[-1]}"
 
 
-class JumpBackView(discord.ui.View):
+class JumpBackView(ParrotLinkView):
     def __init__(self, jump_url) -> None:
-        super().__init__()
-        self.add_item(discord.ui.Button(url=jump_url, label="Go to Message"))
+        super().__init__(url=jump_url, label="Jump Back")
 
 
 class Highlight(Cog):

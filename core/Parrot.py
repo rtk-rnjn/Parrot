@@ -84,6 +84,7 @@ from utilities.regex import LINKS_RE
 
 from .__template import post as POST
 from .Context import Context
+from .help import PaginatedHelpCommand
 
 if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
@@ -232,6 +233,7 @@ class Parrot(commands.AutoShardedBot):
             max_messages=1000 if HEROKU else 5000,
             chunk_guilds_at_startup=False,
             enable_debug_events=False,
+            help_command=PaginatedHelpCommand(),
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()

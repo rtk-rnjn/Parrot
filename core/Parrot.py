@@ -1487,7 +1487,7 @@ class Parrot(commands.AutoShardedBot):
         self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True
     ) -> None:
         if db is None:
-            db = self.mongo["mainDB"]
+            db = "mainDB"
         db_col = f"{db}.{col}"
         if db_col not in self.__global_write_data:
             self.__global_write_data[db_col] = []

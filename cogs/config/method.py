@@ -7,8 +7,6 @@ from core import Context
 
 
 async def update_db(*, ctx: Context, key: str, cmd: str, value: Any, op: str) -> None:
-    assert ctx.guild
-
     await ctx.bot.guild_configurations.update_one(
         {"_id": ctx.guild.id},
         {

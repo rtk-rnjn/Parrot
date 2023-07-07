@@ -179,6 +179,23 @@ class Sudoku:
             return
         self.board[self._current_row][self._current_col] = 0
 
+    def reset(self) -> None:
+        self.board = self.original_board.copy()
+        self._current_row = 0
+        self._current_col = 0
+
+    @property
+    def is_board_full(self) -> bool:
+        return all(all(row) for row in self.board)
+
+    @property
+    def is_board_empty(self) -> bool:
+        return all(not any(row) for row in self.board)
+
+    @property
+    def is_board_valid(self) -> bool:
+        return self.checker()
+
 
 class SudokuButton(discord.ui.Button["SudokuView"]):
     async def callback(self, interaction: discord.Interaction):
@@ -194,6 +211,7 @@ class SudokuButton(discord.ui.Button["SudokuView"]):
 class SudokuView(discord.ui.View):
     message: discord.Message
     ctx: Context
+
     def __init__(self, timeout: Optional[float] = 300) -> None:
         super().__init__(timeout=timeout)
 
@@ -218,6 +236,12 @@ class SudokuView(discord.ui.View):
                     row=4,
                 )
             )
+
+    async def timeout(self):
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+        await self.message.edit(view=self)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id == self.ctx.author.id:
@@ -250,6 +274,14 @@ class SudokuView(discord.ui.View):
         return
 
     @discord.ui.button(
+        label="Reset",
+        style=discord.ButtonStyle.danger,
+    )
+    async def reset(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self.game.reset()
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
+
+    @discord.ui.button(
         emoji="\N{LEFTWARDS BLACK ARROW}",
         style=discord.ButtonStyle.secondary,
         row=1,
@@ -277,6 +309,18 @@ class SudokuView(discord.ui.View):
         await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
 
     @discord.ui.button(
+        label="Exit",
+        style=discord.ButtonStyle.danger,
+        row=1,
+    )
+    async def exit(self, interaction: discord.Interaction, _: discord.ui.Button):
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+        await interaction.response.edit_message(content=self.game.display_board("discord"), view=self)
+        self.stop()
+
+    @discord.ui.button(
         label="\u200b",
         style=discord.ButtonStyle.secondary,
         disabled=True,
@@ -302,6 +346,21 @@ class SudokuView(discord.ui.View):
     )
     async def __null_5(self, interaction: discord.Interaction, _: discord.ui.Button):
         return
+
+    @discord.ui.button(
+        label="Submit",
+        style=discord.ButtonStyle.success,
+        row=2,
+    )
+    async def submit(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if self.game.is_board_full:
+            if self.game.is_board_valid:
+                await interaction.response.edit_message(content="You win!", view=self)
+            else:
+                await interaction.response.edit_message(content="You lose!", view=self)
+            self.stop()
+        else:
+            await interaction.response.edit_message(content="You have not filled out the whole board!", view=self)
 
     async def start(
         self,

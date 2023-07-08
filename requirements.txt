@@ -166,7 +166,7 @@ tzdata
 urllib3
 uvicorn
 Wavelink @ git+https://github.com/PythonistaGuild/Wavelink
-wand
+Wand
 wcwidth
 Werkzeug
 wheezy.captcha

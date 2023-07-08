@@ -20,7 +20,6 @@ from discord.ext import commands
 
 from .config import LRU_CACHE
 from .exceptions import ImageTooLarge
-from .imaging import image as image_mod
 from .regex import IMGUR_PAGE_REGEX, TENOR_GIF_REGEX, TENOR_PAGE_REGEX
 
 KT = TypeVar("KT", bound=Any)
@@ -252,6 +251,8 @@ def from_bottom(text: str) -> str:
 
 
 async def get_default_emoji(bot: Parrot, emoji: str, *, svg: bool = True) -> Optional[bytes]:
+    from .imaging import image as image_mod
+
     try:
         if len(emoji) > 1:
             svg = False
@@ -356,6 +357,8 @@ class UrlConverter(commands.Converter):
             raise bad_arg from e
 
     async def convert(self, ctx: Context, argument: str) -> bytes:
+        from .imaging import image as image_mod
+
         bad_arg = commands.BadArgument('Invalid image URL')
         argument = argument.strip('<>')
         try:
@@ -451,6 +454,8 @@ class ImageConverter(commands.Converter):
                     continue
 
     async def get_file_image(self, files: list[discord.Attachment]) -> Optional[bytes]:
+        from .imaging import image as image_mod
+
         for file in files:
             if file.content_type and file.content_type.startswith('image/'):
                 byt = await file.read()

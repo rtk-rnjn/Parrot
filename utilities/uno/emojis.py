@@ -41,7 +41,7 @@ def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
         draw = ImageDraw.Draw(image)
         draw.rectangle([(radius, 0), (mx - radius, my)], fill=(50, 50, 50))
         draw.rectangle([(0, radius), (mx, my - radius)], fill=(50, 50, 50))
-        image = image.resize(size, Image.ANTIALIAS)
+        image = image.resize(size, Image.Resampling.LANCZOS)
 
         return image
 

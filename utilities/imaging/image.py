@@ -181,7 +181,7 @@ def pil_circular(img: Image.Image, *, mask: Optional[Image.Image] = None) -> Ima
         mask = pil_circle_mask(img.width, img.height)
 
     if mask.size != img.size:
-        mask = mask.resize(img.size, Image.ANTIALIAS)
+        mask = mask.resize(img.size, Image.Resampling.LANCZOS)
 
     out = ImageOps.fit(img, mask.size, centering=(0.5, 0.5))
     out = ImageChops.darker(img, mask)
@@ -234,7 +234,7 @@ def resize_pil_prop(
     height: Optional[int] = None,
     *,
     process_gif: bool = True,
-    resampling: Image.Resampling = Image.ANTIALIAS,
+    resampling: Image.Resampling = Image.Resampling.LANCZOS,
 ) -> list[Image.Image] | Image.Image:
     if not (width and height):
         width, height = _get_prop_size(image, width, height)

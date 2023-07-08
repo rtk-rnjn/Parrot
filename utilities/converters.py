@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import TYPE_CHECKING, Any, Callable, Generic, List, Optional, Tuple, TypeVar, Union
+from io import BytesIO
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generic, List, Optional, Tuple, TypeVar, Union
 
-from aiohttp import ClientSession
+from aiohttp import ClientResponse, ClientSession
 from lru import LRU
 
 import discord
@@ -15,7 +17,11 @@ if TYPE_CHECKING:
     from core import Context, Parrot
 
 from discord.ext import commands
-from utilities.config import LRU_CACHE
+
+from .config import LRU_CACHE
+from .exceptions import ImageTooLarge
+from .imaging import image as image_mod
+from .regex import IMGUR_PAGE_REGEX, TENOR_GIF_REGEX, TENOR_PAGE_REGEX
 
 KT = TypeVar("KT", bound=Any)
 VT = TypeVar("VT", bound=Any)
@@ -245,6 +251,24 @@ def from_bottom(text: str) -> str:
     return out.decode()
 
 
+async def get_default_emoji(bot: Parrot, emoji: str, *, svg: bool = True) -> Optional[bytes]:
+    try:
+        if len(emoji) > 1:
+            svg = False
+            url = f'https://emojicdn.elk.sh/{emoji}?style=twitter'
+        else:
+            folder = ('72x72', 'svg')[svg]
+            ext = ('png', 'svg')[svg]
+            url = f'https://twemoji.maxcdn.com/v/latest/{folder}/{ord(emoji):x}.{ext}'
+
+        async with bot.http_session.get(url) as r:
+            if r.ok:
+                byt = await r.read()
+                return await image_mod.svg_to_png(byt) if svg else byt
+    except Exception:
+        return None
+
+
 class ToImage(commands.Converter):
     async def convert(self, ctx: Context, argument):
         if argument is None:
@@ -289,3 +313,185 @@ async def emoji_to_url(char, include_check: bool = True, session: ClientSession 
         return url if is_valid else char
     except TypeError:
         return char
+
+
+class DefaultEmojiConverter(commands.Converter):
+    async def convert(self, ctx: Context, argument: str) -> bytes:
+        emoji = await get_default_emoji(ctx.bot, argument)
+
+        if not emoji:
+            raise commands.BadArgument('Invalid Emoji')
+        else:
+            return emoji
+
+
+class UrlConverter(commands.Converter):
+    async def find_tenor_gif(self, ctx: Context, response: ClientResponse) -> bytes:
+        bad_arg = commands.BadArgument('An Error occured when fetching the tenor GIF')
+        try:
+            content = await response.text()
+            if match := TENOR_GIF_REGEX.search(content):
+                async with ctx.bot.http_session.get(match.group()) as gif:
+                    if gif.ok:
+                        return await gif.read()
+                    else:
+                        raise bad_arg
+            else:
+                raise bad_arg
+        except Exception as e:
+            raise bad_arg from e
+
+    async def find_imgur_img(self, ctx: Context, match: re.Match) -> bytes:
+        name = match.group(2)
+        raw_url = f'https://i.imgur.com/{name}.gif'
+
+        bad_arg = commands.BadArgument('An Error occured when fetching the imgur GIF')
+        try:
+            async with ctx.bot.http_session.get(raw_url) as raw:
+                if raw.ok:
+                    return await raw.read()
+                else:
+                    raise bad_arg
+        except Exception as e:
+            raise bad_arg from e
+
+    async def convert(self, ctx: Context, argument: str) -> bytes:
+        bad_arg = commands.BadArgument('Invalid image URL')
+        argument = argument.strip('<>')
+        try:
+            async with ctx.bot.http_session.get(argument) as r:
+                if r.ok:
+                    if r.content_type.startswith('image/'):
+                        byt = await r.read()
+                        if r.content_type.startswith('image/svg'):
+                            byt = await image_mod.svg_to_png(byt)
+                        return byt
+                    elif TENOR_PAGE_REGEX.fullmatch(argument):
+                        return await self.find_tenor_gif(ctx, r)
+                    elif imgur := IMGUR_PAGE_REGEX.fullmatch(argument):
+                        return await self.find_imgur_img(ctx, imgur)
+                    else:
+                        raise bad_arg
+                else:
+                    raise bad_arg
+        except Exception as e:
+            raise bad_arg from e
+
+
+class ImageConverter(commands.Converter):
+    """
+    ImageConverter
+
+    A class for fetching and resolving images within a command, it attempts to fetch, (in order):
+        - Member from the command argument, then User if failed
+        - A Guild Emoji from the command argument, then default emoji if failed
+        - An image url, content-type must be of `image/xx`
+        - An attachment from the invocation message
+        - A sticker from the invocation message
+
+        If all above fails, it repeats the above for references (replies)
+        and also searches for embed thumbnails / images in references
+
+    Raises
+    ------
+    ImageTooLarge
+        The resolved image is too large, possibly a decompression bomb?
+    commands.BadArgument
+        Failed to fetch anything
+    """
+
+    _converters: ClassVar[tuple[type[commands.Converter], ...]] = (
+        commands.MemberConverter,
+        commands.UserConverter,
+        commands.PartialEmojiConverter,
+        DefaultEmojiConverter,
+        UrlConverter,
+    )
+
+    def check_size(self, byt: bytes, *, max_size: int = 15_000_000) -> None:
+        if (size := byt.__sizeof__()) > max_size:
+            del byt
+            raise ImageTooLarge(size, max_size)
+
+    async def converted_to_buffer(self, source: Union[discord.Member, discord.User, discord.PartialEmoji, bytes]) -> bytes:
+        if isinstance(source, (discord.Member, discord.User)):
+            source = await source.display_avatar.read()
+
+        elif isinstance(source, discord.PartialEmoji):
+            source = await source.read()
+
+        return source
+
+    async def get_attachments(self, ctx: Context, message: Optional[discord.Message] = None) -> Optional[bytes]:
+        source = None
+        message = message or ctx.message
+
+        if files := message.attachments:
+            source = await self.get_file_image(files)
+
+        if (st := message.stickers) and source is None:
+            source = await self.get_sticker_image(ctx, st)
+
+        if (embeds := message.embeds) and source is None:
+            for embed in embeds:
+                if img := embed.image.url or embed.thumbnail.url:
+                    try:
+                        source = await UrlConverter().convert(ctx, img)
+                        break
+                    except commands.BadArgument:
+                        continue
+        return source
+
+    async def get_sticker_image(self, ctx: Context, stickers: list[discord.StickerItem]) -> Optional[bytes]:
+        for sticker in stickers:
+            if sticker.format is not discord.StickerFormatType.lottie:
+                try:
+                    return await UrlConverter().convert(ctx, sticker.url)
+                except commands.BadArgument:
+                    continue
+
+    async def get_file_image(self, files: list[discord.Attachment]) -> Optional[bytes]:
+        for file in files:
+            if file.content_type and file.content_type.startswith('image/'):
+                byt = await file.read()
+                if file.content_type.startswith('image/svg'):
+                    byt = await image_mod.svg_to_png(byt)
+                return byt
+
+    async def convert(self, ctx: Context, argument: str, *, raise_on_failure: bool = True) -> Optional[bytes]:
+        for converter in self._converters:
+            try:
+                source = await converter().convert(ctx, argument)
+            except commands.BadArgument:
+                continue
+            else:
+                break
+        else:
+            if raise_on_failure:
+                raise commands.BadArgument('Failed to fetch an image from argument')
+            else:
+                return None
+
+        return await self.converted_to_buffer(source)
+
+    async def get_image(self, ctx: Context, source: Optional[str | bytes], *, max_size: int = 15_000_000) -> BytesIO:
+        if isinstance(source, str):
+            source = await self.convert(ctx, source, raise_on_failure=False)
+
+        if source is None:
+            source = await self.get_attachments(ctx)
+
+        if (ref := ctx.message.reference) and source is None:
+            ref = ref.resolved
+
+            if not isinstance(ref, discord.DeletedReferencedMessage) and ref:
+                source = await self.get_attachments(ctx, ref)
+
+                if source is None and ref.content:
+                    source = await self.convert(ctx, ref.content.split()[0], raise_on_failure=False)
+
+        if source is None:
+            source = await ctx.author.display_avatar.read()
+
+        self.check_size(source, max_size=max_size)
+        return BytesIO(source)

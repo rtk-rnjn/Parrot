@@ -108,7 +108,6 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         if message is None:
             return stars
 
-
         if data := await self.bot.starboards.find_one(
             {
                 "$or": [

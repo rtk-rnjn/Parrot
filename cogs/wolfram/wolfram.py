@@ -5,8 +5,8 @@ from io import BytesIO
 from typing import Callable, List, Optional, Tuple
 from urllib.parse import urlencode
 
-import arrow  # type: ignore
-from discord.ext.commands import BucketType, check, group  # type: ignore
+import arrow
+from discord.ext.commands import BucketType, check, group
 
 import discord
 from core import Cog, Context, Parrot
@@ -20,9 +20,7 @@ QUERY = "http://api.wolframalpha.com/v2/{request}"
 WOLF_IMAGE = "https://www.symbols.com/gi.php?type=1&id=2886&i=1"
 
 MAX_PODS = 20
-STAFF_ROLES = {
-    771025632184369152,
-}  # I am poor
+STAFF_ROLES = {}
 # The role is of Server Moderator of the support server
 
 # Allows for 10 wolfram calls pr user pr day
@@ -70,6 +68,8 @@ def custom_cooldown(*ignore: int) -> Callable:
             return guild_cooldown
 
         user_bucket = usercd.get_bucket(ctx.message)
+        if user_bucket is None:
+            return True
 
         if all(role.id not in ignore for role in ctx.author.roles):
             user_rate = user_bucket.update_rate_limit()
@@ -82,6 +82,9 @@ def custom_cooldown(*ignore: int) -> Callable:
                 return False
 
         guild_bucket = guildcd.get_bucket(ctx.message)
+        if guild_bucket is None:
+            return True
+
         guild_rate = guild_bucket.update_rate_limit()
 
         # Repr has a token attribute to read requests left
@@ -149,7 +152,7 @@ async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> Optional[List[
         return pages
 
 
-class Wolfram(Cog):  # type: ignore
+class Wolfram(Cog):
     """Commands for interacting with the Wolfram|Alpha API."""
 
     def __init__(self, bot: Parrot) -> None:

@@ -38,6 +38,8 @@ from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
 from utilities.converters import ToAsync, convert_bool
+from utilities.imaging.graphing import boxplot, plotfn
+from utilities.imaging.image import do_command
 from utilities.paginator import PaginationView
 from utilities.regex import INVITE_RE, LINKS_RE
 from utilities.robopages import SimplePages
@@ -842,109 +844,37 @@ class Misc(Cog):
         final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.reply(final_url)
 
-    @commands.group()
-    @commands.has_permissions(embed_links=True, add_reactions=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @commands.command()
+    @commands.has_permissions(manage_messages=True, add_reactions=True)
+    @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
     @Context.with_type
-    async def poll(
-        self,
-        ctx: Context,
-    ):
-        """To make polls. Thanks to Strawpoll API"""
-        await self.bot.invoke_help_command(ctx)
+    async def quickpoll(self, ctx: Context, *questions_and_choices: str):
+        """
+        To make a quick poll for making quick decision.
+        'Question must be in quotes' and 'Options' 'must' 'be' 'seperated' 'by' 'spaces'.
+        Not more than 21 options. :)
+        """
 
-    @poll.command(name="create")
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def create_poll(self, ctx: Context, question: str, *, options: str):
-        """To create a poll, options should be seperated by commas"""
+        def to_emoji(c) -> str:
+            base = 0x1F1E6
+            return chr(base + c)
 
-        BASE_URL = "https://strawpoll.com/api/poll/"
-        options: List[str] = options.split(",")
-        data = {"poll": {"title": question, "answers": options, "only_reg": True}}
-        if len(options) > 10:
-            return await ctx.error(f"{ctx.author.mention} can not provide more than 10 options")
-        poll = await self.bot.http_session.post(BASE_URL, json=data, headers={"API-KEY": os.environ["STRAW_POLL"]})
+        if len(questions_and_choices) < 3:
+            return await ctx.send("Need at least 1 question with 2 choices.")
+        if len(questions_and_choices) > 21:
+            return await ctx.send("You can only have up to 20 choices.")
 
-        data = await poll.json()
-        _exists = await self.bot.user_collections_ind.find_one_and_update(
-            {"_id": ctx.author.id},
-            {"$set": {"content_id": data["content_id"]}},
-            upsert=True,
-        )
+        question = questions_and_choices[0]
+        choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
 
-        msg = await ctx.reply(f"Poll created: <https://strawpoll.com/{data['content_id']}>")
-        await msg.reply(f"{ctx.author.mention} your poll content id is: {data['content_id']}")
+        body = "\n".join(f"{key}: {c}" for key, c in choices)
+        poll: discord.Message = await ctx.send(f"**Poll: {question}**\n\n{body}")
+        await ctx.bulk_add_reactions(poll, *[emoji for emoji, _ in choices])
 
-    @poll.command(name="get")
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def get_poll(self, ctx: Context, content_id: str):
-        """To get the poll data"""
-        URL = f"https://strawpoll.com/api/poll/{content_id}"
+        await ctx.message.delete(delay=5)
 
-        poll = await self.bot.http_session.get(URL, headers={"API-KEY": os.environ["STRAW_POLL"]})
-        try:
-            data = await poll.json()
-        except (json.decoder.JSONDecodeError, aiohttp.ContentTypeError):
-            return
-        embed = discord.Embed(
-            title=data["content"]["poll"]["title"],
-            description=f"Total Options: {len(data['content']['poll']['poll_answers'])} | Total Votes: {data['content']['poll']['total_votes']}",
-            timestamp=discord.utils.utcnow(),
-            color=ctx.author.color,
-        )
-        for temp in data["content"]["poll"]["poll_answers"]:
-            embed.add_field(name=temp["answer"], value=f"Votes: **{temp['votes']}**", inline=True)
-        embed.set_footer(text=f"{ctx.author}")
-        await ctx.reply(embed=embed)
-
-    @poll.command(name="delete")
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def delete_poll(self, ctx: Context, content_id: str):
-        """To delete the poll. Only if it's yours"""
-        _exists: Dict[str, Any] = await self.bot.user_collections_ind.find_one(
-            {"_id": ctx.author.id, "content_id": content_id}
-        )
-        if not _exists:
-            return await ctx.reply(f"{ctx.author.mention} you can only delete your own polls. Content id didn't match")
-        URL = "https://strawpoll.com/api/content/delete"
-        await self.bot.http_session.delete(
-            URL,
-            data={"content_id": content_id},
-            headers={"API-KEY": os.environ["STRAW_POLL"], **self.bot.GLOBAL_HEADERS},
-        )
-        await ctx.reply(f"{ctx.author.mention} deleted")
-
+    # TODO: Add Strawpoll
     # TODO: OCR
-    # @commands.command(name="orc")
-    # @commands.cooldown(1, 5, commands.BucketType.member)
-    # @commands.max_concurrency(1, per=commands.BucketType.user)
-    # @Context.with_type
-    # async def ocr(self, ctx: Context, *, link: str = None):
-    #     """To convert image to text"""
-    #     link = link or ctx.message.attachments[0].url
-    #     if not link:
-    #         await ctx.error(f"{ctx.author.mention} must provide the link")
-    #     try:
-    #         res = await self.bot.http_session.get(link)
-    #     except Exception as e:
-    #         return await ctx.error(
-    #             f"{ctx.author.mention} something not right. Error raised {e}"
-    #         )
-    #     else:
-    #         json = await res.json()
-    #     if str(json["status"]) != str(200):
-    #         return await ctx.error(f"{ctx.author.mention} something not right.")
-    #     msg = json["message"][:2000:]
-    #     await ctx.reply(
-    #         embed=discord.Embed(
-    #             description=msg,
-    #             color=ctx.author.color,
-    #             timestamp=discord.utils.utcnow(),
-    #         ).set_footer(text=f"{ctx.author}")
-    #     )
 
     @commands.command(name="qr", aliases=["createqr", "cqr"])
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -1041,3 +971,21 @@ class Misc(Cog):
         if data := await self.bot.dictionary.find_one({query: {"$exists": True}}):
             return await ctx.send(f"**{query.title()}**: {data[query]}")
         return await ctx.error("No word found, if you think its a mistake then contact the owner.")
+
+    @commands.command(name='boxplot', aliases=('box', 'boxwhisker', 'numsetdata'))
+    async def _boxplot(self, ctx: Context, *numbers: float) -> None:
+        """Plots the providednumber data set in a box & whisker plot
+        showing Min, Max, Mean, Q1, Median and Q3.
+        Numbers should be seperated by spaces per data point.
+        """
+        return await do_command(ctx, numbers, func=boxplot)
+
+    @commands.command(name='plot', aliases=('line-graph', 'graph'))
+    async def _plot(self, ctx: Context, *, equation: str) -> None:
+        """Plots the provided equation out.
+        Ex: `{prefix}plot 2x+1`
+        """
+        try:
+            return await do_command(ctx, equation, func=plotfn)
+        except TypeError:
+            await ctx.send('Provided equation was invalid; the only variable present must be `x`.')

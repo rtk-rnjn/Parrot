@@ -11,6 +11,8 @@ akinator.py
 astunparse
 async_lru
 async-timeout
+Equation
+opencv-python
 attrs
 autopep8
 bandit
@@ -100,6 +102,7 @@ motor
 multidict
 mypy
 mypy-extensions
+matplotlib
 numpy
 oauthlib
 opuslib
@@ -163,6 +166,7 @@ tzdata
 urllib3
 uvicorn
 Wavelink @ git+https://github.com/PythonistaGuild/Wavelink
+wand
 wcwidth
 Werkzeug
 wheezy.captcha

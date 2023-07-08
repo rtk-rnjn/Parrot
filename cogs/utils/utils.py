@@ -300,35 +300,6 @@ class Utils(Cog):
         """To show the tag in raw format"""
         await mt._show_raw_tag(self.bot, ctx, tag)
 
-    @commands.command()
-    @commands.has_permissions(manage_messages=True, add_reactions=True)
-    @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
-    @Context.with_type
-    async def quickpoll(self, ctx: Context, *questions_and_choices: str):
-        """
-        To make a quick poll for making quick decision.
-        'Question must be in quotes' and 'Options' 'must' 'be' 'seperated' 'by' 'spaces'.
-        Not more than 21 options. :)
-        """
-
-        def to_emoji(c) -> str:
-            base = 0x1F1E6
-            return chr(base + c)
-
-        if len(questions_and_choices) < 3:
-            return await ctx.send("Need at least 1 question with 2 choices.")
-        if len(questions_and_choices) > 21:
-            return await ctx.send("You can only have up to 20 choices.")
-
-        question = questions_and_choices[0]
-        choices = [(to_emoji(e), v) for e, v in enumerate(questions_and_choices[1:])]
-
-        body = "\n".join(f"{key}: {c}" for key, c in choices)
-        poll: discord.Message = await ctx.send(f"**Poll: {question}**\n\n{body}")
-        await ctx.bulk_add_reactions(poll, *[emoji for emoji, _ in choices])
-
-        await ctx.message.delete(delay=5)
-
     @commands.group(name="todo", invoke_without_command=True)
     @commands.bot_has_permissions(embed_links=True)
     async def todo(self, ctx: Context):

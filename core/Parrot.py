@@ -652,7 +652,7 @@ class Parrot(commands.AutoShardedBot):
 
         if self.timer_task is not None and not self.timer_task.cancelled():
             self.timer_task.cancel()
-        
+
         if self.global_write_data.is_running():
             self.global_write_data.stop()
 

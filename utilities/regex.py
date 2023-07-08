@@ -24,3 +24,11 @@ CALANDER_RE = re.compile(
 EQUATION_REGEX = re.compile(
     r"((?:(?:((?:(?:[ \t]+))))|(?:((?:(?:\/\/.*?$))))|(?:((?:(?:(?<![\d.])[0-9]+(?![\d.])))))|(?:((?:(?:[0-9]+\.(?:[0-9]+\b)?|\.[0-9]+))))|(?:((?:(?:(?:\+)))))|(?:((?:(?:(?:\-)))))|(?:((?:(?:(?:\*)))))|(?:((?:(?:(?:\/)))))|(?:((?:(?:(?:%)))))|(?:((?:(?:(?:\()))))|(?:((?:(?:(?:\))))))))+"
 )
+
+TENOR_PAGE_REGEX = re.compile(r'https?://(www\.)?tenor\.com/view/\S+/?')
+
+TENOR_GIF_REGEX = re.compile(r'https?://(www\.)?c\.tenor\.com/\S+/\S+\.gif/?')
+
+IMGUR_PAGE_REGEX = re.compile(r'https?://(www\.)?imgur.com/(\S+)/?')
+
+CUSTOM_EMOJI_REGEX = re.compile(r'<(a)?:([a-zA-Z0-9_]{2,32}):([0-9]{18,22})>')

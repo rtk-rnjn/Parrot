@@ -157,8 +157,8 @@ def plotfn(_, equation: str, *, xrange: tuple[int, int] = (-20, 20)) -> discord.
     x = np.linspace(*xrange, 1000)
 
     ax.set_aspect('equal', adjustable='box')
-    ax.spines['left'].set_position('center')  # type: ignore
-    ax.spines['bottom'].set_position('zero')  # type: ignore
+    ax.spines['left'].set_position(('axes', 0.5))
+    ax.spines['bottom'].set_position(('data', 0.0))
     ax.spines['right'].set_color('none')
     ax.spines['top'].set_color('none')
     ax.xaxis.set_ticks_position('bottom')

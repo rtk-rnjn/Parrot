@@ -153,7 +153,7 @@ def plotfn(_, equation: str, *, xrange: tuple[int, int] = (-20, 20)) -> discord.
     ax.set_title(f'y = {equation}', pad=15)
     equation = _clean_implicit_mul(equation)
     
-    _func = lambda x: int(Expression(equation, ['x']))  # type: ignore
+    _func = lambda x: int(str(Expression(equation, ['x'])))
 
     fx = np.vectorize(_func)
     x = np.linspace(*xrange, 1000)

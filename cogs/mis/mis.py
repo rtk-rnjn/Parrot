@@ -973,6 +973,7 @@ class Misc(Cog):
         return await ctx.error("No word found, if you think its a mistake then contact the owner.")
 
     @commands.command(name='boxplot', aliases=('box', 'boxwhisker', 'numsetdata'))
+    @Context.with_type
     async def _boxplot(self, ctx: Context, *numbers: float) -> None:
         """Plots the providednumber data set in a box & whisker plot
         showing Min, Max, Mean, Q1, Median and Q3.
@@ -981,9 +982,10 @@ class Misc(Cog):
         return await do_command(ctx, numbers, func=boxplot)
 
     @commands.command(name='plot', aliases=('line-graph', 'graph'))
+    @Context.with_type
     async def _plot(self, ctx: Context, *, equation: str) -> None:
         """Plots the provided equation out.
-        Ex: `{prefix}plot 2x+1`
+        Ex: `$plot 2x+1`
         """
         try:
             return await do_command(ctx, equation, func=plotfn)

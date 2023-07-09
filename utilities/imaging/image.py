@@ -513,7 +513,6 @@ async def _do_command_body(
         content=f'**Process Time:** `{elapsed:.2f} ms`',
         file=file,
         mention_author=False,
-        delete_button=True,
     )
 
 

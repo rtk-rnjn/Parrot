@@ -15,10 +15,10 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
         if not guild.chunked:
             await guild.chunk(cache=True)
         content = (
-            "```css\n"
-            f"[Joined] {guild.name} ({guild.id})"
-            f" - Owner {guild.owner} ({guild.owner.id})"
-            f" - {guild.member_count} members"
+            "```diff\n"
+            f"+ Joined {guild.name} ({guild.id})\n"
+            f"+ Owner {guild.owner} ({guild.owner.id})\n"
+            f"+ {guild.member_count} members\n"
             "\n```"
         )
         if self.hook:
@@ -28,10 +28,10 @@ class GuildJoin(Cog, command_attrs=dict(hidden=True)):
     async def on_guild_remove(self, guild: discord.Guild):
         await self.bot.wait_until_ready()
         content = (
-            "```css\n"
-            f"[Left] {guild.name} ({guild.id})"
-            f" - Owner {guild.owner} ({guild.owner.id})"
-            f" - {guild.member_count} members"
+            "```diff\n"
+            f"- Left {guild.name} ({guild.id})\n"
+            f"- Owner {guild.owner} ({guild.owner.id})\n"
+            f"- {guild.member_count} members\n"
             "\n```"
         )
         if self.hook:

@@ -155,6 +155,7 @@ sniffio
 soupsieve
 starlette
 stevedore
+sympy
 tabulate
 toml
 tomlkit

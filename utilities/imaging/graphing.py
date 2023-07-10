@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import re
-import time
 from io import BytesIO
 from statistics import StatisticsError, mean, mode, quantiles
 from typing import TYPE_CHECKING, Any
 
 import matplotlib
 import numpy as np
+from sympy import lambdify, symbols, sympify
 
 from core import Context
 
@@ -147,31 +147,37 @@ def _clean_implicit_mul(equation: str) -> str:
 
 
 @to_thread()
-def plotfn(_, equation: str, *, xrange: tuple[int, int] = (-20, 20)) -> discord.File:
-    fig: Figure = plt.figure()
-    ax: Axes = fig.add_subplot(1, 1, 1)
-    ax.set_title(f'y = {equation}', pad=15)
+def plotfn(_: Context, equation: str, *, xrange: tuple[int, int] = (-20, 20)) -> discord.File:
+    x = symbols('x')
     equation = _clean_implicit_mul(equation)
-    
-    _func = lambda x: int(str(Expression(equation, ['x'])))
+    expr = sympify(equation)  # Convert equation string to a Sympy expression
+    print(expr)
+    func = lambdify(x, expr)  # Create a function from the Sympy expression
 
-    fx = np.vectorize(_func)
-    x = np.linspace(*xrange, 1000)
+    x_vals = np.linspace(*xrange, 500)
+    y_vals = func(x_vals)  # Evaluate the function for the x-values
 
-    ax.set_aspect('equal', adjustable='box')
-    ax.spines['left'].set_position(('axes', 0.5))
-    ax.spines['bottom'].set_position(('data', 0.0))
-    ax.spines['right'].set_color('none')
-    ax.spines['top'].set_color('none')
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
-    ax.set_ylim(*ax.get_xlim())
+    plt.plot(x_vals, y_vals)
+    plt.xlabel('X - Axis')
+    plt.ylabel('Y - Axis')
+    plt.title(f'Graph of {equation}')
+    plt.grid(True)
+    plt.axhline(0, color='black', linewidth=0.5)
+    plt.axvline(0, color='black', linewidth=0.5)
 
-    ax.plot(x, fx(x))
-    plt.axis('equal')
+    plt.annotate(
+        "Created by Parrot Bot",
+        xy=(0.999, 0.01),
+        xycoords='axes fraction',
+        fontsize=8,
+        horizontalalignment='right',
+        verticalalignment='bottom',
+        bbox={"facecolor": "orange", "alpha": 0.5, "pad": 5},
+    )
+    image_buffer = BytesIO()
+    plt.savefig(image_buffer, format='png')
+    image_buffer.seek(0)
 
-    buffer = BytesIO()
-    plt.savefig(buffer)
     plt.close()
-    buffer.seek(0)
-    return discord.File(buffer, 'graph.png')
+
+    return discord.File(image_buffer, 'graph.png')

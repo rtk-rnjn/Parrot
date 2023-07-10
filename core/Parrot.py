@@ -1491,3 +1491,29 @@ class Parrot(commands.AutoShardedBot):
         if db_col not in self.__global_write_data:
             self.__global_write_data[db_col] = []
         self.__global_write_data[db_col].append(pymongo.UpdateOne(query, update, upsert=upsert))
+
+    @overload
+    def get_global_write_data(
+        self,
+        *,
+        db: ...,
+        col: ...,
+    ) -> Optional[List[pymongo.UpdateOne]]:
+        ...
+
+    @overload
+    def get_global_write_data(
+        self,
+    ) -> Dict[str, List[pymongo.UpdateOne]]:
+        ...
+
+    def get_global_write_data(
+        self, *, db: Optional[str] = None, col: Optional[str] = None
+    ) -> Optional[List[pymongo.UpdateOne]] | Dict[str, List[pymongo.UpdateOne]]:
+        if col:
+            if db is None:
+                db = "mainDB"
+            db_col = f"{db}.{col}"
+            return self.__global_write_data.get(db_col)
+
+        return self.__global_write_data

@@ -751,6 +751,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
 
     async def _on_message_passive_afk_user_message(self, message: discord.Message):
         # code - when the AFK user messages
+        if message.guild is None:
+            return
+
         if message.author.bot and message.interaction is not None:
             interacted_user = message.interaction.user
         else:
@@ -832,8 +835,9 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             from cogs.fun.fun import replace_many
         except ImportError:
             return
+        msg: str = getattr(message, "content", message)  # type: ignore
 
-        if match := QUESTION_REGEX.fullmatch(message.content if isinstance(message, discord.Message) else message):
+        if match := QUESTION_REGEX.fullmatch(msg):
             word = replace_many(
                 match.string,
                 {"means": "", "what is": "", " ": "", "?": "", ".": ""},
@@ -894,7 +898,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "messageCollection": self.get_raw_message(message),
             },
         }
-        self.bot.add_global_write_data(col="messageCollections", query=query, update=update)
+        self.bot.add_global_write_data(col="messageCollections", query=query, update=update, cls="UpdateOne")
 
     @Cog.listener("on_message_delete")
     async def on_message_delete_updater(self, message: discord.Message) -> None:
@@ -909,7 +913,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "messageCollection.timestamp": discord.utils.utcnow().timestamp() + 60 * 60 * 24 * 30,  # 30 days
             },
         }
-        self.bot.add_global_write_data(col="messageCollections", query=query, update=update)
+        self.bot.add_global_write_data(col="messageCollections", query=query, update=update, cls="UpdateMany")
 
     @Cog.listener("on_message_edit")
     async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
@@ -925,7 +929,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "messageCollection": self.get_raw_message(message),
             },
         }
-        self.bot.add_global_write_data(col="messageCollections", query=query, update=update)
+        self.bot.add_global_write_data(col="messageCollections", query=query, update=update, cls="UpdateOne")
 
     @Cog.listener("on_reaction_add")
     async def on_reaction_add_updater(self, reaction: discord.Reaction, _: discord.User) -> None:

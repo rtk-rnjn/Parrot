@@ -317,7 +317,7 @@ class Parrot(commands.AutoShardedBot):
         self.__app_commands_global: Dict[int, app_commands.AppCommand] = {}
         self.__app_commands_guild: Dict[int, Dict[int, app_commands.AppCommand]] = {}
 
-        self.__global_write_data: Dict[str, List[pymongo.UpdateOne]] = {}
+        self.__global_write_data: Dict[str, List[Union[pymongo.UpdateOne, pymongo.UpdateMany]]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
 
     def init_db(self) -> None:
@@ -1478,14 +1478,18 @@ class Parrot(commands.AutoShardedBot):
             self.__global_write_data = {}
 
     def add_global_write_data(
-        self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True
+        self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True, cls: str
     ) -> None:
         if db is None:
             db = "mainDB"
         db_col = f"{db}.{col}"
         if db_col not in self.__global_write_data:
             self.__global_write_data[db_col] = []
-        self.__global_write_data[db_col].append(pymongo.UpdateOne(query, update, upsert=upsert))
+        
+        func = getattr(pymongo, cls)
+        entity = func(query, update, upsert=upsert)
+
+        self.__global_write_data[db_col].append(entity)
 
     @overload
     def get_global_write_data(
@@ -1493,18 +1497,18 @@ class Parrot(commands.AutoShardedBot):
         *,
         db: ...,
         col: ...,
-    ) -> Optional[List[pymongo.UpdateOne]]:
+    ) -> Optional[List]:
         ...
 
     @overload
     def get_global_write_data(
         self,
-    ) -> Dict[str, List[pymongo.UpdateOne]]:
+    ) -> Dict[str, List]:
         ...
 
     def get_global_write_data(
         self, *, db: Optional[str] = None, col: Optional[str] = None
-    ) -> Optional[List[pymongo.UpdateOne]] | Dict[str, List[pymongo.UpdateOne]]:
+    ) -> Optional[List] | Dict[str, List]:
         if col:
             if db is None:
                 db = "mainDB"

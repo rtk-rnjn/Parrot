@@ -469,13 +469,6 @@ class Parrot(commands.AutoShardedBot):
         self.timer_task = self.loop.create_task(self.dispatch_timers())
         self.global_write_data.start()
 
-        async def __laod_cache():
-            log.debug("Fetching guild configurations from database")
-            async for data in self.guild_configurations.find({}):
-                self.guild_configurations_cache[data["_id"]] = data
-
-        self.loop.create_task(__laod_cache())
-
     async def db_latency(self) -> float:
         ini = perf_counter()
         await self.guild_configurations.find_one({})
@@ -1066,6 +1059,8 @@ class Parrot(commands.AutoShardedBot):
 
     async def __before_invoke(self, ctx: Context):
         if ctx.guild is not None and not ctx.guild.chunked:
+            await ctx.bot.wait_until_ready()
+            log.info("Chunking guild %s", ctx.guild.id)
             self.loop.create_task(ctx.guild.chunk())
 
     async def get_active_timer(self, **filters: Any) -> dict:

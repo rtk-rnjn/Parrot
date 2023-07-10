@@ -990,4 +990,8 @@ class Misc(Cog):
         try:
             return await do_command(ctx, equation, func=plotfn)
         except TypeError:
-            await ctx.send('Provided equation was invalid; the only variable present must be `x`.')
+            await ctx.reply('Provided equation was invalid; the only variable present must be `x`')
+        except NameError as e:
+            await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; {e}')
+        except SyntaxError:
+            await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; check your syntax.')

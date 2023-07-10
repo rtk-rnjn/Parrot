@@ -159,6 +159,12 @@ def in_temp_channel() -> Check[Context]:
 
 def can_run(ctx: Context) -> Optional[bool]:
     """Return True is the command is whitelisted in specific channel, also with specific role"""
+    try:
+        if ctx.bot.banned_users[ctx.author.id]["command"]:
+            return
+    except KeyError:
+        pass
+
     assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and ctx.command is not None
 
     cmd = ctx.command.qualified_name.replace(' ', '_')
@@ -181,10 +187,7 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional
     CMD_ENABLE_ = f"CMD_ENABLE_{cmd_cog}".upper()
 
     if cmd_config.get(CMD_GLOBAL_ENABLE_) is not None:
-        if cmd_config.get(CMD_GLOBAL_ENABLE_) is True:
-            return True
-        else:
-            return False
+        return cmd_config.get(CMD_GLOBAL_ENABLE_) is True
 
     if any(r.id in cmd_config.get(CMD_ROLE_ENABLE_, []) for r in ctx.author.roles):
         return True

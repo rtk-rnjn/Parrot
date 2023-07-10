@@ -468,6 +468,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.timer_task = self.loop.create_task(self.dispatch_timers())
         self.global_write_data.start()
+        self.update_banned_members.start()
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -668,7 +669,7 @@ class Parrot(commands.AutoShardedBot):
             content=f"```css\n{ready_up_message}```",
         )
 
-        log.debug("Ready: %s (ID: %s)", self.user, self.user.id)
+        log.info("Ready: %s (ID: %s)", self.user, self.user.id)
 
         log.debug("Getting all afk users from database")
         ls: List[Optional[int]] = await self.afk_collection.distinct("afk.messageAuthor")
@@ -794,22 +795,17 @@ class Parrot(commands.AutoShardedBot):
             else:
                 self._auto_spam_count.pop(message.author.id, None)
 
-        if ctx.command is not None:
-            if not self.banned_users:
-                await self.update_banned_members.start()
-            try:
-                if self.banned_users[ctx.author.id]["command"]:
-                    return
-            except KeyError:
-                pass
-
-            if can_run(ctx) is False:
-                log.debug("Command %s cannot be run in this context", ctx.command)
-                return
+        if can_run(ctx) is False:
+            log.debug("Command %s cannot be run in this context", ctx.command)
+            return
 
         if not getattr(ctx.cog, "ON_TESTING", False):
-            await ctx.bot.wait_until_ready()
+            if not self.is_ready():
+                log.info("waiting for ready")
+                await self.wait_until_ready()
             await self.invoke(ctx)
+        else:
+            log.debug("Command %s is on testing, ignoring", ctx.command)
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1

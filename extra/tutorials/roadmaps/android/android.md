@@ -48,6 +48,8 @@ There are multiple ways to develop applications for Android; you can go down the
 
 Here is the full version of the roadmap in a single image and after that we have the broken down version with the resources and links to learn more about each of the boxes.
 
+[![](/roadmaps/android/roadmap.svg)](/roadmaps/android/roadmap.png)
+
 ## Broken Down Version
 
 Below is the broken down version of the roadmap with links and resources to learn more about each of the items listed in the complete roadmap above.
@@ -56,11 +58,15 @@ Below is the broken down version of the roadmap with links and resources to lear
 
 For the languages, you can develop Android apps either by using Kotlin or Java.
 
+[![](/roadmaps/android/pick-language.svg)](/roadmaps/android/pick-language.svg)
+
 Although, you can use both [Kotlin](<https://en.wikipedia.org/wiki/Kotlin_(programming_language)>) and [Java](<https://en.wikipedia.org/wiki/Java_(programming_language)>) to develop native Android apps, [Google announced in 2019](https://android-developers.googleblog.com/2019/05/google-io-2019-empowering-developers-to-build-experiences-on-Android-Play.html) to make Kotlin the preferred way of developing Android applications. If you were to start learning Android development today, Kotlin should be your language of choice.
 
 ## The Fundamentals
 
 Install [Android Studio](https://developer.android.com/studio) and learn the basics of Kotlin to get started.
+
+[![](/roadmaps/android/the-fundamentals.png)](/roadmaps/android/the-fundamentals.png)
 
 We have also listed down some free resources which you can use for the items listed in the image above. If you have some better ones, please do suggest. Also, you don't need to go through all of them, just go through them and pick what you like.
 
@@ -71,11 +77,13 @@ We have also listed down some free resources which you can use for the items lis
 - [Algorithms and Data Structures in Kotlin](https://github.com/bmaslakov/kotlin-algorithm-club)
 - [Gradle](https://docs.gradle.org/current/userguide/what_is_gradle.html)
 - [Getting started with Gradle](https://docs.gradle.org/current/userguide/getting_started.html)
-  Note: Android Studio comes with a working installation of Gradle, so you don't need to install Gradle separately in that case.
+  Note: Android Studio comes with a working installation of Gradle, so you don’t need to install Gradle separately in that case.
 
 ## Version Control Systems
 
 Version Control Systems record your changes to the codebase and allow you to recall specific versions later. There are multiple Version Control Systems available, but [Git](https://git-scm.com/) is the most common one these days.
+
+[![](/roadmaps/android/git-github.png)](/roadmaps/android/git-github.png)
 
 Here are some of the resources to get you started. Feel free to google and find something else that you find easier.
 
@@ -85,6 +93,8 @@ Here are some of the resources to get you started. Feel free to google and find 
 ## Building an Application
 
 Here is the list of items that you are going to need when developing Android applications. Please note that this is an exhaustive list, and you don't need to know it all from the get-go. Get an idea of the items listed, and just start building some apps and keep the items listed in the back of your mind and have a deep dive when using them.
+
+[![](/roadmaps/android/build-an-application.png)](/roadmaps/android/build-an-application.png)
 
 To learn more about the items listed in the image above, here are the links to the relevant docs.
 
@@ -107,7 +117,7 @@ To learn more about the items listed in the image above, here are the links to t
 
 ## Jetpack Compose
 
-Jetpack Compose is Android's modern toolkit for building native UI. It simplifies and accelerates UI development on Android. Quickly bring your app to life with less code, powerful tools, and intuitive Kotlin APIs.
+Jetpack Compose is Android’s modern toolkit for building native UI. It simplifies and accelerates UI development on Android. Quickly bring your app to life with less code, powerful tools, and intuitive Kotlin APIs.
 
 - [Jetpack Compose](https://developer.android.com/jetpack/compose/documentation)
 - [Material Design 3](https://m3.material.io/)
@@ -127,3 +137,7 @@ I would highly recommend watching [this free course](https://www.udacity.com/cou
 That wraps it up for the Android developer roadmap. Again, remember to not be exhausted by the list; just learn the basics and start working on some project and the rest of the learnings will come along the way. Good luck!
 
 For any suggestions, improvements and feedback, feel free to [submit an issue](https://github.com/kamranahmedse/developer-roadmap) or reach out to me on twitter [@kamrify](https://twitter.com/kamrify).
+
+<!-- @fixme add padding to the container -->
+
+<br /><br /><br />

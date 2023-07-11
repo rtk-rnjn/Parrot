@@ -2,7 +2,7 @@ all_extensions:
   - cogs.actions
   - cogs.api
   - cogs.config
-  # - cogs.fun
+  - cogs.fun
   - cogs.holidays
   - cogs.holidays.easter
   - cogs.ipc
@@ -32,9 +32,9 @@ all_extensions:
   - events.on_rexn
   - events.user
   - events.arbitrary_events
-  # - interactions.buttons
-  # - interactions.buttons.foggle
-  # - interactions.buttons.snakes
+  - interactions.buttons
+  - interactions.buttons.foggle
+  - interactions.buttons.snakes
   - interactions.slash
   - jishaku
   - custom_commands

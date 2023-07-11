@@ -4,7 +4,6 @@
             "name": "parrot",
             "script": "main.py",
             "interpreter": "python3",
-            "max_memory_restart": "700M",
             "autorestart": true,
             "instances": 1
         }

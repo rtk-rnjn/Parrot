@@ -819,29 +819,45 @@ class Misc(Cog):
     @commands.command(aliases=["src"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def source(self, ctx: Context, *, command: str = None):
-        """Displays my full source code or for a specific command."""
-        source_url = self.bot.github
-        branch = "main"
-        if command is None:
-            return await ctx.reply(source_url)
+    async def source(self, ctx: Context, *, command: Optional[str] = None):
+        """Displays my full source code or for a specific command.
 
-        if command == "help":
+        To display the source code of a subcommand you can separate it by
+        periods, e.g. tag.create for the create subcommand of the tag command
+        or by spaces.
+        """
+        source_url = 'https://github.com/rtk-rnjn/Parrot'
+        branch = 'main'
+        if command is None:
+            return await ctx.reply(f"<{source_url}>")
+
+        if command == 'help':
             src = type(self.bot.help_command)
             module = src.__module__
-
+            filename = inspect.getsourcefile(src)
         else:
-            obj = self.bot.get_command(command.replace(".", " "))
+            obj = self.bot.get_command(command.replace('.', ' '))
             if obj is None:
-                return await ctx.reply("Could not find command.")
+                return await ctx.reply('Could not find command.')
+
+            # since we found the command we're looking for, presumably anyway, let's
+            # try to access the code itself
             src = obj.callback.__code__
             module = obj.callback.__module__
+            filename = src.co_filename
 
         lines, firstlineno = inspect.getsourcelines(src)
+        if module.startswith('discord'):
+            location = module.replace('.', '/') + '.py'
+            source_url = 'https://github.com/Rapptz/discord.py'
+            branch = 'master'
 
-        location = module.replace(".", "/") + ".py"
+        elif filename is None:
+            return await ctx.reply('Could not find source for command.')
 
-        final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
+        else:
+            location = os.path.relpath(filename).replace('\\', '/')
+        final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.reply(final_url)
 
     @commands.command()

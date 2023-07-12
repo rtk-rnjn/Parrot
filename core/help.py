@@ -237,7 +237,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         )
         self.__all_commands: Dict[Cog, List[commands.Command]] = {}
 
-    async def on_help_command_error(self, ctx, error):
+    async def on_help_command_error(self, ctx: Context, error: commands.CommandError):
         if isinstance(error, commands.CommandInvokeError):
             # Ignore missing permission errors
             if isinstance(error.original, discord.HTTPException) and error.original.code == 50013:
@@ -297,10 +297,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
     def common_command_formatting(self, embed_like, command: commands.Command, *, message: discord.Message):
         embed_like.title = command.qualified_name.upper()
         if isinstance(embed_like, discord.Embed):
-            if _ := self.get_command_signature(command):
+            if signature := self.get_command_signature(command):
                 embed_like.add_field(
                     name="Syntax",
-                    value=f"`{self.get_command_signature(command)}`",
+                    value=f"`{signature}`",
                     inline=False,
                 )
             if command.aliases:
@@ -309,29 +309,16 @@ class PaginatedHelpCommand(commands.HelpCommand):
                     value=f"`{', '.join(command.aliases)}`",
                     inline=False,
                 )
-            if command._buckets.valid:
-                embed_like.add_field(
-                    name="Cooldown",
-                    value=f"`Rate:` **{command._buckets.get_bucket(message).rate}**\n`Per :` **{command._buckets.get_bucket(message).per}**",
-                    inline=False,
-                )
-            if command._max_concurrency:
-                embed_like.add_field(
-                    name="Max Concurrenry",
-                    value=f"`Rate:` **{command._max_concurrency.number}**\n`Per :` **{command._max_concurrency.per.name.replace('guild', 'server').title()}**",
-                    inline=False,
-                )
 
         if command.description:
-            embed_like.description = f"> {command.description}\n\n*{command.help}*"
+            embed_like.description = f"{command.description}\n\n*{command.help}*"
         else:
-            embed_like.description = f'> {command.help or "No help found..."}'
+            embed_like.description = f'{command.help or "No help found..."}'
 
     async def send_command_help(self, command: commands.Command):
         await self.context.typing()
         # No pagination necessary for a single command.
         embed = discord.Embed(colour=discord.Color.blue(), timestamp=discord.utils.utcnow())
-        embed.set_thumbnail(url=self.context.me.display_avatar.url)
         self.common_command_formatting(embed, command, message=self.context.message)
         await self.context.send(embed=embed)
 

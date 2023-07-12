@@ -1255,7 +1255,7 @@ async def _emoji_rename(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    emoji: Union[discord.Emoji, discord.PartialEmoji],
+    emoji: discord.Emoji,
     name: str,
     reason: str,
     **kwargs: Any,
@@ -1372,7 +1372,7 @@ async def instant_action_parser(*, name: str, ctx: Context, message: discord.Mes
         except (discord.Forbidden, discord.NotFound):
             pass
 
-    elif name == "tempban":
+    elif name == "tempban" and duration:
         try:
             await ctx.guild.ban(message.author, reason="Auto mod: Mention protection")
         except (discord.Forbidden, discord.NotFound):

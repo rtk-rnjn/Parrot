@@ -2446,7 +2446,7 @@ class Fun(Cog):
         await confirm.edit(content=f"{ctx.author.mention} reacted on {end-start:.2f}s")
 
         await self.bot.game_collections.update_one(
-            {"_id": ctx.author.id},
+            {"_id": ctx.author.id, "game_reaction_test_time": {"$lte": end - start}},
             {
                 "$set": {"game_reaction_test_time": end - start},
                 "$inc": {"game_reaction_test_played": 1},

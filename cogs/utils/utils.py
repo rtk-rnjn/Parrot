@@ -6,8 +6,8 @@ import logging
 from itertools import zip_longest
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
-from motor.motor_asyncio import AsyncIOMotorCollection  # type: ignore
-from pymongo import ReturnDocument  # type: ignore
+from motor.motor_asyncio import AsyncIOMotorCollection
+from pymongo import ReturnDocument
 from typing_extensions import Annotated
 
 import discord
@@ -344,7 +344,7 @@ class Utils(Cog):
         await mt._set_timer_todo(self.bot, ctx, name, deadline.dt.timestamp())
 
     @commands.group(invoke_without_command=True)
-    async def afk(self, ctx: Context, *, text: commands.clean_content = None):
+    async def afk(self, ctx: Context, *, text: Optional[commands.clean_content] = None):
         """To set AFK
 
         AFK will be removed once you message.
@@ -743,13 +743,13 @@ class Utils(Cog):
     @suggest.command(name="delete")
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(read_message_history=True)
-    async def suggest_delete(self, ctx: Context, *, messageID: int):
+    async def suggest_delete(self, ctx: Context, *, message_id: int):
         """To delete the suggestion you suggested"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
 
         if ctx.channel.permissions_for(ctx.author).manage_messages:
@@ -765,13 +765,13 @@ class Utils(Cog):
 
     @suggest.command(name="stats", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    async def suggest_status(self, ctx: Context, *, messageID: int):
+    async def suggest_status(self, ctx: Context, *, message_id: int):
         """To get the statistics os the suggestion"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
         PAYLOAD: Dict[str, Any] = self.message[msg.id]
 
@@ -784,7 +784,7 @@ class Utils(Cog):
         ls = list(zip_longest(upvoter, downvoter, fillvalue=""))
         table.add_rows(ls)
 
-        embed = discord.Embed(title=f"Suggestion Statistics of message ID: {messageID}")
+        embed = discord.Embed(title=f"Suggestion Statistics of message ID: {message_id}")
         embed.description = f"```\n{table.render()}```"
 
         if msg.content:
@@ -815,12 +815,12 @@ class Utils(Cog):
 
     @suggest.command(name="note", aliases=["remark"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
-    async def add_note(self, ctx: Context, messageID: int, *, remark: str):
+    async def add_note(self, ctx: Context, message_id: int, *, remark: str):
         """To add a note in suggestion embed"""
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
 
         embed: discord.Embed = msg.embeds[0]
@@ -840,14 +840,14 @@ class Utils(Cog):
     async def clear_suggestion_embed(
         self,
         ctx: Context,
-        messageID: int,
+        message_id: int,
     ):
         """To remove all kind of notes and extra reaction from suggestion embed"""
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
 
         embed: discord.Embed = msg.embeds[0]
@@ -863,7 +863,7 @@ class Utils(Cog):
 
     @suggest.command(name="flag")
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
-    async def suggest_flag(self, ctx: Context, messageID: int, flag: str):
+    async def suggest_flag(self, ctx: Context, message_id: int, flag: str):
         """To flag the suggestion.
 
         Avalibale Flags :-
@@ -875,14 +875,14 @@ class Utils(Cog):
         - DUPLICATE
         """
 
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(messageID, guild=ctx.guild)
+        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{messageID}`. Probably already deleted, or `{messageID}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
 
         if msg.author.id != self.bot.user.id:
-            return await ctx.send(f"{ctx.author.mention} Invalid `{messageID}`")
+            return await ctx.send(f"{ctx.author.mention} Invalid `{message_id}`")
 
         flag = flag.upper()
         try:
@@ -904,7 +904,7 @@ class Utils(Cog):
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
     @Cog.listener(name="on_raw_message_delete")
-    async def suggest_msg_delete(self, payload) -> None:
+    async def suggest_msg_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
         if payload.message_id in self.message:
             del self.message[payload.message_id]
 
@@ -1011,7 +1011,7 @@ class Utils(Cog):
         duration: ShortTime,
         winners: Optional[int] = 1,
         *,
-        prize: str = None,
+        prize: Optional[str] = None,
     ):
         """To create giveaway in quick format"""
         if not prize:
@@ -1021,10 +1021,10 @@ class Utils(Cog):
 
     @giveaway.command(name="end")
     @commands.has_permissions(manage_guild=True)
-    async def giveaway_end(self, ctx: Context, messageID: int):
+    async def giveaway_end(self, ctx: Context, message_id: int):
         """To end the giveaway"""
         if data := await self.bot.giveaways.find_one_and_update(
-            {"message_id": messageID, "status": "ONGOING"}, {"$set": {"status": "END"}}
+            {"message_id": message_id, "status": "ONGOING"}, {"$set": {"status": "END"}}
         ):
             member_ids = await mt.end_giveaway(self.bot, **data)
             if not member_ids:
@@ -1039,9 +1039,9 @@ class Utils(Cog):
 
     @giveaway.command(name="reroll")
     @commands.has_permissions(manage_guild=True)
-    async def giveaway_reroll(self, ctx: Context, messageID: int, winners: int = 1):
+    async def giveaway_reroll(self, ctx: Context, message_id: int, winners: int = 1):
         """To end the giveaway"""
-        if data := await self.bot.giveaways.find_one({"message_id": messageID}):
+        if data := await self.bot.giveaways.find_one({"message_id": message_id}):
             if data["status"].upper() == "ONGOING":
                 return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
 
@@ -1059,7 +1059,7 @@ class Utils(Cog):
                 f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
             )
             return
-        await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{messageID}`")
+        await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{message_id}`")
 
     @tasks.loop(seconds=600)
     async def server_stats_updater(self):

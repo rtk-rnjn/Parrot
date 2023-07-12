@@ -56,7 +56,27 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Gives a role to the all bots."""
+        """Gives a role to the all bots.
+
+        You must have Manage Roles permission to use this command,
+        or must have the Moderator Role.
+
+        Bot must have Manage Roles permission.
+
+        `operator` can be `+` or `-` to add or remove the role respectively.
+        - `+` adds the role to the bots.
+        - `-` removes the role from the bots.
+
+        **Examples:**
+        - `[p]role bots + @Role`
+        - `[p]role bots - @Role`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]role bots + @Role reason`
+        - `[p]role bots - @Role reason`
+        """
         await mt._add_roles_bot(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -79,7 +99,27 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Gives a role to the all humans."""
+        """Gives a role to the all humans.
+
+        You must have Manage Roles permission to use this command,
+        or must have the Moderator Role.
+
+        Bot must have Manage Roles permission.
+
+        `operator` can be `+` or `-` to add or remove the role respectively.
+        - `+` adds the role to the humans.
+        - `-` removes the role from the humans.
+
+        **Examples:**
+        - `[p]role humans + @Role`
+        - `[p]role humans - @Role`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]role humans + @Role reason`
+        - `[p]role humans - @Role reason`
+        """
         await mt._add_roles_humans(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -102,7 +142,23 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Gives a role to the specified member(s)."""
+        """Gives a role to the specified member(s).
+
+        You must have Manage Roles permission to use this command,
+        or must have the Moderator Role.
+
+        Bot must have Manage Roles permission.
+
+        **Examples:**
+        - `[p]role add @Member @Role`
+        - `[p]role add 123456789012345678 @Role`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]role add @Member @Role reason`
+        - `[p]role add 123456789012345678 @Role reason`
+        """
         await mt._add_roles(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -125,7 +181,23 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Remove the mentioned role from mentioned/id member"""
+        """Remove the mentioned role from mentioned/id member
+
+        You must have Manage Roles permission to use this command,
+        or must have the Moderator Role.
+
+        Bot must have Manage Roles permission.
+
+        **Examples:**
+        - `[p]role remove @Member @Role`
+        - `[p]role remove 123456789012345678 @Role`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]role remove @Member @Role reason`
+        - `[p]role remove 123456789012345678 @Role reason`
+        """
         await mt._remove_roles(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -144,7 +216,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         member: Annotated[discord.abc.Snowflake, MemberID],
-        days: Optional[int] = None,
+        days: Optional[int] = 0,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -154,9 +226,23 @@ class Moderator(Cog):
 
         In order for this to work, the bot must have Ban Member permissions.
         To use this command you must have Ban Members permission.
+
+        **Examples:**
+        - `[p]ban @Member`
+        - `[p]ban 123456789012345678`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]ban @Member reason`
+        - `[p]ban 123456789012345678 reason`
+
+        You can also specify the number of days worth of messages to delete.
+
+        **Examples:**
+        - `[p]ban @Member 7`
+        - `[p]ban 123456789012345678 7`
         """
-        if days is None:
-            days = 0
         await mt._ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -176,7 +262,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         members: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
-        days: Optional[int] = None,
+        days: Optional[int] = 0,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -185,17 +271,25 @@ class Moderator(Cog):
         This only works through banning via ID.
 
         In order for this to work, the bot must have Ban Member permissions.
+        To use this command you must have Ban Members permission.
 
-        To use this command you must have Ban Members permission."""
-        if days is None:
-            days = 0
+        **Examples:**
+        - `[p]massban 123456789012345678 123456789012345678`
+        - `[p]massban 123456789012345678 123456789012345678 7`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]massban 123456789012345678 123456789012345678 reason`
+        - `[p]massban 123456789012345678 123456789012345678 7 reason`
+        """
         await mt._mass_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
             destination=ctx.channel,
             members=members,
-            days=0,
+            days=days,
             reason=reason,
         )
 
@@ -212,10 +306,19 @@ class Moderator(Cog):
     ):
         """Soft bans a member from the server.
 
-        A softban is basically banning the member from the server but then unbanning the member as well. This allows you to essentially kick the member while removing their messages.
+        A softban is basically banning the member from the server but then unbanning the member as well.
+        This allows you to essentially kick the member while removing their messages.
 
         In order for this to work, the bot must have Ban Member permissions.
         To use this command you must have Kick Members permissions
+
+        **Examples:**
+        - `[p]softban @Member`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]softban @Member reason`
         """
         await mt._softban(
             guild=ctx.guild,
@@ -247,7 +350,16 @@ class Moderator(Cog):
         You can also ban from ID to ban regardless whether they're in the server or not.
 
         In order for this to work, the bot must have Ban Member permissions.
-        To use this command you must have Ban Members permission."""
+        To use this command you must have Ban Members permission.
+
+        **Examples:**
+        - `[p]tempban 30d @Member`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]tempban 30d @Member reason`
+        """
         await mt._temp_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -270,7 +382,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Blocks a user from replying message in that channel."""
+        """Blocks a user from replying message in that channel.
+
+        In order for this to work, the bot must have Manage Channels, Manage Permissions and Manage Roles permissions.
+        To use this command you must have Kick Members permission.
+
+        **Examples:**
+        - `[p]block @Member`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]block @Member reason`
+        """
         await mt._block(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -289,11 +413,25 @@ class Moderator(Cog):
     async def clone(
         self,
         ctx: Context,
-        channel: discord.TextChannel = None,
+        channel: Optional[discord.TextChannel] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To clone the channel or to nukes the channel (clones and delete)."""
+        """To clone the channel or to nukes the channel (clones and delete).
+
+        In order for this to work, the bot must have Manage Channels permissions.
+        To use this command you must have Manage Channels permission.
+
+        **Examples:**
+        - `[p]clone`
+        - `[p]clone #channel`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]clone reason`
+        - `[p]clone #channel reason`
+        """
         await mt._clone(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -314,7 +452,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To kick a member from guild."""
+        """To kick a member from guild.
+
+        In order for this to work, the bot must have Kick Members permissions.
+        To use this command you must have Kick Members permission.
+
+        **Examples:**
+        - `[p]kick @Member`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]kick @Member reason`
+        """
         await mt._kick(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -335,7 +485,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To kick a member from guild."""
+        """To kick a members from guild.
+
+        In order for this to work, the bot must have Kick Members permissions.
+        To use this command you must have Kick Members permission.
+
+        **Examples:**
+        - `[p]masskick @Member @Member`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]masskick @Member @Member reason`
+        """
         await mt._mass_kick(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -356,7 +518,23 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To lock the channel"""
+        """To lock the channel.
+
+        In order for this to work, the bot must have Manage Channels, Manage Permissions and Manage Roles permissions.
+        To use this command you must have Kick Members permission.
+
+        **Examples:**
+        - `[p]lock`
+        - `[p]lock #channel`
+        - `[p]lock #channel #channel`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]lock reason`
+        - `[p]lock #channel reason`
+        - `[p]lock #channel #channel reason`
+        """
         channel = channel or [ctx.channel]
         for chn in channel:
             if isinstance(chn, discord.abc.Messageable):
@@ -389,7 +567,23 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To unlock the channel"""
+        """To unlock the channel.
+
+        In order for this to work, the bot must have Manage Channels, Manage Permissions and Manage Roles permissions.
+        To use this command you must have Kick Members permission.
+
+        **Examples:**
+        - `[p]unlock`
+        - `[p]unlock #channel`
+        - `[p]unlock #channel #channel`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]unlock reason`
+        - `[p]unlock #channel reason`
+        - `[p]unlock #channel #channel reason`
+        """
         channel = channel or [ctx.channel]
         for chn in channel:
             if isinstance(chn, discord.abc.Messageable):
@@ -422,7 +616,18 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To mute yourself"""
+        """To mute yourself.
+
+        In order for this to work, the bot must have Manage Roles permissions.
+
+        **Examples:**
+        - `[p]selfmute 1h`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]selfmute 1h reason`
+        """
         await mt._self_mute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -435,7 +640,7 @@ class Moderator(Cog):
 
     @commands.command(aliases=["mute"])
     @commands.bot_has_permissions(moderate_members=True)
-    @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True, manage_roles=True))
+    @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True))
     @Context.with_type
     async def timeout(
         self,
@@ -445,7 +650,21 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To Timeout the member, from chat."""
+        """To Timeout the member, from chat.
+
+        In order for this to work, the bot must Moderate Members permissions.
+        To use this command you must have Moderate Members permission.
+
+        **Examples:**
+        - `[p]timeout @member`
+        - `[p]timeout @member 1h`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]timeout @member reason`
+        - `[p]timeout @member 1h reason`
+        """
         if duration:
             await mt._timeout(
                 guild=ctx.guild,
@@ -477,7 +696,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To allow a member to sending message in the Text Channels, if muted/timeouted."""
+        """To allow a member to sending message in the Text Channels, if muted/timeouted.
+
+        In order for this to work, the bot must have Manage Roles permissions.
+        To use this command you must have Manage Roles permission.
+
+        **Examples:**
+        - `[p]unmute @member`
+
+        You can also provide a reason for the action.
+
+        **Examples:**
+        - `[p]unmute @member reason`
+        """
         await mt._unmute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -494,7 +725,7 @@ class Moderator(Cog):
     async def clean(
         self,
         ctx: Context,
-        num: int = 100,
+        num: Optional[int] = 100,
     ):
         """Removes messages that meet a criteria.
 
@@ -502,6 +733,9 @@ class Moderator(Cog):
 
         Note that the bot needs Manage Messages as well. These commands cannot be used in a private message.
         When the command is done doing its work, you will get a message detailing which users got removed and how many messages got removed.
+
+        **Examples:**
+        - `[p]clean 10`
         """
         if ctx.invoked_subcommand is None:
 
@@ -513,15 +747,26 @@ class Moderator(Cog):
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def embeds(self, ctx: Context, search: int = 100):
-        """Removes messages that have embeds in them."""
+    async def embeds(self, ctx: Context, search: Optional[int] = 100):
+        """Removes messages that have embeds in them.
+
+        **Examples:**
+        - `[p]clean embeds`
+        - `[p]clean embeds 10`
+        """
         await mt.do_removal(ctx, search, lambda e: len(e.embeds))
 
     @clean.command(name="regex")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _regex(self, ctx: Context, pattern: Optional[str] = None, search: int = 100):
-        """Removed messages that matches the regex pattern."""
+    async def _regex(self, ctx: Context, pattern: Optional[str] = None, search: Optional[int] = 100):
+        """Removed messages that matches the regex pattern.
+
+        **Examples:**
+        - `[p]clean regex`
+        - `[p]clean regex .*`
+        - `[p]clean regex .* 10`
+        """
         pattern = pattern or r".*"
 
         def check(m: discord.Message) -> bool:
@@ -532,22 +777,37 @@ class Moderator(Cog):
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def files(self, ctx: Context, search: int = 100):
-        """Removes messages that have attachments in them."""
+    async def files(self, ctx: Context, search: Optional[int] = 100):
+        """Removes messages that have attachments in them.
+
+        **Examples:**
+        - `[p]clean files`
+        - `[p]clean files 10`
+        """
         await mt.do_removal(ctx, search, lambda e: len(e.attachments))
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def images(self, ctx: Context, search: int = 100):
-        """Removes messages that have embeds or attachments."""
+    async def images(self, ctx: Context, search: Optional[int] = 100):
+        """Removes messages that have embeds or attachments.
+
+        **Examples:**
+        - `[p]clean images`
+        - `[p]clean images 10`
+        """
         await mt.do_removal(ctx, search, lambda e: len(e.embeds) or len(e.attachments))
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def user(self, ctx: Context, member: discord.Member, search: int = 100):
-        """Removes all messages by the member."""
+    async def user(self, ctx: Context, member: discord.Member, search: Optional[int] = 100):
+        """Removes all messages by the member.
+
+        **Examples:**
+        - `[p]clean user @member`
+        - `[p]clean user @member 10`
+        """
         await mt.do_removal(ctx, search, lambda e: e.author == member)
 
     @clean.command()
@@ -556,6 +816,9 @@ class Moderator(Cog):
     async def contains(self, ctx: Context, *, substr: str):
         """Removes all messages containing a substring.
         The substring must be at least 3 characters long.
+
+        **Examples:**
+        - `[p]clean contains Hello`
         """
         if len(substr) < 3:
             await ctx.send("The substring length must be at least 3 characters.")
@@ -565,8 +828,13 @@ class Moderator(Cog):
     @clean.command(name="bot", aliases=["bots"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: int = 100):
-        """Removes a bot user's messages and messages with their optional prefix."""
+    async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: Optional[int] = 100):
+        """Removes a bot user's messages and messages with their optional prefix.
+
+        **Examples:**
+        - `[p]clean bot`
+        - `[p]clean bot !`
+        """
 
         def predicate(m: discord.Message):
             return (m.webhook_id is None and m.author.bot) or (prefix and m.content.startswith(prefix))
@@ -576,8 +844,13 @@ class Moderator(Cog):
     @clean.command(name="emoji", aliases=["emojis"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _emoji(self, ctx: Context, search: int = 100):
-        """Removes all messages containing custom emoji."""
+    async def _emoji(self, ctx: Context, search: Optional[int] = 100):
+        """Removes all messages containing custom emoji.
+
+        **Examples:**
+        - `[p]clean emoji`
+        - `[p]clean emoji 10`
+        """
         custom_emoji = re.compile(r"<a?:[a-zA-Z0-9\_]+:([0-9]+)>")
 
         def predicate(m):
@@ -588,8 +861,13 @@ class Moderator(Cog):
     @clean.command(name="reactions")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _reactions(self, ctx: Context, search: int = 100):
-        """Removes all reactions from messages that have them."""
+    async def _reactions(self, ctx: Context, search: Optional[int] = 100):
+        """Removes all reactions from messages that have them.
+
+        **Examples:**
+        - `[p]clean reactions`
+        - `[p]clean reactions 10`
+        """
 
         if search > 2000:
             return await ctx.error(f"Too many messages to search for ({search}/2000)")
@@ -610,11 +888,19 @@ class Moderator(Cog):
         self,
         ctx: Context,
         seconds: int,
-        channel: discord.TextChannel = None,
+        channel: Optional[discord.TextChannel] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To set slowmode in the specified channel"""
+        """To set slowmode in the specified channel.
+
+        In order to set slowmode in a channel, you must have the Manage Channels permission.
+        Bot requires the Manage Channels permission in order to set slowmode.
+
+        **Examples:**
+        - `[p]slowmode 5`
+        - `[p]slowmode 5 #general`
+        """
         await mt._slowmode(
             guild=ctx.guild,
             command_name=ctx.command.name,
@@ -654,6 +940,9 @@ class Moderator(Cog):
         `--reactions`: Check if the message has reactions
         `--or`: Use logical OR for all options.
         `--not`: Use logical NOT for all options.
+
+        **Examples:**
+        - `[p]clean custom --user @Member`
         """
         parser = Arguments(add_help=False, allow_abbrev=False)
         parser.add_argument("--user", nargs="+")
@@ -742,7 +1031,17 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To Unban a member from a guild"""
+        """To Unban a member from a guild.
+
+        In order to unban a member, you must have the Ban Members permission for the guild or be a moderator.
+        Bot must have Ban Members permission for the guild.
+
+        **Examples:**
+        - `[p]unban @Member`
+
+        You can also provide reason for the unban.
+        - `[p]unban @Member reason`
+        """
         await mt._unban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -755,7 +1054,7 @@ class Moderator(Cog):
     @commands.command()
     @commands.check_any(
         is_mod(),
-        commands.has_permissions(manage_permissions=True, manage_roles=True, manage_channels=True),
+        commands.has_permissions(kick_members=True),
     )
     @commands.bot_has_permissions(manage_channels=True, manage_permissions=True, manage_roles=True)
     @Context.with_type
@@ -766,7 +1065,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Unblocks a user from the text channel"""
+        """Unblocks a user from the text channel.
+
+        In order to unblock a member, you must have the Kick Members permission for the guild or be a moderator.
+        Bot must have Manage Channels, Manage Permissions and Manage Roles permission for the guild.
+
+        **Examples:**
+        - `[p]unblock @Member`
+
+        You can also provide reason for the unblock.
+
+        **Examples:**
+        - `[p]unblock @Member reason`
+        """
         await mt._unblock(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -786,10 +1097,15 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        name: commands.clean_content = None,
+        name: Optional[commands.clean_content] = None,
     ):
-        """
-        To change the nickname of the specified member
+        """To change the nickname of the specified member
+
+        In order to change the nickname of a member, you must have the Manage Nicknames permission for the guild or be a moderator.
+        Bot must have Manage Nicknames permission for the guild.
+
+        **Examples:**
+        - `[p]nick @Member nickname`
         """
         await mt._change_nickname(
             guild=ctx.guild,
@@ -821,7 +1137,11 @@ class Moderator(Cog):
     )
     @Context.with_type
     async def voice(self, ctx: Context):
-        """Voice Moderation"""
+        """Voice Moderation.
+
+        > **Note**
+        > Voice Moderation also works for the user who is owner of their temporary channels.
+        """
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
@@ -836,7 +1156,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice mute"""
+        """To give the member voice mute.
+
+        In order to give a member voice mute, you must have the Mute Members permission for the guild or be a moderator.
+        Bot must have Mute Members permission for the guild.
+
+        **Examples:**
+        - `[p]voice mute @Member`
+
+        You can also provide reason for the voice mute.
+
+        **Examples:**
+        - `[p]voice mute @Member reason`
+        """
         await mt._voice_mute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -857,7 +1189,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice unmute"""
+        """To give the member voice unmute.
+
+        In order to give a member voice unmute, you must have the Mute Members permission for the guild or be a moderator.
+        Bot must have Mute Members permission for the guild.
+
+        **Examples:**
+        - `[p]voice unmute @Member`
+
+        You can also provide reason for the voice unmute.
+
+        **Examples:**
+        - `[p]voice unmute @Member reason`
+        """
         await mt._voice_unmute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -882,7 +1226,19 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice ban"""
+        """To give the member voice ban.
+
+        In order to give a member voice ban, you must have the Manage Channels and Manage Permissions permission for the guild or be a moderator.
+        Bot must have Manage Channels and Manage Permissions permission for the guild.
+
+        **Examples:**
+        - `[p]voice ban @Member`
+
+        You can also provide reason for the voice ban.
+
+        **Examples:**
+        - `[p]voice ban @Member reason`
+        """
         if member.voice is None:
             return await ctx.error(f"{ctx.author.mention} {member} is not in Voice Channel")
         await mt._voice_ban(
@@ -910,7 +1266,14 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice unban"""
+        """To give the member voice unban.
+
+        In order to give a member voice unban, you must have the Manage Channels and Manage Permissions permission for the guild or be a moderator.
+        Bot must have Manage Channels and Manage Permissions permission for the guild.
+
+        **Examples:**
+        - `[p]voice unban @Member`
+        """
         if member.voice is None:
             return await ctx.error(f"{ctx.author.mention} {member} is not in Voice Channel")
         await mt._voice_unban(
@@ -934,7 +1297,14 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice deafen"""
+        """To give the member voice deafen.
+
+        In order to give a member voice deafen, you must have the Deafen Members permission for the guild or be a moderator.
+        Bot must have Deafen Members permission for the guild.
+
+        **Examples:**
+        - `[p]voice deafen @Member`
+        """
         await mt._voice_deafen(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -955,7 +1325,14 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice undeafen"""
+        """To give the member voice undeafen.
+
+        In order to give a member voice undeafen, you must have the Deafen Members permission for the guild or be a moderator.
+        Bot must have Deafen Members permission for the guild.
+
+        **Examples:**
+        - `[p]voice undeafen @Member`
+        """
         await mt._voice_undeafen(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -976,7 +1353,14 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice kick"""
+        """To give the member voice kick.
+
+        In order to give a member voice kick, you must have the Move Members permission for the guild or be a moderator.
+        Bot must have Move Members permission for the guild.
+
+        **Examples:**
+        - `[p]voice kick @Member`
+        """
         await mt._voice_kick(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -997,11 +1381,20 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To set the VC limit"""
+        """To set the VC limit.
+
+        In order to set the VC limit, you must have the Move Members permission for the guild or be a moderator.
+        Bot must have Manage Channels permission for the guild.
+
+        **Examples:**
+        - `[p]voice limit 5`
+
+        **NOTE:** To remove the limit, use the command without any arguments.
+        """
         if not ctx.author.voice:
             return await ctx.error(f"{ctx.author.mention} you must be in voice channel to use the command")
         await ctx.author.voice.channel.edit(
-            user_limit=limit,
+            user_limit=limit,  # type: ignore
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
         )
         if limit:
@@ -1016,12 +1409,22 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,
-        channel: Union[discord.VoiceChannel, None] = None,
+        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,  # type: ignore
+        channel: Optional[discord.VoiceChannel] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To give the member voice move"""
+        """To give the member voice move.
+
+        In order to give a member voice move, you must have the Move Members permission for the guild or be a moderator.
+        Bot must have Move Members permission for the guild.
+
+        **Examples:**
+        - `[p]voice move @Member`
+        - `[p]voice move @Member #voice-channel`
+
+        **NOTE:** If you don't specify the channel, it will move the member to the channel you are in.
+        """
         if member:
             member: List[discord.Member] = [i async for i in self.bot.resolve_member_ids(ctx.guild, member)]
 
@@ -1087,9 +1490,16 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To delete the emoji"""
+        """To delete the emoji.
+
+        In order to delete the emoji, you must have the Manage Emojis permission for the guild or be a moderator.
+        Bot must have Manage Emojis permission for the guild.
+
+        **Examples:**
+        - `[p]emoji delete [emoji]`
+        """
         if not emoji:
-            return
+            return await ctx.error(f"{ctx.author.mention} you must specify the emoji to delete")
         await mt._emoji_delete(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -1110,7 +1520,14 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To add the emoji"""
+        """To add the emoji.
+
+        In order to add the emoji, you must have the Manage Emojis permission for the guild or be a moderator.
+        Bot must have Manage Emojis permission for the guild.
+
+        **Examples:**
+        - `[p]emoji add [emoji]`
+        """
         if not emoji:
             return
         await mt._emoji_add(
@@ -1130,11 +1547,22 @@ class Moderator(Cog):
         self,
         ctx: Context,
         url: str,
-        name: commands.clean_content,
+        name: Optional[commands.clean_content] = "emoji",  # type: ignore
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To add the emoji from url"""
+        """To add the emoji from url.
+
+        In order to add the emoji, you must have the Manage Emojis permission for the guild or be a moderator.
+        Bot must have Manage Emojis permission for the guild.
+
+        **Examples:**
+        - `[p]emoji addurl url`
+        - `[p]emoji addurl url name`
+
+        **Note:**
+        - The name must be less than 32 characters.
+        """
         await mt._emoji_addurl(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -1157,7 +1585,17 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To rename the emoji"""
+        """To rename the emoji.
+
+        In order to rename the emoji, you must have the Manage Emojis permission for the guild or be a moderator.
+        Bot must have Manage Emojis permission for the guild.
+
+        **Examples:**
+        - `[p]emoji rename emoji name`
+
+        **Note:**
+        - The name must be less than 32 characters.
+        """
         await mt._emoji_rename(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -1169,15 +1607,10 @@ class Moderator(Cog):
         )
 
     @commands.group()
-    @commands.check_any(
-        is_mod(),
-        commands.has_permissions(
-            manage_emojis=True,
-        ),
-    )
+    @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
     @Context.with_type
     async def sticker(self, ctx: Context):
-        """Sticker Management of the server"""
+        """Sticker Management of the server."""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
@@ -1275,7 +1708,13 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Why to learn the commands? This is all in one mod command."""
+        """Why to learn the commands? This is all in one mod command.
+        
+        **Examples:**
+        - `[p]mod @member`
+        - `[p]mod #channel`
+        - `[p]mod @role`
+        """
 
         def check_msg(m: discord.Message) -> bool:
             return m.author == ctx.author and m.channel == ctx.channel

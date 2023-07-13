@@ -7,7 +7,7 @@ import itertools
 from collections import Counter
 from time import time
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+import os
 import psutil
 import pygit2
 
@@ -72,16 +72,24 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def owner(self, ctx: Context):
-        """
-        Get the freaking bot owner name.
-        """
+        """Core and sole maintainer of this bot."""
+        from utilities.config import SUPER_USER, AUTHOR_NAME, AUTHOR_DISCRIMINATOR
+
+        owner = self.bot.get_user(int(SUPER_USER))
+        if not owner:
+            return await ctx.reply("Owner not found, for some reason.")
+
+        name = str(owner)
         await ctx.reply(
             embed=discord.Embed(
                 title="Owner Info",
-                description=r"This bot is being hosted and created by !! Ritik Ranjan [\*.\*]#9230. He is actually a dumb bot developer. He do not know why he made this shit bot. But it\'s cool",
+                description=(
+                    f"This bot is being hosted and created by `{owner}` (He/Him). "
+                    f"Previously known as {AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}. "
+                    f"He is actually a dumb bot developer. He do not know why he made this shit bot. But it's cool"),
                 timestamp=discord.utils.utcnow(),
                 color=ctx.author.color,
-                url=f"https://discord.com/users/{self.bot.author_obj.id}",
+                url=f"https://discord.com/users/{owner.id}",
             )
         )
 
@@ -90,15 +98,12 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def guildicon(self, ctx: Context):
-        """
-        Get the freaking server icon
-        """
-        if not hasattr(ctx.guild.icon, "url"):
+        """Get the freaking server icon"""
+        if not ctx.guild.icon:
             return await ctx.reply(f"{ctx.author.mention} {ctx.guild.name} has no icon yet!")
 
-        guild = ctx.guild
         embed = discord.Embed(timestamp=discord.utils.utcnow())
-        embed.set_image(url=guild.icon.url)
+        embed.set_image(url=ctx.guild.icon.url)
 
         await ctx.reply(embed=embed)
 
@@ -107,13 +112,11 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def server_info(self, ctx: Context):
-        """
-        Get the basic stats about the server
-        """
+        """Get the basic stats about the server"""
         guild = ctx.guild
         embed: discord.Embed = discord.Embed(
             title=f"Server Info: {ctx.guild.name}",
-            colour=ctx.guild.owner.colour,
+            colour=ctx.guild.owner.colour if ctx.guild.owner else discord.Colour.blurple(),
             timestamp=discord.utils.utcnow(),
         )
         if ctx.guild.icon:
@@ -245,23 +248,46 @@ class Meta(Cog):
         offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
         return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})"
 
+    def format_commit_from_json(self, commit: dict):
+        # sourcery skip: aware-datetime-for-utc
+        commit_hex = commit["sha"]
+        short_sha2 = commit_hex[:6]
+        commit_time = datetime.datetime.strptime(commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ")
+        utc_offset = datetime.datetime.now() - datetime.datetime.utcnow()  # type: datetime.timedelta
+        commit_tz = datetime.timezone(datetime.timedelta(minutes=utc_offset.total_seconds() // 60))
+        commit_time = commit_time.astimezone(commit_tz)
+
+        # [`hash`](url) message (offset)
+        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
+        return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit_hex}) {commit['commit']['message']} ({offset})"
+
     def get_last_commits(self, count=3):
+        # check if the `.git` directory exists
+        if not os.path.isdir(".git"):
+            return
         repo = pygit2.Repository(".git")
         commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
         return "\n".join(self.format_commit(c) for c in commits)
+    
+    async def get_last_commits_async(self, count: int = 3):
+        repo = "rtk-rnjn/Parrot"
+        url = f"https://api.github.com/repos/{repo}/commits"
+
+        async with self.bot.http_session.get(url) as response:
+            if response.status != 200:
+                return "Failed to get commits"
+            
+            data = await response.json()
+
+        return "\n".join(self.format_commit_from_json(c) for c in data[:count])
 
     @commands.command(name="stats", aliases=["about"])
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def show_bot_stats(self, ctx: Context):
-        """
-        Get the bot stats
-        """
-        if self.bot.ON_HEROKU:
-            revision = "Failed to get revision"
-        else:
-            revision = self.get_last_commits()
+        """Get the bot stats"""
+        revision = self.get_last_commits(3) or await self.get_last_commits_async(3)
         embed = discord.Embed(
             title="Official Bot Server Invite",
             colour=ctx.author.colour,
@@ -270,7 +296,7 @@ class Meta(Cog):
             url=SUPPORT_SERVER,
         )
         support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
-        owner = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)
+        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)  # type: ignore  i am owner
         embed.set_author(name=str(owner), icon_url=owner.display_avatar.url)
 
         # statistics
@@ -285,7 +311,7 @@ class Meta(Cog):
             if guild.unavailable:
                 continue
 
-            total_members += guild.member_count
+            total_members += guild.member_count or 0
             for channel in guild.channels:
                 if isinstance(channel, discord.TextChannel):
                     text += 1
@@ -337,7 +363,7 @@ class Meta(Cog):
                 f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''} [Blame Discord]",
                 True,
             ),
-            ("Joined at", f"{discord.utils.format_dt(target.joined_at)}", True),
+            ("Joined at", f"{discord.utils.format_dt(target.joined_at)}" if target.joined_at else 'N/A', True),
             ("Boosted", bool(target.premium_since), True),
             ("Bot?", target.bot, True),
             ("Nickname", target.display_name, True),
@@ -360,7 +386,7 @@ class Meta(Cog):
             perms.append("Role Manager")
         if target.guild_permissions.moderate_members:
             perms.append("Can Timeout Members")
-        embed.description = f"Key perms: {', '.join(perms or ['NA'])}"
+        embed.description = f"Key perms: {', '.join(perms or ['N/A'])}"
         if target.banner:
             embed.set_image(url=target.banner.url)
         await ctx.reply(ctx.author.mention, embed=embed)
@@ -382,7 +408,7 @@ class Meta(Cog):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"{ctx.author}")
-            .set_thumbnail(url=ctx.guild.me.avatar.url)
+            .set_thumbnail(url=ctx.guild.me.display_avatar.url)
         )
         await ctx.reply(embed=em)
 
@@ -426,7 +452,7 @@ class Meta(Cog):
             perms.append("Channel Manager")
         if role.permissions.manage_emojis:
             perms.append("Emoji Manager")
-        embed.description = f"Key perms: {', '.join(perms or ['NA'])}"
+        embed.description = f"Key perms: {', '.join(perms or ['N/A'])}"
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
             embed.set_thumbnail(
@@ -452,7 +478,7 @@ class Meta(Cog):
             ("Name", emoji.name, True),
             ("Is Animated?", emoji.animated, True),
             ("Created At", f"{discord.utils.format_dt(emoji.created_at)}", True),
-            ("Server Owned", emoji.guild.name, True),
+            ("Server Owned", emoji.guild.name if emoji.guild else 'N/A', True),
             ("Server ID", emoji.guild_id, True),
             ("Created By", emoji.user or "User Not Found", True),
             ("Available?", emoji.available, True),
@@ -481,7 +507,12 @@ class Meta(Cog):
         ] = None,
     ):
         channel = channel or ctx.channel  # type: ignore
-        id_ = channel.id
+        id_ = channel.id  # type: ignore
+
+        assert isinstance(
+            channel, (discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.StageChannel)
+        )
+
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
@@ -523,7 +554,7 @@ class Meta(Cog):
             else:
                 from utilities.config import SUPER_USER
 
-                await self.bot.get_user(SUPER_USER).send(text[:1800:])
+                await self.bot.get_user(int(SUPER_USER)).send(text[:1800:])  # type: ignore
             await ctx.reply(f"{ctx.author.mention} your message is being delivered!")
         else:
             await ctx.reply(f"{ctx.author.mention} nvm, reverting the process")
@@ -559,7 +590,7 @@ class Meta(Cog):
             color=ctx.author.color,
         )
         embed.set_footer(text=f"{ctx.author}")
-        change_log = await self.bot.change_log()
+        change_log: discord.Message = await self.bot.change_log()
         embed.description = f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
         await ctx.reply(embed=embed)
 
@@ -577,7 +608,7 @@ class Meta(Cog):
             color=ctx.author.color,
         )
         embed.set_footer(text=f"{ctx.author}")
-        embed.set_thumbnail(url=ctx.guild.me.avatar.url)
+        embed.set_thumbnail(url=ctx.guild.me.display_avatar.url)
         await ctx.reply(embed=embed)
 
     @commands.command()
@@ -594,7 +625,7 @@ class Meta(Cog):
         fields: List[Tuple[str, Optional[str], bool]] = [  # type: ignore
             ("Member count?", invite.approximate_member_count, True),
             ("Presence Count?", invite.approximate_presence_count, True),
-            ("Channel", f"<#{invite.channel.id}>", True),
+            ("Channel", f"<#{invite.channel.id}>" if invite.channel else 'N/A', True),
             (
                 "Created At",
                 discord.utils.format_dt(invite.created_at, "R") if invite.created_at is not None else "Can not determine",
@@ -626,12 +657,12 @@ class Meta(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def stickerinfo(self, ctx: Context, sticker: Union[discord.GuildSticker, None] = None):
+    async def stickerinfo(self, ctx: Context, sticker: Optional[discord.GuildSticker] = None):
         """Get the info regarding the Sticker"""
         if sticker is None and not ctx.message.stickers:
             return await ctx.error(f"{ctx.author.mention} you did not provide any sticker")
         sticker = sticker or await ctx.message.stickers[0].fetch()
-        if sticker.guild and sticker.guild.id != ctx.guild.id:
+        if sticker is None or (sticker.guild and sticker.guild.id != ctx.guild.id):
             return await ctx.error(f"{ctx.author.mention} this sticker is not from this server")
 
         embed: discord.Embed = (

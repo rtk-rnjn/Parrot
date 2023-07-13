@@ -383,7 +383,7 @@ class Parrot(commands.AutoShardedBot):
     def support_server(self) -> str:
         return SUPPORT_SERVER
 
-    async def change_log(self) -> Optional[discord.Message]:
+    async def change_log(self) -> discord.Message:
         """For the command `announcement` to let the users know the most recent change"""
         log.debug("Getting recent message from channel %s", CHANGE_LOG_ID)
         assert isinstance(CHANGE_LOG_ID, int)
@@ -393,8 +393,7 @@ class Parrot(commands.AutoShardedBot):
         if not self._change_log and channel is not None:
             self._change_log = [msg async for msg in channel.history(limit=1)]
 
-        if self._change_log:
-            return self._change_log[0]
+        return self._change_log[0]
 
     @property
     def author_obj(self) -> Optional[discord.User]:

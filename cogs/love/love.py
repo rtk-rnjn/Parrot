@@ -11,7 +11,7 @@ from pathlib import Path
 from random import choice
 from typing import Coroutine, Optional, Tuple, Union
 
-from discord.ext.commands import clean_content  # type: ignore
+from discord.ext.commands import clean_content
 
 import discord
 from core import Cog, Context, Parrot
@@ -33,8 +33,8 @@ HEART_EMOJIS = [
 VALENTINES_DATES = json.loads(Path("extra/valentines/date_ideas.json").read_text("utf8"))
 PICKUP_LINES = json.loads(Path("extra/valentines/pickup_lines.json").read_text("utf8"))
 STATES = json.loads(Path("extra/valentines/valenstates.json").read_text("utf8"))
-LOVE_DATA: dict = json.loads(Path("extra/valentines/love_matches.json").read_text("utf8"))
-LOVE_DATA = sorted((int(key), value) for key, value in LOVE_DATA.items())
+_LOVE_DATA: dict = json.loads(Path("extra/valentines/love_matches.json").read_text("utf8"))
+LOVE_DATA = sorted((int(key), value) for key, value in _LOVE_DATA.items())
 
 
 class Love(Cog):

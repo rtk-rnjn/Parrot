@@ -364,6 +364,8 @@ class Misc(Cog):
         """To get the first message of the specified channel"""
         channel = channel or ctx.channel  # type: ignore
 
+        assert isinstance(channel, discord.TextChannel)
+
         async for msg in channel.history(limit=1, oldest_first=True):
             return await ctx.send(
                 embed=discord.Embed(
@@ -421,10 +423,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def news(self, ctx: Context, *, nat: str):
-        """This command will fetch the latest news from all over the world.
-
-        $news <country_code>
-        """
+        """This command will fetch the latest news from all over the world."""
         NEWS_KEY = os.environ["NEWSKEY"]
         if not get_country_code(nat):
             return await ctx.reply(f"{ctx.author.mention} **{nat}** is not a valid country code.")
@@ -582,7 +581,7 @@ class Misc(Cog):
     @Context.with_type
     async def truthtable(self, ctx: Context, *, flags: TTFlag):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
-        (Example: `tt --var a, b --con a and b, a or b`)
+
         ```
         Negation             : not, -, ~
         Logical disjunction  : or
@@ -593,6 +592,9 @@ class Misc(Cog):
         Material implication : =>, implies
         Logical biconditional: =
         ```
+
+        **Example:**
+        - `[p]truthtable --var p, q --con p and q`
         """
         table = Truths(
             flags.var.replace(" ", "").split(","),
@@ -648,23 +650,38 @@ class Misc(Cog):
         name = res["name"]
 
         embed.add_field(name="Temperature", value=f"{temp:.2f}°C").add_field(
-            name="Feels Like", value=f"{feels_like:.2f}°C"
-        ).add_field(name="Humidity", value=f"{humidity}%").add_field(name="Pressure", value=f"{pressure}hPa").add_field(
-            name="Wind Speed", value=f"{wind_speed}m/s"
+            name="Feels Like",
+            value=f"{feels_like:.2f}°C",
         ).add_field(
-            name="Wind Direction", value=f"{wind_deg}°"
+            name="Humidity",
+            value=f"{humidity}%",
         ).add_field(
-            name="Cloudiness", value=f"{cloudiness}%"
+            name="Pressure",
+            value=f"{pressure}hPa",
         ).add_field(
-            name="Visibility", value=f"{visibliity}m"
+            name="Wind Speed",
+            value=f"{wind_speed}m/s",
         ).add_field(
-            name="Sunrise", value=f"{sunrise.strftime('%H:%M')}"
+            name="Wind Direction",
+            value=f"{wind_deg}°",
         ).add_field(
-            name="Sunset", value=f"{sunset.strftime('%H:%M')}"
+            name="Cloudiness",
+            value=f"{cloudiness}%",
         ).add_field(
-            name="Country", value=f"{country}"
+            name="Visibility",
+            value=f"{visibliity}m",
         ).add_field(
-            name="Name", value=f"{name}"
+            name="Sunrise",
+            value=f"{sunrise.strftime('%H:%M')}",
+        ).add_field(
+            name="Sunset",
+            value=f"{sunset.strftime('%H:%M')}",
+        ).add_field(
+            name="Country",
+            value=f"{country}",
+        ).add_field(
+            name="Name",
+            value=f"{name}",
         ).set_footer(
             text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url
         ).set_author(

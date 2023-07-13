@@ -204,7 +204,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     async def send(
         self,
-        content: Optional[str] = None,
+        content: Any = None,
         *,
         bold: bool = False,
         italic: bool = False,

@@ -22,11 +22,11 @@ from collections import defaultdict
 from contextlib import suppress
 from pathlib import Path
 from random import choice, randint
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union, Annotated
 
 import aiohttp
-import rapidfuzz  # type: ignore
-from aiohttp import request  # type: ignore
+import rapidfuzz
+from aiohttp import request
 from colorama import Fore
 from PIL import Image, ImageColor
 
@@ -116,7 +116,7 @@ class Fun(Cog):
 
         self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
         self.game_player_scores: Dict[
-            int, Dict[discord.Member, int]
+            int, Dict[Union[discord.Member, discord.User], int]
         ] = {}  # A variable to store temporary game player's scores.
         self.latest_comic_info: Dict[str, Union[int, str]] = {}
         self.categories = {
@@ -555,7 +555,7 @@ class Fun(Cog):
         name="trivia",
         invoke_without_command=True,
     )
-    async def triva_quiz(self, ctx: Context, *, flag: TriviaFlag) -> None:
+    async def triva_quiz(self, ctx: Context, *, flag: TriviaFlag):
         """Trivia quiz commands.
 
         Available flags:
@@ -1758,7 +1758,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def scrapbook(self, ctx: Context, *, text: commands.clean_content):
+    async def scrapbook(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """ScrapBook Text image generation"""
         params = {"text": text[:20:]}
         r = await self.bot.http_session.get(f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params)
@@ -1769,7 +1769,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def uwuify(self, ctx: Context, *, text: commands.clean_content):
+    async def uwuify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Converts a given `text` into it's uwu equivalent."""
         conversion_func = functools.partial(replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True)
         text, embed = await self._get_text_and_embed(ctx, text)
@@ -1787,7 +1787,7 @@ class Fun(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def coinflip(self, ctx: Context, *, choose: str = None):
+    async def coinflip(self, ctx: Context, *, choose: str = 'heads'):
         """Coin Flip, It comes either HEADS or TAILS"""
         choose = "tails" if choose.lower() in {"tails", "tail", "t"} else "heads"
         msg: discord.Message = await ctx.send(
@@ -1926,7 +1926,7 @@ class Fun(Cog):
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
         """
 
-        async def send(*args, **kwargs) -> str:
+        async def send(*args, **kwargs) -> Optional[str]:
             """
             This replaces the original ctx.send.
             When invoking the egg decorating command, the egg itself doesn't print to to the channel.
@@ -2075,7 +2075,7 @@ class Fun(Cog):
     @commands.command(name="activity")
     @commands.bot_has_guild_permissions(
         create_instant_invite=True,
-        use_embedded_activities=True,
+        use_embedded_activities=True
     )
     @commands.has_guild_permissions(use_embedded_activities=True)
     async def activity(self, ctx: Context, *, name: str):
@@ -2086,6 +2086,9 @@ class Fun(Cog):
         INT = EmbeddedActivity.get(name.lower().replace(" ", "_"))
         if INT is None:
             return await ctx.error(f"{ctx.author.mention} no activity named {name}")
+
+        if ctx.author.voice.channel is None:
+            return await ctx.error(f"{ctx.author.mention} you must be in the voice channel to use the activity")
 
         inv = await ctx.author.voice.channel.create_invite(
             target_type=discord.InviteTarget.embedded_application,
@@ -2102,7 +2105,7 @@ class Fun(Cog):
         )
 
     @commands.command(
-        name="mosaic",
+        name="mosaic"
     )
     async def mosaic_command(self, ctx: Context, squares: int = 16):
         """Splits your avatar into x squares, randomizes them and stitches them back into a new image!"""
@@ -2455,7 +2458,7 @@ class Fun(Cog):
         )
 
     @commands.command(name="bottomify", aliases=["bottom"])
-    async def _bottomify(self, ctx: Context, *, text: commands.clean_content):
+    async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Bottomify your text"""
         text = await self.bot.func(to_bottom, text)
         if len(text) > 2000:
@@ -2464,7 +2467,7 @@ class Fun(Cog):
             await ctx.reply(text)
 
     @commands.command(name="debottomify", aliases=["debottom"])
-    async def _debottomify(self, ctx: Context, *, text: commands.clean_content):
+    async def _debottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Debottomify your text"""
         text = await self.bot.func(from_bottom, text)
         if len(text) > 2000:
@@ -2494,4 +2497,4 @@ class Fun(Cog):
             text=f"Game played by: {ctx.author}",
             icon_url=ctx.author.display_avatar.url,
         )
-        view.msg = await ctx.reply(file=file, embed=embed, view=view)  # type: ignore
+        view.msg = await ctx.reply(file=file, embed=embed, view=view)

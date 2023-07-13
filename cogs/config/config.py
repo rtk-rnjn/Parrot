@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, Annotated
 
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate
@@ -776,7 +776,7 @@ class Configuration(Cog):
     async def enable(
         self,
         ctx: Context,
-        command: commands.clean_content,
+        command: Annotated[str, commands.clean_content],
         *,
         target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
     ):
@@ -798,7 +798,7 @@ class Configuration(Cog):
     async def disable(
         self,
         ctx: Context,
-        command: commands.clean_content,
+        command: Annotated[str, commands.clean_content],
         *,
         target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
     ):

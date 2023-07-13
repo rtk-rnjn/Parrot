@@ -60,7 +60,7 @@ class ContentView(discord.ui.Select):
         super().__init__(placeholder="Select a folder...", min_values=1, max_values=1)
 
         for folder in folders:
-            self.add_option(label=folder, value=folder)
+            self.add_option(label=folder.replace("-", " ").title(), value=folder)
     
     def remove_img_links(self, text: str) -> str:
         """Remove all ![]() links from text"""
@@ -75,15 +75,15 @@ class ContentView(discord.ui.Select):
         
         return re.sub(r"(\[.*?\])\((.*?)\)", f, text)
 
-    async def prepare_file_embed(self, path: str):
+    async def send_file_embed(self, path: str, interaction: discord.Interaction) -> None:
         async with aiofiles.open(path, mode="r", encoding="utf-8") as f:
             content = await f.read()
 
         page = commands.Paginator(prefix="", suffix="")
         _ADD_LINE = True
-        main = []
+
         for line in content.splitlines():
-            if line.startswith("---"):
+            if line == "---":
                 _ADD_LINE = not _ADD_LINE
                 continue
             if _ADD_LINE:
@@ -92,18 +92,14 @@ class ContentView(discord.ui.Select):
                 page.add_line(line)
 
         interference = PaginatorEmbedInterface(self.view.ctx, page, owner=self.view.ctx.author)
-        await interference.send_to(self.view.ctx.channel)
+        await interference.send_to(interaction.followup)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
 
         folder = self.values[0]
-        if os.path.isdir(folder):
-            await self.view.message.edit(
-                embed=discord.Embed(
-                    title="Developer Roadmaps",
-                    description=f"**{folder}**",
-                    url="https://roadmap.sh/",
-                )
-            )
-            await self.prepare_file_embed(os.path.join(folder, "README.md"))
+        if not os.path.isdir(folder):
+            await self.send_file_embed(folder, interaction)
+        else:
+            files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+            files.sort()

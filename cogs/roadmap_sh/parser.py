@@ -23,9 +23,6 @@ class ParentView(ParrotView):
     message: discord.Message
     ctx: Context
 
-    def __init__(self, timeout: float) -> None:
-        super().__init__(timeout=timeout)
-
     @discord.ui.button(label="Roadmap", style=discord.ButtonStyle.blurple)
     async def roadmap(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()

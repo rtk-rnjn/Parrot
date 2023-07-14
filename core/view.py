@@ -19,6 +19,9 @@ class ParrotView(discord.ui.View):
         self.delete_message = delete_message
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if not hasattr(self, "ctx"):
+            return True
+
         if interaction.user.id == self.ctx.author.id:
             return True
         await interaction.response.send_message(f"Only the {self.ctx.author.mention} can use this menu.", ephemeral=True)

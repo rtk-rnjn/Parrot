@@ -12,12 +12,12 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional
 
 import async_timeout
-from discord.ext.commands import CommandError, bot_has_permissions, group
+from discord.ext.commands import CommandError, bot_has_permissions, group, BucketType
+from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
 
 from core import Cog, Context, Parrot
 from discord import Colour, Embed, File, Member, Message, PartialEmoji, Reaction
-from utilities.deco import locked
 
 from ._converter import Snake
 from ._utils import (
@@ -457,7 +457,7 @@ class Snakes(Cog):
 
     @bot_has_permissions(manage_messages=True)
     @snakes_group.command(name="antidote")
-    @locked()
+    @commands.max_concurrency(1, per=BucketType.channel)
     async def antidote_command(self, ctx: Context) -> None:
         """
         Antidote! Can you create the antivenom before the patient dies?
@@ -629,7 +629,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="get")
     @bot_has_permissions(manage_messages=True)
-    @locked()
+    @commands.max_concurrency(1, per=BucketType.channel)
     async def get_command(self, ctx: Context, *, name: Snake = None) -> None:
         """
         Fetches information about a snake from Wikipedia.
@@ -675,7 +675,7 @@ class Snakes(Cog):
             await ctx.send(embed=embed)
 
     @snakes_group.command(name="guess", aliases=("identify",))
-    @locked()
+    @commands.max_concurrency(1, per=BucketType.channel)
     async def guess_command(self, ctx: Context) -> None:
         """
         Snake identifying game.
@@ -735,7 +735,7 @@ class Snakes(Cog):
         await ctx.send(embed=my_snake_embed)
 
     @snakes_group.command(name="quiz")
-    @locked()
+    @commands.max_concurrency(1, per=BucketType.channel)
     async def quiz_command(self, ctx: Context) -> None:
         """
         Asks a snake-related question in the chat and validates the user's guess.
@@ -822,7 +822,7 @@ class Snakes(Cog):
         return
 
     @snakes_group.command(name="sal")
-    @locked()
+    @commands.max_concurrency(1, per=BucketType.channel)
     async def sal_command(self, ctx: Context) -> None:
         """
         Play a game of Snakes and Ladders.

@@ -60,7 +60,7 @@ class SokobanGame:
     def move_up(self) -> None:
         if self.level[self.player[0] - 1][self.player[1]] in (" ", "."):
             self.level[self.player[0] - 1][self.player[1]] = "@"
-            return self._extracted_from_move_up_4()
+            return self._move_up_h()
         if (self.level[self.player[0] - 1][self.player[1]] in ("$", "x")) and (
             self.level[self.player[0] - 2][self.player[1]] in (" ", ".")
         ):
@@ -68,10 +68,9 @@ class SokobanGame:
             self.level[self.player[0] - 2][self.player[1]] = (
                 "$" if self.level[self.player[0] - 2][self.player[1]] == " " else "x"
             )
-            return self._extracted_from_move_up_4()
+            return self._move_up_h()
 
-    # TODO Rename this here and in `move_up`
-    def _extracted_from_move_up_4(self):
+    def _move_up_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0] - 1, self.player[1]]
         return
@@ -79,7 +78,7 @@ class SokobanGame:
     def move_down(self) -> None:
         if self.level[self.player[0] + 1][self.player[1]] in (" ", "."):
             self.level[self.player[0] + 1][self.player[1]] = "@"
-            return self._extracted_from_move_down_4()
+            return self._move_down_h()
         if (self.level[self.player[0] + 1][self.player[1]] in ("$", "x")) and (
             self.level[self.player[0] + 2][self.player[1]] in (" ", ".")
         ):
@@ -87,10 +86,9 @@ class SokobanGame:
             self.level[self.player[0] + 2][self.player[1]] = (
                 "$" if self.level[self.player[0] + 2][self.player[1]] == " " else "x"
             )
-            return self._extracted_from_move_down_4()
+            return self._move_down_h()
 
-    # TODO Rename this here and in `move_down`
-    def _extracted_from_move_down_4(self):
+    def _move_down_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0] + 1, self.player[1]]
         return
@@ -98,7 +96,7 @@ class SokobanGame:
     def move_left(self) -> None:
         if self.level[self.player[0]][self.player[1] - 1] in (" ", "."):
             self.level[self.player[0]][self.player[1] - 1] = "@"
-            return self._extracted_from_move_left_4()
+            return self._move_left_h()
         if (self.level[self.player[0]][self.player[1] - 1] in ("$", "x")) and (
             self.level[self.player[0]][self.player[1] - 2] in (" ", ".")
         ):
@@ -106,10 +104,9 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1] - 2] = (
                 "$" if self.level[self.player[0]][self.player[1] - 2] == " " else "x"
             )
-            return self._extracted_from_move_left_4()
+            return self._move_left_h()
 
-    # TODO Rename this here and in `move_left`
-    def _extracted_from_move_left_4(self):
+    def _move_left_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0], self.player[1] - 1]
         return
@@ -117,7 +114,7 @@ class SokobanGame:
     def move_right(self) -> None:
         if self.level[self.player[0]][self.player[1] + 1] in (" ", "."):
             self.level[self.player[0]][self.player[1] + 1] = "@"
-            return self._extracted_from_move_right_4()
+            return self._move_right_h()
         if (self.level[self.player[0]][self.player[1] + 1] in ("$", "x")) and (
             self.level[self.player[0]][self.player[1] + 2] in (" ", ".")
         ):
@@ -125,10 +122,9 @@ class SokobanGame:
             self.level[self.player[0]][self.player[1] + 2] = (
                 "$" if self.level[self.player[0]][self.player[1] + 2] == " " else "x"
             )
-            return self._extracted_from_move_right_4()
+            return self._move_right_h()
 
-    # TODO Rename this here and in `move_right`
-    def _extracted_from_move_right_4(self):
+    def _move_right_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0], self.player[1] + 1]
         return

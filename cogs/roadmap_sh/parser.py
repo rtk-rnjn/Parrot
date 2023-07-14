@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import os
 import re
+from typing import Any
 
 import aiofiles
 from jishaku.paginators import PaginatorEmbedInterface
 
 import discord
-from core import Context
+from core import Context, ParrotView
 from discord.ext import commands
 
 folders = {
@@ -18,7 +19,7 @@ folders = {
 }
 
 
-class ParentView(discord.ui.View):
+class ParentView(ParrotView):
     message: discord.Message
     ctx: Context
 
@@ -27,19 +28,59 @@ class ParentView(discord.ui.View):
 
     @discord.ui.button(label="Roadmap", style=discord.ButtonStyle.blurple)
     async def roadmap(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        await interaction.response.defer()
+
+        dirs = [folders["roadmaps"] + "/" + i for i in os.listdir(folders["roadmaps"])]
+        select = ContentView(folders=dirs)
+        self.add_item(select)
+
+        self.best_practices.disabled = True
+        self.link_groups.disabled = True
+        self.videos.disabled = True
+
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(label="Best Practices", style=discord.ButtonStyle.blurple)
     async def best_practices(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        await interaction.response.defer()
+
+        dirs = [folders["best"] + "/" + i for i in os.listdir(folders["best"])]
+        select = ContentView(folders=dirs)
+        self.add_item(select)
+
+        self.roadmap.disabled = True
+        self.link_groups.disabled = True
+        self.videos.disabled = True
+
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(label="Link Groups", style=discord.ButtonStyle.blurple)
     async def link_groups(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        await interaction.response.defer()
+
+        dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])]
+        select = ContentView(folders=dirs)
+        self.add_item(select)
+
+        self.roadmap.disabled = True
+        self.best_practices.disabled = True
+        self.videos.disabled = True
+
+        await interaction.edit_original_response(view=self)
 
     @discord.ui.button(label="Videos", style=discord.ButtonStyle.blurple)
     async def videos(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        await interaction.response.defer()
+
+        dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])]
+        select = ContentView(folders=dirs)
+        self.add_item(select)
+
+        self.roadmap.disabled = True
+        self.best_practices.disabled = True
+        self.link_groups.disabled = True
+
+        await interaction.edit_original_response(view=self)
 
     async def start(self, ctx: Context) -> None:
         self.ctx = ctx
@@ -68,7 +109,7 @@ class ContentView(discord.ui.Select):
 
     def replace_partial_links(self, text: str) -> str:
         def f(m: re.Match) -> str:
-            title,link = m.groups()
+            title, link = m.groups()
             if link.startswith("/"):
                 link = f"https://roadmap.sh{link}"
             return f"{title}({link})"

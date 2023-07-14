@@ -12,10 +12,10 @@ __all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView")
 
 class ParrotView(discord.ui.View):
     message: discord.Message
+    ctx: Context
 
-    def __init__(self, *, ctx: Context, timeout: float = 60, delete_message: bool = False):
+    def __init__(self, *, timeout: float = 60, delete_message: bool = False):
         super().__init__(timeout=timeout)
-        self.ctx = ctx
         self.delete_message = delete_message
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -28,19 +28,18 @@ class ParrotView(discord.ui.View):
         if self.delete_message and hasattr(self, "message") and self.message:
             await self.message.delete(delay=0)
 
+        self.disable_all()
+
+        if hasattr(self, "message") and self.message:
+            await self.message.edit(view=self)
+    
+    def disable_all(self) -> None:
         for item in self.children:
             if isinstance(item, (discord.ui.Button, discord.ui.Select)):
                 item.disabled = True
 
-        if hasattr(self, "message") and self.message:
-            await self.message.edit(view=self)
-
     async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item) -> None:
         interaction.client.dispatch("error", error, interaction, item)
-
-    @classmethod
-    def build_from_message(cls, message: discord.Message, *, timeout: float = 60) -> ParrotView:
-        return cls.from_message(message, timeout=timeout)  # type: ignore
 
 
 class ParrotButton(discord.ui.Button):

@@ -344,7 +344,7 @@ def create_snek_frame(
     return image
 
 
-def frame_to_png_bytes(image: Image) -> io.BytesIO:
+def frame_to_png_bytes(image: Image.Image) -> io.BytesIO:
     """Convert image to byte stream."""
     stream = io.BytesIO()
     image.save(stream, format="PNG")
@@ -397,7 +397,7 @@ class SnakeAndLaddersGame:
 
         # Check to see if the bot can remove reactions
         if not self.channel.permissions_for(self.ctx.guild.me).manage_messages:
-            return commands.BotMissingPermissions(["manage_messages"])
+            raise commands.BotMissingPermissions(["manage_messages"])
 
         await self._add_player(self.author)
         await self.channel.send(

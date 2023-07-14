@@ -25,7 +25,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Roadmap", style=discord.ButtonStyle.blurple)
     async def roadmap(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.defer()
 
         dirs = [folders["roadmaps"] + "/" + i for i in os.listdir(folders["roadmaps"])]
         select = ContentView(folders=dirs)
@@ -39,7 +38,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Best Practices", style=discord.ButtonStyle.blurple)
     async def best_practices(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.defer()
 
         dirs = [folders["best"] + "/" + i for i in os.listdir(folders["best"])]
         select = ContentView(folders=dirs)
@@ -53,7 +51,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Link Groups", style=discord.ButtonStyle.blurple)
     async def link_groups(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.defer()
 
         dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])][:25]
         select = ContentView(folders=dirs)
@@ -67,7 +64,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Videos", style=discord.ButtonStyle.blurple)
     async def videos(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.defer()
 
         dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])][:25]
         select = ContentView(folders=dirs)
@@ -141,3 +137,8 @@ class ContentView(discord.ui.Select):
         else:
             files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
             files.sort()
+            self.view.remove_item(self)
+            select = ContentView(folders=[f"{folder}/{i}" for i in files])
+            self.view.add_item(select)
+
+            await interaction.response.edit_message(embed=discord.Embed(description="Select a file..."), view=self.view)

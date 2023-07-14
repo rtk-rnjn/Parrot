@@ -35,10 +35,25 @@ class ParrotView(discord.ui.View):
 
         if hasattr(self, "message") and self.message:
             await self.message.edit(view=self)
-    
+
     def disable_all(self) -> None:
         for item in self.children:
             if isinstance(item, (discord.ui.Button, discord.ui.Select)):
+                item.disabled = True
+
+    def disable_all_except(self, *items: discord.ui.Item) -> None:
+        for item in self.children:
+            if isinstance(item, (discord.ui.Button, discord.ui.Select)) and item not in items:
+                item.disabled = True
+
+    def disable_all_buttons(self) -> None:
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
+    def disable_all_selects(self) -> None:
+        for item in self.children:
+            if isinstance(item, discord.ui.Select):
                 item.disabled = True
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item) -> None:

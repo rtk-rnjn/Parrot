@@ -4,7 +4,7 @@ import urllib.parse
 from typing import Any, Dict
 
 import discord
-from core import Context, Parrot
+from core import Context, Parrot, ParrotButton, ParrotView
 
 constant: Dict[str, str] = {
     "\N{SUPERSCRIPT ONE}": "^1",
@@ -19,275 +19,103 @@ constant: Dict[str, str] = {
     "\N{SUPERSCRIPT ZERO}": "^0",
 }
 
+CALC_BUTTONS = [
+    [
+        ("7", "7", "green"),
+        ("8", "8", "green"),
+        ("9", "9", "green"),
+        ("/", "/", "blurple"),
+        ("\N{SQUARE ROOT}", "sqrt(", "blurple"),
+    ],
+    [
+        ("4", "4", "green"),
+        ("5", "5", "green"),
+        ("6", "6", "green"),
+        ("*", "*", "blurple"),
+        ("1/x", "1/", "blurple"),
+    ],
+    [
+        ("1", "1", "green"),
+        ("2", "2", "green"),
+        ("3", "3", "green"),
+        ("+", "+", "blurple"),
+        ("%", "/100", "blurple"),
+    ],
+    [
+        ("0", "0", "green"),
+        ("00", "00", "green"),
+        (".", ".", "green"),
+        ("-", "-", "blurple"),
+        ("=", "=", "danger"),
+    ],
+    [
+        ("<", "back", "grey"),
+        (">", "forward", "grey"),
+        ("Change To Scientific", "scientific", "danger"),
+    ],
+]
 
-class CalculatorView(discord.ui.View):
-    def __init__(self, user: discord.Member, *, timeout: float, ctx: Context, arg: Any = None):
-        super().__init__(timeout=timeout)
-        self.user: discord.Member = user
-        self.ctx: Context = ctx
+
+class CalcButton(ParrotButton):
+    view: CalcView
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    async def callback(self, interaction: discord.Interaction):
+        if (self.row or 0) <= 3 and self.label != "=":
+            self.arg += str(self.label)
+        elif self.label == "=":
+            res = await self.view.bot.http_session.get(
+                f"http://twitch.center/customapi/math?expr={urllib.parse.quote(self.arg)}"
+            )
+            self.arg = await res.text()
+        elif self.label == "Change To Scientific":
+            embed = discord.Embed(
+                description=f"```\n{self.arg} \n```",
+            )
+            await interaction.response.edit_message(
+                embed=embed,
+                view=ScientificCalculator(timeout=120, ctx=self.view.ctx, arg=self.arg),
+            )
+            return
+        await interaction.response.edit_message(
+            embed=discord.Embed(
+                description=f"```\n{self.arg} \n```",
+            ),
+            view=self.view,
+        )
+
+
+class CalcView(ParrotView):
+    def __init__(self, *, timeout: float, ctx: Context, arg: Any = None):
+        super().__init__(timeout=timeout, ctx=ctx)
         self.bot: Parrot = ctx.bot
 
         self.arg = arg or ""
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.user.id:
-            await interaction.response.send_message("You can not interact.", ephemeral=True)
-            return False
-        return True
-
-    @discord.ui.button(label="7", style=discord.ButtonStyle.green, row=0)
-    async def __button_7(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "7"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="8", style=discord.ButtonStyle.green, row=0)
-    async def __button_8(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "8"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="9", style=discord.ButtonStyle.green, row=0)
-    async def __button_9(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "9"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="/", style=discord.ButtonStyle.blurple, row=0)
-    async def __button_divide(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "/"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="\N{SQUARE ROOT}", style=discord.ButtonStyle.blurple, row=0)
-    async def __button_sqrt(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "sqrt("
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="4", style=discord.ButtonStyle.green, row=1)
-    async def __button_4(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "4"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="5", style=discord.ButtonStyle.green, row=1)
-    async def __button_5(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "5"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="6", style=discord.ButtonStyle.green, row=1)
-    async def __button_6(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "6"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="\N{MULTIPLICATION SIGN}", style=discord.ButtonStyle.blurple, row=1)
-    async def __button_multiply(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "*"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="1/x", style=discord.ButtonStyle.blurple, row=1)
-    async def __button_1_divide(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg = f"1/({self.arg})"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="1", style=discord.ButtonStyle.green, row=2)
-    async def __button_1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "1"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="2", style=discord.ButtonStyle.green, row=2)
-    async def __button_2(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "2"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="3", style=discord.ButtonStyle.green, row=2)
-    async def __button_3(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "3"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="+", style=discord.ButtonStyle.blurple, row=2)
-    async def __button_plus(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "+"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="%", style=discord.ButtonStyle.blurple, row=2)
-    async def __button_percent(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg = f"{self.arg}/100"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="0", style=discord.ButtonStyle.green, row=3)
-    async def __button_0(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "0"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="00", style=discord.ButtonStyle.green, row=3)
-    async def __button_00(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "00"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label=".", style=discord.ButtonStyle.green, row=3)
-    async def __button_dot(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "."
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="-", style=discord.ButtonStyle.blurple, row=3)
-    async def __button_minus(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.arg += "-"
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(label="=", style=discord.ButtonStyle.red, row=3)
-    async def __button_equal(self, interaction: discord.Interaction, button: discord.ui.Button):
-        res = await self.ctx.bot.http_session.get(f"http://twitch.center/customapi/math?expr={urllib.parse.quote(self.arg)}")
-        self.arg = await res.text()
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(embed=embed, view=self)
-
-    @discord.ui.button(
-        label="\N{HEAVY LEFT-POINTING ANGLE QUOTATION MARK ORNAMENT}",
-        style=discord.ButtonStyle.red,
-        row=4,
-        disabled=True,
-    )
-    async def __button_previous(self, interaction: discord.Interaction, button: discord.ui.Button):
-        ...
-
-    @discord.ui.button(
-        label="\N{HEAVY RIGHT-POINTING ANGLE QUOTATION MARK ORNAMENT}",
-        style=discord.ButtonStyle.red,
-        row=4,
-        disabled=True,
-    )
-    async def __button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
-        ...
-
-    @discord.ui.button(label="Change to Scientific Calculator", style=discord.ButtonStyle.red, row=4)
-    async def __button_scientific(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = discord.Embed(
-            description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
-        )
-        await interaction.response.edit_message(
-            embed=embed,
-            view=ScientificCalculator(self.user, timeout=120, ctx=self.ctx, arg=self.arg),
-        )
+        for i, row in enumerate(CALC_BUTTONS):
+            for label, custom_id, color in row:
+                btn = CalcButton(
+                    label=label,
+                    custom_id=custom_id,
+                    style=getattr(discord.ButtonStyle, color),
+                    row=i,
+                    disabled=label in {"<", ">"},
+                )
+                self.add_item(btn)
 
 
-class ScientificCalculator(discord.ui.View):
-    def __init__(self, user: discord.Member, *, timeout: float, ctx: Context, arg: str):
-        super().__init__(timeout=120)
-        self.user = user
-        self.ctx = ctx
-
+class ScientificCalculator(ParrotView):
+    def __init__(self, *, timeout: float, ctx: Context, arg: str):
+        super().__init__(timeout=timeout, ctx=ctx)
         self.arg = arg or ""
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.user.id:
-            await interaction.response.send_message("You can not interact.", ephemeral=True)
-            return False
-        return True
 
     @discord.ui.button(label="C", style=discord.ButtonStyle.red, row=0)
     async def __button_c(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.arg = ""
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -296,8 +124,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg = f"-{self.arg}"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -306,8 +132,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "ln("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -316,8 +140,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -326,8 +148,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += ")"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -338,8 +158,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "floor("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -348,8 +166,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "sinh("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -358,8 +174,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "sin("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -368,8 +182,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "^2"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -378,8 +190,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "factorial("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -390,8 +200,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "e"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -400,8 +208,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "cosh("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -410,8 +216,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "cos("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -420,8 +224,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "^"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -434,8 +236,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "^(1/"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -445,8 +245,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "pi"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -455,8 +253,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "tanh("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -465,8 +261,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "tan("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -475,8 +269,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "^3"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -489,8 +281,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "^(1/3)"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -500,8 +290,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "e^"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -510,8 +298,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "mod("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -520,8 +306,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg += "log("
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -530,8 +314,6 @@ class ScientificCalculator(discord.ui.View):
         self.arg = f"10^{self.arg}"
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -539,10 +321,8 @@ class ScientificCalculator(discord.ui.View):
     async def __button_back(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = discord.Embed(
             description=f"```\n{self.arg} \n```",
-            color=self.ctx.bot.color,
-            timestamp=discord.utils.utcnow(),
         )
         await interaction.response.edit_message(
             embed=embed,
-            view=CalculatorView(self.user, timeout=120, ctx=self.ctx, arg=self.arg),
+            view=CalcView(timeout=120, ctx=self.ctx, arg=self.arg),
         )

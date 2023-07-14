@@ -343,15 +343,13 @@ class Misc(Cog):
 
             await ctx.reply(embed=embed)
         else:
-            from cogs.mis.__calc_view import CalculatorView
+            from cogs.mis.__calc_view import CalcView as CalculatorView
 
             await ctx.send(
                 embed=discord.Embed(
-                    description="```\n \n```",
-                    color=ctx.bot.color,
-                    timestamp=discord.utils.utcnow(),
+                    description="```\n \n```"
                 ),
-                view=CalculatorView(ctx.author, timeout=120, ctx=ctx, arg=""),
+                view=CalculatorView(timeout=120, ctx=ctx, arg=""),
             )
 
     @commands.command()

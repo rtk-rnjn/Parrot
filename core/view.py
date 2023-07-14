@@ -10,13 +10,18 @@ if TYPE_CHECKING:
 __all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView")
 
 
+class ParrotItem(discord.ui.Item):
+    ...
+
 class ParrotView(discord.ui.View):
     message: discord.Message
     ctx: Context
 
-    def __init__(self, *, timeout: float = 60, delete_message: bool = False):
+    def __init__(self, *, timeout: float = 60, delete_message: bool = False, **kwargs):
         super().__init__(timeout=timeout)
         self.delete_message = delete_message
+        if ctx := kwargs.get("ctx"):
+            self.ctx = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not hasattr(self, "ctx"):
@@ -61,10 +66,10 @@ class ParrotView(discord.ui.View):
         await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
 
 
-class ParrotButton(discord.ui.Button):
+class ParrotButton(discord.ui.Button["ParrotView"]):
     def __init__(self, **kwargs):
+        self.callback_function = kwargs.pop("callback", None)
         super().__init__(**kwargs)
-        self.callback_function = kwargs.get("callback")
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if self.callback_function:
@@ -73,7 +78,7 @@ class ParrotButton(discord.ui.Button):
             await interaction.response.defer()
 
 
-class ParrotSelect(discord.ui.Select):
+class ParrotSelect(discord.ui.Select["ParrotView"]):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.callback_function = kwargs.get("callback")

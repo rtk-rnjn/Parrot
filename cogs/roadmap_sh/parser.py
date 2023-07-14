@@ -141,4 +141,4 @@ class ContentView(discord.ui.Select):
             select = ContentView(folders=[f"{folder}/{i}" for i in files])
             self.view.add_item(select)
 
-            await interaction.response.edit_message(embed=discord.Embed(description="Select a file..."), view=self.view)
+            await interaction.followup.send(embed=discord.Embed(description="Select a file..."), view=self.view)

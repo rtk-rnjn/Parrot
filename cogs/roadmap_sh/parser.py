@@ -35,7 +35,7 @@ class ParentView(ParrotView):
         self.link_groups.disabled = True
         self.videos.disabled = True
 
-        await self.message.edit(view=self)
+        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
 
     @discord.ui.button(label="Best Practices", style=discord.ButtonStyle.blurple)
     async def best_practices(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -49,13 +49,13 @@ class ParentView(ParrotView):
         self.link_groups.disabled = True
         self.videos.disabled = True
 
-        await self.message.edit(view=self)
+        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
 
     @discord.ui.button(label="Link Groups", style=discord.ButtonStyle.blurple)
     async def link_groups(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
 
-        dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])]
+        dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])][:25]
         select = ContentView(folders=dirs)
         self.add_item(select)
 
@@ -63,13 +63,13 @@ class ParentView(ParrotView):
         self.best_practices.disabled = True
         self.videos.disabled = True
 
-        await self.message.edit(view=self)
+        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
 
     @discord.ui.button(label="Videos", style=discord.ButtonStyle.blurple)
     async def videos(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.defer()
 
-        dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])]
+        dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])][:25]
         select = ContentView(folders=dirs)
         self.add_item(select)
 
@@ -77,7 +77,7 @@ class ParentView(ParrotView):
         self.best_practices.disabled = True
         self.link_groups.disabled = True
 
-        await self.message.edit(view=self)
+        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
 
     async def start(self, ctx: Context) -> None:
         self.ctx = ctx

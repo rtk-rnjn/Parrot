@@ -43,6 +43,7 @@ class ParrotView(discord.ui.View):
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item) -> None:
         interaction.client.dispatch("error", error, interaction, item)
+        await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
 
 
 class ParrotButton(discord.ui.Button):

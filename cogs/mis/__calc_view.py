@@ -64,24 +64,24 @@ class CalcButton(ParrotButton):
 
     async def callback(self, interaction: discord.Interaction):
         if (self.row or 0) <= 3 and self.label != "=":
-            self.arg += str(self.label)
+            self.view.arg += str(self.label)
         elif self.label == "=":
             res = await self.view.bot.http_session.get(
-                f"http://twitch.center/customapi/math?expr={urllib.parse.quote(self.arg)}"
+                f"http://twitch.center/customapi/math?expr={urllib.parse.quote(self.view.arg)}"
             )
-            self.arg = await res.text()
+            self.view.arg = await res.text()
         elif self.label == "Change To Scientific":
             embed = discord.Embed(
-                description=f"```\n{self.arg} \n```",
+                description=f"```\n{self.view.arg} \n```",
             )
             await interaction.response.edit_message(
                 embed=embed,
-                view=ScientificCalculator(timeout=120, ctx=self.view.ctx, arg=self.arg),
+                view=ScientificCalculator(timeout=120, ctx=self.view.ctx, arg=self.view.arg),
             )
             return
         await interaction.response.edit_message(
             embed=discord.Embed(
-                description=f"```\n{self.arg} \n```",
+                description=f"```\n{self.view.arg} \n```",
             ),
             view=self.view,
         )

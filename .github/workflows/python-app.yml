@@ -24,10 +24,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Lines of codes
-      run: |
-        find . -name '*.py' | xargs wc -l
-
     - name: Set up Python 3.11
       uses: actions/setup-python@v2
       with:

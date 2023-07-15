@@ -67,10 +67,10 @@ class NumButton(discord.ui.Button["NumView"]):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        if interaction.user.id != self.view.game.message.author.id:
-            return await interaction.response.send_message("You are not allowed to use this button!", ephemeral=True)
-
         assert self.view
+
+        if interaction.user.id != self.view.game.ctx.author.id:
+            return await interaction.response.send_message("You are not allowed to use this button!", ephemeral=True)
 
         if self.label != "Cancel" or not interaction.message:
             return await interaction.response.send_modal(NumModal(self.view))
@@ -169,7 +169,7 @@ class NumberMemory:
             timeout=timeout,
         )
         self.message = await ctx.send(file=self.file, embed=self.embed, view=self.view)
-
+        self.ctx = ctx
         await asyncio.sleep(self.pause_time)
         await self.update_embed(hide=True)
 

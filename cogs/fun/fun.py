@@ -306,7 +306,7 @@ class Fun(Cog):
         """
         try:
             msg = await commands.MessageConverter().convert(ctx, text)
-        except commands.BadArgument:
+        except (commands.BadArgument, ValueError, commands.MessageNotFound):
             msg = await self.bot.get_or_fetch_message(ctx.channel, text, partial=False)
             return msg if msg is not None else text  # type: ignore
         return msg

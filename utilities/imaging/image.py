@@ -103,13 +103,10 @@ def svg_to_png(
 
 
 async def run_threaded(func: Callable[[BytesIO], R | R_], argument: BytesIO, *, timeout: int = 600) -> R | R_:
-    try:
-        return await asyncio.wait_for(
-            asyncio.to_thread(func, argument),
-            timeout=timeout,
-        )
-    except asyncio.TimeoutError as exc:
-        raise ImageProcessTimeout(timeout) from exc
+    return await asyncio.wait_for(
+        asyncio.to_thread(func, argument),
+        timeout=timeout,
+    )
 
 
 def check_frame_amount(img: Image.Image | WandImage, max_frames: int = MAX_FRAMES) -> None:
@@ -212,9 +209,9 @@ def process_wand_gif(
     image: I_,
     func: WandFunction,
     ctx: Context,
-    *args: P.args,
+    *args,
     max_frames: int = MAX_FRAMES,
-    **kwargs: P.kwargs,
+    **kwargs,
 ) -> I_:
     check_frame_amount(image, max_frames)
 

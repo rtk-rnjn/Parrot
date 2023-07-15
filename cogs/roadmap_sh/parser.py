@@ -27,8 +27,13 @@ class ParentView(ParrotView):
     async def roadmap(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
 
         dirs = [folders["roadmaps"] + "/" + i for i in os.listdir(folders["roadmaps"])]
-        select = ContentView(folders=dirs)
+        _25_dirs, _rest = dirs[:25], dirs[25:]
+        select = ContentView(folders=_25_dirs)
         self.add_item(select)
+
+        if _rest:
+            select = ContentView(folders=_rest)
+            self.add_item(select)
 
         self.best_practices.disabled = True
         self.link_groups.disabled = True
@@ -40,8 +45,13 @@ class ParentView(ParrotView):
     async def best_practices(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
 
         dirs = [folders["best"] + "/" + i for i in os.listdir(folders["best"])]
-        select = ContentView(folders=dirs)
+        _25_dirs, _rest = dirs[:25], dirs[25:]
+        select = ContentView(folders=_25_dirs)
         self.add_item(select)
+
+        if _rest:
+            select = ContentView(folders=_rest)
+            self.add_item(select)
 
         self.roadmap.disabled = True
         self.link_groups.disabled = True
@@ -52,9 +62,15 @@ class ParentView(ParrotView):
     @discord.ui.button(label="Link Groups", style=discord.ButtonStyle.blurple)
     async def link_groups(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
 
-        dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])][:25]
-        select = ContentView(folders=dirs)
+        dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])]
+        _25_dirs, _rest = dirs[:25], dirs[25:]
+
+        select = ContentView(folders=_25_dirs)
         self.add_item(select)
+
+        if _rest:
+            select = ContentView(folders=_rest)
+            self.add_item(select)
 
         self.roadmap.disabled = True
         self.best_practices.disabled = True
@@ -65,9 +81,14 @@ class ParentView(ParrotView):
     @discord.ui.button(label="Videos", style=discord.ButtonStyle.blurple)
     async def videos(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
 
-        dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])][:25]
-        select = ContentView(folders=dirs)
+        dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])]
+        _25_dirs, _rest = dirs[:25], dirs[25:]
+        select = ContentView(folders=_25_dirs)
         self.add_item(select)
+
+        if _rest:
+            select = ContentView(folders=_rest)
+            self.add_item(select)
 
         self.roadmap.disabled = True
         self.best_practices.disabled = True
@@ -126,7 +147,7 @@ class ContentView(discord.ui.Select):
                 page.add_line(line)
 
         interference = PaginatorEmbedInterface(self.view.ctx, page, owner=self.view.ctx.author)
-        await interference.send_to(interaction.followup)
+        await interference.send_to(interaction.followup)  # type: ignore
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()

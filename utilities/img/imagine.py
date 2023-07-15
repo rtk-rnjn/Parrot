@@ -28,6 +28,14 @@ BYLINE_BOUND = (IMAGE_WIDTH - (BYLINE_OFFSET[0] * 2), 192)
 WHITE = (255, 255, 255)
 
 
+def text_size(draw: ImageDraw.ImageDraw, text, font: ImageFont.ImageFont | ImageFont.FreeTypeFont) -> Tuple[int, int]:
+    """Returns the size of the text in pixels."""
+    width = draw.textlength(text, font=font)
+    _, top, _, bottom = font.getbbox(text)
+    height = bottom - top
+    return int(width), height
+
+
 def draw_text(
     draw: ImageDraw.ImageDraw,
     text: str,
@@ -46,8 +54,8 @@ def draw_text(
     # Calculate font size
     while True:
         font = ImageFont.truetype(font_name, font_size)
-        text_width, _ = cast(Tuple[int, int], draw.textsize(text, font=font))
-        _, _line_height = cast(Tuple[int, int], draw.textsize("\N{FULL BLOCK}", font=font))
+        text_width = draw.textlength(text, font=font)
+        _, _line_height = text_size(draw, "\N{FULL BLOCK}", font)
         text_height = int(_line_height * line_height * len(lines))
 
         if text_width < bounds[0] and text_height < bounds[1]:
@@ -60,7 +68,7 @@ def draw_text(
 
     # Draw text
     for line in lines:
-        line_width, _ = draw.textsize(line, font=font)  # type: ignore
+        line_width = draw.textlength(line, font=font)
         x_pos = offsets[0] + (bounds[0] - line_width) // 2
         draw.text((x_pos, y_pos), line, colour, font=font)
         y_pos += int(_line_height * line_height)

@@ -112,7 +112,8 @@ class NumberMemory:
     def generate_image(self) -> BytesIO:
         MARGIN = 3
 
-        w, h = self._font.getsize(self.number)
+        _left, _top, _right, _bottom = self._font.getbbox(self.number)
+        w, h = _right - _left, _bottom - _top
         with Image.new("RGBA", (w + MARGIN * 2, h + MARGIN * 2), 0) as img:
             draw = ImageDraw.Draw(img)
             draw.text((MARGIN, MARGIN), self.number, font=self._font, color=(255, 255, 255))

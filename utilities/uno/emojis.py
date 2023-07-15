@@ -83,7 +83,8 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
             ) as fp:
                 font = ImageFont.truetype(BytesIO(fp.read()), size=210)
 
-            w, h = font.getsize(text)
+            _l, _t, _r, _b = font.getbbox(text)
+            w, h = _r - _l, _b - _t
             x, y = 128 - int(w / 2), -14
 
             extra = dict(stroke_width=4, stroke_fill=(0, 0, 0))

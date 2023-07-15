@@ -9,7 +9,7 @@ import string
 import textwrap
 from functools import partial
 from io import BytesIO
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import async_timeout
 from discord.ext.commands import CommandError, bot_has_permissions, group, BucketType
@@ -137,7 +137,7 @@ ERROR_REPLIES = [
 ]
 
 # snake card consts
-CARD = {
+CARD: Dict[str, Union[Image.Image, List, ImageFont.FreeTypeFont]] = {
     "top": Image.open("extra/snakes/snake_cards/card_top.png"),
     "frame": Image.open("extra/snakes/snake_cards/card_frame.png"),
     "bottom": Image.open("extra/snakes/snake_cards/card_bottom.png"),

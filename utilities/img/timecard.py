@@ -120,21 +120,22 @@ def timecard(text: str) -> discord.File:
     font_size = 100
     font = ImageFont.truetype(FONT, font_size)
 
-    # Calculate font-size
-    while (text_size := draw.textsize(text, font=font)) > (
-        TIMECARD_X_BOUND,
-        TIMECARD_Y_BOUND,
-    ):
+    _, _, w, h = draw.textbbox((0, 0), text, font=font)
+    text_size = (w, h)
+
+    while True:
+        _, _, w, h = draw.textbbox((0, 0), text, font=font)
+        if w < TIMECARD_X_BOUND and h < TIMECARD_Y_BOUND:
+            break
         font_size -= 1
         font = ImageFont.truetype(FONT, font_size)
-
     # Calculate Starting Y position
     y_pos = TIMECARD_Y_OFFSET + (TIMECARD_Y_BOUND - text_size[1]) // 2
 
     # Draw text
     lines = text.split("\n")
     for line in lines:
-        line_width, _ = draw.textsize(line, font=font)
+        _, _, line_width, _ = draw.textbbox((0, 0), line, font=font)
         x_pos = TIMECARD_X_OFFSET + (TIMECARD_X_BOUND - line_width) // 2
 
         if timecard.shadow_colour is not None:

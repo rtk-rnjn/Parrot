@@ -22,7 +22,7 @@ from collections import defaultdict
 from contextlib import suppress
 from pathlib import Path
 from random import choice, randint
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union, Annotated
+from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union, cast
 
 import aiohttp
 import rapidfuzz
@@ -962,10 +962,10 @@ class Fun(Cog):
     async def hangman(
         self,
         ctx: Context,
-        min_length: Optional[int] = 0,
-        max_length: Optional[int] = 25,
-        min_unique_letters: Optional[int] = 0,
-        max_unique_letters: Optional[int] = 25,
+        min_length: int = 0,
+        max_length: int = 25,
+        min_unique_letters: int = 0,
+        max_unique_letters: int = 25,
     ) -> None:
         """
         Play hangman against the bot, where you have to guess the word it has provided!
@@ -1117,7 +1117,7 @@ class Fun(Cog):
         await self.send_score(ctx.channel, self.player_scores)
 
     @staticmethod
-    async def send_score(channel: discord.TextChannel, player_data: dict) -> None:
+    async def send_score(channel: discord.abc.Messageable, player_data: dict) -> None:
         """Send the current scores of players in the game channel."""
         if not player_data:
             await channel.send("No one has made it onto the leaderboard yet.")
@@ -1137,7 +1137,7 @@ class Fun(Cog):
         await channel.send(embed=embed)
 
     @staticmethod
-    async def declare_winner(channel: discord.TextChannel, player_data: dict) -> None:
+    async def declare_winner(channel: discord.abc.Messageable, player_data: dict) -> None:
         """Announce the winner of the quiz in the game channel."""
         if player_data:
             highest_points = max(list(player_data.values()))
@@ -1170,12 +1170,12 @@ class Fun(Cog):
             colour=Colours.blue,
             title="The available question categories are:",
             description="",
-        )
+        ).set_footer(text="If a category is not chosen, a random one will be selected.")
 
-        embed.set_footer(text="If a category is not chosen, a random one will be selected.")
+        assert embed.description is not None
 
         for cat, description in self.categories.items():
-            embed.description += f"**- {cat.capitalize()}**\n" f"{description.capitalize()}\n"
+            embed.description = f"{embed.description}**- {cat.capitalize()}**\n{description.capitalize()}\n"
 
         return embed
 
@@ -1200,28 +1200,29 @@ class Fun(Cog):
             description="",
         )
 
-        # Don't check for info is not None, as we want to filter out empty strings.
-        if info:
-            embed.description += f"**Information**\n{info}\n\n"
+        assert embed.description is not None
 
-        embed.description += ("Let's move to the next question." if q_left > 0 else "") + f"\nRemaining questions: {q_left}"
+        if info:
+            embed.description = f"{embed.description}**Information**\n{info}\n\n"
+
+        embed.description = embed.description + ("Let's move to the next question." if q_left > 0 else "") + f"\nRemaining questions: {q_left}"
         await channel.send(embed=embed)
 
     @commands.command(name="8ball")
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def _8ball(self, ctx: Context, *, question: commands.clean_content):
+    async def _8ball(self, ctx: Context, *, question: Annotated[str, commands.clean_content]):
         """8ball Magic, nothing to say much"""
         await ctx.reply(f"Question: **{question}**\nAnswer: **{random.choice(RESPONSES)}**")
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def choose(self, ctx: Context, *, options: commands.clean_content):
+    async def choose(self, ctx: Context, *, options: Annotated[str, commands.clean_content]):
         """Confuse something with your decision? Let Parrot choose from your choice.
         NOTE: The `Options` should be seperated by commas `,`."""
-        options = options.split(",")
-        await ctx.reply(f"{ctx.author.mention} I choose {choice(options)}")
+        ls = options.split(",")
+        await ctx.reply(f"{ctx.author.mention} I choose {choice(ls)}")
 
     async def _create_role_on_clr(self, *, ctx: Context, rgb: Tuple[int, int, int], color_name: str):
         if ctx.author.guild_permissions.manage_roles:
@@ -1247,7 +1248,7 @@ class Fun(Cog):
             return
 
         try:
-            extra_colour = ImageColor.getrgb(colour_input)
+            extra_colour = cast(Tuple[int, int, int], ImageColor.getrgb(colour_input))
             await self.send_colour_response(ctx, extra_colour)
         except ValueError:
             await self.bot.invoke_help_command(ctx)
@@ -1270,7 +1271,7 @@ class Fun(Cog):
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, value}`."
             )
-        hsv_tuple = ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)")
+        hsv_tuple = cast(Tuple[int, ...], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
@@ -1281,7 +1282,7 @@ class Fun(Cog):
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, lightness}`."
             )
-        hsl_tuple = ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)")
+        hsl_tuple = cast(Tuple[int, ...], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
@@ -1445,6 +1446,7 @@ class Fun(Cog):
         """Random meme generator."""
         link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(subreddit, count)
 
+        res = {"memes": []}
         while True:
             response = await self.bot.http_session.get(link)
             if response.status <= 300:
@@ -1548,7 +1550,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def urbandictionary(self, ctx: Context, *, text: commands.clean_content):
+    async def urbandictionary(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """LOL. This command is insane."""
         t = text
         BRACKETED = re.compile(r"(\[(.+?)\])")
@@ -2073,10 +2075,7 @@ class Fun(Cog):
             await ctx.send(file=file, embed=embed)
 
     @commands.command(name="activity")
-    @commands.bot_has_guild_permissions(
-        create_instant_invite=True,
-        use_embedded_activities=True
-    )
+    @commands.bot_has_guild_permissions(create_instant_invite=True, use_embedded_activities=True)
     @commands.has_guild_permissions(use_embedded_activities=True)
     async def activity(self, ctx: Context, *, name: str):
         """To create embed activity within your server"""
@@ -2104,9 +2103,7 @@ class Fun(Cog):
             )
         )
 
-    @commands.command(
-        name="mosaic"
-    )
+    @commands.command(name="mosaic")
     async def mosaic_command(self, ctx: Context, squares: int = 16):
         """Splits your avatar into x squares, randomizes them and stitches them back into a new image!"""
         async with ctx.typing():
@@ -2160,6 +2157,8 @@ class Fun(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(self, ctx: Context, text: Optional[str] = None):
         """Make a cat say something"""
+
+        # please dont DM to ask what is this, I forget
         m: discord.Message = await ctx.reply("starting")
         text = text or "Hi..."
 
@@ -2353,13 +2352,17 @@ class Fun(Cog):
 
     @commands.command(name="imagine")
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
-    async def _imagine_a_place(self, ctx: Context, *, text: commands.clean_content):
+    async def _imagine_a_place(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Generates a Image in discord styling"""
-        await ctx.send(file=await imagine(text))
+        text = text.replace("\n", " ")
+        text = text[:24]
+        text = f"{text[:12]}\n{text[12:24]}"
+        file = await imagine(text)
+        await ctx.reply(file=file)
 
     @commands.command(name="timecard")
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
-    async def _timecard_spn(self, ctx: Context, *, text: commands.clean_content):
+    async def _timecard_spn(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Generates a timecard"""
         await ctx.send(file=await timecard(text))
 
@@ -2369,7 +2372,7 @@ class Fun(Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def typing_test(
         self,
-        ctx: Context,
+        ctx: Context
     ):
         """Test your typing skills"""
         confirm: discord.Message = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")

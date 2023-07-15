@@ -16,7 +16,7 @@ BYLINE_FONT = "extra/roboto-bold.ttf"
 IMAGE_WIDTH = 2048
 IMAGE_HEIGHT = 1024
 
-TITLE_OFFSET = (128, 192)
+TITLE_OFFSET = (0, 0)
 TITLE_BOUND = (
     IMAGE_WIDTH - (TITLE_OFFSET[0] * 2),
     IMAGE_HEIGHT - 224 - TITLE_OFFSET[1],
@@ -26,14 +26,6 @@ BYLINE_OFFSET = (TITLE_OFFSET[0] * 2, TITLE_OFFSET[1] + TITLE_BOUND[1])
 BYLINE_BOUND = (IMAGE_WIDTH - (BYLINE_OFFSET[0] * 2), 192)
 
 WHITE = (255, 255, 255)
-
-
-def text_size(draw: ImageDraw.ImageDraw, text, font: ImageFont.ImageFont | ImageFont.FreeTypeFont) -> Tuple[int, int]:
-    """Returns the size of the text in pixels."""
-    width = draw.textlength(text, font=font)
-    _, top, _, bottom = font.getbbox(text)
-    height = bottom - top
-    return int(width), height
 
 
 def draw_text(
@@ -54,8 +46,10 @@ def draw_text(
     # Calculate font size
     while True:
         font = ImageFont.truetype(font_name, font_size)
-        text_width = draw.textlength(text, font=font)
-        _, _line_height = text_size(draw, "\N{FULL BLOCK}", font)
+        left, _, right, _ = draw.multiline_textbbox((0, 0), text, font=font)
+        text_width = right - left
+        _, top, _, bottom = draw.multiline_textbbox((0, 0), "\N{FULL BLOCK}", font=font)
+        _line_height = bottom - top
         text_height = int(_line_height * line_height * len(lines))
 
         if text_width < bounds[0] and text_height < bounds[1]:
@@ -83,9 +77,9 @@ def imagine(text: str) -> discord.File:
         raise commands.BadArgument("Too many lines in input.")
     title = f"IMAGINE\n{title.strip()}"
     byline = byline.strip()
-    draw_text(draw, title, TITLE_FONT, WHITE, TITLE_BOUND, TITLE_OFFSET, 300, 0.95)
+    draw_text(draw, title, TITLE_FONT, WHITE, TITLE_BOUND, TITLE_OFFSET, 200, 0.95)
     if byline:
-        draw_text(draw, byline, BYLINE_FONT, WHITE, BYLINE_BOUND, BYLINE_OFFSET, 100)
+        draw_text(draw, byline, TITLE_FONT, WHITE, BYLINE_BOUND, BYLINE_OFFSET, 200)
     out_fp = io.BytesIO()
     image.save(out_fp, "PNG")
     out_fp.seek(0)

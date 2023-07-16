@@ -5,7 +5,7 @@ import functools
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Final, List, Optional, Set, Tuple, TypeVar, Union
 
 import discord
-from core import Context, Parrot
+from core import Context, Parrot, ParrotView
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
@@ -98,11 +98,5 @@ async def double_wait(
     )
 
 
-class BaseView(discord.ui.View):
-    def disable_all(self) -> None:
-        for button in self.children:
-            if isinstance(button, discord.ui.Button):
-                button.disabled = True
-
-    async def on_timeout(self) -> None:
-        return self.stop()
+class BaseView(ParrotView):
+    pass

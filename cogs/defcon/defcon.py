@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 log = logging.getLogger("cogs.defcon")
 
 
-class Defcon(Cog):
+class DefensiveCondition(Cog):
     """Powerful Raid Protection"""
 
     def __init__(self, bot: Parrot) -> None:
@@ -51,9 +51,8 @@ class Defcon(Cog):
             defcon_help = (
                 "**`Def`ensive `Con`dition**"
                 "\n\n"
-                "Defcon is a system that allows you to lock down your server in case of a raid or other emergency."
-                "It allows you to lock down your server in a variety of ways, such as locking channels, preventing"
-                "users from joining, and more."
+                "Defcon is a system that allows you to lock down your server in case of a raid or other emergency. "
+                "It allows you to lock down your server in a variety of ways, such as locking channels, preventing users from joining, and more."
                 "\n\n"
                 "> :warning: **WARNING** :warning:\n"
                 f"> - {self.bot.user.name} is highly tested, but there is always a chance that it may fail to lock down your server.\n"
@@ -193,9 +192,8 @@ class Defcon(Cog):
             return
 
         settings = DEFCON_SETTINGS[level]["SETTINGS"]
-        unhide_channels = []
         if settings.get("HIDE_CHANNELS"):
-            for channel_id in guild_config["default_defcon"]["hidden_channels"]:
+            for channel_id in guild_config["default_defcon"].get("hidden_channels", []):
                 if channel := ctx.guild.get_channel(channel_id):
                     try:
                         overwrite = channel.overwrites_for(ctx.guild.default_role)
@@ -206,21 +204,13 @@ class Defcon(Cog):
                             overwrite=overwrite,
                             reason=f"Resetting DEFCON {level}. Invoked by {ctx.author}",
                         )
-                        unhide_channels.append(channel.id)
+
                     except discord.Forbidden:
                         log.warning(f"Failed to reset channel {channel.id} in guild {ctx.guild.id}")
 
-        if unhide_channels:
-            await self.bot.guild_configurations.update_one(
-                {"_id": ctx.guild.id},
-                {"$set": {"default_defcon.hidden_channels": unhide_channels}},
-                upsert=True,
-            )
-
-        channel_unlocked = []
-
+        count = 0
         if settings.get("LOCK_VOICE_CHANNELS"):
-            for channel_id in guild_config["default_defcon"]["locked_channels"]:
+            for channel_id in guild_config["default_defcon"].get("locked_channels", []):
                 if channel := ctx.guild.get_channel(channel_id):
                     try:
                         overwrite = channel.overwrites_for(ctx.guild.default_role)
@@ -231,13 +221,12 @@ class Defcon(Cog):
                             overwrite=overwrite,
                             reason=f"Resetting DEFCON {level}. Invoked by {ctx.author}",
                         )
-                        channel_unlocked.append(channel.id)
-                        unhide_channels.append(channel.id)
+                        count += 1
                     except discord.Forbidden:
                         log.warning(f"Failed to reset channel {channel.id} in guild {ctx.guild.id}")
 
         if settings.get("LOCK_TEXT_CHANNELS"):
-            for channel_id in guild_config["default_defcon"]["locked_channels"]:
+            for channel_id in guild_config["default_defcon"].get("locked_channels", []):
                 if channel := ctx.guild.get_channel(channel_id):
                     try:
                         overwrite = channel.overwrites_for(ctx.guild.default_role)
@@ -248,19 +237,22 @@ class Defcon(Cog):
                             overwrite=overwrite,
                             reason=f"Resetting DEFCON {level}. Invoked by {ctx.author}",
                         )
-                        channel_unlocked.append(channel.id)
-                        unhide_channels.append(channel.id)
+                        count += 1
                     except discord.Forbidden:
                         log.warning(f"Failed to reset channel {channel.id} in guild {ctx.guild.id}")
 
-        if channel_unlocked:
-            await self.bot.guild_configurations.update_one(
-                {"_id": ctx.guild.id},
-                {"$set": {"default_defcon.locked_channels": channel_unlocked}},
-                upsert=True,
-            )
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id},
+            {
+                "$set": {
+                    "default_defcon.locked_channels": [],
+                    "default_defcon.hidden_channels": [],
+                }
+            },
+            upsert=True,
+        )
 
-        count = 0
+        slow_mode_count = 0
         if settings.get("SLOWMODE") and settings.get("SLOWMODE_TIME"):
             for channel in ctx.guild.text_channels:
                 if channel.id in guild_config["default_defcon"]["locked_channels"]:
@@ -270,7 +262,7 @@ class Defcon(Cog):
                         slowmode_delay=0,
                         reason=f"Resetting DEFCON {level}. Invoked by {ctx.author}",
                     )
-                    count += 1
+                    slow_mode_count += 1
                 except discord.Forbidden:
                     log.warning(f"Failed to reset slowmode in channel {channel.id} in guild {ctx.guild.id}")
 
@@ -281,8 +273,8 @@ class Defcon(Cog):
             )
             embed.description = (
                 f"**{ctx.author}** has reset the defcon level to {level}.\n\n"
-                f"`Total Channels Unlocked`: **{len(channel_unlocked)}**\n"
-                f"`Channels With Slowmode `: **{count}**\n\n"
+                f"`Total Channels Unlocked`: **{count}**\n"
+                f"`Channels With Slowmode `: **{slow_mode_count}**\n\n"
                 f"> **Use `defcon set` to set the defcon level.**"
             )
             await cog.defcon_broadcast(embed, guild=ctx.guild, level=level)

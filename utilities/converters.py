@@ -132,7 +132,6 @@ class MemberID(commands.Converter):
 
 def lru_callback(key: KT, value: VT) -> None:  # type: ignore
     value = str(value)[:20]  # type: ignore
-    print(f"[Cached] Key: {key} | Value: {value}...")
 
 
 class Cache(Generic[KT, VT]):

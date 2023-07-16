@@ -40,6 +40,8 @@ class ParrotView(discord.ui.View):
 
         if hasattr(self, "message") and self.message:
             await self.message.edit(view=self)
+        
+        self.stop()
 
     def disable_all(self) -> None:
         for item in self.children:

@@ -24,7 +24,7 @@ OTHER_REACTION = {
 
 
 class Suggestions(Cog):
-    """For making the suggestion. Suggestions are sent to the suggestion channel and then voted on by the community."""
+    """For making the suggestion, which then then voted on by the community."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

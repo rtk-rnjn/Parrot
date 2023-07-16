@@ -22,7 +22,7 @@ __all__ = (
 DISPLAY_COG = (
     "CONFIGURATION",
     "FUN",
-    "DEFCON",
+    "DEFENSIVECONDITION",
     "TODOS",
     "TAGS",
     "META",

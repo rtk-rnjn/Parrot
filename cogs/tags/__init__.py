@@ -7,6 +7,7 @@ from discord.ext import commands
 
 
 class Tags(Cog):
+    """For making the tags. Tags are like the snippets. You can create tags and use them later"""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 

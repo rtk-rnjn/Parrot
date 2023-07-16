@@ -8,6 +8,7 @@ from utilities.time import ShortTime
 
 
 class Todos(Cog):
+    """For making the TODO list"""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 

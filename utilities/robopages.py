@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from discord.ext.commands import Paginator as CommandPaginator
 
 import discord
-from discord.ext import commands, old_menus as menus  # type: ignore
+from discord.ext import old_menus as menus  # type: ignore
 
 if TYPE_CHECKING:
     from core import Context

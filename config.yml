@@ -40,6 +40,9 @@ all_extensions:
   - custom_commands
   - cogs.highlight
   - cogs.defcon
+  - cogs.suggestion
+  - cogs.tags
+  - cogs.todo
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

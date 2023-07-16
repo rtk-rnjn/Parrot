@@ -1709,7 +1709,7 @@ class Moderator(Cog):
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
         """Why to learn the commands? This is all in one mod command.
-        
+
         **Examples:**
         - `[p]mod @member`
         - `[p]mod #channel`

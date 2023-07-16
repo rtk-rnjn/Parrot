@@ -13,7 +13,6 @@ from html import unescape
 from pathlib import Path
 from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
 
-import aiohttp
 import qrcode
 from PIL import Image
 from qrcode.image.styledpil import StyledPilImage
@@ -346,9 +345,7 @@ class Misc(Cog):
             from cogs.mis.__calc_view import CalcView as CalculatorView
 
             await ctx.send(
-                embed=discord.Embed(
-                    description="```\n \n```"
-                ),
+                embed=discord.Embed(description="```\n \n```"),
                 view=CalculatorView(timeout=120, ctx=ctx, arg=""),
             )
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Any
 
 import aiofiles
 from jishaku.paginators import PaginatorEmbedInterface
@@ -25,7 +24,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Roadmap", style=discord.ButtonStyle.blurple)
     async def roadmap(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-
         dirs = [folders["roadmaps"] + "/" + i for i in os.listdir(folders["roadmaps"])]
         _25_dirs, _rest = dirs[:25], dirs[25:]
         select = ContentView(folders=_25_dirs)
@@ -43,7 +41,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Best Practices", style=discord.ButtonStyle.blurple)
     async def best_practices(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-
         dirs = [folders["best"] + "/" + i for i in os.listdir(folders["best"])]
         _25_dirs, _rest = dirs[:25], dirs[25:]
         select = ContentView(folders=_25_dirs)
@@ -61,7 +58,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Link Groups", style=discord.ButtonStyle.blurple)
     async def link_groups(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-
         dirs = [folders["links"] + "/" + i for i in os.listdir(folders["links"])]
         _25_dirs, _rest = dirs[:25], dirs[25:]
 
@@ -80,7 +76,6 @@ class ParentView(ParrotView):
 
     @discord.ui.button(label="Videos", style=discord.ButtonStyle.blurple)
     async def videos(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-
         dirs = [folders["videos"] + "/" + i for i in os.listdir(folders["videos"])]
         _25_dirs, _rest = dirs[:25], dirs[25:]
         select = ContentView(folders=_25_dirs)
@@ -116,7 +111,7 @@ class ContentView(discord.ui.Select):
 
         for folder in folders:
             self.add_option(label=folder.replace("-", " ").title(), value=folder)
-    
+
     def remove_img_links(self, text: str) -> str:
         """Remove all ![]() links from text"""
         return re.sub(r"!\[.*\]\(.*\)", "", text)
@@ -127,7 +122,7 @@ class ContentView(discord.ui.Select):
             if link.startswith("/"):
                 link = f"https://roadmap.sh{link}"
             return f"{title}({link})"
-        
+
         return re.sub(r"(\[.*?\])\((.*?)\)", f, text)
 
     async def send_file_embed(self, path: str, interaction: discord.Interaction) -> None:

@@ -1205,7 +1205,11 @@ class Fun(Cog):
         if info:
             embed.description = f"{embed.description}**Information**\n{info}\n\n"
 
-        embed.description = embed.description + ("Let's move to the next question." if q_left > 0 else "") + f"\nRemaining questions: {q_left}"
+        embed.description = (
+            embed.description
+            + ("Let's move to the next question." if q_left > 0 else "")
+            + f"\nRemaining questions: {q_left}"
+        )
         await channel.send(embed=embed)
 
     @commands.command(name="8ball")
@@ -2370,10 +2374,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def typing_test(
-        self,
-        ctx: Context
-    ):
+    async def typing_test(self, ctx: Context):
         """Test your typing skills"""
         confirm: discord.Message = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")

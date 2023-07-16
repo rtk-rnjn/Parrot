@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import datetime
-import inspect
 import io
 import itertools
 from collections import Counter
 from time import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 import os
 import psutil
 import pygit2
@@ -79,14 +78,15 @@ class Meta(Cog):
         if not owner:
             return await ctx.reply("Owner not found, for some reason.")
 
-        name = str(owner)
+        str(owner)
         await ctx.reply(
             embed=discord.Embed(
                 title="Owner Info",
                 description=(
                     f"This bot is being hosted and created by `{owner}` (He/Him). "
                     f"Previously known as {AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}. "
-                    f"He is actually a dumb bot developer. He do not know why he made this shit bot. But it's cool"),
+                    f"He is actually a dumb bot developer. He do not know why he made this shit bot. But it's cool"
+                ),
                 timestamp=discord.utils.utcnow(),
                 color=ctx.author.color,
                 url=f"https://discord.com/users/{owner.id}",
@@ -268,7 +268,7 @@ class Meta(Cog):
         repo = pygit2.Repository(".git")
         commits = list(itertools.islice(repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count))
         return "\n".join(self.format_commit(c) for c in commits)
-    
+
     async def get_last_commits_async(self, count: int = 3):
         repo = "rtk-rnjn/Parrot"
         url = f"https://api.github.com/repos/{repo}/commits"
@@ -276,7 +276,7 @@ class Meta(Cog):
         async with self.bot.http_session.get(url) as response:
             if response.status != 200:
                 return "Failed to get commits"
-            
+
             data = await response.json()
 
         return "\n".join(self.format_commit_from_json(c) for c in data[:count])

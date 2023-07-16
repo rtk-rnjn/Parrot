@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from io import BytesIO
 from statistics import StatisticsError, mean, mode, quantiles
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import matplotlib
 import numpy as np
@@ -18,7 +18,6 @@ from matplotlib.font_manager import FontProperties
 
 plt.style.use(('bmh', 'ggplot'))  # type: ignore
 
-from Equation import Expression
 
 import discord
 from utilities.converters import ToAsync as to_thread

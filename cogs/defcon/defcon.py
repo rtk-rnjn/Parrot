@@ -43,6 +43,10 @@ class DefensiveCondition(Cog):
         }
         """
 
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{MILITARY HELMET}")
+
     @commands.group(name="defcon", aliases=["dc"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     async def defcon(self, ctx: Context) -> None:

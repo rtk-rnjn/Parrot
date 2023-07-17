@@ -638,7 +638,7 @@ class Moderator(Cog):
             _datetime=duration.dt,
         )
 
-    @commands.command(aliases=["mute"])
+    @commands.command(aliases=["mute", "stfu"])
     @commands.bot_has_permissions(moderate_members=True)
     @commands.check_any(is_mod(), commands.has_permissions(moderate_members=True))
     @Context.with_type

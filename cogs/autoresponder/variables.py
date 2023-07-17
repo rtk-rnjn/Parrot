@@ -63,10 +63,10 @@ class Variables:
 
     async def _create_channel(self, name: str, position: int = None, category: int = None):
         cat = (
-            self.__message.guild.get_channel(category) if category else None
-        )  # type: discord.CategoryChannel # type: ignore
+            self.__message.guild.get_channel(category) if category else None  # type: discord.CategoryChannel # type: ignore
+        )
         chn = await self.__message.guild.create_text_channel(  # type: ignore
-            name, position=position or discord.utils.MISSING, category=cat
+            name, position=position or discord.utils.MISSING, category=cat  # type: ignore
         )
         return chn.id
 

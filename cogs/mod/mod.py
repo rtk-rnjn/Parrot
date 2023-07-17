@@ -216,7 +216,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         member: Annotated[discord.abc.Snowflake, MemberID],
-        days: Optional[int] = 0,
+        days: Annotated[int, Optional[int]] = 0,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):

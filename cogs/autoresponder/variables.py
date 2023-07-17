@@ -21,6 +21,7 @@ class Variables:
         self.get_member_name = self._get_member_name
         self.create_channel = self._create_channel
         self.create_role = self._create_role
+        self.delete_message = self._delete_message
 
         return {
             "message_id": self.message_id,
@@ -34,6 +35,7 @@ class Variables:
             "get_channel_name": self.get_channel_name,
             "get_member_name": self.get_member_name,
             "create_channel": self.create_channel,
+            "delete_message": self.delete_message,
         }
 
     @property
@@ -107,5 +109,15 @@ class Variables:
         role = await self.__message.guild.create_role(name=name, color=clr, permissions=perms)  # type: ignore
         return role.id
 
+    async def _delete_message(self, channel: int, message: int):
+        """Delete a message from a channel"""
+        msg: discord.PartialMessage = self.__bot.get_or_fetch_message(channel, message, partial=True)  # type: ignore
+        if msg and (msg.guild.id != self.__message.guild.id):  # type: ignore
+            return
+        await msg.delete(delay=0)
+    
+    async def delete_trigger(self):
+        await self.__message.delete(delay=0)
 
+    
 # print(dir(Variables))

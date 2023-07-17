@@ -8,18 +8,17 @@ from jinja2.sandbox import SandboxedEnvironment
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
+import difflib
 
 from .variables import Variables
+from .jinja_help import TOPICS
 
 
 class Environment(SandboxedEnvironment):
     intercepted_binops = frozenset(["//", "%", "**", "<<", ">>", "&", "^", "|"])
 
     def make_globals(self, *args, **kwargs):
-        super().make_globals(*args, **kwargs)
-        return {
-            **self.globals,
-        }
+        return super().make_globals(*args, **kwargs)
 
     def call_binop(self, context, operator: str, left, right):
         disabled_operators = ["//", "%", "**", "<<", ">>", "&", "^", "|"]
@@ -66,8 +65,23 @@ class AutoResponders(Cog):
             await ctx.send_help(ctx.command)
 
     @autoresponder.command(name="tutorial")
-    async def autoresponder_tutorial(self, ctx: Context) -> None:
+    async def autoresponder_tutorial(self, ctx: Context, *, entity: Optional[str] = None) -> None:
         """Tutorial for autoresponder commands."""
+        # get the entity from TOPICS, use difflib to get the closest match
+        if entity:
+            et = difflib.get_close_matches(entity, TOPICS.keys(), n=1, cutoff=0.5)
+            if not et:
+                await ctx.reply(f"No tutorial found for that entity {entity}.")
+                return
+            
+            description = TOPICS[et[0]]
+            embed = discord.Embed(
+                title="Autoresponder Tutorial",
+                description=description,
+            )
+            await ctx.reply(embed=embed)
+            return
+
         embed = (
             discord.Embed(
                 title="Autoresponder Tutorial",
@@ -83,6 +97,7 @@ class AutoResponders(Cog):
                     "To create an autoresponder, use the command `$ar add <name> <response>`. "
                     "The name of the autoresponder must be unique. "
                 ),
+                inline=False,
             )
             .add_field(
                 name="For make the response more dynamic",
@@ -91,6 +106,13 @@ class AutoResponders(Cog):
                     "For example, you can use `<@{{ message_author_id }}>` to mention the user who sent the message. "
                     "You can also use `{{ message_author_name }}` to get the name of the user who sent the message. "
                 ),
+                inline=False,
+            )
+            .set_footer(
+                text=(
+                    "To get syntax of jinja2 template, use `$ar tutorial <entity>.\n"
+                    "Available entities: `" + "`, `".join(TOPICS.keys()) + "`"
+                )
             )
         )
         await ctx.reply(embed=embed)
@@ -106,7 +128,7 @@ class AutoResponders(Cog):
 
         des = ""
         for v, f in variables.items():
-            des += f"`{format_var(v):<17}`\n"
+            des += f"`{format_var(v):<22}`\n"
         embed = discord.Embed(
             title="Autoresponder Variables",
             description=des,
@@ -322,7 +344,6 @@ class AutoResponders(Cog):
             return await template.render_async(**variables)
         except Exception as e:
             return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
-
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(AutoResponders(bot))

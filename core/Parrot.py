@@ -1379,7 +1379,7 @@ class Parrot(commands.AutoShardedBot):
         partial: bool = False,
         force_fetch: bool = False,
         dm_allowed: bool = False,
-    ) -> Union[discord.Message, discord.PartialMessage, None]:
+    ):
         """|coro|
 
         Get message from cache. Fetches if not found, and stored in cache

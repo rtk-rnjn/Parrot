@@ -292,3 +292,7 @@ class AutoResponders(Cog):
             return await template.render_async(**vars)
         except Exception as e:
             return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
+
+
+async def setup(bot: Parrot) -> None:
+    await bot.add_cog(AutoResponders(bot))

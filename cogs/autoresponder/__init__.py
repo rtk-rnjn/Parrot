@@ -156,7 +156,7 @@ class AutoResponders(Cog):
         del self.cache[ctx.guild.id][name]
         await ctx.reply(f"Removed autoresponder `{name}`.")
 
-    @autoresponder.command(name="list", aliases=["show", "ls"])
+    @autoresponder.command(name="list", aliases=["ls"])
     async def autoresponder_list(self, ctx: Context) -> None:
         """List all autoresponders."""
         if not self.cache[ctx.guild.id]:

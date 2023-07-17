@@ -97,11 +97,16 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}")
 
         elif isinstance(error, commands.MissingPermissions):
+            if await self.bot.is_owner(ctx.author):
+                await ctx.reinvoke()
+                return
+
             missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in error.missing_permissions]
             if len(missing) > 2:
                 fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
                 fmt = " and ".join(missing)
+
             ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}")
             ctx.command.reset_cooldown(ctx)

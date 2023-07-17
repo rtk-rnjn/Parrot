@@ -275,18 +275,6 @@ class AutoResponders(Cog):
         var = Variables(message=message, bot=self.bot)
         variables = var.build_base()
 
-        bucket = self.cooldown.get_bucket(message)
-        exceeded_bucket = self.exceeded_cooldown.get_bucket(message)
-        if exceeded_bucket.update_rate_limit():  # type: ignore
-            return
-
-        if retry_after := bucket.update_rate_limit():  # type: ignore
-            await message.channel.send(
-                f"Gave up executing autoresponder for `{message.author}` (ID: `{message.author.id}`)\n"
-                f"Reason: Ratelimited. Try again in `{retry_after:.2f}` seconds."
-            )
-            return
-
         for name, data in self.cache[message.guild.id].items():
             if not data.get("enabled"):
                 continue
@@ -298,6 +286,18 @@ class AutoResponders(Cog):
                 continue
 
             response = data["response"]
+
+            bucket = self.cooldown.get_bucket(message)
+            exceeded_bucket = self.exceeded_cooldown.get_bucket(message)
+            if exceeded_bucket.update_rate_limit():  # type: ignore
+                break
+
+            if retry_after := bucket.update_rate_limit():  # type: ignore
+                await message.channel.send(
+                    f"Gave up executing autoresponder for `{message.author}` (ID: `{message.author.id}`)\n"
+                    f"Reason: Ratelimited. Try again in `{retry_after:.2f}` seconds."
+                )
+                break
 
             try:
                 name = re.escape(name.strip())

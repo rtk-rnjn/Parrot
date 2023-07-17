@@ -88,11 +88,12 @@ class AutoResponders(Cog):
                 name="For make the response more dynamic",
                 value=(
                     "You can use Jinja2 template to make the response more dynamic. "
-                    "For example, you can use `{{author.mention}}` to mention the user who sent the message. "
-                    "You can also use `{{author.name}}` to get the name of the user who sent the message. "
+                    "For example, you can use `<@{{ message_author_id }}>` to mention the user who sent the message. "
+                    "You can also use `{{ message_author_name }}` to get the name of the user who sent the message. "
                 ),
             )
         )
+        await ctx.reply(embed=embed)
 
     @autoresponder.command(name="variables")
     async def autoresponder_variables(self, ctx: Context) -> None:
@@ -105,7 +106,7 @@ class AutoResponders(Cog):
 
         des = ""
         for v, f in variables.items():
-            des += f"`{format_var(v):<17}:` - {f.__doc__.split(' ')[0]}\n"
+            des += f"`{format_var(v):<17}`\n"
         embed = discord.Embed(
             title="Autoresponder Variables",
             description=des,

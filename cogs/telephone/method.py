@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import random
-from typing import Any, Callable, Optional
+from typing import Any
 
 import discord
 from core import Context, Parrot
@@ -16,14 +16,14 @@ async def telephone_update(ctx: Context, *, guild_id: int, event: str, value: An
     await ctx.bot.guild_configurations.update_one({"_id": guild_id}, {"$set": {f"telephone.{event}": value}}, upsert=True)
 
 
-async def get_guild(ctx: Context, guild_id: int) -> Optional[dict]:
+async def get_guild(ctx: Context, guild_id: int) -> dict:
     if ctx.bot.guild_configurations_cache.get(guild_id):
         return ctx.bot.guild_configurations_cache.get(guild_id)
 
     return await ctx.bot.guild_configurations.find_one({"_id": guild_id})
 
 
-def outer_check_pickup_hangup(channel: discord.TextChannel, target_channel: discord.TextChannel) -> Callable:
+def outer_check_pickup_hangup(channel: discord.abc.MessageableChannel, target_channel: discord.abc.Messageable):
     def check_pickup_hangup(m: discord.Message) -> bool:
         return (
             (m.content.lower() in ("pickup", "hangup")) and (m.channel in (channel, target_channel)) and (not m.author.bot)
@@ -32,7 +32,7 @@ def outer_check_pickup_hangup(channel: discord.TextChannel, target_channel: disc
     return check_pickup_hangup
 
 
-async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False) -> None:
+async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool = False):
     if server.id == ctx.guild.id:
         return await ctx.send("Can't make a self call")
 
@@ -44,6 +44,13 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
             f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this."
         )
     target_guild = await get_guild(ctx, number)
+    target_guild_obj = bot.get_guild(target_guild["_id"])
+    if not target_guild_obj:
+        return await ctx.send(
+            f"{ctx.author.mention} no telephone line channel is set for the **{number}** server,"
+            f" or the number you entered do not match with any other server!"
+        )
+
     if not target_guild:
         return await ctx.send(
             f"{ctx.author.mention} no telephone line channel is set for the **{number}** server,"
@@ -51,26 +58,25 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
         )
 
     if target_guild.get("is_line_busy"):
-        return await ctx.send(
-            f"Can not make a connection to **{number} ({bot.get_guild(target_guild['_id']).name})**. Line busy!"
-        )
+        return await ctx.send(f"Can not make a connection to **{number} ({target_guild_obj.name})**. Line busy!")
 
-    target_channel = bot.get_channel(target_guild.get("channel"))
+    target_channel = bot.get_channel(target_guild.get("channel", 0))
     if not target_channel:
         return await ctx.send("Calling failed! Possible reasons: `Channel deleted`, missing `View Channels` permission.")
+    assert isinstance(target_channel, discord.abc.Messageable)
 
     if (target_guild["_id"] in self_guild.get("blocked", [])) or (self_guild["_id"] in target_guild.get("blocked", [])):
         return await ctx.send("Calling failed! Possible reasons: They blocked You, You blocked Them.")
 
-    await ctx.send(f"Calling to **{number} ({bot.get_guild(target_guild['_id']).name})** ... Waiting for the response ...")
+    await ctx.send(f"Calling to **{number} ({target_guild_obj.name})** ... Waiting for the response ...")
 
     await target_channel.send(
         f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
     )
-    await telephone_update(ctx.guild.id, "is_line_busy", True)
-    await telephone_update(number, "is_line_busy", True)
+    await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=True)
+    await telephone_update(ctx, guild_id=number, event="is_line_busy", value=True)
     with contextlib.suppress(AttributeError, KeyError):
-        temp_message: discord.Message = target_channel.send(
+        temp_message: discord.Message = target_channel.send(  # type: ignore
             f'<@&{target_guild["pingrole"]}> <@{target_guild["memberping"]}>',
             delete_after=1,
         )
@@ -88,20 +94,20 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
             f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
         )
         await ctx.send(
-            f"Line disconnected from **{number} ({bot.get_guild(number).name})**. Reason: Line Inactive for more than 60 seconds"
+            f"Line disconnected from **{number} ({target_guild_obj.name})**. Reason: Line Inactive for more than 60 seconds"
         )
-
-        await telephone_update(ctx.guild.id, "is_line_busy", False)
-        await telephone_update(number, "is_line_busy", False)
+        await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=False)
+        await telephone_update(ctx, guild_id=number, event="is_line_busy", value=False)
         return
 
+    assert isinstance(_talk, discord.Message) and isinstance(_talk.author, discord.Member)
     if _talk.content.lower() == "hangup":
         await ctx.send(f"Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**")
         await target_channel.send(f"Disconnected. From **{_talk.author.guild.name} ({_talk.author.guild.id})**")
 
     elif _talk.content.lower() == "pickup":
-        await telephone_update(ctx.guild.id, "is_line_busy", True)
-        await telephone_update(number, "is_line_busy", True)
+        await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=True)
+        await telephone_update(ctx, guild_id=number, event="is_line_busy", value=True)
         await ctx.send(f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
         await target_channel.send(f"**Connected. Say {random.choice(['hi', 'hello', 'heya'])}**")
 
@@ -119,7 +125,7 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
                     f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
                 )
                 await ctx.send(
-                    f"Line disconnected from **{number} ({bot.get_guild(number).name})**."
+                    f"Line disconnected from **{number} ({target_guild_obj.name})**."
                     f"Reason: Line Inactive for more than 60 seconds"
                 )
                 break
@@ -151,5 +157,5 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
         await channel.send("Disconnected. Call duration reached its maximum limit")
         await target_channel.send("Disconnected. Call duration reached its maximum limit")
 
-    await telephone_update(ctx.guild.id, "is_line_busy", False)
-    await telephone_update(number, "is_line_busy", False)
+    await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=False)
+    await telephone_update(ctx, guild_id=number, event="is_line_busy", value=False)

@@ -263,7 +263,7 @@ class AutoResponders(Cog):
     @autoresponder_disable.before_invoke
     async def ensure_cache(self, ctx: Context) -> None:
         if ctx.guild.id not in self.cache:
-            self.cache[ctx.guild.id] = self.bot.guild_configurations_cache[ctx.guild.id].get("autoresponders", {})
+            self.cache[ctx.guild.id] = self.bot.guild_configurations_cache[ctx.guild.id].get("autoresponder", {})
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -279,7 +279,7 @@ class AutoResponders(Cog):
             if not data.get("enabled"):
                 continue
 
-            if message.channel.id not in data.get("channels", []):
+            if message.channel.id in data.get("ignore_channel", []):
                 continue
 
             if any(role.id in data.get("ignore_role", []) for role in message.author.roles):
@@ -302,7 +302,7 @@ class AutoResponders(Cog):
             try:
                 name = re.escape(name.strip())
 
-                if re.fullmatch(rf"\b{name}\b", message.content, re.IGNORECASE):
+                if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
                     await message.channel.send(await self.execute_jinja(response, **variables))
                     break
             except re.error:

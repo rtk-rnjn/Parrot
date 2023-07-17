@@ -803,6 +803,8 @@ class Parrot(commands.AutoShardedBot):
                 log.info("waiting for ready")
                 await self.wait_until_ready()
             await self.invoke(ctx)
+        elif await self.is_owner(ctx.author):
+            await self.invoke(ctx)
         else:
             log.debug("Command %s is on testing, ignoring", ctx.command)
 

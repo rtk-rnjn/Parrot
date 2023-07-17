@@ -295,7 +295,13 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
 
         msg = author_message
 
-        if data := await self.bot.starboards.find_one({"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]}):
+        if data := await self.bot.starboards.find_one_and_update(
+            {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
+            {
+                "$addToSet": {"starrer": payload.user_id},
+                "$inc": {"number_of_stars": 1},
+            }
+        ):
             await self.edit_starbord_post(payload, **data)
             return
 
@@ -331,7 +337,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
             }
-            and user.id in self.bot.owner_ids  # type: ignore
+            and user.id in self.bot.owner_ids
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
 
@@ -369,7 +375,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
                 "\N{FACE WITH PLEADING EYES}",
             }
-            and user.id in self.bot.owner_ids  # type: ignore
+            and user.id in self.bot.owner_ids
         ):
             await self.bot.update_server_config_cache.start(user.guild.id)
 

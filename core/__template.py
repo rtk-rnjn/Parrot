@@ -122,4 +122,13 @@ post: Dict[str, Any] = {
         "ticket_channel_ids": [],
         "ticket_counter": 0,
     },
+    "autoresponder": {
+        # "{RESPONDER_ID}": {
+        #     "enabled": True,
+        #     "response": "RESPONSE",
+        #     "trigger": "TRIGGER",
+        #     "ignore_role": [],
+        #     "ignore_channel": [],
+        # }
+    }
 }

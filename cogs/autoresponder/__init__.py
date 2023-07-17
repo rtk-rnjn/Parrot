@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import difflib
 import re
 from typing import Annotated, Any, Optional, Union
 
@@ -8,10 +9,9 @@ from jinja2.sandbox import SandboxedEnvironment
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
-import difflib
 
-from .variables import Variables
 from .jinja_help import TOPICS
+from .variables import Variables
 
 
 class Environment(SandboxedEnvironment):
@@ -73,7 +73,7 @@ class AutoResponders(Cog):
             if not et:
                 await ctx.reply(f"No tutorial found for that entity {entity}.")
                 return
-            
+
             description = TOPICS[et[0]]
             embed = discord.Embed(
                 title="Autoresponder Tutorial",
@@ -344,6 +344,20 @@ class AutoResponders(Cog):
             return await template.render_async(**variables)
         except Exception as e:
             return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
+
+    @commands.command(name="jinja", aliases=["j2", "jinja2"])
+    async def jinja(self, ctx: Context, *, code: str) -> None:
+        """Execute jinja2 code."""
+        if code.startswith(("```jinja", "```", "```py")) and code.endswith("```"):
+            code = "\n".join(code.split("\n")[1:-1])
+
+        code = code.strip("`").strip("\n").strip("")
+
+        try:
+            await ctx.reply(await self.execute_jinja(code))
+        except Exception as e:
+            await ctx.reply(f"Gave up executing jinja2 code\n" f"Reason: `{e.__class__.__name__}: {e}`")
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(AutoResponders(bot))

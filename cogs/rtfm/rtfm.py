@@ -235,7 +235,7 @@ class RTFM(Cog):
         # Match the start of examples, until the end of the table of contents (toc)
         table_of_contents = re.search(r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)[0].split(
             "\n"
-        )  # type: ignore
+        )
 
         for header in list(map(str.strip, table_of_contents)):
             if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):
@@ -1461,7 +1461,7 @@ class RTFM(Cog):
             other_info_embed=miscellaneous_embed,
         )
         kata_view = self.create_view(dropdown, f"https://codewars.com/kata/{first_kata_id}")
-        original_message: discord.Message = await ctx.send(embed=kata_embed, view=kata_view)  # type: ignore
+        original_message: discord.Message = await ctx.send(embed=kata_embed, view=kata_view)
         dropdown.original_message = original_message
 
         wait_for_kata = await kata_view.wait()

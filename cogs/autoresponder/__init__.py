@@ -33,8 +33,8 @@ class AutoResponders(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.cache = {}
-        self.cooldown = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
-        self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(5, 10, commands.BucketType.channel)
+        self.cooldown = commands.CooldownMapping.from_cooldown(5, 10, commands.BucketType.channel)
+        self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
     @tasks.loop(seconds=300)
     async def check_autoresponders(self) -> None:

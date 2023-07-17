@@ -115,9 +115,9 @@ class Variables:
         if msg and (msg.guild.id != self.__message.guild.id):  # type: ignore
             return
         await msg.delete(delay=0)
-    
+
     async def delete_trigger(self):
         await self.__message.delete(delay=0)
 
-    
+
 # print(dir(Variables))

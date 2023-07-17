@@ -233,9 +233,7 @@ class RTFM(Cog):
 
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
-        table_of_contents = re.search(r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)[0].split(
-            "\n"
-        )
+        table_of_contents = re.search(r"\[👀 Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)[0].split("\n")
 
         for header in list(map(str.strip, table_of_contents)):
             if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):

@@ -130,5 +130,5 @@ post: Dict[str, Any] = {
         #     "ignore_role": [],
         #     "ignore_channel": [],
         # }
-    }
+    },
 }

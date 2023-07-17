@@ -6,7 +6,7 @@ from core import Context, Parrot
 
 async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
     collection = ctx.user_collection
-    if data := await collection.find_one({"id": name}):
+    if _ := await collection.find_one({"id": name}):
         await ctx.reply(f"{ctx.author.mention} `{name}` already exists as your TODO list")
     else:
         await collection.insert_one(

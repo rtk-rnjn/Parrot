@@ -7,25 +7,20 @@ from typing import TYPE_CHECKING
 
 import matplotlib
 import numpy as np
-from sympy import lambdify, symbols, sympify
-
-from core import Context
-
-matplotlib.use('agg')
-
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
-
-plt.style.use(('bmh', 'ggplot'))  # type: ignore
-
+from sympy import lambdify, symbols, sympify
 
 import discord
+from core import Context
 from utilities.converters import ToAsync as to_thread
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
+matplotlib.use('agg')
+plt.style.use(('bmh', 'ggplot'))  # type: ignore
 __all__: tuple[str, ...] = (
     'boxplot',
     'plotfn',

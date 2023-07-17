@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from io import BytesIO
 from textwrap import dedent, indent
-from typing import Any, Awaitable, Tuple
+from typing import Any, Awaitable, Optional, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -46,7 +46,7 @@ def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
         return image
 
 
-def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
+def _create_sample(card: Card, *, animated: bool = False) -> Optional[BytesIO]:
     with Image.new("RGBA", (256, 256)) as image:
         if card.color is not Color.wild:
             _ = Image.new("RGBA", image.size, COLORS[card.color])
@@ -84,7 +84,7 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO:
                 font = ImageFont.truetype(BytesIO(fp.read()), size=210)
 
             _l, _t, _r, _b = font.getbbox(text)
-            w, h = _r - _l, _b - _t
+            w, _ = _r - _l, _b - _t
             x, y = 128 - int(w / 2), -14
 
             extra = dict(stroke_width=4, stroke_fill=(0, 0, 0))

@@ -12,12 +12,12 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional, Union
 
 import async_timeout
-from discord.ext.commands import CommandError, bot_has_permissions, group, BucketType
-from discord.ext import commands
+from discord.ext.commands import BucketType, CommandError, bot_has_permissions, group
 from PIL import Image, ImageDraw, ImageFont
 
 from core import Cog, Context, Parrot
 from discord import Colour, Embed, File, Member, Message, PartialEmoji, Reaction
+from discord.ext import commands
 
 from ._converter import Snake
 from ._utils import (

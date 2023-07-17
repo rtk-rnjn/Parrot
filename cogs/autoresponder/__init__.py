@@ -9,7 +9,7 @@ import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 
-from .vars  import Variables
+from .variables  import Variables
 
 class Environment(SandboxedEnvironment):
     intercepted_binops = frozenset(["//", "%", "**", "<<", ">>", "&", "^", "|"])
@@ -281,7 +281,7 @@ class AutoResponders(Cog):
                     await message.channel.send(await self.execute_jinja(response, **variables))
                     break
 
-    async def execute_jinja(self, response: str, **vars) -> Any:
+    async def execute_jinja(self, response: str, **variables) -> Any:
         if not hasattr(self, "jinja_env"):
             self.jinja_env = Environment(
                 enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True
@@ -289,7 +289,7 @@ class AutoResponders(Cog):
 
         template = self.jinja_env.from_string(response)
         try:
-            return await template.render_async(**vars)
+            return await template.render_async(**variables)
         except Exception as e:
             return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
 

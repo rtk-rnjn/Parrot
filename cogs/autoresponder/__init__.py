@@ -33,10 +33,8 @@ class AutoResponders(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.cache = {}
-        self.cooldown = commands.CooldownMapping.from_cooldown(1, 5, commands.BucketType.member)
-        self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(1, 10, commands.BucketType.member)
-
-        self.ON_TESTING = True
+        self.cooldown = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
+        self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(5, 10, commands.BucketType.channel)
 
     @tasks.loop(seconds=300)
     async def check_autoresponders(self) -> None:
@@ -48,12 +46,12 @@ class AutoResponders(Cog):
             {"_id": guild_id},
             {"$set": {"autoresponder": data}},
         )
-    
+
     async def cog_load(self):
         self.check_autoresponders.start()
         async for guild_data in self.bot.guild_configurations.find({"autoresponder": {"$exists": True}}):
             self.cache[guild_data["_id"]] = guild_data["autoresponder"]
-    
+
     async def cog_unload(self):
         self.check_autoresponders.cancel()
 
@@ -107,7 +105,7 @@ class AutoResponders(Cog):
 
         des = ""
         for v, f in variables.items():
-            des += f"`{format_var(v):<15}:` - {f.__doc__}\n"
+            des += f"`{format_var(v):<17}:` - {f.__doc__.split(' ')[0]}\n"
         embed = discord.Embed(
             title="Autoresponder Variables",
             description=des,
@@ -274,10 +272,12 @@ class AutoResponders(Cog):
 
         assert isinstance(message.author, discord.Member)
 
+        var = Variables(message=message, bot=self.bot)
+        variables = var.build_base()
+
         bucket = self.cooldown.get_bucket(message)
         exceeded_bucket = self.exceeded_cooldown.get_bucket(message)
-
-        if retry_after := exceeded_bucket.update_rate_limit():  # type: ignore
+        if exceeded_bucket.update_rate_limit():  # type: ignore
             return
 
         if retry_after := bucket.update_rate_limit():  # type: ignore
@@ -287,11 +287,7 @@ class AutoResponders(Cog):
             )
             return
 
-        var = Variables(message=message, bot=self.bot)
-        variables = var.build_base()
-
-        super_data = self.cache.get(message.guild.id, {})
-        for name, data in super_data.items():
+        for name, data in self.cache[message.guild.id].items():
             if not data.get("enabled"):
                 continue
 

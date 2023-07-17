@@ -69,7 +69,7 @@ class Variables:
     @property
     def message_author(self):
         """Get message author"""
-        return self.__message.author
+        return str(self.__message.author)
 
     def _get_role_name(self, role_id: int):
         """Get role name from role id"""

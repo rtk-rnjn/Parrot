@@ -15,18 +15,14 @@ class Variables:
         self.__message = message
         self.__bot = bot
 
-    def build_base(self):
-        self.message_id = self.__message.id
-        self.message_content = self.__message.content
+    def build_base(self) -> dict:
+        self.get_role_name = self._get_role_name
+        self.get_channel_name = self._get_channel_name
+        self.get_member_name = self._get_member_name
+        self.create_channel = self._create_channel
+        self.create_role = self._create_role
 
-        self.channel_id = self.__message.channel.id
-        self.channel_name = self.__message.channel.name  # type: ignore
-
-        self.message_author_id = self.__message.author.id
-        self.message_author_name = self.__message.author.name
-        self.message_author = str(self.__message.author)
-
-        payload = {
+        return {
             "message_id": self.message_id,
             "message_content": self.message_content,
             "channel_id": self.channel_id,
@@ -34,34 +30,64 @@ class Variables:
             "message_author_id": self.message_author_id,
             "message_author_name": self.message_author_name,
             "message_author": self.message_author,
+            "get_role_name": self.get_role_name,
+            "get_channel_name": self.get_channel_name,
+            "get_member_name": self.get_member_name,
+            "create_channel": self.create_channel,
         }
 
-        self.get_role_name = self._get_role_name
-        self.get_channel_name = self._get_channel_name
-        self.get_member_name = self._get_member_name
-        self.create_channel = self._create_channel
-        self.create_role = self._create_role
+    @property
+    def message_id(self):
+        """Get message id"""
+        return self.__message.id
 
-        payload["get_role_name"] = self.get_role_name
-        payload["get_channel_name"] = self.get_channel_name
-        payload["get_member_name"] = self.get_member_name
-        payload["create_channel"] = self.create_channel
+    @property
+    def message_content(self):
+        """Get message content"""
+        return self.__message.content
 
-        return payload
+    @property
+    def channel_id(self):
+        """Get channel id"""
+        return self.__message.channel.id
+
+    @property
+    def channel_name(self):
+        """Get channel name"""
+        return self.__message.channel.name  # type: ignore
+
+    @property
+    def message_author_id(self):
+        """Get message author id"""
+        return self.__message.author.id
+
+    @property
+    def message_author_name(self):
+        """Get message author name"""
+        return self.__message.author.name
+
+    @property
+    def message_author(self):
+        """Get message author"""
+        return self.__message.author
 
     def _get_role_name(self, role_id: int):
+        """Get role name from role id"""
         r = self.__message.guild.get_role(role_id)  # type: ignore
         return r.name if r else None
 
     def _get_channel_name(self, channel_id: int):
+        """Get channel name from channel id"""
         c = self.__message.guild.get_channel(channel_id)  # type: ignore
         return c.name if c else None
 
     def _get_member_name(self, member_id: int):
+        """Get member name from member id"""
         m = self.__message.guild.get_member(member_id)  # type: ignore
         return m.name if m else None
 
     async def _create_channel(self, name: str, position: int = None, category: int = None):
+        """Create a channel in the same category as the message channel"""
         cat = (
             self.__message.guild.get_channel(category) if category else None  # type: discord.CategoryChannel # type: ignore
         )
@@ -71,6 +97,7 @@ class Variables:
         return chn.id
 
     async def _create_role(self, name: str, permission: int = None, color: int = None):
+        """Create a role in the same guild as the message"""
         if permission:
             perms = discord.Permissions(permission)
         else:

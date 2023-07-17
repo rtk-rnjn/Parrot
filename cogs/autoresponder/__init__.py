@@ -9,7 +9,8 @@ import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 
-from .variables  import Variables
+from .variables import Variables
+
 
 class Environment(SandboxedEnvironment):
     intercepted_binops = frozenset(["//", "%", "**", "<<", ">>", "&", "^", "|"])
@@ -47,6 +48,14 @@ class AutoResponders(Cog):
             {"_id": guild_id},
             {"$set": {"autoresponder": data}},
         )
+    
+    async def cog_load(self):
+        self.check_autoresponders.start()
+        async for guild_data in self.bot.guild_configurations.find({"autoresponder": {"$exists": True}}):
+            self.cache[guild_data["_id"]] = guild_data["autoresponder"]
+    
+    async def cog_unload(self):
+        self.check_autoresponders.cancel()
 
     @commands.group(name="autoresponder", aliases=["ar"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
@@ -90,7 +99,20 @@ class AutoResponders(Cog):
     @autoresponder.command(name="variables")
     async def autoresponder_variables(self, ctx: Context) -> None:
         """Show variables that can be used in autoresponder response."""
-        pass
+        var = Variables(message=ctx.message, bot=self.bot)
+        variables = var.build_base()
+
+        def format_var(v: str) -> str:
+            return "{{ " + v + " }}"
+
+        des = ""
+        for v, f in variables.items():
+            des += f"`{format_var(v):<15}:` - {f.__doc__}\n"
+        embed = discord.Embed(
+            title="Autoresponder Variables",
+            description=des,
+        )
+        await ctx.reply(embed=embed)
 
     @autoresponder.command(name="ignore")
     async def autoresponder_ignore(self, ctx: Context, name: str, entity: Union[discord.Role, discord.TextChannel]) -> None:
@@ -136,7 +158,12 @@ class AutoResponders(Cog):
             await ctx.reply("You must provide a response.")
             return
 
-        self.cache[ctx.guild.id][name] = res
+        self.cache[ctx.guild.id][name] = {
+            "enabled": True,
+            "response": res,
+            "ignore_role": [],
+            "ignore_channel": [],
+        }
         await ctx.reply(f"Added autoresponder `{name}`.")
 
     @autoresponder.command(
@@ -180,7 +207,12 @@ class AutoResponders(Cog):
             await ctx.reply("You must provide a response.")
             return
 
-        self.cache[ctx.guild.id][name] = res
+        self.cache[ctx.guild.id][name] = {
+            "enabled": self.cache[ctx.guild.id][name].get("enabled", True),
+            "response": res,
+            "ignore_role": self.cache[ctx.guild.id][name].get("ignore_role", []),
+            "ignore_channel": self.cache[ctx.guild.id][name].get("ignore_channel", []),
+        }
         await ctx.reply(f"Edited autoresponder `{name}`.")
 
     @autoresponder.command(name="info", aliases=["show"])
@@ -191,7 +223,7 @@ class AutoResponders(Cog):
             return
 
         embed = discord.Embed(title=name)
-        embed.description = self.cache[ctx.guild.id][name]
+        embed.description = self.cache[ctx.guild.id][name]["response"]
 
         await ctx.reply(embed=embed)
 
@@ -258,7 +290,8 @@ class AutoResponders(Cog):
         var = Variables(message=message, bot=self.bot)
         variables = var.build_base()
 
-        for name, data in self.cache[message.guild.id].items():
+        super_data = self.cache.get(message.guild.id, {})
+        for name, data in super_data.items():
             if not data.get("enabled"):
                 continue
 

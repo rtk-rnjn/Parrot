@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import difflib
+import inspect
 import re
 from typing import Annotated, Any, Optional, Union
 
@@ -353,8 +354,16 @@ class AutoResponders(Cog):
 
         code = code.strip("`").strip("\n").strip("")
 
+        variables = Variables(message=ctx.message, bot=self.bot)
+        variables = variables.build_base()
+
+        # Pop all functions
+        for name, func in inspect.getmembers(variables):
+            if inspect.ismethod(func) or inspect.isfunction(func):
+                variables.pop(name, None)
+
         try:
-            await ctx.reply(await self.execute_jinja(code))
+            await ctx.reply(await self.execute_jinja(code, **variables))
         except Exception as e:
             await ctx.reply(f"Gave up executing jinja2 code\n" f"Reason: `{e.__class__.__name__}: {e}`")
 

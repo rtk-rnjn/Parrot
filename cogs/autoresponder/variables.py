@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from core import Parrot
 
 import discord
+from core import Context
 
 
 class Variables:
@@ -22,6 +23,11 @@ class Variables:
         self.create_channel = self._create_channel
         self.create_role = self._create_role
         self.delete_message = self._delete_message
+        self.delete_trigger = self._delete_trigger
+        self.get_db = self._get_db
+        self.set_db = self._set_db
+        self.delete_db = self._delete_db
+        self.update_db = self._update_db
 
         return {
             "message_id": self.message_id,
@@ -35,7 +41,13 @@ class Variables:
             "get_channel_name": self.get_channel_name,
             "get_member_name": self.get_member_name,
             "create_channel": self.create_channel,
+            "create_role": self.create_role,
             "delete_message": self.delete_message,
+            "delete_trigger": self.delete_trigger,
+            "get_db": self.get_db,
+            "set_db": self.set_db,
+            "delete_db": self.delete_db,
+            "update_db": self.update_db,
         }
 
     @property
@@ -116,8 +128,25 @@ class Variables:
             return
         await msg.delete(delay=0)
 
-    async def delete_trigger(self):
+    async def _delete_trigger(self):
         await self.__message.delete(delay=0)
+
+    async def _get_db(self, key: str):
+        """Get the database"""
+        data = await self.__bot.extra_collections.find_one({"_id": self.__message.guild.id, key: {"$exists": True}})  # type: ignore
+        return data[key] if data else None
+
+    async def _set_db(self, key: str, value: Any):
+        """Set the database"""
+        await self.__bot.extra_collections.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}}, upsert=True)  # type: ignore
+
+    async def _delete_db(self, key: str):
+        """Delete the database"""
+        await self.__bot.extra_collections.update_one({"_id": self.__message.guild.id}, {"$unset": {key: ""}})  # type: ignore
+
+    async def _update_db(self, key: str, value: Any):
+        """Update the database"""
+        await self.__bot.extra_collections.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}})  # type: ignore
 
 
 # print(dir(Variables))

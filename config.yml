@@ -43,6 +43,7 @@ all_extensions:
   - cogs.suggestion
   - cogs.tags
   - cogs.todo
+  - cogs.giveaway
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import random
-from time import time
 from typing import Any, Dict, List, Optional
 
 import discord
@@ -163,29 +162,25 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
     CHANNEL = None
 
     for index, question in enumerate(quest, start=1):
+        await ctx.reply(embed=discord.Embed(description=question))
         if index == 1:
-            await ctx.reply(embed=discord.Embed(description=question))
             channel = await commands.TextChannelConverter().convert(ctx, argument=(await __wait_for__message(ctx)))
             CHANNEL = channel
             payload["giveaway_channel"] = channel.id
 
         elif index == 2:
-            await ctx.reply(embed=discord.Embed(description=question))
             duration = ShortTime(await __wait_for__message(ctx))
             payload["endtime"] = duration.dt.timestamp()
 
         elif index == 3:
-            await ctx.reply(embed=discord.Embed(description=question))
             prize = await __wait_for__message(ctx)
             payload["prize"] = prize
 
         elif index == 4:
-            await ctx.reply(embed=discord.Embed(description=question))
             winners = __is_int(await __wait_for__message(ctx), "Winner must be a whole number")
             payload["winners"] = winners
 
         elif index == 5:
-            await ctx.reply(embed=discord.Embed(description=question))
             arg = await __wait_for__message(ctx)
             if arg.lower() not in ("skip", "no", "none"):
                 role = await commands.RoleConverter().convert(ctx, argument=arg)
@@ -194,12 +189,10 @@ async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
                 payload["required_role"] = None
 
         elif index == 6:
-            await ctx.reply(embed=discord.Embed(description=question))
             level = __is_int(await __wait_for__message(ctx), "Level must be a whole number")
             payload["required_level"] = level
 
         elif index == 7:
-            await ctx.reply(embed=discord.Embed(description=question))
             server = __is_int(await __wait_for__message(ctx), "Server ID must be a whole number")
             payload["required_guild"] = server
 

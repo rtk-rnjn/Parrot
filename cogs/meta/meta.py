@@ -3,10 +3,11 @@ from __future__ import annotations
 import datetime
 import io
 import itertools
+import os
 from collections import Counter
 from time import time
 from typing import List, Optional, Tuple, Union
-import os
+
 import psutil
 import pygit2
 
@@ -72,7 +73,7 @@ class Meta(Cog):
     @Context.with_type
     async def owner(self, ctx: Context):
         """Core and sole maintainer of this bot."""
-        from utilities.config import SUPER_USER, AUTHOR_NAME, AUTHOR_DISCRIMINATOR
+        from utilities.config import AUTHOR_DISCRIMINATOR, AUTHOR_NAME, SUPER_USER
 
         owner = self.bot.get_user(int(SUPER_USER))
         if not owner:

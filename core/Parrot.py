@@ -1480,7 +1480,7 @@ class Parrot(commands.AutoShardedBot):
         db_col = f"{db}.{col}"
         if db_col not in self.__global_write_data:
             self.__global_write_data[db_col] = []
-        
+
         func = getattr(pymongo, cls)
         entity = func(query, update, upsert=upsert)
 

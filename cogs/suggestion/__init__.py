@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import io
 from itertools import zip_longest
-from typing import Any, Dict, Optional, Union, Annotated
+from typing import Annotated, Any, Dict, Optional, Union
 
 import discord
 from core import Cog, Context, Parrot

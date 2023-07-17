@@ -3,10 +3,8 @@ from __future__ import annotations
 import contextlib
 from typing import Any, Dict, List, Optional, Union
 
-from pymongo.collection import Collection
-
 import discord
-from cogs.utils.method import end_giveaway
+from cogs.giveaway.method import end_giveaway
 from core import Cog, Parrot
 from utilities.time import ShortTime
 
@@ -145,7 +143,7 @@ class EventCustom(Cog):
             await self._parse_db_execute(**kw)
 
     async def _parse_db_execute(self, **kw: Any) -> None:
-        collection: Collection = self.bot.mongo[kw["database"]][kw["collection"]]
+        collection = self.bot.mongo[kw["database"]][kw["collection"]]
         if kw.get("action") == "delete_one" and kw.get("filter"):
             await collection.delete_one(kw["filter"])
 

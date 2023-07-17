@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from typing import Any, Dict, List, Literal, Optional, Union, Annotated
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate

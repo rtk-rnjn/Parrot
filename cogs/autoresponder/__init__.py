@@ -35,6 +35,10 @@ class AutoResponders(Cog):
         self.cooldown = commands.CooldownMapping.from_cooldown(5, 10, commands.BucketType.channel)
         self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
 
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{ROBOT FACE}")
+
     @tasks.loop(seconds=300)
     async def check_autoresponders(self) -> None:
         for guild_id, data in self.cache.items():
@@ -65,6 +69,7 @@ class AutoResponders(Cog):
             await ctx.send_help(ctx.command)
 
     @autoresponder.command(name="tutorial")
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_tutorial(self, ctx: Context, *, entity: Optional[str] = None) -> None:
         """Tutorial for autoresponder commands."""
         # get the entity from TOPICS, use difflib to get the closest match
@@ -118,6 +123,7 @@ class AutoResponders(Cog):
         await ctx.reply(embed=embed)
 
     @autoresponder.command(name="variables")
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_variables(self, ctx: Context) -> None:
         """Show variables that can be used in autoresponder response."""
         var = Variables(message=ctx.message, bot=self.bot)
@@ -136,6 +142,7 @@ class AutoResponders(Cog):
         await ctx.reply(embed=embed)
 
     @autoresponder.command(name="ignore")
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_ignore(self, ctx: Context, name: str, entity: Union[discord.Role, discord.TextChannel]) -> None:
         """Ignore a role or channel from an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -164,6 +171,7 @@ class AutoResponders(Cog):
             await ctx.reply(f"Ignored channel `{entity.name}` from autoresponder `{name}`.")
 
     @autoresponder.command(name="add", aliases=["create", "set"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_add(
         self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None
     ) -> None:
@@ -188,6 +196,7 @@ class AutoResponders(Cog):
         await ctx.reply(f"Added autoresponder `{name}`.")
 
     @autoresponder.command(name="remove", aliases=["delete", "del", "rm"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_remove(self, ctx: Context, name: str) -> None:
         """Remove an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -198,6 +207,7 @@ class AutoResponders(Cog):
         await ctx.reply(f"Removed autoresponder `{name}`.")
 
     @autoresponder.command(name="list", aliases=["ls"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_list(self, ctx: Context) -> None:
         """List all autoresponders."""
         if not self.cache[ctx.guild.id]:
@@ -209,6 +219,7 @@ class AutoResponders(Cog):
         await ctx.reply(embed=embed)
 
     @autoresponder.command(name="edit", aliases=["change", "modify"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_edit(
         self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None
     ) -> None:
@@ -230,6 +241,7 @@ class AutoResponders(Cog):
         await ctx.reply(f"Edited autoresponder `{name}`.")
 
     @autoresponder.command(name="info", aliases=["show"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_info(self, ctx: Context, name: str) -> None:
         """Show info about an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -242,6 +254,7 @@ class AutoResponders(Cog):
         await ctx.reply(embed=embed)
 
     @autoresponder.command(name="enable", aliases=["on"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_enable(self, ctx: Context, name: str) -> None:
         """Enable an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -256,6 +269,7 @@ class AutoResponders(Cog):
         await ctx.reply(f"Enabled autoresponder `{name}`.")
 
     @autoresponder.command(name="disable", aliases=["off"])
+    @commands.has_permissions(manage_guild=True)
     async def autoresponder_disable(self, ctx: Context, name: str) -> None:
         """Disable an autoresponder."""
         if name not in self.cache[ctx.guild.id]:

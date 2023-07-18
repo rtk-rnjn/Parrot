@@ -24,6 +24,7 @@ DISPLAY_COG = (
     "FUN",
     "DEFENSIVECONDITION",
     "TODOS",
+    "AUTORESPONDERS",
     "TAGS",
     "META",
     "SUGGESTIONS",

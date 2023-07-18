@@ -344,11 +344,11 @@ class AutoResponders(Cog):
 
         try:
             async with async_timeout.timeout(delay=1):
-                template = await self.bot.func(self.jinja_env.from_string, response)
                 try:
+                    template = await self.bot.func(self.jinja_env.from_string, response)
                     return await template.render_async(**variables)
                 except Exception as e:
-                    return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
+                    return f"Gave up executing autoresponder.\nReason: `{e.__class__.__name__}: {e}`"
         except asyncio.TimeoutError:
             return "Gave up executing autoresponder\nReason: `Execution took too long`"
 

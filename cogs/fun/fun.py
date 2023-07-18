@@ -2469,6 +2469,7 @@ class Fun(Cog):
                         "$set": {"game_reaction_test_time": end - start},
                         "$inc": {"game_reaction_test_played": 1},
                     },
+                    upsert=True,
                 )
 
     @commands.command(name="bottomify", aliases=["bottom"])

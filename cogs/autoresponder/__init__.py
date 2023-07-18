@@ -320,23 +320,24 @@ class AutoResponders(Cog):
 
             try:
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
-                    content = await self.execute_jinja(response, **variables)
+                    content = await self.execute_jinja(name, response, **variables)
                     if content:
                         await message.channel.send()
                         break
             except re.error:
                 if name == message.content:
-                    content = await self.execute_jinja(response, **variables)
+                    content = await self.execute_jinja(name, response, **variables)
                     if content:
                         await message.channel.send()
                         break
 
-    async def execute_jinja(self, response: str, *, from_auto_response: bool = True, **variables) -> Any:
+    async def execute_jinja(self, trigger: str, response: str, *, from_auto_response: bool = True, **variables) -> Any:
         if not hasattr(self, "jinja_env"):
             self.jinja_env = Environment(
                 enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True
             )
 
+        trigger = discord.utils.escape_mentions(trigger)
         executing_what = "autoresponder" if from_auto_response else "jinja2"
 
         try:
@@ -345,12 +346,12 @@ class AutoResponders(Cog):
                     template = await self.bot.func(self.jinja_env.from_string, response)
                     return_data = await template.render_async(**variables)
                     if len(return_data) > 1990:
-                        return f"Gave up executing {executing_what}.\nReason: `Response is too long`"
+                        return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Response is too long`"
                     return return_data
                 except Exception as e:
                     return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`"
         except asyncio.TimeoutError:
-            return f"Gave up executing {executing_what}\nReason: `Execution took too long`"
+            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Execution took too long`"
 
     @commands.command(name="jinja", aliases=["j2", "jinja2"])
     async def jinja(self, ctx: Context, *, code: str) -> None:
@@ -371,7 +372,7 @@ class AutoResponders(Cog):
                     variables.pop(name, None)
 
         try:
-            await ctx.reply(await self.execute_jinja(code, from_auto_response=False, **variables))
+            await ctx.reply(await self.execute_jinja("None", code, from_auto_response=False, **variables))
         except Exception as e:
             await ctx.reply(f"Gave up executing jinja2\n" f"Reason: `{e.__class__.__name__}: {e}`")
 

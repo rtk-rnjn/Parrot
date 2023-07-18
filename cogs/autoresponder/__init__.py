@@ -140,7 +140,7 @@ class AutoResponders(Cog):
 
     @autoresponder.command(name="ignore")
     async def autoresponder_ignore(self, ctx: Context, name: str, entity: Union[discord.Role, discord.TextChannel]) -> None:
-        """Ignore a role or member from an autoresponder."""
+        """Ignore a role or channel from an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
             await ctx.reply("An autoresponder with that name does not exist.")
             return
@@ -190,14 +190,7 @@ class AutoResponders(Cog):
         }
         await ctx.reply(f"Added autoresponder `{name}`.")
 
-    @autoresponder.command(
-        name="remove",
-        aliases=[
-            "delete",
-            "del",
-            "rm",
-        ],
-    )
+    @autoresponder.command(name="remove", aliases=["delete", "del", "rm"])
     async def autoresponder_remove(self, ctx: Context, name: str) -> None:
         """Remove an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -326,8 +319,6 @@ class AutoResponders(Cog):
                 break
 
             try:
-                name = re.escape(name.strip())
-
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
                     await message.channel.send(await self.execute_jinja(response, **variables))
                     break

@@ -27,6 +27,7 @@ class Environment(SandboxedEnvironment):
 
         return super().call_binop(context, operator, left, right)
 
+
 class AutoResponders(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
@@ -302,30 +303,24 @@ class AutoResponders(Cog):
 
             response = data["response"]
 
-            bucket = self.cooldown.get_bucket(message)
-            exceeded_bucket = self.exceeded_cooldown.get_bucket(message)
-            if exceeded_bucket.update_rate_limit():  # type: ignore
-                break
-
-            if retry_after := bucket.update_rate_limit():  # type: ignore
-                await message.channel.send(
-                    f"Gave up executing autoresponder for `{message.author}` (ID: `{message.author.id}`)\n"
-                    f"Reason: Ratelimited. Try again in `{retry_after:.2f}` seconds."
-                )
-                break
-
+            content = None
             try:
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
                     content = await self.execute_jinja(name, response, **variables)
-                    if content:
-                        await message.channel.send(content)
-                        break
             except re.error:
                 if name == message.content:
                     content = await self.execute_jinja(name, response, **variables)
-                    if content:
-                        await message.channel.send(content)
-                        break
+
+            if content and (not self.is_ratelimited(message)):
+                await message.channel.send(content)
+
+    def is_ratelimited(self, message: discord.Message):
+        bucket = self.cooldown.get_bucket(message)
+        exceeded_bucket = self.exceeded_cooldown.get_bucket(message)
+        if exceeded_bucket.update_rate_limit():  # type: ignore
+            return True
+
+        return bool(bucket.update_rate_limit())  # type: ignore
 
     async def execute_jinja(self, trigger: str, response: str, *, from_auto_response: bool = True, **variables) -> Any:
         if not hasattr(self, "jinja_env"):

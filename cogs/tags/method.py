@@ -177,7 +177,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
     entries: List[str] = []
 
     async for data in collection.find({"owner": ctx.author.id, "guild_id": ctx.guild.id, "tag_id": {"$exists": True}}):
-        entries.append(f"{data['_id']}")
+        entries.append(f"{data['tag_id']}")
     try:
         return await ctx.paginate(entries, module="SimplePages")
     except IndexError:

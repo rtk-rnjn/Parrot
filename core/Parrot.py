@@ -336,6 +336,7 @@ class Parrot(commands.AutoShardedBot):
         self.dictionary: MongoCollection = self.main_db["dictionary"]
         self.afk_collection: MongoCollection = self.main_db["afkCollection"]
         self.tags_collection: MongoCollection = self.main_db["tagsCollection"]
+        self.auto_responders: MongoCollection = self.main_db["autoResponders"]
 
         # User Message DB
         self.user_message_db: MongoDatabase = self.mongo["userMessageDB"]

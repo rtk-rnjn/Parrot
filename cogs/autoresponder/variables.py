@@ -133,20 +133,20 @@ class Variables:
 
     async def _get_db(self, key: str):
         """Get the database"""
-        data = await self.__bot.extra_collections.find_one({"_id": self.__message.guild.id, key: {"$exists": True}})  # type: ignore
+        data = await self.__bot.auto_responders.find_one({"_id": self.__message.guild.id, key: {"$exists": True}})  # type: ignore
         return data[key] if data else None
 
     async def _set_db(self, key: str, value: Any):
         """Set the database"""
-        await self.__bot.extra_collections.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}}, upsert=True)  # type: ignore
+        await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}}, upsert=True)  # type: ignore
 
     async def _delete_db(self, key: str):
         """Delete the database"""
-        await self.__bot.extra_collections.update_one({"_id": self.__message.guild.id}, {"$unset": {key: ""}})  # type: ignore
+        await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$unset": {key: ""}})  # type: ignore
 
     async def _update_db(self, key: str, value: Any):
         """Update the database"""
-        await self.__bot.extra_collections.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}})  # type: ignore
+        await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}})  # type: ignore
 
 
 # print(dir(Variables))

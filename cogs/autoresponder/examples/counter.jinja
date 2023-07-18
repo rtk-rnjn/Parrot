@@ -1,0 +1,32 @@
+{# CONFIGURATION OF COUNTING CHANNEL #}
+{% set counting_channel = CHANNEL_ID_HERE %}
+{# END OF CONFIGURATION #}
+
+{# ACTUAL CODE BELOW #}
+
+{# CHECK IF THE MESSAGE IS IN THE COUNTING CHANNEL #}
+{% if message_channel_id == counting_channel %}
+
+    {# GET THE CURRENT NUMBER #}
+    {% set current_number = get_db(counting_channel) %}
+    
+    {# IF THE CURRENT NUMBER IS NULL, SET IT TO 0 #}
+    {% if current_number == null %}
+        {% set current_number = 0 %}
+    {% endif %}
+
+    {# CHECK IF THE MESSAGE IS A NUMBER #}
+    {% set user_number = message_content | int %}
+
+    {# CHECK IF THE MESSAGE IS THE NEXT NUMBER #}
+    {% if user_number == current_number + 1 %}
+
+        {# SET THE CURRENT NUMBER TO THE NEW NUMBER #}
+        {% set new_number = current_number + 1 %}
+
+        {# SET THE NEW NUMBER IN THE DATABASE #}
+        {% set db = set_db(counting_channel, new_number) %}
+    
+    {# IF THE MESSAGE IS NOT THE NEXT NUMBER, DELETE IT #}
+    {% else %}
+        {{ delete_trigger() }}

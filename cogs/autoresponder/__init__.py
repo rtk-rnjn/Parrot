@@ -320,12 +320,16 @@ class AutoResponders(Cog):
 
             try:
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
-                    await message.channel.send(await self.execute_jinja(response, **variables))
-                    break
+                    content = await self.execute_jinja(response, **variables)
+                    if content:
+                        await message.channel.send()
+                        break
             except re.error:
                 if name == message.content:
-                    await message.channel.send(await self.execute_jinja(response, **variables))
-                    break
+                    content = await self.execute_jinja(response, **variables)
+                    if content:
+                        await message.channel.send()
+                        break
 
     async def execute_jinja(self, response: str, *, from_auto_response: bool = True, **variables) -> Any:
         if not hasattr(self, "jinja_env"):
@@ -359,10 +363,12 @@ class AutoResponders(Cog):
         variables = Variables(message=ctx.message, bot=self.bot)
         variables = variables.build_base()
 
-        # Pop all functions
-        for name, func in inspect.getmembers(variables):
-            if inspect.ismethod(func) or inspect.isfunction(func):
-                variables.pop(name, None)
+        owner = await self.bot.is_owner(ctx.author)
+
+        if not owner:
+            for name, func in inspect.getmembers(variables):
+                if inspect.ismethod(func) or inspect.isfunction(func):
+                    variables.pop(name, None)
 
         try:
             await ctx.reply(await self.execute_jinja(code, from_auto_response=False, **variables))

@@ -336,11 +336,13 @@ class AutoResponders(Cog):
                     await message.channel.send(await self.execute_jinja(response, **variables))
                     break
 
-    async def execute_jinja(self, response: str, **variables) -> Any:
+    async def execute_jinja(self, response: str, *, from_auto_response: bool = True, **variables) -> Any:
         if not hasattr(self, "jinja_env"):
             self.jinja_env = Environment(
                 enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True
             )
+
+        executing_what = "autoresponder" if from_auto_response else "jinja2"
 
         try:
             async with async_timeout.timeout(delay=1):
@@ -348,9 +350,9 @@ class AutoResponders(Cog):
                     template = await self.bot.func(self.jinja_env.from_string, response)
                     return await template.render_async(**variables)
                 except Exception as e:
-                    return f"Gave up executing autoresponder.\nReason: `{e.__class__.__name__}: {e}`"
+                    return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`"
         except asyncio.TimeoutError:
-            return "Gave up executing autoresponder\nReason: `Execution took too long`"
+            return f"Gave up executing {executing_what}\nReason: `Execution took too long`"
 
     @commands.command(name="jinja", aliases=["j2", "jinja2"])
     async def jinja(self, ctx: Context, *, code: str) -> None:
@@ -369,9 +371,9 @@ class AutoResponders(Cog):
                 variables.pop(name, None)
 
         try:
-            await ctx.reply(await self.execute_jinja(code, **variables))
+            await ctx.reply(await self.execute_jinja(code, from_auto_response=False, **variables))
         except Exception as e:
-            await ctx.reply(f"Gave up executing jinja2 code\n" f"Reason: `{e.__class__.__name__}: {e}`")
+            await ctx.reply(f"Gave up executing jinja2\n" f"Reason: `{e.__class__.__name__}: {e}`")
 
 
 async def setup(bot: Parrot) -> None:

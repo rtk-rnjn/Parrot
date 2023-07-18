@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import io
 import itertools
+import os
 import random
 import re
 import unicodedata
@@ -168,8 +170,8 @@ class Sector1729(Cog):
         if member is None and not isinstance(member, discord.Member):
             return
 
-        await member.add_roles(discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg")  # type: ignore
-        await self.__add_to_db(member)  # type: ignore
+        await member.add_roles(discord.Object(id=VOTER_ROLE_ID), reason="Voted for the bot on Top.gg")
+        await self.__add_to_db(member)
 
     @Cog.listener("on_member_join")
     async def on_member_join(self, member: discord.Member):
@@ -601,3 +603,17 @@ class Sector1729(Cog):
         await ctx.tick()
 
         await ctx.reply(f"Adjective removed, Total count: {len(self.adjectives)}")
+
+    @commands.command()
+    async def removebg(self, ctx: Context, *, url: str):
+        """To remove the background from image"""
+        async with self.bot.http_session.get(url) as img:
+            imgdata = io.BytesIO(await img.read())
+
+        response = await self.bot.http_session.post(
+            "https://api.remove.bg/v1.0/removebg",
+            data={"size": "auto", "image_file": imgdata},
+            headers={"X-Api-Key": f'{os.environ["REMOVE_BG"]}'},
+        )
+        img = io.BytesIO(await response.read())
+        await ctx.send(file=discord.File(img, "nobg.png"))

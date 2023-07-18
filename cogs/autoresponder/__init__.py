@@ -322,13 +322,13 @@ class AutoResponders(Cog):
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
                     content = await self.execute_jinja(name, response, **variables)
                     if content:
-                        await message.channel.send()
+                        await message.channel.send(content)
                         break
             except re.error:
                 if name == message.content:
                     content = await self.execute_jinja(name, response, **variables)
                     if content:
-                        await message.channel.send()
+                        await message.channel.send(content)
                         break
 
     async def execute_jinja(self, trigger: str, response: str, *, from_auto_response: bool = True, **variables) -> Any:

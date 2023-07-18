@@ -291,20 +291,6 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         elif channel_member.lower() in ("members",):
             await PaginationView(em_list_member).start(ctx=ctx)
 
-    @commands.command()
-    async def removebg(self, ctx: Context, *, url: str):
-        """To remove the background from image"""
-        async with self.bot.http_session.get(url) as img:
-            imgdata = io.BytesIO(await img.read())
-
-        response = await self.bot.http_session.post(
-            "https://api.remove.bg/v1.0/removebg",
-            data={"size": "auto", "image_file": imgdata},
-            headers={"X-Api-Key": f'{os.environ["REMOVE_BG"]}'},
-        )
-        img = io.BytesIO(await response.read())
-        await ctx.send(file=discord.File(img, "nobg.png"))
-
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
     async def auditlog(self, ctx: Context, *, args: AuditFlag):

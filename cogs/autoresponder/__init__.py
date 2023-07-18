@@ -342,6 +342,7 @@ class AutoResponders(Cog):
                     return_data = await template.render_async(**variables)
                     if len(return_data) > 1990:
                         return f"Gave up executing {executing_what}.\nReason: `Response is too long`"
+                    return return_data
                 except Exception as e:
                     return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`"
         except asyncio.TimeoutError:

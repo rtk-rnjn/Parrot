@@ -344,7 +344,7 @@ class AutoResponders(Cog):
 
         try:
             async with async_timeout.timeout(delay=1):
-                template = self.jinja_env.from_string(response)
+                template = await self.bot.func(self.jinja_env.from_string, response)
                 try:
                     return await template.render_async(**variables)
                 except Exception as e:

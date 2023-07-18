@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import difflib
 import inspect
 import re
 from typing import Annotated, Any, Optional, Union
 
+import async_timeout
 from jinja2.sandbox import SandboxedEnvironment
 
 import discord
@@ -340,11 +342,15 @@ class AutoResponders(Cog):
                 enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True
             )
 
-        template = self.jinja_env.from_string(response)
         try:
-            return await template.render_async(**variables)
-        except Exception as e:
-            return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
+            async with async_timeout.timeout(delay=1):
+                template = self.jinja_env.from_string(response)
+                try:
+                    return await template.render_async(**variables)
+                except Exception as e:
+                    return f"Gave up executing autoresponder\n" f"Reason: `{e.__class__.__name__}: {e}`"
+        except asyncio.TimeoutError:
+            return "Gave up executing autoresponder\nReason: `Execution took too long`"
 
     @commands.command(name="jinja", aliases=["j2", "jinja2"])
     async def jinja(self, ctx: Context, *, code: str) -> None:

@@ -2452,14 +2452,24 @@ class Fun(Cog):
 
         await confirm.edit(content=f"{ctx.author.mention} reacted on {end-start:.2f}s")
 
-        await self.bot.game_collections.update_one(
-            {"_id": ctx.author.id, "game_reaction_test_time": {"$lte": end - start}},
-            {
-                "$set": {"game_reaction_test_time": end - start},
-                "$inc": {"game_reaction_test_played": 1},
-            },
-            upsert=True,
-        )
+        data = await self.bot.game_collections.find_one({"_id": ctx.author.id})
+        if not data:
+            await self.bot.game_collections.insert_one(
+                {
+                    "_id": ctx.author.id,
+                    "game_reaction_test_time": end - start,
+                    "game_reaction_test_played": 1,
+                }
+            )
+        else:
+            if data.get("game_reaction_test_time", 0) > end - start:
+                await self.bot.game_collections.update_one(
+                    {"_id": ctx.author.id},
+                    {
+                        "$set": {"game_reaction_test_time": end - start},
+                        "$inc": {"game_reaction_test_played": 1},
+                    },
+                )
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):

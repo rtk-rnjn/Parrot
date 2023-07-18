@@ -48,6 +48,7 @@ class Variables:
             "set_db": self.set_db,
             "delete_db": self.delete_db,
             "update_db": self.update_db,
+            "multiply": self.multiply,
         }
 
     @property
@@ -147,6 +148,11 @@ class Variables:
     async def _update_db(self, key: str, value: Any):
         """Update the database"""
         await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}})  # type: ignore
+
+    def multiply(self, a: int, b: int):
+        if max(a, b) > 1000000:
+            raise ValueError("The number is too big")
+        return a * b
 
 
 # print(dir(Variables))

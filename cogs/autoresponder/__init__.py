@@ -18,18 +18,14 @@ from .variables import Variables
 
 
 class Environment(SandboxedEnvironment):
-    intercepted_binops = frozenset(["//", "%", "**", "<<", ">>", "&", "^", "|"])
-
-    def make_globals(self, *args, **kwargs):
-        return super().make_globals(*args, **kwargs)
+    intercepted_binops = frozenset(["//", "%", "**", "<<", ">>", "&", "^", "|", "*"])
 
     def call_binop(self, context, operator: str, left, right):
-        disabled_operators = ["//", "%", "**", "<<", ">>", "&", "^", "|"]
+        disabled_operators = ["//", "%", "**", "<<", ">>", "&", "^", "|", "*"]
         if operator in disabled_operators:
             return self.undefined(f"Undefined binary operator: {operator}", name=operator)
 
         return super().call_binop(context, operator, left, right)
-
 
 class AutoResponders(Cog):
     def __init__(self, bot: Parrot):

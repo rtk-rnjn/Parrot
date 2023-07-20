@@ -1034,6 +1034,9 @@ class Parrot(commands.AutoShardedBot):
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
+        if isinstance(guild_id, discord.Guild):
+            guild_id = guild_id.id
+
         await self.__update_server_config_cache(guild_id)
 
     async def __update_server_config_cache(self, guild_id: int):

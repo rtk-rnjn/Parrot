@@ -116,7 +116,7 @@ class DefconListeners(Cog):
 
     @Cog.listener("on_audit_log_entry_create")
     async def audit_member_update(self, entry: discord.AuditLogEntry) -> None:
-        if entry.action != discord.AuditLogAction.member_update:
+        if entry.action != discord.AuditLogAction.member_role_update:
             return
 
         defcon = self.has_defcon_in(entry.guild)

@@ -97,8 +97,8 @@ class DefensiveCondition(Cog):
         channel_hidded = []
         settings = DEFCON_SETTINGS[level]["SETTINGS"]
         if settings.get("HIDE_CHANNELS"):
-            for channel in ctx.guild.text_channels:
-                if channel.overwrites_for(ctx.guild.default_role).read_messages:
+            for channel in ctx.guild.channels:
+                if channel.permissions_for(ctx.guild.default_role).read_messages:
                     try:
                         overwrite = channel.overwrites_for(ctx.guild.default_role)
                         overwrite.update(read_messages=False)
@@ -122,7 +122,7 @@ class DefensiveCondition(Cog):
         channel_locked = []
         if settings.get("LOCK_VOICE_CHANNELS"):
             for channel in ctx.guild.voice_channels:
-                if channel.overwrites_for(ctx.guild.default_role).connect:
+                if channel.permissions_for(ctx.guild.default_role).connect:
                     try:
                         overwrite = channel.overwrites_for(ctx.guild.default_role)
                         overwrite.update(connect=False)
@@ -138,7 +138,7 @@ class DefensiveCondition(Cog):
 
         if settings.get("LOCK_TEXT_CHANNELS"):
             for channel in ctx.guild.text_channels:
-                if channel.overwrites_for(ctx.guild.default_role).send_messages:
+                if channel.permissions_for(ctx.guild.default_role).send_messages:
                     try:
                         overwrite = channel.overwrites_for(ctx.guild.default_role)
                         overwrite.update(send_messages=False)

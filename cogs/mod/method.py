@@ -448,20 +448,26 @@ async def _mute(
     silent: bool = False,
     **kwargs: Any,
 ):
-    if ctx.author.top_role.position < member.top_role.position and not silent:
+    if ctx.author.top_role.position < member.top_role.position:
+        if silent:
+            return
+
         raise commands.BadArgument(
             f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         )
-    if member.id in (ctx.author.id, guild.me.id) and not silent:
+    if member.id in (ctx.author.id, guild.me.id):
+        if silent:
+            return
+
         await destination.send(f"{ctx.author.mention} don't do that, Bot is only trying to help")
         return
 
-    muted = await ctx.muterole()
+    muted = await ctx.muterole() if ctx else await Context.get_mute_role(ctx.bot, guild)
 
     if not muted:
         muted = await guild.create_role(
             name="Muted",
-            reason=f"Setting up mute role. it's first command is execution, by {ctx.author} ({ctx.author.id})",
+            reason="Setting up mute role",
             permissions=discord.Permissions(
                 send_messages=False,
                 add_reactions=False,

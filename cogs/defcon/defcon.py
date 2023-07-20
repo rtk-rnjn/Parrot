@@ -270,8 +270,7 @@ class DefensiveCondition(Cog):
                 except discord.Forbidden:
                     log.warning(f"Failed to reset slowmode in channel {channel.id} in guild {ctx.guild.id}")
 
-        cog: DefconListeners = self.bot.get_cog("DefconListeners")  # type: ignore
-        if cog:
+        if cog := self.bot.get_cog("DefconListeners"):
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(
                 text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url
             )
@@ -281,7 +280,7 @@ class DefensiveCondition(Cog):
                 f"`Channels With Slowmode `: **{slow_mode_count}**\n\n"
                 f"> **Use `defcon set` to set the defcon level.**"
             )
-            await cog.defcon_broadcast(embed, guild=ctx.guild, level=level)
+            await cog.defcon_broadcast(embed, guild=ctx.guild, level=level)  # type: ignore
 
     @defcon.command(name="set")
     @commands.has_permissions(manage_guild=True)
@@ -555,5 +554,5 @@ class DefensiveCondition(Cog):
 
     @Cog.listener()
     async def on_command(self, ctx: Context) -> None:
-        if ctx.cog and ctx.cog.qualified_name == "Defcon":
+        if ctx.cog and ctx.cog.qualified_name == "DefensiveCondition":
             self.bot.update_server_config_cache.start(ctx.guild.id)

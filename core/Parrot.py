@@ -350,6 +350,12 @@ class Parrot(commands.AutoShardedBot):
         # Guild DB
         self.guild_level_db: MongoDatabase = self.mongo["guildLevelDB"]
 
+        # AutoMod DB
+        self.automod_db: MongoDatabase = self.mongo["automodDB"]
+        self.automod_configurations: MongoCollection = self.automod_db["automodConfigurations"]
+        self.automod_logs: MongoCollection = self.automod_db["automodLogs"]
+        self.automod_voilations: MongoCollection = self.automod_db["automodVoilations"]
+
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
 

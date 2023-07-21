@@ -33,6 +33,7 @@ from qrcode.image.styles.moduledrawers import (
 )
 
 import discord
+import sympy
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
@@ -1019,7 +1020,7 @@ class Misc(Cog):
             return await do_command(ctx, equation, func=plotfn)
         except TypeError:
             await ctx.reply('Provided equation was invalid; the only variable present must be `x`')
-        except NameError as e:
+        except (NameError, ValueError) as e:
             await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; {e}')
-        except SyntaxError:
-            await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; check your syntax.')
+        except (SyntaxError, sympy.SympifyError, ZeroDivisionError) as e:
+            await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}')

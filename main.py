@@ -10,6 +10,7 @@ from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from core import Parrot
+from updater import init
 from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION
 
 bot: Parrot = Parrot()
@@ -29,6 +30,8 @@ async def main() -> None:
     async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as http_session:
         async with bot:
             bot.http_session = http_session
+            bot.sql = await init()
+            setattr(bot, "database", bot.sql)
 
             if not hasattr(bot, "__version__"):
                 bot.__version__ = VERSION
@@ -36,7 +39,7 @@ async def main() -> None:
             bot.mongo = AsyncIOMotorClient(
                 DATABASE_URI.format(DATABASE_KEY),
             )
-            bot.init_db()
+            await bot.init_db()
             await bot.start(TOKEN)
 
 

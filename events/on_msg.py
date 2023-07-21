@@ -462,6 +462,8 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
+        assert message.guild and isinstance(message.author, discord.Member)
+
         if not message.content:
             return
 
@@ -657,6 +659,14 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             r"(?:[A-z0-9](?:[A-z0-9-]{0,61}[A-z0-9])?\.)+[A-z0-9][A-z0-9-]{0,61}[A-z0-9]",
             message.content,
         )
+
+        for i in match_list:
+            cursor = await self.bot.sql.execute("""SELECT * FROM scam_links WHERE link = ?""", (i,))
+            if await cursor.fetchone():
+                await message.channel.send(
+                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{i}`",
+                )
+                return True
 
         if any(self.__scam_link_cache.get(i, False) for i in set(match_list)):
             with suppress(discord.Forbidden):

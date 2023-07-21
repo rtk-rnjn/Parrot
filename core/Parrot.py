@@ -35,6 +35,7 @@ from typing import (
 )
 
 import aiohttp
+import aiosqlite
 import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
@@ -199,6 +200,7 @@ class Parrot(commands.AutoShardedBot):
 
     http_session: ClientSession
     mongo: AsyncIOMotorClient  # type: ignore
+    sql: aiosqlite.Connection
 
     cogs: Mapping[str, Cog]
     extensions: Mapping[str, types.ModuleType]
@@ -320,7 +322,7 @@ class Parrot(commands.AutoShardedBot):
         self.__global_write_data: Dict[str, List[Union[pymongo.UpdateOne, pymongo.UpdateMany]]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
 
-    def init_db(self) -> None:
+    async def init_db(self) -> None:
         # MongoDB Database variables
         # Main DB
         self.main_db: MongoDatabase = self.mongo["mainDB"]
@@ -358,7 +360,7 @@ class Parrot(commands.AutoShardedBot):
 
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
-    
+
     @property
     def config(self) -> Cache:
         return self.guild_configurations_cache
@@ -477,8 +479,10 @@ class Parrot(commands.AutoShardedBot):
                     traceback.print_exc()
 
         self.timer_task = self.loop.create_task(self.dispatch_timers())
+
         self.global_write_data.start()
         self.update_banned_members.start()
+        self.update_scam_link_db.start()
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -659,6 +663,9 @@ class Parrot(commands.AutoShardedBot):
 
         if self.global_write_data.is_running():
             self.global_write_data.stop()
+        
+        if self.update_scam_link_db.is_running():
+            self.update_scam_link_db.stop()
 
         return await super().close()
 
@@ -1527,3 +1534,10 @@ class Parrot(commands.AutoShardedBot):
             return self.__global_write_data.get(db_col)
 
         return self.__global_write_data
+
+    @tasks.loop(hours=1)
+    async def update_scam_link_db(self):
+        from updater import insert_new
+
+        async with self.lock:
+            await insert_new(self.sql)

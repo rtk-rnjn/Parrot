@@ -4,6 +4,7 @@ aiofiles
 aiohttp
 aioredis
 aiosignal
+aiosqlite
 anyio
 arrow
 astroid

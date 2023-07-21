@@ -145,7 +145,6 @@ def plotfn(_: Context, equation: str, *, xrange: tuple[int, int] = (-20, 20)) ->
     x = symbols('x')
     equation = _clean_implicit_mul(equation)
     expr = sympify(equation)  # Convert equation string to a Sympy expression
-    print(expr)
     func = lambdify(x, expr)  # Create a function from the Sympy expression
 
     x_vals = np.linspace(*xrange, 500)

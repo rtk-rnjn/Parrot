@@ -1,0 +1,63 @@
+{
+    "actions": [
+        {
+            "type": "delete_message"
+        },
+        {
+            "type": "plus_voilation",
+            "name_of_voilation": "str"
+        },
+        {
+            "type": "minus_voilation",
+            "name_of_voilation": "str"
+        },
+        {
+            "type": "reset_voilations"
+        },
+        {
+            "type": "kick_user",
+            "msg": "str"
+        },
+        {
+            "type": "ban_user",
+            "msg": "str"
+        },
+        {
+            "type": "mute_user",
+            "duration": "str"
+        },
+        {
+            "type": "set_nickname",
+            "nickname": "str"
+        },
+        {
+            "type": "delete_multiple_messages",
+            "count": "int",
+            "max_age": "int"
+        },
+        {
+            "type": "enable_slowmode",
+            "duration": "int"
+        },
+        {
+            "type": "lock_channel",
+            "msg": "str"
+        },
+        {
+            "type": "give_role",
+            "duration": "int",
+            "role": "str"
+        },
+        {
+            "type": "remove_role",
+            "duration": "int",
+            "role": "str"
+        },
+        {
+            "type": "send_message",
+            "msg": "str",
+            "delete_after": "int",
+            "channel": "str"
+        }
+    ]
+}

@@ -1,0 +1,56 @@
+{
+    "conditions": [
+        {
+            "type": "ignore_roles",
+            "roles": "List[role]"
+        },
+        {
+            "type": "require_roles",
+            "roles": "List[role]"
+        },
+        {
+            "type": "ignore_channels",
+            "channels": "List[int]"
+        },
+        {
+            "type": "require_channels",
+            "channels": "List[int]"
+        },
+        {
+            "type": "account_age_below",
+            "age_in_min": "int"
+        },
+        {
+            "type": "account_age_above",
+            "age_in_min": "int"
+        },
+        {
+            "type": "server_member_duration_below",
+            "duration_in_min": "int"
+        },
+        {
+            "type": "server_member_duration_above",
+            "duration_in_min": "int"
+        },
+        {
+            "type": "ignore_bots"
+        },
+        {
+            "type": "require_bots"
+        },
+        {
+            "type": "ignore_categories",
+            "categories": "List[category]"
+        },
+        {
+            "type": "require_categories",
+            "categories": "List[category]"
+        },
+        {
+            "type": "new_message"
+        },
+        {
+            "type": "edited_message"
+        }
+    ]
+}

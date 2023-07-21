@@ -358,6 +358,10 @@ class Parrot(commands.AutoShardedBot):
 
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
+    
+    @property
+    def config(self) -> Cache:
+        return self.guild_configurations_cache
 
     @property
     def server(self) -> Optional[discord.Guild]:

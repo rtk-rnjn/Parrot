@@ -1,17 +1,25 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
+from discord.interactions import Interaction
 
 import discord
 
 if TYPE_CHECKING:
     from . import Context
 
-__all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView")
+__all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView", "ParrotModal")
 
 
 class ParrotItem(discord.ui.Item):
     ...
+
+
+class ParrotModal(discord.ui.Modal):
+    async def on_error(self, interaction: Interaction, error: Exception):
+        interaction.client.dispatch("error", error, interaction, self)
+        await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
 
 
 class ParrotView(discord.ui.View):
@@ -65,7 +73,7 @@ class ParrotView(discord.ui.View):
                 item.disabled = True
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item) -> None:
-        interaction.client.dispatch("error", error, interaction, item)
+        interaction.client.dispatch("error", error, interaction, item, self)
         await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
 
 
@@ -82,8 +90,25 @@ class ParrotButton(discord.ui.Button["ParrotView"]):
 
 
 class ParrotSelect(discord.ui.Select["ParrotView"]):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        *,
+        custom_id: str = discord.utils.MISSING,
+        placeholder: str = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        options: List[discord.SelectOption] = discord.utils.MISSING,
+        row: int = 0,
+        **kwargs,
+    ):
+        super().__init__(
+            custom_id=custom_id,
+            placeholder=placeholder,
+            min_values=min_values,
+            max_values=max_values,
+            options=options,
+            row=row,
+        )
         self.callback_function = kwargs.get("callback")
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -91,6 +116,10 @@ class ParrotSelect(discord.ui.Select["ParrotView"]):
             await self.callback_function(interaction)
         else:
             await interaction.response.defer()
+
+    def set_callback(self, callback) -> ParrotSelect:
+        self.callback_function = callback
+        return self
 
 
 class ParrotLinkView(discord.ui.View):

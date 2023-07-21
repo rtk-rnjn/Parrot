@@ -131,4 +131,19 @@ post: Dict[str, Any] = {
         #     "ignore_channel": [],
         # }
     },
+    "default_defcon": {
+        "enabled": False,
+        "level": 0,
+        "trustables": {
+            "roles": [],
+            "members": [],
+            "members_with_admin": True,
+        },
+        "locked_channels": [],
+        "hidden_channels": [],
+        "broadcast": {
+            "enabled": False,
+            "channel": None,
+        },
+    },
 }

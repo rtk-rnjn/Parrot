@@ -1,0 +1,136 @@
+{
+    "triggers": [
+        {
+            "type": "all_caps",
+            "threshold": "int",
+            "percentage": "float"
+        },
+        {
+            "type": "message_mentions",
+            "threshold": "int"
+        },
+        {
+            "type": "any_link"
+        },
+        {
+            "type": "voilation",
+            "voilation_name": "str",
+            "threshold": "int",
+            "within": "int"
+        },
+        {
+            "type": "word_blacklist",
+            "words": "List[str]"
+        },
+        {
+            "type": "word_whitelist",
+            "words": "List[str]"
+        },
+        {
+            "type": "server_invites"
+        },
+        {
+            "type": "scam_links"
+        },
+        {
+            "type": "x_user_messages_in_y_seconds",
+            "messages": "int",
+            "within": "int"
+        },
+        {
+            "type": "x_channel_messages_in_y_seconds",
+            "messages": "int",
+            "within": "int"
+        },
+        {
+            "type": "user_x_mentions_in_y_seconds",
+            "mentions": "int",
+            "within": "int"
+        },
+        {
+            "type": "channel_x_mentions_in_y_seconds",
+            "mentions": "int",
+            "within": "int"
+        },
+        {
+            "type": "message_match_regex",
+            "regex": "str"
+        },
+        {
+            "type": "message_not_match_regex",
+            "regex": "str"
+        },
+        {
+            "type": "nickname_match_regex",
+            "regex": "str"
+        },
+        {
+            "type": "nickname_not_match_regex",
+            "regex": "str"
+        },
+        {
+            "type": "nickname_word_blacklist",
+            "words": "List[str]"
+        },
+        {
+            "type": "nickname_word_whitelist",
+            "words": "List[str]"
+        },
+        {
+            "type": "x_user_attachments_in_y_seconds",
+            "attachments": "int",
+            "within": "int"
+        },
+        {
+            "type": "x_channel_attachments_in_y_seconds",
+            "attachments": "int",
+            "within": "int"
+        },
+        {
+            "type": "join_username_match_regex",
+            "regex": "str"
+        },
+        {
+            "type": "join_username_not_match_regex",
+            "regex": "str"
+        },
+        {
+            "type": "join_username_word_blacklist",
+            "words": "List[str]"
+        },
+        {
+            "type": "join_username_word_whitelist",
+            "words": "List[str]"
+        },
+        {
+            "type": "join_username_invite"
+        },
+        {
+            "type": "new_member_join"
+        },
+        {
+            "type": "message_without_attachments"
+        },
+        {
+            "type": "message_with_attachments"
+        },
+        {
+            "type": "message_with_more_than_x_characters",
+            "characters": "int"
+        },
+        {
+            "type": "message_with_less_than_x_characters",
+            "characters": "int"
+        },
+        {
+            "type": "x_user_links_in_y_seconds",
+            "links": "int",
+            "within": "int"
+        },
+        {
+            "type": "x_channel_links_in_y_seconds",
+            "links": "int",
+            "within": "int"
+        }
+    ]
+}

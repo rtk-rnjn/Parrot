@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 from itertools import zip_longest
 from typing import Annotated, Any, Dict, Optional, Union
-
+from random import random
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -12,15 +12,37 @@ from utilities.formats import TabularData
 
 REACTION_EMOJI = ["\N{UPWARDS BLACK ARROW}", "\N{DOWNWARDS BLACK ARROW}"]
 
-
+# fmt: off
 OTHER_REACTION = {
     "INVALID": {"emoji": "\N{WARNING SIGN}", "color": 0xFFFFE0},
+    "NOTVALIDATED": {"emoji": "\N{WARNING SIGN}", "color": 0xFFFFE0},
+    "NOTVALID": {"emoji": "\N{WARNING SIGN}", "color": 0xFFFFE0},
+    "NOT VALID": {"emoji": "\N{WARNING SIGN}", "color": 0xFFFFE0},
+
     "ABUSE": {"emoji": "\N{DOUBLE EXCLAMATION MARK}", "color": 0xFFA500},
+    "SPAM": {"emoji": "\N{DOUBLE EXCLAMATION MARK}", "color": 0xFFA500},
+
     "INCOMPLETE": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+    "NEEDINFO": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+    "MOREINFO": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+    "WHAT?": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+    "NEED INFO": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+    "MORE INFO": {"emoji": "\N{WHITE QUESTION MARK ORNAMENT}", "color": 0xFFFFFF},
+
     "DECLINE": {"emoji": "\N{CROSS MARK}", "color": 0xFF0000},
+    "DENY": {"emoji": "\N{CROSS MARK}", "color": 0xFF0000},
+    "REJECT": {"emoji": "\N{CROSS MARK}", "color": 0xFF0000},
+
     "APPROVED": {"emoji": "\N{WHITE HEAVY CHECK MARK}", "color": 0x90EE90},
+    "OK": {"emoji": "\N{WHITE HEAVY CHECK MARK}", "color": 0x90EE90},
+    "ACCEPT": {"emoji": "\N{WHITE HEAVY CHECK MARK}", "color": 0x90EE90},
+    "ALRIGHT": {"emoji": "\N{WHITE HEAVY CHECK MARK}", "color": 0x90EE90},
+
     "DUPLICATE": {"emoji": "\N{HEAVY EXCLAMATION MARK SYMBOL}", "color": 0xDDD6D5},
+    "COPY": {"emoji": "\N{HEAVY EXCLAMATION MARK SYMBOL}", "color": 0xDDD6D5},
+    "SAME": {"emoji": "\N{HEAVY EXCLAMATION MARK SYMBOL}", "color": 0xDDD6D5},
 }
+# fmt: on
 
 
 class Suggestions(Cog):
@@ -168,7 +190,11 @@ class Suggestions(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True, create_public_threads=True)
     async def suggest(self, ctx: Context, *, suggestion: Annotated[str, commands.clean_content]):
-        """Suggest something. Abuse of the command may result in required mod actions"""
+        """Suggest something. Abuse of the command may result in required mod actions
+        
+        **Examples:**
+        - `[p]suggest This is really nice suggestion`
+        """
 
         if not ctx.invoked_subcommand:
             embed = discord.Embed(description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6)
@@ -191,11 +217,15 @@ class Suggestions(Cog):
             await self.__notify_on_suggestion(ctx, message=msg)
             await ctx.message.delete(delay=0)
 
-    @suggest.command(name="delete")
+    @suggest.command(name="delete", aliases=["del", "remove", "rm"])
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(read_message_history=True)
+    @commands.bot_has_permissions(read_message_history=True, manage_channels=True, manage_messages=True)
     async def suggest_delete(self, ctx: Context, *, message_id: int):
-        """To delete the suggestion you suggested"""
+        """To delete the suggestion you suggested
+        
+        **Examples:**
+        - `[p]suggest delete 123456789`
+        """
 
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
@@ -214,10 +244,17 @@ class Suggestions(Cog):
         await msg.delete(delay=0)
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
 
+        if thread := ctx.guild.get_thread(message_id):
+            await thread.delete()
+
     @suggest.command(name="stats", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_status(self, ctx: Context, *, message_id: int):
-        """To get the statistics os the suggestion"""
+        """To get the statistics os the suggestion
+        
+        **Examples:**
+        - `[p]suggest stats 123456789`
+        """
 
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
@@ -245,18 +282,28 @@ class Suggestions(Cog):
     @suggest.command(name="resolved")
     @commands.bot_has_guild_permissions(manage_threads=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    async def suggest_resolved(self, ctx: Context, *, thread_id: int):
-        """To mark the suggestion as resolved"""
+    async def suggest_resolved(self, ctx: Context, *, message_id: int):
+        """To mark the suggestion as resolved. This will archive the thread and lock it.
+        
+        **Examples:**
+        - `[p]suggest resolved 123456789`
+        """
+        thread_id = message_id
         msg: Optional[discord.Message] = await self.get_or_fetch_message(thread_id, guild=ctx.guild)
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:  # type: ignore
             return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
         thread: discord.Thread = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id)
+        if thread.locked and thread.archived:
+            await ctx.send(f"{ctx.author.mention} This suggestion is already resolved", delete_after=5)
+            return
+
         if not msg or not thread:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid"
             )
+        await thread.send("This suggestion has been resolved")
         await thread.edit(
             archived=True,
             locked=True,
@@ -267,7 +314,11 @@ class Suggestions(Cog):
     @suggest.command(name="note", aliases=["remark"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, message_id: int, *, remark: str):
-        """To add a note in suggestion embed"""
+        """To add a note in suggestion embed. This will be visible to the user who suggested
+        
+        **Examples:**
+        - `[p]suggest note 123456789 This is a note`
+        """
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
@@ -293,7 +344,11 @@ class Suggestions(Cog):
         ctx: Context,
         message_id: int,
     ):
-        """To remove all kind of notes and extra reaction from suggestion embed"""
+        """To remove all kind of notes and extra reaction from suggestion embed.
+        
+        **Examples:**
+        - `[p]suggest clear 123456789`
+        """
 
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
@@ -314,16 +369,20 @@ class Suggestions(Cog):
 
     @suggest.command(name="flag")
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
-    async def suggest_flag(self, ctx: Context, message_id: int, flag: str):
+    async def suggest_flag(self, ctx: Context, message_id: int, flag: str, *, remark: str = ""):
         """To flag the suggestion.
 
         Avalibale Flags :-
-        - INVALID
-        - ABUSE
-        - INCOMPLETE
-        - DECLINE
-        - APPROVED
-        - DUPLICATE
+        - INVALID / NOTVALIDATED / NOTVALID / NOT VALID
+        - ABUSE / SPAM
+        - INCOMPLETE / NEEDINFO / MOREINFO / WHAT? / NEED INFO / MORE INFO
+        - DECLINE / DENY / REJECT
+        - APPROVED / OK / ACCEPT / ALRIGHT
+        - DUPLICATE / COPY / SAME
+
+        **Examples:**
+        - `[p]suggest flag 123456789 INVALID`
+        - `[p]suggest flag 123456789 INVALID This is a remark`
         """
 
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
@@ -345,14 +404,24 @@ class Suggestions(Cog):
         embed.color = payload["color"]  # type: ignore
 
         user_id = int(embed.footer.text.split(":")[1])  # type: ignore
+        if remark:
+            embed.clear_fields()
+            embed.add_field(name="Remark", value=remark[:250])
+
         user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, user_id)
-        await self.__notify_user(ctx, user, message=msg, remark="")
+        await self.__notify_user(ctx, user, message=msg, remark=remark)
 
         content = f"Flagged: {flag} | {payload['emoji']}"
         new_msg = await msg.edit(content=content, embed=embed)
         self.message[new_msg.id]["message"] = new_msg
 
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
+
+        if random() < 0.05:
+            await ctx.send(
+                f"{ctx.author.mention} btw, you can also flag the suggestion by replying the message with the proper FLAG.\n"
+                f"Like: `INVALID > This is a remark`, `SPAM`"
+            )
 
     @Cog.listener(name="on_raw_message_delete")
     async def suggest_msg_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
@@ -416,8 +485,12 @@ class Suggestions(Cog):
 
         if not self.__is_mod(message.author):
             return
+        
+        command, remark = message.content.split(">", 1)
+        command = command.strip().upper()
+        remark = remark.strip() or ""
 
-        if message.content.upper() in OTHER_REACTION:
+        if command in OTHER_REACTION:
             context: Context = await self.bot.get_context(message, cls=Context)
             # cmd: commands.Command = self.bot.get_command("suggest flag")
 
@@ -432,8 +505,7 @@ class Suggestions(Cog):
             if msg.author.id != self.bot.user.id:
                 return
 
-            # await context.invoke(cmd, msg.id, message.content.upper())
-            await self.suggest_flag(context, msg.id, message.content.upper())
+            await self.suggest_flag(context, msg.id, command, remark=remark)
             return True
 
     def __is_mod(self, member: discord.Member) -> bool:

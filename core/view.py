@@ -117,7 +117,7 @@ class ParrotButton(discord.ui.Button["ParrotView"]):
         return self
 
 
-class ParrotSelect(discord.ui.Select["ParrotView"]):
+class ParrotSelect(discord.ui.Select):
     def __init__(
         self,
         *,
@@ -141,7 +141,7 @@ class ParrotSelect(discord.ui.Select["ParrotView"]):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if self.callback_function:
-            await self.callback_function(interaction)
+            await self.callback_function(self, interaction)
         else:
             await interaction.response.defer()
 

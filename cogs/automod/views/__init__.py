@@ -4,6 +4,7 @@ import json
 from typing import Dict, List
 
 import discord
+from discord.interactions import Interaction
 from core import Context, Parrot, ParrotButton, ParrotModal, ParrotSelect, ParrotView
 
 ACTION_PATH = "cogs/automod/templates/actions.json"
@@ -54,20 +55,50 @@ class Automod(ParrotView):
 
 
 def get_action_item() -> ParrotSelect:
+    options = [
+        discord.SelectOption(
+            label=action["type"].replace("_", " ").title(),
+            value=f"{action}",  # dict -> str
+        )
+        for action in ACTIONS["actions"]
+    ]
+
+    async def callback(self: ParrotSelect, interaction: discord.Interaction) -> None:
+        assert self.view is not None
+
+        await interaction.response.send_modal(ActionModal(data=self.view.values[0]))
+
     return ParrotSelect(
         placeholder="Select an action",
-        options=[
-            discord.SelectOption(label=action["type"].replace("_", " ").title(), value=action["type"])
-            for action in ACTIONS["actions"]
-        ],
+        options=options,
+        max_values=1,
+        min_values=1,
+    ).set_callback(callback)
+
+
+def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
+    return discord.ui.TextInput(
+        placeholder=f"Enter {name.replace('_', ' ').title()}",
+        custom_id=f"{name}_{value}",
+        label=name.replace("_", " ").title(),
     )
 
 
-class ActionModal(ParrotModal):
-    def __init__(self, *, title: str = "Action Modal", **kw) -> None:
-        super().__init__(title=title, **kw)
-
+class ActionView(ParrotView):
+    def __init__(self) -> None:
+        super().__init__()
         self.add_item(get_action_item())
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        await interaction.response.defer()
+
+class ActionModal(ParrotModal):
+    def __init__(self, *, data: str, **kw) -> None:
+        d: dict = json.loads(data)
+
+        super().__init__(title=d.pop('type'), **kw)
+        self.data = d
+
+        for k in d:
+            self.add_item(get_text_input(name=k, value=d[k]))
+
+    async def on_submit(self, interaction: Interaction) -> None:
+        pass

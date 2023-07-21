@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import json
-from typing import List
+from typing import Dict, List
 
 import discord
-from core import Context, Parrot, ParrotButton, ParrotSelect, ParrotView, ParrotModal
+from core import Context, Parrot, ParrotButton, ParrotModal, ParrotSelect, ParrotView
 
 ACTION_PATH = "cogs/automod/templates/actions.json"
 
 with open(ACTION_PATH, "r") as f:
-    ACTIONS = json.load(f)
+    ACTIONS: Dict[str, List[Dict[str, str]]] = json.load(f)
 
 
 class Automod(ParrotView):
@@ -53,24 +53,21 @@ class Automod(ParrotView):
         pass
 
 
-def get_action_items() -> List[ParrotSelect]:
-    return [
-        ParrotSelect(
-            placeholder="Select an action",
-            options=[
-                discord.SelectOption(label=action["type"].replace("_", " ").title(), value=action["type"])
-                for action in ACTIONS
-            ],
-        )
-    ]
+def get_action_item() -> ParrotSelect:
+    return ParrotSelect(
+        placeholder="Select an action",
+        options=[
+            discord.SelectOption(label=action["type"].replace("_", " ").title(), value=action["type"])
+            for action in ACTIONS["actions"]
+        ],
+    )
 
 
 class ActionModal(ParrotModal):
     def __init__(self, *, title: str = "Action Modal", **kw) -> None:
         super().__init__(title=title, **kw)
-    
-        for item in get_action_items():
-            self.add_item(item)
-    
+
+        self.add_item(get_action_item())
+
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()

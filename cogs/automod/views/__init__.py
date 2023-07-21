@@ -66,8 +66,8 @@ def get_action_items() -> List[ParrotSelect]:
 
 
 class ActionModal(ParrotModal):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *, title: str = "Action Modal", **kw) -> None:
+        super().__init__(title=title, **kw)
     
         for item in get_action_items():
             self.add_item(item)

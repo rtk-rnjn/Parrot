@@ -296,7 +296,7 @@ class Fun(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name="fun", id=892432619374014544)
+        return discord.PartialEmoji(name="\N{SMILING FACE WITH OPEN MOUTH}")
 
     async def _get_discord_message(self, ctx: Context, text: str) -> Union[discord.Message, str, None]:
         """

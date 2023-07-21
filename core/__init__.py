@@ -12,5 +12,5 @@ __all__ = (
     "ParrotButton",
     "ParrotSelect",
     "ParrotLinkView",
-    "ParrotModal"
+    "ParrotModal",
 )

@@ -20,21 +20,24 @@ __all__ = (
 )
 
 DISPLAY_COG = (
-    "CONFIGURATION",
-    "FUN",
-    "DEFENSIVECONDITION",
-    "TODOS",
     "AUTORESPONDERS",
-    "TAGS",
+    "CONFIGURATION",
+    "DEFENSIVECONDITION",
+    "FUN",
+    "GAMES",
+    "GIVEAWAYS",
+    "HIGHLIGHT",
+    "LINTER",
+    "LOVE",
     "META",
-    "SUGGESTIONS",
     "MISC",
     "MODERATOR",
     "NASA",
-    "UTILS",
-    "GAMES",
     "RTFM",
-    "LOVE",
+    "SUGGESTIONS",
+    "TAGS",
+    "TODOS",
+    "UTILS",
 )
 
 
@@ -160,7 +163,7 @@ class FrontPageSource(menus.PageSource):
 
         embed.add_field(
             name="Support Server",
-            value=f"For more help, consider joining the official server over at {self.bot.support_server}",
+            value=f"For more help, consider joining the [official server]({self.bot.support_server})",
             inline=False,
         )
 
@@ -175,7 +178,7 @@ class FrontPageSource(menus.PageSource):
             embed.add_field(
                 name="Who are you?",
                 value=(
-                    r"The bot made by !! Ritik Ranjan [\*.*]#9230. Built with love and `discord.py`! Bot been running since "
+                    r"The bot made by `@ritik.ranjan` (ritik) formerly know as `!! Ritik Ranjan [*.*]#9230`. Built with love and `discord.py`! Bot been running since "
                     f"{created_at}. Bot have features such as moderation, global-chat, and more. You can get more "
                     "information on my commands by using the dropdown below.\n\n"
                     f"Bot is also open source. You can see the code on [GitHub]({self.bot.github})!"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 
@@ -15,10 +16,14 @@ from ._utils import (
 
 
 class Linter(Cog):
-    """Bot gives you some linting tools. Like flake8, pylint, mypy, bandit, pyright. Can also format code with black and imports with isort"""
+    """Bot gives you some linting tools. Like flake8, pylint, mypy, bandit, pyright."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{BROOM}")
 
     @commands.group(name="lintcode", aliases=["lint"], invoke_without_command=True)
     @commands.cooldown(1, 5, commands.BucketType.user)

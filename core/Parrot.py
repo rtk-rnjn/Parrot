@@ -663,7 +663,7 @@ class Parrot(commands.AutoShardedBot):
 
         if self.global_write_data.is_running():
             self.global_write_data.stop()
-        
+
         if self.update_scam_link_db.is_running():
             self.update_scam_link_db.stop()
 

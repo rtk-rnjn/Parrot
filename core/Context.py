@@ -167,10 +167,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     async def get_mute_role(bot: Parrot, guild: discord.Guild) -> Optional[discord.Role]:
         try:
             global_muted = discord.utils.find(lambda m: m.name.lower() == "muted", guild.roles)
-            return (
-                guild.get_role(bot.guild_configurations_cache[guild.id]["mute_role"] or 0)
-                or global_muted
-            )
+            return guild.get_role(bot.guild_configurations_cache[guild.id]["mute_role"] or 0) or global_muted
         except KeyError:
             if data := await bot.guild_configurations.find_one({"_id": guild.id}):
                 return guild.get_role(data["mute_role"] or 0)

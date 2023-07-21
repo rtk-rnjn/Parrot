@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional, Union
 
+from discord.enums import ButtonStyle
 from discord.interactions import Interaction
+from discord.utils import MISSING
 
 import discord
 
@@ -17,6 +19,11 @@ class ParrotItem(discord.ui.Item):
 
 
 class ParrotModal(discord.ui.Modal):
+    def __init__(
+        self, *, title: str = discord.utils.MISSING, timeout: float = None, custom_id: str = discord.utils.MISSING
+    ) -> None:
+        super().__init__(title=title, timeout=timeout, custom_id=custom_id)
+
     async def on_error(self, interaction: Interaction, error: Exception):
         interaction.client.dispatch("error", error, interaction, self)
         await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
@@ -33,13 +40,18 @@ class ParrotView(discord.ui.View):
             self.ctx = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not hasattr(self, "ctx"):
-            return True
+        author = None
 
-        if interaction.user.id == self.ctx.author.id:
-            return True
-        await interaction.response.send_message(f"Only the {self.ctx.author.mention} can use this menu.", ephemeral=True)
-        return False
+        if hasattr(self, "ctx"):
+            author = self.ctx.author
+
+        if hasattr(self, "message"):
+            author = self.message.author
+
+        if author and interaction.user.id != author.id:
+            await interaction.response.send_message(f"Only the {self.ctx.author.mention} can use this menu.", ephemeral=True)
+            return False
+        return True
 
     async def on_timeout(self) -> None:
         if self.delete_message and hasattr(self, "message") and self.message:
@@ -78,15 +90,31 @@ class ParrotView(discord.ui.View):
 
 
 class ParrotButton(discord.ui.Button["ParrotView"]):
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        *,
+        style: ButtonStyle = ButtonStyle.secondary,
+        label: str = None,
+        disabled: bool = False,
+        custom_id: str = None,
+        url: str = None,
+        emoji: Union[str, discord.Emoji, discord.PartialEmoji] = None,
+        row: int = None,
+        **kwargs,
+    ):
+        super().__init__(style=style, label=label, disabled=disabled, custom_id=custom_id, url=url, emoji=emoji, row=row)
+
         self.callback_function = kwargs.pop("callback", None)
-        super().__init__(**kwargs)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if self.callback_function:
             await self.callback_function(interaction)
         else:
             await interaction.response.defer()
+
+    def set_callback(self, callback) -> ParrotButton:
+        self.callback_function = callback
+        return self
 
 
 class ParrotSelect(discord.ui.Select["ParrotView"]):

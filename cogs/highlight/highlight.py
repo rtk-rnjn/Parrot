@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 import pymongo
 from pymongo import UpdateMany, UpdateOne
-
+from pymongo.results import BulkWriteResult
 import discord
 from core import Cog, Context, Parrot, ParrotLinkView
 from discord.ext import commands, tasks
@@ -39,6 +39,7 @@ class JumpBackView(ParrotLinkView):
 
 
 class Highlight(Cog):
+    """Highlight words and get notified when they are said"""
     def __init__(self, bot: Parrot):
         self.bot = bot
         self._highlight_batch = []
@@ -47,6 +48,10 @@ class Highlight(Cog):
         self.cached_words: CACHED_WORDS_HINT = {}
         self.cached_settings: CACHED_SETTINGS_HINT = {}
         self.bulk_insert_loop.start()
+    
+    @property
+    def display_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{ELECTRIC TORCH}")
 
     async def get_user_settings(self, user_id: int) -> _CACHED_SETTINGS_HINT:
         try:
@@ -367,7 +372,7 @@ class Highlight(Cog):
             em = discord.Embed(title="Highlight Words", color=discord.Color.blurple())
             em.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
 
-            em.description = "`" + "`, `".join(words) + "`"
+            em.description = "`" + "`, `".join([str(i) for i in words]) + "`"
 
             await ctx.send(embed=em, delete_after=10)
 
@@ -453,7 +458,7 @@ class Highlight(Cog):
                 },
             ),
         ]
-        data: pymongo.results.BulkWriteResult = await self.bot.user_collections_ind.bulk_write(operations)
+        data: BulkWriteResult = await self.bot.user_collections_ind.bulk_write(operations)
 
         if data.modified_count == 0:
             return await ctx.send(
@@ -543,8 +548,7 @@ class Highlight(Cog):
 
         for converter in converters:
             try:
-                converter: commands.Converter = converter()
-                return await converter.convert(ctx, entity)
+                return await converter().convert(ctx, entity)
             except commands.BadArgument:
                 pass
 

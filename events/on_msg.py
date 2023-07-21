@@ -462,8 +462,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
-        assert message.guild and isinstance(message.author, discord.Member)
-
         if not message.content:
             return
 

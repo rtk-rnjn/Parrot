@@ -141,7 +141,7 @@ class ParrotSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if self.callback_function:
-            await self.callback_function(self, interaction)
+            await self.callback_function(interaction)
         else:
             await interaction.response.defer()
 

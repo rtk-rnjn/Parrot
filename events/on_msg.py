@@ -913,16 +913,6 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         if message.author.id in self.bot.message_cache:
             del self.bot.message_cache[message.author.id]
 
-        query = {
-            "_id": message.author.id,
-        }
-        update = {
-            "$pull": {
-                "messageCollection.timestamp": discord.utils.utcnow().timestamp() + 60 * 60 * 24 * 30,  # 30 days
-            },
-        }
-        self.bot.add_global_write_data(col="messageCollections", query=query, update=update, cls="UpdateMany")
-
     @Cog.listener("on_message_edit")
     async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
         if before.author.id in self.bot.message_cache:

@@ -40,14 +40,7 @@ class ParrotView(discord.ui.View):
             self.ctx = ctx
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        author = None
-
-        if hasattr(self, "ctx"):
-            author = self.ctx.author
-
-        if hasattr(self, "message"):
-            author = self.message.author
-
+        author = self.ctx.author if hasattr(self, "ctx") else None
         if author and interaction.user.id != author.id:
             await interaction.response.send_message(f"Only the {self.ctx.author.mention} can use this menu.", ephemeral=True)
             return False

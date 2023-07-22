@@ -150,11 +150,11 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
             label=action["type"].replace("_", " ").title(),
             value=f"{json.dumps(action)}",  # dict -> str
         )
-        for action in auto_mod_dict[tp]["actions"]
+        for action in auto_mod_dict[tp][f"{tp}s"]
     ]
 
     slct = ParrotSelect(
-        placeholder=titles[tp or "action"],
+        placeholder=titles[tp],
         options=options,
         max_values=1,
         min_values=1,

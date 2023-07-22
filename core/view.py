@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Union
 
 from discord.enums import ButtonStyle
 from discord.interactions import Interaction
-from discord.utils import MISSING
+import traceback
 
 import discord
 
@@ -55,9 +55,6 @@ class ParrotView(discord.ui.View):
         if hasattr(self, "message") and self.message:
             await self.message.edit(view=self)
 
-        if hasattr(self, "ctx"):
-            await self.ctx.message.edit(view=self)
-
         self.stop()
 
     def disable_all(self) -> None:
@@ -82,7 +79,9 @@ class ParrotView(discord.ui.View):
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item) -> None:
         interaction.client.dispatch("error", error, interaction, item, self)
-        await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
+        err = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+
+        await interaction.response.send_message(f"An error occurred: {err}", ephemeral=True)
 
 
 class ParrotButton(discord.ui.Button["ParrotView"]):

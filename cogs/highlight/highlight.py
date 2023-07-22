@@ -227,7 +227,7 @@ class Highlight(Cog):
             content = esc(message.content)
 
         timestamp = int(message.created_at.timestamp())
-        em.description = f"<t:{timestamp}:T> `@{message.author:<15}`: {content}"
+        em.description = f"<t:{timestamp}:T> `@{str(message.author):<15}`: {content}"
 
         # Add some history
         try:

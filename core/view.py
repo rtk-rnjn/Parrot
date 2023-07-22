@@ -121,7 +121,7 @@ class ParrotSelect(discord.ui.Select):
         min_values: int = 1,
         max_values: int = 1,
         options: List[discord.SelectOption] = discord.utils.MISSING,
-        row: int = 0,
+        row: int = None,
         **kwargs,
     ):
         super().__init__(

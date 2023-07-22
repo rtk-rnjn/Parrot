@@ -5,6 +5,10 @@ import asyncio
 import aiohttp
 import aiosqlite
 
+import logging
+
+log = logging.getLogger("updater")
+
 # SCAM LINK URL
 _COMMIT_URL = "https://api.github.com/repos/{REPO}/commits"
 _ORIGINAL_REPO = "https://raw.githubusercontent.com/{REPO}"
@@ -34,41 +38,41 @@ async def insert_all_scams(db: aiosqlite.Connection):
     url = f"{ORIGINAL_REPO}//main/list.json"
 
     async with aiohttp.ClientSession() as session:
-        print("Downloading Data...", url)
+        log.debug("Downloading Data... %s", url)
         response = await session.get(url)
-        print("Downloaded Data...", url, response.status)
+        log.debug("Downloaded Data... %s. return code: %s", url, response.status)
 
         if response.status != 200:
-            print("Failed to download data... Trying to download from original repo...")
+            log.warning("Failed to download data... exiting...")
             return
 
-        print("Parsing Data...", url)
+        log.debug("parsing data from %s", url)
         data = await response.json(content_type="text/plain")
-        print("Parsed Data... Total Links:", len(data))
+        log.debug("parsed data from %s. Total Links: %s", url, len(data))
 
     query = "INSERT INTO scam_links (link) VALUES (?) ON CONFLICT DO NOTHING"
 
     for link in data:
         await db.execute(query, (link,))
-        print("Inserted Link:", link)
+        log.info("inserted link: %s", link)
 
     await db.commit()
 
 
 async def insert_new(db: aiosqlite.Connection):
     async with aiohttp.ClientSession() as session:
-        print("Downloading Data...", COMMIT_URL)
+        log.debug("Downloading Data... %s", COMMIT_URL)
         response = await session.get(COMMIT_URL)
-        print("Downloaded Data...", COMMIT_URL, response.status)
+        log.debug("Downloaded Data... %s. return code: %s", COMMIT_URL, response.status)
 
         if response.status != 200:
-            print("Failed to download data... Trying to download from original repo...")
+            log.info("Failed to download data... trying to download all data...")
             await insert_all_scams(db)
             return
 
-        print("Parsing Data...", COMMIT_URL)
+        log.debug("parsing data from %s", COMMIT_URL)
         data = await response.json()
-        print("Parsed Data... Total Links:", len(data))
+        log.debug("parsed data from %s. Total Links: %s", COMMIT_URL, len(data))
 
     insert_query = "INSERT INTO scam_links (link) VALUES (?) ON CONFLICT DO NOTHING"
     delete_query = "DELETE FROM scam_links WHERE link = ?"
@@ -79,12 +83,12 @@ async def insert_new(db: aiosqlite.Connection):
             link = message[2:]
             cur = await db.execute(insert_query, (link,))
             if cur.rowcount:
-                print("Inserted Link:", link)
+                log.info("inserted link: %s", link)
         elif message.startswith("- "):
             link = message[2:]
             cur = await db.execute(delete_query, (link,))
             if cur.rowcount:
-                print("Deleted Link:", link)
+                log.info("deleted link: %s", link)
 
     await db.commit()
 

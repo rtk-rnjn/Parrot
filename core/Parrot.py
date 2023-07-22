@@ -147,11 +147,11 @@ class CustomFormatter(logging.Formatter):
 
     # fmt: off
     formats = {
-        logging.DEBUG    : fmt.format(WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.INFO     : fmt.format(WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.WARNING  : fmt.format(WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.ERROR    : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.CRITICAL : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.DEBUG   : fmt.format(WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.INFO    : fmt.format(WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.WARNING : fmt.format(WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.ERROR   : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
+        logging.CRITICAL: fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
     }
     # fmt: on
 
@@ -663,6 +663,8 @@ class Parrot(commands.AutoShardedBot):
 
         if self.update_scam_link_db.is_running():
             self.update_scam_link_db.stop()
+        
+        await self.sql.close()
 
         return await super().close()
 
@@ -770,6 +772,10 @@ class Parrot(commands.AutoShardedBot):
 
     async def __bot_under_maintenance_message(self, ctx: Context) -> None:
         log.info("Bot is under maintenance, ignoring command. Context %s", ctx)
+        if await self.is_owner(ctx.author):
+            await self.invoke(ctx)
+            return
+
         await ctx.send(
             embed=discord.Embed(
                 title="Bot under maintenance!",

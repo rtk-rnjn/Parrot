@@ -22,19 +22,25 @@ with open(TRIGGER_PATH, "r") as f:
 
 
 class Automod(ParrotView):
-    def __init__(self, ctx: Context) -> None:
+    def __init__(self, ctx: Context, *, rule_name: str) -> None:
         super().__init__(ctx=ctx)
-        self.actions = [
-            # {
-            #    "type": "...",
-            #    "...": "...
-            # }
-        ]
+        self.rule_name = rule_name
+        self.actions = []
         self.conditions = []
         self.triggers = []
 
-        self.embed = (
-            discord.Embed(title="AutoMod", description="Configure AutoMod for your server", color=discord.Color.blurple())
+        self.add_item(get_item(self.triggers, tp="triggers"))
+        self.add_item(get_item(self.conditions, tp="conditions"))
+        self.add_item(get_item(self.actions, tp="actions"))
+
+    @property
+    def embed(self) -> discord.Embed:
+        return (
+            discord.Embed(
+                title=f"AutoMod - {self.rule_name}",
+                description="Configure AutoMod for your server",
+                color=discord.Color.blurple(),
+            )
             .add_field(
                 name="Triggers",
                 value="\n".join([f"{i + 1}. {t}" for i, t in enumerate(self.triggers)]) or "\u200b",
@@ -49,11 +55,7 @@ class Automod(ParrotView):
             )
         )
 
-        self.add_item(get_item(self.actions, tp="actions"))
-        self.add_item(get_item(self.conditions, tp="conditions"))
-        self.add_item(get_item(self.triggers, tp="triggers"))
-
-    @discord.ui.button(label="Save", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Save", style=discord.ButtonStyle.green, row=3)
     async def save(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if not self.actions:
             return await interaction.response.send_message("Please add at least one action", ephemeral=True)
@@ -65,6 +67,9 @@ class Automod(ParrotView):
             return await interaction.response.send_message("Please add at least one trigger", ephemeral=True)
 
         await interaction.response.send_message("Saved", ephemeral=True)
+
+    async def start(self) -> None:
+        self.message = await self.ctx.send(embed=self.embed, view=self)
 
 
 class _Parser:
@@ -113,26 +118,30 @@ titles = {
 }
 
 auto_mod_dict = {
-    "actions": ACTIONS,
-    "conditions": CONDITIONS,
     "triggers": TRIGGERS,
+    "conditions": CONDITIONS,
+    "actions": ACTIONS,
 }
 
 
 def get_item(main_data, *, tp: str) -> ParrotSelect:
     class Select(ParrotSelect):
         def __init__(self):
+            options = []
+            for action in auto_mod_dict[tp][f"{tp}"]:
+                options.append(
+                    discord.SelectOption(
+                        label=action["type"].replace("_", " ").title(),
+                        value=f"{json.dumps(action)}",
+                    )
+                )
+                print("Added", tp, action["type"])
+
             super().__init__(
                 placeholder=titles[tp],
                 max_values=1,
                 min_values=1,
-                options=[
-                    discord.SelectOption(
-                        label=action["type"].replace("_", " ").title(),
-                        value=f"{json.dumps(action)}",  # dict -> str
-                    )
-                    for action in auto_mod_dict[tp][f"{tp}"]
-                ],
+                options=options[:25],
             )
 
         async def callback(self, interaction: discord.Interaction) -> None:
@@ -146,6 +155,8 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
                 modal = Modal(data=self.values[0], main_data=main_data)
                 await interaction.response.send_modal(modal)
                 getattr(self.view, tp).append(modal.main_data)
+
+            await self.view.message.edit(embed=self.view.embed)
 
     return Select()
 

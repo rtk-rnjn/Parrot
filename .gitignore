@@ -138,3 +138,5 @@ env.json
 venv
 tests/
 temp/*
+*.sqlite
+cached.sqlite

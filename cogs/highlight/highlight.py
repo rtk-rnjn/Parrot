@@ -235,7 +235,7 @@ class Highlight(Cog):
                 content = esc(ms.content)
                 timestamp = int(ms.created_at.timestamp())
 
-                text = f"<t:{timestamp}:T> `@{ms.author:<15}`: {esc(content)}\n"
+                text = f"<t:{timestamp}:T> `@{str(ms.author):<15}`: {esc(content)}\n"
 
                 if len(initial_description + em.description + text) <= 4096:
                     em.description = text + em.description

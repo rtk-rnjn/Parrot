@@ -49,50 +49,22 @@ class Automod(ParrotView):
             )
         )
 
-    @discord.ui.button(label="If", style=discord.ButtonStyle.blurple, disabled=True)
-    async def trigger(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        self.add_item(get_item(self.actions, tp="actions"))
+        self.add_item(get_item(self.conditions, tp="conditions"))
+        self.add_item(get_item(self.triggers, tp="triggers"))
 
-    @discord.ui.button(emoji="\N{HEAVY PLUS SIGN}", style=discord.ButtonStyle.green)
-    async def add_trigger(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.send_message("Select a trigger", view=View(self.triggers, tp="trigger"))
-
-    @discord.ui.button(emoji="\N{HEAVY MINUS SIGN}", style=discord.ButtonStyle.red)
-    async def remove_trigger(self, interaction: discord.Interaction, b: discord.ui.Button) -> None:
-        if not self.triggers:
-            return await interaction.response.send_message("There are no triggers to remove", ephemeral=True)
-        self.triggers.pop()
-        await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
-
-    @discord.ui.button(label="This", style=discord.ButtonStyle.blurple, row=1, disabled=True)
-    async def condition(self, i: discord.Interaction, b: discord.ui.Button) -> None:
-        pass
-
-    @discord.ui.button(emoji="\N{HEAVY PLUS SIGN}", style=discord.ButtonStyle.green, row=1)
-    async def add_condition(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.send_message("Select a condition", view=View(self.conditions, tp="condition"))
-
-    @discord.ui.button(emoji="\N{HEAVY MINUS SIGN}", style=discord.ButtonStyle.red, row=1)
-    async def remove_condition(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if not self.conditions:
-            return await interaction.response.send_message("There are no conditions to remove", ephemeral=True)
-        self.conditions.pop()
-        await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
-
-    @discord.ui.button(label="Then", style=discord.ButtonStyle.blurple, row=2, disabled=True)
-    async def action(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
-
-    @discord.ui.button(emoji="\N{HEAVY PLUS SIGN}", style=discord.ButtonStyle.green, row=2)
-    async def add_action(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.send_message("Select an action", view=View(self.actions, tp="action"))
-
-    @discord.ui.button(emoji="\N{HEAVY MINUS SIGN}", style=discord.ButtonStyle.red, row=2)
-    async def remove_action(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    @discord.ui.button(label="Save", style=discord.ButtonStyle.green)
+    async def save(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if not self.actions:
-            return await interaction.response.send_message("There are no actions to remove", ephemeral=True)
-        self.actions.pop()
-        await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
+            return await interaction.response.send_message("Please add at least one action", ephemeral=True)
+
+        if not self.conditions:
+            return await interaction.response.send_message("Please add at least one condition", ephemeral=True)
+
+        if not self.triggers:
+            return await interaction.response.send_message("Please add at least one trigger", ephemeral=True)
+
+        await interaction.response.send_message("Saved", ephemeral=True)
 
 
 class _Parser:
@@ -103,14 +75,17 @@ class _Parser:
     def __call__(self):
         if self.method.startswith("int"):
             return self.parse_int(self.value)
-        elif self.method.startswith("float"):
+
+        if self.method.startswith("float"):
             return self.parse_float(self.value)
-        elif self.method.startswith("bool"):
+
+        if self.method.startswith("bool"):
             return self.parse_bool(self.value)
-        elif self.method.startswith("list"):
+
+        if self.method.startswith("list"):
             return self.parse_list(self.value)
-        else:
-            return self.value
+
+        return self.value
 
     def parse_int(self, value: str):
         try:
@@ -132,45 +107,47 @@ class _Parser:
 
 
 titles = {
-    "action": "Select an action",
-    "condition": "Select a condition",
-    "trigger": "Select a trigger",
+    "actions": "Action (THEN DO THIS)",
+    "conditions": "Condition (IF THIS IS TRUE)",
+    "triggers": "Trigger (IF THIS HAPPENS)",
 }
 
 auto_mod_dict = {
-    "action": ACTIONS,
-    "condition": CONDITIONS,
-    "trigger": TRIGGERS,
+    "actions": ACTIONS,
+    "conditions": CONDITIONS,
+    "triggers": TRIGGERS,
 }
 
 
 def get_item(main_data, *, tp: str) -> ParrotSelect:
-    options = [
-        discord.SelectOption(
-            label=action["type"].replace("_", " ").title(),
-            value=f"{json.dumps(action)}",  # dict -> str
-        )
-        for action in auto_mod_dict[tp][f"{tp}s"]
-    ]
+    class Select(ParrotSelect):
+        def __init__(self):
+            super().__init__(
+                placeholder=titles[tp],
+                max_values=1,
+                min_values=1,
+                options=[
+                    discord.SelectOption(
+                        label=action["type"].replace("_", " ").title(),
+                        value=f"{json.dumps(action)}",  # dict -> str
+                    )
+                    for action in auto_mod_dict[tp][f"{tp}"]
+                ],
+            )
 
-    slct = ParrotSelect(
-        placeholder=titles[tp],
-        options=options,
-        max_values=1,
-        min_values=1,
-    )
+        async def callback(self, interaction: discord.Interaction) -> None:
+            assert isinstance(self.view, Automod)
 
-    async def callback(interaction: discord.Interaction) -> None:
-        assert isinstance(slct.view, Automod)
+            data = json.loads(self.values[0])
+            if len(data.keys()) == 1:
+                getattr(self.view, tp).append(data)
+                await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
+            else:
+                modal = Modal(data=self.values[0], main_data=main_data)
+                await interaction.response.send_modal(modal)
+                getattr(self.view, tp).append(modal.main_data)
 
-        data = json.loads(slct.values[0])
-        if len(data.keys()) == 1:
-            slct.view.actions.append(data)
-            await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
-        else:
-            await interaction.response.send_modal(Modal(data=slct.values[0], main_data=main_data))
-
-    return slct.set_callback(callback)
+    return Select()
 
 
 def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
@@ -179,12 +156,6 @@ def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
         custom_id=f"{name}_{value}",
         label=name.replace("_", " ").title(),
     )
-
-
-class View(ParrotView):
-    def __init__(self, main_data: List, *, tp: str) -> None:
-        super().__init__()
-        self.add_item(get_item(main_data, tp=tp))
 
 
 class Modal(ParrotModal):

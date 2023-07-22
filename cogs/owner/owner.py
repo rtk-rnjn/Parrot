@@ -224,7 +224,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         if "message" in json:
             return await ctx.reply(f"{ctx.author.mention} can not spy that server")
         name = json["name"]
-        id_ = json["id"]
+        _id = json["id"]
         instant_invite = json["instant_invite"]
         presence_count = json["presence_count"]
 
@@ -235,7 +235,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         )
         if instant_invite:
             embed_first.url = instant_invite
-        embed_first.set_footer(text=f"{id_}")
+        embed_first.set_footer(text=f"{_id}")
         embed_first.description = f"**Presence Count:** {presence_count}"
         em_list = [embed_first]
 
@@ -252,7 +252,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         em_list_member = [embed_first]
 
         for member in json["members"]:
-            id_ = member["id"]
+            _id = member["id"]
             username = member["username"]
             avatar_url = member["avatar_url"]
             status = member["status"]
@@ -269,7 +269,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                     color=ctx.author.color,
                     timestamp=discord.utils.utcnow(),
                 )
-                .set_footer(text=f"{id_}")
+                .set_footer(text=f"{_id}")
                 .set_thumbnail(url=avatar_url)
             )
             em.description = f"**Status:** {status.upper()}\n**In VC?** {bool(vc)} ({f'<#{str(vc)}>' if vc else None})"

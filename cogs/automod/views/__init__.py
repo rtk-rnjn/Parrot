@@ -8,9 +8,17 @@ from core import Context, Parrot, ParrotButton, ParrotModal, ParrotSelect, Parro
 from utilities.converters import convert_bool
 
 ACTION_PATH = "cogs/automod/templates/actions.json"
+CONDITION_PATH = "cogs/automod/templates/conditions.json"
+TRIGGER_PATH = "cogs/automod/templates/triggers.json"
 
 with open(ACTION_PATH, "r") as f:
     ACTIONS: Dict[str, List[Dict[str, str]]] = json.load(f)
+
+with open(CONDITION_PATH, "r") as f:
+    CONDITIONS: Dict[str, List[Dict[str, str]]] = json.load(f)
+
+with open(TRIGGER_PATH, "r") as f:
+    TRIGGERS: Dict[str, List[Dict[str, str]]] = json.load(f)
 
 
 class Automod(ParrotView):
@@ -41,41 +49,50 @@ class Automod(ParrotView):
             )
         )
 
-    @discord.ui.button(label="Trigger", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="If", style=discord.ButtonStyle.blurple, disabled=True)
     async def trigger(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         pass
 
     @discord.ui.button(emoji="\N{HEAVY PLUS SIGN}", style=discord.ButtonStyle.green)
     async def add_trigger(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        await interaction.response.send_message("Select a trigger", view=View(self.triggers, tp="trigger"))
 
     @discord.ui.button(emoji="\N{HEAVY MINUS SIGN}", style=discord.ButtonStyle.red)
-    async def remove_trigger(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+    async def remove_trigger(self, interaction: discord.Interaction, b: discord.ui.Button) -> None:
+        if not self.triggers:
+            return await interaction.response.send_message("There are no triggers to remove", ephemeral=True)
+        self.triggers.pop()
+        await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
 
-    @discord.ui.button(label="Condition", style=discord.ButtonStyle.blurple, row=1)
-    async def condition(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    @discord.ui.button(label="This", style=discord.ButtonStyle.blurple, row=1, disabled=True)
+    async def condition(self, i: discord.Interaction, b: discord.ui.Button) -> None:
         pass
 
     @discord.ui.button(emoji="\N{HEAVY PLUS SIGN}", style=discord.ButtonStyle.green, row=1)
     async def add_condition(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        await interaction.response.send_message("Select a condition", view=View(self.conditions, tp="condition"))
 
     @discord.ui.button(emoji="\N{HEAVY MINUS SIGN}", style=discord.ButtonStyle.red, row=1)
     async def remove_condition(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        if not self.conditions:
+            return await interaction.response.send_message("There are no conditions to remove", ephemeral=True)
+        self.conditions.pop()
+        await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
 
-    @discord.ui.button(label="Action", style=discord.ButtonStyle.blurple, row=2)
+    @discord.ui.button(label="Then", style=discord.ButtonStyle.blurple, row=2, disabled=True)
     async def action(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         pass
 
     @discord.ui.button(emoji="\N{HEAVY PLUS SIGN}", style=discord.ButtonStyle.green, row=2)
     async def add_action(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.send_message("Select an action", ephemeral=True, view=View(self.actions, tp="action"))
+        await interaction.response.send_message("Select an action", view=View(self.actions, tp="action"))
 
     @discord.ui.button(emoji="\N{HEAVY MINUS SIGN}", style=discord.ButtonStyle.red, row=2)
     async def remove_action(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        pass
+        if not self.actions:
+            return await interaction.response.send_message("There are no actions to remove", ephemeral=True)
+        self.actions.pop()
+        await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
 
 
 class _Parser:
@@ -120,14 +137,20 @@ titles = {
     "trigger": "Select a trigger",
 }
 
+auto_mod_dict = {
+    "action": ACTIONS,
+    "condition": CONDITIONS,
+    "trigger": TRIGGERS,
+}
 
-def get_item(main_data, *, tp: str = None) -> ParrotSelect:
+
+def get_item(main_data, *, tp: str) -> ParrotSelect:
     options = [
         discord.SelectOption(
             label=action["type"].replace("_", " ").title(),
             value=f"{json.dumps(action)}",  # dict -> str
         )
-        for action in ACTIONS["actions"]
+        for action in auto_mod_dict[tp]["actions"]
     ]
 
     slct = ParrotSelect(
@@ -140,7 +163,7 @@ def get_item(main_data, *, tp: str = None) -> ParrotSelect:
     async def callback(interaction: discord.Interaction) -> None:
         assert isinstance(slct.view, Automod)
 
-        data = json.loads(slct.values[0])  # str -> dict
+        data = json.loads(slct.values[0])
         if len(data.keys()) == 1:
             slct.view.actions.append(data)
             await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
@@ -161,7 +184,7 @@ def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
 class View(ParrotView):
     def __init__(self, main_data: List, *, tp: str) -> None:
         super().__init__()
-        self.add_item(get_item(main_data))
+        self.add_item(get_item(main_data, tp=tp))
 
 
 class Modal(ParrotModal):

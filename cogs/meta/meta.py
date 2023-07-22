@@ -52,9 +52,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def avatar(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Get the avatar of the user. Make sure you don't misuse.
-        """
+        """Get the avatar of the user. Make sure you don't misuse."""
         member = member or ctx.author
         embed = discord.Embed(timestamp=discord.utils.utcnow())
         # embed.add_field(
@@ -79,7 +77,6 @@ class Meta(Cog):
         if not owner:
             return await ctx.reply("Owner not found, for some reason.")
 
-        str(owner)
         await ctx.reply(
             embed=discord.Embed(
                 title="Owner Info",
@@ -342,9 +339,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def user_info(self, ctx: Context, *, member: discord.Member = None):
-        """
-        Get the basic stats about the user
-        """
+        """Get the basic stats about the user"""
         target = member or ctx.author
         roles = list(target.roles)
         embed = discord.Embed(
@@ -397,9 +392,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def invite(self, ctx: Context):
-        """
-        Get the invite of the bot! Thanks for seeing this command
-        """
+        """Get the invite of the bot! Thanks for seeing this command"""
         url = self.bot.invite
         em: discord.Embed = (
             discord.Embed(
@@ -508,7 +501,7 @@ class Meta(Cog):
         ] = None,
     ):
         channel = channel or ctx.channel  # type: ignore
-        id_ = channel.id  # type: ignore
+        _id = channel.id  # type: ignore
 
         assert isinstance(
             channel, (discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.StageChannel)
@@ -517,7 +510,7 @@ class Meta(Cog):
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
-        type_ = str(channel.type).capitalize()
+        _type = str(channel.type).capitalize()
         embed = (
             discord.Embed(
                 title="Channel Info",
@@ -525,11 +518,11 @@ class Meta(Cog):
                 timestamp=discord.utils.utcnow(),
             )
             .add_field(name="Name", value=channel.name)
-            .add_field(name="ID", value=f"{id_}")
+            .add_field(name="ID", value=f"{_id}")
             .add_field(name="Created At", value=created_at)
             .add_field(name="Mention", value=mention)
             .add_field(name="Position", value=position)
-            .add_field(name="Type", value=type_)
+            .add_field(name="Type", value=_type)
             .set_footer(text=f"{ctx.author}")
         )
         if ctx.guild.icon:

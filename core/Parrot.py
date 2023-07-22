@@ -593,7 +593,7 @@ class Parrot(commands.AutoShardedBot):
         return None
 
     async def on_error(self, event: str, *args: Any, **kwargs: Any) -> None:
-        log.error("Ignoring exception in %s", event, exc_info=True)
+        log.error("Ignoring exception in %s, %s, %s", event, args, kwargs, exc_info=True)
         await self._execute_webhook(
             WEBHOOK_ERROR_LOGS,
             content=f"```py\nIgnoring exception on {event}\n{traceback.format_exc()}```",
@@ -604,9 +604,6 @@ class Parrot(commands.AutoShardedBot):
         self._clear_gateway_data()
         self.identifies[shard_id].append(discord.utils.utcnow())
         await super().before_identify_hook(shard_id, initial=initial)
-
-    async def db(self, db_name: str):
-        return self.mongo[db_name]
 
     async def on_autopost_success(self) -> None:
         if self.HAS_TOP_GG:

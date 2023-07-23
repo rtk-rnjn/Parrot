@@ -44,14 +44,17 @@ class Automod(ParrotView):
             .add_field(
                 name="Triggers",
                 value="\n".join([f"{i + 1}. {t}" for i, t in enumerate(self.triggers)]) or "\u200b",
+                inline=False,
             )
             .add_field(
                 name="Conditions",
                 value="\n".join([f"{i + 1}. {c}" for i, c in enumerate(self.conditions)]) or "\u200b",
+                inline=False,
             )
             .add_field(
                 name="Actions",
                 value="\n".join([f"{i + 1}. {a}" for i, a in enumerate(self.actions)]) or "\u200b",
+                inline=False,
             )
         )
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import inspect
 import io
 from itertools import zip_longest
-from typing import Annotated, Any, Dict, Optional, Union
 from random import random
+from typing import Annotated, Any, Dict, Optional, Union
+
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -191,7 +193,7 @@ class Suggestions(Cog):
     @commands.bot_has_permissions(embed_links=True, create_public_threads=True)
     async def suggest(self, ctx: Context, *, suggestion: Annotated[str, commands.clean_content]):
         """Suggest something. Abuse of the command may result in required mod actions
-        
+
         **Examples:**
         - `[p]suggest This is really nice suggestion`
         """
@@ -222,7 +224,7 @@ class Suggestions(Cog):
     @commands.bot_has_permissions(read_message_history=True, manage_channels=True, manage_messages=True)
     async def suggest_delete(self, ctx: Context, *, message_id: int):
         """To delete the suggestion you suggested
-        
+
         **Examples:**
         - `[p]suggest delete 123456789`
         """
@@ -251,7 +253,7 @@ class Suggestions(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_status(self, ctx: Context, *, message_id: int):
         """To get the statistics os the suggestion
-        
+
         **Examples:**
         - `[p]suggest stats 123456789`
         """
@@ -284,7 +286,7 @@ class Suggestions(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_resolved(self, ctx: Context, *, message_id: int):
         """To mark the suggestion as resolved. This will archive the thread and lock it.
-        
+
         **Examples:**
         - `[p]suggest resolved 123456789`
         """
@@ -315,7 +317,7 @@ class Suggestions(Cog):
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, message_id: int, *, remark: str):
         """To add a note in suggestion embed. This will be visible to the user who suggested
-        
+
         **Examples:**
         - `[p]suggest note 123456789 This is a note`
         """
@@ -345,7 +347,7 @@ class Suggestions(Cog):
         message_id: int,
     ):
         """To remove all kind of notes and extra reaction from suggestion embed.
-        
+
         **Examples:**
         - `[p]suggest clear 123456789`
         """
@@ -366,6 +368,24 @@ class Suggestions(Cog):
             if str(reaction.emoji) not in REACTION_EMOJI:
                 await msg.clear_reaction(reaction.emoji)
         await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
+
+    @suggest.command(name="flags", aliases=["flaglist", "flag-list", "show-flags"])
+    @commands.cooldown(1, 60, commands.BucketType.member)
+    async def suggest_flags(self, ctx: Context):
+        """To get the list of available flags"""
+        embed = discord.Embed(title="Available Flags")
+        desc = inspect.cleandoc(
+            """
+            - **INVALID / NOTVALIDATED / NOTVALID / NOT VALID**
+            - **ABUSE / SPAM**
+            - **INCOMPLETE / NEEDINFO / MOREINFO / WHAT? / NEED INFO / MORE INFO**
+            - **DECLINE / DENY / REJECT**
+            - **APPROVED / OK / ACCEPT / ALRIGHT**
+            - **DUPLICATE / COPY / SAME**
+            """
+        )
+        embed.description = desc
+        await ctx.send(embed=embed)
 
     @suggest.command(name="flag")
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
@@ -485,7 +505,7 @@ class Suggestions(Cog):
 
         if not self.__is_mod(message.author):
             return
-        
+
         command, remark = message.content.split(">", 1)
         command = command.strip().upper()
         remark = remark.strip() or ""

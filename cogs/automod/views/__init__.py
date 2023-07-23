@@ -154,7 +154,7 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
             else:
                 modal = Modal(data=self.values[0], main_data=main_data)
                 await interaction.response.send_modal(modal)
-                getattr(self.view, tp).append(modal.main_data)
+                setattr(self.view, tp, main_data)
 
             await self.view.message.edit(embed=self.view.embed)
 
@@ -172,8 +172,7 @@ def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
 class Modal(ParrotModal):
     def __init__(self, *, data: str, **kw) -> None:
         d: dict = json.loads(data)
-        main_data: List = kw.pop("main_data")
-        self.main_data = main_data
+        self.main_data = kw.pop("main_data")
         super().__init__(title=d.pop('type'), **kw)
         self.data = d
 

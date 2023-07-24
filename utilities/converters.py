@@ -64,8 +64,6 @@ class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild."""
 
     async def convert(self, ctx: Context, argument: str) -> Optional[discord.User]:
-        assert ctx.guild is not None
-
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
@@ -108,7 +106,6 @@ class MemberID(commands.Converter):
 
     async def convert(self, ctx: Context, argument: str) -> Optional[discord.Member]:
         """Convert a user mention or ID to a member object."""
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         try:
             m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)  # type: ignore
         except commands.BadArgument:

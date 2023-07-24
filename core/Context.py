@@ -66,6 +66,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     bot: Parrot
     guild: discord.Guild
     command: commands.Command
+    me: discord.Member
     author: discord.Member
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -808,7 +809,6 @@ class SentFromView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.ctx = ctx
 
-        assert ctx.guild is not None
         self.add_item(
             discord.ui.Button(
                 style=discord.ButtonStyle.blurple,

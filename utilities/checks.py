@@ -41,8 +41,6 @@ __all__ = (
 
 def in_server(guild_id: int) -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
-        assert ctx.guild is not None
-
         guild = ctx.bot.get_guild(guild_id)
         if not guild:
             return False
@@ -59,7 +57,7 @@ def in_server(guild_id: int) -> Check[Context]:
 def in_support_server() -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
-        assert ctx.guild is not None
+
         if ctx.guild.id == ctx.bot.server.id:
             return True
         raise ex.NotInSupportServer()
@@ -98,8 +96,6 @@ def is_me() -> Check[Context]:
 
 def has_verified_role_ticket() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
-
         data = ctx.bot.guild_configurations_cache[ctx.guild.id]
         data = data["ticket_config"]
         roles = data["verified_roles"]
@@ -116,8 +112,6 @@ def has_verified_role_ticket() -> Check[Context]:
 
 def is_mod() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
-
         bot: Parrot = ctx.bot
         try:
             role = bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0  # role could be `None`
@@ -138,7 +132,6 @@ def is_mod() -> Check[Context]:
 
 def in_temp_channel() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
         if not ctx.author.voice:
             raise ex.InHubVoice()
 
@@ -163,8 +156,6 @@ def can_run(ctx: Context) -> Optional[bool]:
             return
     except KeyError:
         pass
-
-    assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and ctx.command is not None
 
     cmd = ctx.command.qualified_name.replace(" ", "_")
     cog = getattr(ctx.cog, "qualified_name", "").replace(" ", "_")
@@ -247,7 +238,6 @@ def in_voice() -> Check[Context]:
 
 def same_voice() -> Check[Context]:
     async def predicate(ctx: Context) -> Optional[bool]:
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and isinstance(ctx.me, discord.Member)
         if ctx.me.voice is None:
             raise ex.NotBotInVoice()
         if ctx.author.voice is None:

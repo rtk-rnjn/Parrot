@@ -357,7 +357,6 @@ class Owner(Cog, command_attrs={"hidden": True}):
         PAYLOAD = {}
         BASIC = list(string.ascii_letters + string.digits)
         random.shuffle(BASIC)
-        assert ctx.guild is not None
 
         if args.code:
             PAYLOAD["hash"] = hashlib.sha256(args.code.encode()).hexdigest()
@@ -478,7 +477,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         return ctx.bot.get_guild(GUILD or ctx.guild.id).member_count
         ```
         """
-        assert ctx.guild is not None
+
         GUILD_ID = getattr(guild, "id", ctx.guild.id)
         await ctx.send(
             getattr(
@@ -822,7 +821,6 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         return {"Bot": count}
 
     async def _complex_cleanup_strategy(self, ctx: Context, search: int):
-        assert ctx.guild is not None and isinstance(ctx.channel, discord.TextChannel)
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))  # thanks startswith
 
         def check(m: discord.Message):
@@ -832,8 +830,6 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         return Counter(m.author.display_name for m in deleted)
 
     async def _regular_user_cleanup_strategy(self, ctx: Context, search: int):
-        assert ctx.guild is not None and isinstance(ctx.channel, discord.TextChannel)
-
         prefixes = tuple(await self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m: discord.Message):

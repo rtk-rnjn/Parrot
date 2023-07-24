@@ -164,7 +164,8 @@ class Sector1729(Cog):
     async def on_dbl_vote(self, data: BotVoteData):
         assert self.bot.server is not None
         member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
-            self.bot.server, data.user,
+            self.bot.server,
+            data.user,
         )
 
         if member is None and not isinstance(member, discord.Member):
@@ -464,8 +465,6 @@ class Sector1729(Cog):
         """Lock updating general chat and railway role. And all messagable channels."""
         self._is_locked = True
 
-        assert ctx.guild is not None
-
         if reason is not None:
             for channel in ctx.guild.channels:
                 if (
@@ -490,8 +489,6 @@ class Sector1729(Cog):
     async def unlock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
         """Unlock updating general chat and railway role. And unlock all messagable channels."""
         self._is_locked = False
-
-        assert ctx.guild is not None
 
         if reason is not None:
             for channel in ctx.guild.channels:

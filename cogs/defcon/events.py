@@ -16,7 +16,9 @@ class DefconListeners(Cog):
     async def defcon_broadcast(self, message: Union[str, discord.Embed], *, guild: discord.Guild, level: int) -> None:
         if self.has_defcon_in(guild) is False:
             await self.bot.guild_configurations.update_one(
-                {"_id": guild.id}, {"$set": {"default_defcon.level": level}}, upsert=True,
+                {"_id": guild.id},
+                {"$set": {"default_defcon.level": level}},
+                upsert=True,
             )
             self.settings[guild.id]["default_defcon"] = {"level": level, "broadcast": {"enabled": True, "channel": None}}
 
@@ -92,7 +94,8 @@ class DefconListeners(Cog):
             )
 
     def has_defcon_in(
-        self, guild: Optional[Union[discord.Guild, discord.Object, discord.PartialInviteGuild]],
+        self,
+        guild: Optional[Union[discord.Guild, discord.Object, discord.PartialInviteGuild]],
     ) -> Union[bool, int]:
         if guild is None:
             return False
@@ -153,7 +156,8 @@ class DefconListeners(Cog):
         if added:
             try:
                 await entry.target.remove_roles(
-                    *added, reason=f"DEFCON is active and does not allow role adds. LEVEL {defcon}",
+                    *added,
+                    reason=f"DEFCON is active and does not allow role adds. LEVEL {defcon}",
                 )
             except discord.Forbidden:
                 pass
@@ -167,7 +171,8 @@ class DefconListeners(Cog):
         if removed:
             try:
                 await entry.target.add_roles(
-                    *removed, reason=f"DEFCON is active and does not allow role removals. LEVEL {defcon}",
+                    *removed,
+                    reason=f"DEFCON is active and does not allow role removals. LEVEL {defcon}",
                 )
             except discord.Forbidden:
                 pass

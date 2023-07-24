@@ -4,11 +4,10 @@ import asyncio
 import functools
 import random
 from asyncio import Lock
-from collections.abc import Container, Iterable
+from collections.abc import Callable, Container, Iterable
 from datetime import datetime
 from functools import wraps
 from typing import Optional, Union
-from collections.abc import Callable
 from weakref import WeakValueDictionary
 
 from discord.ext.commands import Command

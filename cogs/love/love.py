@@ -6,11 +6,11 @@ import collections
 import hashlib
 import json
 import random
+from collections.abc import Coroutine
 from datetime import datetime
 from pathlib import Path
 from random import choice
 from typing import Optional, Union
-from collections.abc import Coroutine
 
 from discord.ext.commands import clean_content
 

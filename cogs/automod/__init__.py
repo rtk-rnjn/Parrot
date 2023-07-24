@@ -141,7 +141,8 @@ class AutoMod(Cog):
             trigger = rule_data["trigger"]
             condition = rule_data["condition"]
             if await trigger.check(message=message, member=message.author) and await condition.check(
-                message=message, member=message.author,
+                message=message,
+                member=message.author,
             ):
                 action = rule_data["action"]
 

@@ -176,7 +176,8 @@ class DefensiveCondition(Cog):
         cog: DefconListeners = self.bot.get_cog("DefconListeners")  # type: ignore
         if cog:
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(
-                text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url,
+                text=f"Invoked by {ctx.author}",
+                icon_url=ctx.author.display_avatar.url,
             )
             embed.description = (
                 f"**{ctx.author}** has set the defcon level to {level}.\n\n"
@@ -272,7 +273,8 @@ class DefensiveCondition(Cog):
 
         if cog := self.bot.get_cog("DefconListeners"):
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(
-                text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url,
+                text=f"Invoked by {ctx.author}",
+                icon_url=ctx.author.display_avatar.url,
             )
             embed.description = (
                 f"**{ctx.author}** has reset the defcon level to {level}.\n\n"

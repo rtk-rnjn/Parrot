@@ -1,4 +1,3 @@
-
 import discord
 from core import Context, Parrot
 

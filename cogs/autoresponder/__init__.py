@@ -173,7 +173,11 @@ class AutoResponders(Cog):
     @autoresponder.command(name="add", aliases=["create", "set"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_add(
-        self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None,
+        self,
+        ctx: Context,
+        name: str,
+        *,
+        res: Annotated[str, Optional[commands.clean_content]] = None,
     ) -> None:
         """Add a new autoresponder.
 
@@ -229,7 +233,11 @@ class AutoResponders(Cog):
     @autoresponder.command(name="edit", aliases=["change", "modify"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_edit(
-        self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None,
+        self,
+        ctx: Context,
+        name: str,
+        *,
+        res: Annotated[str, Optional[commands.clean_content]] = None,
     ) -> None:
         """Edit an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -345,11 +353,20 @@ class AutoResponders(Cog):
         return bool(bucket.update_rate_limit())  # type: ignore
 
     async def execute_jinja(
-        self, trigger: str, response: str, *, from_auto_response: bool = True, **variables,
+        self,
+        trigger: str,
+        response: str,
+        *,
+        from_auto_response: bool = True,
+        **variables,
     ) -> tuple[str, bool]:
         if not hasattr(self, "jinja_env"):
             self.jinja_env = Environment(
-                enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True,
+                enable_async=True,
+                trim_blocks=True,
+                lstrip_blocks=True,
+                keep_trailing_newline=False,
+                autoescape=True,
             )
 
         trigger = discord.utils.escape_mentions(trigger)

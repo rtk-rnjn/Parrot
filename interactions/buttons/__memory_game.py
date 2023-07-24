@@ -9,8 +9,9 @@ import discord
 from core import Context, Parrot
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
     from typing import TypeAlias
+
+    from typing_extensions import ParamSpec
 
     DiscordColor: TypeAlias = Union[discord.Color, int]
 

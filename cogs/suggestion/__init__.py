@@ -76,7 +76,11 @@ class Suggestions(Cog):
             return ch
 
     async def get_or_fetch_message(
-        self, msg_id: int, *, guild: discord.Guild, channel: discord.TextChannel = None,
+        self,
+        msg_id: int,
+        *,
+        guild: discord.Guild,
+        channel: discord.TextChannel = None,
     ) -> Optional[discord.Message]:
         try:
             self.message[msg_id]

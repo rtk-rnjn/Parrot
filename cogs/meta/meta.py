@@ -502,7 +502,8 @@ class Meta(Cog):
         _id = channel.id  # type: ignore
 
         assert isinstance(
-            channel, discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel,
+            channel,
+            discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel,
         )
 
         created_at = f"{discord.utils.format_dt(channel.created_at)}"

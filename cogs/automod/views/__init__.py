@@ -157,7 +157,6 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
 
             await self.view.message.edit(embed=self.view.embed)
 
-
     return Select()
 
 

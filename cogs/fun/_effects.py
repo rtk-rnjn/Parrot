@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Callable
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional
-from collections.abc import Callable
 
 from PIL import Image, ImageDraw, ImageOps
 

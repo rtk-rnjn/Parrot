@@ -10,8 +10,9 @@ from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
 from .utils import chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
     from typing import TypeAlias
+
+    from typing_extensions import ParamSpec
 
     P = ParamSpec("P")
     T = TypeVar("T")

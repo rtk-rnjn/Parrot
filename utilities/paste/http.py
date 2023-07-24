@@ -6,8 +6,8 @@ import json
 import logging
 import sys
 import weakref
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Optional, TypeVar, Union
 from collections.abc import Coroutine
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Optional, TypeVar, Union
 from urllib.parse import quote as _uriquote
 
 import aiohttp

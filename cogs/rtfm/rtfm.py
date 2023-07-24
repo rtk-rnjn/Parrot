@@ -7,13 +7,13 @@ import re
 import sys
 import unicodedata
 import urllib.parse
+from collections.abc import Callable
 from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
 from typing import Any, Optional, Union
-from collections.abc import Callable
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore
@@ -216,7 +216,8 @@ class RTFM(Cog):
 
     @staticmethod
     async def send_reaction_embed(
-        channel: discord.abc.MessageableChannel, target_message: discord.Message,
+        channel: discord.abc.MessageableChannel,
+        target_message: discord.Message,
     ) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(

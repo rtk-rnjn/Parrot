@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -7,19 +6,11 @@ import functools
 import importlib.util
 import io
 import logging
+from collections.abc import Awaitable, Callable, Iterable
 from contextlib import suppress
 from io import BytesIO
 from operator import attrgetter
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Generic,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-)
-from collections.abc import Awaitable, Callable, Iterable
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import aiohttp
 import humanize
@@ -323,7 +314,8 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             fp = io.BytesIO(content.encode())
             kwargs.pop("file", None)
             return await self.send(
-                file=discord.File(fp, filename="message_too_long.txt"), **kwargs,
+                file=discord.File(fp, filename="message_too_long.txt"),
+                **kwargs,
             )  # must have `Attach Files` permissions
         return await self.send(content, **kwargs)
 
@@ -361,7 +353,9 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         try:
             payload: discord.RawReactionActionEvent = await self.bot.wait_for(
-                "raw_reaction_add", check=check, timeout=timeout,
+                "raw_reaction_add",
+                check=check,
+                timeout=timeout,
             )
             return str(payload.emoji) == "\N{THUMBS UP SIGN}"
         except asyncio.TimeoutError:
@@ -617,7 +611,11 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         return bool(update_result.modified_count)
 
     async def database_command_update(
-        self, *, success: bool = False, error: Optional[str] = None, **kwargs: Any,
+        self,
+        *,
+        success: bool = False,
+        error: Optional[str] = None,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         if self.command is None:
             return {}

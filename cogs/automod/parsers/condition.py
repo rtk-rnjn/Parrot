@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 from discord.abc import GuildChannel
-from discord.utils import utcnow, maybe_coroutine
+from discord.utils import maybe_coroutine, utcnow
 
 from discord import Member, Message
 

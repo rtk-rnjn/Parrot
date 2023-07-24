@@ -4,8 +4,8 @@ import asyncio
 import datetime
 import io
 from collections import Counter
-from typing import Any, Literal, Optional, Union
 from collections.abc import Callable
+from typing import Any, Literal, Optional, Union
 
 import discord
 from core import Context, Parrot

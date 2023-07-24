@@ -8,13 +8,14 @@ import os
 import re
 import string
 import urllib.parse
+from collections.abc import Iterable
 from datetime import datetime
 from html import unescape
 from pathlib import Path
 from typing import Any, BinaryIO, Optional, Union
-from collections.abc import Iterable
 
 import qrcode
+import sympy
 from PIL import Image
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import (
@@ -34,7 +35,6 @@ from qrcode.image.styles.moduledrawers import (
 )
 
 import discord
-import sympy
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
@@ -270,7 +270,8 @@ class Misc(Cog):
         if response_json["status"] != "success":
             raise InvalidLatexError(logs=response_json.get("log"))
         async with self.bot.http_session.get(
-            f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True,
+            f"{LATEX_API_URL}/{response_json['filename']}",
+            raise_for_status=True,
         ) as response:
             await _process_image(await response.read(), out_file)
 
@@ -358,7 +359,10 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def firstmessage(
-        self, ctx: Context, *, channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None,
+        self,
+        ctx: Context,
+        *,
+        channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None,
     ):
         """To get the first message of the specified channel."""
         channel = channel or ctx.channel  # type: ignore
@@ -682,9 +686,11 @@ class Misc(Cog):
             name="Name",
             value=f"{name}",
         ).set_footer(
-            text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url,
+            text=f"{ctx.author.name}",
+            icon_url=ctx.author.display_avatar.url,
         ).set_author(
-            name=f"{name}: {_id}", icon_url=ctx.author.display_avatar.url,
+            name=f"{name}: {_id}",
+            icon_url=ctx.author.display_avatar.url,
         )
 
         await ctx.reply(embed=embed)

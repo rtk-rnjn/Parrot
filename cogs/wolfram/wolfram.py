@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from io import BytesIO
 from typing import Optional
-from collections.abc import Callable
 from urllib.parse import urlencode
 
 import arrow

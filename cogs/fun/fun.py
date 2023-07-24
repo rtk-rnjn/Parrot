@@ -19,11 +19,11 @@ import string
 import time
 import urllib
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
 from random import choice, randint
 from typing import Annotated, Any, Optional, TypeVar, Union, cast
-from collections.abc import Callable
 
 import aiohttp
 import rapidfuzz
@@ -106,7 +106,8 @@ class Fun(Cog):
 
         self.game_status: dict[int, bool] = {}  # A variable to store the game status: either running or not running.
         self.game_owners: dict[
-            int, discord.Member,
+            int,
+            discord.Member,
         ] = {}  # A variable to store the person's ID who started the quiz game in a channel.
         with open(Path(r"extra/ryanzec_colours.json")) as f:
             self.colour_mapping: dict = json.load(f)
@@ -117,7 +118,8 @@ class Fun(Cog):
 
         self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
         self.game_player_scores: dict[
-            int, dict[Union[discord.Member, discord.User], int],
+            int,
+            dict[Union[discord.Member, discord.User], int],
         ] = {}  # A variable to store temporary game player's scores.
         self.latest_comic_info: dict[str, Union[int, str]] = {}
         self.categories = {
@@ -651,7 +653,8 @@ class Fun(Cog):
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and rapidfuzz.fuzz.ratio(
-                    question_data["correct_answer"].lower(), m.content.lower(),
+                    question_data["correct_answer"].lower(),
+                    m.content.lower(),
                 ) > 75
 
             try:

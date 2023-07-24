@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable
 from io import BytesIO
 from textwrap import dedent, indent
 from typing import Any, Optional
-from collections.abc import Awaitable
 
 from PIL import Image, ImageDraw, ImageFont
 

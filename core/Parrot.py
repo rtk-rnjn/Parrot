@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -11,16 +10,9 @@ import re
 import traceback
 import types
 from collections import Counter, defaultdict, deque
-from contextlib import suppress
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    Optional,
-    Union,
-    overload,
-)
 from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
+from contextlib import suppress
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
 
 import aiohttp
 import aiosqlite
@@ -76,9 +68,10 @@ from .Context import Context
 from .help import PaginatedHelpCommand
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from discord.ext.commands.cooldowns import CooldownMapping
     from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-    from typing import TypeAlias
 
     from .Cog import Cog
 
@@ -848,7 +841,9 @@ class Parrot(commands.AutoShardedBot):
             await self.process_commands(after)
 
     async def resolve_member_ids(
-        self, guild: discord.Guild, member_ids: Iterable[int],
+        self,
+        guild: discord.Guild,
+        member_ids: Iterable[int],
     ) -> AsyncGenerator[discord.Member, None]:
         """|coro|.
 
@@ -1493,7 +1488,14 @@ class Parrot(commands.AutoShardedBot):
             self.__global_write_data = {}
 
     def add_global_write_data(
-        self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True, cls: str,
+        self,
+        *,
+        db: Optional[str] = None,
+        col: str,
+        query: dict,
+        update: dict,
+        upsert: bool = True,
+        cls: str,
     ) -> None:
         if db is None:
             db = "mainDB"
@@ -1522,7 +1524,10 @@ class Parrot(commands.AutoShardedBot):
         ...
 
     def get_global_write_data(
-        self, *, db: Optional[str] = None, col: Optional[str] = None,
+        self,
+        *,
+        db: Optional[str] = None,
+        col: Optional[str] = None,
     ) -> Optional[list] | dict[str, list]:
         if col:
             if db is None:

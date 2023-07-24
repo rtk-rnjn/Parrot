@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
-from collections.abc import Callable
 
 from aiohttp import ClientResponse, ClientSession
 from lru import LRU

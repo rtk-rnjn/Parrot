@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 import re
 
-from discord import Message, Member
+from discord import Member, Message
 from discord.ext import commands
 from utilities.regex import INVITE_RE, LINKS_RE
 
@@ -34,9 +34,7 @@ class Trigger:
         self.build_cooldowns()
 
     async def check(self, **kw) -> bool:
-        return self.operator(
-            getattr(self, tgr["type"])(**{**kw, **tgr["kwargs"]}) for tgr in self.data
-        )
+        return self.operator(getattr(self, tgr["type"])(**{**kw, **tgr["kwargs"]}) for tgr in self.data)
 
     def build_cooldowns(self) -> None:
         for tgr in self.data:
@@ -196,14 +194,10 @@ class Trigger:
         return not (bool(re.search(regex, member.display_name)) or bool(re.search(regex, member.name)))
 
     def join_username_word_blacklist(self, *, member: Member, words: list[str], **kw) -> bool:
-        return any(word in member.display_name for word in words) or any(
-            word in member.name for word in words
-        )
+        return any(word in member.display_name for word in words) or any(word in member.name for word in words)
 
     def join_username_word_whitelist(self, *, member: Member, words: list[str], **kw) -> bool:
-        return all(word not in member.display_name for word in words) and all(
-            word not in member.name for word in words
-        )
+        return all(word not in member.display_name for word in words) and all(word not in member.name for word in words)
 
     def join_username_invite(self, *, member: Member, **kw) -> bool:
         return bool(INVITE_RE.search(member.display_name)) or bool(INVITE_RE.search(member.name))

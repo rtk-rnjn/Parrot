@@ -8,6 +8,7 @@ from typing import Any, Literal, Optional, Union
 
 from pymongo import UpdateMany, UpdateOne
 from pymongo.results import BulkWriteResult
+
 import discord
 from core import Cog, Context, Parrot, ParrotLinkView
 from discord.ext import commands, tasks
@@ -147,7 +148,8 @@ class Highlight(Cog):
         assert message.guild is not None
 
         member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
-            message.guild, word["user_id"],
+            message.guild,
+            word["user_id"],
         )
 
         if member is None:

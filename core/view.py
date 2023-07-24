@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import traceback
 from typing import TYPE_CHECKING, Union
 
 from discord.enums import ButtonStyle
 from discord.interactions import Interaction
-import traceback
 
 import discord
 
@@ -20,7 +20,11 @@ class ParrotItem(discord.ui.Item):
 
 class ParrotModal(discord.ui.Modal):
     def __init__(
-        self, *, title: str = discord.utils.MISSING, timeout: float = None, custom_id: str = discord.utils.MISSING,
+        self,
+        *,
+        title: str = discord.utils.MISSING,
+        timeout: float = None,
+        custom_id: str = discord.utils.MISSING,
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
 

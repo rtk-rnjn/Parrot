@@ -275,13 +275,21 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if vc:
                 em.add_field(name="VC Channel ID", value=str(vc), inline=True).add_field(
-                    name="Suppress?", value=suppress, inline=True,
+                    name="Suppress?",
+                    value=suppress,
+                    inline=True,
                 ).add_field(name="Self Mute?", value=self_mute, inline=True).add_field(
-                    name="Self Deaf?", value=self_deaf, inline=True,
+                    name="Self Deaf?",
+                    value=self_deaf,
+                    inline=True,
                 ).add_field(
-                    name="Deaf?", value=deaf, inline=True,
+                    name="Deaf?",
+                    value=deaf,
+                    inline=True,
                 ).add_field(
-                    name="Mute?", value=mute, inline=True,
+                    name="Mute?",
+                    value=mute,
+                    inline=True,
                 )
             em_list_member.append(em)
 

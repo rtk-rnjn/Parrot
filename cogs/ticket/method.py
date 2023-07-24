@@ -231,7 +231,9 @@ async def _save(ctx: Context, bot: Parrot, limit: int) -> None:
 
 async def _addaccess(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}, upsert=True,
+        {"_id": ctx.guild.id},
+        {"$addToSet": {"valid_roles": role.id}},
+        upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -245,7 +247,9 @@ async def _addaccess(ctx: Context, role: discord.Role) -> None:
 
 async def _delaccess(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}, upsert=True,
+        {"_id": ctx.guild.id},
+        {"$addToSet": {"valid_roles": role.id}},
+        upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -259,7 +263,9 @@ async def _delaccess(ctx: Context, role: discord.Role) -> None:
 
 async def _addadimrole(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"verified_roles": role.id}}, upsert=True,
+        {"_id": ctx.guild.id},
+        {"$addToSet": {"verified_roles": role.id}},
+        upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -273,7 +279,9 @@ async def _addadimrole(ctx: Context, role: discord.Role) -> None:
 
 async def _addpingedrole(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"pinged_roles": role.id}}, upsert=True,
+        {"_id": ctx.guild.id},
+        {"$addToSet": {"pinged_roles": role.id}},
+        upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",

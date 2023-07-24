@@ -6,9 +6,9 @@ import asyncio
 import random
 import re
 import string
+from collections.abc import Coroutine
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
-from collections.abc import Coroutine
 
 from PIL import Image, ImageDraw
 
@@ -228,7 +228,10 @@ class BattleShip:
         return False, False
 
     async def get_file(
-        self, player: discord.User, *, hide: bool = True,
+        self,
+        player: discord.User,
+        *,
+        hide: bool = True,
     ) -> tuple[discord.Embed, discord.File, discord.Embed, discord.File]:
         board = self.get_board(player)
         image1 = await board.to_image()
@@ -324,7 +327,10 @@ class BattleShip:
         return True
 
     async def start(
-        self, ctx: Context[Parrot], *, timeout: Optional[float] = None,
+        self,
+        ctx: Context[Parrot],
+        *,
+        timeout: Optional[float] = None,
     ) -> tuple[discord.Message, discord.Message]:
         """Starts the battleship game.
 
@@ -628,7 +634,8 @@ class SetupInput(discord.ui.Modal):
 
         if vertical not in ("y", "n"):
             return await interaction.response.send_message(
-                "Response for `vertical` must be either `y` or `n`", ephemeral=True,
+                "Response for `vertical` must be either `y` or `n`",
+                ephemeral=True,
             )
 
         vertical = vertical != "y"

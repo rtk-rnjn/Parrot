@@ -4,9 +4,9 @@ import asyncio
 import math
 import random
 from collections import defaultdict
+from collections.abc import Awaitable, Iterable
 from dataclasses import dataclass
 from typing import Literal, NamedTuple, Optional, TypeVar, Union, overload
-from collections.abc import Awaitable, Iterable
 
 import discord
 from core import Context
@@ -461,7 +461,8 @@ class GameView(discord.ui.View):
             hand = discord.utils.get(self.game.hands, player=interaction.user)
             if len(hand) != 1:
                 return await interaction.response.send_message(
-                    'You must only have one card in order to say "UNO".', ephemeral=True,
+                    'You must only have one card in order to say "UNO".',
+                    ephemeral=True,
                 )
 
             self.game._uno_safe.add(interaction.user)
@@ -805,13 +806,15 @@ class UNO:
         if self.draw_queue > 0:
             if not self.rule_set.progressive:
                 return await interaction.response.send_message(
-                    "You cannot play anything, you must draw instead.", ephemeral=True,
+                    "You cannot play anything, you must draw instead.",
+                    ephemeral=True,
                 )
 
             can_play = card.type is self.current.type is CardType.plus_2 or card.type is CardType.plus_4
             if not can_play:
                 return await interaction.response.send_message(
-                    "You must stack onto the draw, or draw yourself.", ephemeral=True,
+                    "You must stack onto the draw, or draw yourself.",
+                    ephemeral=True,
                 )
 
         # All unsafe players are now safe as they haven't been caught

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import datetime
-from collections.abc import Container, Iterable
-from typing import TYPE_CHECKING, Optional, Union
-from collections.abc import Callable
+from collections.abc import Callable, Container, Iterable
+from typing import TYPE_CHECKING, Optional, TypeAlias, Union
 
 from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
-from typing import TypeAlias
 
 import discord
 from core import Context, Parrot

@@ -121,7 +121,9 @@ class Variables:
             self.__message.guild.get_channel(category) if category else None  # type: discord.CategoryChannel # type: ignore
         )
         chn = await self.__message.guild.create_text_channel(  # type: ignore
-            name, position=position or discord.utils.MISSING, category=cat,  # type: ignore
+            name,
+            position=position or discord.utils.MISSING,
+            category=cat,  # type: ignore
         )
         return chn.id
 

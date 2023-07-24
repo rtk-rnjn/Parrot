@@ -11,7 +11,11 @@ POSSIBLE_PYLINT_CODE = re.compile(r"([A-Z]\d{4})")
 class PyLintConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     confidence: Literal[
-        "high", "control_flow", "inference_failure", "undefined", "inference",
+        "high",
+        "control_flow",
+        "inference_failure",
+        "undefined",
+        "inference",
     ] = "HIGH CONTROL_FLOW INFERENCE_FAILURE UNDEFINED INFERENCE"
     disable: Optional[str] = None
     enable: Optional[str] = None

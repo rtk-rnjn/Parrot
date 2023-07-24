@@ -7,9 +7,9 @@ import pathlib
 import re
 import threading
 import time
+from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any, Optional, Union
-from collections.abc import Callable
 
 import aiofiles
 import bandit

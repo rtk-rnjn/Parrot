@@ -77,7 +77,9 @@ class Configuration(Cog):
     async def config_opt_in_github(self, ctx: Context):
         """To opt in git link to code block."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": True}}, upsert=True,
+            {"_id": ctx.guild.id},
+            {"$set": {"gitlink_enabled": True}},
+            upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} enabled gitlink to codeblock in this server")
 
@@ -86,7 +88,9 @@ class Configuration(Cog):
     async def config_opt_in_equation(self, ctx: Context):
         """To opt in instant equation solver."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": True}}, upsert=True,
+            {"_id": ctx.guild.id},
+            {"$set": {"equation_enabled": True}},
+            upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} enabled instant equation solver in this server")
 
@@ -102,7 +106,9 @@ class Configuration(Cog):
     async def config_opt_out_github(self, ctx: Context):
         """To opt out git link to code block."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": False}}, upsert=True,
+            {"_id": ctx.guild.id},
+            {"$set": {"gitlink_enabled": False}},
+            upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} disabled gitlink to codeblock in this server")
 
@@ -111,7 +117,9 @@ class Configuration(Cog):
     async def config_opt_out_equation(self, ctx: Context):
         """To opt out instant equation solver."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": False}}, upsert=True,
+            {"_id": ctx.guild.id},
+            {"$set": {"equation_enabled": False}},
+            upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} disabled instant equation solver in this server")
 
@@ -237,7 +245,8 @@ class Configuration(Cog):
     async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
         """To lock the starboard channel."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard_config.is_locked": toggle}},
+            {"_id": ctx.guild.id},
+            {"$set": {"starboard_config.is_locked": toggle}},
         )
         await ctx.reply(f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}")
 
@@ -246,7 +255,8 @@ class Configuration(Cog):
     async def starboard_self_star(self, ctx: Context, *, toggle: convert_bool = False):
         """To allow self star."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard_config.can_self_star": toggle}},
+            {"_id": ctx.guild.id},
+            {"$set": {"starboard_config.can_self_star": toggle}},
         )
         await ctx.reply(f"{ctx.author.mention} self star is now {'enabled' if toggle else 'disabled'}")
 
@@ -268,7 +278,8 @@ class Configuration(Cog):
         """To configure the suggestion channel. If no channel is provided it will remove the channel."""
         if channel:
             await self.bot.guild_configurations.update_one(
-                {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}},
+                {"_id": ctx.guild.id},
+                {"$set": {"suggestion_channel": channel.id}},
             )
             await ctx.reply(f"{ctx.author.mention} set suggestion channel to {channel.mention}")
             return
@@ -328,7 +339,9 @@ class Configuration(Cog):
         if not setting:
             overwrites: dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
-                    read_messages=True, send_messages=True, read_message_history=True,
+                    read_messages=True,
+                    send_messages=True,
+                    read_message_history=True,
                 ),
                 ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True),
             }
@@ -452,7 +465,8 @@ class Configuration(Cog):
     async def leveling_ignore_role(self, ctx: Context, *, role: discord.Role):
         """To configure leveling ignore role."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"leveling.ignore_role": role.id}},
+            {"_id": ctx.guild.id},
+            {"$addToSet": {"leveling.ignore_role": role.id}},
         )
         await ctx.reply(f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**")
         return
@@ -499,7 +513,8 @@ class Configuration(Cog):
     async def leveling_unignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
         """To configure leveling ignore channel."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_channel": channel.id}},
+            {"_id": ctx.guild.id},
+            {"$pull": {"leveling.ignore_channel": channel.id}},
         )
         await ctx.reply(f"{ctx.author.mention} removed **{channel.mention}** from ignore list. (If existed)")
 

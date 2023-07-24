@@ -1,4 +1,3 @@
-
 """Captcha
 ~~~~~~~
 A captcha library that generates audio and image CAPTCHAs.

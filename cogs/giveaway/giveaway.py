@@ -56,7 +56,8 @@ class Giveaways(Cog):
     async def giveaway_end(self, ctx: Context, message_id: int):
         """To end the giveaway."""
         if data := await self.bot.giveaways.find_one_and_update(
-            {"message_id": message_id, "status": "ONGOING"}, {"$set": {"status": "END"}},
+            {"message_id": message_id, "status": "ONGOING"},
+            {"$set": {"status": "END"}},
         ):
             member_ids = await mt.end_giveaway(self.bot, **data)
             if not member_ids:

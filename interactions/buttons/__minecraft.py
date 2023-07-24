@@ -251,7 +251,10 @@ class Minecraft(discord.ui.View):
         self.add_item(self.place_btn)
 
         self.finish_btn = discord.ui.Button(
-            emoji="\N{WHITE HEAVY CHECK MARK}", style=discord.ButtonStyle.primary, disabled=True, row=2,
+            emoji="\N{WHITE HEAVY CHECK MARK}",
+            style=discord.ButtonStyle.primary,
+            disabled=True,
+            row=2,
         )
         self.finish_btn.callback = self.finish
         self.add_item(self.finish_btn)

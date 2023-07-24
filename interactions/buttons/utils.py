@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar, Union
 from collections.abc import Callable, Coroutine
+from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar, Union
 
 import discord
 from core import Context, Parrot, ParrotView
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
     from typing import TypeAlias
+
+    from typing_extensions import ParamSpec
 
     P = ParamSpec("P")
     T = TypeVar("T")

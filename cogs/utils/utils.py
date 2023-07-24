@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pymongo import ReturnDocument
-from typing import Annotated
 
 import discord
 from core import Cog, Context, Parrot

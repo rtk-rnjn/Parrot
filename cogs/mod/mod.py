@@ -4,10 +4,9 @@ import argparse
 import asyncio
 import re
 import shlex
-from typing import Optional, Union
+from typing import Annotated, Optional, Union
 
 import wavelink
-from typing import Annotated
 
 import discord
 from cogs.mod import method as mt

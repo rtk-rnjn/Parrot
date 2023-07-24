@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     from pymongo.collection import Collection
     from pymongo.results import UpdateResult
 
+from collections import deque
+
 from .__flags import (
     ChannelMixFlag,
     DistortionFlag,
@@ -32,7 +34,6 @@ from .__flags import (
     VibratoFlag,
 )
 from .__view import MusicView
-from collections import deque
 
 
 def get_emoji_from_like_rate(like_rate: float) -> str:
@@ -711,7 +712,9 @@ class Music(Cog):
     async def myplaylist_clear(self, ctx: Context):
         """Clears the playlist."""
         data: UpdateResult = await self.bot.user_collections_ind.update_one(
-            {"_id": ctx.author.id}, {"$set": {"playlist": []}}, upsert=True,
+            {"_id": ctx.author.id},
+            {"$set": {"playlist": []}},
+            upsert=True,
         )
         if data.modified_count == 0:
             return await ctx.error(f"{ctx.author.mention} Failed to clear playlist")

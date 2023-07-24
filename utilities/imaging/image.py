@@ -2,20 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Awaitable, Callable, Iterable
 from io import BytesIO
 from itertools import cycle
 from math import ceil
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Concatenate,
-    Final,
-    Optional,
-    ParamSpec,
-    TypeAlias,
-    TypeVar,
-)
-from collections.abc import Awaitable, Callable, Iterable
+from typing import TYPE_CHECKING, Any, Concatenate, Final, Optional, ParamSpec, TypeAlias, TypeVar
 
 import cv2
 import numpy as np
@@ -471,7 +462,8 @@ def _convert_from_arr(
 
 
 def to_array(
-    img_mode: str = "RGB", arr_mode: int = cv2.COLOR_RGB2BGR,
+    img_mode: str = "RGB",
+    arr_mode: int = cv2.COLOR_RGB2BGR,
 ) -> Callable[[WandFunction | PillowFunction], WandFunction | PillowFunction]:
     def decorator(func: WandFunction | PillowFunction) -> WandFunction | PillowFunction:
         def inner(ctx: C, image: I | I_ | list[I | I_], *args: P.args, **kwargs: P.kwargs) -> R | R_:

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 import random
-from typing import TYPE_CHECKING, Optional
 from collections.abc import Callable
+from typing import TYPE_CHECKING, Optional
 
 from PIL import Image, ImageFilter, ImageFont
 from PIL.ImageDraw import Draw

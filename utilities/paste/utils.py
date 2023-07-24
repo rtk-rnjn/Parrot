@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import wraps
 from typing import TYPE_CHECKING, Any, TypeVar
-from collections.abc import Callable
 
 from .errors import AuthenticationRequired
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
     from typing import Concatenate
+
+    from typing_extensions import ParamSpec
 
     C = TypeVar("C", bound="Any")
     T = TypeVar("T")

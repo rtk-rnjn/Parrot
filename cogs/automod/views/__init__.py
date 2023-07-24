@@ -130,16 +130,13 @@ auto_mod_dict = {
 def get_item(main_data, *, tp: str) -> ParrotSelect:
     class Select(ParrotSelect):
         def __init__(self):
-            options = []
-            for action in auto_mod_dict[tp][f"{tp}"]:
-                options.append(
-                    discord.SelectOption(
-                        label=action["type"].replace("_", " ").title(),
-                        value=f"{json.dumps(action)}",
-                    )
+            options = [
+                discord.SelectOption(
+                    label=action["type"].replace("_", " ").title(),
+                    value=f"{json.dumps(action)}",
                 )
-                print("Added", tp, action["type"])
-
+                for action in auto_mod_dict[tp][f"{tp}"]
+            ]
             super().__init__(
                 placeholder=titles[tp],
                 max_values=1,
@@ -160,6 +157,7 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
                 setattr(self.view, tp, main_data)
 
             await self.view.message.edit(embed=self.view.embed)
+
 
     return Select()
 

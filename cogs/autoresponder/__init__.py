@@ -325,7 +325,7 @@ class AutoResponders(Cog):
                 if name == message.content:
                     content = await self.execute_jinja(name, response, **variables)
 
-            if content and (not self.is_ratelimited(message)):
+            if content and (not self.is_ratelimited(message)) and str(content) != "None":
                 await message.channel.send(content)
 
     def is_ratelimited(self, message: discord.Message):

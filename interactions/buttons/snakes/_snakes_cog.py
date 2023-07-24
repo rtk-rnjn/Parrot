@@ -9,7 +9,7 @@ import string
 import textwrap
 from functools import partial
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import async_timeout
 from discord.ext.commands import BucketType, CommandError, bot_has_permissions, group
@@ -137,7 +137,7 @@ ERROR_REPLIES = [
 ]
 
 # snake card consts
-CARD: Dict[str, Union[Image.Image, List, ImageFont.FreeTypeFont]] = {
+CARD: dict[str, Union[Image.Image, list, ImageFont.FreeTypeFont]] = {
     "top": Image.open("extra/snakes/snake_cards/card_top.png"),
     "frame": Image.open("extra/snakes/snake_cards/card_frame.png"),
     "bottom": Image.open("extra/snakes/snake_cards/card_bottom.png"),
@@ -153,16 +153,15 @@ async def invoke_help_command(ctx: Context) -> None:
 
 
 class Snakes(Cog):
-    """
-    Commands related to snakes, created by Python-Discord community during the first code jam.
+    """Commands related to snakes, created by Python-Discord community during the first code jam.
     More information can be found in the code-jam-1 repo.
-    https://github.com/python-discord/code-jam-1
+    https://github.com/python-discord/code-jam-1.
     """
 
     wiki_brief = re.compile(r"(.*?)(=+ (.*?) =+)", flags=re.DOTALL)
     valid_image_extensions = ("gif", "png", "jpeg", "jpg", "webp")
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
         self.active_sal = {}
@@ -194,8 +193,7 @@ class Snakes(Cog):
 
     @staticmethod
     def _generate_card(buffer: BytesIO, content: dict) -> BytesIO:
-        """
-        Generate a card from snake information.
+        """Generate a card from snake information.
         Written by juan and Someone during the first code jam.
         """
         snake = Image.open(buffer)
@@ -304,9 +302,8 @@ class Snakes(Cog):
             async with self.bot.http_session.get(url, params=params) as response:
                 return await response.json()
 
-    def _get_random_long_message(self, messages: List[str], retries: int = 10) -> str:
-        """
-        Fetch a message that's at least 3 words long, if possible to do so in retries attempts.
+    def _get_random_long_message(self, messages: list[str], retries: int = 10) -> str:
+        """Fetch a message that's at least 3 words long, if possible to do so in retries attempts.
         Else, just return whatever the last message is.
         """
         long_message = random.choice(messages)
@@ -315,9 +312,8 @@ class Snakes(Cog):
 
         return long_message
 
-    async def _get_snek(self, name: str) -> Dict[str, Any]:
-        """
-        Fetches all the data from a wikipedia article about a snake.
+    async def _get_snek(self, name: str) -> dict[str, Any]:
+        """Fetches all the data from a wikipedia article about a snake.
         Builds a dict that the .get() method can use.
         Created by Ava and eivl.
         """
@@ -412,11 +408,11 @@ class Snakes(Cog):
 
         return snake_info
 
-    async def _get_snake_name(self) -> Dict[str, str]:
+    async def _get_snake_name(self) -> dict[str, str]:
         """Gets a random snake name."""
         return random.choice(self.snake_names)
 
-    async def _validate_answer(self, ctx: Context, message: Message, answer: str, options: Dict[str, str]) -> None:
+    async def _validate_answer(self, ctx: Context, message: Message, answer: str, options: dict[str, str]) -> None:
         """Validate the answer using a reaction event loop."""
 
         def predicate(reaction: Reaction, user: Member) -> bool:
@@ -459,8 +455,7 @@ class Snakes(Cog):
     @snakes_group.command(name="antidote")
     @commands.max_concurrency(1, per=BucketType.channel)
     async def antidote_command(self, ctx: Context) -> None:
-        """
-        Antidote! Can you create the antivenom before the patient dies?
+        """Antidote! Can you create the antivenom before the patient dies?
         Rules:  You have 4 ingredients for each antidote, you only have 10 attempts
                 Once you synthesize the antidote, you will be presented with 4 markers
                 Tick: This means you have a CORRECT ingredient in the CORRECT position
@@ -483,7 +478,7 @@ class Snakes(Cog):
                     user_.id != self.bot.user.id,
                     # Reaction was made by author
                     user_.id == ctx.author.id,
-                )
+                ),
             )
 
         # Initialize variables
@@ -593,8 +588,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="draw")
     async def draw_command(self, ctx: Context) -> None:
-        """
-        Draws a random snek using Perlin noise.
+        """Draws a random snek using Perlin noise.
         Written by Momo and kel.
         Modified by juan and lemon.
         """
@@ -631,8 +625,7 @@ class Snakes(Cog):
     @bot_has_permissions(manage_messages=True)
     @commands.max_concurrency(1, per=BucketType.channel)
     async def get_command(self, ctx: Context, *, name: Snake = None) -> None:
-        """
-        Fetches information about a snake from Wikipedia.
+        """Fetches information about a snake from Wikipedia.
         Created by Ava and eivl.
         """
         async with ctx.typing():
@@ -677,8 +670,7 @@ class Snakes(Cog):
     @snakes_group.command(name="guess", aliases=("identify",))
     @commands.max_concurrency(1, per=BucketType.channel)
     async def guess_command(self, ctx: Context) -> None:
-        """
-        Snake identifying game.
+        """Snake identifying game.
         Made by Ava and eivl.
         Modified by lemon.
         """
@@ -708,8 +700,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="hatch")
     async def hatch_command(self, ctx: Context) -> None:
-        """
-        Hatches your personal snake.
+        """Hatches your personal snake.
         Written by Momo and kel.
         """
         # Pick a random snake to hatch.
@@ -728,17 +719,16 @@ class Snakes(Cog):
         await message.delete()
 
         # Build and send the embed.
-        my_snake_embed = Embed(description=":tada: Congrats! You hatched: **{0}**".format(snake_name))
+        my_snake_embed = Embed(description=f":tada: Congrats! You hatched: **{snake_name}**")
         my_snake_embed.set_thumbnail(url=snake_image)
-        my_snake_embed.set_footer(text=" Owner: {0}".format(ctx.author))
+        my_snake_embed.set_footer(text=f" Owner: {ctx.author}")
 
         await ctx.send(embed=my_snake_embed)
 
     @snakes_group.command(name="quiz")
     @commands.max_concurrency(1, per=BucketType.channel)
     async def quiz_command(self, ctx: Context) -> None:
-        """
-        Asks a snake-related question in the chat and validates the user's guess.
+        """Asks a snake-related question in the chat and validates the user's guess.
         This was created by Mushy and Cardium,
         and modified by Urthas and lemon.
         """
@@ -759,15 +749,16 @@ class Snakes(Cog):
 
     @snakes_group.command(name="name", aliases=("name_gen",))
     async def name_command(self, ctx: Context, *, name: str = None) -> None:
-        """
-        Snakifies a username.
+        """Snakifies a username.
         Slices the users name at the last vowel (or second last if the name
         ends with a vowel), and then combines it with a random snake name,
         which is sliced at the first vowel (or second if the name starts with
         a vowel).
         If the name contains no vowels, it just appends the snakename
         to the end of the name.
-        Examples:
+
+        Examples
+        --------
             lemon + anaconda = lemoconda
             krzsn + anaconda = krzsnconda
             gdude + anaconda = gduconda
@@ -824,8 +815,7 @@ class Snakes(Cog):
     @snakes_group.command(name="sal")
     @commands.max_concurrency(1, per=BucketType.channel)
     async def sal_command(self, ctx: Context) -> None:
-        """
-        Play a game of Snakes and Ladders.
+        """Play a game of Snakes and Ladders.
         Written by Momo and kel.
         Modified by lemon.
         """
@@ -862,8 +852,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="card")
     async def card_command(self, ctx: Context, *, name: Snake = None) -> None:
-        """
-        Create an interesting little card from a snake.
+        """Create an interesting little card from a snake.
         Created by juan and Someone during the first code jam.
         """
         # Get the snake data we need
@@ -898,8 +887,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="fact")
     async def fact_command(self, ctx: Context) -> None:
-        """
-        Gets a snake-related fact.
+        """Gets a snake-related fact.
         Written by Andrew and Prithaj.
         Modified by lemon.
         """
@@ -909,8 +897,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="snakify")
     async def snakify_command(self, ctx: Context, *, message: str = None) -> None:
-        """
-        How would I talk if I were a snake?
+        """How would I talk if I were a snake?
         If `message` is passed, the bot will snakify the message.
         Otherwise, a random message from the user's history is snakified.
         Written by Momo and kel.
@@ -924,7 +911,7 @@ class Snakes(Cog):
                 # Get a random message from the users history
                 messages = []
                 async for message in ctx.history(limit=500).filter(
-                    lambda msg: msg.author == ctx.author  # Message was sent by author.
+                    lambda msg: msg.author == ctx.author,  # Message was sent by author.
                 ):
                     messages.append(message.content)
 
@@ -941,8 +928,7 @@ class Snakes(Cog):
 
     @snakes_group.command(name="zen")
     async def zen_command(self, ctx: Context) -> None:
-        """
-        Gets a random quote from the Zen of Python, except as if spoken by a snake.
+        """Gets a random quote from the Zen of Python, except as if spoken by a snake.
         Written by Prithaj and Andrew.
         Modified by lemon.
         """

@@ -6,8 +6,8 @@ import discord
 from core import Cog, Parrot
 
 
-class TicketReaction(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class TicketReaction(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     async def log(self, guild, channel: discord.TextChannel, description: str, status: str) -> Optional[discord.Message]:
@@ -19,7 +19,7 @@ class TicketReaction(Cog, command_attrs=dict(hidden=True)):
                 color=discord.Color.blue(),
             )
             .add_field(name="Status", value=status)
-            .set_footer(text=f"{guild.name}")
+            .set_footer(text=f"{guild.name}"),
         )
 
     @Cog.listener()

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class InputUI(discord.ui.View):
-    def __init__(self, game: GameUI):
+    def __init__(self, game: GameUI) -> None:
         self.game: GameUI = game
         super().__init__(timeout=None)
 

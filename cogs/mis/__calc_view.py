@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import urllib.parse
-from typing import Any, Dict
+from typing import Any
 
 import discord
 from core import Context, Parrot, ParrotButton, ParrotView
 
-constant: Dict[str, str] = {
+constant: dict[str, str] = {
     "\N{SUPERSCRIPT ONE}": "^1",
     "\N{SUPERSCRIPT TWO}": "^2",
     "\N{SUPERSCRIPT THREE}": "^3",
@@ -59,7 +59,7 @@ CALC_BUTTONS = [
 class CalcButton(ParrotButton):
     view: CalcView
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     async def callback(self, interaction: discord.Interaction):
@@ -67,7 +67,7 @@ class CalcButton(ParrotButton):
             self.view.arg += str(self.label)
         elif self.label == "=":
             res = await self.view.bot.http_session.get(
-                f"http://twitch.center/customapi/math?expr={urllib.parse.quote(self.view.arg)}"
+                f"http://twitch.center/customapi/math?expr={urllib.parse.quote(self.view.arg)}",
             )
             self.view.arg = await res.text()
         elif self.label == "Change To Scientific":
@@ -88,7 +88,7 @@ class CalcButton(ParrotButton):
 
 
 class CalcView(ParrotView):
-    def __init__(self, *, timeout: float, ctx: Context, arg: Any = None):
+    def __init__(self, *, timeout: float, ctx: Context, arg: Any = None) -> None:
         super().__init__(timeout=timeout, ctx=ctx)
         self.bot: Parrot = ctx.bot
 
@@ -107,7 +107,7 @@ class CalcView(ParrotView):
 
 
 class ScientificCalculator(ParrotView):
-    def __init__(self, *, timeout: float, ctx: Context, arg: str):
+    def __init__(self, *, timeout: float, ctx: Context, arg: str) -> None:
         super().__init__(timeout=timeout, ctx=ctx)
         self.arg = arg or ""
 

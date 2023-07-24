@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
-from typing import Any, Dict, List, Optional, Union, overload
+from typing import Any, Optional, Union, overload
 
 import yaml
 
@@ -13,7 +13,7 @@ with contextlib.suppress(ImportError):
     dotenv_values(".env")
 
 with open("config.yml", encoding="utf-8", errors="ignore") as f:
-    data: Dict[str, Any] = yaml.safe_load(f.read())
+    data: dict[str, Any] = yaml.safe_load(f.read())
 
 VERSION = "v5.0.0"
 
@@ -35,13 +35,12 @@ def parse_env_var(key: ..., default: ...) -> ...:
     ...
 
 
-def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, float, bool, List[Any]]:
-    """
-    Parse an environment variable into a Python type.
-    """
+def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, float, bool, list[Any]]:
+    """Parse an environment variable into a Python type."""
     value = os.environ.get(str(key), default)
     if value is None:
-        raise ValueError(f"{key} is not set")
+        msg = f"{key} is not set"
+        raise ValueError(msg)
     if "|" in value:
         return [parse_env_var(None, key) for key in value.split("|")]
     if value.isdigit():
@@ -51,14 +50,14 @@ def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, fl
     return value.lower() == "true" if value.lower() in ("true", "false") else value
 
 
-OWNER_IDS: List[int] = parse_env_var("OWNER_IDS")
+OWNER_IDS: list[int] = parse_env_var("OWNER_IDS")
 DEFAULT_PREFIX: str = parse_env_var("BOT_PREFIX", "$")
 CASE_INSENSITIVE: bool = parse_env_var("COMMAND_CASE_INSENSITIVE", True)
 STRIP_AFTER_PREFIX: bool = parse_env_var("STRIP_AFTER_PREFIX")
 SUPER_USER: str = parse_env_var("OWNER_ID")
 MASTER_OWNER: str = SUPER_USER
-EXTENSIONS: List[str] = data["all_extensions"]
-UNLOAD_EXTENSIONS: List[str] = data.get("unload_extensions", [])
+EXTENSIONS: list[str] = data["all_extensions"]
+UNLOAD_EXTENSIONS: list[str] = data.get("unload_extensions", [])
 DEV_LOGO: str = data["dev_logo"]
 TOKEN: str = parse_env_var("TOKEN")
 DATABASE_KEY: str = parse_env_var("DATABASE_KEY")

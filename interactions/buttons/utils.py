@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Final, List, Optional, Set, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar, Union
+from collections.abc import Callable, Coroutine
 
 import discord
 from core import Context, Parrot, ParrotView
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, TypeAlias
+    from typing_extensions import ParamSpec
+    from typing import TypeAlias
 
     P = ParamSpec("P")
     T = TypeVar("T")
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
     A = TypeVar("A", bound=bool)
     B = TypeVar("B", bound=bool)
 
-__all__: Tuple[str, ...] = (
+__all__: tuple[str, ...] = (
     "DiscordColor",
     "DEFAULT_COLOR",
     "executor",
@@ -31,7 +33,7 @@ DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 
-def chunk(iterable: List[T], *, count: int) -> List[List[T]]:
+def chunk(iterable: list[T], *, count: int) -> list[list[T]]:
     return [iterable[i : i + count] for i in range(0, len(iterable), count)]
 
 
@@ -54,7 +56,7 @@ async def wait_for_delete(
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
     bot: Optional[discord.Client] = None,
-    user: Optional[Union[discord.User, discord.Member, Tuple[discord.User, ...]]] = None,
+    user: Optional[Union[discord.User, discord.Member, tuple[discord.User, ...]]] = None,
     timeout: Optional[float] = None,
 ) -> bool:
     if not user:
@@ -85,7 +87,7 @@ async def double_wait(
     task2: Coroutine[Any, Any, B],
     *,
     loop: Optional[asyncio.AbstractEventLoop] = None,
-) -> Tuple[Set[Union[asyncio.Task[A], asyncio.Task[B]]], Set[Union[asyncio.Task[A], asyncio.Task[B]]],]:
+) -> tuple[set[Union[asyncio.Task[A], asyncio.Task[B]]], set[Union[asyncio.Task[A], asyncio.Task[B]]]]:
     if not loop:
         loop = asyncio.get_event_loop()
 

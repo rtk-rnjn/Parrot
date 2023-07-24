@@ -16,7 +16,7 @@ log = logging.getLogger("cogs.defcon")
 
 
 class DefensiveCondition(Cog):
-    """Powerful Raid Protection"""
+    """Powerful Raid Protection."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -50,7 +50,7 @@ class DefensiveCondition(Cog):
     @commands.group(name="defcon", aliases=["dc"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     async def defcon(self, ctx: Context) -> None:
-        """Manage defcon settings"""
+        """Manage defcon settings."""
         if ctx.invoked_subcommand is None:
             defcon_help = (
                 "**`Def`ensive `Con`dition**"
@@ -93,7 +93,7 @@ class DefensiveCondition(Cog):
 
     async def defcon_set(self, ctx: Context, level: int) -> None:
         # sourcery skip: use-named-expression
-        """Set the level of defcon"""
+        """Set the level of defcon."""
         channel_hidded = []
         settings = DEFCON_SETTINGS[level]["SETTINGS"]
         if settings.get("HIDE_CHANNELS"):
@@ -176,7 +176,7 @@ class DefensiveCondition(Cog):
         cog: DefconListeners = self.bot.get_cog("DefconListeners")  # type: ignore
         if cog:
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(
-                text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url
+                text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url,
             )
             embed.description = (
                 f"**{ctx.author}** has set the defcon level to {level}.\n\n"
@@ -189,7 +189,7 @@ class DefensiveCondition(Cog):
             await cog.defcon_broadcast(embed, guild=ctx.guild, level=level)
 
     async def defcon_reset(self, ctx: Context, level: int) -> None:
-        """Reset the level of defcon"""
+        """Reset the level of defcon."""
         guild_config = await self.bot.guild_configurations.find_one({"_id": ctx.guild.id})
         if not guild_config or not guild_config.get("default_defcon"):
             await ctx.reply("Defcon is not set.")
@@ -251,7 +251,7 @@ class DefensiveCondition(Cog):
                 "$set": {
                     "default_defcon.locked_channels": [],
                     "default_defcon.hidden_channels": [],
-                }
+                },
             },
             upsert=True,
         )
@@ -272,7 +272,7 @@ class DefensiveCondition(Cog):
 
         if cog := self.bot.get_cog("DefconListeners"):
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(
-                text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url
+                text=f"Invoked by {ctx.author}", icon_url=ctx.author.display_avatar.url,
             )
             embed.description = (
                 f"**{ctx.author}** has reset the defcon level to {level}.\n\n"
@@ -285,7 +285,7 @@ class DefensiveCondition(Cog):
     @defcon.command(name="set")
     @commands.has_permissions(manage_guild=True)
     async def _defcon_set(self, ctx: Context, *, level: int = 1) -> None:
-        """Set the level of defcon"""
+        """Set the level of defcon."""
         if level > 5 or level < 1:
             await ctx.reply("Defcon level must be between 0 and 5 (inclusive).")
             return
@@ -312,8 +312,7 @@ class DefensiveCondition(Cog):
     @defcon.command(name="reset")
     @commands.has_permissions(manage_guild=True)
     async def _defcon_reset(self, ctx: Context) -> None:
-        """Reset the defcon level"""
-
+        """Reset the defcon level."""
         default_defcon = self.bot.guild_configurations_cache[ctx.guild.id].get("default_defcon", {})
         level = default_defcon.get("level", -1)
         if level == -1:
@@ -338,9 +337,9 @@ class DefensiveCondition(Cog):
     @defcon.command(name="settings")
     @commands.has_permissions(manage_guild=True)
     async def defcon_settings(self, ctx: Context) -> None:
-        """View the current defcon settings"""
+        """View the current defcon settings."""
         guild_config = await self.bot.guild_configurations.find_one(
-            {"_id": ctx.guild.id, "default_defcon": {"$exists": True}}
+            {"_id": ctx.guild.id, "default_defcon": {"$exists": True}},
         )
         if not guild_config or "level" not in guild_config["default_defcon"]:
             await ctx.reply("No defcon settings found.")
@@ -351,7 +350,7 @@ class DefensiveCondition(Cog):
     @defcon.command(name="enable")
     @commands.has_permissions(manage_guild=True)
     async def defcon_enable(self, ctx: Context) -> None:
-        """Enable defcon"""
+        """Enable defcon."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"default_defcon.enabled": True}},
@@ -362,7 +361,7 @@ class DefensiveCondition(Cog):
     @defcon.command(name="disable")
     @commands.has_permissions(manage_guild=True)
     async def defcon_disable(self, ctx: Context) -> None:
-        """Disable defcon"""
+        """Disable defcon."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"default_defcon.enabled": False}},
@@ -373,7 +372,7 @@ class DefensiveCondition(Cog):
     @defcon.command(name="broadcast")
     @commands.has_permissions(manage_guild=True)
     async def defcon_broadcast(self, ctx: Context, channel: discord.TextChannel = None) -> None:
-        """Set the broadcast channel for defcon"""
+        """Set the broadcast channel for defcon."""
         if not channel:
             await self.bot.guild_configurations.update_one(
                 {"_id": ctx.guild.id},
@@ -393,7 +392,7 @@ class DefensiveCondition(Cog):
     @defcon.group(name="trustables", aliases=["trustable"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     async def defcon_trustables(self, ctx: Context) -> None:
-        """Manage trustable roles"""
+        """Manage trustable roles."""
         if ctx.invoked_subcommand is None:
             guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 
@@ -442,7 +441,7 @@ class DefensiveCondition(Cog):
     @defcon_trustables.command(name="add")
     @commands.has_permissions(manage_guild=True)
     async def defcon_trustables_add(self, ctx: Context, *roles_or_members: Union[discord.Role, discord.Member]) -> None:
-        """To add trustable roles or members"""
+        """To add trustable roles or members."""
         guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 
         if "default_defcon" not in guild_config:
@@ -481,7 +480,7 @@ class DefensiveCondition(Cog):
     @defcon_trustables.command(name="remove")
     @commands.has_permissions(manage_guild=True)
     async def defcon_trustables_remove(self, ctx: Context, *roles_or_members: Union[discord.Role, discord.Member]) -> None:
-        """To remove trustable roles or members"""
+        """To remove trustable roles or members."""
         guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 
         if "default_defcon" not in guild_config:
@@ -519,7 +518,7 @@ class DefensiveCondition(Cog):
     @defcon_trustables.command(name="admin")
     @commands.has_permissions(manage_guild=True)
     async def defcon_trustables_admin(self, ctx: Context) -> None:
-        """To add admin as trustable"""
+        """To add admin as trustable."""
         guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 
         if "default_defcon" not in guild_config:
@@ -537,7 +536,7 @@ class DefensiveCondition(Cog):
     @defcon_trustables.command(name="removeadmin")
     @commands.has_permissions(manage_guild=True)
     async def defcon_trustables_removeadmin(self, ctx: Context) -> None:
-        """To remove admin as trustable"""
+        """To remove admin as trustable."""
         guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 
         if "default_defcon" not in guild_config:

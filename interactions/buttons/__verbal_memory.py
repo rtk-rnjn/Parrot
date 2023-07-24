@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from english_words import get_english_words_set
 
@@ -72,7 +72,7 @@ class VerbalView(BaseView):
 
 
 class VerbalMemory:
-    def __init__(self, word_set: Optional[List[str]] = None, sample_size: Optional[int] = 300) -> None:
+    def __init__(self, word_set: Optional[list[str]] = None, sample_size: Optional[int] = 300) -> None:
         self.lives: int = 0
         self.embed: Optional[discord.Embed] = None
 
@@ -81,7 +81,7 @@ class VerbalMemory:
                 ["web2"],
                 alpha=True,
                 lower=True,
-            )
+            ),
         )
 
         if sample_size:
@@ -95,7 +95,7 @@ class VerbalMemory:
         assert self.word_set
 
         self.score: int = 0
-        self.seen: List[str] = []
+        self.seen: list[str] = []
         self.word = self.choose_word()
 
     def choose_word(self) -> str:
@@ -120,7 +120,7 @@ class VerbalMemory:
         ctx: Context[Parrot],
         *,
         lives: int = 3,
-        weights: Tuple[float, float] = (0.7, 0.3),
+        weights: tuple[float, float] = (0.7, 0.3),
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
         timeout: Optional[float] = None,
     ) -> Optional[discord.Message]:

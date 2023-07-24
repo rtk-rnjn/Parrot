@@ -10,7 +10,7 @@ import unicodedata
 from contextlib import suppress
 from datetime import datetime
 from time import time
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import discord
 from core import Cog
@@ -53,22 +53,22 @@ CORE_MAINTAINER_ROLE = 1022216515598164019
 __all__ = ("Sector1729",)
 
 
-with open("extra/adjectives.txt", "r", encoding="utf-8", errors="ignore") as f:
+with open("extra/adjectives.txt", encoding="utf-8", errors="ignore") as f:
     ADJECTIVES = f.read().splitlines()
 
-with open("extra/mr_robot.txt", "r", encoding="utf-8", errors="ignore") as f:
+with open("extra/mr_robot.txt", encoding="utf-8", errors="ignore") as f:
     MR_ROBOT = f.read().splitlines()
 
 
 class Sector1729(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self._cache: Dict[int, Union[int, float]] = {}
+        self._cache: dict[int, Union[int, float]] = {}
         self.vote_reseter.start()
         self.ON_TESTING = False
 
-        self.lock: "asyncio.Lock" = asyncio.Lock()
-        self.__assignable_roles: List[int] = [
+        self.lock: asyncio.Lock = asyncio.Lock()
+        self.__assignable_roles: list[int] = [
             1022896161167777835,  # NSFW ACCESS
             1022896162107310130,  # BOT ACCESS
             1022897174624866426,  # MUSIC ACCESS
@@ -164,7 +164,7 @@ class Sector1729(Cog):
     async def on_dbl_vote(self, data: BotVoteData):
         assert self.bot.server is not None
         member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
-            self.bot.server, data.user
+            self.bot.server, data.user,
         )
 
         if member is None and not isinstance(member, discord.Member):
@@ -191,7 +191,7 @@ class Sector1729(Cog):
             return await ctx.error("You already have the vote role.")
 
         if await self.bot.user_collections_ind.find_one(
-            {"_id": ctx.author.id, "topgg_vote_expires": {"$gte": time()}}
+            {"_id": ctx.author.id, "topgg_vote_expires": {"$gte": time()}},
         ) or await self.bot.topgg.get_user_vote(ctx.author.id):
             role = discord.Object(id=VOTER_ROLE_ID)
             await ctx.author.add_roles(role, reason="Voted for the bot on Top.gg")
@@ -200,7 +200,7 @@ class Sector1729(Cog):
 
         await ctx.send(
             "Seems you haven't voted for the bot on Top.gg Yet. This might be error. "
-            f"Consider asking the owner of the bot ({self.bot.author_obj})"
+            f"Consider asking the owner of the bot ({self.bot.author_obj})",
         )
 
     @commands.command(name="myvotes", hidden=True)
@@ -319,14 +319,14 @@ class Sector1729(Cog):
 
     @commands.group(name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True)
     async def sector_17_29(self, ctx: Context):
-        """Commands related to SECTOR 17-29"""
+        """Commands related to SECTOR 17-29."""
         if not ctx.invoked_subcommand:
             await ctx.bot.invoke_help_command(ctx)
 
     @sector_17_29.command(name="info", aliases=["about"])
     @in_support_server()
     async def sector_17_29_about(self, ctx: Context):
-        """Information about the SECTOR 17-29"""
+        """Information about the SECTOR 17-29."""
         description = (
             f"SECTOR 17-29 is support server of the bot (Parrot) and formely a "
             f"community server for the stream Beasty Stats.\n"
@@ -337,7 +337,7 @@ class Sector1729(Cog):
     @sector_17_29.command(name="color")
     @in_support_server()
     async def sector_17_29_color(self, ctx: Context, *, color: Optional[str] = None):
-        """Assign yourself color role"""
+        """Assign yourself color role."""
         if not color:
             return
 
@@ -357,7 +357,7 @@ class Sector1729(Cog):
     @sector_17_29.command(name="uncolor")
     @in_support_server()
     async def sector_17_29_uncolor(self, ctx: Context, *, color: Optional[str] = None):
-        """Unassign yourself color role"""
+        """Unassign yourself color role."""
         if not color:
             return
 
@@ -378,7 +378,7 @@ class Sector1729(Cog):
     @sector_17_29.command(name="role")
     @in_support_server()
     async def sector_17_29_role(self, ctx: Context, *, role: Optional[discord.Role]):
-        """Assign yourself role"""
+        """Assign yourself role."""
         if not role:
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
@@ -399,7 +399,7 @@ class Sector1729(Cog):
     @sector_17_29.command(name="unrole")
     @in_support_server()
     async def sector_17_29_unrole(self, ctx: Context, *, role: Optional[discord.Role]):
-        """Unassign yourself role"""
+        """Unassign yourself role."""
         if not role:
             await ctx.error(f"{ctx.author.mention} that role do not exists")
             return
@@ -454,14 +454,14 @@ class Sector1729(Cog):
 
     @sector_17_29.group(name="add")
     async def sector_17_29_add(self, ctx: Context):
-        """Add something to the server"""
+        """Add something to the server."""
         if not ctx.invoked_subcommand:
             await ctx.bot.invoke_help_command(ctx)
 
     @sector_17_29.command(name="lock")
     @commands.has_permissions(manage_channels=True)
     async def lock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
-        """Lock updating general chat and railway role. And all messagable channels"""
+        """Lock updating general chat and railway role. And all messagable channels."""
         self._is_locked = True
 
         assert ctx.guild is not None
@@ -477,7 +477,7 @@ class Sector1729(Cog):
                     self.__locked_channels.add(channel.id)
 
                 if (
-                    isinstance(channel, (discord.VoiceChannel, discord.StageChannel))
+                    isinstance(channel, discord.VoiceChannel | discord.StageChannel)
                     and channel.permissions_for(ctx.guild.default_role).connect
                 ):
                     await channel.set_permissions(ctx.guild.default_role, connect=False, reason=reason)
@@ -488,7 +488,7 @@ class Sector1729(Cog):
     @sector_17_29.command(name="unlock", aliases=["release"])
     @commands.has_permissions(manage_channels=True)
     async def unlock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
-        """Unlock updating general chat and railway role. And unlock all messagable channels"""
+        """Unlock updating general chat and railway role. And unlock all messagable channels."""
         self._is_locked = False
 
         assert ctx.guild is not None
@@ -503,7 +503,7 @@ class Sector1729(Cog):
                         await channel.set_permissions(ctx.guild.default_role, send_messages=None, reason=reason)
                         await channel.send(f"Server Unlocked: {reason}")
                     if (
-                        isinstance(channel, (discord.VoiceChannel, discord.StageChannel))
+                        isinstance(channel, discord.VoiceChannel | discord.StageChannel)
                         and not channel.permissions_for(ctx.guild.default_role).connect
                     ):
                         await channel.set_permissions(ctx.guild.default_role, connect=None, reason=reason)
@@ -519,7 +519,7 @@ class Sector1729(Cog):
     @commands.cooldown(1, 300, commands.BucketType.guild)
     @in_support_server()
     async def sector_17_29_add_adj(self, ctx: Context, *adjs: str):
-        """Add adjective to the server"""
+        """Add adjective to the server."""
         if not adjs:
             return await ctx.bot.invoke_help_command(ctx)
 
@@ -579,7 +579,7 @@ class Sector1729(Cog):
 
     @sector_17_29.group(name="remove")
     async def sector_17_29_remove(self, ctx: Context):
-        """Remove something from the server"""
+        """Remove something from the server."""
         if not ctx.invoked_subcommand:
             await ctx.bot.invoke_help_command(ctx)
 
@@ -587,7 +587,7 @@ class Sector1729(Cog):
     @commands.has_any_role(SERVER_MOD, CORE_MAINTAINER_ROLE)
     @in_support_server()
     async def sector_17_29_remove_adj(self, ctx: Context, *adjs: str):
-        """Remove adjective from the server"""
+        """Remove adjective from the server."""
         if not adjs:
             return await ctx.bot.invoke_help_command(ctx)
 
@@ -606,7 +606,7 @@ class Sector1729(Cog):
 
     @commands.command()
     async def removebg(self, ctx: Context, *, url: str):
-        """To remove the background from image"""
+        """To remove the background from image."""
         async with self.bot.http_session.get(url) as img:
             imgdata = io.BytesIO(await img.read())
 

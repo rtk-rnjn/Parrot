@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import discord
 from core import Cog, Parrot
 
 
-class GuildRoleEmoji(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class GuildRoleEmoji(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     @Cog.listener()

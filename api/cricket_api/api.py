@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import aiohttp  # type: ignore
 import uvicorn  # type: ignore
@@ -19,11 +19,11 @@ async def root():
 
 
 @app.get("/cricket_api")
-async def cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
+async def cricket_api(url: Optional[str] = None) -> Optional[dict[str, Any]]:
     return await _cricket_api(url)
 
 
-async def _cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
+async def _cricket_api(url: Optional[str] = None) -> Optional[dict[str, Any]]:
     if not url:
         raise HTTPException(status_code=400, detail="URL not provided")
 
@@ -50,7 +50,7 @@ async def _cricket_api(url: Optional[str] = None) -> Optional[Dict[str, Any]]:
             zip(
                 await find_all(soup, "span", **{"style": "color:#777;"}),
                 await find_all(soup, "span", **{"style": "color:#333"}),
-            )
+            ),
         ),
         "commentry": await find_all(soup, "p", **{"class": "commtext"}),
         "batting": await get_batting(soup),

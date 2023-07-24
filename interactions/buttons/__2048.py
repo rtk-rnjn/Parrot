@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 import discord
 from core import Parrot
@@ -19,28 +19,28 @@ class Twenty48:
         self._controls = ["w", "a", "s", "d"]
         self._conversion = number_to_display_dict
 
-    def reverse(self, board: List[List[int]]) -> List[List[int]]:
-        new_board: List[List[int]] = []
+    def reverse(self, board: list[list[int]]) -> list[list[int]]:
+        new_board: list[list[int]] = []
         for i in range(self.size):
             new_board.append([])
             for j in range(self.size):
                 new_board[i].append(board[i][(self.size - 1) - j])
         return new_board
 
-    def transp(self, board: List[List[int]]) -> List[List[int]]:
+    def transp(self, board: list[list[int]]) -> list[list[int]]:
         new_board = [[0 for _ in range(self.size)] for _ in range(self.size)]
         for i, j in itertools.product(range(self.size), range(self.size)):
             new_board[i][j] = board[j][i]
         return new_board
 
-    def merge(self, board: List[List[int]]) -> List[List[int]]:
+    def merge(self, board: list[list[int]]) -> list[list[int]]:
         for i, j in itertools.product(range(self.size), range(self.size - 1)):
             if board[i][j] == board[i][j + 1] and board[i][j] != 0:
                 board[i][j] += board[i][j]
                 board[i][j + 1] = 0
         return board
 
-    def compress(self, board: List[List[int]]) -> List[List[int]]:
+    def compress(self, board: list[list[int]]) -> list[list[int]]:
         new_board = [[0 for _ in range(self.size)] for _ in range(self.size)]
         for i in range(self.size):
             pos = 0

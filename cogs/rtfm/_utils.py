@@ -8,7 +8,8 @@ import re
 import threading
 import time
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Optional, Union
+from collections.abc import Callable
 
 import aiofiles
 import bandit
@@ -80,7 +81,7 @@ $wtf del
 TIMEOUT = 120
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
-MAPPING_OF_KYU: Dict[int, int] = {
+MAPPING_OF_KYU: dict[int, int] = {
     8: 0xDDDBDA,
     7: 0xDDDBDA,
     6: 0xECB613,
@@ -92,7 +93,7 @@ MAPPING_OF_KYU: Dict[int, int] = {
 }
 
 # Supported languages for a kata on codewars.com
-SUPPORTED_LANGUAGES: Dict[str, List[str]] = {
+SUPPORTED_LANGUAGES: dict[str, list[str]] = {
     "stable": [
         "c",
         "c#",
@@ -155,7 +156,7 @@ SUPPORTED_LANGUAGES: Dict[str, List[str]] = {
 }
 
 
-NEGATIVE_REPLIES: List[str] = ["! YOU DONE? !", "! OK, HERE IS AN ERROR !", "! F. !"]
+NEGATIVE_REPLIES: list[str] = ["! YOU DONE? !", "! OK, HERE IS AN ERROR !", "! F. !"]
 
 
 class Icons:
@@ -173,8 +174,8 @@ class InformationDropdown(discord.ui.Select):
         tags_embed: discord.Embed,
         other_info_embed: discord.Embed,
         main_embed: discord.Embed,
-    ):
-        options: List[discord.SelectOption] = [
+    ) -> None:
+        options: list[discord.SelectOption] = [
             discord.SelectOption(
                 label="Main Information",
                 description="See the kata's difficulty, description, etc.",
@@ -198,7 +199,7 @@ class InformationDropdown(discord.ui.Select):
         ]
 
         # We map the option label to the embed instance so that it can be easily looked up later in O(1)
-        self.mapping_of_embeds: Dict[str, discord.Embed] = {
+        self.mapping_of_embeds: dict[str, discord.Embed] = {
             "Main Information": main_embed,
             "Languages": language_embed,
             "Tags": tags_embed,
@@ -238,7 +239,7 @@ def background_task(func: Callable, *args: Any, **kwargs: Any) -> Callable[[], A
     return wrapper
 
 
-async def lint(cmd: str, filename: str) -> Dict[str, str]:
+async def lint(cmd: str, filename: str) -> dict[str, str]:
     proc = await asyncio.create_subprocess_shell(
         f"{cmd} {filename}",
         stdout=asyncio.subprocess.PIPE,
@@ -379,7 +380,7 @@ class LintCode:
             pages.add_line(f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{pyright.__version__}\n")
 
             pages.add_line(
-                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information"
+                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information",
             )
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
@@ -432,7 +433,7 @@ class LintCode:
                     message = f"{Fore.BLUE}{error['text']}"
                     physical_line = f"{Fore.CYAN}{error['physical_line']}"
                     await interface.add_line(
-                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n>>> {physical_line}"
+                        f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {code} - {message}\n>>> {physical_line}",
                     )
 
         if data.get("stderr"):
@@ -475,7 +476,7 @@ class LintCode:
                 end_location_col = f'{Fore.YELLOW}{result["end_location"]["column"]}'
 
                 await interface.add_line(
-                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}:{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}"
+                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}:{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}",
                 )
                 if result["fix"]:
                     applicability = f'{Fore.CYAN}{result["fix"]["applicability"]}'
@@ -516,7 +517,7 @@ class LintCode:
                 message_id = f"{Fore.RED}{result['message-id']}"
                 symbol = f"{Fore.WHITE}({Fore.CYAN}{result['symbol']}{Fore.WHITE})"
                 await interface.add_line(
-                    f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {message_id} - {message:<13} {symbol}"
+                    f"{Fore.WHITE}{filename}:{line:>2}:{column:<2} - {message_id} - {message:<13} {symbol}",
                 )
 
     async def lint_with_bandit(self, ctx: Context) -> None:
@@ -543,7 +544,7 @@ class LintCode:
             confidence_undefined = json_data["metrics"]["_totals"]["CONFIDENCE.UNDEFINED"]
 
             await interface.add_line(
-                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High {Fore.WHITE}- {Fore.YELLOW}{confidence_medium} Medium {Fore.WHITE}- {Fore.GREEN}{confidence_low} Low {Fore.WHITE}- {Fore.CYAN}{confidence_undefined} Undefined"
+                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High {Fore.WHITE}- {Fore.YELLOW}{confidence_medium} Medium {Fore.WHITE}- {Fore.GREEN}{confidence_low} Low {Fore.WHITE}- {Fore.CYAN}{confidence_undefined} Undefined",
             )
 
             severity_high = json_data["metrics"]["_totals"]["SEVERITY.HIGH"]
@@ -552,7 +553,7 @@ class LintCode:
             severity_undefined = json_data["metrics"]["_totals"]["SEVERITY.UNDEFINED"]
 
             await interface.add_line(
-                f"{Fore.WHITE}Severity  : {Fore.RED}{severity_high} High {Fore.WHITE}- {Fore.YELLOW}{severity_medium} Medium {Fore.WHITE}- {Fore.GREEN}{severity_low} Low {Fore.WHITE}- {Fore.CYAN}{severity_undefined} Undefined"
+                f"{Fore.WHITE}Severity  : {Fore.RED}{severity_high} High {Fore.WHITE}- {Fore.YELLOW}{severity_medium} Medium {Fore.WHITE}- {Fore.GREEN}{severity_low} Low {Fore.WHITE}- {Fore.CYAN}{severity_undefined} Undefined",
             )
 
             loc = json_data["metrics"]["_totals"]["loc"]
@@ -560,7 +561,7 @@ class LintCode:
             skipped_tests = json_data["metrics"]["_totals"]["skipped_tests"]
 
             await interface.add_line(
-                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}Lines of Code (#NoSec) {nosec} {Fore.WHITE}- {Fore.YELLOW}Skipped Tests {skipped_tests}\n"
+                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}Lines of Code (#NoSec) {nosec} {Fore.WHITE}- {Fore.YELLOW}Skipped Tests {skipped_tests}\n",
             )
 
             for result in json_data["results"]:
@@ -589,7 +590,7 @@ class LintCode:
                     f"{Fore.WHITE}   More Info: {more_info}\n"
                     f"{Fore.WHITE}   Location : {filename}{line_number:>2}:{col_offset:<2}\n"
                     f"{Fore.WHITE}   Code     :\n{code}\n"
-                    f"{Fore.WHITE}{'-'*50}\n"
+                    f"{Fore.WHITE}{'-'*50}\n",
                 )
 
     async def run_black(self, ctx: Context) -> None:

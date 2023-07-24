@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from string import ascii_uppercase
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 from PIL import Image
 
@@ -54,7 +54,7 @@ LETTERS_EMOJI = {
         "5": QU_EMOJI,
         "6": TH_EMOJI,
     },
-    **dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI)),
+    **dict(zip(ascii_uppercase, REGIONAL_INDICATOR_EMOJI, strict=True)),
 }
 
 SMALL = 3
@@ -218,7 +218,7 @@ STATES = (
 NUMBERS = list(Emojis.number_emojis.values())
 CROSS_EMOJI = Emojis.incident_unactioned
 
-Coordinate = Optional[Tuple[int, int]]
+Coordinate = Optional[tuple[int, int]]
 EMOJI_CHECK = Union[discord.Emoji, discord.PartialEmoji, str]
 
 CHOICES = ["rock", "paper", "scissors"]
@@ -275,12 +275,12 @@ NUMBERS = [
 CROSS_EMOJI = "\u274e"
 HAND_RAISED_EMOJI = "\U0001f64b"
 
-BoardState = List[List[Optional[bool]]]
+BoardState = list[list[Optional[bool]]]
 
 DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 
 
-EmojiSet = Dict[Tuple[bool, bool], str]
+EmojiSet = dict[tuple[bool, bool], str]
 
 grass = Image.open("extra/minecraft/grass64x.png").convert("RGBA")
 water = Image.open("extra/minecraft/water64x.png").convert("RGBA")

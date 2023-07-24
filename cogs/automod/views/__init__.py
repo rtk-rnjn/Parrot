@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List
 
 import discord
-from core import Context, Parrot, ParrotButton, ParrotModal, ParrotSelect, ParrotView
+from core import Context, ParrotModal, ParrotSelect, ParrotView
 from utilities.converters import convert_bool
 
 ACTION_PATH = "cogs/automod/templates/actions.json"
 CONDITION_PATH = "cogs/automod/templates/conditions.json"
 TRIGGER_PATH = "cogs/automod/templates/triggers.json"
 
-with open(ACTION_PATH, "r") as f:
-    ACTIONS: Dict[str, List[Dict[str, str]]] = json.load(f)
+with open(ACTION_PATH) as f:
+    ACTIONS: dict[str, list[dict[str, str]]] = json.load(f)
 
-with open(CONDITION_PATH, "r") as f:
-    CONDITIONS: Dict[str, List[Dict[str, str]]] = json.load(f)
+with open(CONDITION_PATH) as f:
+    CONDITIONS: dict[str, list[dict[str, str]]] = json.load(f)
 
-with open(TRIGGER_PATH, "r") as f:
-    TRIGGERS: Dict[str, List[Dict[str, str]]] = json.load(f)
+with open(TRIGGER_PATH) as f:
+    TRIGGERS: dict[str, list[dict[str, str]]] = json.load(f)
 
 
 class Automod(ParrotView):
@@ -76,7 +75,7 @@ class Automod(ParrotView):
 
 
 class _Parser:
-    def __init__(self, value: str, method):
+    def __init__(self, value: str, method) -> None:
         self.value = value
         self.method = method.lower()
 
@@ -129,7 +128,7 @@ auto_mod_dict = {
 
 def get_item(main_data, *, tp: str) -> ParrotSelect:
     class Select(ParrotSelect):
-        def __init__(self):
+        def __init__(self) -> None:
             options = [
                 discord.SelectOption(
                     label=action["type"].replace("_", " ").title(),
@@ -174,7 +173,7 @@ class Modal(ParrotModal):
     def __init__(self, *, data: str, **kw) -> None:
         d: dict = json.loads(data)
         self.main_data = kw.pop("main_data")
-        super().__init__(title=d.pop('type'), **kw)
+        super().__init__(title=d.pop("type"), **kw)
         self.data = d
 
         for k in d:

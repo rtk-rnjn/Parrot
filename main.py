@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from __future__ import annotations
 
@@ -31,7 +30,7 @@ async def main() -> None:
         async with bot:
             bot.http_session = http_session
             bot.sql = await init()
-            setattr(bot, "database", bot.sql)
+            bot.database = bot.sql
 
             if not hasattr(bot, "__version__"):
                 bot.__version__ = VERSION

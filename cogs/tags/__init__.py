@@ -7,7 +7,7 @@ from discord.ext import commands
 
 
 class Tags(Cog):
-    """For making the tags. Tags are like the snippets. You can create tags and use them later"""
+    """For making the tags. Tags are like the snippets. You can create tags and use them later."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -37,7 +37,7 @@ class Tags(Cog):
     @tag.command(name="create", aliases=["add"])
     @commands.bot_has_permissions(embed_links=True)
     async def tag_create(self, ctx: Context, tag: str, *, text: str):
-        """To create tag. All tag have unique name
+        """To create tag. All tag have unique name.
 
         **Examples:**
         - `[p]tag create tag_name tag_text`
@@ -106,7 +106,8 @@ class Tags(Cog):
         """To claim the ownership of the tag, if the owner of the tag left the server.
 
         **Examples:**
-        - `[p]tag snipe tag_name`"""
+        - `[p]tag snipe tag_name`
+        """
         await mt._claim_owner(self.bot, ctx, tag)
 
     @tag.command(name="togglensfw", aliases=["nsfw", "tnsfw"])
@@ -122,7 +123,7 @@ class Tags(Cog):
     @tag.command(name="give", aliases=["transfer"])
     @commands.bot_has_permissions(embed_links=True)
     async def tag_tranfer(self, ctx: Context, tag: str, *, member: discord.Member):
-        """To transfer the ownership of tag you own to other member
+        """To transfer the ownership of tag you own to other member.
 
         **Examples:**
         - `[p]tag give tag_name @member`
@@ -138,7 +139,7 @@ class Tags(Cog):
     @tag.command(name="all")
     @commands.bot_has_permissions(embed_links=True)
     async def tag_all(self, ctx: Context):
-        """To show all tags
+        """To show all tags.
 
         **Examples:**
         - `[p]tag all`

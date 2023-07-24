@@ -6,13 +6,12 @@ if TYPE_CHECKING:
     from core import Parrot
 
 import discord
-from core import Context
 
 
 class Variables:
     __class__ = None  # type: ignore
 
-    def __init__(self, *, message: discord.Message, bot: Parrot):
+    def __init__(self, *, message: discord.Message, bot: Parrot) -> None:
         self.__message = message
         self.__bot = bot
 
@@ -53,66 +52,81 @@ class Variables:
 
     @property
     def message_id(self):
-        """Get message id"""
+        """Get message id."""
         return self.__message.id
 
     @property
     def message_content(self):
-        """Get message content"""
+        """Get message content."""
         return self.__message.content
 
     @property
     def channel_id(self):
-        """Get channel id"""
+        """Get channel id."""
         return self.__message.channel.id
 
     @property
     def channel_name(self):
-        """Get channel name"""
+        """Get channel name."""
         return self.__message.channel.name  # type: ignore
 
     @property
     def message_author_id(self):
-        """Get message author id"""
+        """Get message author id."""
         return self.__message.author.id
 
     @property
     def message_author_name(self):
-        """Get message author name"""
+        """Get message author name."""
         return self.__message.author.name
 
     @property
     def message_author(self):
-        """Get message author"""
+        """Get message author."""
         return str(self.__message.author)
 
+    async def _send_message_after(self, channel: int, message: str, delay: int = 0):
+        """Send a message after a delay."""
+        delay = max(0, delay)
+        if delay > 15 * 60:
+            return
+        if chn := self.__message.guild.get_channel(channel):  # type: ignore
+            await chn.send(message[:1990], delete_after=delay or None)  # type: ignore
+
+    async def _reply_message_after(self, message: str, delay: int = 0):
+        """Reply to a message after a delay."""
+        delay = max(0, delay)
+        if delay > 15 * 60:
+            return
+        await self.__message.reply(message[:1990], delete_after=delay or None)  # type: ignore
+
     def _get_role_name(self, role_id: int):
-        """Get role name from role id"""
+        """Get role name from role id."""
         r = self.__message.guild.get_role(role_id)  # type: ignore
         return r.name if r else None
 
     def _get_channel_name(self, channel_id: int):
-        """Get channel name from channel id"""
+        """Get channel name from channel id."""
         c = self.__message.guild.get_channel(channel_id)  # type: ignore
         return c.name if c else None
 
     def _get_member_name(self, member_id: int):
-        """Get member name from member id"""
+        """Get member name from member id."""
         m = self.__message.guild.get_member(member_id)  # type: ignore
         return m.name if m else None
 
     async def _create_channel(self, name: str, position: int = None, category: int = None):
-        """Create a channel in the same category as the message channel"""
+        """Create a channel in the same category as the message channel."""
         cat = (
             self.__message.guild.get_channel(category) if category else None  # type: discord.CategoryChannel # type: ignore
         )
         chn = await self.__message.guild.create_text_channel(  # type: ignore
-            name, position=position or discord.utils.MISSING, category=cat  # type: ignore
+            name, position=position or discord.utils.MISSING, category=cat,  # type: ignore
         )
         return chn.id
 
     async def _create_role(self, name: str, permission: int = None, color: int = None):
-        """Create a role in the same guild as the message"""
+        """Create a role in the same guild as the message."""
         if permission:
             perms = discord.Permissions(permission)
         else:
@@ -123,7 +137,7 @@ class Variables:
         return role.id
 
     async def _delete_message(self, channel: int, message: int):
-        """Delete a message from a channel"""
+        """Delete a message from a channel."""
         msg: discord.PartialMessage = self.__bot.get_or_fetch_message(channel, message, partial=True)  # type: ignore
         if msg and (msg.guild.id != self.__message.guild.id):  # type: ignore
             return
@@ -133,25 +147,26 @@ class Variables:
         await self.__message.delete(delay=0)
 
     async def _get_db(self, key: str):
-        """Get the database"""
+        """Get the database."""
         data = await self.__bot.auto_responders.find_one({"_id": self.__message.guild.id, key: {"$exists": True}})  # type: ignore
         return data[key] if data else None
 
     async def _set_db(self, key: str, value: Any):
-        """Set the database"""
+        """Set the database."""
         await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}}, upsert=True)  # type: ignore
 
     async def _delete_db(self, key: str):
-        """Delete the database"""
+        """Delete the database."""
         await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$unset": {key: ""}})  # type: ignore
 
     async def _update_db(self, key: str, value: Any):
-        """Update the database"""
+        """Update the database."""
         await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}})  # type: ignore
 
     def multiply(self, a: int, b: int):
-        if max(a, b) > 1000000:
-            raise ValueError("The number is too big")
+        if max(a, b) > 100000:
+            msg = "The number is too big"
+            raise ValueError(msg)
         return a * b
 
 

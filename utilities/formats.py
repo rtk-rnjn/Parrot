@@ -6,7 +6,7 @@ from typing import Any, Union
 
 
 class plural:
-    def __init__(self, value: int):
+    def __init__(self, value: int) -> None:
         self.value = value
 
     def __format__(self, format_spec: str) -> str:
@@ -28,7 +28,7 @@ def human_join(seq, delim=", ", final="or"):
 
 
 class TabularData:
-    def __init__(self):
+    def __init__(self) -> None:
         self._widths = []
         self._columns = []
         self._rows = []
@@ -51,13 +51,15 @@ class TabularData:
 
     def render(self):
         """Renders a table in rST format.
+
         Example:
+        -------
         +-------+-----+
         | Name  | Age |
         +-------+-----+
         | Alice | 24  |
         |  Bob  | 19  |
-        +-------+-----+
+        +-------+-----+.
         """
         sep = "+".join("-" * w for w in self._widths)
         sep = f"+{sep}+"
@@ -80,8 +82,7 @@ class TabularData:
 
 def format_dt(dt: Union[datetime.datetime, int, float], style: str = None) -> str:
     """Formats a datetime object or timestamp into a Discord-style timestamp."""
-
-    if isinstance(dt, (int, float)):
+    if isinstance(dt, int | float):
         dt = datetime.datetime.utcfromtimestamp(dt)
 
     if dt.tzinfo is None:

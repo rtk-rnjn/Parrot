@@ -1,9 +1,9 @@
-# coding: utf-8
 from __future__ import annotations
 
 import os
 import random
-from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
+from typing import TYPE_CHECKING, Optional
+from collections.abc import Callable
 
 from PIL import Image, ImageFilter, ImageFont
 from PIL.ImageDraw import Draw
@@ -40,14 +40,14 @@ except AttributeError:
 table = [int(i * 1.97) for i in range(256)]
 
 
-class _Captcha(object):
+class _Captcha:
     if TYPE_CHECKING:
         generate_image: Callable[[str], Image.Image]
 
     def generate(self, chars: str, format: str = "png") -> bytes:
         """Generate an Image Captcha of the given characters.
         :param chars: text to be generated.
-        :param format: image file format
+        :param format: image file format.
         """
         im: Image.Image = self.generate_image(chars)
         out: BytesIO = BytesIO()
@@ -59,7 +59,7 @@ class _Captcha(object):
         """Generate and write an image CAPTCHA data to the output.
         :param chars: text to be generated.
         :param output: output destination.
-        :param format: image file format
+        :param format: image file format.
         """
         im = self.generate_image(chars)
         return im.save(output, format=format)
@@ -68,7 +68,7 @@ class _Captcha(object):
 class WheezyCaptcha(_Captcha):
     """Create an image CAPTCHA with wheezy.captcha."""
 
-    def __init__(self, width: int = 200, height: int = 75, fonts: str = None):
+    def __init__(self, width: int = 200, height: int = 75, fonts: str = None) -> None:
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
@@ -114,13 +114,13 @@ class ImageCaptcha(_Captcha):
         width: int = 160,
         height: int = 60,
         fonts: Optional[str] = None,
-        font_sizes: Optional[Tuple[int, int, int]] = None,
-    ):
+        font_sizes: Optional[tuple[int, int, int]] = None,
+    ) -> None:
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
         self._font_sizes = font_sizes or (42, 50, 56)
-        self._truefonts: "List[ImageFont.FreeTypeFont]" = []
+        self._truefonts: list[ImageFont.FreeTypeFont] = []
 
     @property
     def truefonts(self):
@@ -131,7 +131,7 @@ class ImageCaptcha(_Captcha):
         return self._truefonts
 
     @staticmethod
-    def create_noise_curve(image: Image.Image, color: Tuple[int, int, int]):
+    def create_noise_curve(image: Image.Image, color: tuple[int, int, int]):
         w, h = image.size
         x1 = random.randint(0, int(w / 5))
         x2 = random.randint(w - int(w / 5), w)
@@ -144,7 +144,7 @@ class ImageCaptcha(_Captcha):
         return image
 
     @staticmethod
-    def create_noise_dots(image: Image.Image, color: Tuple, width: int = 3, number: int = 30):
+    def create_noise_dots(image: Image.Image, color: tuple, width: int = 3, number: int = 30):
         draw = Draw(image)
         w, h = image.size
         while number:
@@ -154,7 +154,7 @@ class ImageCaptcha(_Captcha):
             number -= 1
         return image
 
-    def create_captcha_image(self, chars: str, color: Tuple[int, int, int], background: str) -> Image.Image:
+    def create_captcha_image(self, chars: str, color: tuple[int, int, int], background: str) -> Image.Image:
         """Create the CAPTCHA image itself.
         :param chars: text to be generated.
         :param color: color of the text.
@@ -203,7 +203,7 @@ class ImageCaptcha(_Captcha):
             im = im.transform((w, h), _QUAD, data)
             return im
 
-        images: List[Image.Image] = []
+        images: list[Image.Image] = []
         for c in chars:
             if random.random() > 0.5:
                 images.append(_draw_character(" "))
@@ -235,7 +235,7 @@ class ImageCaptcha(_Captcha):
         """
         background = random_color(238, 255)
         color = random_color(10, 200, random.randint(220, 255))
-        im: "Image.Image" = self.create_captcha_image(chars, color, background)
+        im: Image.Image = self.create_captcha_image(chars, color, background)
         self.create_noise_dots(im, color)
         self.create_noise_curve(im, color)
         im = im.filter(ImageFilter.SMOOTH)

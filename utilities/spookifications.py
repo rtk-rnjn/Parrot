@@ -6,8 +6,7 @@ from PIL import Image, ImageOps
 
 
 def inversion(im: Image.Image) -> Image.Image:
-    """
-    Inverts the image.
+    """Inverts the image.
     Returns an inverted image when supplied with an Image object.
     """
     im = im.convert("RGB")
@@ -25,8 +24,7 @@ def pentagram(im: Image.Image) -> Image.Image:
 
 
 def bat(im: Image.Image) -> Image.Image:
-    """
-    Adds a bat silhoutte to the image.
+    """Adds a bat silhoutte to the image.
     The bat silhoutte is of a size at least one-fifths that of the original image and may be rotated
     up to 90 degrees anti-clockwise.
     """

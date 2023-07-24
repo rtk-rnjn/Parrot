@@ -3,7 +3,7 @@ from discord.ext import old_menus
 
 
 class ViewMenu(old_menus.Menu):
-    def __init__(self, *, auto_defer=True, **kwargs):
+    def __init__(self, *, auto_defer=True, **kwargs) -> None:
         super().__init__(**kwargs)
         self.auto_defer = auto_defer
         self.view = None
@@ -60,7 +60,8 @@ class ViewMenu(old_menus.Menu):
                 return wrapped()
 
             async def dummy():
-                raise old_menus.MenuError("Menu has not been started yet")
+                msg = "Menu has not been started yet"
+                raise old_menus.MenuError(msg)
 
             return dummy()
 
@@ -80,7 +81,8 @@ class ViewMenu(old_menus.Menu):
                 return wrapped()
 
             async def dummy():
-                raise old_menus.MenuError("Menu has not been started yet")
+                msg = "Menu has not been started yet"
+                raise old_menus.MenuError(msg)
 
             return dummy()
 
@@ -99,7 +101,8 @@ class ViewMenu(old_menus.Menu):
                 return wrapped()
 
             async def dummy():
-                raise old_menus.MenuError("Menu has not been started yet")
+                msg = "Menu has not been started yet"
+                raise old_menus.MenuError(msg)
 
             return dummy()
 
@@ -172,7 +175,7 @@ class ViewMenu(old_menus.Menu):
 
 
 class ViewMenuPages(old_menus.MenuPages, ViewMenu):
-    def __init__(self, source, **kwargs):
+    def __init__(self, source, **kwargs) -> None:
         self._source = source
         self.current_page = 0
         super().__init__(source, **kwargs)

@@ -18,9 +18,9 @@ from utilities.config import SUPPORT_SERVER
 class EmbedSend(discord.ui.Button):
     view: EmbedBuilder
 
-    def __init__(self, channel: discord.TextChannel):
+    def __init__(self, channel: discord.TextChannel) -> None:
         self.channel = channel
-        super().__init__(label="Send to #{0}".format(channel.name), style=discord.ButtonStyle.green)
+        super().__init__(label=f"Send to #{channel.name}", style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction) -> T.Any:
         try:
@@ -40,7 +40,7 @@ class EmbedSend(discord.ui.Button):
 class EmbedCancel(discord.ui.Button):
     view: EmbedBuilder
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(label="Cancel", style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction) -> T.Any:
@@ -87,7 +87,7 @@ class ParrotView(discord.ui.View):
     message: discord.Message
     custom_id = None
 
-    def __init__(self, ctx: Context, *, timeout: T.Optional[float] = 30):
+    def __init__(self, ctx: Context, *, timeout: T.Optional[float] = 30) -> None:
         super().__init__(timeout=timeout)
         self.ctx = ctx
         self.bot = ctx.bot
@@ -122,7 +122,7 @@ class ParrotView(discord.ui.View):
 
 
 class ParrotInput(discord.ui.Modal):
-    def __init__(self, title: str):
+    def __init__(self, title: str) -> None:
         super().__init__(title=title)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
@@ -133,7 +133,7 @@ class ParrotInput(discord.ui.Modal):
 class EmbedOptions(discord.ui.Select):
     view: EmbedBuilder
 
-    def __init__(self, ctx: Context):
+    def __init__(self, ctx: Context) -> None:
         self.ctx = ctx
         super().__init__(
             placeholder="Select an option to design the message.",
@@ -187,7 +187,7 @@ class EmbedOptions(discord.ui.Select):
                     required=False,
                     style=discord.TextStyle.short,
                     default=self.view.embed.title,
-                )
+                ),
             )
             modal.add_item(
                 discord.ui.TextInput(
@@ -197,7 +197,7 @@ class EmbedOptions(discord.ui.Select):
                     required=False,
                     style=discord.TextStyle.long,
                     default=self.view.embed.description,
-                )
+                ),
             )
             modal.add_item(
                 discord.ui.TextInput(
@@ -207,7 +207,7 @@ class EmbedOptions(discord.ui.Select):
                     max_length=2048,
                     required=False,
                     default=self.view.embed.footer.text,
-                )
+                ),
             )
             await interaction.response.send_modal(modal)
             await modal.wait()
@@ -232,7 +232,7 @@ class EmbedOptions(discord.ui.Select):
                     placeholder="Leave empty to remove Image.",
                     required=False,
                     default=getattr(self.view.embed.thumbnail, "url", None),
-                )
+                ),
             )
             await interaction.response.send_modal(modal)
             await modal.wait()
@@ -253,7 +253,7 @@ class EmbedOptions(discord.ui.Select):
                     placeholder="Leave empty to remove Image.",
                     required=False,
                     default=getattr(self.view.embed.image, "url", None),
-                )
+                ),
             )
             await interaction.response.send_modal(modal)
             await modal.wait()
@@ -275,7 +275,7 @@ class EmbedOptions(discord.ui.Select):
                     placeholder="Leave empty to remove Icon.",
                     required=False,
                     default=getattr(self.view.embed.footer, "icon_url", None),
-                )
+                ),
             )
             await interaction.response.send_modal(modal)
             await modal.wait()
@@ -297,7 +297,7 @@ class EmbedOptions(discord.ui.Select):
                     placeholder="Examples: red, yellow, #00ffb3, etc.",
                     required=False,
                     max_length=7,
-                )
+                ),
             )
             await interaction.response.send_modal(modal)
             await modal.wait()
@@ -314,7 +314,7 @@ class EmbedOptions(discord.ui.Select):
 
 
 class EmbedBuilder(ParrotView):
-    def __init__(self, ctx: Context, **kwargs: T.Any):
+    def __init__(self, ctx: Context, **kwargs: T.Any) -> None:
         super().__init__(ctx, timeout=100)
 
         self.ctx = ctx
@@ -349,7 +349,7 @@ class EmbedBuilder(ParrotView):
         return (
             discord.Embed(color=self.bot.color, title="Title", description="Description")
             .set_thumbnail(
-                url="https://cdn.discordapp.com/attachments/853174868551532564/860464565338898472/embed_thumbnail.png"
+                url="https://cdn.discordapp.com/attachments/853174868551532564/860464565338898472/embed_thumbnail.png",
             )
             .set_image(url="https://cdn.discordapp.com/attachments/853174868551532564/860462053063393280/embed_image.png")
             .set_footer(

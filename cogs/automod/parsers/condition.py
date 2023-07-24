@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -12,10 +12,10 @@ from discord import Member, Message
 
 
 class Condition:
-    def __init__(self, bot: Parrot, data: List[dict]):
+    def __init__(self, bot: Parrot, data: list[dict]) -> None:
         self.bot = bot
         self.data = data
-    
+
     async def check(self, **kw) -> bool:
         for condition in self.data:
             func = getattr(self, condition["name"])
@@ -23,16 +23,16 @@ class Condition:
                 return False
         return True
 
-    def ignore_roles(self, *, member: Member, roles: List[int], **kw) -> bool:
+    def ignore_roles(self, *, member: Member, roles: list[int], **kw) -> bool:
         return any(role.id in roles for role in member.roles)
 
-    def require_roles(self, *, member: Member, roles: List[int], **kw) -> bool:
+    def require_roles(self, *, member: Member, roles: list[int], **kw) -> bool:
         return all(role.id in roles for role in member.roles)
 
-    def ignore_channel(self, *, message: Message, channels: List[int], **kw) -> bool:
+    def ignore_channel(self, *, message: Message, channels: list[int], **kw) -> bool:
         return message.channel.id in channels
 
-    def require_channel(self, *, message: Message, channels: List[int], **kw) -> bool:
+    def require_channel(self, *, message: Message, channels: list[int], **kw) -> bool:
         return message.channel.id not in channels
 
     def ignore_bots(self, *, member: Member, **kw) -> bool:
@@ -41,11 +41,11 @@ class Condition:
     def require_bots(self, *, member: Member, **kw) -> bool:
         return member.bot
 
-    def ignore_categories(self, *, message: Message, categories: List[int], **kw) -> bool:
+    def ignore_categories(self, *, message: Message, categories: list[int], **kw) -> bool:
         assert isinstance(message.channel, GuildChannel)
         return message.channel.category.id in categories if message.channel.category else False
 
-    def require_categories(self, *, message: Message, categories: List[int], **kw) -> bool:
+    def require_categories(self, *, message: Message, categories: list[int], **kw) -> bool:
         assert isinstance(message.channel, GuildChannel)
         return message.channel.category.id not in categories if message.channel.category else False
 

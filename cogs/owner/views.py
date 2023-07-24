@@ -9,7 +9,7 @@ from utilities.paginator import PaginationView
 
 
 class NitroView(discord.ui.View):
-    def __init__(self, ctx: Context):
+    def __init__(self, ctx: Context) -> None:
         super().__init__(timeout=None)
         self.ctx: Context = ctx
         self.bot: Parrot = ctx.bot
@@ -42,7 +42,7 @@ class NitroView(discord.ui.View):
 class MongoCollectionView(discord.ui.View):
     message: typing.Optional[discord.Message] = None
 
-    def __init__(self, *, timeout: float = 20, db: str, collection: str, ctx: Context):
+    def __init__(self, *, timeout: float = 20, db: str, collection: str, ctx: Context) -> None:
         super().__init__(timeout=timeout)
         self.collection = collection
         self.db = db
@@ -97,7 +97,7 @@ class MongoCollectionView(discord.ui.View):
 
 
 class MongoViewSelect(discord.ui.Select["MongoView"]):
-    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs):
+    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs) -> None:
         self.db_name = kwargs.pop("db_name", "")
         super().__init__(min_values=1, max_values=1, **kwargs)
         self.ctx = ctx
@@ -132,13 +132,13 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
 class MongoView(discord.ui.View):
     message: typing.Optional[discord.Message] = None
 
-    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs):
+    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs) -> None:
         super().__init__(timeout=timeout)
 
         self.ctx = ctx
 
     async def init(self):
-        names: typing.List[str] = await self.ctx.bot.mongo.list_database_names()
+        names: list[str] = await self.ctx.bot.mongo.list_database_names()
 
         def to_emoji(c):
             return chr(127462 + c)
@@ -169,7 +169,7 @@ class MongoView(discord.ui.View):
                     row=i,
                     placeholder=f"Database - {name}",
                     db_name=name,
-                )
+                ),
             )
 
         self.message = await self.ctx.send(embed=embed, view=self)

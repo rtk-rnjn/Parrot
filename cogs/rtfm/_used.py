@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, List
 
 from yaml import safe_load as yaml_load  # type: ignore
 
@@ -14,7 +13,7 @@ from ._tio import Tio
 with open("extra/lang.txt", encoding="utf-8", errors="ignore") as f:
     languages = f.read().split("\n")
 
-wrapping: Dict[str, str] = {
+wrapping: dict[str, str] = {
     "c": "#include <stdio.h>\nint main() {code}",
     "cpp": "#include <iostream>\nint main() {code}",
     "cs": "using System;class Program {static void Main(string[] args) {code}}",
@@ -24,7 +23,7 @@ wrapping: Dict[str, str] = {
     "kotlin": "fun main(args: Array<String>) {code}",
 }
 
-with open("extra/default_langs.yml", "r", encoding="utf-8", errors="ignore") as file:
+with open("extra/default_langs.yml", encoding="utf-8", errors="ignore") as file:
     default_langs = yaml_load(file)
 
 
@@ -58,7 +57,7 @@ async def execute_run(
 
     # Setting options and removing them from the beginning of the command
     # options may be separated by any single whitespace, which we keep in the list
-    code: List[str] = re.split(r"(\s)", code, maxsplit=optionsAmount)
+    code: list[str] = re.split(r"(\s)", code, maxsplit=optionsAmount)
 
     for option in options:
         if option in code[: optionsAmount * 2]:
@@ -93,7 +92,7 @@ async def execute_run(
     code = "\n".join(code)  # type: ignore
 
     # common identifiers, also used in highlight.js and thus discord codeblocks
-    quickmap: Dict[str, str] = {
+    quickmap: dict[str, str] = {
         "asm": "assembly",
         "c#": "cs",
         "c++": "cpp",
@@ -136,7 +135,7 @@ async def execute_run(
             code = code[len(firstLine) + 1 :]
 
     if options["--wrapped"]:
-        if not (any(map(lambda x: lang.split("-")[0] == x, wrapping))) or lang in (
+        if not (any(lang.split("-")[0] == x for x in wrapping)) or lang in (
             "cs-mono-shell",
             "cs-csi",
         ):
@@ -190,7 +189,7 @@ async def execute_run(
 
 
 def get_raw(link: str) -> str:
-    """Returns the url for raw version on a hastebin-like"""
+    """Returns the url for raw version on a hastebin-like."""
     link = link.strip("<>/")  # Allow for no-embed links
 
     authorized = (
@@ -200,7 +199,8 @@ def get_raw(link: str) -> str:
     )
 
     if not any(link.startswith(url) for url in authorized):
-        raise commands.BadArgument(f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http').")
+        msg = f"Bot only accept links from {', '.join(authorized)}. (Starting with 'http')."
+        raise commands.BadArgument(msg)
 
     domain = link.split("/")[2]
 

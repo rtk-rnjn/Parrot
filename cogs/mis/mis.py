@@ -11,7 +11,8 @@ import urllib.parse
 from datetime import datetime
 from html import unescape
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
+from typing import Any, BinaryIO, Optional, Union
+from collections.abc import Iterable
 
 import qrcode
 from PIL import Image
@@ -147,7 +148,7 @@ def _process_image(data: bytes, out_file: BinaryIO) -> None:
 class InvalidLatexError(Exception):
     """Represents an error caused by invalid latex."""
 
-    def __init__(self, logs: Optional[str]):
+    def __init__(self, logs: Optional[str]) -> None:
         super().__init__(logs)
         self.logs = logs
 
@@ -206,12 +207,12 @@ qr_color_mask = {
 
 
 class Misc(Cog):
-    """Those commands which can't be listed"""
+    """Those commands which can't be listed."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
-        self.snipes: Dict[int, Union[List[discord.Message], discord.Message, None]] = {}
+        self.snipes: dict[int, Union[list[discord.Message], discord.Message, None]] = {}
 
         self.youtube_search = YoutubeSearch(5)
 
@@ -230,17 +231,19 @@ class Misc(Cog):
             if before.content != after.content:
                 self.snipes[before.channel.id] = [before, after]
 
-    async def wiki_request(self, _: discord.TextChannel, search: str) -> List[str]:
+    async def wiki_request(self, _: discord.TextChannel, search: str) -> list[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
         params = {**WIKI_PARAMS, "srlimit": 10, "srsearch": search}
         async with self.bot.http_session.get(url=SEARCH_API, params=params) as resp:
             if resp.status != 200:
-                raise commands.BadArgument(f"Wikipedia API {resp.status}")
+                msg = f"Wikipedia API {resp.status}"
+                raise commands.BadArgument(msg)
 
             raw_data = await resp.json()
 
             if not raw_data.get("query"):
-                raise commands.BadArgument(f"Wikipedia API: {resp.status} {raw_data.get('errors')}")
+                msg = f"Wikipedia API: {resp.status} {raw_data.get('errors')}"
+                raise commands.BadArgument(msg)
 
             lines = []
             if raw_data["query"]["searchinfo"]["totalhits"]:
@@ -267,7 +270,7 @@ class Misc(Cog):
         if response_json["status"] != "success":
             raise InvalidLatexError(logs=response_json.get("log"))
         async with self.bot.http_session.get(
-            f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True
+            f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True,
         ) as response:
             await _process_image(await response.read(), out_file)
 
@@ -321,7 +324,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
-        """To view the emoji in bigger form"""
+        """To view the emoji in bigger form."""
         await ctx.reply(emoji.url)
 
     @commands.command(aliases=["calc", "cal"])
@@ -329,7 +332,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def calculator(self, ctx: Context, *, text: str = None):
-        """This is basic calculator with all the expression supported. Syntax is similar to python math module"""
+        """This is basic calculator with all the expression supported. Syntax is similar to python math module."""
         if text:
             new_text = urllib.parse.quote(text)
             link = f"http://twitch.center/customapi/math?expr={new_text}"
@@ -355,9 +358,9 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def firstmessage(
-        self, ctx: Context, *, channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None
+        self, ctx: Context, *, channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None,
     ):
-        """To get the first message of the specified channel"""
+        """To get the first message of the specified channel."""
         channel = channel or ctx.channel  # type: ignore
 
         assert isinstance(channel, discord.TextChannel)
@@ -369,7 +372,7 @@ class Misc(Cog):
                     url=msg.jump_url,
                     description=f"{msg.content}",  # fuck you pycord
                     timestamp=discord.utils.utcnow(),
-                ).set_footer(text=f"Message sent by {msg.author}")
+                ).set_footer(text=f"Message sent by {msg.author}"),
             )
 
     @commands.command()
@@ -377,7 +380,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def maths(self, ctx: Context, operation: str, *, expression: str):
-        """Another calculator but quite advance one
+        """Another calculator but quite advance one.
 
         Note: Available operation -
             - Simplify
@@ -458,7 +461,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def search(self, ctx: Context[Parrot], *, search: str):
-        """Simple google search Engine"""
+        """Simple google search Engine."""
         if ctx.invoked_subcommand:
             return
         search = urllib.parse.quote(search)
@@ -481,7 +484,7 @@ class Misc(Cog):
                 f"""**[Title: {title}]({link})**
 > {snippet}
 
-"""
+""",
             )
         if not pages:
             return await ctx.error(f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`")
@@ -494,7 +497,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def search_custom(self, ctx: Context, *, search: SearchFlag):
-        """To make custom search request"""
+        """To make custom search request."""
         PAYLOAD = {"q": search.q}
         for k, v in _SEACH_FLAG_CONVERTERS.items():
             if hasattr(search, k):
@@ -519,7 +522,7 @@ class Misc(Cog):
                 f"""**[Title: {title}]({link})**
 > {snippet}
 
-"""
+""",
             )
         if not pages:
             return await ctx.error(f"{ctx.author.mention} No results found.`{urllib.parse.unquote(search)}`")
@@ -531,13 +534,13 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snipe(self, ctx: Context):
-        """Snipes someone's message that's deleted"""
+        """Snipes someone's message that's deleted."""
         snipe = self.snipes.get(ctx.channel.id)
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
         emb = discord.Embed()
 
-        if isinstance(snipe, (list, Iterable)):  # edit snipe
+        if isinstance(snipe, list | Iterable):  # edit snipe
             emb.set_author(name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url)
             emb.colour = snipe[0].author.colour
             emb.add_field(name="Before", value=self.sanitise(snipe[0].content), inline=False)
@@ -679,9 +682,9 @@ class Misc(Cog):
             name="Name",
             value=f"{name}",
         ).set_footer(
-            text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url
+            text=f"{ctx.author.name}", icon_url=ctx.author.display_avatar.url,
         ).set_author(
-            name=f"{name}: {_id}", icon_url=ctx.author.display_avatar.url
+            name=f"{name}: {_id}", icon_url=ctx.author.display_avatar.url,
         )
 
         await ctx.reply(embed=embed)
@@ -709,9 +712,9 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def youtube(self, ctx: Context, *, query: str):
-        """Search for videos on YouTube"""
+        """Search for videos on YouTube."""
         results = await self.youtube_search.to_json(query)
-        main: Dict[str, Any] = json.loads(results)
+        main: dict[str, Any] = json.loads(results)
 
         em_list = []
 
@@ -737,7 +740,7 @@ class Misc(Cog):
                 )
                 .set_thumbnail(
                     url="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social"
-                    "-youtube-circle-512.png"
+                    "-youtube-circle-512.png",
                 )
                 .set_image(url=f"{_1_thunb}")
                 .set_footer(text=f"{ctx.author.name}")
@@ -800,7 +803,7 @@ class Misc(Cog):
             discord.Object,
         ],
     ):
-        """To get the ID of discord models"""
+        """To get the ID of discord models."""
         embed = discord.Embed(
             title="Snowflake lookup",
             color=ctx.author.color,
@@ -820,13 +823,13 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snowflaketime(self, ctx: Context, snowflake1: int, snowflake2: int):
-        """Get the time difference in seconds, between two discord SnowFlakes"""
+        """Get the time difference in seconds, between two discord SnowFlakes."""
         first = discord.utils.snowflake_time(snowflake1)
         second = discord.utils.snowflake_time(snowflake2)
 
         timedelta = second - first if snowflake2 > snowflake1 else first - second
         await ctx.reply(
-            f"{ctx.author.mention} total seconds between **{snowflake1}** and **{snowflake2}** is **{timedelta.total_seconds()}**"
+            f"{ctx.author.mention} total seconds between **{snowflake1}** and **{snowflake2}** is **{timedelta.total_seconds()}**",
         )
 
     @commands.command(aliases=["src"])
@@ -839,19 +842,19 @@ class Misc(Cog):
         periods, e.g. tag.create for the create subcommand of the tag command
         or by spaces.
         """
-        source_url = 'https://github.com/rtk-rnjn/Parrot'
-        branch = 'main'
+        source_url = "https://github.com/rtk-rnjn/Parrot"
+        branch = "main"
         if command is None:
             return await ctx.reply(f"<{source_url}>")
 
-        if command == 'help':
+        if command == "help":
             src = type(self.bot.help_command)
             module = src.__module__
             filename = inspect.getsourcefile(src)
         else:
-            obj = self.bot.get_command(command.replace('.', ' '))
+            obj = self.bot.get_command(command.replace(".", " "))
             if obj is None:
-                return await ctx.reply('Could not find command.')
+                return await ctx.reply("Could not find command.")
 
             # since we found the command we're looking for, presumably anyway, let's
             # try to access the code itself
@@ -860,17 +863,17 @@ class Misc(Cog):
             filename = src.co_filename
 
         lines, firstlineno = inspect.getsourcelines(src)
-        if module.startswith('discord'):
-            location = module.replace('.', '/') + '.py'
-            source_url = 'https://github.com/Rapptz/discord.py'
-            branch = 'master'
+        if module.startswith("discord"):
+            location = module.replace(".", "/") + ".py"
+            source_url = "https://github.com/Rapptz/discord.py"
+            branch = "master"
 
         elif filename is None:
-            return await ctx.reply('Could not find source for command.')
+            return await ctx.reply("Could not find source for command.")
 
         else:
-            location = os.path.relpath(filename).replace('\\', '/')
-        final_url = f'<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
+            location = os.path.relpath(filename).replace("\\", "/")
+        final_url = f"<{source_url}/blob/{branch}/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.reply(final_url)
 
     @commands.command()
@@ -878,10 +881,9 @@ class Misc(Cog):
     @commands.bot_has_permissions(embed_links=True, add_reactions=True, read_message_history=True)
     @Context.with_type
     async def quickpoll(self, ctx: Context, *questions_and_choices: str):
-        """
-        To make a quick poll for making quick decision.
+        """To make a quick poll for making quick decision.
         'Question must be in quotes' and 'Options' 'must' 'be' 'seperated' 'by' 'spaces'.
-        Not more than 21 options. :)
+        Not more than 21 options. :).
         """
 
         def to_emoji(c) -> str:
@@ -910,8 +912,8 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def qrcode(self, ctx: Context, text: str, *, flags: QRCodeFlags):
-        """To generate the QR from the given Text"""
-        payload: Dict[str, Any] = {}
+        """To generate the QR from the given Text."""
+        payload: dict[str, Any] = {}
         if flags.module_drawer:
             payload["module_drawer"] = qr_modular.get(flags.module_drawer)
         if flags.color_mask:
@@ -930,7 +932,7 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def mine_server_status(self, ctx: Context, address: str, bedrock: Optional[convert_bool] = False):
-        """If you are minecraft fan, then you must be know about servers. Check server status with thi command"""
+        """If you are minecraft fan, then you must be know about servers. Check server status with thi command."""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"
         else:
@@ -972,7 +974,7 @@ class Misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def currencies(self, ctx: Context):
-        """To see the currencies notations with names"""
+        """To see the currencies notations with names."""
         obj = await self.bot.http_session.get("https://api.coinbase.com/v2/currencies")
         data = await obj.json()
         entries = [f"`{temp['id']}` `{temp['name']}`" for temp in data["data"]]
@@ -982,7 +984,7 @@ class Misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def exchangerate(self, ctx: Context, currency: str):
-        """To see the currencies notations with names"""
+        """To see the currencies notations with names."""
         if len(currency) != 3:
             return await ctx.send(f"{ctx.author.mention} please provide a **valid currency!**")
         obj = await self.bot.http_session.get(f"https://api.coinbase.com/v2/exchange-rates?currency={currency}")
@@ -995,13 +997,13 @@ class Misc(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def whatis(self, ctx: Context, *, query: str):
-        """To get the meaning of the word"""
+        """To get the meaning of the word."""
         query = query.lower()
         if data := await self.bot.dictionary.find_one({query: {"$exists": True}}):
             return await ctx.send(f"**{query.title()}**: {data[query]}")
         return await ctx.error("No word found, if you think its a mistake then contact the owner.")
 
-    @commands.command(name='boxplot', aliases=('box', 'boxwhisker', 'numsetdata'))
+    @commands.command(name="boxplot", aliases=("box", "boxwhisker", "numsetdata"))
     @Context.with_type
     async def _boxplot(self, ctx: Context, *numbers: float) -> None:
         """Plots the providednumber data set in a box & whisker plot
@@ -1010,17 +1012,17 @@ class Misc(Cog):
         """
         return await do_command(ctx, numbers, func=boxplot)
 
-    @commands.command(name='plot', aliases=('line-graph', 'graph'))
+    @commands.command(name="plot", aliases=("line-graph", "graph"))
     @Context.with_type
     async def _plot(self, ctx: Context, *, equation: str) -> None:
         """Plots the provided equation out.
-        Ex: `$plot 2x+1`
+        Ex: `$plot 2x+1`.
         """
         try:
             return await do_command(ctx, equation, func=plotfn)
         except TypeError:
-            await ctx.reply('Provided equation was invalid; the only variable present must be `x`')
+            await ctx.reply("Provided equation was invalid; the only variable present must be `x`")
         except (NameError, ValueError) as e:
-            await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; {e}')
+            await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; {e}")
         except (SyntaxError, sympy.SympifyError, ZeroDivisionError) as e:
-            await ctx.reply(f'{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}')
+            await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")

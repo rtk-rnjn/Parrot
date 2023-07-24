@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Final, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
 
 from akinator import Answer, AsyncAkinator as AkinatorGame, CantGoBackAnyFurther, Language, Theme
 
@@ -15,7 +15,7 @@ BACK = "\N{BLACK LEFT-POINTING TRIANGLE}"
 STOP = "\N{BLACK SQUARE FOR STOP}"
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
 DiscordColor: TypeAlias = Union[discord.Color, int]
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
@@ -30,9 +30,7 @@ class Options(Enum):
 
 
 class Akinator:
-    """
-    Akinator Game, utilizes reactions
-    """
+    """Akinator Game, utilizes reactions."""
 
     BAR: ClassVar[str] = "\N{FULL BLOCK}" * 2
     instructions: ClassVar[str] = (
@@ -48,7 +46,7 @@ class Akinator:
 
         self.player: Optional[Union[discord.User, discord.Member]] = None
         self.win_at: Optional[int] = None
-        self.guess: Optional[Dict[str, Any]] = None
+        self.guess: Optional[dict[str, Any]] = None
         self.message: Optional[discord.Message] = None
 
         self.embed_color: Optional[DiscordColor] = None
@@ -104,7 +102,7 @@ class Akinator:
             {
                 "$inc": {
                     "game_aki_played": 1,
-                }
+                },
             },
             upsert=True,
         )

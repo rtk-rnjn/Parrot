@@ -4,7 +4,7 @@ import discord
 from core import Cog, Parrot
 
 
-class GuildJoin(Cog, command_attrs=dict(hidden=True)):
+class GuildJoin(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.hook = self.bot._join_leave_log_token

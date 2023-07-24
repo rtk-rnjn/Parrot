@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Generic, Iterator, List, Tuple, TypeVar, Union
+from typing import Generic, TypeVar, Union
+from collections.abc import Iterator
 
 T = TypeVar("T")
 
@@ -24,7 +25,8 @@ def keycap_digit(c: Union[int, str]) -> str:
         return str(c) + "\U0000FE0F\U000020E3"
     if c == 10:
         return "\U000FE83B"
-    raise ValueError("Invalid keycap digit")
+    msg = "Invalid keycap digit"
+    raise ValueError(msg)
 
 
 class Board(Generic[T]):
@@ -48,33 +50,35 @@ class Board(Generic[T]):
         *,
         draw_row_guide: bool = True,
         draw_column_guide: bool = True,
-    ):
+    ) -> None:
         if not 1 <= size_x <= 26:
-            raise ValueError("Boards can have a maximum width of 26.")
+            msg = "Boards can have a maximum width of 26."
+            raise ValueError(msg)
         if not 1 <= size_y <= 10:
-            raise ValueError("Boards can have a maximum height of 10.")
+            msg = "Boards can have a maximum height of 10."
+            raise ValueError(msg)
 
         self.size_x = size_x
         self.size_y = size_y
-        self._state: List[List[T]] = [[fill_with for _ in range(size_x)] for _ in range(size_y)]
+        self._state: list[list[T]] = [[fill_with for _ in range(size_x)] for _ in range(size_y)]
         self._draw_row_guide = draw_row_guide
         self._draw_column_guide = draw_column_guide
 
-    def __getitem__(self, ij: Tuple[int, int]) -> T:
+    def __getitem__(self, ij: tuple[int, int]) -> T:
         i, j = ij
         return self._state[j][i]
 
-    def __setitem__(self, ij: Tuple[int, int], value: T):
+    def __setitem__(self, ij: tuple[int, int], value: T) -> None:
         i, j = ij
         self._state[j][i] = value
 
-    def __iter__(self) -> Iterator[List[T]]:
+    def __iter__(self) -> Iterator[list[T]]:
         return self._state.__iter__()
 
     def __len__(self) -> int:
         return self.size_x * self.size_y
 
-    def __str__(self):
+    def __str__(self) -> str:
         out = ""
 
         if self._draw_column_guide:

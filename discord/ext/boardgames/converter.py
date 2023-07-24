@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 from discord.ext import commands
 
@@ -25,7 +25,8 @@ class Column(commands.Converter[int]):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> int:
         if len(argument) != 1 or not argument.isalpha():
-            raise commands.BadArgument("Column must be a single letter.")
+            msg = "Column must be a single letter."
+            raise commands.BadArgument(msg)
         return cls.from_char(argument)
 
 
@@ -39,16 +40,18 @@ class Row(commands.Converter[int]):
     @classmethod
     async def convert(cls, ctx: Context, argument: str) -> int:
         if not argument.isdigit():
-            raise commands.BadArgument("Row must be a number.")
+            msg = "Row must be a number."
+            raise commands.BadArgument(msg)
         return cls.from_char(argument)
 
 
-class Cell(commands.Converter[Tuple[int, int]]):
+class Cell(commands.Converter[tuple[int, int]]):
     """Returns the index of a row and column."""
 
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> Tuple[int, int]:
+    async def convert(cls, ctx: Context, argument: str) -> tuple[int, int]:
         if re.match(r"[A-z]:?\d+", argument):
             return (Row.from_char(argument[1:]), Column.from_char(argument[0]))
 
-        raise commands.BadArgument("Could not determine cell!")
+        msg = "Could not determine cell!"
+        raise commands.BadArgument(msg)

@@ -10,7 +10,7 @@ from utilities.time import ShortTime
 
 
 class Giveaways(Cog):
-    """Giveaway commands. Let's start a giveaway!"""
+    """Giveaway commands. Let's start a giveaway!."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -30,7 +30,7 @@ class Giveaways(Cog):
     @commands.group(name="giveaway", aliases=["gw"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     async def giveaway(self, ctx: Context):
-        """To create giveaway"""
+        """To create giveaway."""
         if not ctx.invoked_subcommand:
             post = await mt._make_giveaway(ctx)
             await self.bot.create_timer(_event_name="giveaway", **post)
@@ -45,7 +45,7 @@ class Giveaways(Cog):
         *,
         prize: Optional[str] = None,
     ):
-        """To create giveaway in quick format"""
+        """To create giveaway in quick format."""
         if not prize:
             return await ctx.send(f"{ctx.author.mention} you didn't give the prize argument")
         post = await mt._make_giveaway_drop(ctx, duration=duration, winners=winners, prize=prize)
@@ -54,9 +54,9 @@ class Giveaways(Cog):
     @giveaway.command(name="end")
     @commands.has_permissions(manage_guild=True)
     async def giveaway_end(self, ctx: Context, message_id: int):
-        """To end the giveaway"""
+        """To end the giveaway."""
         if data := await self.bot.giveaways.find_one_and_update(
-            {"message_id": message_id, "status": "ONGOING"}, {"$set": {"status": "END"}}
+            {"message_id": message_id, "status": "ONGOING"}, {"$set": {"status": "END"}},
         ):
             member_ids = await mt.end_giveaway(self.bot, **data)
             if not member_ids:
@@ -66,13 +66,13 @@ class Giveaways(Cog):
 
             await ctx.send(
                 f"Congrats <@{joiner}> you won {data.get('prize')}\n"
-                f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
+                f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}",
             )
 
     @giveaway.command(name="reroll")
     @commands.has_permissions(manage_guild=True)
     async def giveaway_reroll(self, ctx: Context, message_id: int, winners: int = 1):
-        """To end the giveaway"""
+        """To end the giveaway."""
         if data := await self.bot.giveaways.find_one({"message_id": message_id}):
             if data["status"].upper() == "ONGOING":
                 return await ctx.send(f"{ctx.author.mention} can not reroll the ongoing giveaway")
@@ -88,7 +88,7 @@ class Giveaways(Cog):
 
             await ctx.send(
                 f"Contragts <@{joiner}> you won {data.get('prize')}\n"
-                f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}"
+                f"> https://discord.com/channels/{data.get('guild_id')}/{data.get('giveaway_channel')}/{data.get('message_id')}",
             )
             return
         await ctx.send(f"{ctx.author.mention} no giveaway found on message ID: `{message_id}`")
@@ -96,7 +96,7 @@ class Giveaways(Cog):
     @giveaway.command(name="list")
     @commands.has_permissions(manage_guild=True)
     async def giveaway_list(self, ctx: Context):
-        """To list all the running giveaway in the server"""
+        """To list all the running giveaway in the server."""
         if data := await self.bot.giveaways.find({"guild_id": ctx.guild.id}).to_list(length=10):
             embed = discord.Embed(title="Giveaway list", color=self.bot.color)
             for i in data:

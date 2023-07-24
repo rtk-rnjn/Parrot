@@ -7,7 +7,8 @@ from asyncio import Lock
 from collections.abc import Container, Iterable
 from datetime import datetime
 from functools import wraps
-from typing import Callable, Optional, Set, Union
+from typing import Optional, Union
+from collections.abc import Callable
 from weakref import WeakValueDictionary
 
 from discord.ext.commands import Command
@@ -54,34 +55,33 @@ def human_time(past: datetime, future: datetime) -> str:
 class InChannelCheckFailure(ParrotCheckFailure):
     """Check failure when the user runs a command in a non-whitelisted channel."""
 
-    def __init__(self, error: str = None):
+    def __init__(self, error: str = None) -> None:
         super().__init__(error)
 
 
 class InMonthCheckFailure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed month."""
 
-    def __init__(self, error: str = None):
+    def __init__(self, error: str = None) -> None:
         super().__init__(error)
 
 
 class InDayCheckFailure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed day."""
 
-    def __init__(self, error: str = None):
+    def __init__(self, error: str = None) -> None:
         super().__init__(error)
 
 
 class InTimeCheckFaliure(ParrotCheckFailure):
     """Check failure for when a command is invoked outside of its allowed time."""
 
-    def __init__(self, error: str = None):
+    def __init__(self, error: str = None) -> None:
         super().__init__(error)
 
 
 def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY) -> Callable:
-    """
-    Perform the decorated method periodically in `allowed_months`.
+    """Perform the decorated method periodically in `allowed_months`.
     This provides a convenience wrapper to avoid code repetition where some task shall
     perform an operation repeatedly in a constant interval, but only in specific months.
     The decorated function will be called once every `sleep_time` seconds while
@@ -93,7 +93,6 @@ def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DA
         @functools.wraps(task_body)
         async def decorated_task(*args, **kwargs) -> None:
             """Call `task_body` once every `sleep_time` seconds in `allowed_months`."""
-
             while True:
                 current_month = resolve_current_month()
 
@@ -108,8 +107,7 @@ def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DA
 
 
 def in_month_listener(*allowed_months: Month) -> Callable:
-    """
-    Shield a listener from being invoked outside of `allowed_months`.
+    """Shield a listener from being invoked outside of `allowed_months`.
     The check is performed against current UTC month.
     """
 
@@ -129,8 +127,7 @@ def in_month_listener(*allowed_months: Month) -> Callable:
 
 
 def in_day_listener(*allowed_day: Day) -> Callable:
-    """
-    Shield a listener from being invoked outside of `allowed_day`.
+    """Shield a listener from being invoked outside of `allowed_day`.
     The check is performed against current UTC Day.
     """
 
@@ -150,8 +147,7 @@ def in_day_listener(*allowed_day: Day) -> Callable:
 
 
 def in_time_listener(*, past: datetime, future: datetime) -> Callable:
-    """
-    Shield a listener from being invoked outside of `allowed_time`.
+    """Shield a listener from being invoked outside of `allowed_time`.
     The check is performed against current UTC Day.
     """
 
@@ -170,8 +166,7 @@ def in_time_listener(*, past: datetime, future: datetime) -> Callable:
 
 
 def in_month_command(*allowed_months: Month) -> Callable:
-    """
-    Check whether the command was invoked in one of `enabled_months`.
+    """Check whether the command was invoked in one of `enabled_months`.
     Uses the current UTC month at the time of running the predicate.
     """
 
@@ -181,14 +176,14 @@ def in_month_command(*allowed_months: Month) -> Callable:
 
         if can_run:
             return True
-        raise InMonthCheckFailure(f"Command can only be used in {human_months(allowed_months)}")
+        msg = f"Command can only be used in {human_months(allowed_months)}"
+        raise InMonthCheckFailure(msg)
 
     return commands.check(predicate)
 
 
 def in_day_command(*allowed_day: Day) -> Callable:
-    """
-    Check whether the command was invoked in one of `enabled_days`.
+    """Check whether the command was invoked in one of `enabled_days`.
     Uses the current UTC day at the time of running the predicate.
     """
 
@@ -198,7 +193,8 @@ def in_day_command(*allowed_day: Day) -> Callable:
 
         if can_run:
             return True
-        raise InDayCheckFailure(f"Command can only be used in {human_days(allowed_day)}")
+        msg = f"Command can only be used in {human_days(allowed_day)}"
+        raise InDayCheckFailure(msg)
 
     return commands.check(predicate)
 
@@ -210,7 +206,8 @@ def in_time_command(*, past: datetime, future: datetime) -> Callable:
 
         if can_run:
             return True
-        raise InTimeCheckFaliure(f"Command can only be used during {human_time(past, future)}")
+        msg = f"Command can only be used during {human_time(past, future)}"
+        raise InTimeCheckFaliure(msg)
 
     return commands.check(predicate)
 
@@ -228,7 +225,8 @@ def in_month(*allowed_months: Month) -> Callable:
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
+            msg = f"Decorated object {callable_} is neither a command nor a listener"
+            raise TypeError(msg)
 
         return actual_deco(callable_)
 
@@ -248,7 +246,8 @@ def in_day(*allowed_days: Day) -> Callable:
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
+            msg = f"Decorated object {callable_} is neither a command nor a listener"
+            raise TypeError(msg)
 
         return actual_deco(callable_)
 
@@ -268,7 +267,8 @@ def in_time(*, past: datetime, future: datetime) -> Callable:
         # Otherwise we're unsure exactly what has been decorated
         # This happens before the bot starts, so let's just raise
         else:
-            raise TypeError(f"Decorated object {callable_} is neither a command nor a listener")
+            msg = f"Decorated object {callable_} is neither a command nor a listener"
+            raise TypeError(msg)
 
         return actual_deco(callable_)
 
@@ -300,8 +300,7 @@ def without_role(*role_ids: int) -> Callable:
 
 
 def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], bool]:
-    """
-    Checks if a message is sent in a whitelisted context.
+    """Checks if a message is sent in a whitelisted context.
     All arguments from `in_whitelist_check` are supported, with the exception of "fail_silently".
     If `whitelist_override` is present, it is added to the global whitelist.
     """
@@ -345,7 +344,7 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
             return result
 
         # Raise error if the check did not pass
-        channels: Set[int] = set(kwargs.get("channels") or {})
+        channels: set[int] = set(kwargs.get("channels") or {})
         categories = kwargs.get("categories")
 
         # Only output override channels + community_bot_commands
@@ -371,8 +370,7 @@ def whitelist_check(**default_kwargs: Container[int]) -> Callable[[Context], boo
 
 
 def whitelist_override(bypass_defaults: bool = False, allow_dm: bool = False, **kwargs: Container[int]) -> Callable:
-    """
-    Override global whitelist context, with the kwargs specified.
+    """Override global whitelist context, with the kwargs specified.
     All arguments from `in_whitelist_check` are supported, with the exception of `fail_silently`.
     Set `bypass_defaults` to True if you want to completely bypass global checks.
     Set `allow_dm` to True if you want to allow the command to be invoked from within direct messages.
@@ -390,8 +388,7 @@ def whitelist_override(bypass_defaults: bool = False, allow_dm: bool = False, **
 
 
 def locked() -> Optional[Callable]:
-    """
-    Allows the user to only run an instance of one decorated command at a time.
+    """Allows the user to only run an instance of one decorated command at a time.
     Subsequent calls to the command from the same author are ignored until the command has completed invocation.
     This decorator has to go before (below) the `command` decorator.
     """

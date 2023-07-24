@@ -6,7 +6,7 @@ import re
 from collections import defaultdict
 from itertools import product
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -58,7 +58,7 @@ The second flight is valid because there are no 2:1 splits; each feature is eith
 """
 
 
-def assemble_board_image(board: List[Tuple[int]], rows: int, columns: int) -> Image.Image:
+def assemble_board_image(board: list[tuple[int]], rows: int, columns: int) -> Image.Image:
     """Cut and paste images representing the given cards into an image representing the board."""
     new_im = Image.new("RGBA", (CARD_WIDTH * columns, CARD_HEIGHT * rows))
     draw = ImageDraw.Draw(new_im)
@@ -76,7 +76,7 @@ def assemble_board_image(board: List[Tuple[int]], rows: int, columns: int) -> Im
     return new_im
 
 
-def get_card_image(card: Tuple[int]) -> Image.Image:
+def get_card_image(card: tuple[int]) -> Image.Image:
     """Slice the image containing all the cards to get just this card."""
     # The master card image file should have 9x9 cards,
     # arranged such that their features can be interpreted as ordered trinary.
@@ -88,7 +88,7 @@ def get_card_image(card: Tuple[int]) -> Image.Image:
     return ALL_CARDS.crop((x1, y1, x2, y2))
 
 
-def as_trinary(card: Tuple[int]) -> int:
+def as_trinary(card: tuple[int]) -> int:
     """Find the card's unique index by interpreting its features as trinary."""
     return int("".join(str(x) for x in card), base=3)
 
@@ -103,10 +103,11 @@ class DuckGame:
         rows: int = 4,
         columns: int = 3,
         minimum_solutions: int = 1,
-    ):
-        """
-        Take samples from the deck to generate a board.
+    ) -> None:
+        """Take samples from the deck to generate a board.
+
         Args:
+        ----
             rows (int, optional): Rows in the game board. Defaults to 4.
             columns (int, optional): Columns in the game board. Defaults to 3.
             minimum_solutions (int, optional): Minimum acceptable number of solutions in the board. Defaults to 1.
@@ -128,12 +129,12 @@ class DuckGame:
         self.found_msg: Optional[discord.Message] = None
 
     @property
-    def board(self) -> List[Tuple[int]]:
+    def board(self) -> list[tuple[int]]:
         """Accesses board property."""
         return self._board
 
     @board.setter
-    def board(self, val: List[Tuple[int]]) -> None:
+    def board(self, val: list[tuple[int]]) -> None:
         """Erases calculated solutions if the board changes."""
         self._solutions = None
         self._board = val

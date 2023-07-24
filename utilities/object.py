@@ -1,26 +1,25 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-""" Object is a subclass of dict with attribute-style access.
-    >>> b = Object()
-    >>> b.hello = 'world'
-    >>> b.hello
-    'world'
-    >>> b['hello'] += "!"
-    >>> b.hello
-    'world!'
-    >>> b.foo = Object(lol=True)
-    >>> b.foo.lol
-    True
-    >>> b.foo is b['foo']
-    True
-    It is safe to import * from this module:
-        __all__ = ('Object', 'objectify', 'unobjectify')
-    un/objectify provide dictionary conversion; Munches can also be
-    converted via Object.to/from_dict().
+"""Object is a subclass of dict with attribute-style access.
+>>> b = Object()
+>>> b.hello = 'world'
+>>> b.hello
+'world'
+>>> b['hello'] += "!"
+>>> b.hello
+'world!'
+>>> b.foo = Object(lol=True)
+>>> b.foo.lol
+True
+>>> b.foo is b['foo']
+True
+It is safe to import * from this module:
+__all__ = ('Object', 'objectify', 'unobjectify')
+un/objectify provide dictionary conversion; Munches can also be
+converted via Object.to/from_dict().
 """
 
 import sys
-from typing import Any, Dict, List, Self, TypeVar
+from typing import Any, Self, TypeVar
 
 __version__ = "2.0.2"
 VERSION = tuple(map(int, __version__.split(".")))
@@ -129,7 +128,7 @@ class Object(dict):
         True
         >>> b[False] = 456
         >>> False in b
-        True
+        True.
         """
         try:
             if isinstance(k, NULL):
@@ -156,7 +155,7 @@ class Object(dict):
         >>> b.lol is b['lol']
         True
         >>> b.lol is getattr(b, 'lol')
-        True
+        True.
         """
         try:
             return object.__getattribute__(self, k)
@@ -179,7 +178,7 @@ class Object(dict):
         >>> b['values']
         Traceback (most recent call last):
             ...
-        KeyError: 'values'
+        KeyError: 'values'.
         """
         try:
             # Throws exception if not in prototype chain
@@ -205,7 +204,7 @@ class Object(dict):
         >>> b.lol
         Traceback (most recent call last):
             ...
-        AttributeError: lol
+        AttributeError: lol.
         """
         try:
             object.__getattribute__(self, k)
@@ -217,7 +216,7 @@ class Object(dict):
         else:
             object.__delattr__(self, k)
 
-    def to_dict(self) -> Dict[KT, VT]:
+    def to_dict(self) -> dict[KT, VT]:
         """Recursively converts a Object back into a dictionary.
         >>> b = Object(foo=Object(lol=True), hello=42, ponies='are pretty!')
         >>> b.to_dict()
@@ -239,7 +238,7 @@ class Object(dict):
         args = ", ".join([f"{key}={self[key]!r}" for key in keys])
         return f"{self.__class__.__name__}({args})"
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         return list(iterkeys(self))
 
     __members__ = __dir__  # for python2.x compatibility
@@ -280,7 +279,7 @@ def objectify(x):
     """
     if isinstance(x, dict):
         return Object((k, objectify(v)) for k, v in iteritems(x))
-    return type(x)(objectify(v) for v in x) if isinstance(x, (list, tuple)) else x
+    return type(x)(objectify(v) for v in x) if isinstance(x, list | tuple) else x
 
 
 def unobjectify(x):
@@ -299,7 +298,7 @@ def unobjectify(x):
     """
     if isinstance(x, dict):
         return {(k, unobjectify(v)) for k, v in iteritems(x)}
-    if isinstance(x, (list, tuple)):
+    if isinstance(x, list | tuple):
         return type(x)(unobjectify(v) for v in x)
     return x
 
@@ -318,7 +317,7 @@ def to_json(self, **options):
     >>> json.dumps(b)
     '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
     >>> b.to_json()
-    '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'
+    '{"ponies": "are pretty!", "foo": {"lol": true}, "hello": 42}'.
     """
     return (json.dumps(self, **options)).decode()
 
@@ -357,7 +356,7 @@ try:
         >>> b = Object(foo=['bar', Object(lol=True)], hello=42)
         >>> import yaml
         >>> yaml.safe_dump(b, default_flow_style=True)
-        '{foo: [bar, {lol: true}], hello: 42}\\n'
+        '{foo: [bar, {lol: true}], hello: 42}\\n'.
         """
         return dumper.represent_dict(data)
 
@@ -366,7 +365,7 @@ try:
         >>> b = Object(foo=['bar', Object(lol=True)], hello=42)
         >>> import yaml
         >>> yaml.dump(b, default_flow_style=True)
-        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
+        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'.
         """
         return dumper.represent_mapping(u("!object.Object"), data)
 
@@ -392,9 +391,9 @@ try:
         >>> yaml.dump(b, default_flow_style=True)
         '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
         >>> b.toYAML(Dumper=yaml.Dumper, default_flow_style=True)
-        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'
+        '!object.Object {foo: [bar, !object.Object {lol: true}], hello: 42}\\n'.
         """
-        opts = dict(indent=4, default_flow_style=False) | options
+        opts = {"indent": 4, "default_flow_style": False} | options
         if "Dumper" not in opts:
             return yaml.safe_dump(self, **opts)
         return yaml.dump(self, **opts)

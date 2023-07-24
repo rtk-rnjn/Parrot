@@ -4,8 +4,8 @@ import discord
 from core import Cog, Parrot
 
 
-class Extra(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class Extra(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     @Cog.listener()

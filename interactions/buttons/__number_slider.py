@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, List, Literal, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Literal, Optional, TypeVar, Union
 
 import discord
 from core import Context
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
 
-    Board: TypeAlias = List[List[Optional[int]]]
+    Board: TypeAlias = list[list[Optional[int]]]
 
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, chunk, double_wait, wait_for_delete
@@ -64,15 +64,14 @@ class SlideButton(discord.ui.Button["SlideView"]):
 
 
 class NumberSlider:
-    """
-    Number Slider Game
-    """
+    """Number Slider Game."""
 
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
         if count not in range(1, 6):
-            raise ValueError("Count must be an integer between 1 and 5")
+            msg = "Count must be an integer between 1 and 5"
+            raise ValueError(msg)
 
-        self.all_numbers: List[Optional[int]] = list(range(1, count**2))
+        self.all_numbers: list[Optional[int]] = list(range(1, count**2))
 
         self.player: Optional[Union[discord.Member, discord.User]] = None
 
@@ -84,10 +83,10 @@ class NumberSlider:
         self.wrong_style: discord.ButtonStyle = discord.ButtonStyle.gray
         self.correct_style: discord.ButtonStyle = discord.ButtonStyle.green
 
-    def get_item(self, obj: Optional[int] = None) -> Tuple[int, int]:
+    def get_item(self, obj: Optional[int] = None) -> tuple[int, int]:
         return next((x, y) for x, row in enumerate(self.numbers) for y, item in enumerate(row) if item == obj)
 
-    def beside_blank(self) -> List[Optional[int]]:
+    def beside_blank(self) -> list[Optional[int]]:
         nx, ny = self.get_item()
 
         beside_item = [

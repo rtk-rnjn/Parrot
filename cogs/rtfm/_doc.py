@@ -22,7 +22,7 @@ def get_ele(soup: BeautifulSoup, name: str, **kw: Any):
 
 
 async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
-    """Filters python.org results based on your query"""
+    """Filters python.org results based on your query."""
     text = text.strip("`")
 
     url = "https://docs.python.org/3/genindex-all.html"
@@ -47,7 +47,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
 
     emb = discord.Embed(title="Python 3 docs")
     emb.set_thumbnail(
-        url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png"
+        url="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png",
     )
     emb.description = f"Results for `{text}` :\n" + "\n".join(content)
 
@@ -55,7 +55,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
 
 
 async def _cppreference(language: str, ctx: Context, text: str) -> Optional[discord.Message]:
-    """Search something on cppreference"""
+    """Search something on cppreference."""
     text = text.strip("`")
 
     base_url = f"https://cppreference.com/w/cpp/index.php?title=Special:Search&search={text}"
@@ -98,7 +98,7 @@ cpp_doc = partial(_cppreference, "C++")
 
 
 async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
-    """Search something on wiki.haskell.org"""
+    """Search something on wiki.haskell.org."""
     text = text.strip("`")
 
     snake = "_".join(text.split(" "))
@@ -120,7 +120,7 @@ async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
 
     emb = discord.Embed(title="Haskell docs")
     emb.set_thumbnail(
-        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png"
+        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png",
     )
 
     content = []

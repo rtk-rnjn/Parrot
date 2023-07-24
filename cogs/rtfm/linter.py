@@ -30,7 +30,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode(self, ctx: Context):
-        """To lint your codes"""
+        """To lint your codes."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -38,7 +38,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_flake8(self, ctx: Context, *, flag: Flake8Converter):
-        """Lint code with flake8
+        """Lint code with flake8.
 
         **Flags**
         `--code` - To lint the code
@@ -57,7 +57,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_flake8_shortcut(self, ctx: Context, *, code: str):
-        """Shortcut for `lintcode flake8` with no flags, just the code"""
+        """Shortcut for `lintcode flake8` with no flags, just the code."""
         linter = LintCode(code).set_linttype("flake8")
         await linter.lint_with_flake8(ctx)
 
@@ -65,7 +65,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_pylint(self, ctx: Context, *, flag: PyLintConverter):
-        """Lint code with pylint
+        """Lint code with pylint.
 
         **Flags**
         `--code` - To lint the code
@@ -83,7 +83,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_pylint_shortcut(self, ctx: Context, *, code: str):
-        """Shortcut for `lintcode pylint` with no flags, just the code"""
+        """Shortcut for `lintcode pylint` with no flags, just the code."""
         linter = LintCode(code).set_linttype("pylint")
         await linter.lint_with_pylint(ctx)
 
@@ -91,7 +91,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_mypy(self, ctx: Context, *, flag: MypyConverter):
-        """Lint code with mypy"""
+        """Lint code with mypy."""
         linter = LintCode(flag).set_linttype("mypy")
         await linter.lint(ctx)
 
@@ -99,7 +99,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_bandit(self, ctx: Context, *, flag: BanditConverter):
-        """Lint code with bandit
+        """Lint code with bandit.
 
         **Flags**
         `--code` - To lint the code
@@ -119,7 +119,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def lintcode_bandit_shortcut(self, ctx: Context, *, code: str):
-        """Shortcut for `lintcode bandit` with no flags, just the code"""
+        """Shortcut for `lintcode bandit` with no flags, just the code."""
         linter = LintCode(code).set_linttype("bandit")
         await linter.lint_with_bandit(ctx)
 
@@ -127,7 +127,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def black(self, ctx: Context, *, code: str):
-        """Format code with black"""
+        """Format code with black."""
         linter = LintCode(code)
         await linter.run_black(ctx)
 
@@ -135,7 +135,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def black_isort(self, ctx: Context, *, code: str):
-        """Format code with black and isort"""
+        """Format code with black and isort."""
         linter = LintCode(code)
         await linter.run_isort_with_black(ctx)
 
@@ -143,7 +143,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def isort(self, ctx: Context, *, code: str):
-        """Format code with isort"""
+        """Format code with isort."""
         linter = LintCode(code)
         await linter.run_isort(ctx)
 
@@ -151,7 +151,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def yapf(self, ctx: Context, *, code: str):
-        """Format code with yapf"""
+        """Format code with yapf."""
         linter = LintCode(code)
         await linter.run_yapf(ctx)
 
@@ -159,7 +159,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def autopep8(self, ctx: Context, *, code: str):
-        """Format code with autopep8"""
+        """Format code with autopep8."""
         linter = LintCode(code)
         await linter.run_autopep8(ctx)
 
@@ -167,7 +167,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def pyright(self, ctx: Context, *, code: PyrightConverter):
-        """Lint code with pyright
+        """Lint code with pyright.
 
         **Flags**
         `--code` - To lint the code
@@ -182,7 +182,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def pyright_shortcut(self, ctx: Context, *, code: str):
-        """Shortcut for `lintcode pyright` with no flags, just the code"""
+        """Shortcut for `lintcode pyright` with no flags, just the code."""
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint_with_pyright(ctx)
 
@@ -190,7 +190,7 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def ruff(self, ctx: Context, *, flag: RuffConverter):
-        """Lint code with ruff"""
+        """Lint code with ruff."""
         linter = LintCode(flag).set_linttype("ruff")
         await linter.lint(ctx)
 
@@ -198,6 +198,6 @@ class Linter(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def ruff_shortcut(self, ctx: Context, *, code: str):
-        """Shortcut for `lintcode ruff` with no flags, just the code"""
+        """Shortcut for `lintcode ruff` with no flags, just the code."""
         linter = LintCode(code).set_linttype("ruff")
         await linter.lint_with_ruff(ctx)

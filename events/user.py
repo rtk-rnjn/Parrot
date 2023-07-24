@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-class User(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class User(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     @Cog.listener()

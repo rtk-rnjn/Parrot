@@ -18,7 +18,7 @@ DISCORD_PY_ID = 336642139381301249
 
 
 class GistContent:
-    def __init__(self, argument: str):
+    def __init__(self, argument: str) -> None:
         try:
             block, code = argument.split("\n", 1)
         except ValueError:
@@ -44,7 +44,7 @@ def validate_token(token: str) -> bool:
         return True
 
 
-class Gist(Cog, command_attrs=dict(hidden=True)):
+class Gist(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self._req_lock = asyncio.Lock()
@@ -130,12 +130,12 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
     @commands.group(name="gist")
     @commands.is_owner()
     async def gist(self, ctx: Context):
-        """Gist related commands"""
+        """Gist related commands."""
 
     @gist.command(name="create")
     @commands.is_owner()
     async def gist_create(self, ctx: Context, *, content: str):
-        """Create a gist from the given content"""
+        """Create a gist from the given content."""
         content = GistContent(content)  # type: ignore
         url = await self.create_gist(
             content.source,  # type: ignore
@@ -145,7 +145,7 @@ class Gist(Cog, command_attrs=dict(hidden=True)):
     @gist.command(name="delete")
     @commands.is_owner()
     async def gist_delete(self, ctx: Context, gist_id: str):
-        """Delete a gist"""
+        """Delete a gist."""
         if gist_id.startswith("<") and gist_id.endswith(">"):
             gist_id = gist_id[1:-1]
 

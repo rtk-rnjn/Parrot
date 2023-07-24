@@ -5,7 +5,7 @@ import difflib
 import os
 import random
 from io import BytesIO
-from typing import TYPE_CHECKING, Final, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Final, Optional, Union
 
 from PIL import Image, ImageFilter, ImageOps
 
@@ -14,7 +14,7 @@ from core import Context, Parrot
 from utilities.converters import ToAsync
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     DiscordColor: TypeAlias = Union[discord.Color, int]
 
@@ -22,9 +22,7 @@ DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 
 class CountryGuesser:
-    """
-    CountryGuesser Game
-    """
+    """CountryGuesser Game."""
 
     embed: discord.Embed
     accepted_length: Optional[int]
@@ -125,9 +123,9 @@ class CountryGuesser:
         self,
         ctx: Context[Parrot],
         *,
-        options: Tuple[str, ...] = (),
+        options: tuple[str, ...] = (),
         length: Optional[int] = None,
-    ) -> Optional[Tuple[discord.Message, str]]:
+    ) -> Optional[tuple[discord.Message, str]]:
         def check(m: discord.Message) -> bool:
             if length:
                 return m.channel == ctx.channel and m.author == ctx.author and len(m.content) == length
@@ -149,8 +147,8 @@ class CountryGuesser:
         embed_color: DiscordColor = DEFAULT_COLOR,
         ignore_diff_len: bool = False,
     ) -> discord.Message:
-        """
-        starts the country-guesser game
+        """Starts the country-guesser game.
+
         Parameters
         ----------
         ctx : Context
@@ -161,10 +159,11 @@ class CountryGuesser:
             the color of the game embed, by default DEFAULT_COLOR
         ignore_diff_len : bool, optional
             specifies whether or not to ignore guesses that are not of the same length as the correct answer, by default False
+
         Returns
         -------
         discord.Message
-            returns the game message
+            returns the game message.
         """
         file = await self.get_country()
 
@@ -271,7 +270,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
                 acc = game.get_accuracy(guess)
                 game.update_guesslog(
                     f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n"
-                    f"+ You have {game.guesses} guesses left.\n"
+                    f"+ You have {game.guesses} guesses left.\n",
                 )
                 await interaction.response.edit_message(embed=game.embed)
 
@@ -334,9 +333,7 @@ class CountryView(discord.ui.View):
 
 
 class BetaCountryGuesser(CountryGuesser):
-    """
-    Country Guesser(buttons) Game
-    """
+    """Country Guesser(buttons) Game."""
 
     guesslog: str = ""
 
@@ -352,8 +349,8 @@ class BetaCountryGuesser(CountryGuesser):
         ignore_diff_len: bool = False,
         timeout: Optional[float] = 120,
     ) -> discord.Message:
-        """
-        starts the Country Guesser(buttons) Game
+        """Starts the Country Guesser(buttons) Game.
+
         Parameters
         ----------
         ctx : Context
@@ -364,10 +361,11 @@ class BetaCountryGuesser(CountryGuesser):
             specifies whether or not to ignore guesses that are not of the same length as the correct answer, by default False
         timeout : Optional[float], optional
             the timeout for the view, by default None
+
         Returns
         -------
         discord.Message
-            returns the game message
+            returns the game message.
         """
         self.accepted_length = len(self.country) if ignore_diff_len else None
 

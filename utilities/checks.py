@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Container, Iterable
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
+from collections.abc import Callable
 
 from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
-from typing_extensions import TypeAlias
+from typing import TypeAlias
 
 import discord
 from core import Context, Parrot
@@ -51,7 +52,8 @@ def in_server(guild_id: int) -> Check[Context]:
         if ctx.guild.id == guild.id:
             return True
 
-        raise ex.CustomError(f"You must be in server: `{guild.name}`, to use the command")
+        msg = f"You must be in server: `{guild.name}`, to use the command"
+        raise ex.CustomError(msg)
 
     return commands.check(predicate)  # type: ignore
 
@@ -59,9 +61,8 @@ def in_server(guild_id: int) -> Check[Context]:
 def in_support_server() -> Check[Context]:
     def predicate(ctx: Context) -> Optional[bool]:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
-
         assert ctx.guild is not None
-        if ctx.guild.id == getattr(ctx.bot.server, "id"):
+        if ctx.guild.id == ctx.bot.server.id:
             return True
         raise ex.NotInSupportServer()
 
@@ -148,7 +149,7 @@ def in_temp_channel() -> Check[Context]:
                 "_id": ctx.guild.id,
                 "hub_temp_channels.channel_id": getattr(ctx.author.voice.channel, "id", 0),
                 "hub_temp_channels.author": ctx.author.id,
-            }
+            },
         ):
             return True
 
@@ -158,7 +159,7 @@ def in_temp_channel() -> Check[Context]:
 
 
 def can_run(ctx: Context) -> Optional[bool]:
-    """Return True is the command is whitelisted in specific channel, also with specific role"""
+    """Return True is the command is whitelisted in specific channel, also with specific role."""
     try:
         if ctx.bot.banned_users[ctx.author.id]["command"]:
             return
@@ -167,8 +168,8 @@ def can_run(ctx: Context) -> Optional[bool]:
 
     assert ctx.guild is not None and isinstance(ctx.author, discord.Member) and ctx.command is not None
 
-    cmd = ctx.command.qualified_name.replace(' ', '_')
-    cog = getattr(ctx.cog, "qualified_name", "").replace(' ', '_')
+    cmd = ctx.command.qualified_name.replace(" ", "_")
+    cog = getattr(ctx.cog, "qualified_name", "").replace(" ", "_")
 
     cmd_config = ctx.bot.guild_configurations_cache[ctx.guild.id].get("cmd_config", {})
 
@@ -268,8 +269,7 @@ def cooldown_with_role_bypass(
     *,
     bypass_roles: Iterable[Union[int, str]],
 ) -> Callable:
-    """
-    Applies a cooldown to a command, but allows members with certain roles to be ignored.
+    """Applies a cooldown to a command, but allows members with certain roles to be ignored.
     NOTE: this replaces the `Command.before_invoke` callback, which *might* introduce problems in the future.
     """
     # Make it a set so lookup is hash based.
@@ -302,9 +302,9 @@ def cooldown_with_role_bypass(
         #
         # If the `before_invoke` detail is ever a problem then I can quickly just swap over.
         if not isinstance(command, Command):
+            msg = "Decorator `cooldown_with_role_bypass` must be applied after the command decorator. This means it has to be above the command decorator in the code."
             raise TypeError(
-                "Decorator `cooldown_with_role_bypass` must be applied after the command decorator. "
-                "This means it has to be above the command decorator in the code."
+                msg,
             )
 
         command._before_invoke = predicate
@@ -336,8 +336,7 @@ def in_whitelist_check(
     redirect: Optional[int] = None,
     fail_silently: bool = False,
 ) -> bool:
-    """
-    Check if a command was issued in a whitelisted context.
+    """Check if a command was issued in a whitelisted context.
     The whitelists that can be provided are:
     - `channels`: a container with channel ids for whitelisted channels
     - `categories`: a container with category ids for whitelisted categories
@@ -382,7 +381,7 @@ def in_whitelist_check(
 class InWhitelistCheckFailure(ex.ParrotCheckFailure):
     """Raised when the `in_whitelist` check fails."""
 
-    def __init__(self, redirect_channel: Optional[int]):
+    def __init__(self, redirect_channel: Optional[int]) -> None:
         self.redirect_channel = redirect_channel
 
         if redirect_channel:

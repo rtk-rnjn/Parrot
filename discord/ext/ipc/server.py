@@ -10,9 +10,8 @@ log = logging.getLogger(__name__)
 
 
 def route(name=None):
-    """
-    Used to register a coroutine as an endpoint when you don't have
-    access to an instance of :class:`.Server`
+    """Used to register a coroutine as an endpoint when you don't have
+    access to an instance of :class:`.Server`.
 
     Parameters
     ----------
@@ -23,7 +22,7 @@ def route(name=None):
 
     def decorator(func):
         route_name = name or func.__name__
-        setattr(func, "__ipc_route__", route_name)
+        func.__ipc_route__ = route_name
 
         return func
 
@@ -31,7 +30,7 @@ def route(name=None):
 
 
 class IpcServerResponse:
-    def __init__(self, data):
+    def __init__(self, data) -> None:
         self._json = data
         self.length = len(data)
 
@@ -43,10 +42,10 @@ class IpcServerResponse:
     def to_json(self):
         return self._json
 
-    def __repr__(self):
-        return "<IpcServerResponse length={0.length}>".format(self)
+    def __repr__(self) -> str:
+        return f"<IpcServerResponse length={self.length}>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__repr__()
 
 
@@ -79,7 +78,7 @@ class Server:
         secret_key=None,
         do_multicast=True,
         multicast_port=20000,
-    ):
+    ) -> None:
         self.bot = bot
         self.loop = bot.loop
 
@@ -101,15 +100,14 @@ class Server:
         self.sorted_endpoints = {}
 
     def update_endpoints(self):
-        """Ensures endpoints is up to date"""
+        """Ensures endpoints is up to date."""
         self.endpoints = {}
         for routes in self.sorted_endpoints.values():
             self.endpoints = {**self.endpoints, **routes}
 
     async def add_cog(self, cog: Cog, *, override: bool = False) -> None:
-        """
-        Hooks into add_cog and allows
-        for easy route finding within classes
+        """Hooks into add_cog and allows
+        for easy route finding within classes.
         """
         await self._add_cog(cog, override=override)
 
@@ -124,7 +122,7 @@ class Server:
         self.sorted_endpoints[cog_name] = {}
 
         for method in method_list:
-            method_name = getattr(method, "__ipc_route__")
+            method_name = method.__ipc_route__
             if cog_name not in self.sorted_endpoints:
                 self.sorted_endpoints[cog_name] = {}
             self.sorted_endpoints[cog_name][method_name] = method
@@ -140,7 +138,7 @@ class Server:
 
         def decorator(func):
             route_name = name or func.__name__
-            setattr(func, "__ipc_route__", route_name)
+            func.__ipc_route__ = route_name
 
             if "__main__" not in self.sorted_endpoints:
                 self.sorted_endpoints["__main__"] = {}
@@ -198,7 +196,7 @@ class Server:
                         self.bot.dispatch("ipc_error", endpoint, error)
 
                         response = {
-                            "error": "IPC route raised error of type {}".format(type(error).__name__),
+                            "error": f"IPC route raised error of type {type(error).__name__}",
                             "code": 500,
                         }
 
@@ -254,7 +252,7 @@ class Server:
             await websocket.send_json(response)
 
     async def __start(self, application, port):
-        """Start both servers"""
+        """Start both servers."""
         runner = aiohttp.web.AppRunner(application)
         await runner.setup()
 

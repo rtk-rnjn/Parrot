@@ -3,9 +3,9 @@ from __future__ import annotations
 import asyncio
 import json
 import urllib.parse
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
-import aiohttp  # type: ignore
+import aiohttp
 
 BASE_URL = "https://youtube.com"
 
@@ -13,10 +13,10 @@ BASE_URL = "https://youtube.com"
 class YoutubeSearch:
     search_terms: str
 
-    def __init__(self, max_results: Optional[int] = 5):
+    def __init__(self, max_results: Optional[int] = 5) -> None:
         self.max_results = max_results
 
-        self._cache: Dict[str, str] = {}
+        self._cache: dict[str, str] = {}
 
     async def _search(self, search_term):
         self.search_terms = search_term
@@ -48,14 +48,14 @@ class YoutubeSearch:
         json_str = response[start:end]
         data = json.loads(json_str)
 
-        videos: List[Dict] = data["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"][
+        videos: list[dict] = data["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"][
             "contents"
         ][0]["itemSectionRenderer"]["contents"]
 
         for video in videos:
             res = {}
             if "videoRenderer" in video.keys():
-                video_data: Dict[str, Any] = video.get("videoRenderer", {})
+                video_data: dict[str, Any] = video.get("videoRenderer", {})
                 res["id"] = video_data.get("videoId")
                 res["thumbnails"] = [
                     thumb.get("url", None) for thumb in video_data.get("thumbnail", {}).get("thumbnails", [{}])

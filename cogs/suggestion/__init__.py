@@ -4,7 +4,7 @@ import inspect
 import io
 from itertools import zip_longest
 from random import random
-from typing import Annotated, Any, Dict, Optional, Union
+from typing import Annotated, Any, Optional, Union
 
 import discord
 from core import Cog, Context, Parrot
@@ -52,7 +52,7 @@ class Suggestions(Cog):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.message: Dict[int, Dict[str, Any]] = {}
+        self.message: dict[int, dict[str, Any]] = {}
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -62,10 +62,12 @@ class Suggestions(Cog):
         try:
             ch_id: Optional[int] = self.bot.guild_configurations_cache[guild.id]["suggestion_channel"]
         except KeyError as e:
-            raise commands.BadArgument("No suggestion channel is setup") from e
+            msg = "No suggestion channel is setup"
+            raise commands.BadArgument(msg) from e
         else:
             if not ch_id:
-                raise commands.BadArgument("No suggestion channel is setup")
+                msg = "No suggestion channel is setup"
+                raise commands.BadArgument(msg)
             ch: Optional[discord.TextChannel] = self.bot.get_channel(ch_id)  # type: ignore
             if ch is None:
                 await self.bot.wait_until_ready()
@@ -74,7 +76,7 @@ class Suggestions(Cog):
             return ch
 
     async def get_or_fetch_message(
-        self, msg_id: int, *, guild: discord.Guild, channel: discord.TextChannel = None
+        self, msg_id: int, *, guild: discord.Guild, channel: discord.TextChannel = None,
     ) -> Optional[discord.Message]:
         try:
             self.message[msg_id]
@@ -83,7 +85,8 @@ class Suggestions(Cog):
                 try:
                     channel_id = self.bot.guild_configurations_cache[guild.id]["suggestion_channel"]
                 except KeyError as e:
-                    raise commands.BadArgument("No suggestion channel is setup") from e
+                    msg = "No suggestion channel is setup"
+                    raise commands.BadArgument(msg) from e
             msg = await self.__fetch_message_from_channel(message=msg_id, channel=self.bot.get_channel(channel_id))  # type: ignore
         else:
             msg = self.message[msg_id]["message"]
@@ -125,7 +128,8 @@ class Suggestions(Cog):
     ) -> Optional[discord.Message]:
         channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(ctx.guild)
         if channel is None:
-            raise commands.BadArgument(f"{ctx.author.mention} error fetching suggestion channel")
+            msg = f"{ctx.author.mention} error fetching suggestion channel"
+            raise commands.BadArgument(msg)
         file = file or discord.utils.MISSING
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 
@@ -192,12 +196,11 @@ class Suggestions(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True, create_public_threads=True)
     async def suggest(self, ctx: Context, *, suggestion: Annotated[str, commands.clean_content]):
-        """Suggest something. Abuse of the command may result in required mod actions
+        """Suggest something. Abuse of the command may result in required mod actions.
 
         **Examples:**
         - `[p]suggest This is really nice suggestion`
         """
-
         if not ctx.invoked_subcommand:
             embed = discord.Embed(description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6)
             embed.set_author(name=str(ctx.author), icon_url=ctx.author.display_avatar.url)
@@ -223,16 +226,15 @@ class Suggestions(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(read_message_history=True, manage_channels=True, manage_messages=True)
     async def suggest_delete(self, ctx: Context, *, message_id: int):
-        """To delete the suggestion you suggested
+        """To delete the suggestion you suggested.
 
         **Examples:**
         - `[p]suggest delete 123456789`
         """
-
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
 
         if ctx.channel.permissions_for(ctx.author).manage_messages:
@@ -252,18 +254,17 @@ class Suggestions(Cog):
     @suggest.command(name="stats", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_status(self, ctx: Context, *, message_id: int):
-        """To get the statistics os the suggestion
+        """To get the statistics os the suggestion.
 
         **Examples:**
         - `[p]suggest stats 123456789`
         """
-
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
-        PAYLOAD: Dict[str, Any] = self.message[msg.id]
+        PAYLOAD: dict[str, Any] = self.message[msg.id]
 
         table = TabularData()
 
@@ -303,7 +304,7 @@ class Suggestions(Cog):
 
         if not msg or not thread:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid",
             )
         await thread.send("This suggestion has been resolved")
         await thread.edit(
@@ -316,7 +317,7 @@ class Suggestions(Cog):
     @suggest.command(name="note", aliases=["remark"])
     @commands.check_any(commands.has_permissions(manage_messages=True), is_mod())
     async def add_note(self, ctx: Context, message_id: int, *, remark: str):
-        """To add a note in suggestion embed. This will be visible to the user who suggested
+        """To add a note in suggestion embed. This will be visible to the user who suggested.
 
         **Examples:**
         - `[p]suggest note 123456789 This is a note`
@@ -324,7 +325,7 @@ class Suggestions(Cog):
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
 
         embed: discord.Embed = msg.embeds[0]
@@ -351,11 +352,10 @@ class Suggestions(Cog):
         **Examples:**
         - `[p]suggest clear 123456789`
         """
-
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
 
         embed: discord.Embed = msg.embeds[0]
@@ -372,7 +372,7 @@ class Suggestions(Cog):
     @suggest.command(name="flags", aliases=["flaglist", "flag-list", "show-flags"])
     @commands.cooldown(1, 60, commands.BucketType.member)
     async def suggest_flags(self, ctx: Context):
-        """To get the list of available flags"""
+        """To get the list of available flags."""
         embed = discord.Embed(title="Available Flags")
         desc = inspect.cleandoc(
             """
@@ -382,7 +382,7 @@ class Suggestions(Cog):
             - **DECLINE / DENY / REJECT**
             - **APPROVED / OK / ACCEPT / ALRIGHT**
             - **DUPLICATE / COPY / SAME**
-            """
+            """,
         )
         embed.description = desc
         await ctx.send(embed=embed)
@@ -404,11 +404,10 @@ class Suggestions(Cog):
         - `[p]suggest flag 123456789 INVALID`
         - `[p]suggest flag 123456789 INVALID This is a remark`
         """
-
         msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
 
         if msg.author.id != self.bot.user.id:
@@ -416,7 +415,7 @@ class Suggestions(Cog):
 
         flag = flag.upper()
         try:
-            payload: Dict[str, Union[int, str]] = OTHER_REACTION[flag]
+            payload: dict[str, Union[int, str]] = OTHER_REACTION[flag]
         except KeyError:
             return await ctx.send(f"{ctx.author.mention} Invalid Flag")
 
@@ -440,7 +439,7 @@ class Suggestions(Cog):
         if random() < 0.05:
             await ctx.send(
                 f"{ctx.author.mention} btw, you can also flag the suggestion by replying the message with the proper FLAG.\n"
-                f"Like: `INVALID > This is a remark`, `SPAM`"
+                f"Like: `INVALID > This is a remark`, `SPAM`",
             )
 
     @Cog.listener(name="on_raw_message_delete")
@@ -455,7 +454,7 @@ class Suggestions(Cog):
             return
 
         ls = await self.bot.guild_configurations.find_one(
-            {"_id": message.guild.id, "suggestion_channel": message.channel.id}
+            {"_id": message.guild.id, "suggestion_channel": message.channel.id},
         )
         if not ls:
             return

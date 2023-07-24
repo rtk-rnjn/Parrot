@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate
@@ -22,9 +22,9 @@ with open(r"cogs/config/events.json", encoding="utf-8", errors="ignore") as f:
 
 
 class Configuration(Cog):
-    """To config the bot. In the server"""
+    """To config the bot. In the server."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
         self.ON_TESTING = False
@@ -55,63 +55,63 @@ class Configuration(Cog):
                 f"`MuteRole:` **{mute_role.name if mute_role else 'None'} ({data.get('mute_role')})**\n"
                 f"`Premium :` **{'Enabled' if data.get('premium') else 'Disabled'}**\n"
                 f"`Hub     :` **{hub.mention if hub else 'None'} ({data.get('hub')})**\n"
-                f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n"
+                f"`SuggestionChannel:` **{suggestion_channel.mention if suggestion_channel else 'None'} ({data.get('suggestion_channel')})**\n",
             )
 
     @config.group(name="opt", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt(self, ctx: Context):
-        """To opt in or opt out certain features"""
+        """To opt in or opt out certain features."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
     @config_opt.group(name="in", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_in(self, ctx: Context):
-        """To opt in certain features of Parrot bot in server"""
+        """To opt in certain features of Parrot bot in server."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
     @config_opt_in.command(name="github", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_in_github(self, ctx: Context):
-        """To opt in git link to code block"""
+        """To opt in git link to code block."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": True}}, upsert=True
+            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": True}}, upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} enabled gitlink to codeblock in this server")
 
     @config_opt_in.command(name="equation", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_in_equation(self, ctx: Context):
-        """To opt in instant equation solver"""
+        """To opt in instant equation solver."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": True}}, upsert=True
+            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": True}}, upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} enabled instant equation solver in this server")
 
     @config_opt.group(name="out", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_out(self, ctx: Context):
-        """To opt out certain features of Parrot bot in server"""
+        """To opt out certain features of Parrot bot in server."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
     @config_opt_out.command(name="github", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_out_github(self, ctx: Context):
-        """To opt out git link to code block"""
+        """To opt out git link to code block."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": False}}, upsert=True
+            {"_id": ctx.guild.id}, {"$set": {"gitlink_enabled": False}}, upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} disabled gitlink to codeblock in this server")
 
     @config_opt_out.command(name="equation", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def config_opt_out_equation(self, ctx: Context):
-        """To opt out instant equation solver"""
+        """To opt out instant equation solver."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": False}}, upsert=True
+            {"_id": ctx.guild.id}, {"$set": {"equation_enabled": False}}, upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} disabled instant equation solver in this server")
 
@@ -122,8 +122,8 @@ class Configuration(Cog):
         self,
         ctx: Context,
     ):
-        """To setup Hub like channel"""
-        overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+        """To setup Hub like channel."""
+        overwrites: dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
             ctx.guild.default_role: discord.PermissionOverwrite(connect=True, read_messages=True),
             ctx.guild.me: discord.PermissionOverwrite(
                 connect=True,
@@ -154,11 +154,11 @@ class Configuration(Cog):
         self,
         ctx: Context,
     ):
-        """To setup the starboard in your server"""
+        """To setup the starboard in your server."""
         if ctx.invoked_subcommand:
             return
         try:
-            starboard_data: Dict[str, Union[str, int, List[int], bool, None]] = self.bot.guild_configurations_cache[
+            starboard_data: dict[str, Union[str, int, list[int], bool, None]] = self.bot.guild_configurations_cache[
                 ctx.guild.id
             ]["starboard_config"]
         except KeyError:
@@ -179,13 +179,13 @@ class Configuration(Cog):
             f"`Locked   :` **{is_locked}**\n"
             f"`Ignore   :` **{ignore_channel or 'None'}**\n"
             f"`Duration :` **{max_duration}**\n"
-            f"`Self Star:` **{can_self_star}**\n"
+            f"`Self Star:` **{can_self_star}**\n",
         )
 
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
     async def starboard_channel(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None):
-        """To setup the channel"""
+        """To setup the channel."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"starboard_config.channel": channel.id if channel else None}},
@@ -197,7 +197,7 @@ class Configuration(Cog):
     @starboard.command(name="maxage", aliases=["maxduration"])
     @commands.has_permissions(administrator=True)
     async def starboard_max_age(self, ctx: Context, *, duration: ShortTime):
-        """To set the max duration"""
+        """To set the max duration."""
         difference = duration.dt.timestamp() - ctx.message.created_at.timestamp()
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -208,7 +208,7 @@ class Configuration(Cog):
     @starboard.command(name="ignore", aliases=["ignorechannel"])
     @commands.has_permissions(administrator=True)
     async def starboard_add_ignore(self, ctx: Context, *, channel: discord.TextChannel):
-        """To add ignore list"""
+        """To add ignore list."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$addToSet": {"starboard_config.ignore_channel": channel.id}},
@@ -218,7 +218,7 @@ class Configuration(Cog):
     @starboard.command(name="unignore", aliases=["unignorechannel"])
     @commands.has_permissions(administrator=True)
     async def starboard_remove_ignore(self, ctx: Context, *, channel: discord.TextChannel):
-        """To remove the channel from ignore list"""
+        """To remove the channel from ignore list."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$pull": {"starboard_config.ignore_channel": channel.id}},
@@ -228,25 +228,25 @@ class Configuration(Cog):
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_permissions(administrator=True)
     async def starboard_limit(self, ctx: Context, limit: int = 3):
-        """To set the starboard limit"""
+        """To set the starboard limit."""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"starboard_config.limit": limit}})
         await ctx.reply(f"{ctx.author.mention} set starboard limit to **{limit}**")
 
     @starboard.command(name="lock", aliases=["locked"])
     @commands.has_permissions(administrator=True)
     async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
-        """To lock the starboard channel"""
+        """To lock the starboard channel."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard_config.is_locked": toggle}}
+            {"_id": ctx.guild.id}, {"$set": {"starboard_config.is_locked": toggle}},
         )
         await ctx.reply(f"{ctx.author.mention} starboard channel is now {'locked' if toggle else 'unlocked'}")
 
     @starboard.command(name="selfstar", aliases=["self-star"])
     @commands.has_permissions(administrator=True)
     async def starboard_self_star(self, ctx: Context, *, toggle: convert_bool = False):
-        """To allow self star"""
+        """To allow self star."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$set": {"starboard_config.can_self_star": toggle}}
+            {"_id": ctx.guild.id}, {"$set": {"starboard_config.can_self_star": toggle}},
         )
         await ctx.reply(f"{ctx.author.mention} self star is now {'enabled' if toggle else 'disabled'}")
 
@@ -254,9 +254,8 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def botprefix(self, ctx: Context, *, arg: str):
-        """
-        To set the prefix of the bot. Whatever prefix you passed, will be case sensitive.
-        It is advised to keep a symbol as a prefix. Must not greater than 6 chars
+        """To set the prefix of the bot. Whatever prefix you passed, will be case sensitive.
+        It is advised to keep a symbol as a prefix. Must not greater than 6 chars.
         """
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"prefix": arg}})
 
@@ -266,10 +265,10 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def suggestchannel(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None):
-        """To configure the suggestion channel. If no channel is provided it will remove the channel"""
+        """To configure the suggestion channel. If no channel is provided it will remove the channel."""
         if channel:
             await self.bot.guild_configurations.update_one(
-                {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}}
+                {"_id": ctx.guild.id}, {"$set": {"suggestion_channel": channel.id}},
             )
             await ctx.reply(f"{ctx.author.mention} set suggestion channel to {channel.mention}")
             return
@@ -292,7 +291,8 @@ class Configuration(Cog):
     @Context.with_type
     async def modrole(self, ctx: Context, *, role: discord.Role = None):
         """To set mod role of the server. People with mod role can accesss the Moderation power of Parrot.
-        By default the mod functionality works on the basis of permission"""
+        By default the mod functionality works on the basis of permission.
+        """
         post = {"mod_role": role.id if role else None}
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": post})
         if not role:
@@ -304,7 +304,7 @@ class Configuration(Cog):
     @Context.with_type
     async def djrole(self, ctx: Context, *, role: discord.Role = None):
         """To set dj role of the server. People with dj role can accesss the DJ power of Parrot.
-        By default the dj functionality works on the basis of permission that is (Manage Channel)
+        By default the dj functionality works on the basis of permission that is (Manage Channel).
         """
         post = {"dj_role": role.id if role else None}
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": post})
@@ -323,12 +323,12 @@ class Configuration(Cog):
         *,
         role: Optional[discord.Role] = None,
     ):
-        """This command will connect your server with other servers which then connected to #global-chat must try this once"""
+        """This command will connect your server with other servers which then connected to #global-chat must try this once."""
         collection: Collection = self.bot.guild_configurations
         if not setting:
-            overwrites: Dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+            overwrites: dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
-                    read_messages=True, send_messages=True, read_message_history=True
+                    read_messages=True, send_messages=True, read_message_history=True,
                 ),
                 ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True),
             }
@@ -348,7 +348,7 @@ class Configuration(Cog):
                         "global_chat.channel_id": channel.id,
                         "global_chat.webhook": webhook.url,
                         "global_chat.enable": True,
-                    }
+                    },
                 },
                 upsert=True,
             )
@@ -375,7 +375,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling(self, ctx: Context, toggle: convert_bool = True):
-        """To configure leveling"""
+        """To configure leveling."""
         if not ctx.invoked_subcommand:
             await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}})
             await ctx.reply(f"{ctx.author.mention} set leveling system to: **{toggle}**")
@@ -384,12 +384,12 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_show(self, ctx: Context):
-        """To show leveling system"""
+        """To show leveling system."""
         try:
-            leveling: Dict[str, Any] = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"]
+            leveling: dict[str, Any] = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"]
         except KeyError:
             return await ctx.reply(f"{ctx.author.mention} leveling system is not set up yet!")
-        reward: List[Dict[str, int]] = leveling.get("reward", [])
+        reward: list[dict[str, int]] = leveling.get("reward", [])
         rwrd_tble = []
         for i in reward:
             role = ctx.guild.get_role(i["role"]) or None
@@ -399,14 +399,14 @@ class Configuration(Cog):
                 getattr(ctx.guild.get_role(r), "name", None)
                 for r in leveling.get("ignore_role", [])
                 if getattr(ctx.guild.get_role(r), "name", None)
-            ]
+            ],
         )
         ignored_channel = ", ".join(
             [
                 getattr(ctx.guild.get_channel(r), "name", None)
                 for r in leveling.get("ignore_channel", [])
                 if getattr(ctx.guild.get_channel(r), "name", None)
-            ]
+            ],
         )
 
         await ctx.reply(
@@ -416,14 +416,14 @@ class Configuration(Cog):
 `Ignore Roles   :` **{ignored_roles}**
 `Ignore Channels:` **{ignored_channel}** ```
 {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
-```"""
+```""",
         )
 
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_channel(self, ctx: Context, *, channel: discord.TextChannel = None):
-        """To configure leveling channel"""
+        """To configure leveling channel."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"leveling.channel": channel.id if channel else None}},
@@ -440,7 +440,7 @@ class Configuration(Cog):
         self,
         ctx: Context,
     ):
-        """To configure the ignoring system of leveling"""
+        """To configure the ignoring system of leveling."""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
@@ -450,9 +450,9 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_ignore_role(self, ctx: Context, *, role: discord.Role):
-        """To configure leveling ignore role"""
+        """To configure leveling ignore role."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$addToSet": {"leveling.ignore_role": role.id}}
+            {"_id": ctx.guild.id}, {"$addToSet": {"leveling.ignore_role": role.id}},
         )
         await ctx.reply(f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**")
         return
@@ -463,7 +463,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_ignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
-        """To configure leveling ignore channel"""
+        """To configure leveling ignore channel."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$addToSet": {"leveling.ignore_channel": channel.id}},
@@ -477,7 +477,7 @@ class Configuration(Cog):
         self,
         ctx: Context,
     ):
-        """To configure the ignoring system of leveling"""
+        """To configure the ignoring system of leveling."""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
@@ -487,7 +487,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_role(self, ctx: Context, *, role: discord.Role):
-        """To configure leveling unignore role"""
+        """To configure leveling unignore role."""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_role": role.id}})
         await ctx.reply(f"{ctx.author.mention} removed **{role.name}** from ignore list. (If existed)")
 
@@ -497,9 +497,9 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
-        """To configure leveling ignore channel"""
+        """To configure leveling ignore channel."""
         await self.bot.guild_configurations.update_one(
-            {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_channel": channel.id}}
+            {"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_channel": channel.id}},
         )
         await ctx.reply(f"{ctx.author.mention} removed **{channel.mention}** from ignore list. (If existed)")
 
@@ -507,11 +507,11 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def level_reward_add(self, ctx: Context, level: int, role: discord.Role = None):
-        """To add the level reward"""
+        """To add the level reward."""
         if _ := await self.bot.guild_configurations.find_one({"_id": ctx.guild.id, "leveling.reward": level}):
             role = ctx.guild.get_role(_["role"])
             return await ctx.error(
-                f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{getattr(role, 'name', 'Role Not Found')}**"
+                f"{ctx.author.mention} conflit in adding {level}. It already exists with reward of role ID: **{getattr(role, 'name', 'Role Not Found')}**",
             )
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -526,7 +526,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
     async def level_reward_remove(self, ctx: Context, level: int):
-        """To remove the level reward"""
+        """To remove the level reward."""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"leveling.reward": {"lvl": level}}})
         await ctx.reply(f"{ctx.author.mention} updated/removed reward at level: **{level}**")
 
@@ -535,7 +535,6 @@ class Configuration(Cog):
     @Context.with_type
     async def telephone(self, ctx: Context):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
-
         if not ctx.invoked_subcommand:
             data = await self.bot.guild_configurations.find_one({"_id": ctx.guild.id})
             if data:
@@ -549,7 +548,7 @@ class Configuration(Cog):
                     f"`Channel   :` **{channel}**\n"
                     f"`Pingrole  :` **{role} ({data['pingrole'] or None})**\n"
                     f"`MemberPing:` **{member} ({data['memberping'] or None})**\n"
-                    f"`Blocked   :` **{', '.join(data['blocked']) or None}**"
+                    f"`Blocked   :` **{', '.join(data['blocked']) or None}**",
                 )
 
     @telephone.command(name="channel")
@@ -570,7 +569,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_pingrole(self, ctx: Context, *, role: discord.Role = None):
-        """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
+        """To add the ping role. If other server call your server. Then the role will be pinged if set any."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"telephone.ping_role": role.id if role else None}},
@@ -584,7 +583,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def tel_config_memberping(self, ctx: Context, *, member: discord.Member = None):
-        """To add the ping role. If other server call your server. Then the role will be pinged if set any"""
+        """To add the ping role. If other server call your server. Then the role will be pinged if set any."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"telephone.member_ping": member.id if member else None}},
@@ -628,7 +627,7 @@ class Configuration(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def ticketconfig(self, ctx: Context):
-        """To config the Ticket Parrot Bot in the server"""
+        """To config the Ticket Parrot Bot in the server."""
         if ctx.invoked_subcommand:
             return
         data = await self.bot.guild_configurations.find_one({"_id": ctx.guild.id})
@@ -674,7 +673,7 @@ class Configuration(Cog):
             f"`Pinged Roles       :` **{pinged_roles}**\n"
             f"`Active Channel     :` **{current_active_channel}**\n"
             f"`Verifed Roles (mod):` **{verified_roles}**\n"
-            f"`Category Channel   :` **{category}**"
+            f"`Category Channel   :` **{category}**",
         )
 
     @ticketconfig.command()
@@ -682,7 +681,7 @@ class Configuration(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def auto(self, ctx: Context, channel: discord.TextChannel = None, *, message: str = None):
-        """Automatic ticket making system. On reaction basis"""
+        """Automatic ticket making system. On reaction basis."""
         channel = channel or ctx.channel
         message = message or "React to \N{ENVELOPE} to create ticket"
         await mt._auto(ctx, channel, message)
@@ -708,8 +707,7 @@ class Configuration(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addaccess(self, ctx: Context, *, role: discord.Role):
-        """
-        This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
+        """This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
 
         Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
@@ -720,8 +718,7 @@ class Configuration(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def delaccess(self, ctx: Context, *, role: discord.Role):
-        """
-        This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
+        """This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
 
         Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
@@ -733,7 +730,8 @@ class Configuration(Cog):
     @Context.with_type
     async def addadminrole(self, ctx: Context, *, role: discord.Role):
         """This command gives all users with a specific role access to the admin-level commands for the bot,
-        such as `Addpingedrole` and `Addaccess`."""
+        such as `Addpingedrole` and `Addaccess`.
+        """
         await mt._addadimrole(ctx, role)
 
     @ticketconfig.command(hidden=False)
@@ -742,7 +740,8 @@ class Configuration(Cog):
     @Context.with_type
     async def addpingedrole(self, ctx: Context, *, role: discord.Role):
         """This command adds a role to the list of roles that are pinged when a new ticket is created.
-        This command can only be run if you have an admin-level role for this bot."""
+        This command can only be run if you have an admin-level role for this bot.
+        """
         await mt._addpingedrole(ctx, role)
 
     @ticketconfig.command()
@@ -751,7 +750,8 @@ class Configuration(Cog):
     @Context.with_type
     async def deladminrole(self, ctx: Context, *, role: discord.Role):
         """This command removes access for all users with the specified role to the admin-level commands for the bot,
-        such as `Addpingedrole` and `Addaccess`."""
+        such as `Addpingedrole` and `Addaccess`.
+        """
         await mt._deladminrole(ctx, role)
 
     @ticketconfig.command()
@@ -766,7 +766,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def cmdconfig(self, ctx: Context):
-        """Command Management of the server"""
+        """Command Management of the server."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
@@ -780,7 +780,7 @@ class Configuration(Cog):
         *,
         target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
     ):
-        """To enable the command"""
+        """To enable the command."""
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
@@ -802,7 +802,7 @@ class Configuration(Cog):
         *,
         target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
     ):
-        """To disable the command"""
+        """To disable the command."""
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
@@ -818,7 +818,7 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def cmd_config_list(self, ctx: Context, *, cmd: str):
-        """To view what all configuation are being made with command"""
+        """To view what all configuation are being made with command."""
         data = self.bot.guild_configurations_cache[ctx.guild.id].get("cmd_config", {})
         CMD_GLOBAL_ENABLE_ = f"CMD_GLOBAL_ENABLE_{cmd}".upper()
         CMD_ROLE_ENABLE_ = f"CMD_ROLE_ENABLE_{cmd}".upper()
@@ -886,18 +886,18 @@ class Configuration(Cog):
     @commands.has_permissions(administrator=True)
     @Context.with_type
     async def clear(self, ctx: Context):
-        """To clear all overrides"""
+        """To clear all overrides."""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"cmd_config": {}}})
         await ctx.send(f"{ctx.author.mention} reseted everything!")
 
     @config.group(name="serverstats", aliases=["sstats"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def serverstats(self, ctx: Context):
-        """Creates Fancy counters that everyone can see"""
+        """Creates Fancy counters that everyone can see."""
         if ctx.invoked_subcommand is not None:
             return
         try:
-            server_stats: Dict[str, Any] = self.bot.guild_configurations_cache[ctx.guild.id]["stats_channels"]
+            server_stats: dict[str, Any] = self.bot.guild_configurations_cache[ctx.guild.id]["stats_channels"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
         table = []
@@ -910,7 +910,7 @@ class Configuration(Cog):
                         f"#{chn.name}" if chn else "None",
                         value.get("channel_type"),
                         value.get("template"),
-                    ]
+                    ],
                 )
         table_role = []
         for _role in server_stats.get("role", {}):
@@ -924,14 +924,14 @@ class Configuration(Cog):
                     channel.name if channel else "None",
                     channel_type,
                     template,
-                ]
+                ],
             )
         await ctx.send(
             f"""```
 {str(tabulate(table, headers=["Name", "Channel", "Type", "Template"], tablefmt="pretty"))}
 ``````
 {str(tabulate(table_role, headers=["Role", "Channel", "Type", "Template"], tablefmt="pretty"))}
-```"""
+```""",
         )
 
     @serverstats.command(name="create")
@@ -940,7 +940,7 @@ class Configuration(Cog):
         self,
         ctx: Context,
     ):
-        """Creates a server stats counter"""
+        """Creates a server stats counter."""
         COUNTER_PAYLOAD = {
             "bots": len([m for m in ctx.guild.members if m.bot]),
             "members": len(ctx.guild.members),
@@ -992,7 +992,7 @@ class Configuration(Cog):
 
         if counter not in AVAILABLE_COUNTER:
             return await ctx.error(
-                f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE_COUNTER)}`"
+                f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE_COUNTER)}`",
             )
         if counter == "role":
             OP = "$addToSet"
@@ -1010,7 +1010,7 @@ class Configuration(Cog):
         channel_type = await wait_for_response()
         if channel_type not in AVAILABLE_TYPE:
             return await ctx.error(
-                f"{ctx.author.mention} invalid channel type! Available channel type: `{'`, `'.join(AVAILABLE_TYPE)}`"
+                f"{ctx.author.mention} invalid channel type! Available channel type: `{'`, `'.join(AVAILABLE_TYPE)}`",
             )
         PAYLOAD[f"{counter}.channel_type"] = channel_type
         PAYLOAD_R["channel_type"] = channel_type
@@ -1052,7 +1052,7 @@ class Configuration(Cog):
             {
                 OP: {f"stats_channels.{k}": v for k, v in PAYLOAD.items()}
                 if counter != "role"
-                else {"stats_channels.role": PAYLOAD_R}
+                else {"stats_channels.role": PAYLOAD_R},
             },
             upsert=True,
         )
@@ -1066,7 +1066,7 @@ class Configuration(Cog):
         ctx: Context,
         counter: str,
     ):
-        """Deletes a server stats counter"""
+        """Deletes a server stats counter."""
         AVAILABLE = [
             "bots",
             "members",
@@ -1113,14 +1113,14 @@ class Configuration(Cog):
                     f"stats_channels.{counter}.channel_id": None,
                     f"stats_channels.{counter}.channel_type": None,
                     f"stats_channels.{counter}.template": None,
-                }
+                },
             },
         ):
             await ctx.send(f"{ctx.author.mention} counter deleted")
 
     @commands.group(invoke_without_command=True)
     async def optout(self, ctx: Context):
-        """Opt-out to the certain configuration"""
+        """Opt-out to the certain configuration."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
@@ -1136,7 +1136,7 @@ class Configuration(Cog):
 
     @optout.command(name="equation")
     async def optout_equation(self, ctx: Context, g: Literal["--global"]):
-        """Opt-out for equation usage"""
+        """Opt-out for equation usage."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"opts.equation": False}},
@@ -1146,13 +1146,13 @@ class Configuration(Cog):
 
     @commands.group(invoke_without_command=True)
     async def optin(self, ctx: Context):
-        """Opt-in to the certain configuration"""
+        """Opt-in to the certain configuration."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
     @optin.command(name="gitlink")
     async def optin_gitlink(self, ctx: Context, g: Literal["--global"]):
-        """Opt-in for gitlink to codeblock"""
+        """Opt-in for gitlink to codeblock."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"opts.equation": True}},
@@ -1162,7 +1162,7 @@ class Configuration(Cog):
 
     @optin.command(name="equation")
     async def optin_equation(self, ctx: Context, g: Literal["--global"]):
-        """Opt-in for equation usage"""
+        """Opt-in for equation usage."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {"$set": {"opts.equation": False}},
@@ -1173,8 +1173,7 @@ class Configuration(Cog):
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def activate(self, ctx: Context, code: str):
-        """To upgrade the server to premium"""
-
+        """To upgrade the server to premium."""
         code_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
         if data := await self.bot.extra_collections.find_one({"hash": code_hash}):
             if data.get("uses", 0) > data.get("limit", 0):
@@ -1183,7 +1182,7 @@ class Configuration(Cog):
 
             if data.get("guild", None) is not None and data["guild"] != ctx.guild.id:
                 await ctx.send(
-                    f"{ctx.author.mention} This code is not for this server. Please ask for new code in support server"
+                    f"{ctx.author.mention} This code is not for this server. Please ask for new code in support server",
                 )
                 return
 

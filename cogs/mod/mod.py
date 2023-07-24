@@ -4,10 +4,10 @@ import argparse
 import asyncio
 import re
 import shlex
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import wavelink
-from typing_extensions import Annotated
+from typing import Annotated
 
 import discord
 from cogs.mod import method as mt
@@ -27,7 +27,7 @@ class Arguments(argparse.ArgumentParser):
 class Moderator(Cog):
     """A simple moderator's tool for managing the server."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
 
@@ -181,7 +181,7 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """Remove the mentioned role from mentioned/id member
+        """Remove the mentioned role from mentioned/id member.
 
         You must have Manage Roles permission to use this command,
         or must have the Moderator Role.
@@ -261,7 +261,7 @@ class Moderator(Cog):
     async def mass_ban(
         self,
         ctx: Context,
-        members: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         days: Optional[int] = 0,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
@@ -300,7 +300,7 @@ class Moderator(Cog):
     async def softban(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -337,7 +337,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         duration: FutureTime,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -378,7 +378,7 @@ class Moderator(Cog):
     async def block(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -481,7 +481,7 @@ class Moderator(Cog):
     async def mass_kick(
         self,
         ctx: Context,
-        members: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -546,7 +546,7 @@ class Moderator(Cog):
                     channel=chn,
                     reason=reason,
                 )
-            elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
+            elif isinstance(chn, discord.VoiceChannel | discord.StageChannel):
                 await mt._vc_lock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
@@ -596,7 +596,7 @@ class Moderator(Cog):
                     reason=reason,
                 )
 
-            elif isinstance(chn, (discord.VoiceChannel, discord.StageChannel)):
+            elif isinstance(chn, discord.VoiceChannel | discord.StageChannel):
                 await mt._vc_unlock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
@@ -868,7 +868,6 @@ class Moderator(Cog):
         - `[p]clean reactions`
         - `[p]clean reactions 10`
         """
-
         if search > 2000:
             return await ctx.error(f"Too many messages to search for ({search}/2000)")
 
@@ -1061,7 +1060,7 @@ class Moderator(Cog):
     async def unblock(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
@@ -1099,7 +1098,7 @@ class Moderator(Cog):
         *,
         name: Optional[commands.clean_content] = None,
     ):
-        """To change the nickname of the specified member
+        """To change the nickname of the specified member.
 
         In order to change the nickname of a member, you must have the Manage Nicknames permission for the guild or be a moderator.
         Bot must have Manage Nicknames permission for the guild.
@@ -1409,7 +1408,7 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[List[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,  # type: ignore
+        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,  # type: ignore
         channel: Optional[discord.VoiceChannel] = None,
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
@@ -1426,7 +1425,7 @@ class Moderator(Cog):
         **NOTE:** If you don't specify the channel, it will move the member to the channel you are in.
         """
         if member:
-            member: List[discord.Member] = [i async for i in self.bot.resolve_member_ids(ctx.guild, member)]
+            member: list[discord.Member] = [i async for i in self.bot.resolve_member_ids(ctx.guild, member)]
 
         def check(m: discord.Member, b: discord.VoiceState, a: discord.VoiceState) -> bool:
             return m.id == ctx.me.id and (b.channel.id != a.channel.id)
@@ -1442,7 +1441,7 @@ class Moderator(Cog):
                     member = voicestate.channel.members
             else:
                 return await ctx.error(
-                    f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command"
+                    f"{ctx.author.mention} you must specify the the channel or must be in the voice channel to use this command",
                 )
 
             try:
@@ -1475,7 +1474,7 @@ class Moderator(Cog):
     @commands.bot_has_guild_permissions(manage_emojis=True)
     @Context.with_type
     async def emoji(self, ctx: Context):
-        """For Emoji Moderation"""
+        """For Emoji Moderation."""
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
@@ -1616,7 +1615,7 @@ class Moderator(Cog):
 
     @sticker.command(name="add")
     async def sticker_add(self, ctx: Context, emoji: str, *, description: str):
-        """To add sticker"""
+        """To add sticker."""
         if not ctx.message.stickers:
             return await ctx.send(f"{ctx.author.mention} You did not provide any sticker")
 
@@ -1639,7 +1638,7 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To delete sticker"""
+        """To delete sticker."""
         if not ctx.message.stickers:
             return await ctx.send(f"{ctx.author.mention} You did not provide any sticker")
         sticker = sticker or ctx.message.stickers[0]
@@ -1663,7 +1662,7 @@ class Moderator(Cog):
         *,
         reason: Annotated[Optional[str], ActionReason] = None,
     ):
-        """To add sticker from url"""
+        """To add sticker from url."""
         await mt._sticker_addurl(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
@@ -1859,10 +1858,7 @@ class Moderator(Cog):
 
         if isinstance(
             target,
-            (
-                discord.VoiceChannel,
-                discord.StageChannel,
-            ),
+            discord.VoiceChannel | discord.StageChannel,
         ):
             vc_embed = VOICE_CHANNEL_EMBED
             vc_embed.description = (

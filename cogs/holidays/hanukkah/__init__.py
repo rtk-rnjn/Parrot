@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from typing import List
 
 import discord
 from core import Cog, Context, Parrot
@@ -16,12 +15,12 @@ HEBCAL_URL = (
 )
 
 
-class Hanukkah(Cog, command_attrs=dict(hidden=True)):
+class Hanukkah(Cog, command_attrs={"hidden": True}):
     """A cog that returns information about Hanukkah festival."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.hanukkah_dates: List[datetime.date] = []
+        self.hanukkah_dates: list[datetime.date] = []
 
     def _parse_time_to_datetime(self, date: str) -> datetime.datetime:
         """Format the times provided by the api to datetime forms."""
@@ -32,7 +31,7 @@ class Hanukkah(Cog, command_attrs=dict(hidden=True)):
             # to catch this, we try again without time information
             return datetime.datetime.strptime(date, "%Y-%m-%d")
 
-    async def fetch_hanukkah_dates(self) -> List[datetime.date]:
+    async def fetch_hanukkah_dates(self) -> list[datetime.date]:
         """Gets the dates for hanukkah festival."""
         # clear the datetime objects to prevent a memory link
         self.hanukkah_dates = []

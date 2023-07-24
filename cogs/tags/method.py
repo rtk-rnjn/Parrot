@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
 import discord
 from core import Context, Parrot
@@ -84,7 +84,7 @@ async def _create_tag(bot: Parrot, ctx: Context, tag: str, text: str):
             "guild_id": ctx.guild.id,
             "nsfw": nsfw,
             "created_at": int(discord.utils.utcnow().timestamp()),
-        }
+        },
     )
     await ctx.reply(f"{ctx.author.mention} tag created successfully")
 
@@ -133,7 +133,7 @@ async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
         member = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         if member:
             return await ctx.error(
-                f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server"
+                f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server",
             )
         await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"owner": ctx.author.id}})
         await ctx.reply(f"{ctx.author.mention} ownership of tag `{tag}` claimed!")
@@ -147,7 +147,7 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.M
         if data["owner"] != ctx.author.id:
             return await ctx.error(f"{ctx.author.mention} you don't own this tag")
         val = await ctx.prompt(
-            f"{ctx.author.mention} are you sure to transfer the tag ownership to **{member}**? This process is irreversible!"
+            f"{ctx.author.mention} are you sure to transfer the tag ownership to **{member}**? This process is irreversible!",
         )
         if val is None:
             await ctx.error(f"{ctx.author.mention} you did not responds on time")
@@ -174,7 +174,7 @@ async def _toggle_nsfw(bot: Parrot, ctx: Context, tag: str):
 
 async def _show_tag_mine(bot: Parrot, ctx: Context):
     collection = ctx.bot.tags_collection
-    entries: List[str] = []
+    entries: list[str] = []
 
     async for data in collection.find({"owner": ctx.author.id, "guild_id": ctx.guild.id, "tag_id": {"$exists": True}}):
         entries.append(f"{data['tag_id']}")
@@ -186,7 +186,7 @@ async def _show_tag_mine(bot: Parrot, ctx: Context):
 
 async def _show_all_tags(bot: Parrot, ctx: Context):
     collection = ctx.bot.tags_collection
-    entries: List[str] = []
+    entries: list[str] = []
     async for data in collection.find({"guild_id": ctx.guild.id, "tag_id": {"$exists": True}}):
         entries.append(f"{data['tag_id']}")
     try:

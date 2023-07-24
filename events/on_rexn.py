@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from time import time
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 import pymongo
 
@@ -12,7 +12,7 @@ from core import Cog
 if TYPE_CHECKING:
     from pymongo.collection import Collection
     from pymongo.typings import _DocumentType
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     from core import Parrot
 
@@ -25,7 +25,7 @@ TWO_WEEK = 1209600
 # 60 * 60 * 24 * 7 * 2
 
 
-class OnReaction(Cog, command_attrs=dict(hidden=True)):
+class OnReaction(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
@@ -113,8 +113,8 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "$or": [
                     {"message_id.bot": message.id},
                     {"message_id.author": message.id},
-                ]
-            }
+                ],
+            },
         ):
             stars = len(data["starrer"])
 
@@ -191,7 +191,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
         else:
             starchannel: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, starboard_channel
+                self.bot.get_channel, self.bot.fetch_channel, starboard_channel,
             )
 
         msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, data["message_id"]["bot"])  # type: ignore
@@ -244,7 +244,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                     "$or": [
                         {"message_id.bot": msg.id},
                         {"message_id.author": msg.id},
-                    ]
+                    ],
                 },
                 {
                     "$pull": {"starrer": payload.user_id},
@@ -277,7 +277,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
         starboard_channel: discord.TextChannel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
 
         bot_msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
-            starboard_channel, data["message_id"]["bot"]
+            starboard_channel, data["message_id"]["bot"],
         )
 
         if bot_msg:
@@ -300,7 +300,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             {
                 "$addToSet": {"starrer": payload.user_id},
                 "$inc": {"number_of_stars": 1},
-            }
+            },
         ):
             await self.edit_starbord_post(payload, **data)
             return
@@ -318,7 +318,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             return
         else:
             starboard_channel: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, channel
+                self.bot.get_channel, self.bot.fetch_channel, channel,
             )
         if not limit:
             return
@@ -406,7 +406,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
             await self._factory_reactor(payload, tp="remove")
 
     @Cog.listener()
-    async def on_reaction_clear(self, message: discord.Message, reactions: List[discord.Reaction]):
+    async def on_reaction_clear(self, message: discord.Message, reactions: list[discord.Reaction]):
         pass
 
     @Cog.listener()
@@ -419,7 +419,7 @@ class OnReaction(Cog, command_attrs=dict(hidden=True)):
                 "$or": [
                     {"message_id.bot": payload.message_id},
                     {"message_id.author": payload.message_id},
-                ]
+                ],
             },
         )
 

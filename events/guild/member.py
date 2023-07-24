@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import Dict, Optional, Set, Union
+from typing import Optional, Union
 
 from pymongo import UpdateOne
 
@@ -11,10 +11,10 @@ from core import Cog, Parrot
 from ._member import _MemberJoin as MemberJoin
 
 
-class Member(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class Member(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.muted: Dict[int, Set[int]] = {}  # {GUILD_ID: {*MEMBER_IDS}}
+        self.muted: dict[int, set[int]] = {}  # {GUILD_ID: {*MEMBER_IDS}}
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -107,8 +107,8 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                                 "hub_temp_channels": {
                                     "channel_id": hub_channel.id,
                                     "author": member.id,
-                                }
-                            }
+                                },
+                            },
                         },
                     )
                     await member.edit(
@@ -131,7 +131,7 @@ class Member(Cog, command_attrs=dict(hidden=True)):
                 "_id": member.guild.id,
                 "hub_temp_channels.channel_id": channel.id,
                 "hub_temp_channels.author": member.id,
-            }
+            },
         ):
             perms = member.guild.me.guild_permissions
             if not all([perms.manage_permissions, perms.manage_channels, perms.move_members]):

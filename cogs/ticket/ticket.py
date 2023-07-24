@@ -9,7 +9,7 @@ from discord.ext import commands
 
 
 class Ticket(Cog):
-    """A simple ticket service, trust me it's better than YAG. LOL!"""
+    """A simple ticket service, trust me it's better than YAG. LOL!."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -34,7 +34,8 @@ class Ticket(Cog):
     @Context.with_type
     async def close(self, ctx: Context):
         """Use this to close a ticket.
-        This command only works in ticket channels."""
+        This command only works in ticket channels.
+        """
         await mt._close(ctx, self.bot)
 
     @commands.command(hidden=True)
@@ -43,5 +44,6 @@ class Ticket(Cog):
     @Context.with_type
     async def save(self, ctx: Context, limit: Optional[int] = 100):
         """Use this to save the transcript of a ticket.
-        This command only works in ticket channels."""
+        This command only works in ticket channels.
+        """
         await mt._save(ctx, self.bot, limit)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import wavelink
 from wavelink.ext import spotify
@@ -20,19 +20,19 @@ class IPCRoutes(Cog):
 
     def _overwrite_to_json(
         self,
-        overwrites: Dict[Union[discord.User, discord.Role], discord.PermissionOverwrite],
-    ) -> Dict[str, Union[str, Optional[bool]]]:
+        overwrites: dict[Union[discord.User, discord.Role], discord.PermissionOverwrite],
+    ) -> dict[str, Union[str, Optional[bool]]]:
         try:
             return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}  # type: ignore
         except Exception:
             return {}
 
     @server.route()
-    async def echo(self, data: server.IpcServerResponse) -> Dict[str, Any]:
+    async def echo(self, data: server.IpcServerResponse) -> dict[str, Any]:
         return data.to_json()
 
     @server.route()
-    async def db_exec_find_one(self, data: server.IpcServerResponse) -> Dict[str, Any]:
+    async def db_exec_find_one(self, data: server.IpcServerResponse) -> dict[str, Any]:
         db = data.db
         collection = data.collection
 
@@ -46,14 +46,14 @@ class IPCRoutes(Cog):
         db: str = data.db
         collection: str = data.collection
 
-        query: Dict[str, Any] = getattr(data, "query", {})
-        update: Dict[str, Any] = getattr(data, "update", {})
+        query: dict[str, Any] = getattr(data, "query", {})
+        update: dict[str, Any] = getattr(data, "update", {})
         upsert: bool = getattr(data, "upsert", False)
 
         return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
 
     @server.route()
-    async def commands(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
+    async def commands(self, data: server.IpcServerResponse) -> list[dict[str, str]]:
         if name := getattr(data, "name", None):
             cmds = [self.bot.get_command(name)]
         else:
@@ -73,7 +73,7 @@ class IPCRoutes(Cog):
         ]
 
     @server.route()
-    async def guilds(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
+    async def guilds(self, data: server.IpcServerResponse) -> list[dict[str, Any]]:
         if _id := getattr(data, "id", None):
             guilds = [self.bot.get_guild(_id)]
         elif name := getattr(data, "name", None):
@@ -162,7 +162,7 @@ class IPCRoutes(Cog):
         ]
 
     @server.route()
-    async def users(self, data: server.IpcServerResponse) -> List[Dict[str, Any]]:
+    async def users(self, data: server.IpcServerResponse) -> list[dict[str, Any]]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
         elif name := getattr(data, "name", None):
@@ -183,7 +183,7 @@ class IPCRoutes(Cog):
         ]
 
     @server.route()
-    async def get_message(self, data: server.IpcServerResponse) -> Dict[str, Any]:
+    async def get_message(self, data: server.IpcServerResponse) -> dict[str, Any]:
         channel = self.bot.get_channel(data.channel_id)
         message = await self.bot.get_or_fetch_message(
             channel,
@@ -208,7 +208,7 @@ class IPCRoutes(Cog):
         )
 
     @server.route()
-    async def announce_global(self, data: server.IpcServerResponse) -> List[Dict[str, str]]:
+    async def announce_global(self, data: server.IpcServerResponse) -> list[dict[str, str]]:
         MESSAGES = []
         async for data in self.bot.guild_configurations.find({}):
             webhook = data["global_chat"]
@@ -230,12 +230,12 @@ class IPCRoutes(Cog):
                             "jump_url": msg.jump_url,
                             "clean_content": msg.clean_content,
                             "created_at": msg.created_at.isoformat(),
-                        }
+                        },
                     )
         return MESSAGES
 
     @server.route()
-    async def start_wavelink_nodes(self, data: server.IpcServerResponse) -> Dict[str, str]:
+    async def start_wavelink_nodes(self, data: server.IpcServerResponse) -> dict[str, str]:
         if self.bot.ON_HEROKU:
             return {"status": "error: cannot start wavelink on heroku"}
         host = data.host
@@ -260,12 +260,12 @@ class IPCRoutes(Cog):
         return {"status": "ok"}
 
     @server.route()
-    async def start_cricket_api(self, data: server.IpcServerResponse) -> Optional[Dict[str, Any]]:
+    async def start_cricket_api(self, data: server.IpcServerResponse) -> Optional[dict[str, Any]]:
         url = data.url
         return cricket_api(url) if url else None
 
     @server.route()
-    async def start_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
+    async def start_dbl_server(self, data: server.IpcServerResponse) -> dict[str, str]:
         if self.bot.HAS_TOP_GG:
             port = data.port or 1019
             end_point = data.end_point or "/dblwebhook"
@@ -283,7 +283,7 @@ class IPCRoutes(Cog):
         return {"status": "error: top.gg not installed"}
 
     @server.route()
-    async def stop_dbl_server(self, data: server.IpcServerResponse) -> Dict[str, str]:
+    async def stop_dbl_server(self, data: server.IpcServerResponse) -> dict[str, str]:
         if self.bot.HAS_TOP_GG:
             self.bot.topgg_webhook.close()
             self.bot.DBL_SERVER_RUNNING = False

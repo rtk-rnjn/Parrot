@@ -1,7 +1,6 @@
 import re
 import string
 import unicodedata
-from typing import Dict, List
 
 import discord
 
@@ -10,7 +9,7 @@ FILENAME_STRING = "{effect}_{author}.png"
 
 def replace_many(
     sentence: str,
-    replacements: Dict[str, str],
+    replacements: dict[str, str],
     *,
     ignore_case: bool = False,
     match_case: bool = False,
@@ -61,13 +60,12 @@ def file_safe_name(effect: str, display_name: str) -> str:
 
 
 class AnagramGame:
-    """
-    Used for creating instances of anagram games.
+    """Used for creating instances of anagram games.
     Once multiple games can be run at the same time, this class' instances
     can be used for keeping track of each anagram game.
     """
 
-    def __init__(self, scrambled: str, correct: List[str]) -> None:
+    def __init__(self, scrambled: str, correct: list[str]) -> None:
         self.scrambled = scrambled
         self.correct = set(correct)
 

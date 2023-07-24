@@ -4,7 +4,7 @@ import asyncio
 import difflib
 import inspect
 import re
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Optional, Union
 
 import async_timeout
 from jinja2.sandbox import SandboxedEnvironment
@@ -29,7 +29,7 @@ class Environment(SandboxedEnvironment):
 
 
 class AutoResponders(Cog):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.cache = {}
         self.cooldown = commands.CooldownMapping.from_cooldown(5, 10, commands.BucketType.channel)
@@ -117,7 +117,7 @@ class AutoResponders(Cog):
                 text=(
                     "To get syntax of jinja2 template, use `$ar tutorial <entity>.\n"
                     "Available entities: `" + "`, `".join(TOPICS.keys()) + "`"
-                )
+                ),
             )
         )
         await ctx.reply(embed=embed)
@@ -133,7 +133,7 @@ class AutoResponders(Cog):
             return "{{ " + v + " }}"
 
         des = ""
-        for v, f in variables.items():
+        for v, _f in variables.items():
             des += f"`{format_var(v):<22}`\n"
         embed = discord.Embed(
             title="Autoresponder Variables",
@@ -173,7 +173,7 @@ class AutoResponders(Cog):
     @autoresponder.command(name="add", aliases=["create", "set"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_add(
-        self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None
+        self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None,
     ) -> None:
         """Add a new autoresponder.
 
@@ -185,6 +185,14 @@ class AutoResponders(Cog):
 
         if not res:
             await ctx.reply("You must provide a response.")
+            return
+
+        ins = Variables(message=ctx.message, bot=self.bot)
+        variables = ins.build_base()
+        content, err = await self.execute_jinja(name, res, from_auto_response=False, **variables)
+
+        if err:
+            await ctx.reply(f"Failed to add autoresponder `{name}`.\n\n`{content}`")
             return
 
         self.cache[ctx.guild.id][name] = {
@@ -221,7 +229,7 @@ class AutoResponders(Cog):
     @autoresponder.command(name="edit", aliases=["change", "modify"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_edit(
-        self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None
+        self, ctx: Context, name: str, *, res: Annotated[str, Optional[commands.clean_content]] = None,
     ) -> None:
         """Edit an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -320,12 +328,12 @@ class AutoResponders(Cog):
             content = None
             try:
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
-                    content = await self.execute_jinja(name, response, **variables)
+                    content, _ = await self.execute_jinja(name, response, **variables)
             except re.error:
                 if name == message.content:
-                    content = await self.execute_jinja(name, response, **variables)
+                    content, _ = await self.execute_jinja(name, response, **variables)
 
-            if content and (not self.is_ratelimited(message)) and str(content) != "None":
+            if content and (not self.is_ratelimited(message)) and (str(content).lower().strip() != "none"):
                 await message.channel.send(content)
 
     def is_ratelimited(self, message: discord.Message):
@@ -336,10 +344,12 @@ class AutoResponders(Cog):
 
         return bool(bucket.update_rate_limit())  # type: ignore
 
-    async def execute_jinja(self, trigger: str, response: str, *, from_auto_response: bool = True, **variables) -> Any:
+    async def execute_jinja(
+        self, trigger: str, response: str, *, from_auto_response: bool = True, **variables,
+    ) -> tuple[str, bool]:
         if not hasattr(self, "jinja_env"):
             self.jinja_env = Environment(
-                enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True
+                enable_async=True, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False, autoescape=True,
             )
 
         trigger = discord.utils.escape_mentions(trigger)
@@ -351,16 +361,16 @@ class AutoResponders(Cog):
                     template = await self.bot.func(self.jinja_env.from_string, response)
                     return_data = await template.render_async(**variables)
                     if len(return_data) > 1990:
-                        return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Response is too long`"
-                    return return_data
+                        return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Response is too long`", False
+                    return return_data, True
                 except Exception as e:
-                    return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`"
+                    return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`", False
         except asyncio.TimeoutError:
-            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Execution took too long`"
+            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Execution took too long`", False
 
     @commands.command(name="jinja", aliases=["j2", "jinja2"])
     async def jinja(self, ctx: Context, *, code: str) -> None:
-        """Execute jinja2 code."""
+        """Execute jinja2 code. To practice your Autoresponder skills."""
         if code.startswith(("```jinja", "```", "```py")) and code.endswith("```"):
             code = "\n".join(code.split("\n")[1:-1])
 
@@ -375,11 +385,12 @@ class AutoResponders(Cog):
             for name, func in inspect.getmembers(variables):
                 if inspect.ismethod(func) or inspect.isfunction(func):
                     variables.pop(name, None)
-
         try:
-            await ctx.reply(await self.execute_jinja("None", code, from_auto_response=False, **variables))
+            content, error = await self.execute_jinja("None", code, from_auto_response=False, **variables)
         except Exception as e:
-            await ctx.reply(f"Gave up executing jinja2\n" f"Reason: `{e.__class__.__name__}: {e}`")
+            content = f"Failed to execute jinja2 code.\nReason: `{e.__class__.__name__}: {e}`"
+
+        await ctx.reply(content)
 
 
 async def setup(bot: Parrot) -> None:

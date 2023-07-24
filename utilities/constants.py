@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import enum
-from typing import List, Tuple
 
 from .emotes import EMOJIS
 
@@ -22,7 +21,7 @@ class Colours:
     grass_green: int = 0x66FF00
     gold: int = 0xE6C200
 
-    easter_like_colours: List[Tuple[int, int, int]] = [
+    easter_like_colours: list[tuple[int, int, int]] = [
         (255, 247, 0),
         (255, 255, 224),
         (0, 255, 127),
@@ -94,7 +93,7 @@ class Day(enum.IntEnum):
         return self.name.replace("_", " ").title()
 
 
-ERROR_REPLIES: List[str] = [
+ERROR_REPLIES: list[str] = [
     "Please don't do that.",
     "You have to stop.",
     "Do you mind?",
@@ -107,7 +106,7 @@ ERROR_REPLIES: List[str] = [
     "I can't believe you've done this",
 ]
 
-NEGATIVE_REPLIES: List[str] = [
+NEGATIVE_REPLIES: list[str] = [
     "Noooooo!!",
     "Nope.",
     "I'm sorry Dave, I'm afraid I can't do that.",
@@ -127,7 +126,7 @@ NEGATIVE_REPLIES: List[str] = [
     "Not in my house!",
 ]
 
-POSITIVE_REPLIES: List[str] = [
+POSITIVE_REPLIES: list[str] = [
     "Yep.",
     "Absolutely!",
     "Can do!",

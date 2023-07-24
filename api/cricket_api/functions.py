@@ -5,7 +5,8 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from html import unescape
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Optional
+from collections.abc import Callable
 
 from bs4 import BeautifulSoup
 
@@ -52,7 +53,7 @@ def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[str]:
 
 
 @ToAsync()
-def find_all(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[List[str]]:
+def find_all(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[list[str]]:
     if finder := soup.find_all(name, kwargs):
         return [__parse_text(i.text) for i in finder]
 
@@ -65,7 +66,7 @@ def parse_url(html: str) -> BeautifulSoup:
 
 
 @ToAsync()
-def get_batting(soup: BeautifulSoup) -> Dict[str, Any]:
+def get_batting(soup: BeautifulSoup) -> dict[str, Any]:
     data = [
         [__parse_text(i.text) for i in mini_table.find_all("td")]
         for mini_table in soup.find_all("table", {"class": "table table-condensed"})
@@ -74,7 +75,7 @@ def get_batting(soup: BeautifulSoup) -> Dict[str, Any]:
 
 
 @ToAsync()
-def get_bowling(soup: BeautifulSoup) -> Dict[str, Any]:
+def get_bowling(soup: BeautifulSoup) -> dict[str, Any]:
     data = [
         [__parse_text(i.text) for i in mini_table.find_all("td")]
         for mini_table in soup.find_all("table", {"class": "table table-condensed"})

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -26,7 +26,7 @@ class Flake8Converter(commands.FlagConverter, case_insensitive=True, delimiter="
     count: Optional[convert_bool] = None
 
 
-def validate_flake8_code(code: str) -> List[str]:
+def validate_flake8_code(code: str) -> list[str]:
     return POSSIBLE_FLAKE8_CODE.findall(code)
 
 

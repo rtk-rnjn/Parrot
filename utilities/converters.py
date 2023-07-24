@@ -6,7 +6,8 @@ from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
+from collections.abc import Callable
 
 from aiohttp import ClientResponse, ClientSession
 from lru import LRU
@@ -27,26 +28,27 @@ VT = TypeVar("VT", bound=Any)
 
 
 def convert_bool(text: Union[str, bool, Any]) -> bool:
-    """True/False converter"""
+    """True/False converter."""
     return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o"}
 
 
 class ActionReason(commands.Converter):
-    """Action reason converter"""
+    """Action reason converter."""
 
     async def convert(self, ctx: Context, argument: Optional[str] = None) -> str:
-        """Convert the argument to a action string"""
+        """Convert the argument to a action string."""
         ret = f"Action requested by {ctx.author} (ID: {ctx.author.id}) | Reason: {argument or 'no reason provided'}"
 
         LEN = 0 if argument is None else len(argument)
         if len(ret) > 512:
             reason_max = 512 - len(ret) + LEN
-            raise commands.BadArgument(f"Reason is too long ({LEN}/{reason_max})")
+            msg = f"Reason is too long ({LEN}/{reason_max})"
+            raise commands.BadArgument(msg)
         return ret
 
 
 class ToAsync:
-    """Converts a blocking function to an async function"""
+    """Converts a blocking function to an async function."""
 
     def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
         self.executor = executor or ThreadPoolExecutor()
@@ -60,7 +62,7 @@ class ToAsync:
 
 
 class BannedMember(commands.Converter):
-    """A coverter that is used for fetching Banned Member of Guild"""
+    """A coverter that is used for fetching Banned Member of Guild."""
 
     async def convert(self, ctx: Context, argument: str) -> Optional[discord.User]:
         assert ctx.guild is not None
@@ -71,7 +73,8 @@ class BannedMember(commands.Converter):
                 ban_entry = await ctx.guild.fetch_ban(discord.Object(id=member_id))
                 return ban_entry.user
             except discord.NotFound:
-                raise commands.BadArgument("User Not Found! Probably this member has not been banned before.") from None
+                msg = "User Not Found! Probably this member has not been banned before."
+                raise commands.BadArgument(msg) from None
 
         async for entry in ctx.guild.bans():
             if argument in (entry.user.name, str(entry.user)):
@@ -79,7 +82,8 @@ class BannedMember(commands.Converter):
             if str(entry.user) == argument:
                 return entry.user
 
-        raise commands.BadArgument("User Not Found! Probably this member has not been banned before.") from None
+        msg = "User Not Found! Probably this member has not been banned before."
+        raise commands.BadArgument(msg) from None
 
 
 class WrappedMessageConverter(commands.MessageConverter):
@@ -112,7 +116,8 @@ class MemberID(commands.Converter):
             try:
                 member_id = int(argument, base=10)
             except ValueError:
-                raise commands.BadArgument(f"{argument} is not a valid member or member ID.") from None
+                msg = f"{argument} is not a valid member or member ID."
+                raise commands.BadArgument(msg) from None
             else:
                 m: Optional[Union[discord.Member, discord.User]] = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:
@@ -124,8 +129,9 @@ class MemberID(commands.Converter):
                     )()
 
         if not can_execute_action(ctx, ctx.author, m):
+            msg = f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
             raise commands.BadArgument(
-                f"{ctx.author.mention} can not {ctx.command.qualified_name} the {m}, as the their's role is above you"
+                msg,
             )
         return m
 
@@ -144,19 +150,19 @@ class Cache(Generic[KT, VT]):
     ) -> None:
         self.cache_size: int = cache_size or LRU_CACHE
         self.bot = bot
-        self.__internal_cache: "LRU" = LRU(self.cache_size, callback=callback or lru_callback)
+        self.__internal_cache: LRU = LRU(self.cache_size, callback=callback or lru_callback)
 
-        self.items: Callable[[], List[Tuple[int, Any]]] = self.__internal_cache.items
-        self.peek_first_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_first_item
-        self.peek_last_item: Callable[[], Optional[Tuple[int, Any]]] = self.__internal_cache.peek_last_item
+        self.items: Callable[[], list[tuple[int, Any]]] = self.__internal_cache.items
+        self.peek_first_item: Callable[[], Optional[tuple[int, Any]]] = self.__internal_cache.peek_first_item
+        self.peek_last_item: Callable[[], Optional[tuple[int, Any]]] = self.__internal_cache.peek_last_item
         self.get_size: Callable[[], int] = self.__internal_cache.get_size
         self.set_size: Callable[[int], None] = self.__internal_cache.set_size
         self.has_key: Callable[[object], bool] = self.__internal_cache.has_key
-        self.values: Callable[[], List[Any]] = self.__internal_cache.values
-        self.keys: Callable[[], List[Any]] = self.__internal_cache.keys
+        self.values: Callable[[], list[Any]] = self.__internal_cache.values
+        self.keys: Callable[[], list[Any]] = self.__internal_cache.keys
         self.get: Callable[[object], Any] = self.__internal_cache.get
         self.pop: Callable[[object], Any] = self.__internal_cache.pop
-        self.get_stats: Callable[[], Tuple[int, int]] = self.__internal_cache.get_stats
+        self.get_stats: Callable[[], tuple[int, int]] = self.__internal_cache.get_stats
         self.set_callback: Callable[[Callable[[KT, VT], Any]], None] = self.__internal_cache.set_callback
 
     def __repr__(self) -> str:
@@ -190,7 +196,7 @@ class Cache(Generic[KT, VT]):
         return iter(self.__internal_cache)
 
 
-def text_to_list(text: str, *, number_of_lines: int, prefix: str = "```\n", suffix: str = "\n```") -> List[str]:
+def text_to_list(text: str, *, number_of_lines: int, prefix: str = "```\n", suffix: str = "\n```") -> list[str]:
     texts = text.split("\n")
     ls = []
     temp = ""
@@ -238,7 +244,8 @@ def from_bottom(text: str) -> str:
     text = text.strip().removesuffix(SECTION_SEPERATOR)
 
     if any(c not in CHARACTER_VALUES.values() for c in text.replace(SECTION_SEPERATOR, "")):
-        raise TypeError(f"Invalid bottom text: {text}")
+        msg = f"Invalid bottom text: {text}"
+        raise TypeError(msg)
 
     for char in text.split(SECTION_SEPERATOR):
         rev_mapping = {v: k for k, v in CHARACTER_VALUES.items()}
@@ -255,11 +262,11 @@ async def get_default_emoji(bot: Parrot, emoji: str, *, svg: bool = True) -> Opt
     try:
         if len(emoji) > 1:
             svg = False
-            url = f'https://emojicdn.elk.sh/{emoji}?style=twitter'
+            url = f"https://emojicdn.elk.sh/{emoji}?style=twitter"
         else:
-            folder = ('72x72', 'svg')[svg]
-            ext = ('png', 'svg')[svg]
-            url = f'https://twemoji.maxcdn.com/v/latest/{folder}/{ord(emoji):x}.{ext}'
+            folder = ("72x72", "svg")[svg]
+            ext = ("png", "svg")[svg]
+            url = f"https://twemoji.maxcdn.com/v/latest/{folder}/{ord(emoji):x}.{ext}"
 
         async with bot.http_session.get(url) as r:
             if r.ok:
@@ -320,14 +327,15 @@ class DefaultEmojiConverter(commands.Converter):
         emoji = await get_default_emoji(ctx.bot, argument)
 
         if not emoji:
-            raise commands.BadArgument('Invalid Emoji')
+            msg = "Invalid Emoji"
+            raise commands.BadArgument(msg)
         else:
             return emoji
 
 
 class UrlConverter(commands.Converter):
     async def find_tenor_gif(self, ctx: Context, response: ClientResponse) -> bytes:
-        bad_arg = commands.BadArgument('An Error occured when fetching the tenor GIF')
+        bad_arg = commands.BadArgument("An Error occured when fetching the tenor GIF")
         try:
             content = await response.text()
             if match := TENOR_GIF_REGEX.search(content):
@@ -343,9 +351,9 @@ class UrlConverter(commands.Converter):
 
     async def find_imgur_img(self, ctx: Context, match: re.Match) -> bytes:
         name = match.group(2)
-        raw_url = f'https://i.imgur.com/{name}.gif'
+        raw_url = f"https://i.imgur.com/{name}.gif"
 
-        bad_arg = commands.BadArgument('An Error occured when fetching the imgur GIF')
+        bad_arg = commands.BadArgument("An Error occured when fetching the imgur GIF")
         try:
             async with ctx.bot.http_session.get(raw_url) as raw:
                 if raw.ok:
@@ -358,14 +366,14 @@ class UrlConverter(commands.Converter):
     async def convert(self, ctx: Context, argument: str) -> bytes:
         from .imaging import image as image_mod
 
-        bad_arg = commands.BadArgument('Invalid image URL')
-        argument = argument.strip('<>')
+        bad_arg = commands.BadArgument("Invalid image URL")
+        argument = argument.strip("<>")
         try:
             async with ctx.bot.http_session.get(argument) as r:
                 if r.ok:
-                    if r.content_type.startswith('image/'):
+                    if r.content_type.startswith("image/"):
                         byt = await r.read()
-                        if r.content_type.startswith('image/svg'):
+                        if r.content_type.startswith("image/svg"):
                             byt = await image_mod.svg_to_png(byt)
                         return byt
                     elif TENOR_PAGE_REGEX.fullmatch(argument):
@@ -381,8 +389,7 @@ class UrlConverter(commands.Converter):
 
 
 class ImageConverter(commands.Converter):
-    """
-    ImageConverter
+    """ImageConverter.
 
     A class for fetching and resolving images within a command, it attempts to fetch, (in order):
         - Member from the command argument, then User if failed
@@ -416,7 +423,7 @@ class ImageConverter(commands.Converter):
             raise ImageTooLarge(size, max_size)
 
     async def converted_to_buffer(self, source: Union[discord.Member, discord.User, discord.PartialEmoji, bytes]) -> bytes:
-        if isinstance(source, (discord.Member, discord.User)):
+        if isinstance(source, discord.Member | discord.User):
             source = await source.display_avatar.read()
 
         elif isinstance(source, discord.PartialEmoji):
@@ -456,9 +463,9 @@ class ImageConverter(commands.Converter):
         from .imaging import image as image_mod
 
         for file in files:
-            if file.content_type and file.content_type.startswith('image/'):
+            if file.content_type and file.content_type.startswith("image/"):
                 byt = await file.read()
-                if file.content_type.startswith('image/svg'):
+                if file.content_type.startswith("image/svg"):
                     byt = await image_mod.svg_to_png(byt)
                 return byt
 
@@ -472,7 +479,8 @@ class ImageConverter(commands.Converter):
                 break
         else:
             if raise_on_failure:
-                raise commands.BadArgument('Failed to fetch an image from argument')
+                msg = "Failed to fetch an image from argument"
+                raise commands.BadArgument(msg)
             else:
                 return None
 

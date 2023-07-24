@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, Dict, Optional, Tuple, Type
+from typing import Any, Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pymongo import ReturnDocument
-from typing_extensions import Annotated
+from typing import Annotated
 
 import discord
 from core import Cog, Context, Parrot
@@ -18,11 +18,11 @@ from utilities.time import FriendlyTimeResult, ShortTime, UserFriendlyTime
 
 log = logging.getLogger("cogs.utils.utils")
 
-Collection = Type[AsyncIOMotorCollection]
+Collection = type[AsyncIOMotorCollection]
 
 
 class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
-    ignore_channel: Tuple[discord.TextChannel, ...] = []
+    ignore_channel: tuple[discord.TextChannel, ...] = []
     _global: Optional[convert_bool] = commands.flag(name="global", default=False)
     _for: Optional[ShortTime] = commands.flag(name="for", default=None)
     text: Optional[str] = None
@@ -30,7 +30,7 @@ class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
 
 
 class Utils(Cog):
-    """Utilities for server, UwU"""
+    """Utilities for server, UwU."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -94,7 +94,7 @@ class Utils(Cog):
     @remindme.command(name="list", aliases=["all"])
     @Context.with_type
     async def _list(self, ctx: Context) -> None:
-        """To get all your reminders of first 10 active reminders"""
+        """To get all your reminders of first 10 active reminders."""
         ls = []
         log.info("Fetching reminders for %s from database.", ctx.author)
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
@@ -111,7 +111,7 @@ class Utils(Cog):
     @remindme.command(name="del", aliases=["delete", "remove"])
     @Context.with_type
     async def delremind(self, ctx: Context, message: int) -> None:
-        """To delete the reminder"""
+        """To delete the reminder."""
         log.info("Deleting reminder of message id %s", message)
         delete_result = await self.bot.delete_timer(_id=message)
         delete_result = await self.delete_timer(_id=message)
@@ -128,7 +128,7 @@ class Utils(Cog):
         *,
         when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
     ) -> None:
-        """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot"""
+        """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot."""
         seconds = when.dt.timestamp()
         text = (
             f"{ctx.author.mention} alright, you will be mentioned in your DM (Make sure you have your DM open for this bot) "
@@ -206,7 +206,7 @@ class Utils(Cog):
 
     @commands.group(invoke_without_command=True)
     async def afk(self, ctx: Context, *, text: Annotated[str, Optional[commands.clean_content]] = None):
-        """To set AFK
+        """To set AFK.
 
         AFK will be removed once you message.
         If provided permissions, bot will add `[AFK]` as the prefix in nickname.
@@ -246,7 +246,7 @@ class Utils(Cog):
 
     @afk.command(name="global")
     async def _global(self, ctx: Context, *, text: commands.clean_content = None):
-        """To set the AFK globally (works only if the bot can see you)"""
+        """To set the AFK globally (works only if the bot can see you)."""
         post = {
             "_id": ctx.message.id,
             "messageURL": ctx.message.jump_url,
@@ -265,7 +265,7 @@ class Utils(Cog):
 
     @afk.command(name="for")
     async def afk_till(self, ctx: Context, till: ShortTime, *, text: commands.clean_content = None):
-        """To set the AFK time"""
+        """To set the AFK time."""
         if till.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
             return await ctx.send(f"{ctx.author.mention} time must be above 120s")
         post = {
@@ -283,7 +283,7 @@ class Utils(Cog):
         await self.bot.afk_collection.insert_one(post)
         self.bot.afk_users.add(ctx.author.id)
         await ctx.send(
-            f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}"
+            f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(till.dt, 'R')}",
         )
         await self.create_timer(
             _event_name="remove_afk",
@@ -295,7 +295,7 @@ class Utils(Cog):
 
     @afk.command(name="after")
     async def afk_after(self, ctx: Context, after: ShortTime, *, text: commands.clean_content = None):
-        """To set the AFK future time"""
+        """To set the AFK future time."""
         if after.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
             return await ctx.send(f"{ctx.author.mention} time must be above 120s")
         post = {
@@ -311,7 +311,7 @@ class Utils(Cog):
             "ignoredChannel": [],
         }
         await ctx.send(
-            f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(after.dt, 'R')}"
+            f"{ctx.author.mention} AFK: {text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(after.dt, 'R')}",
         )
         await self.create_timer(
             _event_name="set_afk",
@@ -323,7 +323,7 @@ class Utils(Cog):
 
     @afk.command(name="custom")
     async def custom_afk(self, ctx: Context, *, flags: AfkFlags):
-        """To set the custom AFK"""
+        """To set the custom AFK."""
         payload = {
             "_id": ctx.message.id,
             "text": flags.text or "AFK",
@@ -349,7 +349,7 @@ class Utils(Cog):
                 message=ctx.message,
             )
             await ctx.send(
-                f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(flags.after.dt, 'R')}"
+                f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be set {discord.utils.format_dt(flags.after.dt, 'R')}",
             )
             return
         if flags._for:
@@ -363,7 +363,7 @@ class Utils(Cog):
             await self.bot.afk_collection.insert_one(payload)
             self.bot.afk_users.add(ctx.author.id)
             await ctx.send(
-                f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}"
+                f"{ctx.author.mention} AFK: {flags.text or 'AFK'}\n> Your AFK status will be removed {discord.utils.format_dt(flags._for.dt, 'R')}",
             )
             return
         await self.bot.afk_collection.insert_one(payload)
@@ -376,7 +376,7 @@ class Utils(Cog):
     @commands.command(aliases=["level"])
     @commands.bot_has_permissions(attach_files=True)
     async def rank(self, ctx: Context, *, member: discord.Member = None):
-        """To get the level of the user"""
+        """To get the level of the user."""
         member = member or ctx.author
         try:
             enable = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"]["enable"]
@@ -413,7 +413,7 @@ class Utils(Cog):
     @commands.command(aliases=["leaderboard"])
     @commands.bot_has_permissions(embed_links=True)
     async def lb(self, ctx: Context, *, limit: Optional[int] = None):
-        """To display the Leaderboard"""
+        """To display the Leaderboard."""
         limit = limit or 10
         collection = self.bot.guild_level_db[f"{ctx.guild.id}"]
         entries = await self.__get_entries(collection=collection, limit=limit, guild=ctx.guild)
@@ -461,13 +461,13 @@ class Utils(Cog):
                 "categories": len(guild.categories),
             }
             try:
-                stats_channels: Dict[str, Any] = self.bot.guild_configurations_cache[guild.id]["stats_channels"]
+                stats_channels: dict[str, Any] = self.bot.guild_configurations_cache[guild.id]["stats_channels"]
             except KeyError:
                 pass
             else:
                 for k, v in stats_channels.items():
                     if k != "role":
-                        v: Dict[str, Any]
+                        v: dict[str, Any]
                         if channel := guild.get_channel(v["channel_id"]):
                             await channel.edit(
                                 name=v["template"].format(PAYLOAD[k]),

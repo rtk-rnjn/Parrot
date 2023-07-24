@@ -4,7 +4,7 @@ import asyncio
 import json
 import random
 from collections.abc import Iterable
-from typing import List, Optional
+from typing import Optional
 
 from discord.abc import User
 from discord.ext.commands import BadArgument, Converter, Paginator
@@ -39,9 +39,8 @@ class LinePaginator(Paginator):
         max_size: int = 2000,
         max_lines: Optional[int] = None,
         linesep: str = "\n",
-    ):
-        """
-        Overrides the Paginator.__init__ from inside discord.ext.commands.
+    ) -> None:
+        """Overrides the Paginator.__init__ from inside discord.ext.commands.
         `prefix` and `suffix` will be prepended and appended respectively to every page.
         `max_size` and `max_lines` denote the maximum amount of codepoints and lines
         allowed per page.
@@ -55,15 +54,15 @@ class LinePaginator(Paginator):
         self._pages = []
 
     def add_line(self, line: str = "", *, empty: bool = False) -> None:
-        """
-        Adds a line to the current page.
+        """Adds a line to the current page.
         If the line exceeds the `max_size` then a RuntimeError is raised.
         Overrides the Paginator.add_line from inside discord.ext.commands in order to allow
         configuration of the maximum number of lines per page.
         If `empty` is True, an empty line will be placed after the a given `line`.
         """
         if len(line) > self.max_size - len(self.prefix) - 2:
-            raise RuntimeError(f"Line exceeds maximum page size {self.max_size - len(self.prefix) - 2}")
+            msg = f"Line exceeds maximum page size {self.max_size - len(self.prefix) - 2}"
+            raise RuntimeError(msg)
 
         if self.max_lines is not None:
             if self._linecount >= self.max_lines:
@@ -98,8 +97,7 @@ class LinePaginator(Paginator):
         url: str = None,
         exception_on_empty_embed: bool = False,
     ) -> None:
-        """
-        Use a paginator and set of reactions to provide pagination over a set of lines.
+        """Use a paginator and set of reactions to provide pagination over a set of lines.
         The reactions are used to switch page, or to finish with pagination.
         When used, this will send a message using `ctx.send()` and apply a set of reactions to it.
         These reactions may be used to change page, or to remove pagination from the message.
@@ -111,7 +109,7 @@ class LinePaginator(Paginator):
         >>> await LinePaginator.paginate(
         ...     (line for line in lines),
         ...     ctx, embed
-        ... )
+        ... ).
         """
 
         def event_check(reaction_: Reaction, user_: Member) -> bool:
@@ -135,7 +133,7 @@ class LinePaginator(Paginator):
                         user_.id != ctx.bot.user.id,
                         # There were no restrictions
                         no_restrictions,
-                    )
+                    ),
                 )
             )
 
@@ -144,7 +142,8 @@ class LinePaginator(Paginator):
 
         if not lines:
             if exception_on_empty_embed:
-                raise EmptyPaginatorEmbedError("No lines to paginate")
+                msg = "No lines to paginate"
+                raise EmptyPaginatorEmbedError(msg)
 
             lines.append("(nothing to display)")
 
@@ -245,21 +244,21 @@ class LinePaginator(Paginator):
 
 async def disambiguate(
     ctx: Context,
-    entries: List[str],
+    entries: list[str],
     *,
     timeout: float = 30,
     entries_per_page: int = 20,
     empty: bool = False,
     embed: Optional[discord.Embed] = None,
 ) -> str:
-    """
-    Has the user choose between multiple entries in case one could not be chosen automatically.
+    """Has the user choose between multiple entries in case one could not be chosen automatically.
     Disambiguation will be canceled after `timeout` seconds.
     This will raise a BadArgument if entries is empty, if the disambiguation event times out,
     or if the user makes an invalid choice.
     """
     if not entries:
-        raise BadArgument("No matches found.")
+        msg = "No matches found."
+        raise BadArgument(msg)
 
     if len(entries) == 1:
         return entries[0]
@@ -295,7 +294,8 @@ async def disambiguate(
         if result is None:
             for coro in pending:
                 coro.cancel()
-            raise BadArgument("Canceled.")
+            msg = "Canceled."
+            raise BadArgument(msg)
 
         # Pagination was not initiated, only one page
         if result.author == ctx.bot.user:
@@ -306,7 +306,8 @@ async def disambiguate(
         for coro in pending:
             coro.cancel()
     except asyncio.TimeoutError:
-        raise BadArgument("Timed out.")
+        msg = "Timed out."
+        raise BadArgument(msg)
 
     # Guaranteed to not error because of isdecimal() in check
     index = int(result.content)
@@ -314,7 +315,8 @@ async def disambiguate(
     try:
         return entries[index - 1]
     except IndexError:
-        raise BadArgument("Invalid choice.")
+        msg = "Invalid choice."
+        raise BadArgument(msg)
 
 
 class Snake(Converter):
@@ -331,7 +333,7 @@ class Snake(Converter):
         if name == "python":
             return "Python (programming language)"
 
-        def get_potential(iterable: Iterable, *, threshold: int = 80) -> List[str]:
+        def get_potential(iterable: Iterable, *, threshold: int = 80) -> list[str]:
             nonlocal name
             potential = []
 
@@ -377,8 +379,7 @@ class Snake(Converter):
 
     @classmethod
     async def random(cls) -> str:
-        """
-        Get a random Snake from the loaded resources.
+        """Get a random Snake from the loaded resources.
         This is stupid. We should find a way to somehow get the global session into a global context,
         so I can get it from here.
         """

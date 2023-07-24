@@ -15,7 +15,7 @@ from .__constants import code_dict, codes, selector_back, selector_front
 
 @ToAsync()
 def isometric_func(shape, selector_pos=None):
-    """Creates static isometric drawing"""
+    """Creates static isometric drawing."""
     t = 4
     resx = resy = 1024 * 5
     canvas = Image.new("RGBA", (resx, resy), (25, 25, 25, 0))
@@ -54,7 +54,8 @@ def isometric_func(shape, selector_pos=None):
         i += 1
 
     if count == 0:
-        raise Exception("Did not detect any blocks. Do `j;iso blocks` or `j;help iso` to see available blocks")
+        msg = "Did not detect any blocks. Do `j;iso blocks` or `j;help iso` to see available blocks"
+        raise Exception(msg)
 
     canvasBox = canvas.getbbox()
     crop = canvas.crop(canvasBox)
@@ -140,7 +141,7 @@ def liquid(blocks: str) -> str:
 
 
 class BlockSelector(discord.ui.Select["Minecraft"]):
-    def __init__(self, selector_pos):
+    def __init__(self, selector_pos) -> None:
         options = [
             discord.SelectOption(label="Grass Block", value="1", default=True),
             discord.SelectOption(label="Water", value="2"),
@@ -199,7 +200,7 @@ class Minecraft(discord.ui.View):
         "k": "Cake",
     }
 
-    def __init__(self, ctx: Context, shape=None, selector_pos=None):
+    def __init__(self, ctx: Context, shape=None, selector_pos=None) -> None:
         if shape is None:
             shape = [50, 50, 50]
         super().__init__(timeout=None)
@@ -250,7 +251,7 @@ class Minecraft(discord.ui.View):
         self.add_item(self.place_btn)
 
         self.finish_btn = discord.ui.Button(
-            emoji="\N{WHITE HEAVY CHECK MARK}", style=discord.ButtonStyle.primary, disabled=True, row=2
+            emoji="\N{WHITE HEAVY CHECK MARK}", style=discord.ButtonStyle.primary, disabled=True, row=2,
         )
         self.finish_btn.callback = self.finish
         self.add_item(self.finish_btn)

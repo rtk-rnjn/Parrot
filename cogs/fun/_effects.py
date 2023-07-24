@@ -4,13 +4,14 @@ import math
 import random
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Optional
+from collections.abc import Callable
 
 from PIL import Image, ImageDraw, ImageOps
 
 import discord
 
-easter_like_colours: List[Tuple[int, int, int]] = [
+easter_like_colours: list[tuple[int, int, int]] = [
     (255, 247, 0),
     (255, 255, 224),
     (0, 255, 127),
@@ -28,8 +29,7 @@ easter_like_colours: List[Tuple[int, int, int]] = [
 
 
 class PfpEffects:
-    """
-    Implements various image modifying effects, for the PfpModify cog.
+    """Implements various image modifying effects, for the PfpModify cog.
     All of these functions are slow, and blocking, so they should be ran in executors.
     """
 
@@ -48,14 +48,13 @@ class PfpEffects:
         return discord.File(bufferedio, filename=filename)
 
     @staticmethod
-    def closest(x: Tuple[int, int, int]) -> Tuple[int, int, int]:
-        """
-        Finds the closest "easter" colour to a given pixel.
+    def closest(x: tuple[int, int, int]) -> tuple[int, int, int]:
+        """Finds the closest "easter" colour to a given pixel.
         Returns a merge between the original colour and the closest colour.
         """
         r1, g1, b1 = x
 
-        def distance(point: Tuple[int, int, int]) -> int:
+        def distance(point: tuple[int, int, int]) -> int:
             """Finds the difference between a pastel colour and the original pixel colour."""
             r2, g2, b2 = point
             return (r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2
@@ -69,7 +68,7 @@ class PfpEffects:
         return r, g, b
 
     @staticmethod
-    def crop_avatar_circle(avatar: "Image.Image") -> "Image.Image":
+    def crop_avatar_circle(avatar: Image.Image) -> Image.Image:
         """This crops the avatar given into a circle."""
         mask = Image.new("L", avatar.size, 0)
         draw = ImageDraw.Draw(mask)
@@ -78,7 +77,7 @@ class PfpEffects:
         return avatar
 
     @staticmethod
-    def crop_ring(ring: "Image.Image", px: int) -> "Image.Image":
+    def crop_ring(ring: Image.Image, px: int) -> Image.Image:
         """This crops the given ring into a circle."""
         mask = Image.new("L", ring.size, 0)
         draw = ImageDraw.Draw(mask)
@@ -88,7 +87,7 @@ class PfpEffects:
         return ring
 
     @staticmethod
-    def pridify_effect(image: "Image.Image", pixels: int, flag: str) -> "Image.Image":
+    def pridify_effect(image: Image.Image, pixels: int, flag: str) -> Image.Image:
         """Applies the given pride effect to the given image."""
         image = PfpEffects.crop_avatar_circle(image)
 
@@ -100,9 +99,8 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def eight_bitify_effect(image: "Image.Image") -> "Image.Image":
-        """
-        Applies the 8bit effect to the given image.
+    def eight_bitify_effect(image: Image.Image) -> Image.Image:
+        """Applies the 8bit effect to the given image.
         This is done by reducing the image to 32x32 and then back up to 1024x1024.
         We then quantize the image before returning too.
         """
@@ -111,9 +109,8 @@ class PfpEffects:
         return image.quantize()
 
     @staticmethod
-    def flip_effect(image: "Image.Image") -> "Image.Image":
-        """
-        Flips the image horizontally.
+    def flip_effect(image: Image.Image) -> Image.Image:
+        """Flips the image horizontally.
         This is done by just using ImageOps.mirror().
         """
         image = ImageOps.mirror(image)
@@ -121,9 +118,8 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def easterify_effect(image: "Image.Image", overlay_image: Optional["Image.Image"] = None) -> "Image.Image":
-        """
-        Applies the easter effect to the given image.
+    def easterify_effect(image: Image.Image, overlay_image: Optional[Image.Image] = None) -> Image.Image:
+        """Applies the easter effect to the given image.
         This is done by getting the closest "easter" colour to each pixel and changing the colour
         to the half-way RGB value.
         We also then add an overlay image on top in middle right, a chocolate bunny by default.
@@ -134,7 +130,7 @@ class PfpEffects:
                 (
                     round(overlay_image.width * ratio),
                     round(overlay_image.height * ratio),
-                )
+                ),
             )
             overlay_image = overlay_image.convert("RGBA")
         else:
@@ -161,9 +157,8 @@ class PfpEffects:
         return im
 
     @staticmethod
-    def split_image(img: "Image.Image", squares: int) -> list:
-        """
-        Split an image into a selection of squares, specified by the squares argument.
+    def split_image(img: Image.Image, squares: int) -> list:
+        """Split an image into a selection of squares, specified by the squares argument.
         Explanation:
         1. It gets the width and the height of the Image passed to the function.
         2. It gets the root of a number of squares (number of squares) passed, which is called xy. Reason: if let's say
@@ -214,9 +209,8 @@ class PfpEffects:
         return new_imgs
 
     @staticmethod
-    def join_images(images: List["Image.Image"]) -> "Image.Image":
-        """
-        Stitches all the image squares into a new image.
+    def join_images(images: list[Image.Image]) -> Image.Image:
+        """Stitches all the image squares into a new image.
         Explanation:
         1. Shuffles the passed images to randomize the pieces.
         2. The program gets a single square (split piece) out of the list and defines single_width as the square's width
@@ -276,9 +270,8 @@ class PfpEffects:
         return new_image
 
     @staticmethod
-    def mosaic_effect(image: "Image.Image", squares: int) -> "Image.Image":
-        """
-        Applies a mosaic effect to the given image.
+    def mosaic_effect(image: Image.Image, squares: int) -> Image.Image:
+        """Applies a mosaic effect to the given image.
         The "squares" argument specifies the number of squares to split
         the image into. This should be a square number.
         """

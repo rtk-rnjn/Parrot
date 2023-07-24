@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from __future__ import annotations
 
@@ -9,7 +8,9 @@ import re
 import textwrap
 import urllib.parse
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Pattern, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
+from re import Pattern
+from collections.abc import Callable, Coroutine
 from urllib.parse import quote_plus
 
 import aiohttp
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
     from pymongo.collection import Collection
     from pymongo.typings import _DocumentType
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     from core import Parrot
 
@@ -37,9 +38,9 @@ if TYPE_CHECKING:
 from core import Cog
 
 with open("extra/profanity.json", encoding="utf-8", errors="ignore") as f:
-    bad_dict: Dict[str, bool] = json.load(f)
+    bad_dict: dict[str, bool] = json.load(f)
 
-TRIGGER: Tuple = (
+TRIGGER: tuple = (
     "ok google,",
     "ok google ",
     "hey google,",
@@ -84,7 +85,7 @@ DISCORD_PY_ID = 336642139381301249
 class Delete(discord.ui.View):
     message: Optional[discord.Message]
 
-    def __init__(self, user: Union[discord.Member, discord.User]):
+    def __init__(self, user: Union[discord.Member, discord.User]) -> None:
         super().__init__(timeout=30.0)
         self.user = user
         self.value = None
@@ -109,26 +110,26 @@ class Delete(discord.ui.View):
         self.stop()
 
 
-class OnMsg(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class OnMsg(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot: Parrot = bot
         self.cd_mapping = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.channel)
-        self.pattern_handlers: List[Tuple[Pattern[str], Callable]] = [
+        self.pattern_handlers: list[tuple[Pattern[str], Callable]] = [
             (GITHUB_RE, self._fetch_github_snippet),
             (GITHUB_GIST_RE, self._fetch_github_gist_snippet),
             (GITLAB_RE, self._fetch_gitlab_snippet),
             (BITBUCKET_RE, self._fetch_bitbucket_snippet),
         ]
-        self.message_append: List[discord.Message] = []
+        self.message_append: list[discord.Message] = []
         self.message_cooldown: CooldownMapping = commands.CooldownMapping.from_cooldown(
             1,
             60,
             commands.BucketType.member,
         )
 
-        self.__scam_link_cache: Dict[str, bool] = {}
+        self.__scam_link_cache: dict[str, bool] = {}
 
-    async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Union[str, Dict[str, Any], None]:
+    async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Union[str, dict[str, Any], None]:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(url, raise_for_status=True, **kwargs) as response:
             if response_format == "text":
@@ -137,7 +138,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 return await response.json()
         return None
 
-    def _find_ref(self, path: str, refs: Tuple) -> Tuple:
+    def _find_ref(self, path: str, refs: tuple) -> tuple:
         """Loops through all branches and tags to find the required ref."""
         # Base case: there is no slash in the branch name
         ref, file_path = path.split("/", 1)
@@ -241,8 +242,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         start_line: Union[str, int, None],
         end_line: Union[str, int, None],
     ) -> str:
-        """
-        Given the entire file contents and target lines, creates a code block.
+        """Given the entire file contents and target lines, creates a code block.
         First, we split the file contents into a list of lines and then keep and join only the required
         ones together.
         We then dedent the lines to look nice, and replace all ` characters with `\u200b to prevent
@@ -302,7 +302,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                     print(error_message)
 
         # Sorts the list of snippets by their match index and joins them into a single message
-        return "\n".join(map(lambda x: x[1], sorted(all_snippets)))
+        return "\n".join(x[1] for x in sorted(all_snippets))
 
     def _check_gitlink_req(self, message: discord.Message):
         assert message.guild is not None
@@ -318,7 +318,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
         link = f"https://api.duckduckgo.com/?q={query}&format=json&pretty=1"
         # saying `ok google`, and querying from ddg LOL.
         res = await self.bot.http_session.get(link)
-        data: Dict = json.loads(await res.text())
+        data: dict = json.loads(await res.text())
         if data.get("Abstract"):
             return data.get("Abstract")
         return data["RelatedTopics"][0]["Text"] if data["RelatedTopics"] else None
@@ -365,7 +365,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             re.findall(
                 r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>",
                 message_content,
-            )
+            ),
         )
         return int(str_count + dis_count)
 
@@ -450,7 +450,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             if message.author.bot:
                 return
 
-        AWAITABLES: List[Coroutine] = [
+        AWAITABLES: list[Coroutine] = [
             __internal_snippets_parser(),
             self._scam_detection(message),
             self._on_message_leveling(message),
@@ -478,7 +478,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                 "_id": message.guild.id,
                 "global_chat.channel_id": message.channel.id,
                 "global_chat.enable": True,
-            }
+            },
         )
         if data is None:
             return
@@ -562,7 +562,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         await self.bot.wait_until_ready()
         if before.content != after.content and after.guild is not None and after.author.id == self.bot.user.id:
-            AWAITABLES: List[Coroutine] = [
+            AWAITABLES: list[Coroutine] = [
                 self._on_message_passive(after),
                 self._scam_detection(after),
                 self.equation_solver(after),
@@ -589,7 +589,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            role: List[int] = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_role"] or []
+            role: list[int] = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_role"] or []
         except KeyError:
             role = []
 
@@ -597,7 +597,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             return
 
         try:
-            ignore_channel: List = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_channel"] or []
+            ignore_channel: list = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_channel"] or []
         except KeyError:
             ignore_channel = []
 
@@ -698,7 +698,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                         f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
                         if len(data["matches"]) < 10
                         else str(len(data["matches"]))
-                    )
+                    ),
                 )
                 for match in data["matches"]:
                     self.__scam_link_cache[match["domain"]] = True
@@ -783,10 +783,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                 "messageAuthor": interacted_user.id,
                                 "global": True,
                             },
-                        ]
+                        ],
                     },
                     {"ignoreChannel": {"$nin": [message.channel.id]}},
-                ]
+                ],
             },
         )
         if not data:
@@ -824,10 +824,10 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
                                         "messageAuthor": user.id,
                                         "global": True,
                                     },
-                                ]
+                                ],
                             },
                             {"ignoreChannel": {"$nin": [message.channel.id]}},
-                        ]
+                        ],
                     },
                 )
             ):
@@ -940,7 +940,7 @@ class OnMsg(Cog, command_attrs=dict(hidden=True)):
             self.bot.message_cache[reaction.message.id] = reaction.message
 
     @Cog.listener("on_reaction_clear")
-    async def on_reaction_clear_updater(self, message: discord.Message, _: List[discord.Reaction]) -> None:
+    async def on_reaction_clear_updater(self, message: discord.Message, _: list[discord.Reaction]) -> None:
         if message.id in self.bot.message_cache:
             self.bot.message_cache[message.id] = message
 

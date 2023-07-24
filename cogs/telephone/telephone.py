@@ -28,9 +28,7 @@ class Telephone(Cog):
     @commands.bot_has_permissions(add_reactions=True)
     @Context.with_type
     async def dial(self, ctx: Context, *, server: discord.Guild):
-        """
-        To dial to other server. Do not misuse this. Else you RIP :|
-        """
+        """To dial to other server. Do not misuse this."""
         if not server:
             await ctx.send("That server no longer exists or bot is being removed from that server")
         self.redial[ctx.guild.id] = server.id
@@ -44,7 +42,7 @@ class Telephone(Cog):
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
             f"`Called by       :` **{ctx.author}**\n"
             f"`Can Redial?     :` **True**\n"
-            f"`Call log saved? :` **False**\n"
+            f"`Call log saved? :` **False**\n",
         )
 
     @commands.command(name="redial", aliases=["recall"])
@@ -52,7 +50,7 @@ class Telephone(Cog):
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @Context.with_type
     async def redial_call(self, ctx: Context):
-        """To redial the recently called server, if any"""
+        """To redial the recently called server, if any."""
         try:
             serverid = self.redial[ctx.guild.id]
         except KeyError:
@@ -68,7 +66,7 @@ class Telephone(Cog):
                     f"`Tried to call   :` **{server.name} ({server.id})**\n"
                     f"`Called by       :` **{ctx.author}**\n"
                     f"`Can Redial?     :` **True**\n"
-                    f"`Call log saved? :` **False**\n"
+                    f"`Call log saved? :` **False**\n",
                 )
             await ctx.send("That server no longer exists or bot is being removed from that server")
 
@@ -77,7 +75,7 @@ class Telephone(Cog):
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @Context.with_type
     async def reversedial(self, ctx: Context, *, server: discord.Guild):
-        """To make the calls but contents are reverted"""
+        """To make the calls but contents are reverted."""
         if not server:
             await ctx.send("That server no longer exists or bot is being removed from that server")
         self.redial[ctx.guild.id] = server.id
@@ -91,5 +89,5 @@ class Telephone(Cog):
             f"`Tried to call   :` **{server.name} ({server.id})**\n"
             f"`Called by       :` **{ctx.author}**\n"
             f"`Can Redial?     :` **True**\n"
-            f"`Call log saved? :` **False**\n"
+            f"`Call log saved? :` **False**\n",
         )

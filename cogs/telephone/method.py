@@ -41,20 +41,20 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
     self_guild = await get_guild(ctx, ctx.guild.id)
     if not self_guild:
         return await ctx.send(
-            f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this."
+            f"{ctx.author.mention} no telephone line channel is set for this server, ask your Server Manager to fix this.",
         )
     target_guild = await get_guild(ctx, number)
     target_guild_obj = bot.get_guild(target_guild["_id"])
     if not target_guild_obj:
         return await ctx.send(
             f"{ctx.author.mention} no telephone line channel is set for the **{number}** server,"
-            f" or the number you entered do not match with any other server!"
+            f" or the number you entered do not match with any other server!",
         )
 
     if not target_guild:
         return await ctx.send(
             f"{ctx.author.mention} no telephone line channel is set for the **{number}** server,"
-            f" or the number you entered do not match with any other server!"
+            f" or the number you entered do not match with any other server!",
         )
 
     if target_guild.get("is_line_busy"):
@@ -71,7 +71,7 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
     await ctx.send(f"Calling to **{number} ({target_guild_obj.name})** ... Waiting for the response ...")
 
     await target_channel.send(
-        f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject"
+        f"**Incoming call from {ctx.guild.id}. {ctx.guild.name} ...**\n`pickup` to pickup | `hangup` to reject",
     )
     await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=True)
     await telephone_update(ctx, guild_id=number, event="is_line_busy", value=True)
@@ -91,10 +91,10 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
     except asyncio.TimeoutError:
         await asyncio.sleep(0.5)
         await target_channel.send(
-            f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
+            f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds",
         )
         await ctx.send(
-            f"Line disconnected from **{number} ({target_guild_obj.name})**. Reason: Line Inactive for more than 60 seconds"
+            f"Line disconnected from **{number} ({target_guild_obj.name})**. Reason: Line Inactive for more than 60 seconds",
         )
         await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=False)
         await telephone_update(ctx, guild_id=number, event="is_line_busy", value=False)
@@ -122,11 +122,11 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
             except asyncio.TimeoutError:
                 await asyncio.sleep(0.5)
                 await target_channel.send(
-                    f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds"
+                    f"Line disconnected from **{ctx.guild.id} ({ctx.guild.name})**. Reason: Line Inactive for more than 60 seconds",
                 )
                 await ctx.send(
                     f"Line disconnected from **{number} ({target_guild_obj.name})**."
-                    f"Reason: Line Inactive for more than 60 seconds"
+                    f"Reason: Line Inactive for more than 60 seconds",
                 )
                 break
 
@@ -145,7 +145,7 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
             TALK = discord.utils.escape_mentions(talk_message.content[:1000:])
             if reverse:
                 TALK = discord.utils.escape_mentions(
-                    "".join(reversed(talk_message.content[:1000:]))
+                    "".join(reversed(talk_message.content[:1000:])),
                 )  # this is imp, cause people can bypass so i added discord.utils
 
             if talk_message.channel == target_channel:

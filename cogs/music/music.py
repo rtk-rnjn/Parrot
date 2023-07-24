@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 from contextlib import suppress
-from typing import TYPE_CHECKING, Deque, Dict, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional, Union
 
 import arrow
 import wavelink
@@ -32,6 +32,7 @@ from .__flags import (
     VibratoFlag,
 )
 from .__view import MusicView
+from collections import deque
 
 
 def get_emoji_from_like_rate(like_rate: float) -> str:
@@ -58,8 +59,8 @@ class Music(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-        self._config: Dict[int, dict] = {}
-        self._cache: Dict[int, MusicView] = {}  # guild_id -> MusicView
+        self._config: dict[int, dict] = {}
+        self._cache: dict[int, MusicView] = {}  # guild_id -> MusicView
         self.ON_TESTING = False
 
     @property
@@ -95,7 +96,7 @@ class Music(Cog):
         embed: discord.Embed = self.make_embed(ctx, track)
         col = self.bot.user_collections_ind
         i = 0
-        async for data in col.find({"playlist.id": track.identifier}):
+        async for _data in col.find({"playlist.id": track.identifier}):
             i += 1
 
         embed.add_field(name="Likes", value=i, inline=True)
@@ -105,8 +106,7 @@ class Music(Cog):
     @commands.bot_has_guild_permissions(connect=True)
     @in_voice()
     async def join(self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None):
-        """Joins a voice channel. If no channel is given then it will connects to your channel"""
-
+        """Joins a voice channel. If no channel is given then it will connects to your channel."""
         assert isinstance(ctx.author, discord.Member)
         if ctx.voice_client is not None:
             vc: Optional[wavelink.Player] = ctx.voice_client
@@ -119,13 +119,14 @@ class Music(Cog):
             channel = getattr(ctx.author.voice, "channel", channel)
 
             if channel is None:
-                raise commands.BadArgument("You must be in a voice channel or must provide the channel argument")
+                msg = "You must be in a voice channel or must provide the channel argument"
+                raise commands.BadArgument(msg)
 
             try:
                 await channel.connect(cls=wavelink.Player, timeout=10)  # type: ignore
             except discord.ClientException:
                 return await ctx.error(
-                    f"{ctx.author.mention} seems bot already connected to voice channel, consider using `disconnect` command"
+                    f"{ctx.author.mention} seems bot already connected to voice channel, consider using `disconnect` command",
                 )
             await ctx.send(f"{ctx.author.mention} joined {channel.mention}")
             return
@@ -133,7 +134,7 @@ class Music(Cog):
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def move(self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None):
-        """Moves the bot to a different voice channel"""
+        """Moves the bot to a different voice channel."""
         if ctx.voice_client is None:
             return self.join(ctx, channel)
 
@@ -146,8 +147,7 @@ class Music(Cog):
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def loop(self, ctx: Context, info: Optional[Literal["all", "current"]] = "all"):
-        """To loop the current song or the queue"""
-
+        """To loop the current song or the queue."""
         assert isinstance(ctx.author, discord.Member) and isinstance(ctx.guild, discord.Guild)
 
         if ctx.voice_client is None:
@@ -166,14 +166,14 @@ class Music(Cog):
         self._config[ctx.guild.id]["loop"] = not self._config[ctx.guild.id].get("loop", False)
         self._config[ctx.guild.id]["loop_type"] = info
         await ctx.send(
-            f"{ctx.author.mention} looping is now **{'enabled' if self._config[ctx.guild.id]['loop'] else 'disabled'}**. Type: `{info}`"
+            f"{ctx.author.mention} looping is now **{'enabled' if self._config[ctx.guild.id]['loop'] else 'disabled'}**. Type: `{info}`",
         )
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def shuffle(self, ctx: Context):
-        """Shuffles the queue"""
+        """Shuffles the queue."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -195,7 +195,7 @@ class Music(Cog):
     @commands.group(name="filter", invoke_without_command=True)
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def _filter(self, ctx: Context):
-        """Set filter for the song"""
+        """Set filter for the song."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -216,7 +216,7 @@ class Music(Cog):
         *,
         equalizer: Literal["boost", "flat", "metal", "piano"],
     ):
-        """Set the Equalizer filter. Available options: `boost`, `flat`, `metal`, `piano`"""
+        """Set the Equalizer filter. Available options: `boost`, `flat`, `metal`, `piano`."""
         if ctx.invoked_subcommand is None:
             _equalizer: wavelink.Equalizer = getattr(wavelink.Equalizer, equalizer)()
             if ctx.voice_client is None:
@@ -235,7 +235,7 @@ class Music(Cog):
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_karaoke(self, ctx: Context, *, flag: KaraokeFlag):
-        """To configure Karaoke filter"""
+        """To configure Karaoke filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -257,14 +257,14 @@ class Music(Cog):
         _filter = wavelink.Karaoke(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(karaoke=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the karaoke filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the karaoke filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter.command(name="timescale")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_timescale(self, ctx: Context, *, timescale: TimescaleFlag):
-        """To configure the timescale filter"""
+        """To configure the timescale filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -284,14 +284,14 @@ class Music(Cog):
         _filter = wavelink.Timescale(**PAYLOAD)
         await channel.set_filter(_filter)  # type: ignore
         await ctx.send(
-            f"{ctx.author.mention} set the timescale filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the timescale filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter.command(name="tremolo")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_tremolo(self, ctx: Context, *, tremolo: TremoloFlag):
-        """To configure the tremolo filter"""
+        """To configure the tremolo filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -309,14 +309,14 @@ class Music(Cog):
         _filter = wavelink.Tremolo(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(tremolo=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the tremolo filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the tremolo filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter.command(name="vibrato")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_vibrato(self, ctx: Context, *, flag: VibratoFlag):
-        """To configure the vibrato filter"""
+        """To configure the vibrato filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -334,14 +334,14 @@ class Music(Cog):
         _filter = wavelink.Vibrato(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(vibrato=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the vibrato filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the vibrato filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter.command(name="rotation")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_rotation(self, ctx: Context, *, flag: RotationFlag):
-        """To configure the rotation filter"""
+        """To configure the rotation filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -357,14 +357,14 @@ class Music(Cog):
         _filter = wavelink.Rotation(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(rotation=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the rotation filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the rotation filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter.command(name="distortion")
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_distortion(self, ctx: Context, *, flag: DistortionFlag):
-        """To configure the distortion filter"""
+        """To configure the distortion filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -394,7 +394,7 @@ class Music(Cog):
         _filter = wavelink.Distortion(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(distortion=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the distortion filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the distortion filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter.group(name="channelmix", invoke_without_command=True)
@@ -406,7 +406,7 @@ class Music(Cog):
         *,
         flag: ChannelMixFlag,
     ):
-        """To configure the channelmix filter"""
+        """To configure the channelmix filter."""
         if ctx.invoked_subcommand is not None:
             return
         if ctx.voice_client is None:
@@ -430,7 +430,7 @@ class Music(Cog):
         _filter = wavelink.ChannelMix(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(channel_mix=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the channelmix filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the channelmix filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @_filter_channelmix.command(name="builtin", aliases=["built-in"])
@@ -442,7 +442,7 @@ class Music(Cog):
         *,
         mix: Literal["full_left", "full_right", "mono", "only_left", "only_right", "switch"],
     ):
-        """To configure the channelmix filter"""
+        """To configure the channelmix filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -460,7 +460,7 @@ class Music(Cog):
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _filter_lowpass(self, ctx: Context, *, flag: LowPassFlag):
-        """To configure the lowpass filter"""
+        """To configure the lowpass filter."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -476,13 +476,13 @@ class Music(Cog):
         _filter = wavelink.LowPass(**PAYLOAD)
         await channel.set_filter(wavelink.Filter(low_pass=_filter))
         await ctx.send(
-            f"{ctx.author.mention} set the lowpass filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**"
+            f"{ctx.author.mention} set the lowpass filter to **{' '.join(f'{k}={str(v)}' for k, v in PAYLOAD.items())}**",
         )
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     async def disconnect(self, ctx: Context):
-        """Disconnects from the voice channel"""
+        """Disconnects from the voice channel."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
         await ctx.send(f"{ctx.author.mention} disconnected")
@@ -528,7 +528,7 @@ class Music(Cog):
 
     @play.command(name="spotify")
     async def play_spotify(self, ctx: Context, *, link: str):
-        """Play a song from spotify with the given link"""
+        """Play a song from spotify with the given link."""
         if ctx.voice_client is None:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
         else:
@@ -567,10 +567,10 @@ class Music(Cog):
         self,
         ctx: Context,
     ):
-        """Play a playlist from spotify with the given link"""
+        """Play a playlist from spotify with the given link."""
         if ctx.voice_client is None:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(  # type: ignore
-                cls=wavelink.Player  # type: ignore
+                cls=wavelink.Player,  # type: ignore
             )
         else:
             vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -597,7 +597,7 @@ class Music(Cog):
 
     @commands.command(aliases=["np"])
     async def nowplaying(self, ctx: Context):
-        """Shows the currently playing song"""
+        """Shows the currently playing song."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
 
@@ -642,7 +642,7 @@ class Music(Cog):
 
     @myplaylist.command(name="remove", aliases=["delete", "del"])
     async def myplaylist_remove(self, ctx: Context, index_or_name: Union[int, str]):
-        """Removes the song from your playlist"""
+        """Removes the song from your playlist."""
         col: Collection = self.bot.user_collections_ind
         data = await col.find_one(  # type: ignore
             {"_id": ctx.author.id, "playlist": {"$exists": True}},
@@ -663,8 +663,8 @@ class Music(Cog):
                         "playlist": {
                             "$each": [],
                             "$sort": {"song_name": 1},
-                        }
-                    }
+                        },
+                    },
                 },
                 return_document=True,
             )
@@ -685,7 +685,7 @@ class Music(Cog):
 
     @myplaylist.command(name="add", aliases=["addsong", "add_song"])
     async def myplaylist_add(self, ctx: Context, *, track: Union[wavelink.SoundCloudTrack, str]):
-        """Add song in the playlist"""
+        """Add song in the playlist."""
         if isinstance(track, str):
             track = wavelink.GenericTrack.search(track)
 
@@ -697,8 +697,8 @@ class Music(Cog):
                         "id": track.id,
                         "song_name": getattr(track, "title", None),
                         "url": getattr(track, "uri", None),
-                    }
-                }
+                    },
+                },
             },
             upsert=True,
         )
@@ -709,9 +709,9 @@ class Music(Cog):
 
     @myplaylist.command(name="clear", aliases=["deleteall", "delall"])
     async def myplaylist_clear(self, ctx: Context):
-        """Clears the playlist"""
+        """Clears the playlist."""
         data: UpdateResult = await self.bot.user_collections_ind.update_one(
-            {"_id": ctx.author.id}, {"$set": {"playlist": []}}, upsert=True
+            {"_id": ctx.author.id}, {"$set": {"playlist": []}}, upsert=True,
         )
         if data.modified_count == 0:
             return await ctx.error(f"{ctx.author.mention} Failed to clear playlist")
@@ -721,7 +721,7 @@ class Music(Cog):
     @commands.command(name="next", aliases=["skip"])
     @same_voice()
     async def _next(self, ctx: Context, *, flag: Optional[Literal["--force"]] = None):
-        """Skips the currently playing song
+        """Skips the currently playing song.
 
         To force the skip use `$skip --force`. This will skip the song without voting.
         Force skip can only be used by member with DJ role.
@@ -780,7 +780,7 @@ class Music(Cog):
             vote = 1
             required_vote = int(members / 2)
             msg: discord.Message = await ctx.send(  # type: ignore
-                f"{ctx.author.mention} wants to skip the current song need {required_vote} votes to skip"
+                f"{ctx.author.mention} wants to skip the current song need {required_vote} votes to skip",
             )
             emoji = "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}"
             await msg.add_reaction(emoji)
@@ -817,7 +817,7 @@ class Music(Cog):
 
     @commands.group(name="queue", invoke_without_command=True)
     async def _queue(self, ctx: Context):
-        """Shows the current songs queue"""
+        """Shows the current songs queue."""
         if ctx.invoked_subcommand is not None:
             return
         if ctx.voice_client is None:
@@ -839,7 +839,7 @@ class Music(Cog):
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _queue_clear(self, ctx: Context):
-        """Clears the current songs queue"""
+        """Clears the current songs queue."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -856,7 +856,7 @@ class Music(Cog):
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
     async def _queue_remove(self, ctx: Context, *, index: int):
-        """Removes a song from the current songs queue"""
+        """Removes a song from the current songs queue."""
         if ctx.voice_client is None:
             return await ctx.error(f"{ctx.author.mention} bot is not connected to a voice channel.")
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -866,7 +866,7 @@ class Music(Cog):
 
         if vc.queue.is_empty:
             return await ctx.error(f"{ctx.author.mention} There are no songs in the queue.")
-        q: Deque[wavelink.GenericTrack] = vc.queue._queue  # type: ignore
+        q: deque[wavelink.GenericTrack] = vc.queue._queue  # type: ignore
         for i, track in enumerate(q, start=1):
             if i == index:
                 q.remove(track)
@@ -989,7 +989,7 @@ class Music(Cog):
                 self._config[player.guild.id] = {}
 
             if self._config[player.guild.id].get("loop", False):
-                q: Deque[wavelink.GenericTrack] = player.queue._queue  # type: ignore
+                q: deque[wavelink.GenericTrack] = player.queue._queue  # type: ignore
                 q.rotate(-1)
 
                 if self._config[player.guild.id].get("loop_type") == "all" and len(q) != 0:

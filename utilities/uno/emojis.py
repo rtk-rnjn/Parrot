@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 from io import BytesIO
 from textwrap import dedent, indent
-from typing import Any, Awaitable, Optional, Tuple
+from typing import Any, Optional
+from collections.abc import Awaitable
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -22,7 +23,7 @@ COLORS = {
 }
 
 
-def _create_rounded_mask(size: Tuple[int, int], radius: int) -> "Image.Image":
+def _create_rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
     factor = 5
     radius *= factor  # For anti-alias
 
@@ -87,7 +88,7 @@ def _create_sample(card: Card, *, animated: bool = False) -> Optional[BytesIO]:
             w, _ = _r - _l, _b - _t
             x, y = 128 - int(w / 2), -14
 
-            extra = dict(stroke_width=4, stroke_fill=(0, 0, 0))
+            extra = {"stroke_width": 4, "stroke_fill": (0, 0, 0)}
 
             draw.text((x + 5, y + 5), text, (0, 0, 0), font, **extra)
             draw.text((x, y), text, (255, 255, 255), font, **extra)
@@ -164,38 +165,38 @@ async def fill_emojis(guild: discord.Guild) -> str:
         class red:
             numbers = [{}
             ]
-    
+
             plus_2 = {!r}
             reverse = {!r}
             skip = {!r}
-    
+
         class yellow:
             numbers = [{}
             ]
-    
+
             plus_2 = {!r}
             reverse = {!r}
             skip = {!r}
-    
+
         class blue:
             numbers = [{}
             ]
-    
+
             plus_2 = {!r}
             reverse = {!r}
             skip = {!r}
-    
+
         class green:
             numbers = [{}
             ]
-    
+
             plus_2 = {!r}
             reverse = {!r}
             skip = {!r}
-    
+
         wild = {!r}
         plus_4 = {!r}
-    """
+    """,
     )
 
     def _(sink: Any) -> tuple:

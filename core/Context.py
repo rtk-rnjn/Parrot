@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from __future__ import annotations
 
@@ -14,20 +13,13 @@ from operator import attrgetter
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
-    Callable,
-    Dict,
     Generic,
-    Iterable,
-    List,
     Literal,
     Optional,
-    Set,
-    Tuple,
-    Type,
     TypeVar,
     Union,
 )
+from collections.abc import Awaitable, Callable, Iterable
 
 import aiohttp
 import humanize
@@ -41,7 +33,7 @@ from utilities.converters import ToAsync, ToImage, emoji_to_url
 from utilities.emotes import emojis
 from utilities.regex import LINKS_RE
 
-CONFIRM_REACTIONS: Tuple = (
+CONFIRM_REACTIONS: tuple = (
     "\N{THUMBS UP SIGN}",
     "\N{THUMBS DOWN SIGN}",
 )
@@ -94,12 +86,12 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     def __repr__(self) -> str:
         return (
-            f"<{self.__class__.__name__} author=`{self.author}` ({self.author.id}) guild=`{self.guild}` ({getattr(self.guild, 'id')}) "
-            f"channel=`{self.channel}` ({self.channel.id}) command={getattr(self.command, 'qualified_name')}>"
+            f"<{self.__class__.__name__} author=`{self.author}` ({self.author.id}) guild=`{self.guild}` ({self.guild.id}) "
+            f"channel=`{self.channel}` ({self.channel.id}) command={self.command.qualified_name}>"
         )
 
     @property
-    def session(self) -> "aiohttp.ClientSession":
+    def session(self) -> aiohttp.ClientSession:
         return self.bot.http_session
 
     async def tick(self, emoji: Union[discord.PartialEmoji, discord.Emoji, str, None] = None) -> None:
@@ -138,7 +130,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     async def dj_role(self) -> Optional[discord.Role]:
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
-        if channel := getattr(self.author.voice, "channel"):
+        if channel := self.author.voice.channel:
             # channel: discord.VoiceChannel
             members = sum(not m.bot for m in channel.members)  # channel is surely the voice channel
             if members <= 3:
@@ -273,14 +265,14 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 await msg.delete(delay=0)
         return msg
 
-    async def entry_to_code(self, entries: List[Tuple[Any, Any]]) -> discord.Message:
+    async def entry_to_code(self, entries: list[tuple[Any, Any]]) -> discord.Message:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"{name:<{width}}: {entry}" for name, entry in entries)
         output.append("```")
         return await self.send("\n".join(output))
 
-    async def indented_entry_to_code(self, entries: List[Tuple[Any, Any]]) -> discord.Message:
+    async def indented_entry_to_code(self, entries: list[tuple[Any, Any]]) -> discord.Message:
         width = max(len(str(a)) for a, b in entries)
         output = ["```"]
         output.extend(f"\u200b{name:>{width}}: {entry}" for name, entry in entries)
@@ -331,7 +323,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             fp = io.BytesIO(content.encode())
             kwargs.pop("file", None)
             return await self.send(
-                file=discord.File(fp, filename="message_too_long.txt"), **kwargs
+                file=discord.File(fp, filename="message_too_long.txt"), **kwargs,
             )  # must have `Attach Files` permissions
         return await self.send(content, **kwargs)
 
@@ -343,11 +335,11 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         if message is None or not isinstance(message, discord.Message):
             message: discord.Message = self.message
 
-        tasks: "List[asyncio.Task[None]]" = [asyncio.create_task(message.add_reaction(reaction)) for reaction in reactions]
+        tasks: list[asyncio.Task[None]] = [asyncio.create_task(message.add_reaction(reaction)) for reaction in reactions]
         await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
     async def get_or_fetch_message(self, *args: Any, **kwargs: Any) -> Union[discord.PartialMessage, discord.Message, None]:
-        """Shortcut for bot.get_or_fetch_message(...)"""
+        """Shortcut for bot.get_or_fetch_message(...)."""
         return await self.bot.get_or_fetch_message(*args, **kwargs)
 
     async def confirm(
@@ -369,7 +361,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         try:
             payload: discord.RawReactionActionEvent = await self.bot.wait_for(
-                "raw_reaction_add", check=check, timeout=timeout
+                "raw_reaction_add", check=check, timeout=timeout,
             )
             return str(payload.emoji) == "\N{THUMBS UP SIGN}"
         except asyncio.TimeoutError:
@@ -384,7 +376,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         operator: Callable[[Iterable[object]], bool] = all,
         **kw: Any,
     ) -> Callable[..., bool]:
-        """Check function for the event"""
+        """Check function for the event."""
         if check is not None:
             return check
 
@@ -399,7 +391,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         def __internal_check(
             *args,
         ) -> bool:
-            """Main check function"""
+            """Main check function."""
             convert_pred = [(attrgetter(k.replace("__", ".")), v) for k, v in kw.items()]
             return operator(
                 all(pred(i) == val for i in args if __suppress_attr_error(pred, i)) for pred, val in convert_pred
@@ -434,13 +426,14 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     async def paginate(
         self,
-        entries: Union[List[Any], str],
+        entries: Union[list[Any], str],
         *,
         module: str = "SimplePages",
         **kwargs: Any,
     ) -> None:
         if not entries:
-            raise commands.BadArgument("Cannot paginate an empty list.")
+            msg = "Cannot paginate an empty list."
+            raise commands.BadArgument(msg)
 
         if module == "SimplePages":
             from utilities.robopages import SimplePages
@@ -478,19 +471,20 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             interface = PaginatorInterface(self.bot, pages, owner=self.author)
             await interface.send_to(self)
 
-        raise ValueError("Invalid paginator type")
+        msg = "Invalid paginator type"
+        raise ValueError(msg)
 
     async def multiple_wait_for(
         self,
-        events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
+        events: Union[list[tuple[str, Callable[..., bool]]], dict[str, Callable[..., bool]]],
         *,
         return_when: Literal["FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"] = "FIRST_COMPLETED",
         timeout: Optional[float] = None,
-    ) -> List[Any]:
+    ) -> list[Any]:
         if isinstance(events, dict):
             events = list(events.items())
 
-        _events: "Set[asyncio.Task[Any]]" = {
+        _events: set[asyncio.Task[Any]] = {
             self.bot.loop.create_task(self.wait_for(event, check=check)) for event, check in events
         }
 
@@ -514,19 +508,20 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 check=lambda m: m.author == self.author and m.channel == self.channel,
             )
         except asyncio.TimeoutError as e:
-            raise commands.BadArgument("You took too long to respond.") from e
+            msg = "You took too long to respond."
+            raise commands.BadArgument(msg) from e
 
     async def wait_for_till(
         self,
-        events: Union[List[Tuple[str, Callable[..., bool]]], Dict[str, Callable[..., bool]]],
+        events: Union[list[tuple[str, Callable[..., bool]]], dict[str, Callable[..., bool]]],
         *,
         _for: Union[float, int, None] = None,
         after: Union[float, int, None] = None,
         **kwargs: Any,
-    ) -> List[Any]:
+    ) -> list[Any]:
         if after:
             await self.release(after)
-        done_result: List[Any] = []
+        done_result: list[Any] = []
 
         _for = _for or 0
         now = discord.utils.utcnow().timestamp() + _for
@@ -555,10 +550,10 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         *args: Any,
         multiplier: int = 5,
         retries: int = 5,
-        exception: Type[Exception] = Exception,
+        exception: type[Exception] = Exception,
         **kwargs: Any,
-    ) -> Type[Exception]:
-        errors: Dict[int, Exception] = {}
+    ) -> type[Exception]:
+        errors: dict[int, Exception] = {}
         retry: int = 0
         for retry in range(max(retries, 1)):
             try:
@@ -570,7 +565,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         raise errors[retry]
 
     async def database_game_update(self, game_name: str, *, win: bool = False, loss: bool = False, **kw: Any) -> bool:
-        kwargs: Dict[str, Any] = {}
+        kwargs: dict[str, Any] = {}
 
         for key, value in kw.items():
             new_key = f"${key}"
@@ -622,8 +617,8 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         return bool(update_result.modified_count)
 
     async def database_command_update(
-        self, *, success: bool = False, error: Optional[str] = None, **kwargs: Any
-    ) -> Dict[str, Any]:
+        self, *, success: bool = False, error: Optional[str] = None, **kwargs: Any,
+    ) -> dict[str, Any]:
         if self.command is None:
             return {}
 
@@ -636,7 +631,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 f"command_{cmd}_errors": {
                     "error": error,
                     "time": now,
-                }
+                },
             }
 
         update_result_cmd_user: UpdateResult = await self.bot.command_collections.update_one(
@@ -678,14 +673,16 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     def check_buffer(self, buffer: BytesIO) -> BytesIO:
         if (size := buffer.getbuffer().nbytes) > 15000000:
+            msg = f"Provided image size ({humanize.naturalsize(size)}) is larger than 15 MB size limit."
             raise commands.BadArgument(
-                f"Provided image size ({humanize.naturalsize(size)}) is larger than 15 MB size limit."
+                msg,
             )
 
         try:
             Image.open(buffer)
         except PIL.UnidentifiedImageError as e:
-            raise commands.BadArgument("Could not open provided image. Make sure it is a valid image types") from e
+            msg = "Could not open provided image. Make sure it is a valid image types"
+            raise commands.BadArgument(msg) from e
         finally:
             buffer.seek(0)
 
@@ -724,10 +721,10 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             entity.seek(0)
         elif isinstance(entity, int):
             return await ToImage().convert(self, str(entity))
-        elif isinstance(entity, (discord.Emoji, discord.PartialEmoji)):
+        elif isinstance(entity, discord.Emoji | discord.PartialEmoji):
             entity: BytesIO = BytesIO(await entity.read())
             entity.seek(0)
-        elif isinstance(entity, (discord.User, discord.Member)):
+        elif isinstance(entity, discord.User | discord.Member):
             entity: BytesIO = BytesIO(await entity.display_avatar.read())
             entity.seek(0)
         else:
@@ -736,7 +733,8 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 url = await emoji_to_url(entity)
                 url = LINKS_RE.findall(url)
             if not url:
-                raise commands.BadArgument("Could not convert input to Emoji, Member, or Image URL")
+                msg = "Could not convert input to Emoji, Member, or Image URL"
+                raise commands.BadArgument(msg)
 
             url = url[0]
 
@@ -808,7 +806,7 @@ class ConfirmationView(discord.ui.View):
 
 
 class SentFromView(discord.ui.View):
-    def __init__(self, ctx: Context, *, timeout: Optional[float] = 180, label: Optional[str] = None):
+    def __init__(self, ctx: Context, *, timeout: Optional[float] = 180, label: Optional[str] = None) -> None:
         super().__init__(timeout=timeout)
         self.ctx = ctx
 
@@ -818,12 +816,12 @@ class SentFromView(discord.ui.View):
                 style=discord.ButtonStyle.blurple,
                 label=label or f"Sent from {ctx.guild.name}",
                 disabled=True,
-            )
+            ),
         )
 
 
 class LinkView(discord.ui.View):
-    def __init__(self, *, timeout: Optional[float] = 180, url: str, label: str = "Link"):
+    def __init__(self, *, timeout: Optional[float] = 180, url: str, label: str = "Link") -> None:
         super().__init__(timeout=timeout)
         self.url = url
 

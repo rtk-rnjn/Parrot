@@ -113,7 +113,7 @@ class ContentView(discord.ui.Select):
             self.add_option(label=folder.replace("-", " ").title(), value=folder)
 
     def remove_img_links(self, text: str) -> str:
-        """Remove all ![]() links from text"""
+        """Remove all ![]() links from text."""
         return re.sub(r"!\[.*\]\(.*\)", "", text)
 
     def replace_partial_links(self, text: str) -> str:

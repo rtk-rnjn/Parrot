@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List, Optional
+from typing import Optional
 
 from discord.ext import commands
 
@@ -17,7 +17,7 @@ class RuffConverter(commands.FlagConverter, case_insensitive=True, delimiter=" "
     max_complexity: Optional[int] = None
 
 
-def validate_Ruff_code(code: str) -> List[str]:
+def validate_Ruff_code(code: str) -> list[str]:
     return POSSIBLE_RUFF_CODE.findall(code)
 
 

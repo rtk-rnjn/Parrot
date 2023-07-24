@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from random import choice, random
-from typing import Dict, Optional, Set
+from typing import Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -11,14 +11,14 @@ from ._actions import ENDPOINTS
 
 
 class Actions(Cog):
-    """Action commands like hug and kiss"""
+    """Action commands like hug and kiss."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.url = "https://api.waifu.pics/sfw"
         self.command_loader()
 
-        self.cached_images: Dict[str, Set[str]] = {}
+        self.cached_images: dict[str, set[str]] = {}
 
         self.ON_TESTING = False
 

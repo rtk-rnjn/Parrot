@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import discord
 from cogs.giveaway.method import end_giveaway
@@ -10,7 +10,7 @@ from utilities.time import ShortTime
 
 
 class FakeMessage:
-    def __init__(self, **kwargs: Any):
+    def __init__(self, **kwargs: Any) -> None:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -24,7 +24,7 @@ class EventCustom(Cog):
     async def mod_parser(
         self,
         *,
-        mod_action: Optional[Dict[str, Any]] = None,
+        mod_action: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         if mod_action is None:
@@ -56,7 +56,7 @@ class EventCustom(Cog):
     async def normal_parser(
         self,
         *,
-        embed: Optional[Dict[str, Any]] = None,  # type: ignore
+        embed: Optional[dict[str, Any]] = None,  # type: ignore
         content: Optional[str] = None,
         dm_notify: bool = False,
         is_todo: bool = False,
@@ -91,7 +91,7 @@ class EventCustom(Cog):
             return
 
     @Cog.listener("on_timer_complete")
-    async def extra_parser(self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser(self, *, extra: Optional[dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -103,7 +103,7 @@ class EventCustom(Cog):
             await self.extra_action_parser(name, **main)
 
     @Cog.listener("on_set_afk_timer_complete")
-    async def extra_parser_set_afk(self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser_set_afk(self, *, extra: Optional[dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -113,7 +113,7 @@ class EventCustom(Cog):
             self.bot.afk_users.add(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_remove_afk_timer_complete")
-    async def extra_parser_remove_afk(self, *, extra: Optional[Dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser_remove_afk(self, *, extra: Optional[dict[str, Any]] = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -158,16 +158,16 @@ class EventCustom(Cog):
         await self.bot.create_timer(**post)
 
     async def _parse_giveaway(self, **kw: Any) -> None:
-        data: Dict[str, Any] = await self.bot.giveaways.find_one(
+        data: dict[str, Any] = await self.bot.giveaways.find_one(
             {
                 "message_id": kw.get("message_id"),
                 "guild_id": kw.get("guild_id"),
                 "status": "ONGOING",
-            }
+            },
         )
-        member_ids: List[int] = await end_giveaway(self.bot, **data)
+        member_ids: list[int] = await end_giveaway(self.bot, **data)
         channel: Optional[discord.TextChannel] = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel")
+            self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel"),
         )
         await self.bot.giveaways.find_one_and_update(
             {"message_id": kw.get("message_id"), "status": "ONGOING"},

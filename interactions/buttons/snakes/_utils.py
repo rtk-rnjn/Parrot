@@ -6,7 +6,7 @@ import math
 import random
 from itertools import product
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import Union
 
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
@@ -113,7 +113,7 @@ Y = 1
 ANGLE_RANGE = math.pi * 2
 
 
-def get_resource(file: str) -> List[dict]:
+def get_resource(file: str) -> list[dict]:
     """Load Snake resources JSON."""
     return json.loads((SNAKE_RESOURCES / f"{file}.json").read_text("utf-8"))
 
@@ -129,23 +129,21 @@ def lerp(t: float, a: float, b: float) -> float:
 
 
 class PerlinNoiseFactory:
-    """
-    Callable that produces Perlin noise for an arbitrary point in an arbitrary number of dimensions.
+    """Callable that produces Perlin noise for an arbitrary point in an arbitrary number of dimensions.
     The underlying grid is aligned with the integers.
     There is no limit to the coordinates used; new gradients are generated on the fly as necessary.
     Taken from: https://gist.github.com/eevee/26f547457522755cb1fb8739d0ea89a1
-    Licensed under ISC
+    Licensed under ISC.
     """
 
     def __init__(
         self,
         dimension: int,
         octaves: int = 1,
-        tile: Tuple[int, ...] = (),
+        tile: tuple[int, ...] = (),
         unbias: bool = False,
-    ):
-        """
-        Create a new Perlin noise factory in the given number of dimensions.
+    ) -> None:
+        """Create a new Perlin noise factory in the given number of dimensions.
         dimension should be an integer and at least 1.
         More octaves create a foggier and more-detailed noise pattern.  More than 4 octaves is rather excessive.
         ``tile`` can be used to make a seamlessly tiling pattern.
@@ -166,10 +164,9 @@ class PerlinNoiseFactory:
 
         self.gradient = {}
 
-    def _generate_gradient(self) -> Tuple[float, ...]:
-        """
-        Generate a random unit vector at each grid point.
-        This is the "gradient" vector, in that the grid tile slopes towards it
+    def _generate_gradient(self) -> tuple[float, ...]:
+        """Generate a random unit vector at each grid point.
+        This is the "gradient" vector, in that the grid tile slopes towards it.
         """
         # 1 dimension is special, since the only unit vector is trivial;
         # instead, use a slope between -1 and 1
@@ -188,7 +185,8 @@ class PerlinNoiseFactory:
     def get_plain_noise(self, *point) -> float:
         """Get plain noise for a single point, without taking into account either octaves or tiling."""
         if len(point) != self.dimension:
-            raise ValueError(f"Expected {self.dimension} values, got {len(point)}")
+            msg = f"Expected {self.dimension} values, got {len(point)}"
+            raise ValueError(msg)
 
         # Build a list of the (min, max) bounds in each dimension
         grid_coords = []
@@ -231,8 +229,7 @@ class PerlinNoiseFactory:
         return dots[0] * self.scale_factor
 
     def __call__(self, *point) -> float:
-        """
-        Get the value of this Perlin noise function at the given point.
+        """Get the value of this Perlin noise function at the given point.
         The number of values given should match the number of dimensions.
         """
         ret = 0
@@ -271,25 +268,24 @@ class PerlinNoiseFactory:
 def create_snek_frame(
     perlin_factory: PerlinNoiseFactory,
     perlin_lookup_vertical_shift: float = 0,
-    image_dimensions: Tuple[int, int] = DEFAULT_IMAGE_DIMENSIONS,
-    image_margins: Tuple[int, int] = DEFAULT_IMAGE_MARGINS,
+    image_dimensions: tuple[int, int] = DEFAULT_IMAGE_DIMENSIONS,
+    image_margins: tuple[int, int] = DEFAULT_IMAGE_MARGINS,
     snake_length: int = DEFAULT_SNAKE_LENGTH,
     snake_color: int = DEFAULT_SNAKE_COLOR,
     bg_color: int = DEFAULT_BACKGROUND_COLOR,
-    segment_length_range: Tuple[int, int] = DEFAULT_SEGMENT_LENGTH_RANGE,
+    segment_length_range: tuple[int, int] = DEFAULT_SEGMENT_LENGTH_RANGE,
     snake_width: int = DEFAULT_SNAKE_WIDTH,
     text: str = DEFAULT_TEXT,
-    text_position: Tuple[float, float] = DEFAULT_TEXT_POSITION,
+    text_position: tuple[float, float] = DEFAULT_TEXT_POSITION,
     text_color: int = DEFAULT_TEXT_COLOR,
 ) -> Image.Image:
-    """
-    Creates a single random snek frame using Perlin noise.
+    """Creates a single random snek frame using Perlin noise.
     `perlin_lookup_vertical_shift` represents the Perlin noise shift in the Y-dimension for this frame.
     If `text` is given, display the given text with the snek.
     """
     start_x = random.randint(image_margins[X], image_dimensions[X] - image_margins[X])
     start_y = random.randint(image_margins[Y], image_dimensions[Y] - image_margins[Y])
-    points: List[Tuple[float, float]] = [(start_x, start_y)]
+    points: list[tuple[float, float]] = [(start_x, start_y)]
 
     for index in range(snake_length):
         angle = (
@@ -302,12 +298,12 @@ def create_snek_frame(
             (
                 current_point[X] + segment_length * math.cos(angle),
                 current_point[Y] + segment_length * math.sin(angle),
-            )
+            ),
         )
 
     # normalize bounds
-    min_dimensions: List[float] = [start_x, start_y]
-    max_dimensions: List[float] = [start_x, start_y]
+    min_dimensions: list[float] = [start_x, start_y]
+    max_dimensions: list[float] = [start_x, start_y]
     for point in points:
         min_dimensions[X] = min(point[X], min_dimensions[X])
         min_dimensions[Y] = min(point[Y], min_dimensions[Y])
@@ -364,7 +360,7 @@ GAME_SCREEN_EMOJI = [ROLL_EMOJI, CANCEL_EMOJI]
 class SnakeAndLaddersGame:
     """Snakes and Ladders game Cog."""
 
-    def __init__(self, snakes: Cog, context: Context):
+    def __init__(self, snakes: Cog, context: Context) -> None:
         self.snakes = snakes
         self.ctx = context
         self.channel = self.ctx.channel
@@ -380,8 +376,7 @@ class SnakeAndLaddersGame:
         self.rolls = []
 
     async def open_game(self) -> None:
-        """
-        Create a new Snakes and Ladders game.
+        """Create a new Snakes and Ladders game.
         Listen for reactions until players have joined, and the game has been started.
         """
 
@@ -392,7 +387,7 @@ class SnakeAndLaddersGame:
                     reaction_.message.id == startup.id,  # Reaction is on startup message
                     reaction_.emoji in STARTUP_SCREEN_EMOJI,  # Reaction is one of the startup emotes
                     user_.id != self.ctx.bot.user.id,  # Reaction was not made by the bot
-                )
+                ),
             )
 
         # Check to see if the bot can remove reactions
@@ -408,7 +403,7 @@ class SnakeAndLaddersGame:
             ),
         )
         startup = await self.channel.send(
-            f"Press {JOIN_EMOJI} to participate, and press " f"{START_EMOJI} to start the game"
+            f"Press {JOIN_EMOJI} to participate, and press " f"{START_EMOJI} to start the game",
         )
         for emoji in STARTUP_SCREEN_EMOJI:
             await startup.add_reaction(emoji)
@@ -448,8 +443,7 @@ class SnakeAndLaddersGame:
         self.avatar_images[user.id] = im
 
     async def player_join(self, user: Union[User, Member]) -> None:
-        """
-        Handle players joining the game.
+        """Handle players joining the game.
         Prevent player joining if they have already joined, if the game is full, or if the game is
         in a waiting state.
         """
@@ -472,8 +466,7 @@ class SnakeAndLaddersGame:
         )
 
     async def player_leave(self, user: Union[User, Member]) -> bool:
-        """
-        Handle players leaving the game.
+        """Handle players leaving the game.
         Leaving is prevented if the user wasn't part of the game.
         If the number of players reaches 0, the game is terminated. In this case, a sentinel boolean
         is returned True to prevent a game from continuing after it's destroyed.
@@ -505,8 +498,7 @@ class SnakeAndLaddersGame:
         self._destruct()
 
     async def start_game(self, user: Union[User, Member]) -> None:
-        """
-        Allow the game author to begin the game.
+        """Allow the game author to begin the game.
         The game cannot be started if the game is in a waiting state.
         """
         if user != self.author:
@@ -538,7 +530,7 @@ class SnakeAndLaddersGame:
                     reaction_.message.id == self.positions.id,  # Reaction is on positions message
                     reaction_.emoji in GAME_SCREEN_EMOJI,  # Reaction is one of the game emotes
                     user_.id != self.ctx.bot.user.id,  # Reaction was not made by the bot
-                )
+                ),
             )
 
         self.state = "roll"
@@ -567,7 +559,7 @@ class SnakeAndLaddersGame:
             file=board_file,
         )
         temp_positions = await self.channel.send(
-            f"**Current positions**:\n{player_list}\n\nUse {ROLL_EMOJI} to roll the dice!"
+            f"**Current positions**:\n{player_list}\n\nUse {ROLL_EMOJI} to roll the dice!",
         )
 
         # Delete the previous messages
@@ -678,7 +670,7 @@ class SnakeAndLaddersGame:
         """Clean up the finished game object."""
         del self.snakes.active_sal[self.channel]
 
-    def _board_coordinate_from_index(self, index: int) -> Tuple[int, int]:
+    def _board_coordinate_from_index(self, index: int) -> tuple[int, int]:
         """Convert the tile number to the x/y coordinates for graphical purposes."""
         y_level = 9 - math.floor((index - 1) / 10)
         is_reversed = math.floor((index - 1) / 10) % 2 != 0

@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from functools import wraps
-from typing import Dict, List, Literal, NamedTuple, Optional
+from typing import Literal, NamedTuple, Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -132,7 +132,7 @@ DIE = {
             "5A2200", "8D087A", "67EB11", "F37864", "089578", "DC625E",
             "DAFCF8", "2D9839", "982921", "4FBC0E", "D9AF5B", "6F244D",
         ],
-    }
+    },
 }
 
 # fmt: on
@@ -175,7 +175,7 @@ class Position(NamedTuple):
 
 
 class Board:
-    def __init__(self, *, size: int = ORIGINAL, base: int = 10, board=None, magic_number=None):
+    def __init__(self, *, size: int = ORIGINAL, base: int = 10, board=None, magic_number=None) -> None:
         self.size = size
         self.base = base
 
@@ -191,7 +191,7 @@ class Board:
         self.columns = board
         self.number = magic_number
 
-    def board_contains(self, numbers: str, pos: Position = None, passed: List[Position] = None) -> bool:
+    def board_contains(self, numbers: str, pos: Position = None, passed: list[Position] = None) -> bool:
         if passed is None:
             passed = []
         # Empty numberss
@@ -258,7 +258,7 @@ class Game(menus.Menu):
     name: Optional[str] = "Foggle"
     footer: Optional[str] = None
 
-    def __init__(self, *, size: int = ORIGINAL, base: int = 10, **kwargs):
+    def __init__(self, *, size: int = ORIGINAL, base: int = 10, **kwargs) -> None:
         self.board = Board(size=size, base=base)
         self.setup()
         super().__init__(**kwargs)
@@ -313,7 +313,7 @@ class Game(menus.Menu):
 
 
 class ShuffflingGame(Game):
-    def __init__(self, *, size=ORIGINAL, **kwargs):
+    def __init__(self, *, size=ORIGINAL, **kwargs) -> None:
         super().__init__(size=size, **kwargs)
         self.boards = [self.board]
 
@@ -469,7 +469,8 @@ def foggle_game(game_type: type[Game]):
 
             # Raise if game already running
             if ctx.channel in self.games:
-                raise commands.CheckFailure("There is already a game running in this channel.")
+                msg = "There is already a game running in this channel."
+                raise commands.CheckFailure(msg)
 
             # Start the game
             self.games[ctx.channel] = game = game_type(size=check_size(ctx), base=base)
@@ -491,10 +492,10 @@ def foggle_game(game_type: type[Game]):
 class Foggle(Cog):
     """A mathematical game..."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
-        self.games: Dict[str, Game] = {}
+        self.games: dict[str, Game] = {}
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:

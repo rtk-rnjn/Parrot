@@ -22,7 +22,8 @@ from collections import defaultdict
 from contextlib import suppress
 from pathlib import Path
 from random import choice, randint
-from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Annotated, Any, Optional, TypeVar, Union, cast
+from collections.abc import Callable
 
 import aiohttp
 import rapidfuzz
@@ -65,28 +66,28 @@ from .pour_puzzle import PourView
 COMIC_FORMAT = re.compile(r"latest|[0-9]+")
 BASE_URL = "https://xkcd.com"
 
-with open(Path("extra/truth.txt"), "r", encoding="utf-8", errors="ignore") as f:  # noqa: E741
+with open(Path("extra/truth.txt"), encoding="utf-8", errors="ignore") as f:  # noqa: E741
     _truth = f.read()
 
-with open(Path("extra/dare.txt"), "r", encoding="utf-8", errors="ignore") as g:  # noqa: E741
+with open(Path("extra/dare.txt"), encoding="utf-8", errors="ignore") as g:  # noqa: E741
     _dare = g.read()
 
-with open(Path("extra/lang.json"), "r", encoding="utf-8", errors="ignore") as lang:
+with open(Path("extra/lang.json"), encoding="utf-8", errors="ignore") as lang:
     lg = json.load(lang)
 
-with open(Path("extra/wyr.txt"), "r", encoding="utf-8", errors="ignore") as h:  # noqa: E741
+with open(Path("extra/wyr.txt"), encoding="utf-8", errors="ignore") as h:  # noqa: E741
     _wyr = h.read()
 
-with open(Path("extra/nhi.txt"), "r", encoding="utf-8", errors="ignore") as i:  # noqa: E741
+with open(Path("extra/nhi.txt"), encoding="utf-8", errors="ignore") as i:  # noqa: E741
     _nhi = i.read()
 
-with open(Path("extra/twister.txt"), "r", encoding="utf-8", errors="ignore") as k:  # noqa: E741
+with open(Path("extra/twister.txt"), encoding="utf-8", errors="ignore") as k:  # noqa: E741
     _twister = k.read()
 
-with open(Path("extra/anagram.json"), "r", encoding="utf-8", errors="ignore") as l:  # noqa: E741
+with open(Path("extra/anagram.json"), encoding="utf-8", errors="ignore") as l:  # noqa: E741
     ANAGRAMS_ALL = json.load(l)
 
-with open(Path("extra/random_sentences.txt"), "r", encoding="utf-8", errors="ignore") as m:
+with open(Path("extra/random_sentences.txt"), encoding="utf-8", errors="ignore") as m:
     _random_sentences = m.read().split("\n")
 
 
@@ -94,31 +95,31 @@ T = TypeVar("T")
 
 
 ALL_WORDS = Path("extra/hangman_words.txt").read_text().splitlines()
-GENDER_OPTIONS: Dict[str, Any] = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
+GENDER_OPTIONS: dict[str, Any] = json.loads(Path(r"extra/gender_options.json").read_text("utf8"))
 
 
 class Fun(Cog):
-    """Parrot gives you huge amount of fun commands, so that you won't get bored"""
+    """Parrot gives you huge amount of fun commands, so that you won't get bored."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-        self.game_status: Dict[int, bool] = {}  # A variable to store the game status: either running or not running.
-        self.game_owners: Dict[
-            int, discord.Member
+        self.game_status: dict[int, bool] = {}  # A variable to store the game status: either running or not running.
+        self.game_owners: dict[
+            int, discord.Member,
         ] = {}  # A variable to store the person's ID who started the quiz game in a channel.
         with open(Path(r"extra/ryanzec_colours.json")) as f:
             self.colour_mapping: dict = json.load(f)
             del self.colour_mapping["_"]  # Delete source credit entry
         self.questions = self.load_questions()
         self.question_limit = 0
-        self.games: Dict[int, AnagramGame] = {}
+        self.games: dict[int, AnagramGame] = {}
 
         self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
-        self.game_player_scores: Dict[
-            int, Dict[Union[discord.Member, discord.User], int]
+        self.game_player_scores: dict[
+            int, dict[Union[discord.Member, discord.User], int],
         ] = {}  # A variable to store temporary game player's scores.
-        self.latest_comic_info: Dict[str, Union[int, str]] = {}
+        self.latest_comic_info: dict[str, Union[int, str]] = {}
         self.categories = {
             "general": "Test your general knowledge.",
             "retro": "Questions related to retro gaming.",
@@ -133,7 +134,7 @@ class Fun(Cog):
 
         self.ON_TESTING = False
 
-    async def send_colour_response(self, ctx: Context, rgb: Tuple[int, int, int]) -> None:
+    async def send_colour_response(self, ctx: Context, rgb: tuple[int, int, int]) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
         try:
@@ -199,7 +200,7 @@ class Fun(Cog):
         except asyncio.TimeoutError:
             return
 
-    def get_colour_conversions(self, rgb: Tuple[int, int, int]) -> Dict[str, Any]:
+    def get_colour_conversions(self, rgb: tuple[int, int, int]) -> dict[str, Any]:
         """Create a dictionary mapping of colour types and their values."""
         colour_name = self._rgb_to_name(rgb)
         if colour_name is None:
@@ -214,21 +215,21 @@ class Fun(Cog):
         }
 
     @staticmethod
-    def _rgb_to_hsv(rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
+    def _rgb_to_hsv(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
         """Convert RGB values to HSV values."""
         rgb_list = [val / 255 for val in rgb]
         h, s, v = colorsys.rgb_to_hsv(*rgb_list)
         return round(h * 360), round(s * 100), round(v * 100)
 
     @staticmethod
-    def _rgb_to_hsl(rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
+    def _rgb_to_hsl(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
         """Convert RGB values to HSL values."""
         rgb_list = [val / 255.0 for val in rgb]
         h, l, s = colorsys.rgb_to_hls(*rgb_list)  # noqa: E741
         return round(h * 360), round(s * 100), round(l * 100)
 
     @staticmethod
-    def _rgb_to_cmyk(rgb: Tuple[int, int, int]) -> Tuple[int, int, int, int]:
+    def _rgb_to_cmyk(rgb: tuple[int, int, int]) -> tuple[int, int, int, int]:
         """Convert RGB values to CMYK values."""
         rgb_list = [val / 255.0 for val in rgb]
         if not any(rgb_list):
@@ -240,12 +241,12 @@ class Fun(Cog):
         return c, m, y, round(k * 100)
 
     @staticmethod
-    def _rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
+    def _rgb_to_hex(rgb: tuple[int, int, int]) -> str:
         """Convert RGB values to HEX code."""
         hex_ = "".join([hex(val)[2:].zfill(2) for val in rgb])
         return f"#{hex_}".upper()
 
-    def _rgb_to_name(self, rgb: Tuple[int, int, int]) -> Optional[str]:
+    def _rgb_to_name(self, rgb: tuple[int, int, int]) -> Optional[str]:
         """Convert RGB values to a fuzzy matched name."""
         input_hex_colour = self._rgb_to_hex(rgb)
         try:
@@ -278,8 +279,7 @@ class Fun(Cog):
 
     @staticmethod
     def create_embed(tries: int, user_guess: str) -> discord.Embed:
-        """
-        Helper method that creates the embed where the game information is shown.
+        """Helper method that creates the embed where the game information is shown.
         This includes how many letters the user has guessed so far, and the hangman photo itself.
         """
         hangman_embed = discord.Embed(
@@ -299,8 +299,7 @@ class Fun(Cog):
         return discord.PartialEmoji(name="\N{SMILING FACE WITH OPEN MOUTH}")
 
     async def _get_discord_message(self, ctx: Context, text: str) -> Union[discord.Message, str, None]:
-        """
-        Attempts to convert a given `text` to a discord Message object and return it.
+        """Attempts to convert a given `text` to a discord Message object and return it.
         Conversion will succeed if given a discord Message ID or link.
         Returns `text` if the conversion fails.
         """
@@ -311,7 +310,7 @@ class Fun(Cog):
             return msg if msg is not None else text  # type: ignore
         return msg
 
-    async def _get_text_and_embed(self, ctx: Context, text: str) -> Tuple[str, Optional[discord.Embed]]:
+    async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, Optional[discord.Embed]]:
         embed = None
 
         assert isinstance(ctx.author, discord.Member)
@@ -331,9 +330,8 @@ class Fun(Cog):
         func: Callable[[str], str],
         embed: discord.Embed,
     ) -> discord.Embed:
-        """
-        Converts the text in an embed using a given conversion function, then return the embed.
-        Only modifies the following fields: title, description, footer, fields
+        """Converts the text in an embed using a given conversion function, then return the embed.
+        Only modifies the following fields: title, description, footer, fields.
         """
         embed_dict = embed.to_dict()
 
@@ -429,8 +427,7 @@ class Fun(Cog):
 
     @commands.command(name="xkcd")
     async def fetch_xkcd_comics(self, ctx: Context, comic: Optional[str]) -> None:
-        """
-        Getting an xkcd comic's information along with the image.
+        """Getting an xkcd comic's information along with the image.
         To get a random comic, don't type any number as an argument. To get the latest, type 'latest'.
         """
         embed = discord.Embed(title=f"XKCD comic '{comic}'")
@@ -476,8 +473,7 @@ class Fun(Cog):
     @commands.command(name="anagram", aliases=("anag", "gram", "ag"))
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def anagram_command(self, ctx: Context) -> None:
-        """
-        Given shuffled letters, rearrange them into anagrams.
+        """Given shuffled letters, rearrange them into anagrams.
         Show an embed with scrambled letters which if rearranged can form words.
         After a specific amount of time, list the correct answers and whether someone provided a
         correct answer.
@@ -578,7 +574,7 @@ class Fun(Cog):
 
         # token = flag.token or await self.__issue_trivia_token(ctx)
 
-        PAYLOAD: Dict[str, Any] = {}
+        PAYLOAD: dict[str, Any] = {}
 
         # if token is not None:
         #     PAYLOAD["token"] = token
@@ -616,7 +612,7 @@ class Fun(Cog):
         if data["response_code"] in {1, 2}:
             # invalid parameter(s) or no questions found
             return await ctx.error(
-                f"{ctx.author.mention} no questions found (possible reason: Invalid Parameter(s)). Please try again."
+                f"{ctx.author.mention} no questions found (possible reason: Invalid Parameter(s)). Please try again.",
             )
 
         self.game_status[ctx.channel.id] = True
@@ -629,7 +625,7 @@ class Fun(Cog):
             if not self.game_status[ctx.channel.id]:
                 break
 
-            _option: List[str] = question_data["incorrect_answers"]
+            _option: list[str] = question_data["incorrect_answers"]
             _option.append(question_data["correct_answer"])
             options = _option.copy()
             random.shuffle(options)
@@ -655,7 +651,7 @@ class Fun(Cog):
 
             def check(m: discord.Message) -> bool:
                 return (m.channel.id == ctx.channel.id) and rapidfuzz.fuzz.ratio(
-                    question_data["correct_answer"].lower(), m.content.lower()
+                    question_data["correct_answer"].lower(), m.content.lower(),
                 ) > 75
 
             try:
@@ -675,7 +671,7 @@ class Fun(Cog):
                 continue
 
             embed: discord.Embed = discord.Embed(
-                title="You got it! The correct answer is `{}`".format(question_data["correct_answer"])
+                title="You got it! The correct answer is `{}`".format(question_data["correct_answer"]),
             )
             if ctx.channel.id in self.game_player_scores:
                 if msg.author in self.game_player_scores[ctx.channel.id]:
@@ -721,7 +717,7 @@ class Fun(Cog):
 
     @triva_quiz.command(name="new_token", aliases=["new", "new-token", "token"])
     async def new_trivia_token(self, ctx: Context) -> None:
-        """Register a new token for trivia"""
+        """Register a new token for trivia."""
         await self.__issue_trivia_token(ctx)
 
     @triva_quiz.command(name="stop", aliases=["end", "cancel"])
@@ -736,8 +732,7 @@ class Fun(Cog):
         category: Optional[str] = None,
         questions: Optional[int] = None,
     ) -> None:
-        """
-        Start a quiz!
+        """Start a quiz!
         Questions for the quiz can be selected from the following categories:
         - general: Test your general knowledge.
         - retro: Questions related to retro gaming.
@@ -746,7 +741,7 @@ class Fun(Cog):
         - cs: A large variety of computer science questions.
         - python: Trivia on our amazing language, Python!
         - wikipedia: Guess the title of random wikipedia passages.
-        (More to come!)
+        (More to come!).
         """
         if ctx.channel.id not in self.game_status:
             self.game_status[ctx.channel.id] = False
@@ -778,8 +773,8 @@ class Fun(Cog):
             if questions > topic_length:
                 await ctx.send(
                     embed=self.make_error_embed(
-                        f"This category only has {topic_length} questions. " "Please input a lower value!"
-                    )
+                        f"This category only has {topic_length} questions. " "Please input a lower value!",
+                    ),
                 )
                 return
 
@@ -787,8 +782,8 @@ class Fun(Cog):
                 await ctx.send(
                     embed=self.make_error_embed(
                         "You must choose to complete at least one question. "
-                        f"(or enter nothing for the default value of {DEFAULT_QUESTION_LIMIT} questions)"
-                    )
+                        f"(or enter nothing for the default value of {DEFAULT_QUESTION_LIMIT} questions)",
+                    ),
                 )
                 return
 
@@ -803,7 +798,7 @@ class Fun(Cog):
             await ctx.send(embed=start_embed)  # send an embed with the rules
             await ctx.release(5)
 
-        done_questions: List[int] = []
+        done_questions: list[int] = []
         hint_no = 0
         quiz_entry: QuizEntry = None  # type: ignore
 
@@ -967,13 +962,12 @@ class Fun(Cog):
         min_unique_letters: int = 0,
         max_unique_letters: int = 25,
     ) -> None:
-        """
-        Play hangman against the bot, where you have to guess the word it has provided!
+        """Play hangman against the bot, where you have to guess the word it has provided!
         The arguments for this command mean:
         - min_length: the minimum length you want the word to be (i.e. 2)
         - max_length: the maximum length you want the word to be (i.e. 5)
         - min_unique_letters: the minimum unique letters you want the word to have (i.e. 4)
-        - max_unique_letters: the maximum unique letters you want the word to have (i.e. 7)
+        - max_unique_letters: the maximum unique letters you want the word to have (i.e. 7).
         """
         # Filtering the list of all words depending on the configuration
         filtered_words = [
@@ -1056,7 +1050,7 @@ class Fun(Cog):
             if normalized_content in word:
                 positions = {idx for idx, letter in enumerate(pretty_word) if letter == normalized_content}
                 user_guess = "".join(
-                    [normalized_content if index in positions else dash for index, dash in enumerate(user_guess)]
+                    [normalized_content if index in positions else dash for index, dash in enumerate(user_guess)],
                 )
 
             else:
@@ -1092,7 +1086,8 @@ class Fun(Cog):
     @quiz_game.command(name="stop")
     async def stop_quiz(self, ctx: Context) -> None:
         """Stop a quiz game if its running in the channel.
-        Note: Only mods or the owner of the quiz can stop it."""
+        Note: Only mods or the owner of the quiz can stop it.
+        """
         try:
             if self.game_status[ctx.channel.id]:
                 # Check if the author is the game starter or a moderator.
@@ -1145,7 +1140,7 @@ class Fun(Cog):
 
             # Check if more than 1 player has highest points.
             if no_of_winners > 1:
-                winners: List[discord.Member] = []
+                winners: list[discord.Member] = []
                 points_copy = list(player_data.values()).copy()
 
                 for _ in range(no_of_winners):
@@ -1161,7 +1156,7 @@ class Fun(Cog):
 
             await channel.send(
                 f"{winners_mention} Congratulations "
-                f"on winning this quiz game with a grand total of {highest_points} points :tada:"
+                f"on winning this quiz game with a grand total of {highest_points} points :tada:",
             )
 
     def category_embed(self) -> discord.Embed:
@@ -1182,7 +1177,7 @@ class Fun(Cog):
     @staticmethod
     async def send_answer(
         channel: discord.TextChannel,
-        answers: List[str],
+        answers: list[str],
         answer_is_correct: bool,
         question_dict: dict,
         q_left: int,
@@ -1216,7 +1211,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def _8ball(self, ctx: Context, *, question: Annotated[str, commands.clean_content]):
-        """8ball Magic, nothing to say much"""
+        """8ball Magic, nothing to say much."""
         await ctx.reply(f"Question: **{question}**\nAnswer: **{random.choice(RESPONSES)}**")
 
     @commands.command()
@@ -1224,11 +1219,12 @@ class Fun(Cog):
     @Context.with_type
     async def choose(self, ctx: Context, *, options: Annotated[str, commands.clean_content]):
         """Confuse something with your decision? Let Parrot choose from your choice.
-        NOTE: The `Options` should be seperated by commas `,`."""
+        NOTE: The `Options` should be seperated by commas `,`.
+        """
         ls = options.split(",")
         await ctx.reply(f"{ctx.author.mention} I choose {choice(ls)}")
 
-    async def _create_role_on_clr(self, *, ctx: Context, rgb: Tuple[int, int, int], color_name: str):
+    async def _create_role_on_clr(self, *, ctx: Context, rgb: tuple[int, int, int], color_name: str):
         if ctx.author.guild_permissions.manage_roles:
             await ctx.guild.create_role(
                 name=f"COLOR {color_name.upper()}",
@@ -1242,8 +1238,7 @@ class Fun(Cog):
 
     @commands.group(aliases=("color",), invoke_without_command=True)
     async def colour(self, ctx: Context, *, colour_input: Optional[str] = None) -> None:
-        """
-        Create an embed that displays colour information.
+        """Create an embed that displays colour information.
 
         If no subcommand is called, a randomly selected colour will be shown.
         """
@@ -1252,7 +1247,7 @@ class Fun(Cog):
             return
 
         try:
-            extra_colour = cast(Tuple[int, int, int], ImageColor.getrgb(colour_input))
+            extra_colour = cast(tuple[int, int, int], ImageColor.getrgb(colour_input))
             await self.send_colour_response(ctx, extra_colour)
         except ValueError:
             await self.bot.invoke_help_command(ctx)
@@ -1262,7 +1257,7 @@ class Fun(Cog):
         """Create an embed from an RGB input."""
         if any(c not in range(256) for c in (red, green, blue)):
             raise commands.BadArgument(
-                message=f"RGB values can only be from 0 to 255. User input was: `{red, green, blue}`."
+                message=f"RGB values can only be from 0 to 255. User input was: `{red, green, blue}`.",
             )
         rgb_tuple = (red, green, blue)
         await self.send_colour_response(ctx, rgb_tuple)
@@ -1273,9 +1268,9 @@ class Fun(Cog):
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
-                f"User input was: `{hue, saturation, value}`."
+                f"User input was: `{hue, saturation, value}`.",
             )
-        hsv_tuple = cast(Tuple[int, ...], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
+        hsv_tuple = cast(tuple[int, ...], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
@@ -1284,9 +1279,9 @@ class Fun(Cog):
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
             raise commands.BadArgument(
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
-                f"User input was: `{hue, saturation, lightness}`."
+                f"User input was: `{hue, saturation, lightness}`.",
             )
-        hsl_tuple = cast(Tuple[int, ...], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
+        hsl_tuple = cast(tuple[int, ...], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
@@ -1294,7 +1289,7 @@ class Fun(Cog):
         """Create an embed from a CMYK input."""
         if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
             raise commands.BadArgument(
-                message=f"CMYK values can only be from 0 to 100. User input was: `{cyan, magenta, yellow, key}`."
+                message=f"CMYK values can only be from 0 to 100. User input was: `{cyan, magenta, yellow, key}`.",
             )
         r = round(255 * (1 - (cyan / 100)) * (1 - (key / 100)))
         g = round(255 * (1 - (magenta / 100)) * (1 - (key / 100)))
@@ -1310,7 +1305,7 @@ class Fun(Cog):
         if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
             raise commands.BadArgument(
                 message=f"Cannot convert `{hex_code}` to a recognizable Hex format. "
-                "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
+                "Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*.",
             )
 
         hex_tuple = ImageColor.getrgb(hex_code)
@@ -1345,7 +1340,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def decode(self, ctx: Context, *, string: str):
-        """Decode the code to text from Base64 encryption"""
+        """Decode the code to text from Base64 encryption."""
         base64_string = string
         try:
             base64_bytes = base64_string.encode("ascii")
@@ -1363,7 +1358,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def encode(self, ctx: Context, *, string: str):
-        """Encode the text to Base64 Encryption"""
+        """Encode the text to Base64 Encryption."""
         sample_string = string
         sample_string_bytes = sample_string.encode("ascii")
         base64_bytes = base64.b64encode(sample_string_bytes)
@@ -1376,9 +1371,10 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def animal_fact(self, ctx: Context, *, animal: str):
-        """Return a random Fact. It's useless command, I know
+        """Return a random Fact. It's useless command, I know.
 
-        NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala"""
+        NOTE: Available animals - Dog, Cat, Panda, Fox, Bird, Koala
+        """
         if (animal := animal.lower()) not in (
             "dog",
             "cat",
@@ -1412,14 +1408,14 @@ class Fun(Cog):
                 return await ctx.reply(f"{ctx.author.mention} API returned a {response.status} status.")
 
             return await ctx.reply(
-                f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`"
+                f"{ctx.author.mention} no facts are available for that animal. Available animals: `dog`, `cat`, `panda`, `fox`, `bird`, `koala`",
             )
 
     @commands.command(aliases=["insult"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def roast(self, ctx: Context, *, member: discord.Member = None):
-        """Insult your enemy, Ugh!"""
+        """Insult your enemy, Ugh!."""
         member = member or ctx.author
 
         response = await self.bot.http_session.get("https://insult.mattbas.org/api/insult")
@@ -1436,7 +1432,7 @@ class Fun(Cog):
         if len(comment) > 20:
             comment = comment[:19:]
         async with self.bot.http_session.get(
-            f"https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}"
+            f"https://some-random-api.ml/canvas/its-so-stupid?avatar={member.display_avatar.url}&dog={comment}",
         ) as itssostupid:  # get users avatar as png with 1024 size
             imageData = io.BytesIO(await itssostupid.read())  # read the image/bytes
 
@@ -1448,7 +1444,7 @@ class Fun(Cog):
     @Context.with_type
     async def meme(self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"):
         """Random meme generator."""
-        link = "https://meme-api.herokuapp.com/gimme/{}/{}".format(subreddit, count)
+        link = f"https://meme-api.herokuapp.com/gimme/{subreddit}/{count}"
 
         res = {"memes": []}
         while True:
@@ -1473,7 +1469,7 @@ class Fun(Cog):
             embed.set_footer(text=f"Upvotes: {ups}")
             return embed
 
-        em: List[discord.Embed] = []
+        em: list[discord.Embed] = []
         for _res in res["memes"]:
             em.append(make_embed(_res))
         p = PaginationView(em)
@@ -1525,8 +1521,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def translate(self, ctx: Context, model: str, *, message: str):
-        """Translates a message to English (default). using My Memory"""
-
+        """Translates a message to English (default). using My Memory."""
         # from the docs
         IBM_END_POINT = os.environ["IBM_END_POINT"]
         URL = f"{IBM_END_POINT}/v3/translate?version=2018-05-01"
@@ -1570,7 +1565,7 @@ class Fun(Cog):
         # Thanks Danny
 
         response = await self.bot.http_session.get(
-            f"http://api.urbandictionary.com/v0/define?term={urllib.parse.quote(text)}"
+            f"http://api.urbandictionary.com/v0/define?term={urllib.parse.quote(text)}",
         )
         if response.status == 200:
             res = await response.json()
@@ -1605,13 +1600,13 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def ytcomment(self, ctx: Context, *, comment: str):
-        """Makes a comment in YT. Best ways to fool your fool friends. :')"""
+        """Makes a comment in YT. Best ways to fool your fool friends. :')."""
         member = ctx.author
         if len(comment) > 1000:
             comment = comment[:999:]
         name = member.name[:20:] if len(member.name) > 20 else member.name
         async with self.bot.http_session.get(
-            f"https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}"
+            f"https://some-random-api.ml/canvas/youtube-comment?avatar={member.display_avatar.url}&username={name}&comment={comment}",
         ) as ytcomment:  # get users avatar as png with 1024 size
             imageData = io.BytesIO(await ytcomment.read())  # read the image/bytes
 
@@ -1643,7 +1638,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def wouldyourather(self, ctx: Context, *, member: discord.Member = None):
-        """A classic `Would you Rather...?` game"""
+        """A classic `Would you Rather...?` game."""
         wyr = _wyr.split("\n")
         if member is None:
             em = discord.Embed(
@@ -1664,7 +1659,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def neverhaveiever(self, ctx: Context, *, member: discord.Member = None):
-        """A classic `Never Have I ever...` game"""
+        """A classic `Never Have I ever...` game."""
         nhi = _nhi.split("\n")
         if member is None:
             em = discord.Embed(
@@ -1686,7 +1681,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truth(self, ctx: Context, *, member: discord.Member = None):
-        """Truth: Who is your crush?"""
+        """Truth: Who is your crush?."""
         t = _truth.split("\n")
         if member is None:
             em = discord.Embed(
@@ -1707,7 +1702,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def twister(self, ctx: Context, *, member: discord.Member = None):
-        """I scream, you scream, we all scream for ice-cream"""
+        """I scream, you scream, we all scream for ice-cream."""
         t = _twister.split("\n")
         if member is None:
             em = discord.Embed(
@@ -1728,12 +1723,12 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def http(self, ctx: Context, *, status_code: int):
-        """To understand HTTP Errors, try: `http 404`"""
+        """To understand HTTP Errors, try: `http 404`."""
         if not ctx.invoked_subcommand:
             await ctx.reply(
                 embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color).set_image(
-                    url=f"https://http.cat/{status_code}"
-                )
+                    url=f"https://http.cat/{status_code}",
+                ),
             )
 
     @http.command(name="dog")
@@ -1741,11 +1736,11 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def http_dog(self, ctx: Context, *, status_code: int):
-        """To understand HTTP Errors, in dog format"""
+        """To understand HTTP Errors, in dog format."""
         await ctx.reply(
             embed=discord.Embed(timestamp=discord.utils.utcnow(), color=ctx.author.color).set_image(
-                url=f"https://httpstatusdogs.com/img/{status_code}.jpg"
-            )
+                url=f"https://httpstatusdogs.com/img/{status_code}.jpg",
+            ),
         )
 
     @commands.command()
@@ -1753,7 +1748,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def shear(self, ctx: Context, member: discord.Member = None, axis: str = None):
-        """Shear image generation"""
+        """Shear image generation."""
         member = member or ctx.author
         params = {"image_url": member.display_avatar.url, "axis": axis or "X"}
         r = await self.bot.http_session.get(f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params)
@@ -1765,7 +1760,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def scrapbook(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """ScrapBook Text image generation"""
+        """ScrapBook Text image generation."""
         params = {"text": text[:20:]}
         r = await self.bot.http_session.get(f"https://api.jeyy.xyz/image/{ctx.command.name}", params=params)
         file_obj = discord.File(io.BytesIO(await r.read()), f"{ctx.command.qualified_name}.gif")
@@ -1793,15 +1788,15 @@ class Fun(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def coinflip(self, ctx: Context, *, choose: str = 'heads'):
-        """Coin Flip, It comes either HEADS or TAILS"""
+    async def coinflip(self, ctx: Context, *, choose: str = "heads"):
+        """Coin Flip, It comes either HEADS or TAILS."""
         choose = "tails" if choose.lower() in {"tails", "tail", "t"} else "heads"
         msg: discord.Message = await ctx.send(
-            f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ..."
+            f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on ...",
         )
         await ctx.release(1.5)
         await msg.edit(
-            content=f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on **{random.choice(['HEADS', 'TAILS'])}**"
+            content=f"{ctx.author.mention} you choose **{choose}**. And coin <a:E_CoinFlip:923477401806196786> landed on **{random.choice(['HEADS', 'TAILS'])}**",
         )
 
     @commands.command(aliases=["slot"])
@@ -1809,7 +1804,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def slots(self, ctx: Context):
-        """Basic Slots game"""
+        """Basic Slots game."""
         CHOICE = [
             "\N{BANKNOTE WITH DOLLAR SIGN}",
             "\N{FIRST PLACE MEDAL}",
@@ -1819,34 +1814,33 @@ class Fun(Cog):
         e = discord.PartialEmoji(name="SlotsEmoji", id=923478531873325076, animated=True)
         msg: discord.Message = await ctx.send(
             f"""{ctx.author.mention} your slots results:
-> {e} {e} {e}"""
+> {e} {e} {e}""",
         )
         await ctx.release(1.5)
         _1 = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
-> {_1} {e} {e}"""
+> {_1} {e} {e}""",
         )
         await ctx.release(1.5)
         _2 = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
-> {_1} {_2} {e}"""
+> {_1} {_2} {e}""",
         )
         await ctx.release(1.5)
         _3 = random.choice(CHOICE)
         await msg.edit(
             content=f"""{ctx.author.mention} your slots results:
-> {_1} {_2} {_3}"""
+> {_1} {_2} {_3}""",
         )
 
     async def _fetch_user(self, user_id: int) -> Optional[discord.User]:
-        """
-        Fetches a user and handles errors.
+        """Fetches a user and handles errors.
         This helper function is required as the member cache doesn't always have the most up to date
         profile picture. This can lead to errors if the image is deleted from the Discord CDN.
         fetch_member can't be used due to the avatar url being part of the user object, and
-        some weird caching that D.py does
+        some weird caching that D.py does.
         """
         return await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
@@ -1855,7 +1849,6 @@ class Fun(Cog):
     )
     async def eightbit_command(self, ctx: Context):
         """Pixelates your avatar and changes the palette to an 8bit one."""
-
         user = await self._fetch_user(ctx.author.id)
         if not user:
             await ctx.send(f"{ctx.author.mention} Could not get user info.")
@@ -1888,8 +1881,7 @@ class Fun(Cog):
         name="reverseimg",
     )
     async def reverse(self, ctx: Context, *, text: Optional[str]):
-        """
-        Reverses the sent text.
+        """Reverses the sent text.
         If no text is provided, the user's profile picture will be reversed.
         """
         if text:
@@ -1924,8 +1916,7 @@ class Fun(Cog):
         aliases=("easterify",),
     )
     async def avatareasterify(self, ctx: Context, *colours: Union[discord.Colour, str]):
-        """
-        This "Easterifies" the user's avatar.
+        """This "Easterifies" the user's avatar.
         Given colours will produce a personalised egg in the corner, similar to the egg_decorate command.
         If colours are not given, a nice little chocolate bunny will sit in the corner.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
@@ -1933,8 +1924,7 @@ class Fun(Cog):
         """
 
         async def send(*args, **kwargs) -> Optional[str]:
-            """
-            This replaces the original ctx.send.
+            """This replaces the original ctx.send.
             When invoking the egg decorating command, the egg itself doesn't print to to the channel.
             Returns the message content so that if any errors occur, the error message can be output.
             """
@@ -2010,8 +2000,7 @@ class Fun(Cog):
         aliases=("avatarpride", "pridepfp", "prideprofile"),
     )
     async def prideavatar(self, ctx: Context, option: str = "lgbt", pixels: int = 64):
-        """
-        This surrounds an avatar with a border of a specified LGBT flag.
+        """This surrounds an avatar with a border of a specified LGBT flag.
         This defaults to the LGBT rainbow flag if none is given.
         The amount of pixels can be given which determines the thickness of the flag border.
         This has a maximum of 512px and defaults to a 64px border.
@@ -2082,7 +2071,7 @@ class Fun(Cog):
     @commands.bot_has_guild_permissions(create_instant_invite=True, use_embedded_activities=True)
     @commands.has_guild_permissions(use_embedded_activities=True)
     async def activity(self, ctx: Context, *, name: str):
-        """To create embed activity within your server"""
+        """To create embed activity within your server."""
         if not ctx.author.voice:
             return await ctx.error(f"{ctx.author.mention} you must be in the voice channel to use the activity")
 
@@ -2104,12 +2093,12 @@ class Fun(Cog):
                 title="Activity",
                 description=f"{ctx.author.mention} [Click Here]({inv}). **The invite link will be expired in 120 seconds**",
                 timestamp=ctx.message.created_at,
-            )
+            ),
         )
 
     @commands.command(name="mosaic")
     async def mosaic_command(self, ctx: Context, squares: int = 16):
-        """Splits your avatar into x squares, randomizes them and stitches them back into a new image!"""
+        """Splits your avatar into x squares, randomizes them and stitches them back into a new image!."""
         async with ctx.typing():
             user = await self._fetch_user(ctx.author.id)
             if not user:
@@ -2117,7 +2106,8 @@ class Fun(Cog):
                 return
 
             if not 1 <= squares <= MAX_SQUARES:
-                raise commands.BadArgument(f"Squares must be a positive number less than or equal to {MAX_SQUARES:,}.")
+                msg = f"Squares must be a positive number less than or equal to {MAX_SQUARES:,}."
+                raise commands.BadArgument(msg)
 
             sqrt = math.sqrt(squares)
 
@@ -2160,8 +2150,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(self, ctx: Context, text: Optional[str] = None):
-        """Make a cat say something"""
-
+        """Make a cat say something."""
         # please dont DM to ask what is this, I forget
         m: discord.Message = await ctx.reply("starting")
         text = text or "Hi..."
@@ -2196,7 +2185,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_flop(self, ctx: Context):
-        """Flop"""
+        """Flop."""
         m = await ctx.send("Starting...")
         DEGREE_SIGN = "\N{DEGREE SIGN}"
         WHITE_SQUARE = "\N{WHITE SQUARE}"
@@ -2219,7 +2208,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_poof(self, ctx: Context):
-        """Poof"""
+        """Poof."""
         m: discord.Message = await ctx.send("...")
         ls = ("(   ' - ')", r"' \- ')", r"\- ')", "')", ")", "*poofness*")
         for i in ls:
@@ -2230,7 +2219,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_virus(self, ctx: Context, user: discord.Member = None, virus: str = "trojan"):
-        """Insert a virus to yourself or someone else"""
+        """Insert a virus to yourself or someone else."""
         m = await ctx.send("...")
         user = user or ctx.author
         DARK_SHADE = "\N{DARK SHADE}"
@@ -2253,12 +2242,12 @@ class Fun(Cog):
         ]
         ls.append(
             f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] "
-            f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
+            f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe",
         )
         for _ in range(3):
             ls.append(
                 f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] "
-                f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
+                f"{Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe",
             )
         ls.append(
             f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}",
@@ -2271,7 +2260,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_boom(self, ctx: Context):
-        """Booms a message!"""
+        """Booms a message!."""
         m = await ctx.send("THIS MESSAGE WILL SELFDESTRUCT IN 5")
         await ctx.release(1)
         ls = (
@@ -2357,7 +2346,7 @@ class Fun(Cog):
     @commands.command(name="imagine")
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     async def _imagine_a_place(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Generates a Image in discord styling"""
+        """Generates a Image in discord styling."""
         text = text.replace("\n", " ")
         text = text[:24]
         text = f"{text[:12]}\n{text[12:24]}"
@@ -2367,7 +2356,7 @@ class Fun(Cog):
     @commands.command(name="timecard")
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     async def _timecard_spn(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Generates a timecard"""
+        """Generates a timecard."""
         await ctx.send(file=await timecard(text))
 
     @commands.command(name="typingtest")
@@ -2375,7 +2364,7 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def typing_test(self, ctx: Context):
-        """Test your typing skills"""
+        """Test your typing skills."""
         confirm: discord.Message = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start")
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -2415,7 +2404,7 @@ class Fun(Cog):
         await ctx.send(
             f"{ctx.author.mention} your accuracy is `{accuracy}`%. "
             f"You typed in `{round(fin - ini, 2)}` seconds. "
-            f"Words per minute: `{wpm}`"
+            f"Words per minute: `{wpm}`",
         )
 
     @commands.command(name="reactiontest")
@@ -2423,8 +2412,8 @@ class Fun(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def reaction_test(self, ctx: Context):
-        """Reaction test, REACT AS FAST AS POSSIBLE"""
-        EMOJIS: List[Emoji] = random.sample(EMOJI_DB, 5)
+        """Reaction test, REACT AS FAST AS POSSIBLE."""
+        EMOJIS: list[Emoji] = random.sample(EMOJI_DB, 5)
         emoji = random.choice(EMOJIS)
         confirm: discord.Message = await ctx.send(f"{ctx.author.mention} click on \N{WHITE HEAVY CHECK MARK} to start.")
         await confirm.add_reaction("\N{WHITE HEAVY CHECK MARK}")
@@ -2459,7 +2448,7 @@ class Fun(Cog):
                     "_id": ctx.author.id,
                     "game_reaction_test_time": end - start,
                     "game_reaction_test_played": 1,
-                }
+                },
             )
         else:
             if data.get("game_reaction_test_time", 0) > end - start:
@@ -2474,7 +2463,7 @@ class Fun(Cog):
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Bottomify your text"""
+        """Bottomify your text."""
         text = await self.bot.func(to_bottom, text)
         if len(text) > 2000:
             await ctx.reply(text[:2000])
@@ -2483,7 +2472,7 @@ class Fun(Cog):
 
     @commands.command(name="debottomify", aliases=["debottom"])
     async def _debottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Debottomify your text"""
+        """Debottomify your text."""
         text = await self.bot.func(from_bottom, text)
         if len(text) > 2000:
             await ctx.reply(text[:2000])
@@ -2494,7 +2483,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def _pour(self, ctx: Context, *, level: int = 1):
-        """Pour puzzle"""
+        """Pour puzzle."""
         if level > 50:
             return await ctx.reply("Level must be between 1 and 50")
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import discord
 from core import Cog
@@ -13,7 +13,7 @@ class _MemberJoin(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot: Parrot = bot
         self.ON_TESTING = False
-        self._cache: Dict[int, List[discord.Invite]] = {}
+        self._cache: dict[int, list[discord.Invite]] = {}
 
     @Cog.listener("on_member_remove")
     async def on_member_kick(self, member: discord.Member) -> None:
@@ -67,11 +67,11 @@ class _MemberJoin(Cog):
         if self.bot.is_ws_ratelimited:
             await self.bot.wait_until_ready()
 
-        new_invites: List[discord.Invite] = []
+        new_invites: list[discord.Invite] = []
 
         while RETRY != 0:
             try:
-                new_invites: List[discord.Invite] = await guild.invites()  # type: ignore
+                new_invites: list[discord.Invite] = await guild.invites()  # type: ignore
                 break
             except discord.HTTPException:
                 RETRY -= 1

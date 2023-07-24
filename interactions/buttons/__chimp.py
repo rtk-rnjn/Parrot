@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import List, Optional
+from typing import Optional
 
 import discord
 from core import Context, Parrot
@@ -121,9 +121,7 @@ class ChimpView(discord.ui.View):
 
 
 class ChimpTest:
-    """
-    ChimpTest Memory Game
-    """
+    """ChimpTest Memory Game."""
 
     def __init__(self, count: int = 9) -> None:
         self.lives: int = 0
@@ -131,7 +129,8 @@ class ChimpTest:
         self.highlight_tiles: bool = True
 
         if count not in range(1, 26):
-            raise ValueError(f"the count must be between 1 and 26, not {count}")
+            msg = f"the count must be between 1 and 26, not {count}"
+            raise ValueError(msg)
         self.count = count
 
         self.coordinates = []
@@ -146,7 +145,7 @@ class ChimpTest:
 
         self.step: int = 0
         self.first_clicked: bool = False
-        self.wrong_guesses: List[ChimpButton] = []
+        self.wrong_guesses: list[ChimpButton] = []
 
     async def start(
         self,

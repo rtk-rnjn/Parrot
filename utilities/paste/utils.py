@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
+from collections.abc import Callable
 
 from .errors import AuthenticationRequired
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec
+    from typing_extensions import ParamSpec
+    from typing import Concatenate
 
     C = TypeVar("C", bound="Any")
     T = TypeVar("T")
@@ -40,7 +42,8 @@ def require_authentication(func: Callable[Concatenate[C, B], T]) -> Callable[Con
     @wraps(func)
     def wrapper(item: C, *args: B.args, **kwargs: B.kwargs) -> T:
         if not item.http._authenticated:
-            raise AuthenticationRequired("This method requires you to be authenticated to the API.")
+            msg = "This method requires you to be authenticated to the API."
+            raise AuthenticationRequired(msg)
 
         return func(item, *args, **kwargs)
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, List, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import discord
 
@@ -23,7 +23,7 @@ V = TypeVar("V", bound="SelectUI", covariant=True)
 
 
 class SelectButton(discord.ui.Button[V], Generic[T, V]):
-    def __init__(self, item: T, *args: Any, **kwargs: Any):
+    def __init__(self, item: T, *args: Any, **kwargs: Any) -> None:
         self.item: T = item
         super().__init__(*args, **kwargs)
 
@@ -36,9 +36,9 @@ class SelectButton(discord.ui.Button[V], Generic[T, V]):
 
 
 class SelectUI(InputUI, Generic[T], metaclass=ABCMeta):
-    children: List[SelectButton]
+    children: list[SelectButton]
 
-    def __init__(self, game: GameUI, target: Player, options: List[T]):
+    def __init__(self, game: GameUI, target: Player, options: list[T]) -> None:
         self.target = target
         self.options = options
         super().__init__(game)

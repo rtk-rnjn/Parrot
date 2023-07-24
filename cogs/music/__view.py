@@ -18,7 +18,7 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
         max_length=300,
     )
 
-    def __init__(self, player: wavelink.Player, *, ctx: Context):
+    def __init__(self, player: wavelink.Player, *, ctx: Context) -> None:
         super().__init__()
         self.player = player
         self.ctx = ctx
@@ -46,7 +46,7 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
 class MusicView(discord.ui.View):
     message: Optional[discord.Message]
 
-    def __init__(self, vc: discord.VoiceChannel, *, timeout: Optional[float] = None, ctx: Context):
+    def __init__(self, vc: discord.VoiceChannel, *, timeout: Optional[float] = None, ctx: Context) -> None:
         super().__init__(timeout=timeout or 300)
         self.vc = vc
         self.ctx = ctx
@@ -72,8 +72,8 @@ class MusicView(discord.ui.View):
                         "id": self.player.current.identifier,
                         "song_name": getattr(self.player.current, "title", None),
                         "url": getattr(self.player.current, "uri", None),
-                    }
-                }
+                    },
+                },
             },
             upsert=True,
         )
@@ -85,10 +85,10 @@ class MusicView(discord.ui.View):
                 "$pull": {
                     "playlist": {
                         "id": self.player.current.identifier,
-                        "song_name": getattr(self.player.current, "title"),
-                        "url": getattr(self.player.current, "uri"),
-                    }
-                }
+                        "song_name": self.player.current.title,
+                        "url": self.player.current.uri,
+                    },
+                },
             },
             upsert=True,
         )

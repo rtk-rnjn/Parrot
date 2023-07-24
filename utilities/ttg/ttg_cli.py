@@ -5,10 +5,7 @@ import ttg
 
 
 def clielement():
-    """
-    CLI for the truth_table_generator package.
-    """
-
+    """CLI for the truth_table_generator package."""
     parser = argparse.ArgumentParser()
     parser.add_argument("variables", help="List of variables e. g. \"['p', 'q']\"")
     parser.add_argument(

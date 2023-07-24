@@ -66,7 +66,7 @@ class OwnerListener(Cog):
 
     async def emergency_unload_all_cogs(self):
         log.critical("removing due to emergency")
-        for name, cog in self.bot.cogs.items():
+        for name, _cog in self.bot.cogs.items():
             await self.bot.remove_cog(name)
 
     async def emergency_force_maintaince_on(self):

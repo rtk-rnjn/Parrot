@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import os
 from io import BytesIO
-from typing import Callable, List, Optional, Tuple
+from typing import Optional
+from collections.abc import Callable
 from urllib.parse import urlencode
 
 import arrow
@@ -52,8 +53,7 @@ async def send_embed(
 
 
 def custom_cooldown(*ignore: int) -> Callable:
-    """
-    Implement per-user and per-guild cooldowns for requests to the Wolfram API.
+    """Implement per-user and per-guild cooldowns for requests to the Wolfram API.
     A list of roles may be provided to ignore the per-user cooldown.
     """
 
@@ -100,7 +100,7 @@ def custom_cooldown(*ignore: int) -> Callable:
     return check(predicate)
 
 
-async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> Optional[List[Tuple[str, str]]]:
+async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> Optional[list[tuple[str, str]]]:
     """Get the Wolfram API pod pages for the provided query."""
     async with ctx.typing():
         params = {
@@ -204,8 +204,7 @@ class Wolfram(Cog):
     @wolfram_command.command(name="page", aliases=("pa", "p"))
     @custom_cooldown(*STAFF_ROLES)
     async def wolfram_page_command(self, ctx: Context, *, query: str) -> None:
-        """
-        Requests a drawn image of given query.
+        """Requests a drawn image of given query.
         Keywords worth noting are, "like curve", "curve", "graph", "pokemon", etc.
         """
         pages = await get_pod_pages(ctx, self.bot, query)
@@ -228,8 +227,7 @@ class Wolfram(Cog):
     @wolfram_command.command(name="cut", aliases=("c",))
     @custom_cooldown(*STAFF_ROLES)
     async def wolfram_cut_command(self, ctx: Context, *, query: str) -> None:
-        """
-        Requests a drawn image of given query.
+        """Requests a drawn image of given query.
         Keywords worth noting are, "like curve", "curve", "graph", "pokemon", etc.
         """
         pages = await get_pod_pages(ctx, self.bot, query)

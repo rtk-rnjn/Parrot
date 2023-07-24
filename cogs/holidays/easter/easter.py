@@ -6,7 +6,7 @@ from contextlib import suppress
 from io import BytesIO
 from json import loads
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Optional, Union
 
 from PIL import Image
 
@@ -79,15 +79,15 @@ def suppress_links(message: str) -> str:
     return message
 
 
-class Easter(Cog, command_attrs=dict(hidden=True)):
-    """A cog for April"""
+class Easter(Cog, command_attrs={"hidden": True}):
+    """A cog for April."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.winners: Set[str] = set()
+        self.winners: set[str] = set()
         self.correct = ""
         self.current_channel = None
-        self.quiz_messages: Dict[int, List[str]] = {}
+        self.quiz_messages: dict[int, list[str]] = {}
 
     @staticmethod
     def replace_invalid(colour: str) -> Optional[int]:
@@ -108,15 +108,14 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(f"Check out this April Fools' video by {channel}.\n\n{url}")
 
     @staticmethod
-    def find_separators(displayname: str) -> Optional[List[str]]:
+    def find_separators(displayname: str) -> Optional[list[str]]:
         """Check if Discord name contains spaces so we can bunnify an individual word in the name."""
         new_name = re.split(r"[_.\s]", displayname)
         return new_name if displayname not in new_name else None
 
     @staticmethod
     def find_vowels(displayname: str) -> Optional[str]:
-        """
-        Finds vowels in the user's display name.
+        """Finds vowels in the user's display name.
         If the Discord name contains a vowel and the letter y, it will match one or more of these patterns.
         Only the most recently matched pattern will apply the changes.
         """
@@ -184,8 +183,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(aliases=("riddlemethis", "riddleme"))
     async def riddle(self, ctx: Context) -> None:
-        """
-        Gives a random riddle, then provides 2 hints at certain intervals before revealing the answer.
+        """Gives a random riddle, then provides 2 hints at certain intervals before revealing the answer.
         The duration of the hint interval can be configured by changing the TIMELIMIT constant in this file.
         """
         if self.current_channel:
@@ -244,8 +242,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(aliases=("decorateegg",))
     async def eggdecorate(self, ctx: Context, *colours: Union[discord.Colour, str]) -> Optional[Image.Image]:
-        """
-        Picks a random egg design and decorates it using the given colours.
+        """Picks a random egg design and decorates it using the given colours.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
         """
@@ -281,7 +278,7 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
             data = list(im.getdata())
 
             replaceable = {x for x in data if x not in IRREPLACEABLE}
-            replaceable = sorted(list(replaceable), key=COLOURS.index)
+            replaceable = sorted(replaceable, key=COLOURS.index)
 
             replacing_colours = {colour: colours[i] for i, colour in enumerate(replaceable)}
             new_data = []
@@ -330,9 +327,8 @@ class Easter(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(aliases=("eggheadquiz", "easterquiz"))
     async def eggquiz(self, ctx: Context) -> None:
-        """
-        Gives a random quiz question, waits 30 seconds and then outputs the answer.
-        Also informs of the percentages and votes of each option
+        """Gives a random quiz question, waits 30 seconds and then outputs the answer.
+        Also informs of the percentages and votes of each option.
         """
         random_question = random.choice(EGGHEAD_QUESTIONS)
         question, answers = random_question["question"], random_question["answers"]

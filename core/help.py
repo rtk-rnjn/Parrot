@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import discord
 from discord.ext import commands, old_menus as menus  # type: ignore
@@ -45,17 +45,17 @@ class GroupHelpPageSource(menus.ListPageSource):
     def __init__(
         self,
         group: Union[commands.Group, Cog],
-        commands_list: List[commands.Command],
+        commands_list: list[commands.Command],
         *,
         prefix: str,
-    ):
+    ) -> None:
         super().__init__(entries=commands_list, per_page=6)
         self.group = group
         self.prefix = prefix
         self.title = f"{self.group.qualified_name} Commands"
         self.description = self.group.description
 
-    async def format_page(self, menu, commands_list: List[commands.Command]):
+    async def format_page(self, menu, commands_list: list[commands.Command]):
         embed = discord.Embed(
             title=self.title,
             description=self.description,
@@ -78,7 +78,7 @@ class GroupHelpPageSource(menus.ListPageSource):
 
 
 class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
-    def __init__(self, commands_list: Dict[Cog, List[commands.Command]], bot: Parrot):
+    def __init__(self, commands_list: dict[Cog, list[commands.Command]], bot: Parrot) -> None:
         super().__init__(
             placeholder="Select a category...",
             min_values=1,
@@ -129,7 +129,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
 
 
 class FrontPageSource(menus.PageSource):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     def is_paginating(self) -> bool:
@@ -158,7 +158,7 @@ class FrontPageSource(menus.PageSource):
             Use "`{menu.ctx.clean_prefix}help command`" for more info on a command.
             Use "`{menu.ctx.clean_prefix}help category`" for more info on a category.
             Use the dropdown menu below to select a category.
-        """
+        """,
         )
 
         embed.add_field(
@@ -215,10 +215,10 @@ class FrontPageSource(menus.PageSource):
 
 
 class HelpMenu(RoboPages):
-    def __init__(self, source: menus.PageSource, ctx: Context):
+    def __init__(self, source: menus.PageSource, ctx: Context) -> None:
         super().__init__(source, ctx=ctx, compact=True)
 
-    def add_categories(self, commands_list: Dict[Cog, List[commands.Command]]) -> None:
+    def add_categories(self, commands_list: dict[Cog, list[commands.Command]]) -> None:
         self.clear_items()
         self.add_item(HelpSelectMenu(commands_list, self.ctx.bot))
         self.fill_items()
@@ -235,14 +235,14 @@ class HelpMenu(RoboPages):
 
 
 class PaginatedHelpCommand(commands.HelpCommand):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             command_attrs={
                 "cooldown": commands.CooldownMapping.from_cooldown(1, 3.0, commands.BucketType.member),
                 "help": "Shows help about the bot, a command, or a category",
-            }
+            },
         )
-        self.__all_commands: Dict[Cog, List[commands.Command]] = {}
+        self.__all_commands: dict[Cog, list[commands.Command]] = {}
 
     async def on_help_command_error(self, ctx: Context, error: commands.CommandError):
         if isinstance(error, commands.CommandInvokeError):
@@ -277,7 +277,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
         # )
         if not self.__all_commands:
             entries = bot.cogs
-            all_commands: Dict[Cog, List[commands.Command]] = {}
+            all_commands: dict[Cog, list[commands.Command]] = {}
             for cog in entries:
                 cog = bot.get_cog(cog)
                 _cmds = [c for c in cog.get_commands() if not c.hidden]

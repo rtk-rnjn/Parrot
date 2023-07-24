@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
-post: Dict[str, Any] = {
+post: dict[str, Any] = {
     "prefix": "$",
     "mute_role": None,
     "mod_role": None,

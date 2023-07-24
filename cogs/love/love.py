@@ -9,7 +9,8 @@ import random
 from datetime import datetime
 from pathlib import Path
 from random import choice
-from typing import Coroutine, Optional, Tuple, Union
+from typing import Optional, Union
+from collections.abc import Coroutine
 
 from discord.ext.commands import clean_content
 
@@ -38,9 +39,9 @@ LOVE_DATA = sorted((int(key), value) for key, value in _LOVE_DATA.items())
 
 
 class Love(Cog):
-    """Love, Love, Love, what is Love? I love you?"""
+    """Love, Love, Love, what is Love? I love you?."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.zodiacs, self.zodiac_fact = self.load_comp_json()
         self.ON_TESTING = False
@@ -70,7 +71,7 @@ class Love(Cog):
         return pre_row[-1]
 
     @staticmethod
-    def load_comp_json() -> Tuple[dict, dict]:
+    def load_comp_json() -> tuple[dict, dict]:
         """Load zodiac compatibility from static JSON resource."""
         explanation_file = Path("extra/valentines/zodiac_explanation.json")
         compatibility_file = Path("extra/valentines/zodiac_compatibility.json")
@@ -123,7 +124,7 @@ class Love(Cog):
             value=self.zodiac_fact[zodiac]["full_form"],
             inline=False,
         ).set_thumbnail(
-            url=self.zodiac_fact[zodiac]["url"]
+            url=self.zodiac_fact[zodiac]["url"],
         )
 
     def zodiac_date_verifier(self, query_date: datetime) -> Optional[str]:
@@ -150,7 +151,7 @@ class Love(Cog):
             color=ctx.author.color,
         )
         embed.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg"
+            url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg",
         )
 
         await ctx.send(embed=embed)
@@ -240,8 +241,7 @@ class Love(Cog):
     @in_month(Month.FEBRUARY)
     @commands.command()
     async def pickupline(self, ctx: Context) -> None:
-        """
-        Gives you a random pickup line.
+        """Gives you a random pickup line.
         Note that most of them are very cheesy.
         """
         random_line = random.choice(PICKUP_LINES["lines"])
@@ -296,8 +296,7 @@ class Love(Cog):
     @commands.command(aliases=("love_calculator", "love_calc"))
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
     async def love(self, ctx: Context, who: Member, whom: Optional[Member] = None) -> None:
-        """
-        Tells you how much the two love each other.
+        """Tells you how much the two love each other.
         This command requires at least one member as input, if two are given love will be calculated between
         those two users, if only one is given, the second member is asusmed to be the invoker.
         Members are converted from:

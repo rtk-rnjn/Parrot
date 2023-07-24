@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -53,8 +53,8 @@ class File:
 
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
-        ret: Dict[str, Any] = {"content": self.content, "filename": self.filename}
+    def to_dict(self) -> dict[str, Any]:
+        ret: dict[str, Any] = {"content": self.content, "filename": self.filename}
 
         return ret
 
@@ -80,11 +80,11 @@ class Paste:
         *,
         id: str,
         created_at: str,
-        files: List[File],
+        files: list[File],
     ) -> None:
         self.id: str = id
         self.created_at: datetime.datetime = datetime.datetime.fromisoformat(created_at)
-        self.files: List[File] = files
+        self.files: list[File] = files
 
     def __str__(self) -> str:
         return self.url

@@ -74,7 +74,8 @@ This will output `Hello Universe`. Filters can also be used in if statements: ``
 {% endif %}
 ```"""
 
-macros = """Jinja2 supports macros. Macros are similar to functions in other programming languages. For example, the following is a Jinja2 macro: ```jinja
+macros = """Jinja2 supports macros. Macros are similar to functions in other programming languages.
+For example, the following is a Jinja2 macro: ```jinja
 {% macro add(x, y) %}
     {{ x + y }}
 {% endmacro %}

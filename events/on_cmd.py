@@ -26,7 +26,7 @@ class ErrorView(discord.ui.View):
         *,
         ctx: Optional[Context] = None,
         error: Optional[commands.CommandError] = None,
-    ):
+    ) -> None:
         super().__init__(timeout=300.0)
         self.author_id = author_id
         self.ctx = ctx
@@ -43,15 +43,15 @@ class ErrorView(discord.ui.View):
         await interaction.response.send_message(str(self.error), ephemeral=True)
 
 
-class Cmd(Cog, command_attrs=dict(hidden=True)):
+class Cmd(Cog, command_attrs={"hidden": True}):
     """This category is of no use for you, ignore it."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     @Cog.listener()
     async def on_command(self, ctx: Context):
-        """This event will be triggered when the command is being completed; triggered by [discord.User]!"""
+        """This event will be triggered when the command is being completed; triggered by [discord.User]!."""
         if ctx.author.bot:
             return
         await ctx.database_command_update(
@@ -168,11 +168,7 @@ class Cmd(Cog, command_attrs=dict(hidden=True)):
 
         elif isinstance(
             error,
-            (
-                commands.MissingRequiredArgument,
-                commands.BadUnionArgument,
-                commands.TooManyArguments,
-            ),
+            commands.MissingRequiredArgument | commands.BadUnionArgument | commands.TooManyArguments,
         ):
             command = ctx.command
             ctx.command.reset_cooldown(ctx)

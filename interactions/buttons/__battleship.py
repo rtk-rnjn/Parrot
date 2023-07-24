@@ -7,7 +7,8 @@ import random
 import re
 import string
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, Final, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
+from collections.abc import Coroutine
 
 from PIL import Image, ImageDraw
 
@@ -19,14 +20,14 @@ from .__wordle import WordInputButton
 from .utils import BaseView
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
-    Coords: TypeAlias = Tuple[int, int]
+    Coords: TypeAlias = tuple[int, int]
     DiscordColor: TypeAlias = Union[discord.Color, int]
 
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
-SHIPS: Dict[str, Tuple[int, Tuple[int, int, int]]] = {
+SHIPS: dict[str, tuple[int, tuple[int, int, int]]] = {
     "carrier": (5, (52, 152, 219)),
     "battleship": (4, (246, 246, 112)),
     "destroyer": (3, (14, 146, 150)),
@@ -41,7 +42,7 @@ class Ship:
         name: str,
         size: int,
         start: Coords,
-        color: Tuple[int, int, int],
+        color: tuple[int, int, int],
         vertical: bool = False,
     ) -> None:
         self.name: str = name
@@ -49,7 +50,7 @@ class Ship:
 
         self.start: Coords = start
         self.vertical: bool = vertical
-        self.color: Tuple[int, int, int] = color
+        self.color: tuple[int, int, int] = color
 
         self.end: Coords = (
             (self.start[0], self.start[1] + self.size - 1)
@@ -57,31 +58,31 @@ class Ship:
             else (self.start[0] + self.size - 1, self.start[1])
         )
 
-        self.span: List[Coords] = (
+        self.span: list[Coords] = (
             [(self.start[0], i) for i in range(self.start[1], self.end[1] + 1)]
             if self.vertical
             else [(i, self.start[1]) for i in range(self.start[0], self.end[0] + 1)]
         )
 
-        self.hits: List[bool] = [False] * self.size
+        self.hits: list[bool] = [False] * self.size
 
 
 class Board:
     def __init__(self, player: Union[discord.User, discord.Member], random: bool = True) -> None:
         self.player: Union[discord.User, discord.Member] = player
-        self.ships: List[Ship] = []
+        self.ships: list[Ship] = []
 
-        self.my_hits: List[Coords] = []
-        self.my_misses: List[Coords] = []
+        self.my_hits: list[Coords] = []
+        self.my_misses: list[Coords] = []
 
-        self.op_hits: List[Coords] = []
-        self.op_misses: List[Coords] = []
+        self.op_hits: list[Coords] = []
+        self.op_misses: list[Coords] = []
 
         if random:
             self._place_ships()
 
     @property
-    def moves(self) -> List[Coords]:
+    def moves(self) -> list[Coords]:
         return self.my_hits + self.my_misses
 
     def _is_valid(self, ship: Ship) -> bool:
@@ -91,7 +92,7 @@ class Board:
         return not any(any(c in existing.span for c in ship.span) for existing in self.ships)
 
     def _place_ships(self) -> None:
-        def place_ship(ship: str, size: int, color: Tuple[int, int, int]) -> None:
+        def place_ship(ship: str, size: int, color: tuple[int, int, int]) -> None:
             start = random.randint(1, 10), random.randint(1, 10)
             vertical = bool(random.randint(0, 1))
 
@@ -114,7 +115,7 @@ class Board:
     def won(self) -> bool:
         return all(all(ship.hits) for ship in self.ships)
 
-    def draw_dot(self, cur: ImageDraw.Draw, x: int, y: int, fill: Union[int, Tuple[int, ...]]) -> None:
+    def draw_dot(self, cur: ImageDraw.Draw, x: int, y: int, fill: Union[int, tuple[int, ...]]) -> None:
         x1, y1 = x - 10, y - 10
         x2, y2 = x + 10, y + 10
         cur.ellipse((x1, y1, x2, y2), fill=fill)
@@ -177,9 +178,7 @@ class Board:
 
 
 class BattleShip:
-    """
-    BattleShip Game
-    """
+    """BattleShip Game."""
 
     inputpat: ClassVar[re.Pattern] = re.compile(r"([a-j])(10|[1-9])")
 
@@ -212,7 +211,7 @@ class BattleShip:
         else:
             return self.player1_board if player == self.player1 else self.player2_board
 
-    def place_move(self, player: discord.User, coords: Coords) -> Tuple[bool, bool]:
+    def place_move(self, player: discord.User, coords: Coords) -> tuple[bool, bool]:
         board = self.get_board(player)
         op_board = self.get_board(player, other=True)
 
@@ -229,8 +228,8 @@ class BattleShip:
         return False, False
 
     async def get_file(
-        self, player: discord.User, *, hide: bool = True
-    ) -> Tuple[discord.Embed, discord.File, discord.Embed, discord.File]:
+        self, player: discord.User, *, hide: bool = True,
+    ) -> tuple[discord.Embed, discord.File, discord.Embed, discord.File]:
         board = self.get_board(player)
         image1 = await board.to_image()
 
@@ -251,7 +250,7 @@ class BattleShip:
     def to_num(self, alpha: str) -> int:
         return ord(alpha) % 96
 
-    def get_coords(self, inp: str) -> Tuple[str, Coords]:
+    def get_coords(self, inp: str) -> tuple[str, Coords]:
         inp = re.sub(r"\s+", "", inp).lower()
         match = self.inputpat.match(inp)
         x, y = match.group(1), match.group(2)
@@ -268,7 +267,7 @@ class BattleShip:
     async def get_ship_inputs(self, ctx: Context[Parrot], user: discord.User) -> bool:
         board = self.get_board(user)
 
-        async def place_ship(ship: str, size: int, color: Tuple[int, int, int]) -> bool:
+        async def place_ship(ship: str, size: int, color: tuple[int, int, int]) -> bool:
             embed, file, _, _ = await self.get_file(user)
             await user.send(
                 f"Where do you want to place your `{ship}`?\nSend the start coordinate... e.g. (`a1`)",
@@ -325,22 +324,22 @@ class BattleShip:
         return True
 
     async def start(
-        self, ctx: Context[Parrot], *, timeout: Optional[float] = None
-    ) -> Tuple[discord.Message, discord.Message]:
-        """
-        starts the battleship game
+        self, ctx: Context[Parrot], *, timeout: Optional[float] = None,
+    ) -> tuple[discord.Message, discord.Message]:
+        """Starts the battleship game.
+
         Parameters
         ----------
         ctx : Context
             the context of the invokation command
         timeout : Optional[float], optional
             the timeout for when waiting, by default None
+
         Returns
         -------
         Tuple[discord.Message, discord.Message]
-            returns both player's messages respectively
+            returns both player's messages respectively.
         """
-
         await ctx.send("**Game Started!**\nI've setup the boards in your dms!")
 
         if not self.random:
@@ -412,7 +411,7 @@ class Player:
 
         self.embed = discord.Embed(title="Log", description="```\n\u200b\n```")
 
-        self._logs: List[str] = []
+        self._logs: list[str] = []
         self.log: str = ""
 
         self.approves_cancel: bool = False
@@ -629,7 +628,7 @@ class SetupInput(discord.ui.Modal):
 
         if vertical not in ("y", "n"):
             return await interaction.response.send_message(
-                "Response for `vertical` must be either `y` or `n`", ephemeral=True
+                "Response for `vertical` must be either `y` or `n`", ephemeral=True,
             )
 
         vertical = vertical != "y"
@@ -663,7 +662,7 @@ class SetupInput(discord.ui.Modal):
 
 
 class SetupButton(discord.ui.Button["SetupView"]):
-    def __init__(self, label: str, ship_size: int, ship_color: Tuple[int, int, int]) -> None:
+    def __init__(self, label: str, ship_size: int, ship_color: tuple[int, int, int]) -> None:
         super().__init__(
             label=label,
             style=discord.ButtonStyle.green,
@@ -687,9 +686,7 @@ class SetupView(BaseView):
 
 
 class BetaBattleShip(BattleShip):
-    """
-    BattleShip(buttons) Game
-    """
+    """BattleShip(buttons) Game."""
 
     embed: discord.Embed
 
@@ -727,7 +724,7 @@ class BetaBattleShip(BattleShip):
 
         return view.wait()
 
-    async def process_move(self, raw: str, coords: Tuple[int, int]):
+    async def process_move(self, raw: str, coords: tuple[int, int]):
         sunk, hit = self.place_move(self.turn, coords)
         next_turn = self.player2 if self.turn == self.player1 else self.player1
 
@@ -778,9 +775,9 @@ class BetaBattleShip(BattleShip):
         max_log_size: int = 10,
         embed_color: DiscordColor = DEFAULT_COLOR,
         timeout: Optional[float] = None,
-    ) -> Tuple[discord.Message, discord.Message]:
-        """
-        starts the battleship(buttons) game
+    ) -> tuple[discord.Message, discord.Message]:
+        """Starts the battleship(buttons) game.
+
         Parameters
         ----------
         ctx : Context[Parrot]
@@ -791,10 +788,11 @@ class BetaBattleShip(BattleShip):
             the color of the game embed, by default DEFAULT_COLOR
         timeout : Optional[float], optional
             the timeout for the view, by default None
+
         Returns
         -------
         Tuple[discord.Message, discord.Message]
-            returns the game messages respectively
+            returns the game messages respectively.
         """
         self.max_log_size = max_log_size
         self.timeout = timeout

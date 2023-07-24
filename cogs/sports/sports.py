@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from tabulate import tabulate  # type: ignore
 
@@ -23,7 +23,7 @@ class Sports(Cog):
         self.url = None
         self.ON_TESTING = False
         # list of channels
-        self.channels: List[discord.TextChannel] = []
+        self.channels: list[discord.TextChannel] = []
         self.annouce_task.start()
 
         self.data = None
@@ -35,9 +35,9 @@ class Sports(Cog):
     def create_embed_ipl(
         self,
         *,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> discord.Embed:
-        """To create the embed for the ipl score. For more detailed information, see https://github.com/rtk-rnjn/cricbuzz_scraper"""
+        """To create the embed for the ipl score. For more detailed information, see https://github.com/rtk-rnjn/cricbuzz_scraper."""
         if data["title"]:
             embed = discord.Embed(title=data["title"], timestamp=discord.utils.utcnow())
         embed.set_footer(text=data["status"])
@@ -71,7 +71,7 @@ class Sports(Cog):
 
     @commands.group(name="ipl", invoke_without_command=True)
     async def ipl(self, ctx: Context) -> None:
-        """To get the IPL score"""
+        """To get the IPL score."""
         if ctx.invoked_subcommand is not None:
             return
         if not self.url:
@@ -83,7 +83,7 @@ class Sports(Cog):
             response = await self.bot.http_session.get(url)
             if response.status != 200:
                 return await ctx.send(
-                    f"{ctx.author.mention} Could not get IPL score | Ask for it in support server | Status code: {response.status}"
+                    f"{ctx.author.mention} Could not get IPL score | Ask for it in support server | Status code: {response.status}",
                 )
             self.data = await response.json()
 
@@ -93,7 +93,7 @@ class Sports(Cog):
     @with_role(*STAFF_ROLES)
     @ipl.command(name="set")
     async def set_ipl_url(self, ctx: Context, *, url: str) -> None:
-        """Set the IPL score page url"""
+        """Set the IPL score page url."""
         if url.startswith(("<", "[")) and url.endswith((">", "]")):
             url = url[1:-1]
 
@@ -103,7 +103,7 @@ class Sports(Cog):
     @ipl.command(name="add")
     @commands.is_owner()
     async def add_channel(self, ctx: Context, *, channel: discord.TextChannel):
-        """To add the channel to the list of channels to get IPL score"""
+        """To add the channel to the list of channels to get IPL score."""
         if channel.id in self.channels:
             return await ctx.send(f"{ctx.author.mention} Channel already added")
 
@@ -113,7 +113,7 @@ class Sports(Cog):
     @ipl.command(name="remove")
     @commands.is_owner()
     async def remove_channel(self, ctx: Context, *, channel: discord.TextChannel):
-        """To remove the channel from the list of channels to get IPL score"""
+        """To remove the channel from the list of channels to get IPL score."""
         if channel.id not in self.channels:
             return await ctx.send(f"{ctx.author.mention} Channel not added")
 

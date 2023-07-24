@@ -23,10 +23,10 @@ PRIDE_RESOURCE: dict = json.loads(Path(r"extra/pride/prideleader.json").read_tex
 MINIMUM_FUZZ_RATIO = 40
 
 
-class Pride(Cog, command_attrs=dict(hidden=True)):
-    """PRIDE PRIDE PRIDE!"""
+class Pride(Cog, command_attrs={"hidden": True}):
+    """PRIDE PRIDE PRIDE!."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
     async def send_random_fact(self, ctx: Context) -> None:
@@ -66,8 +66,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
     @in_month(Month.JUNE)
     @commands.command(name="pridefact", aliases=("pridefacts",))
     async def pridefact(self, ctx: Context, option: str = None) -> None:
-        """
-        Sends a message with a pride fact of the day.
+        """Sends a message with a pride fact of the day.
         If "random" is given as an argument, a random previous fact will be provided.
         If a date is given as an argument, and the date is in the past, the fact from that day
         will be provided.
@@ -91,8 +90,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
         await ctx.send(random.choice(NAMES))
 
     def get_video(self, genre: Optional[str] = None) -> dict:
-        """
-        Picks a random anthem from the list.
+        """Picks a random anthem from the list.
         If `genre` is supplied, it will pick from videos attributed with that genre.
         If none can be found, it will log this as well as provide that information to the user.
         """
@@ -108,8 +106,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
     @in_month(Month.JUNE)
     @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
     async def prideanthem(self, ctx: Context, genre: str = None) -> None:
-        """
-        Sends a message with a video of a random pride anthem.
+        """Sends a message with a video of a random pride anthem.
         If `genre` is supplied, it will select from that genre only.
         """
         if anthem := self.get_video(genre):
@@ -118,8 +115,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
             await ctx.send("I couldn't find a video, sorry!")
 
     def invalid_embed_generate(self, pride_leader: str) -> discord.Embed:
-        """
-        Generates Invalid Embed.
+        """Generates Invalid Embed.
         The invalid embed contains a list of closely matched names of the invalid pride
         leader the user gave. If no closely matched names are found it would list all
         the available pride leader names.
@@ -158,8 +154,7 @@ class Pride(Cog, command_attrs=dict(hidden=True)):
     @in_month(Month.JUNE)
     @commands.command(aliases=("pl", "prideleader"))
     async def pride_leader(self, ctx: Context, *, pride_leader_name: Optional[str]) -> None:
-        """
-        Information about a Pride Leader.
+        """Information about a Pride Leader.
         Returns information about the specified pride leader
         and if there is no pride leader given, return a random pride leader.
         """

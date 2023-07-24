@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
-OPS: Dict[str, Callable[[int, int], Optional[int]]] = {
+OPS: dict[str, Callable[[int, int], Optional[int]]] = {
     "^": lambda x, y: x**y,
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
@@ -16,7 +16,7 @@ OPS: Dict[str, Callable[[int, int], Optional[int]]] = {
 
 
 class View:
-    def __init__(self, string: str, base: int = 10):
+    def __init__(self, string: str, base: int = 10) -> None:
         self.string = string
         self.strip_base_identifier()
         self.base = base
@@ -57,7 +57,7 @@ class View:
         self.strip_ws()
         return e
 
-    def parse_prec_lvl(self, ops: Tuple[str, ...], below: Callable[[], Optional[int]]) -> Callable[[], Optional[int]]:
+    def parse_prec_lvl(self, ops: tuple[str, ...], below: Callable[[], Optional[int]]) -> Callable[[], Optional[int]]:
         def parser():
             e = below()
             if e is None:

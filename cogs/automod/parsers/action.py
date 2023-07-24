@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 from discord.abc import GuildChannel
 from discord.utils import utcnow
 
-from core import Context
 from discord import Member, Message, Object, PermissionOverwrite
 
 reason_init = """AutoMod: {reason}
@@ -17,10 +16,10 @@ Sent from {guild.name} ({guild.id})
 
 
 class Action:
-    def __init__(self, bot: Parrot, data: List[dict]) -> None:
+    def __init__(self, bot: Parrot, data: list[dict]) -> None:
         self.bot = bot
         self.data = data
-    
+
     async def execute(self, **kw) -> None:
         for action in self.data:
             await getattr(self, action["name"])(**kw)
@@ -36,7 +35,7 @@ class Action:
             {
                 "$inc": {
                     f"u_{member.id}.{name_of_voilation}": 1,
-                }
+                },
             },
             upsert=True,
         )
@@ -49,7 +48,7 @@ class Action:
             {
                 "$inc": {
                     f"u_{member.id}.{name_of_voilation}": -1,
-                }
+                },
             },
             upsert=True,
         )
@@ -69,7 +68,7 @@ class Action:
             {
                 "$set": {
                     f"u_{member.id}": {},
-                }
+                },
             },
             upsert=True,
         )
@@ -131,7 +130,7 @@ class Action:
 
     async def remove_role(self, *, member: Member, role: int, **kw) -> None:
         await member.remove_roles(Object(id=role), reason="Automod")
-    
+
     async def send_message(self, *, message: Message, msg: str, delete_after: int, channel: int, **kw) -> None:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)
         ch = message.guild.get_channel(channel) or message.channel

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from random import choice, random
-from typing import Dict, List, Literal, Optional, Set
+from typing import Literal, Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -12,14 +12,14 @@ from ._nsfw import ENDPOINTS
 
 
 class NSFW(Cog):
-    """Want some fun? These are best commands! :') :warning: 18+"""
+    """Want some fun? These are best commands! :') :warning: 18+."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
         self.command_loader()
 
-        self.cached_images: Dict[str, Set[str]] = {}
+        self.cached_images: dict[str, set[str]] = {}
 
         self.ON_TESTING = False
 
@@ -71,7 +71,7 @@ class NSFW(Cog):
                         embed=embed.set_footer(
                             text=f"Requested by {ctx.author}",
                             icon_url=ctx.author.display_avatar.url,
-                        )
+                        ),
                     )
                 else:
                     await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
@@ -80,9 +80,7 @@ class NSFW(Cog):
 
     @commands.command(aliases=["randnsfw"], hidden=True)
     async def randomnsfw(self, ctx: Context, *, subreddit: str = None) -> None:
-        """
-        To get Random NSFW from subreddit.
-        """
+        """To get Random NSFW from subreddit."""
         if subreddit is None:
             subreddit = "NSFW"
         end = discord.utils.utcnow().timestamp() + 60
@@ -115,8 +113,8 @@ class NSFW(Cog):
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:
-        """Best command I guess. It return random ^^"""
-        em_list: List[discord.Embed] = []
+        """Best command I guess. It return random ^^."""
+        em_list: list[discord.Embed] = []
 
         if count is not None and count <= 0:
             return await ctx.reply(f"{ctx.author.mention} count must be greater than 0")

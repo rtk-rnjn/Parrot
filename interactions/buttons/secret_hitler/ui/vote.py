@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord import Member as User
@@ -35,7 +35,7 @@ def format_list(
 
 
 class VoteUI(InputUI):
-    def __init__(self, game: GameUI, voters: List[Player[User]]):
+    def __init__(self, game: GameUI, voters: list[Player[User]]) -> None:
         self.voters = voters
         super().__init__(game)
 
@@ -46,7 +46,7 @@ class VoteUI(InputUI):
         return format_list(self.game.game.state.tooltip + "\nCurrently: {0} {1} voted.", *self.votes)
 
     @property
-    def votes(self) -> Dict[Player[User], bool]:
+    def votes(self) -> dict[Player[User], bool]:
         if isinstance(self.game.game.state, VoteGameState):
             return self.game.game.state.votes
         return {}
@@ -66,7 +66,8 @@ class VoteUI(InputUI):
 
         player = self.game.game.get_player(interaction.user)
         if player is None:
-            raise RuntimeError("How?")
+            msg = "How?"
+            raise RuntimeError(msg)
         self.votes[player] = vote
 
         if self.game.game.state.ready:

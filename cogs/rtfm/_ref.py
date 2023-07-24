@@ -32,9 +32,8 @@ def markdownify(html: Any):
 
 
 async def _process_mozilla_doc(ctx: Context, url: str):
-    """
-    From a given url from developers.mozilla.org, processes format,
-    returns tag formatted content
+    """From a given url from developers.mozilla.org, processes format,
+    returns tag formatted content.
     """
     response = await ctx.bot.http_session.get(url)
     if response.status == 404:
@@ -49,7 +48,7 @@ async def _process_mozilla_doc(ctx: Context, url: str):
 
 
 async def html_ref(ctx: Context, text: str):
-    """Displays informations on an HTML tag"""
+    """Displays informations on an HTML tag."""
     text = text.strip("<>`")
 
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/{text}"
@@ -68,7 +67,7 @@ async def html_ref(ctx: Context, text: str):
 
 
 async def _http_ref(part, ctx: Context, text: str):
-    """Displays informations about HTTP protocol"""
+    """Displays informations about HTTP protocol."""
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTTP/{part}/{text}"
     url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
@@ -91,7 +90,7 @@ csp_directives = partial(_http_ref, "Headers/Content-Security-Policy")
 
 
 async def _git_main_ref(part: str, ctx: Context, text: str):
-    """Displays a git help page"""
+    """Displays a git help page."""
     text = text.strip("`")
 
     if part and text == "git":
@@ -131,7 +130,7 @@ git_tutorial_ref = partial(_git_main_ref, "")
 
 
 async def sql_ref(ctx: Context, text: str):
-    """Displays reference on an SQL statement"""
+    """Displays reference on an SQL statement."""
     text = text.strip("`").lower()
     if text in {"check", "unique", "not null"}:
         text += " constraint"
@@ -159,7 +158,7 @@ async def sql_ref(ctx: Context, text: str):
 
 
 async def haskell_ref(ctx: Context, text: str):
-    """Displays informations on given Haskell topic"""
+    """Displays informations on given Haskell topic."""
     text = text.strip("`")
 
     snake = "_".join(text.split(" "))
@@ -183,12 +182,12 @@ async def haskell_ref(ctx: Context, text: str):
                 lambda x: x.name in ["p", "li"] and tuple(x.parents)[1].name not in ("td", "li"),
                 limit=6,
             )
-        ]
+        ],
     )[:2048]
 
     emb = discord.Embed(title=title, description=description, url=url)
     emb.set_thumbnail(
-        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png"
+        url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png",
     )
 
     await ctx.send(embed=emb)

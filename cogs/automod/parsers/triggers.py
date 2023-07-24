@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -13,7 +13,7 @@ from utilities.regex import INVITE_RE, LINKS_RE
 
 
 class Trigger:
-    def __init__(self, bot: Parrot, data: List[dict], operator: str = "all") -> None:
+    def __init__(self, bot: Parrot, data: list[dict], operator: str = "all") -> None:
         self.bot = bot
         self.data = data
 
@@ -32,7 +32,7 @@ class Trigger:
         self.operator = all if operator == "all" else any
 
         self.build_cooldowns()
-    
+
     async def check(self, **kw) -> bool:
         return self.operator(
             getattr(self, tgr["type"])(**{**kw, **tgr["kwargs"]}) for tgr in self.data
@@ -140,7 +140,7 @@ class Trigger:
             return bool(bucket.update_rate_limit()) if bucket else False
         return False
 
-    def all_caps(self, *, message: Message, threshold: float = float('inf'), percentage: float = 100, **kw) -> bool:
+    def all_caps(self, *, message: Message, threshold: float = float("inf"), percentage: float = 100, **kw) -> bool:
         content = message.content
 
         count = sum(bool(ch.isupper()) for ch in content)
@@ -158,12 +158,12 @@ class Trigger:
     def any_link(self, *, message: Message, **kw) -> bool:
         return bool(LINKS_RE.search(message.content))
 
-    def word_blacklist(self, *, message: Message, words: List[str] = None, **kw) -> bool:
+    def word_blacklist(self, *, message: Message, words: list[str] = None, **kw) -> bool:
         if words is None:
             words = []
         return any(word in message.content for word in words)
 
-    def word_whitelist(self, *, message: Message, words: List[str] = None, **kw) -> bool:
+    def word_whitelist(self, *, message: Message, words: list[str] = None, **kw) -> bool:
         if words is None:
             words = []
         return all(word not in message.content for word in words)
@@ -183,10 +183,10 @@ class Trigger:
     def nickname_not_match_regex(self, *, member: Member, regex: str, **kw) -> bool:
         return not bool(re.search(regex, member.display_name))
 
-    def nickname_word_blacklist(self, *, member: Member, words: List[str], **kw) -> bool:
+    def nickname_word_blacklist(self, *, member: Member, words: list[str], **kw) -> bool:
         return any(word in member.display_name for word in words)
 
-    def nickname_word_whitelist(self, *, member: Member, words: List[str], **kw) -> bool:
+    def nickname_word_whitelist(self, *, member: Member, words: list[str], **kw) -> bool:
         return all(word not in member.display_name for word in words)
 
     def join_username_match_regex(self, *, member: Member, regex: str, **kw) -> bool:
@@ -195,12 +195,12 @@ class Trigger:
     def join_username_not_match_regex(self, *, member: Member, regex: str, **kw) -> bool:
         return not (bool(re.search(regex, member.display_name)) or bool(re.search(regex, member.name)))
 
-    def join_username_word_blacklist(self, *, member: Member, words: List[str], **kw) -> bool:
+    def join_username_word_blacklist(self, *, member: Member, words: list[str], **kw) -> bool:
         return any(word in member.display_name for word in words) or any(
             word in member.name for word in words
         )
 
-    def join_username_word_whitelist(self, *, member: Member, words: List[str], **kw) -> bool:
+    def join_username_word_whitelist(self, *, member: Member, words: list[str], **kw) -> bool:
         return all(word not in member.display_name for word in words) and all(
             word not in member.name for word in words
         )

@@ -6,7 +6,7 @@ class SphinxObjectFileReader:
     # Inspired by Sphinx's InventoryFileReader
     BUFSIZE = 16 * 1024
 
-    def __init__(self, buffer):
+    def __init__(self, buffer) -> None:
         self.stream = io.BytesIO(buffer)
 
     def readline(self):

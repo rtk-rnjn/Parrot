@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import chess
 from pymongo import UpdateOne
@@ -12,7 +12,7 @@ from utilities.paginator import ParrotPaginator
 
 
 class ChessView(discord.ui.View):
-    def __init__(self, *, game: Chess, ctx: Context = None, timeout: float = 300.0, **kwargs: Any):
+    def __init__(self, *, game: Chess, ctx: Context = None, timeout: float = 300.0, **kwargs: Any) -> None:
         super().__init__(timeout=timeout, **kwargs)
         self.game = game
         self.ctx = ctx
@@ -81,7 +81,7 @@ class Chess:
         self.game_stop = False
         self.game_message: Optional[discord.Message] = None
 
-    def legal_moves(self) -> List[str]:
+    def legal_moves(self) -> list[str]:
         return [self.board.san(move) for move in self.board.legal_moves]
 
     async def wait_for_move(self) -> Optional[discord.Message]:
@@ -120,7 +120,7 @@ class Chess:
             timestamp=discord.utils.utcnow(),
         )
         embed.set_image(
-            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true&orientation={st}"
+            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&lastMove={move.uci()}&coordinates=true&orientation={st}",
         )
         embed.description = f"""```
 On Check?      : {self.board.is_check()}
@@ -166,7 +166,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             timestamp=discord.utils.utcnow(),
         )
         embed.set_image(
-            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&coordinates=true"
+            url=f"https://backscattering.de/web-boardimage/board.png?fen={self.board.board_fen()}&coordinates=true",
         )
         embed.description = f"""```
 On Check?      : {self.board.is_check()}
@@ -186,7 +186,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 "abort",
             ):
                 msg_ = await self.ctx.send(
-                    f"**{msg.author}** resigned/aborted the game. Game Over! **{self.white} {self.black} now shake hands!**"
+                    f"**{msg.author}** resigned/aborted the game. Game Over! **{self.white} {self.black} now shake hands!**",
                 )
                 await msg_.add_reaction("\N{HANDSHAKE}")
                 self.game_stop = True
@@ -200,12 +200,12 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                                 "$inc": {
                                     "game_chess_played": 1,
                                     "game_chess_won": 1 if _id == msg.author.id else 0,
-                                }
+                                },
                             },
                             upsert=True,
                         )
                         for _id in (self.white.id, self.black.id)
-                    ]
+                    ],
                 )
                 return
 
@@ -216,7 +216,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 )
                 if value:
                     msg_ = await self.ctx.send(
-                        f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**"
+                        f"{self.black} VS {self.white} \N{HANDSHAKE} **Game over! Ended in draw by agreement!**",
                     )
                     await msg_.add_reaction("\N{HANDSHAKE}")
                     self.game_stop = True  # this is imp. as the game wasn't stopping
@@ -249,12 +249,12 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                                 "game_chess_winner": kwargs["winner"],
                                 "game_chess_player_1": _id if _id == self.white.id else self.black.id,
                                 "game_chess_player_2": _id if _id == self.black.id else self.white.id,
-                            }
+                            },
                         },
                     },
                     upsert=True,
                 )
                 for _id in (self.white.id, self.black.id)
-            ]
+            ],
         )
         return

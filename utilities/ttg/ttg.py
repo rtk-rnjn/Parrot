@@ -41,7 +41,6 @@ def string_to_bool(string):
     """Converts a string to boolean if string is either 'True' or 'False'
     otherwise returns it unchanged.
     """
-
     try:
         string = bool(strtobool(string))
     except ValueError:
@@ -71,7 +70,7 @@ def group_operations(phrase):
     """Recursively groups logical operations into separate lists based on
     the order of operations such that each list is one operation.
     Order of operations is:
-        not, and, or, implication
+        not, and, or, implication.
     """
     if isinstance(phrase, list):
         for operator in ["not", "~", "-"]:
@@ -103,13 +102,12 @@ def group_operations(phrase):
 
 
 class Truths:
-    """
-    Class Truhts with modules for table formatting, valuation and CLI
-    """
+    """Class Truhts with modules for table formatting, valuation and CLI."""
 
-    def __init__(self, bases=None, phrases=None, ints=True, ascending=False):
+    def __init__(self, bases=None, phrases=None, ints=True, ascending=False) -> None:
         if not bases:
-            raise Exception("Base items are required")
+            msg = "Base items are required"
+            raise Exception(msg)
         self.bases = bases
         self.phrases = phrases or []
         self.ints = ints
@@ -129,9 +127,7 @@ class Truths:
         self.parens = pyparsing.nestedExpr("(", ")", content=self.to_match)
 
     def calculate(self, *args):
-        """
-        Evaluates the logical value for each expression
-        """
+        """Evaluates the logical value for each expression."""
         bools = dict(zip(self.bases, args))
 
         eval_phrases = []
@@ -156,18 +152,14 @@ class Truths:
         return row
 
     def as_prettytable(self):
-        """
-        Returns table using PrettyTable package
-        """
+        """Returns table using PrettyTable package."""
         table = PrettyTable(self.bases + self.phrases)
         for conditions_set in self.base_conditions:
             table.add_row(self.calculate(*conditions_set))
         return table
 
     def as_pandas(self):
-        """
-        Table as Pandas DataFrame
-        """
+        """Table as Pandas DataFrame."""
         df_columns = self.bases + self.phrases
         df = pd.DataFrame(columns=df_columns)
         for conditions_set in self.base_conditions:
@@ -176,9 +168,7 @@ class Truths:
         return df
 
     def as_tabulate(self, index=True, table_format="psql", align="center"):
-        """
-        Returns table using tabulate package
-        """
+        """Returns table using tabulate package."""
         return tabulate(
             Truths.as_pandas(self),
             headers="keys",
@@ -188,15 +178,15 @@ class Truths:
         )
 
     def valuation(self, col_number=-1):
-        """
-        Evaluates an expression in a table column as a tautology, a
-        contradiction or a contingency
+        """Evaluates an expression in a table column as a tautology, a
+        contradiction or a contingency.
         """
         df = Truths.as_pandas(self)
         if col_number == -1:
             pass
         elif col_number not in range(1, len(df.columns) + 1):
-            raise Exception("Indexer is out-of-bounds")
+            msg = "Indexer is out-of-bounds"
+            raise Exception(msg)
         else:
             col_number = col_number - 1
 
@@ -207,6 +197,6 @@ class Truths:
         else:
             return "Contingency"
 
-    def __str__(self):
+    def __str__(self) -> str:
         table = Truths.as_tabulate(self, index=False)
         return str(table)

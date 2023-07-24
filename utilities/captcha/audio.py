@@ -1,9 +1,7 @@
-# coding: utf-8
-"""
-    captcha.audio
-    ~~~~~~~~~~~~~
-    Generate Audio CAPTCHAs, with built-in digits CAPTCHA.
-    This module is totally inspired by https://github.com/dchest/captcha
+"""captcha.audio
+~~~~~~~~~~~~~
+Generate Audio CAPTCHAs, with built-in digits CAPTCHA.
+This module is totally inspired by https://github.com/dchest/captcha.
 """
 
 import copy
@@ -24,7 +22,7 @@ __all__ = ["AudioCaptcha"]
 
 WAVE_SAMPLE_RATE = 8000  # HZ
 WAVE_HEADER = bytearray(
-    b"RIFF\x00\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00" b"@\x1f\x00\x00@\x1f\x00\x00\x01\x00\x08\x00data"
+    b"RIFF\x00\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00" b"@\x1f\x00\x00@\x1f\x00\x00\x01\x00\x08\x00data",
 )
 WAVE_HEADER_LENGTH = len(WAVE_HEADER) - 4
 DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
@@ -79,7 +77,7 @@ def patch_wave_header(body):
 
 
 def create_noise(length, level=4):
-    """Create white noise for background"""
+    """Create white noise for background."""
     noise = bytearray(length)
     adjust = 128 - int(level / 2)
     i = 0
@@ -138,7 +136,7 @@ END_BEEP = change_speed(BEEP, 1.4)
 SILENCE = create_silence(int(WAVE_SAMPLE_RATE / 5))
 
 
-class AudioCaptcha(object):
+class AudioCaptcha:
     """Create an audio CAPTCHA.
     Create an instance of AudioCaptcha is pretty simple::
         captcha = AudioCaptcha()
@@ -154,10 +152,10 @@ class AudioCaptcha(object):
     the directory name. A charater directory can has many wave files, this
     AudioCaptcha will randomly choose one of them.
     You should always use your own voice library::
-        captcha = AudioCaptcha(voicedir='/path/to/voices')
+        captcha = AudioCaptcha(voicedir='/path/to/voices').
     """
 
-    def __init__(self, voicedir=None):
+    def __init__(self, voicedir=None) -> None:
         if voicedir is None:
             voicedir = DATA_DIR
 
@@ -238,7 +236,7 @@ class AudioCaptcha(object):
             v = random.randint(WAVE_SAMPLE_RATE, WAVE_SAMPLE_RATE * 3)
             inters.append(v)
 
-        durations = map(lambda a: len(a), voices)
+        durations = (len(a) for a in voices)
         length = max(durations) * len(chars) + reduce(operator.add, inters)
         bg = self.create_background_noise(length, chars)
 

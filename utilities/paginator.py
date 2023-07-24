@@ -1,7 +1,8 @@
 # AUTHOR: https://github.com/davidetacchini/
 
 from itertools import islice
-from typing import Awaitable, Callable, List, NamedTuple, Optional, TypeVar, Union
+from typing import NamedTuple, Optional, TypeVar, Union
+from collections.abc import Awaitable, Callable
 
 import discord
 from core import Context
@@ -21,7 +22,7 @@ class Page(NamedTuple):
 
 
 class Pages:
-    def __init__(self, pages: list):
+    def __init__(self, pages: list) -> None:
         self.pages = pages
         self.cur_page = 1
 
@@ -71,7 +72,7 @@ class ParrotPaginator:
         show_page_count=True,
         embed_url: Optional[str] = None,
         check_other_ids: Optional[list] = None,
-    ):
+    ) -> None:
         self.ctx = ctx
         self.per_page = per_page
         self.timeout = timeout
@@ -79,7 +80,7 @@ class ParrotPaginator:
         self.show_page_count = show_page_count
         self.check_other_ids = check_other_ids
 
-        self.lines: List[str] = []
+        self.lines: list[str] = []
         self.pages = None
         self.embed_url = embed_url
 
@@ -136,7 +137,7 @@ class PaginatorView(discord.ui.View):
         show_page_count,
         *,
         check_other_ids: Optional[list] = None,
-    ):
+    ) -> None:
         super().__init__(timeout=timeout)
 
         self.ctx = ctx
@@ -251,7 +252,7 @@ class PaginationView(discord.ui.View):
 
     def __init__(
         self,
-        embed_list: Optional[List[Union[str, discord.File, discord.Embed]]] = None,
+        embed_list: Optional[list[Union[str, discord.File, discord.Embed]]] = None,
         *,
         first_function: Optional[Callback] = None,
         next_function: Optional[Callback] = None,
@@ -313,11 +314,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self,  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self,  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -354,11 +355,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self,  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self,  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -399,11 +400,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self,  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self,  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -434,11 +435,11 @@ class PaginationView(discord.ui.View):
 
         if isinstance(self.embed_list[self.current], discord.Embed):
             await interaction.response.edit_message(
-                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self,  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
-                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self,  # type: ignore
             )
         else:
             await interaction.response.edit_message(
@@ -478,11 +479,11 @@ class PaginationView(discord.ui.View):
     async def _update_message(self) -> None:
         if isinstance(self.embed_list[self.current], discord.Embed):
             await self.message.edit(
-                embed=self.embed_list[self.current], content=None, attachments=[], view=self  # type: ignore
+                embed=self.embed_list[self.current], content=None, attachments=[], view=self,  # type: ignore
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await self.message.edit(
-                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self  # type: ignore
+                attachments=[self.embed_list[self.current]], content=None, embed=None, view=self,  # type: ignore
             )
         else:
             await self.message.edit(

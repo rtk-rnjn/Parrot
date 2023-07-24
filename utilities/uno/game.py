@@ -5,7 +5,8 @@ import math
 import random
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Awaitable, Dict, Iterable, List, Literal, NamedTuple, Optional, Set, Tuple, TypeVar, Union, overload
+from typing import Literal, NamedTuple, Optional, TypeVar, Union, overload
+from collections.abc import Awaitable, Iterable
 
 import discord
 from core import Context
@@ -115,7 +116,7 @@ class PlayerQueueingView(discord.ui.View):
 
     def __init__(self, game: UNO) -> None:
         self.game: UNO = game
-        self.players: Set[discord.Member] = game.players
+        self.players: set[discord.Member] = game.players
         game.players.add(self.game.host)  # Just in case
         super().__init__(timeout=180)
 
@@ -165,10 +166,10 @@ class PlayerQueueingView(discord.ui.View):
 
 
 class WildCardSubview(discord.ui.View):
-    def __init__(self, game: UNO, hand: Hand, cards: List[Card]) -> None:
+    def __init__(self, game: UNO, hand: Hand, cards: list[Card]) -> None:
         self.game: UNO = game
         self.hand: Hand = hand
-        self.cards: List[Card] = cards
+        self.cards: list[Card] = cards
         super().__init__(timeout=360)
 
     def _update(self, color: Color) -> None:
@@ -183,7 +184,7 @@ class WildCardSubview(discord.ui.View):
             self.hand.remove(card)
 
         await self.game._update(
-            f'{interaction.user.name} plays {" ".join(card.emoji for card in self.cards)}. ' f"Color is now {button.emoji}!"
+            f'{interaction.user.name} plays {" ".join(card.emoji for card in self.cards)}. ' f"Color is now {button.emoji}!",
         )
         self.stop()
 
@@ -214,7 +215,7 @@ class WildPlus4Subview(WildCardSubview):
 
         await self.game._update(
             f'{interaction.user.name} plays {" ".join(card.emoji for card in self.cards)}. '
-            f"Draw {self.game.draw_queue}! Color is now {button.emoji}."
+            f"Draw {self.game.draw_queue}! Color is now {button.emoji}.",
         )
 
 
@@ -292,11 +293,11 @@ class StackDirectPlay(discord.ui.Button["StackView"]):
 class StackView(discord.ui.View):
     # See comment in DeckView
 
-    def __init__(self, game: UNO, hand: Hand, cards: List[Card]) -> None:
+    def __init__(self, game: UNO, hand: Hand, cards: list[Card]) -> None:
         super().__init__(timeout=None)
         self.game: UNO = game
         self.hand: Hand = hand
-        self.cards: List[Card] = cards
+        self.cards: list[Card] = cards
         self._add_buttons()
 
     def _get_stackable_cards(self) -> Iterable[Card]:
@@ -348,7 +349,7 @@ class VoteKickConfirmationView(discord.ui.View):
 
         await interaction.response.send_message(
             f"{interaction.user.name} has voted to kick {self.target.name} out of this game. "
-            f"({len(self.game._vote_kicks[self.target])}/{self.game.vote_kick_threshold})"
+            f"({len(self.game._vote_kicks[self.target])}/{self.game.vote_kick_threshold})",
         )
         await self.game.handle_votekick(self.target)
         self.stop()
@@ -460,7 +461,7 @@ class GameView(discord.ui.View):
             hand = discord.utils.get(self.game.hands, player=interaction.user)
             if len(hand) != 1:
                 return await interaction.response.send_message(
-                    'You must only have one card in order to say "UNO".', ephemeral=True
+                    'You must only have one card in order to say "UNO".', ephemeral=True,
                 )
 
             self.game._uno_safe.add(interaction.user)
@@ -492,7 +493,7 @@ class GameView(discord.ui.View):
 
 class Deck:
     def __init__(self, game: UNO) -> None:
-        self._internal_deck: List[Card] = []
+        self._internal_deck: list[Card] = []
         self.game: UNO = game
         self.reset()
 
@@ -519,7 +520,7 @@ class Hand:
     def __init__(self, game: UNO, player: discord.Member) -> None:
         self.game: UNO = game
         self.player: discord.Member = player
-        self._cards: List[Card] = []
+        self._cards: list[Card] = []
 
     def __repr__(self) -> str:
         return f"<Hand player={self.player!r} cards={len(self)}>"
@@ -542,10 +543,10 @@ class Hand:
         ...
 
     @overload
-    def draw(self, amount: int = 1, /) -> List[Card]:
+    def draw(self, amount: int = 1, /) -> list[Card]:
         ...
 
-    def draw(self, amount: int = 1, /) -> Union[List[Card], Card]:
+    def draw(self, amount: int = 1, /) -> Union[list[Card], Card]:
         if amount == 1:
             return self._draw_one()
 
@@ -555,11 +556,11 @@ class Hand:
         self._cards.remove(card)
 
     @staticmethod
-    def _card_sort_key(card: Card, /) -> Tuple[int, int, int]:
+    def _card_sort_key(card: Card, /) -> tuple[int, int, int]:
         return card.color.value, card.type.value, card.value or 0
 
     @property
-    def cards(self) -> List[Card]:
+    def cards(self) -> list[Card]:
         return sorted(self._cards, key=self._card_sort_key)
 
 
@@ -576,10 +577,10 @@ class UNO:
         self.host: discord.Member = host or ctx.author
 
         self.rule_set: RuleSet = rule_set  # This could be None on init
-        self.players: Set[discord.Member] = set(players)
+        self.players: set[discord.Member] = set(players)
 
         self.deck: Deck = Deck(self)
-        self.hands: List[Hand] = []  # This will also determine order
+        self.hands: list[Hand] = []  # This will also determine order
 
         self.draw_queue: int = 0
         self.direction: int = 1
@@ -590,10 +591,10 @@ class UNO:
         self._message: discord.Message = None
         self._wild_card_color_store: Color = None
 
-        self._discard_pile: List[Card] = []
-        self._uno_safe: Set[discord.Member] = set()
-        self._always_skip: Set[discord.Member] = set()  # Will show as strikethrough
-        self._vote_kicks: Dict[discord.Member, Set[discord.Member]] = defaultdict(set)
+        self._discard_pile: list[Card] = []
+        self._uno_safe: set[discord.Member] = set()
+        self._always_skip: set[discord.Member] = set()  # Will show as strikethrough
+        self._vote_kicks: dict[discord.Member, set[discord.Member]] = defaultdict(set)
 
     def __repr__(self) -> str:
         return f"<UNO players={len(self.players)} turn={self.turn} rule_set={self.rule_set!r}>"
@@ -754,7 +755,7 @@ class UNO:
 
         embed = discord.Embed(color=discord.Color.from_rgb(*color), timestamp=discord.utils.utcnow())
 
-        embed.set_thumbnail(url=getattr(self.current, "image_url"))
+        embed.set_thumbnail(url=self.current.image_url)
         embed.description = "\n".join(map(self._embed_format, self.hands))
 
         embed.set_author(
@@ -771,7 +772,7 @@ class UNO:
 
         return embed
 
-    async def _handle_stacks(self, interaction: discord.Interaction, hand: Hand, originator: Card) -> List[Card]:
+    async def _handle_stacks(self, interaction: discord.Interaction, hand: Hand, originator: Card) -> list[Card]:
         if total := sum(originator.stackable_with(card) for card in hand._cards if card is not originator):
             term = "a card" if total == 1 else "cards"
             view = StackView(self, hand, [originator])
@@ -804,13 +805,13 @@ class UNO:
         if self.draw_queue > 0:
             if not self.rule_set.progressive:
                 return await interaction.response.send_message(
-                    "You cannot play anything, you must draw instead.", ephemeral=True
+                    "You cannot play anything, you must draw instead.", ephemeral=True,
                 )
 
             can_play = card.type is self.current.type is CardType.plus_2 or card.type is CardType.plus_4
             if not can_play:
                 return await interaction.response.send_message(
-                    "You must stack onto the draw, or draw yourself.", ephemeral=True
+                    "You must stack onto the draw, or draw yourself.", ephemeral=True,
                 )
 
         # All unsafe players are now safe as they haven't been caught
@@ -835,11 +836,11 @@ class UNO:
 
         elif card.color is Color.wild:
             cls = WildCardSubview if card.type is CardType.wild else WildPlus4Subview
-            kwargs = dict(
-                content="What will the new color be?",
-                view=cls(self, hand, cards),
-                ephemeral=True,
-            )
+            kwargs = {
+                "content": "What will the new color be?",
+                "view": cls(self, hand, cards),
+                "ephemeral": True,
+            }
 
             try:
                 await interaction.response.send_message(**kwargs)
@@ -847,7 +848,7 @@ class UNO:
                 await interaction.followup.send(**kwargs)
 
     # list to take care of stacks
-    async def handle_play(self, cards: List[Card]) -> None:
+    async def handle_play(self, cards: list[Card]) -> None:
         for card in cards:
             self.current_hand.remove(card)
 
@@ -868,7 +869,7 @@ class UNO:
         self.turn = self.hands.index(hand)
         await self._update(content)
 
-    async def handle_reverse_card(self, cards: List[Card]) -> None:
+    async def handle_reverse_card(self, cards: list[Card]) -> None:
         for card in cards:
             self.current_hand.remove(card)
 
@@ -886,7 +887,7 @@ class UNO:
         self.turn += self.direction
         await self._update(content + extra)
 
-    async def handle_skip_card(self, cards: List[Card]) -> None:
+    async def handle_skip_card(self, cards: list[Card]) -> None:
         extra = 0
 
         for card in cards:
@@ -902,7 +903,7 @@ class UNO:
         self.turn += self.direction + extra
         await self._update(content)
 
-    async def handle_draw_2(self, cards: List[Card]) -> None:
+    async def handle_draw_2(self, cards: list[Card]) -> None:
         for card in cards:
             self.current_hand.remove(card)
             self.draw_queue += 2

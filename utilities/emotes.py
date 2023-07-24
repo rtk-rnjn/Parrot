@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Dict
 
 import discord
 
 # fmt: off
 
-EMOJIS: Dict[str, discord.PartialEmoji] = {
+EMOJIS: dict[str, discord.PartialEmoji] = {
     "remove"        : discord.PartialEmoji(name="remove",       id=855002325340913665),
     "edit"          : discord.PartialEmoji(name="edit",         id=855002325440266251),
     "add"           : discord.PartialEmoji(name="add",          id=855002325487452170),

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -18,7 +18,7 @@ class BanditConverter(commands.FlagConverter, case_insensitive=True, delimiter="
     confidence: Optional[Literal["low", "medium", "high"]] = None
 
 
-def validate_bandit_code(code: str) -> List[str]:
+def validate_bandit_code(code: str) -> list[str]:
     return POSSIBLE_BANDIT_CODE.findall(code)
 
 

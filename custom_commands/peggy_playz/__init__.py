@@ -13,7 +13,7 @@ PINGCORD = 282286160494067712
 
 
 class PeggyPlayZ(Cog):
-    """Command Events for the server Peggy PlayZ"""
+    """Command Events for the server Peggy PlayZ."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

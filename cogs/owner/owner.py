@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import hashlib
-import io
 import json
 import os
 import random
@@ -30,14 +29,14 @@ from .utils import SphinxObjectFileReader
 from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
 
 
-class Owner(Cog, command_attrs=dict(hidden=True)):
-    """You can not use these commands"""
+class Owner(Cog, command_attrs={"hidden": True}):
+    """You can not use these commands."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.count = 0
 
-        setattr(self.bot, "get_user_data", self.get_user_data)
+        self.bot.get_user_data = self.get_user_data
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -49,7 +48,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @Context.with_type
     async def gitload(self, ctx: Context, *, link: str) -> None:
-        """To load the cog extension from github"""
+        """To load the cog extension from github."""
         ctx.author.display_name
         r = await self.bot.http_session.get(link)
         data = await r.read()
@@ -79,7 +78,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @Context.with_type
     async def makefile(self, ctx: Context, name: str, *, text: str) -> None:
-        """To make a file in ./temp/ directly"""
+        """To make a file in ./temp/ directly."""
         try:
             async with async_open(f"temp/{name}", "w+") as f:
                 await f.write(text)
@@ -97,7 +96,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         *,
         target: typing.Union[discord.User, discord.TextChannel, discord.Thread, None] = None,
     ):
-        """Fun command"""
+        """Fun command."""
         await ctx.message.delete(delay=0)
         target = target or ctx.channel  # type: ignore
         await target.send(  # type: ignore
@@ -112,7 +111,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @Context.with_type
     async def leave_guild(self, ctx: Context, *, guild: discord.Guild):
-        """To leave the guild"""
+        """To leave the guild."""
         await ctx.send("Leaving Guild in a second!")
         await guild.leave()
 
@@ -125,7 +124,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         *,
         args: BanFlag,
     ):
-        """To ban the user"""
+        """To ban the user."""
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
         await self.bot.extra_collections.insert_one(
@@ -150,7 +149,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         *,
         user: discord.User,
     ):
-        """To ban the user"""
+        """To ban the user."""
         await self.bot.extra_collections.update_one(
             {
                 "_id": "banned_users",
@@ -177,7 +176,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     )
     @Context.with_type
     async def imgsearch(self, ctx: Context, *, text: str):
-        """Image Search. Anything"""
+        """Image Search. Anything."""
         if ctx.invoked_subcommand is None:
             text = urllib.parse.quote(text)
             params = {
@@ -204,7 +203,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command(name="delete-reference", aliases=["dr"])
     async def dr(self, ctx: Context):
-        """To delete the message reference"""
+        """To delete the message reference."""
         await ctx.message.delete(delay=0)
         await ctx.message.reference.resolved.delete(delay=0)  # type: ignore
 
@@ -215,12 +214,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         guild: typing.Union[discord.Guild, int, None] = None,
         channel_member: Optional[str] = None,
     ):
-        """This is not really a spy command"""
+        """This is not really a spy command."""
         guild = guild or ctx.guild
         channel_member = channel_member or "members"
         URL = f"https://discord.com/api/guilds/{guild.id if isinstance(guild, discord.Guild) else guild}/widget.json"
         data = await self.bot.http_session.get(URL)
-        json: typing.Dict[str, typing.Any] = await data.json()
+        json: dict[str, typing.Any] = await data.json()
         if "message" in json:
             return await ctx.reply(f"{ctx.author.mention} can not spy that server")
         name = json["name"]
@@ -276,13 +275,13 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
             if vc:
                 em.add_field(name="VC Channel ID", value=str(vc), inline=True).add_field(
-                    name="Suppress?", value=suppress, inline=True
+                    name="Suppress?", value=suppress, inline=True,
                 ).add_field(name="Self Mute?", value=self_mute, inline=True).add_field(
-                    name="Self Deaf?", value=self_deaf, inline=True
+                    name="Self Deaf?", value=self_deaf, inline=True,
                 ).add_field(
-                    name="Deaf?", value=deaf, inline=True
+                    name="Deaf?", value=deaf, inline=True,
                 ).add_field(
-                    name="Mute?", value=mute, inline=True
+                    name="Mute?", value=mute, inline=True,
                 )
             em_list_member.append(em)
 
@@ -294,7 +293,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
     async def auditlog(self, ctx: Context, *, args: AuditFlag):
-        """To get the audit log of the server, in nice format"""
+        """To get the audit log of the server, in nice format."""
         ls = []
         guild = args.guild or ctx.guild
 
@@ -346,7 +345,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     async def create_code(self, ctx: Context, *, args: SubscriptionFlag):
-        """To create a code for the bot premium"""
+        """To create a code for the bot premium."""
         PAYLOAD = {}
         BASIC = list(string.ascii_letters + string.digits)
         random.shuffle(BASIC)
@@ -370,13 +369,12 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 `Expiry`: {discord.utils.format_dt(args.expiry.dt if args.expiry else ShortTime("2d").dt, 'R')}
 `Uses  `: `{args.uses}`
 `Limit `: `{args.limit}`
-"""
+""",
         )
 
     @commands.command(hidden=True)
     async def gateway(self, ctx: Context):
         """Gateway related stats."""
-
         yesterday = discord.utils.utcnow() - datetime.timedelta(days=1)
 
         # fmt: off
@@ -457,7 +455,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         *,
         reason: Optional[str] = None,
     ):
-        """To toggle the bot maintenance"""
+        """To toggle the bot maintenance."""
         ctx.bot.UNDER_MAINTENANCE = not ctx.bot.UNDER_MAINTENANCE
         ctx.bot.UNDER_MAINTENANCE_OVER = till.dt if till is not None else till
         ctx.bot.UNDER_MAINTENANCE_REASON = reason
@@ -465,7 +463,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     async def member_count(self, ctx: Context, guild: typing.Optional[discord.Object] = None):
-        """Returns member count of the guild
+        """Returns member count of the guild.
 
         This is equivalent to:
         ```py
@@ -479,7 +477,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
                 ctx.bot.get_guild(GUILD_ID),
                 "member_count",
                 "Member count not available",
-            )
+            ),
         )
 
     @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
@@ -491,7 +489,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         *,
         media: str,
     ):
-        """Update bot presence accordingly to invoke command
+        """Update bot presence accordingly to invoke command.
 
         This is equivalent to:
         ```py
@@ -509,7 +507,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
 
     @commands.command()
     async def toggle_testing(self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]) -> None:  # type: ignore
-        """Update the cog setting to toggle testing mode
+        """Update the cog setting to toggle testing mode.
 
         ```py
         if hasattr(cog, "ON_TESTING"):
@@ -529,7 +527,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
             await ctx.send(f"{ctx.author.mention} cog ({cog}) does not exist")
 
     async def get_user_data(self, *, user: discord.Object) -> typing.Any:
-        """Illegal way to get presence of a user"""
+        """Illegal way to get presence of a user."""
         from utilities.object import objectify
 
         url = f"https://japi.rest/discord/v1/user/{user.id}"
@@ -545,7 +543,7 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         db: typing.Optional[str] = None,
         collection: typing.Optional[str] = None,
     ):
-        """MongoDB query"""
+        """MongoDB query."""
         if db and collection:
             view = MongoCollectionView(db=db, collection=collection, ctx=ctx)
             embed = await MongoViewSelect.build_embed(ctx, db, collection)
@@ -556,8 +554,8 @@ class Owner(Cog, command_attrs=dict(hidden=True)):
         await view.init()
 
 
-class DiscordPy(Cog, command_attrs=dict(hidden=True)):
-    def __init__(self, bot: Parrot):
+class DiscordPy(Cog, command_attrs={"hidden": True}):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         with open("extra/docs_links.json", encoding="utf-8", errors="ignore") as f:
             self.page_types = json.load(f)
@@ -579,7 +577,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         _ = stream.readline().rstrip()[11:]
 
         if inv_version != "# Sphinx inventory version 2":
-            raise RuntimeError("Invalid objects.inv file version.")
+            msg = "Invalid objects.inv file version."
+            raise RuntimeError(msg)
 
         # next line is "# Project: <name>"
         # then after that is "# Version: <version>"
@@ -588,7 +587,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         # next line says if it's a zlib header
         line = stream.readline()
         if "zlib" not in line:
-            raise RuntimeError("Invalid objects.inv file, not z-lib compatible.")
+            msg = "Invalid objects.inv file, not z-lib compatible."
+            raise RuntimeError(msg)
 
         # This code mostly comes from the Sphinx repository.
         entry_regex = re.compile(r"(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
@@ -630,7 +630,8 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
             cache[key] = {}
             resp = await self.bot.http_session.get(f"{page}/objects.inv")
             if resp.status != 200:
-                raise RuntimeError("Cannot build rtfm lookup table, try again later.")
+                msg = "Cannot build rtfm lookup table, try again later."
+                raise RuntimeError(msg)
 
             stream = SphinxObjectFileReader(await resp.read())
             cache[key] = self.parse_object_inv(stream, page)
@@ -690,42 +691,42 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
     @rtfd.command(name="aiohttp")
     async def rtfd_aiohttp(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a aiohttp entity"""
+        """Gives you a documentation link for a aiohttp entity."""
         await self.do_rtfm(ctx, "aiohttp", obj)
 
     @rtfd.command(name="requests", aliases=["request", "req"])
     async def rtfd_request(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a request entity"""
+        """Gives you a documentation link for a request entity."""
         await self.do_rtfm(ctx, "requests", obj)
 
     @rtfd.command(name="flask")
     async def rtfd_flask(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a flask entity"""
+        """Gives you a documentation link for a flask entity."""
         await self.do_rtfm(ctx, "flask", obj)
 
     @rtfd.command(name="numpy", aliases=["np"])
     async def rtfd_numpy(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a numpy entity"""
+        """Gives you a documentation link for a numpy entity."""
         await self.do_rtfm(ctx, "numpy", obj)
 
     @rtfd.command(name="pil")
     async def rtfd_pil(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a PIL entity"""
+        """Gives you a documentation link for a PIL entity."""
         await self.do_rtfm(ctx, "pil", obj)
 
     @rtfd.command(name="matplotlib", aliases=["matlab", "plt", "mat"])
     async def rtfd_matplotlib(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a matplotlib entity"""
+        """Gives you a documentation link for a matplotlib entity."""
         await self.do_rtfm(ctx, "matplotlib", obj)
 
     @rtfd.command(name="pandas", aliases=["pd"])
     async def rtfd_pandas(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a pandas entity"""
+        """Gives you a documentation link for a pandas entity."""
         await self.do_rtfm(ctx, "pandas", obj)
 
     @rtfd.command(name="pymongo", aliases=["mongo", "pym"])
     async def rtfd_pymongo(self, ctx: Context, *, obj: Optional[str] = None):
-        """Gives you a documentation link for a pymongo entity"""
+        """Gives you a documentation link for a pymongo entity."""
         await self.do_rtfm(ctx, "pymongo", obj)
 
     @rtfd.command(name="showall", aliases=["show"])
@@ -733,7 +734,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         self,
         ctx: Context,
     ):
-        """Show all the docs links"""
+        """Show all the docs links."""
         async with async_open(r"extra/docs_links.json") as f:
             data = json.loads(await f.read())
 
@@ -741,7 +742,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
 
     @rtfd.command(name="add")
     async def rtfd_add(self, ctx: Context, name: str, *, link: str):
-        """To add the links in docs"""
+        """To add the links in docs."""
         async with async_open(r"extra/docs_links.json") as f:
             data = json.loads(await f.read())
 
@@ -758,7 +759,7 @@ class DiscordPy(Cog, command_attrs=dict(hidden=True)):
         ctx: Context,
         name: str,
     ):
-        """To add the links in docs"""
+        """To add the links in docs."""
         async with async_open(r"extra/docs_links.json") as f:
             data: dict = json.loads(await f.read())
 

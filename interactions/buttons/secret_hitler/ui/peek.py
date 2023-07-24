@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, Dict, List
+from typing import TYPE_CHECKING, ClassVar
 
 import discord
 
@@ -17,7 +17,7 @@ __all__ = (
     "PeekUI",
 )
 
-POLICY_STYLE: Dict[Party, discord.ButtonStyle] = {
+POLICY_STYLE: dict[Party, discord.ButtonStyle] = {
     Party.Liberal: discord.ButtonStyle.primary,
     Party.Fascist: discord.ButtonStyle.danger,
 }
@@ -26,14 +26,14 @@ POLICY_STYLE: Dict[Party, discord.ButtonStyle] = {
 class PeekButton(SelectButton[Party, "PeekUI"]):
     disabled: ClassVar[bool] = True
 
-    def __init__(self, item: Party):
+    def __init__(self, item: Party) -> None:
         super().__init__(item, style=POLICY_STYLE[item], label=item.name, disabled=self.disabled)
 
 
 class PeekUI(SelectUI):
     button_type: ClassVar[type[SelectButton]] = PeekButton
 
-    def __init__(self, game: GameUI, target: Player, options: List[Party]):
+    def __init__(self, game: GameUI, target: Player, options: list[Party]) -> None:
         super().__init__(game, target, options)
 
         for option in options:

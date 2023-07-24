@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
 import random
 from io import BytesIO
@@ -34,7 +34,7 @@ ORANGE = (200, 179, 87)
 GREEN = (105, 169, 99)
 LGRAY = (198, 201, 205)
 
-with open(r"extra/5_words.txt", "r", encoding="utf-8", errors="ignore") as f:
+with open(r"extra/5_words.txt", encoding="utf-8", errors="ignore") as f:
     VALID_WORDS = tuple(f.read().splitlines())
 
 
@@ -46,7 +46,7 @@ class Wordle:
         self._text_size = text_size
         self._font = ImageFont.truetype(r"extra/HelveticaNeuBold.ttf", self._text_size)
 
-        self.guesses: List[List[Dict[str, str]]] = []
+        self.guesses: list[list[dict[str, str]]] = []
         self.word: str = random.choice(self._valid_words)
 
     def parse_guess(self, guess: str) -> bool:
@@ -199,7 +199,7 @@ class WordInput(discord.ui.Modal, title="Word Input"):
 
 
 class WordInputButton(discord.ui.Button["WordleView"]):
-    def __init__(self, *, cancel_button: bool = False):
+    def __init__(self, *, cancel_button: bool = False) -> None:
         super().__init__(
             label="Cancel" if cancel_button else "Make a guess!",
             style=discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple,
@@ -221,7 +221,7 @@ class WordInputButton(discord.ui.Button["WordleView"]):
 
 
 class WordleView(BaseView):
-    def __init__(self, game: BetaWordle, *, timeout: float):
+    def __init__(self, game: BetaWordle, *, timeout: float) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game
@@ -242,8 +242,8 @@ class BetaWordle(Wordle):
         embed_color: DiscordColor = DEFAULT_COLOR,
         timeout: Optional[float] = None,
     ) -> discord.Message:
-        """
-        starts the wordle(buttons) game
+        """Starts the wordle(buttons) game.
+
         Parameters
         ----------
         ctx : Context
@@ -252,10 +252,11 @@ class BetaWordle(Wordle):
             the color of the game embed, by default DEFAULT_COLOR
         timeout : Optional[float], optional
             the timeout for the view, by default None
+
         Returns
         -------
         discord.Message
-            returns the game message
+            returns the game message.
         """
         self.embed_color = embed_color
         self.player = ctx.author

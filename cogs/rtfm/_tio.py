@@ -27,7 +27,7 @@ class Tio:
         compilerFlags=None,
         commandLineOptions=None,
         args=None,
-    ):
+    ) -> None:
         compilerFlags = compilerFlags or []
         commandLineOptions = commandLineOptions or []
         args = args or []

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from __future__ import annotations
 
@@ -16,23 +15,12 @@ from contextlib import suppress
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncGenerator,
-    Awaitable,
-    Callable,
-    Collection,
-    Dict,
-    Iterable,
-    List,
     Literal,
-    Mapping,
     Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
     Union,
     overload,
 )
+from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
 
 import aiohttp
 import aiosqlite
@@ -90,7 +78,7 @@ from .help import PaginatedHelpCommand
 if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
     from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-    from typing_extensions import TypeAlias
+    from typing import TypeAlias
 
     from .Cog import Cog
 
@@ -208,13 +196,13 @@ class Parrot(commands.AutoShardedBot):
     cached_messages: Sequence[discord.Message]
     guilds: Sequence[discord.Guild]
 
-    tree_cls: Type[app_commands.CommandTree]
+    tree_cls: type[app_commands.CommandTree]
     tree: app_commands.CommandTree
 
     owner_id: Optional[int]
     owner_ids: Collection[int]
 
-    voice_clients: List[discord.VoiceProtocol]
+    voice_clients: list[discord.VoiceProtocol]
 
     DBL_SERVER_RUNNING: bool = False
     WAVELINK_NODE_READY: bool = False
@@ -240,7 +228,7 @@ class Parrot(commands.AutoShardedBot):
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
         self._seen_messages: int = 0
-        self._change_log: List[discord.Message] = []
+        self._change_log: list[discord.Message] = []
 
         self._error_log_token: str = WEBHOOK_ERROR_LOGS
         self._startup_log_token: str = WEBHOOK_STARTUP_LOGS
@@ -255,9 +243,9 @@ class Parrot(commands.AutoShardedBot):
         self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.user)
 
         self._was_ready: bool = False
-        self.lock: "asyncio.Lock" = asyncio.Lock()
+        self.lock: asyncio.Lock = asyncio.Lock()
         self.timer_task: Optional[asyncio.Task] = None
-        self._current_timer: Union[Dict, None] = {}
+        self._current_timer: Union[dict, None] = {}
         self._have_data: asyncio.Event = asyncio.Event()
         self.reminder_event: asyncio.Event = asyncio.Event()
         self.ON_HEROKU: bool = HEROKU
@@ -265,22 +253,22 @@ class Parrot(commands.AutoShardedBot):
         # Top.gg
         self.HAS_TOP_GG = HAS_TOP_GG
         if self.HAS_TOP_GG:
-            self.topgg: "topgg.DBLClient"  # type: ignore
-            self.topgg_webhook: "topgg.WebhookManager"  # type: ignore
+            self.topgg: topgg.DBLClient  # type: ignore
+            self.topgg_webhook: topgg.WebhookManager  # type: ignore
 
-        self._auto_spam_count: "Counter[int]" = Counter()
-        self.resumes: Dict[int, List[datetime.datetime]] = defaultdict(list)
-        self.identifies: Dict[int, List[datetime.datetime]] = defaultdict(list)
-        self._prev_events: "deque[str]" = deque(maxlen=10)
+        self._auto_spam_count: Counter[int] = Counter()
+        self.resumes: dict[int, list[datetime.datetime]] = defaultdict(list)
+        self.identifies: dict[int, list[datetime.datetime]] = defaultdict(list)
+        self._prev_events: deque[str] = deque(maxlen=10)
 
         self.mystbin: Client = Client()
 
         # caching variables
-        self.guild_configurations_cache: Cache[int, Dict[str, Any]] = Cache(self)
-        self.message_cache: Dict[int, discord.Message] = {}
-        self.banned_users: Dict[int, Dict[str, Union[int, str, bool]]] = {}
-        self.afk_users: "Set[int]" = set()
-        self.channel_message_cache: "Dict[int, asyncio.Queue[discord.Message]]" = {}
+        self.guild_configurations_cache: Cache[int, dict[str, Any]] = Cache(self)
+        self.message_cache: dict[int, discord.Message] = {}
+        self.banned_users: dict[int, dict[str, Union[int, str, bool]]] = {}
+        self.afk_users: set[int] = set()
+        self.channel_message_cache: dict[int, asyncio.Queue[discord.Message]] = {}
 
         self.func: Callable[..., Any] = func
 
@@ -288,26 +276,26 @@ class Parrot(commands.AutoShardedBot):
 
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
-        self.ipc_server: "ipc.Server" = ipc.Server(
+        self.ipc_server: ipc.Server = ipc.Server(
             bot=self,
             host=LOCALHOST,
             port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
-        self.ipc_client: "ipc.Client" = ipc.Client(
+        self.ipc_client: ipc.Client = ipc.Client(
             host=LOCALHOST,
             port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
 
         # Extensions
-        self._successfully_loaded: List[str] = []
-        self._failed_to_load: Dict[str, str] = {}
+        self._successfully_loaded: list[str] = []
+        self._failed_to_load: dict[str, str] = {}
 
         # Wavelink
-        self.wavelink: "wavelink.NodePool" = wavelink.NodePool()
+        self.wavelink: wavelink.NodePool = wavelink.NodePool()
 
-        self.GLOBAL_HEADERS: Dict[str, str] = {
+        self.GLOBAL_HEADERS: dict[str, str] = {
             "Accept": "application/json",
             "User-Agent": f"Discord Bot '{self.user}' {getattr(self, '__version__', VERSION)} @ {self.github}",
         }
@@ -316,10 +304,10 @@ class Parrot(commands.AutoShardedBot):
         self.UNDER_MAINTENANCE_REASON: Optional[str] = None
         self.UNDER_MAINTENANCE_OVER: Optional[datetime.datetime] = None
 
-        self.__app_commands_global: Dict[int, app_commands.AppCommand] = {}
-        self.__app_commands_guild: Dict[int, Dict[int, app_commands.AppCommand]] = {}
+        self.__app_commands_global: dict[int, app_commands.AppCommand] = {}
+        self.__app_commands_guild: dict[int, dict[int, app_commands.AppCommand]] = {}
 
-        self.__global_write_data: Dict[str, List[Union[pymongo.UpdateOne, pymongo.UpdateMany]]] = {}
+        self.__global_write_data: dict[str, list[Union[pymongo.UpdateOne, pymongo.UpdateMany]]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
 
     async def init_db(self) -> None:
@@ -397,7 +385,7 @@ class Parrot(commands.AutoShardedBot):
         return SUPPORT_SERVER
 
     async def change_log(self) -> discord.Message:
-        """For the command `announcement` to let the users know the most recent change"""
+        """For the command `announcement` to let the users know the most recent change."""
         log.debug("Getting recent message from channel %s", CHANGE_LOG_ID)
         assert isinstance(CHANGE_LOG_ID, int)
 
@@ -431,7 +419,7 @@ class Parrot(commands.AutoShardedBot):
             else:
                 if ext in UNLOAD_EXTENSIONS:
                     await self.unload_extension(ext)
-                    log.warn("Unloaded extension %s", ext)
+                    log.warning("Unloaded extension %s", ext)
 
         if self.HAS_TOP_GG:
             self.topgg = topgg.DBLClient(  # type: ignore
@@ -455,7 +443,7 @@ class Parrot(commands.AutoShardedBot):
                     await self.ipc_server.start()
                     log.debug("IPC server started")
             except OSError as e:
-                log.warn("Failed to start IPC server", exc_info=e)
+                log.warning("Failed to start IPC server", exc_info=e)
 
             if not self.ON_DOCKER:
                 try:
@@ -471,10 +459,10 @@ class Parrot(commands.AutoShardedBot):
                     success = await self.ipc_client.request("start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook")
                     log.debug("Top.GG webhook server started: %s", success)
                 except aiohttp.ClientConnectionError as e:
-                    log.warn("Failed to start IPC server", exc_info=e)
+                    log.warning("Failed to start IPC server", exc_info=e)
                     traceback.print_exc()
                 except OSError as e:
-                    log.warn("Failed to start IPC server", exc_info=e)
+                    log.warning("Failed to start IPC server", exc_info=e)
                     self.ON_DOCKER = True
                     traceback.print_exc()
 
@@ -514,7 +502,7 @@ class Parrot(commands.AutoShardedBot):
         **kw: Any,
     ) -> Optional[dict]:
         payload = {}
-        assert isinstance(webhook, (discord.Webhook, str))
+        assert isinstance(webhook, discord.Webhook | str)
         URL = webhook.url if isinstance(webhook, discord.Webhook) else webhook
         if content:
             payload["content"] = content
@@ -539,11 +527,12 @@ class Parrot(commands.AutoShardedBot):
         content: str,
         force_file: bool = False,
         filename: Optional[str] = None,
-        suppressor: Optional[Union[Tuple[Type[Exception]], Type[Exception]]] = Exception,
+        suppressor: Optional[Union[tuple[type[Exception]], type[Exception]]] = Exception,
         **kwargs: Any,
     ) -> Optional[discord.WebhookMessage]:
         if webhook is None and (webhook_id is None and webhook_token is None):
-            raise ValueError("must provide atleast webhook_url or webhook_id and webhook_token")
+            msg = "must provide atleast webhook_url or webhook_id and webhook_token"
+            raise ValueError(msg)
 
         if webhook_id and webhook_token:
             log.debug("Executing webhook with webhook_id and webhook_token")
@@ -646,12 +635,11 @@ class Parrot(commands.AutoShardedBot):
             )
 
     def run(self) -> None:
-        """To run connect and login into discord"""
+        """To run connect and login into discord."""
         super().run(TOKEN, reconnect=True)
 
     async def close(self) -> None:
-        """To close the bot"""
-
+        """To close the bot."""
         if hasattr(self, "http_session"):
             await self.http_session.close()
 
@@ -663,7 +651,7 @@ class Parrot(commands.AutoShardedBot):
 
         if self.update_scam_link_db.is_running():
             self.update_scam_link_db.stop()
-        
+
         await self.sql.close()
 
         return await super().close()
@@ -688,7 +676,7 @@ class Parrot(commands.AutoShardedBot):
         log.info("Ready: %s (ID: %s)", self.user, self.user.id)
 
         log.debug("Getting all afk users from database")
-        ls: List[Optional[int]] = await self.afk_collection.distinct("afk.messageAuthor")
+        ls: list[Optional[int]] = await self.afk_collection.distinct("afk.messageAuthor")
         log.debug("Got all afk users from database: %s", ls)
         if ls:
             self.afk_users = set(ls)  # type: ignore
@@ -736,7 +724,7 @@ class Parrot(commands.AutoShardedBot):
         self.loop.create_task(self.__cache_app_commands(None))
 
     async def __cache_app_commands(self, guild: Optional[Union[discord.Object, discord.Guild]] = None) -> None:
-        """To cache all application commands"""
+        """To cache all application commands."""
         if guild is None:
             commands = await self.tree.fetch_commands()
             log.debug("Fetched all global commands")
@@ -751,7 +739,7 @@ class Parrot(commands.AutoShardedBot):
                 self.__app_commands_guild[guild.id][command.id] = command
 
     async def update_app_commands_cache(self, guild: Optional[discord.Guild] = None) -> None:
-        """To update the application commands cache"""
+        """To update the application commands cache."""
         await self.__cache_app_commands(guild)
 
     async def on_wavelink_node_ready(self, node: wavelink.Node):
@@ -794,7 +782,7 @@ class Parrot(commands.AutoShardedBot):
                 name=ctx.author,
                 icon_url=ctx.author.display_avatar.url,
                 url=self.support_server,
-            )
+            ),
         )
 
     async def process_commands(self, message: discord.Message) -> None:
@@ -860,9 +848,9 @@ class Parrot(commands.AutoShardedBot):
             await self.process_commands(after)
 
     async def resolve_member_ids(
-        self, guild: discord.Guild, member_ids: Iterable[int]
+        self, guild: discord.Guild, member_ids: Iterable[int],
     ) -> AsyncGenerator[discord.Member, None]:
-        """|coro|
+        """|coro|.
 
         Bulk resolves member IDs to member instances, if possible.
 
@@ -873,14 +861,14 @@ class Parrot(commands.AutoShardedBot):
         Note that the order of the resolved members is not the same as the input.
 
         Parameters
-        -----------
+        ----------
         guild: Guild
             The guild to resolve from.
         member_ids: Iterable[int]
             An iterable of member IDs.
 
         Yields
-        --------
+        ------
         Member
             The resolved members.
         """
@@ -904,7 +892,7 @@ class Parrot(commands.AutoShardedBot):
                 else:
                     yield member
             else:
-                members: List[discord.Member] = await guild.query_members(limit=1, user_ids=needs_resolution, cache=True)
+                members: list[discord.Member] = await guild.query_members(limit=1, user_ids=needs_resolution, cache=True)
                 if members:
                     yield members[0]
         elif total_need_resolution <= 100 and total_need_resolution > 1:
@@ -951,23 +939,22 @@ class Parrot(commands.AutoShardedBot):
         member_id: Union[int, str, discord.Object],
         in_guild: bool = True,
     ) -> Union[discord.Member, discord.User, None]:
-        """|coro|
+        """|coro|.
 
         Looks up a member in cache or fetches if not found.
 
         Parameters
-        -----------
+        ----------
         guild: Guild
             The guild to look in.
         member_id: int
             The member ID to search for.
 
         Returns
-        ---------
+        -------
         Optional[Member]
             The member or None if not found.
         """
-
         member_id = member_id.id if isinstance(member_id, discord.Object) else int(member_id)
 
         if not in_guild:
@@ -986,8 +973,8 @@ class Parrot(commands.AutoShardedBot):
         members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
         return members[0] if members else None
 
-    async def get_prefix(self, message: discord.Message) -> Union[str, Callable, List[str]]:
-        """Dynamic prefixing"""
+    async def get_prefix(self, message: discord.Message) -> Union[str, Callable, list[str]]:
+        """Dynamic prefixing."""
         if message.guild is None:
             return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
         try:
@@ -1176,10 +1163,10 @@ class Parrot(commands.AutoShardedBot):
         message: Union[discord.Message, int, None] = None,
         dm_notify: bool = False,
         is_todo: bool = False,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: Optional[dict[str, Any]] = None,
         **kw,
     ) -> InsertOneResult:
-        """|coro|
+        """|coro|.
 
         Master Function to register Timers.
 
@@ -1200,8 +1187,8 @@ class Parrot(commands.AutoShardedBot):
         """
         collection: MongoCollection = self.timers
 
-        embed: Optional[Dict[str, Any]] = kw.get("embed_like") or kw.get("embed")
-        mod_action: Optional[Dict[str, Any]] = kw.get("mod_action")
+        embed: Optional[dict[str, Any]] = kw.get("embed_like") or kw.get("embed")
+        mod_action: Optional[dict[str, Any]] = kw.get("mod_action")
         cmd_exec_str: Optional[str] = kw.get("cmd_exec_str")
 
         # fmt: off
@@ -1343,7 +1330,7 @@ class Parrot(commands.AutoShardedBot):
     def __get_app_commands(
         self,
         cmd: Optional[Union[str, int]],
-        commands: Dict[int, app_commands.AppCommand],
+        commands: dict[int, app_commands.AppCommand],
         **kwargs: Any,
     ) -> Optional[app_commands.AppCommand]:
         if isinstance(cmd, int):
@@ -1357,7 +1344,7 @@ class Parrot(commands.AutoShardedBot):
 
         return None
 
-    async def wait_and_run_task(self, function: tasks.Loop, *args, **kwargs) -> "asyncio.Task[None]":
+    async def wait_and_run_task(self, function: tasks.Loop, *args, **kwargs) -> asyncio.Task[None]:
         if not function.is_running():
             return function.start(*args, **kwargs)
         await asyncio.sleep(0.2)
@@ -1410,12 +1397,12 @@ class Parrot(commands.AutoShardedBot):
         force_fetch: bool = False,
         dm_allowed: bool = False,
     ):
-        """|coro|
+        """|coro|.
 
         Get message from cache. Fetches if not found, and stored in cache
 
         Parameters
-        -----------
+        ----------
         channel: discord.TextChannel
             The channel to look in.
         message: int
@@ -1428,7 +1415,7 @@ class Parrot(commands.AutoShardedBot):
             If found nothing from cache, it will give the discord.PartialMessage
 
         Returns
-        ---------
+        -------
         Optional[discord.Message]
             The Message or None if not found.
         """
@@ -1451,7 +1438,7 @@ class Parrot(commands.AutoShardedBot):
                 channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
             else:
                 channel = self.get_channel(channel)  # type: ignore
-        elif isinstance(channel, (discord.Object, discord.PartialMessageable)):
+        elif isinstance(channel, discord.Object | discord.PartialMessageable):
             if force_fetch:
                 channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
             else:
@@ -1461,7 +1448,8 @@ class Parrot(commands.AutoShardedBot):
             return None
 
         if isinstance(channel, discord.DMChannel) and not dm_allowed:
-            raise ValueError("DMChannel is not allowed")
+            msg = "DMChannel is not allowed"
+            raise ValueError(msg)
 
         if force_fetch:
             msg = await channel.fetch_message(message)  # type: ignore
@@ -1505,7 +1493,7 @@ class Parrot(commands.AutoShardedBot):
             self.__global_write_data = {}
 
     def add_global_write_data(
-        self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True, cls: str
+        self, *, db: Optional[str] = None, col: str, query: dict, update: dict, upsert: bool = True, cls: str,
     ) -> None:
         if db is None:
             db = "mainDB"
@@ -1524,18 +1512,18 @@ class Parrot(commands.AutoShardedBot):
         *,
         db: ...,
         col: ...,
-    ) -> Optional[List]:
+    ) -> Optional[list]:
         ...
 
     @overload
     def get_global_write_data(
         self,
-    ) -> Dict[str, List]:
+    ) -> dict[str, list]:
         ...
 
     def get_global_write_data(
-        self, *, db: Optional[str] = None, col: Optional[str] = None
-    ) -> Optional[List] | Dict[str, List]:
+        self, *, db: Optional[str] = None, col: Optional[str] = None,
+    ) -> Optional[list] | dict[str, list]:
         if col:
             if db is None:
                 db = "mainDB"

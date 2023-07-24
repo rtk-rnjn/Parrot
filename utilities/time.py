@@ -45,7 +45,7 @@ class ShortTime:
         *,
         now: Optional[datetime.datetime] = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
-    ):
+    ) -> None:
         match = self.compiled.fullmatch(argument)
         if match is None or not match.group(0):
             match = self.discord_fmt.fullmatch(argument)
@@ -55,7 +55,8 @@ class ShortTime:
                     self.dt = self.dt.astimezone(tzinfo)
                 return
             else:
-                raise commands.BadArgument("invalid time provided")
+                msg = "invalid time provided"
+                raise commands.BadArgument(msg)
 
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
         now = now or datetime.datetime.now(datetime.timezone.utc)
@@ -84,11 +85,12 @@ class HumanTime:
         *,
         now: Optional[datetime.datetime] = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
-    ):
+    ) -> None:
         now = now or datetime.datetime.now(tzinfo)
         dt, status = self.calendar.parseDT(argument, sourceTime=now, tzinfo=None)
         if not status.hasDateOrTime:
-            raise commands.BadArgument('invalid time provided, try e.g. "tomorrow" or "3 days"')
+            msg = 'invalid time provided, try e.g. "tomorrow" or "3 days"'
+            raise commands.BadArgument(msg)
 
         if not status.hasTime:
             # replace it with the current time
@@ -123,7 +125,7 @@ class Time(HumanTime):
         *,
         now: Optional[datetime.datetime] = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
-    ):
+    ) -> None:
         try:
             o = ShortTime(argument, now=now, tzinfo=tzinfo)
         except Exception:
@@ -140,11 +142,12 @@ class FutureTime(Time):
         *,
         now: Optional[datetime.datetime] = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
-    ):
+    ) -> None:
         super().__init__(argument, now=now, tzinfo=tzinfo)
 
         if self._past:
-            raise commands.BadArgument("this time is in the past")
+            msg = "this time is in the past"
+            raise commands.BadArgument(msg)
 
 
 class FriendlyTimeResult:
@@ -153,7 +156,7 @@ class FriendlyTimeResult:
 
     __slots__ = ("dt", "arg")
 
-    def __init__(self, dt: datetime.datetime):
+    def __init__(self, dt: datetime.datetime) -> None:
         self.dt = dt
         self.arg = ""
 
@@ -165,11 +168,13 @@ class FriendlyTimeResult:
         remaining: str,
     ) -> None:
         if self.dt < now:
-            raise commands.BadArgument("This time is in the past.")
+            msg = "This time is in the past."
+            raise commands.BadArgument(msg)
 
         if not remaining:
             if uft.default is None:
-                raise commands.BadArgument("Missing argument after the time.")
+                msg = "Missing argument after the time."
+                raise commands.BadArgument(msg)
             remaining = uft.default
 
         if uft.converter is not None:
@@ -186,12 +191,13 @@ class UserFriendlyTime(commands.Converter):
         converter: Optional[Union[type[commands.Converter], commands.Converter]] = None,
         *,
         default: Any = None,
-    ):
+    ) -> None:
         if isinstance(converter, type) and issubclass(converter, commands.Converter):
             converter = converter()
 
         if converter is not None and not isinstance(converter, commands.Converter):
-            raise TypeError("commands.Converter subclass necessary.")
+            msg = "commands.Converter subclass necessary."
+            raise TypeError(msg)
 
         self.converter: commands.Converter = converter  # type: ignore  # It doesn't understand this narrowing
         self.default: Any = default
@@ -216,7 +222,7 @@ class UserFriendlyTime(commands.Converter):
             match = ShortTime.discord_fmt.match(argument)
             if match is not None:
                 result = FriendlyTimeResult(
-                    datetime.datetime.fromtimestamp(int(match.group("ts")), tz=datetime.timezone.utc).astimezone(tzinfo)
+                    datetime.datetime.fromtimestamp(int(match.group("ts")), tz=datetime.timezone.utc).astimezone(tzinfo),
                 )
                 remaining = argument[match.end() :].strip()
                 await result.ensure_constraints(ctx, self, now, remaining)
@@ -234,7 +240,8 @@ class UserFriendlyTime(commands.Converter):
         now = now.astimezone(tzinfo)
         elements = calendar.nlp(argument, sourceTime=now)
         if elements is None or len(elements) == 0:
-            raise commands.BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days".')
+            msg = 'Invalid time provided, try e.g. "tomorrow" or "3 days".'
+            raise commands.BadArgument(msg)
 
         # handle the following cases:
         # "date time" foo
@@ -245,13 +252,13 @@ class UserFriendlyTime(commands.Converter):
         dt, status, begin, end, dt_string = elements[0]
 
         if not status.hasDateOrTime:
-            raise commands.BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days".')
+            msg = 'Invalid time provided, try e.g. "tomorrow" or "3 days".'
+            raise commands.BadArgument(msg)
 
         if begin not in (0, 1) and end != len(argument):
+            msg = "Time is either in an inappropriate location, which must be either at the end or beginning of your input, or I just flat out did not understand what you meant. Sorry."
             raise commands.BadArgument(
-                "Time is either in an inappropriate location, which "
-                "must be either at the end or beginning of your input, "
-                "or I just flat out did not understand what you meant. Sorry."
+                msg,
             )
 
         if not status.hasTime:
@@ -274,10 +281,12 @@ class UserFriendlyTime(commands.Converter):
             if begin == 1:
                 # check if it's quoted:
                 if argument[0] != '"':
-                    raise commands.BadArgument("Expected quote before time input...")
+                    msg = "Expected quote before time input..."
+                    raise commands.BadArgument(msg)
 
                 if end >= len(argument) or argument[end] != '"':
-                    raise commands.BadArgument("If the time is quoted, you must unquote it.")
+                    msg = "If the time is quoted, you must unquote it."
+                    raise commands.BadArgument(msg)
 
                 remaining = argument[end + 1 :].lstrip(" ,.!")
             else:

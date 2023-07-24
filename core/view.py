@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, Union
 
 from discord.enums import ButtonStyle
 from discord.interactions import Interaction
@@ -20,7 +20,7 @@ class ParrotItem(discord.ui.Item):
 
 class ParrotModal(discord.ui.Modal):
     def __init__(
-        self, *, title: str = discord.utils.MISSING, timeout: float = None, custom_id: str = discord.utils.MISSING
+        self, *, title: str = discord.utils.MISSING, timeout: float = None, custom_id: str = discord.utils.MISSING,
     ) -> None:
         super().__init__(title=title, timeout=timeout, custom_id=custom_id)
 
@@ -33,7 +33,7 @@ class ParrotView(discord.ui.View):
     message: discord.Message
     ctx: Context
 
-    def __init__(self, *, timeout: float = 60, delete_message: bool = False, **kwargs):
+    def __init__(self, *, timeout: float = 60, delete_message: bool = False, **kwargs) -> None:
         super().__init__(timeout=timeout)
         self.delete_message = delete_message
         if ctx := kwargs.get("ctx"):
@@ -59,12 +59,12 @@ class ParrotView(discord.ui.View):
 
     def disable_all(self) -> None:
         for item in self.children:
-            if isinstance(item, (discord.ui.Button, discord.ui.Select)):
+            if isinstance(item, discord.ui.Button | discord.ui.Select):
                 item.disabled = True
 
     def disable_all_except(self, *items: discord.ui.Item) -> None:
         for item in self.children:
-            if isinstance(item, (discord.ui.Button, discord.ui.Select)) and item not in items:
+            if isinstance(item, discord.ui.Button | discord.ui.Select) and item not in items:
                 item.disabled = True
 
     def disable_all_buttons(self) -> None:
@@ -96,7 +96,7 @@ class ParrotButton(discord.ui.Button["ParrotView"]):
         emoji: Union[str, discord.Emoji, discord.PartialEmoji] = None,
         row: int = None,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(style=style, label=label, disabled=disabled, custom_id=custom_id, url=url, emoji=emoji, row=row)
 
         self.callback_function = kwargs.pop("callback", None)
@@ -120,10 +120,10 @@ class ParrotSelect(discord.ui.Select):
         placeholder: str = None,
         min_values: int = 1,
         max_values: int = 1,
-        options: List[discord.SelectOption] = discord.utils.MISSING,
+        options: list[discord.SelectOption] = discord.utils.MISSING,
         row: int = None,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(
             custom_id=custom_id,
             placeholder=placeholder,
@@ -146,7 +146,7 @@ class ParrotSelect(discord.ui.Select):
 
 
 class ParrotLinkView(discord.ui.View):
-    def __init__(self, url: str, label: str = "Click here to view the link"):
+    def __init__(self, url: str, label: str = "Click here to view the link") -> None:
         super().__init__()
         self.url = url
 
@@ -155,5 +155,5 @@ class ParrotLinkView(discord.ui.View):
                 label=label,
                 url=self.url,
                 style=discord.ButtonStyle.link,
-            )
+            ),
         )

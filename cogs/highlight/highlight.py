@@ -4,9 +4,8 @@ import asyncio
 import datetime
 import logging
 import re
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 
-import pymongo
 from pymongo import UpdateMany, UpdateOne
 from pymongo.results import BulkWriteResult
 import discord
@@ -16,9 +15,9 @@ from utilities.formats import plural
 
 log = logging.getLogger("cogs.highlight.highlight")
 
-CACHED_WORDS_HINT = Dict[int, List[Dict[str, Union[str, int]]]]
-_CACHED_SETTINGS_HINT = Dict[str, Union[str, int, List[Any]]]
-CACHED_SETTINGS_HINT = Dict[int, _CACHED_SETTINGS_HINT]
+CACHED_WORDS_HINT = dict[int, list[dict[str, Union[str, int]]]]
+_CACHED_SETTINGS_HINT = dict[str, Union[str, int, list[Any]]]
+CACHED_SETTINGS_HINT = dict[int, _CACHED_SETTINGS_HINT]
 ENTITY_HINT = Union[discord.Member, discord.User, discord.TextChannel, discord.CategoryChannel]
 
 
@@ -39,8 +38,9 @@ class JumpBackView(ParrotLinkView):
 
 
 class Highlight(Cog):
-    """Highlight words and get notified when they are said"""
-    def __init__(self, bot: Parrot):
+    """Highlight words and get notified when they are said."""
+
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self._highlight_batch = []
         self._batch_lock = asyncio.Lock()
@@ -48,7 +48,7 @@ class Highlight(Cog):
         self.cached_words: CACHED_WORDS_HINT = {}
         self.cached_settings: CACHED_SETTINGS_HINT = {}
         self.bulk_insert_loop.start()
-    
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{ELECTRIC TORCH}")
@@ -59,7 +59,7 @@ class Highlight(Cog):
         except KeyError:
             pass
         find_one_data = await self.bot.user_collections_ind.find_one(
-            {"_id": user_id, "highlight_settings": {"$exists": True}}
+            {"_id": user_id, "highlight_settings": {"$exists": True}},
         )
         if find_one_data is None:
             return {
@@ -143,11 +143,11 @@ class Highlight(Cog):
         self.bot.dispatch("user_activity", reaction.message.channel, user)
 
     @commands.Cog.listener()
-    async def on_highlight(self, message: discord.Message, word: Dict[str, Union[str, int]], text: str):
+    async def on_highlight(self, message: discord.Message, word: dict[str, Union[str, int]], text: str):
         assert message.guild is not None
 
         member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
-            message.guild, word["user_id"]
+            message.guild, word["user_id"],
         )
 
         if member is None:
@@ -267,11 +267,11 @@ class Highlight(Cog):
                                 "word": word["word"],
                                 "invoked_at": message.created_at.isoformat(),
                                 "content": message.content,
-                            }
-                        }
+                            },
+                        },
                     },
                     upsert=True,
-                )
+                ),
             )
         except discord.Forbidden:
             log.warning("Forbidden to DM user ID %s (guild ID %s)", member.id, message.guild.id)
@@ -296,14 +296,9 @@ class Highlight(Cog):
 
         if discord.utils.escape_mentions(word) != word:
             await ctx.send("Your highlight word cannot contain any mentions.", delete_after=5)
-        elif len(word) < 2:
+        elif len(word) < 3:
             await ctx.send(
-                "Your highlight word must contain at least 2 characters.",
-                delete_after=5,
-            )
-        elif len(word) > 20:
-            await ctx.send(
-                "Your highlight word cannot contain more than 20 characters.",
+                "Your highlight word must contain at least 3 characters.",
                 delete_after=5,
             )
         else:
@@ -452,7 +447,7 @@ class Highlight(Cog):
                         "highlight_words": {
                             "$each": [
                                 word for word in self.cached_words.get(ctx.author.id, []) if word["guild_id"] == from_guild
-                            ]
+                            ],
                         },
                     },
                 },
@@ -493,7 +488,7 @@ class Highlight(Cog):
     ) -> str:
         settings = await self.get_user_settings(user_id)
 
-        if isinstance(entity, (discord.User, discord.Member)):
+        if isinstance(entity, discord.User | discord.Member):
             if entity.id in settings["blocked_users"]:
                 return "This user is already blocked."
             await self.bot.user_collections_ind.update_one(
@@ -503,7 +498,7 @@ class Highlight(Cog):
             )
             return f":no_entry_sign: Blocked `{entity}`."
 
-        elif isinstance(entity, (discord.TextChannel, discord.CategoryChannel)):
+        elif isinstance(entity, discord.TextChannel | discord.CategoryChannel):
             if entity.id in settings["blocked_channels"]:
                 return "This channel is already blocked."
 
@@ -517,7 +512,7 @@ class Highlight(Cog):
     async def do_unblock(self, user_id: int, entity: ENTITY_HINT) -> str:
         settings = await self.get_user_settings(user_id)
 
-        if isinstance(entity, (discord.User, discord.Member)):
+        if isinstance(entity, discord.User | discord.Member):
             if entity.id not in settings["blocked_users"]:
                 return "This user is not blocked."
 
@@ -528,7 +523,7 @@ class Highlight(Cog):
             )
             return f":white_check_mark: Unblocked `{entity}`."
 
-        elif isinstance(entity, (discord.TextChannel, discord.CategoryChannel)):
+        elif isinstance(entity, discord.TextChannel | discord.CategoryChannel):
             if entity.id not in settings["blocked_channels"]:
                 return "This channel is not blocked."
             await self.bot.user_collections_ind.update_one(
@@ -539,7 +534,7 @@ class Highlight(Cog):
             return f":white_check_mark: Unblocked {entity.mention}."
 
     async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> Optional[ENTITY_HINT]:
-        converters: List = [
+        converters: list = [
             commands.MemberConverter,
             commands.UserConverter,
             commands.TextChannelConverter,
@@ -638,7 +633,7 @@ class Highlight(Cog):
                 "$set": {
                     "highlight_settings.blocked_users": [],
                     "highlight_settings.blocked_channels": [],
-                }
+                },
             },
             upsert=True,
         )

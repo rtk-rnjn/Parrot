@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import List, Literal, Optional
+from typing import Literal, Optional
 
 from discord.ext import commands
 
@@ -11,13 +11,13 @@ POSSIBLE_PYLINT_CODE = re.compile(r"([A-Z]\d{4})")
 class PyLintConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     confidence: Literal[
-        "high", "control_flow", "inference_failure", "undefined", "inference"
+        "high", "control_flow", "inference_failure", "undefined", "inference",
     ] = "HIGH CONTROL_FLOW INFERENCE_FAILURE UNDEFINED INFERENCE"
     disable: Optional[str] = None
     enable: Optional[str] = None
 
 
-def validate_pylint_code(code: str) -> List[str]:
+def validate_pylint_code(code: str) -> list[str]:
     return POSSIBLE_PYLINT_CODE.findall(code)
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Final, List, Literal, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Final, Literal, Optional, TypeVar
 
 import discord
 from core import Context, Parrot
@@ -10,7 +10,8 @@ from .__number_slider import DEFAULT_COLOR, DiscordColor, SlideView
 from .utils import chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, TypeAlias
+    from typing_extensions import ParamSpec
+    from typing import TypeAlias
 
     P = ParamSpec("P")
     T = TypeVar("T")
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
 
-    Board: TypeAlias = List[List[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
+    Board: TypeAlias = list[list[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
 
 BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
 
@@ -84,13 +85,12 @@ class LightsOutView(SlideView):
 
 
 class LightsOut:
-    """
-    Lights Out Game
-    """
+    """Lights Out Game."""
 
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
         if count not in range(1, 6):
-            raise ValueError("Count must be an integer between 1 and 5")
+            msg = "Count must be an integer between 1 and 5"
+            raise ValueError(msg)
 
         self.moves: int = 0
         self.count = count
@@ -104,7 +104,7 @@ class LightsOut:
     def toggle(self, row: int, col: int) -> None:
         self.tiles[row][col] = BULB if self.tiles[row][col] is None else None
 
-    def beside_item(self, row: int, col: int) -> List[Tuple[int, int]]:
+    def beside_item(self, row: int, col: int) -> list[tuple[int, int]]:
         beside = [
             (row - 1, col),
             (row, col - 1),
@@ -122,8 +122,8 @@ class LightsOut:
         embed_color: DiscordColor = DEFAULT_COLOR,
         timeout: Optional[float] = None,
     ) -> discord.Message:
-        """
-        starts the Lights Out Game
+        """Starts the Lights Out Game.
+
         Parameters
         ----------
         ctx : Context
@@ -134,10 +134,11 @@ class LightsOut:
             the color of the game embed, by default DEFAULT_COLOR
         timeout : Optional[float], optional
             the timeout for the view, by default None
+
         Returns
         -------
         discord.Message
-            returns the game message
+            returns the game message.
         """
         self.button_style = button_style
         self.player = ctx.author

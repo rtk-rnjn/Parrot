@@ -12,7 +12,7 @@ Liquid = namedtuple("Liquid", "color")
 
 
 class Bottle:
-    def __init__(self, num, liquids):
+    def __init__(self, num, liquids) -> None:
         self.num = num
         self.liquids = liquids
 
@@ -34,12 +34,12 @@ class Bottle:
     def is_completed(self):
         return self.is_full() and len({l.color for l in self.liquids}) == 1
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Bottle(num={self.num}, Liquids[{", ".join(l.color for l in self.liquids)}])'
 
 
 class BottleButton(discord.ui.Button["PourView"]):
-    def __init__(self, bottle: Bottle, **kwargs):
+    def __init__(self, bottle: Bottle, **kwargs) -> None:
         super().__init__(**kwargs)
         self.bottle = bottle
 
@@ -57,7 +57,7 @@ class BottleButton(discord.ui.Button["PourView"]):
                 if isinstance(btn, BottleButton) and btn != self:
                     try:
                         btn.disabled = bool(
-                            btn.bottle.is_full() or self.bottle.liquids[-1].color != btn.bottle.liquids[-1].color
+                            btn.bottle.is_full() or self.bottle.liquids[-1].color != btn.bottle.liquids[-1].color,
                         )
                     except IndexError:
                         btn.disabled = False
@@ -110,7 +110,7 @@ class BottleButton(discord.ui.Button["PourView"]):
 class PourView(discord.ui.View):
     font = ImageFont.truetype("extra/GothamMedium.ttf", 30)
 
-    def __init__(self, ctx, level: int):
+    def __init__(self, ctx, level: int) -> None:
         super().__init__(timeout=None)
         self.ctx = ctx
         self.level = level
@@ -128,7 +128,7 @@ class PourView(discord.ui.View):
                     style=discord.ButtonStyle.secondary,
                     row=1 + (i - 1) // 5,
                     disabled=bool(bottle.is_empty()),
-                )
+                ),
             )
 
     @ToAsync()
@@ -222,7 +222,7 @@ class PourView(discord.ui.View):
                     style=discord.ButtonStyle.secondary,
                     row=1 + (i - 1) // 5,
                     disabled=bool(bottle.is_empty()),
-                )
+                ),
             )
 
         embed = self.msg.embeds[0]
@@ -280,7 +280,7 @@ class PourView(discord.ui.View):
                     style=discord.ButtonStyle.secondary,
                     row=1 + (i - 1) // 5,
                     disabled=bool(bottle.is_empty()),
-                )
+                ),
             )
 
         embed = self.msg.embeds[0]

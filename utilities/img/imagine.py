@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -31,9 +30,9 @@ def draw_text(
     draw: ImageDraw.ImageDraw,
     text: str,
     font_name: str,
-    colour: Tuple[int, int, int],
-    bounds: Tuple[int, int],
-    offsets: Tuple[int, int],
+    colour: tuple[int, int, int],
+    bounds: tuple[int, int],
+    offsets: tuple[int, int],
     max_font_size: int,
     line_height: float = 1,
 ) -> None:

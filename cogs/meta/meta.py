@@ -6,7 +6,7 @@ import itertools
 import os
 from collections import Counter
 from time import time
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import psutil
 import pygit2
@@ -21,7 +21,7 @@ from utilities.config import SUPPORT_SERVER, SUPPORT_SERVER_ID, VERSION
 class Meta(Cog):
     """Commands for utilities related to Discord or the Bot itself."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
 
@@ -33,9 +33,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def ping(self, ctx: Context):
-        """
-        Get the latency of bot.
-        """
+        """Get the latency of bot."""
         start = time()
         message = await ctx.reply("Pinging...")
         db = await self.bot.db_latency()
@@ -44,7 +42,7 @@ class Meta(Cog):
             content=(
                 f"Pong! latency: {self.bot.latency*1000:,.0f} ms. "
                 f"Response time: {(end-start)*1000:,.0f} ms. Database: {db*1000:,.0f} ms."
-            )
+            ),
         )
 
     @commands.command(aliases=["av"])
@@ -88,7 +86,7 @@ class Meta(Cog):
                 timestamp=discord.utils.utcnow(),
                 color=ctx.author.color,
                 url=f"https://discord.com/users/{owner.id}",
-            )
+            ),
         )
 
     @commands.command(aliases=["guildavatar", "serverlogo", "servericon"])
@@ -96,7 +94,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def guildicon(self, ctx: Context):
-        """Get the freaking server icon"""
+        """Get the freaking server icon."""
         if not ctx.guild.icon:
             return await ctx.reply(f"{ctx.author.mention} {ctx.guild.name} has no icon yet!")
 
@@ -110,7 +108,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def server_info(self, ctx: Context):
-        """Get the basic stats about the server"""
+        """Get the basic stats about the server."""
         guild = ctx.guild
         embed: discord.Embed = discord.Embed(
             title=f"Server Info: {ctx.guild.name}",
@@ -284,7 +282,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def show_bot_stats(self, ctx: Context):
-        """Get the bot stats"""
+        """Get the bot stats."""
         revision = self.get_last_commits(3) or await self.get_last_commits_async(3)
         embed = discord.Embed(
             title="Official Bot Server Invite",
@@ -313,7 +311,7 @@ class Meta(Cog):
             for channel in guild.channels:
                 if isinstance(channel, discord.TextChannel):
                     text += 1
-                elif isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
+                elif isinstance(channel, discord.VoiceChannel | discord.StageChannel):
                     voice += 1
 
         embed.add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
@@ -339,7 +337,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def user_info(self, ctx: Context, *, member: discord.Member = None):
-        """Get the basic stats about the user"""
+        """Get the basic stats about the user."""
         target = member or ctx.author
         roles = list(target.roles)
         embed = discord.Embed(
@@ -359,7 +357,7 @@ class Meta(Cog):
                 f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''} [Blame Discord]",
                 True,
             ),
-            ("Joined at", f"{discord.utils.format_dt(target.joined_at)}" if target.joined_at else 'N/A', True),
+            ("Joined at", f"{discord.utils.format_dt(target.joined_at)}" if target.joined_at else "N/A", True),
             ("Boosted", bool(target.premium_since), True),
             ("Bot?", target.bot, True),
             ("Nickname", target.display_name, True),
@@ -392,7 +390,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def invite(self, ctx: Context):
-        """Get the invite of the bot! Thanks for seeing this command"""
+        """Get the invite of the bot! Thanks for seeing this command."""
         url = self.bot.invite
         em: discord.Embed = (
             discord.Embed(
@@ -411,7 +409,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def roleinfo(self, ctx: Context, *, role: discord.Role):
-        """To get the info regarding the server role"""
+        """To get the info regarding the server role."""
         embed = discord.Embed(
             title=f"Role Information: {role.name}",
             description=f"ID: `{role.id}`",
@@ -450,7 +448,7 @@ class Meta(Cog):
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
             embed.set_thumbnail(
-                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png"
+                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png",
             )
         if role.icon:
             embed.set_thumbnail(url=role.icon.url)
@@ -461,7 +459,7 @@ class Meta(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def emojiinfo(self, ctx: Context, *, emoji: discord.Emoji):
-        """To get the info regarding the server emoji"""
+        """To get the info regarding the server emoji."""
         em = discord.Embed(
             title="Emoji Info",
             description=f"\N{BULLET} [Download the emoji]({emoji.url})\n\N{BULLET} Emoji ID: `{emoji.id}`",
@@ -472,7 +470,7 @@ class Meta(Cog):
             ("Name", emoji.name, True),
             ("Is Animated?", emoji.animated, True),
             ("Created At", f"{discord.utils.format_dt(emoji.created_at)}", True),
-            ("Server Owned", emoji.guild.name if emoji.guild else 'N/A', True),
+            ("Server Owned", emoji.guild.name if emoji.guild else "N/A", True),
             ("Server ID", emoji.guild_id, True),
             ("Created By", emoji.user or "User Not Found", True),
             ("Available?", emoji.available, True),
@@ -504,7 +502,7 @@ class Meta(Cog):
         _id = channel.id  # type: ignore
 
         assert isinstance(
-            channel, (discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.StageChannel)
+            channel, discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel,
         )
 
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
@@ -534,16 +532,16 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def request(self, ctx: Context, *, text: str):
-        """To request directly from the owner"""
+        """To request directly from the owner."""
         view = await ctx.prompt(
-            f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue"
+            f"{ctx.author.mention} are you sure want to request for the same. Abuse of this feature may result in ban from using Parrot bot. Press `YES` to continue",
         )
         if view is None:
             await ctx.reply(f"{ctx.author.mention} you did not responds on time. No request is being sent!")
         elif view:
             if self.bot.author_obj:
                 await self.bot.author_obj.send(
-                    f"**{ctx.author}** [`{ctx.author.id}`]\n>>> {text[:1800:]}"
+                    f"**{ctx.author}** [`{ctx.author.id}`]\n>>> {text[:1800:]}",
                 )  # pepole spams T_T
             else:
                 from utilities.config import SUPER_USER
@@ -565,7 +563,7 @@ class Meta(Cog):
 
     @commands.command(hidden=True)
     async def cud(self, ctx: Context):
-        """pls no spam"""
+        """Pls no spam."""
         for i in range(3):
             await ctx.send(3 - i)
             await ctx.release(1)
@@ -577,7 +575,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def announcement(self, ctx: Context):
-        """To get the latest news from the support server | Change Log"""
+        """To get the latest news from the support server | Change Log."""
         embed = discord.Embed(
             title="Announcement",
             timestamp=discord.utils.utcnow(),
@@ -593,7 +591,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def vote(self, ctx: Context):
-        """Vote the bot for better discovery on top.gg"""
+        """Vote the bot for better discovery on top.gg."""
         embed = discord.Embed(
             title="Click here to vote!",
             url=f"https://top.gg/bot/{self.bot.user.id}/vote",
@@ -611,15 +609,15 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def inviteinfo(self, ctx: Context, code: str):
-        """Get the info regarding the Invite Link"""
+        """Get the info regarding the Invite Link."""
         invite = await self.bot.fetch_invite(f"https://discord.gg/{code}")
         if (not invite.guild) or (not invite):
             return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
-        fields: List[Tuple[str, Optional[str], bool]] = [  # type: ignore
+        fields: list[tuple[str, Optional[str], bool]] = [  # type: ignore
             ("Member count?", invite.approximate_member_count, True),
             ("Presence Count?", invite.approximate_presence_count, True),
-            ("Channel", f"<#{invite.channel.id}>" if invite.channel else 'N/A', True),
+            ("Channel", f"<#{invite.channel.id}>" if invite.channel else "N/A", True),
             (
                 "Created At",
                 discord.utils.format_dt(invite.created_at, "R") if invite.created_at is not None else "Can not determine",
@@ -652,7 +650,7 @@ class Meta(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def stickerinfo(self, ctx: Context, sticker: Optional[discord.GuildSticker] = None):
-        """Get the info regarding the Sticker"""
+        """Get the info regarding the Sticker."""
         if sticker is None and not ctx.message.stickers:
             return await ctx.error(f"{ctx.author.mention} you did not provide any sticker")
         sticker = sticker or await ctx.message.stickers[0].fetch()
@@ -678,7 +676,7 @@ class Meta(Cog):
             )
             .add_field(
                 name="User",
-                value=getattr(sticker.user, "mention"),
+                value=sticker.user.mention,
                 inline=True,
             )
             .add_field(

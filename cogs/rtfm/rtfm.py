@@ -12,7 +12,8 @@ from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
+from collections.abc import Callable
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore
@@ -80,7 +81,7 @@ class BookmarkForm(discord.ui.Modal):
         required=False,
     )
 
-    def __init__(self, message: discord.Message):
+    def __init__(self, message: discord.Message) -> None:
         super().__init__(timeout=1000, title="Name your bookmark")
         self.message = message
 
@@ -108,8 +109,7 @@ class BookmarkForm(discord.ui.Modal):
         target_message: discord.Message,
         title: Optional[str],
     ) -> None:
-        """
-        Sends the target_message as a bookmark to the interaction user's DMs.
+        """Sends the target_message as a bookmark to the interaction user's DMs.
 
         Raises ``discord.Forbidden`` if the user's DMs are closed.
         """
@@ -119,21 +119,21 @@ class BookmarkForm(discord.ui.Modal):
 
 
 class RTFM(Cog):
-    """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot"""
+    """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
         self.ON_TESTING = False
-        self.headers: Dict[str, str] = {}
+        self.headers: dict[str, str] = {}
         self.fetch_readme.start()
         self.__bookmark_context_menu_callback = app_commands.ContextMenu(
             name="Bookmark",
             callback=self._bookmark_context_menu_callback,
         )
         self.bot.tree.add_command(self.__bookmark_context_menu_callback)
-        self._python_cached: Dict[str, str] = {}
-        self._roadmap_cached: Dict[str, str] = {}
+        self._python_cached: dict[str, str] = {}
+        self._roadmap_cached: dict[str, str] = {}
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:
@@ -216,7 +216,7 @@ class RTFM(Cog):
 
     @staticmethod
     async def send_reaction_embed(
-        channel: discord.abc.MessageableChannel, target_message: discord.Message
+        channel: discord.abc.MessageableChannel, target_message: discord.Message,
     ) -> discord.Message:
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
@@ -225,7 +225,7 @@ class RTFM(Cog):
                     f"React with {BOOKMARK_EMOJI} to be sent your very own bookmark to "
                     f"[this message]({target_message.jump_url})."
                 ),
-            )
+            ),
         )
 
         await message.add_reaction(BOOKMARK_EMOJI)
@@ -245,7 +245,7 @@ class RTFM(Cog):
         return match if certainty > MINIMUM_CERTAINTY else None
 
     def get_content(self, tag):
-        """Returns content between two h2 tags"""
+        """Returns content between two h2 tags."""
         bssiblings = tag.next_siblings
         siblings = []
         for elem in bssiblings:
@@ -264,7 +264,7 @@ class RTFM(Cog):
 
         return content
 
-    referred: Dict[str, Callable] = {
+    referred: dict[str, Callable] = {
         "csp-directives": _ref.csp_directives,
         "git": _ref.git_ref,
         "git-guides": _ref.git_tutorial_ref,
@@ -277,7 +277,7 @@ class RTFM(Cog):
     }
 
     # TODO: lua, java, javascript, asm
-    documented: Dict[str, Callable] = {
+    documented: dict[str, Callable] = {
         "c": _doc.c_doc,
         "cpp": _doc.cpp_doc,
         "haskell": _doc.haskell_doc,
@@ -294,17 +294,16 @@ class RTFM(Cog):
 
     @staticmethod
     def fmt_error_embed() -> discord.Embed:
-        """
-        Format the Error Embed.
+        """Format the Error Embed.
         If the cht.sh search returned 404, overwrite it to send a custom error embed.
-        link -> https://github.com/chubin/cheat.sh/issues/198
+        link -> https://github.com/chubin/cheat.sh/issues/198.
         """
         return discord.Embed(
             title="! You done? !",
             description=ERROR_MESSAGE_CHEAT_SHEET,
         )
 
-    def result_fmt(self, url: str, body_text: str) -> Tuple[bool, Union[str, discord.Embed]]:
+    def result_fmt(self, url: str, body_text: str) -> tuple[bool, Union[str, discord.Embed]]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -351,7 +350,7 @@ class RTFM(Cog):
                 embed=discord.Embed(
                     description="No such tutorial found in the search query.",
                     color=self.bot.color,
-                )
+                ),
             )
         if 70 < match[1] < 90:
             val = await ctx.prompt(f"{ctx.author.mention} Did you mean `{match[0]}`?")
@@ -361,7 +360,7 @@ class RTFM(Cog):
                 await ctx.send(
                     f"{ctx.author.mention} No tag found with your query, you can ask the developer to create one.\n"
                     f"Or consider contributing to the project by creating a tag yourself.\n"
-                    f"See <{self.bot.github}> | `{ctx.prefix}python list` for a list of available tags."
+                    f"See <{self.bot.github}> | `{ctx.prefix}python list` for a list of available tags.",
                 )
                 return
         else:
@@ -379,14 +378,14 @@ class RTFM(Cog):
                 title="List of available tutorials",
                 description="`" + "`, `".join(self._python_cached.keys()) + "`",
                 color=self.bot.color,
-            )
+            ),
         )
 
     @commands.command(aliases=["pypi"])
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def pypisearch(self, ctx: Context, arg: str):
-        """Get info about a Python package directly from PyPi"""
+        """Get info about a Python package directly from PyPi."""
         res_raw = await self.get_package(f"https://pypi.org/pypi/{arg}/json")
 
         try:
@@ -396,7 +395,7 @@ class RTFM(Cog):
                 embed=discord.Embed(
                     description="No such package found in the search query.",
                     color=self.bot.color,
-                )
+                ),
             )
 
         res = res_json.get("info", "Unknown")
@@ -436,7 +435,7 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def npmsearch(self, ctx: Context, arg: str):
-        """Get info about a NPM package directly from the NPM Registry"""
+        """Get info about a NPM package directly from the NPM Registry."""
         res_raw = await self.get_package(f"https://registry.npmjs.org/{arg}/")
 
         res_json = await res_raw.json()
@@ -446,7 +445,7 @@ class RTFM(Cog):
                 embed=discord.Embed(
                     description="No such package found in the search query.",
                     color=0xCC3534,
-                )
+                ),
             )
 
         latest_version = res_json["dist-tags"]["latest"]
@@ -485,7 +484,7 @@ class RTFM(Cog):
             .add_field(name="Repository", value=repository, inline=False)
             .add_field(name="Homepage", value=homepage, inline=True)
             .set_thumbnail(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png"
+                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png",
             )
         )
 
@@ -495,7 +494,7 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def crate(self, ctx: Context, arg: str):
-        """Get info about a Rust package directly from the Crates.IO Registry"""
+        """Get info about a Rust package directly from the Crates.IO Registry."""
         res_raw = await self.get_package(f"https://crates.io/api/v1/crates/{arg}")
 
         res_json = await res_raw.json()
@@ -505,7 +504,7 @@ class RTFM(Cog):
                 embed=discord.Embed(
                     description="No such package found in the search query.",
                     color=0xE03D29,
-                )
+                ),
             )
         main_info = res_json["crate"]
         latest_info = res_json["versions"][0]
@@ -544,13 +543,13 @@ class RTFM(Cog):
                 color=0xE03D29,
             )
             .add_field(name="Published By", value=publisher, inline=True)
-            .add_field(name="Downloads", value="{:,}".format(downloads), inline=True)
+            .add_field(name="Downloads", value=f"{downloads:,}", inline=True)
             .add_field(name="Latest Version", value=latest_version, inline=False)
             .add_field(name="License", value=_license, inline=True)
             .add_field(name="Repository", value=repository, inline=False)
             .add_field(name="Homepage", value=homepage, inline=True)
             .set_thumbnail(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
+                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png",
             )
         )
 
@@ -581,8 +580,8 @@ class RTFM(Cog):
         in a new hastebin and the link will be returned.
 
         When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
-        Useful to hide your syntax fails or when you forgot to print the result."""
-
+        Useful to hide your syntax fails or when you forgot to print the result.
+        """
         if not payload:
             emb = discord.Embed(
                 title="SyntaxError",
@@ -620,7 +619,7 @@ class RTFM(Cog):
                 lang = re.split(r"\s+", payload, maxsplit=1)[0]
         else:
             language, text, errored = prepare_payload(
-                payload
+                payload,
             )  # we call it text but it's an embed if it errored #JustDynamicTypingThings
 
             if errored:
@@ -639,7 +638,7 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def reference(self, ctx: Context, language: str, *, query: str):
-        """Returns element reference from given language"""
+        """Returns element reference from given language."""
         lang = language.strip("`")
 
         if lang.lower() not in self.referred:
@@ -650,7 +649,7 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def documentation(self, ctx: Context, language: str, *, query: str):
-        """Returns element reference from given language"""
+        """Returns element reference from given language."""
         lang = language.strip("`")
 
         if lang.lower() not in self.documented:
@@ -661,7 +660,7 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def man(self, ctx: Context, *, page: str):
-        """Returns the manual's page for a (mostly Debian) linux command"""
+        """Returns the manual's page for a (mostly Debian) linux command."""
         base_url = f"https://man.cx/{page}"
         url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
 
@@ -702,7 +701,7 @@ class RTFM(Cog):
     @run.command()
     @commands.bot_has_permissions(embed_links=True)
     async def list(self, ctx: Context, *, group=None):
-        """Lists available choices for other commands"""
+        """Lists available choices for other commands."""
         choices = {
             "documentations": self.documented,
             "hashing": sorted([h for h in algorithms if h.islower()]),
@@ -732,7 +731,7 @@ class RTFM(Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def ascii(self, ctx: Context, *, text: str):
-        """Returns number representation of characters in text"""
+        """Returns number representation of characters in text."""
         emb = discord.Embed(
             title="Unicode convert",
             description=" ".join([str(ord(letter)) for letter in text]),
@@ -742,14 +741,14 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def unascii(self, ctx: Context, *, text: str):
-        """Reforms string from char codes"""
+        """Reforms string from char codes."""
         try:
             codes = [chr(int(i)) for i in text.split(" ")]
 
             await ctx.reply(
                 embed=discord.Embed(title="Unicode convert", description="".join(codes)).set_footer(
-                    text=f"Invoked by {str(ctx.message.author)}"
-                )
+                    text=f"Invoked by {str(ctx.message.author)}",
+                ),
             )
         except ValueError:
             await ctx.reply("Invalid sequence. Example usage : `[p]unascii 104 101 121`")
@@ -757,7 +756,7 @@ class RTFM(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def byteconvert(self, ctx: Context, value: int, unit=None):
-        """Shows byte conversions of given value"""
+        """Shows byte conversions of given value."""
         if not unit:
             unit = "Mio"
         units = ("O", "Kio", "Mio", "Gio", "Tio", "Pio", "Eio", "Zio", "Yio")
@@ -778,9 +777,8 @@ class RTFM(Cog):
     @commands.command(name="hash")
     @commands.bot_has_permissions(embed_links=True)
     async def _hash(self, ctx: Context, algorithm: str, *, text: str):
-        """
-        Hashes text with a given algorithm
-        UTF-8, returns under hexadecimal form
+        """Hashes text with a given algorithm
+        UTF-8, returns under hexadecimal form.
         """
         algo = algorithm.lower()
 
@@ -798,7 +796,7 @@ class RTFM(Cog):
             hash_object = hashlib.new(algo, text.encode("utf-8"))
 
         emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest()).set_footer(
-            text=f"Invoked by {str(ctx.message.author)}"
+            text=f"Invoked by {str(ctx.message.author)}",
         )
 
         await ctx.reply(embed=emb)
@@ -806,7 +804,8 @@ class RTFM(Cog):
     @commands.command()
     async def charinfo(self, ctx, *, characters: str):
         """Shows you information about a number of characters.
-        Only up to 25 characters at a time."""
+        Only up to 25 characters at a time.
+        """
 
         def to_string(c):
             digit = f"{ord(c):x}"
@@ -818,7 +817,7 @@ class RTFM(Cog):
             return await ctx.send("Output too long to display.")
         await ctx.send(msg)
 
-    async def fetch_data(self, url: str) -> Dict[str, Any]:
+    async def fetch_data(self, url: str) -> dict[str, Any]:
         """Retrieve data as a dictionary."""
         async with self.bot.http_session.get(url) as r:
             return await r.json()
@@ -901,8 +900,7 @@ class RTFM(Cog):
 
     @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks ``willdn`` (will.#0021 - 211756205721255947)
     async def github_repo_info(self, ctx: Context, *repo: str) -> None:
-        """
-        Fetches a repositories' GitHub information.
+        """Fetches a repositories' GitHub information.
         The repository should look like `user/reponame` or `user reponame`.
         """
         repo = "/".join(repo)  # type: ignore
@@ -961,7 +959,7 @@ class RTFM(Cog):
                 f"\N{BULLET} {repo_data['stargazers_count']} \N{WHITE MEDIUM STAR} "
                 f"\N{BULLET} Created At {repo_created_at} "
                 f"\N{BULLET} Last Commit {last_pushed}"
-            )
+            ),
         )
 
         await ctx.send(embed=embed)
@@ -976,8 +974,7 @@ class RTFM(Cog):
         *,
         user_search: Optional[str] = None,
     ) -> None:
-        """
-        Send some articles from RealPython that match the search terms.
+        """Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to a number between 1 and 5 by specifying an amount before the search query.
         If no search query is specified by the user, the home page is sent.
         """
@@ -1002,7 +999,7 @@ class RTFM(Cog):
                         title="Error while searching Real Python",
                         description="There was an error while trying to reach Real Python. Please try again shortly.",
                         color=ctx.author.color,
-                    )
+                    ),
                 )
                 return
 
@@ -1054,7 +1051,7 @@ class RTFM(Cog):
                             "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
                         ),
                         color=ctx.author.color,
-                    )
+                    ),
                 )
                 return
         if not data["items"]:
@@ -1101,11 +1098,10 @@ class RTFM(Cog):
     )
     @commands.bot_has_permissions(embed_links=True)
     async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
-        """
-        Search cheat.sh.
+        """Search cheat.sh.
         Gets a post from https://cheat.sh/python/ by default.
         Usage:
-        --> $cht read json
+        --> $cht read json.
         """
         async with ctx.typing():
             search_string = quote_plus(" ".join(search_terms))
@@ -1131,11 +1127,10 @@ class RTFM(Cog):
     @commands.command(aliases=["wtfp"])
     @commands.bot_has_permissions(embed_links=True)
     async def wtfpython(self, ctx: Context, *, query: Optional[str] = None) -> None:
-        """
-        Search WTF Python repository.
+        """Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
         Usage:
-            --> $wtfp wild imports
+            --> $wtfp wild imports.
         """
         if query is None:
             no_query_embed = discord.Embed(
@@ -1189,17 +1184,15 @@ class RTFM(Cog):
         """Send the author a link to `target_message` via DMs."""
         if not target_message:
             if not ctx.message.reference:
+                msg = "You must either provide a valid message to bookmark, or reply to one.\n\nThe lookup strategy for a message is as follows (in order):\n1. Lookup by '{channel ID}-{message ID}' (retrieved by shift-clicking on 'Copy ID')\n2. Lookup by message ID (the message **must** be in the context channel)\n3. Lookup by message URL"
                 raise commands.BadArgument(
-                    "You must either provide a valid message to bookmark, or reply to one."
-                    "\n\nThe lookup strategy for a message is as follows (in order):"
-                    "\n1. Lookup by '{channel ID}-{message ID}' (retrieved by shift-clicking on 'Copy ID')"
-                    "\n2. Lookup by message ID (the message **must** be in the context channel)"
-                    "\n3. Lookup by message URL"
+                    msg,
                 )
             target_message = ctx.message.reference.resolved  # type: ignore
 
         if not target_message:
-            raise commands.BadArgument("Couldn't find that message.")
+            msg = "Couldn't find that message."
+            raise commands.BadArgument(msg)
 
         assert isinstance(target_message, discord.Message) and isinstance(ctx.author, discord.Member)
 
@@ -1228,7 +1221,7 @@ class RTFM(Cog):
                         str(reaction.emoji) == BOOKMARK_EMOJI,
                         # Reaction was not made by the Bot
                         user.id != self.bot.user.id,
-                    )
+                    ),
                 )
             )
 
@@ -1248,9 +1241,8 @@ class RTFM(Cog):
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 
-    async def kata_id(self, search_link: str, params: Dict[str, Any]) -> Union[str, discord.Embed]:
-        """
-        Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
+    async def kata_id(self, search_link: str, params: dict[str, Any]) -> Union[str, discord.Embed]:
+        """Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
         codewars.com API to use.
         """
@@ -1266,7 +1258,8 @@ class RTFM(Cog):
             first_kata_div = await _doc.get_ele(soup.find_all, "div", class_="item-title px-0")  # type: ignore
 
             if not first_kata_div:
-                raise commands.BadArgument("No katas could be found with the filters provided.")
+                msg = "No katas could be found with the filters provided."
+                raise commands.BadArgument(msg)
             if len(first_kata_div) >= 3:
                 first_kata_div = choice(first_kata_div[:3])
             elif "q=" not in search_link:
@@ -1276,9 +1269,8 @@ class RTFM(Cog):
 
             return first_kata_div.a["href"].split("/")[-1]
 
-    async def kata_information(self, kata_id: str) -> Union[Dict[str, Any], discord.Embed]:
-        """
-        Returns the information about the Kata.
+    async def kata_information(self, kata_id: str) -> Union[dict[str, Any], discord.Embed]:
+        """Returns the information about the Kata.
         Uses the codewars.com API to get information about the kata using `kata_id`.
         """
         async with self.bot.http_session.get(API_ROOT.format(kata_id=kata_id)) as response:
@@ -1292,7 +1284,7 @@ class RTFM(Cog):
             return await response.json()
 
     @staticmethod
-    def main_embed(kata_information: Dict[str, Any]) -> discord.Embed:
+    def main_embed(kata_information: dict[str, Any]) -> discord.Embed:
         """Creates the main embed which displays the name, difficulty and description of the kata."""
         kata_description = kata_information["description"]
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
@@ -1319,7 +1311,7 @@ class RTFM(Cog):
         return kata_embed
 
     @staticmethod
-    def language_embed(kata_information: Dict[str, Any]) -> discord.Embed:
+    def language_embed(kata_information: dict[str, Any]) -> discord.Embed:
         """Creates the 'language embed' which displays all languages the kata supports."""
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
 
@@ -1331,9 +1323,8 @@ class RTFM(Cog):
         )
 
     @staticmethod
-    def tags_embed(kata_information: Dict[str, Any]) -> discord.Embed:
-        """
-        Creates the 'tags embed' which displays all the tags of the Kata.
+    def tags_embed(kata_information: dict[str, Any]) -> discord.Embed:
+        """Creates the 'tags embed' which displays all the tags of the Kata.
         Tags explain what the kata is about, this is what codewars.com calls categories.
         """
         kata_url = f"https://codewars.com/kata/{kata_information['id']}"
@@ -1348,8 +1339,7 @@ class RTFM(Cog):
 
     @staticmethod
     def miscellaneous_embed(kata_information: dict) -> discord.Embed:
-        """
-        Creates the 'other information embed' which displays miscellaneous information about the kata.
+        """Creates the 'other information embed' which displays miscellaneous information about the kata.
         This embed shows statistics such as the total number of people who completed the kata,
         the total number of stars of the kata, etc.
         """
@@ -1386,8 +1376,7 @@ class RTFM(Cog):
 
     @staticmethod
     def create_view(dropdown: InformationDropdown, link: str) -> discord.ui.View:
-        """
-        Creates the discord.py View for the Discord message components (dropdowns and buttons).
+        """Creates the discord.py View for the Discord message components (dropdowns and buttons).
         The discord UI is implemented onto the embed, where the user can choose what information about the kata they
         want, along with a link button to the kata itself.
         """
@@ -1399,8 +1388,7 @@ class RTFM(Cog):
     @commands.command(aliases=["kata"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def challenge(self, ctx: Context, language: str = "python", *, query: Optional[str] = None) -> None:
-        """
-        The challenge command pulls a random kata (challenge) from codewars.com.
+        """The challenge command pulls a random kata (challenge) from codewars.com.
         The different ways to use this command are:
         `.challenge <language>` - Pulls a random challenge within that language's scope.
         `.challenge <language> <difficulty>` - The difficulty can be from 1-8,
@@ -1411,7 +1399,8 @@ class RTFM(Cog):
         """
         language = language.lower()
         if language not in SUPPORTED_LANGUAGES["stable"] + SUPPORTED_LANGUAGES["beta"]:
-            raise commands.BadArgument("This is not a recognized language on codewars.com!")
+            msg = "This is not a recognized language on codewars.com!"
+            raise commands.BadArgument(msg)
 
         get_kata_link = f"https://codewars.com/kata/search/{language}"
         params = {}
@@ -1421,8 +1410,9 @@ class RTFM(Cog):
                 query_splitted = query.split("," if ", " not in query else ", ")
 
                 if len(query_splitted) > 2:
+                    msg = "There can only be one comma within the query, separating the difficulty and the query itself."
                     raise commands.BadArgument(
-                        "There can only be one comma within the query, separating the difficulty and the query itself."
+                        msg,
                     )
 
                 query, level = query_splitted
@@ -1472,7 +1462,7 @@ class RTFM(Cog):
         self,
         ctx: Context,
     ):
-        """To get the list for all upcoming and ongoing competitive coding contests"""
+        """To get the list for all upcoming and ongoing competitive coding contests."""
         url = "https://kontests.net/api/v1/all"
         res = await self.bot.http_session.get(url)
 
@@ -1494,7 +1484,7 @@ class RTFM(Cog):
 **Ends in:** <t:{get_datetime(i['end_time'])}:R>
 **Website:** {i['site']}
 **Status:** {i['status']}
-"""
+""",
             )
         p = SimplePages(ls, ctx=ctx, per_page=3)
         await p.start()

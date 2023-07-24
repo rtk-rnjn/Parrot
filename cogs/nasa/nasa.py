@@ -4,7 +4,7 @@ import io
 import os
 import random
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -24,21 +24,22 @@ def date_parser(arg: Optional[str] = None) -> str:
     try:
         datetime.strptime(arg, "%Y-%m-%d")
     except ValueError:
-        raise commands.BadArgument("Invalid date format. Use YYYY-MM-DD") from None
+        msg = "Invalid date format. Use YYYY-MM-DD"
+        raise commands.BadArgument(msg) from None
     return arg
 
 
 def upper_split(ini_str: str) -> str:
-    """To split the the given string by camel case"""
+    """To split the the given string by camel case."""
     res_pos = [i for i, e in enumerate(f"{ini_str}A") if e.isupper()]
     res_list = [ini_str[res_pos[j] : res_pos[j + 1]] for j in range(len(res_pos) - 1)]
     return " ".join(res_list)
 
 
 class NASA(Cog):
-    """Incredible NASA API Integration"""
+    """Incredible NASA API Integration."""
 
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.random_agent = random.choice
         self.ON_TESTING = False
@@ -53,7 +54,7 @@ class NASA(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def earth(self, ctx: Context, longitute: float, latitude: float, date: date_parser):
-        """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format"""
+        """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format."""
         if not -90 <= latitude <= 90:
             return await ctx.reply(f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90")
         if not -180 <= latitude <= 180:
@@ -78,7 +79,7 @@ class NASA(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def apod(self, ctx: Context):
-        """Asteroid Picture of the Day"""
+        """Asteroid Picture of the Day."""
         link = f"https://api.nasa.gov/planetary/apod?api_key={NASA_KEY}"
 
         r = await self.bot.http_session.get(link)
@@ -111,7 +112,7 @@ class NASA(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def epic(self, ctx: Context, date: date_parser):
-        """Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format"""
+        """Earth Polychromatic Imaging Camera. Date must be in "YYYY-MM-DD" format."""
         s_link = f"https://epic.gsfc.nasa.gov/api/images.php?date={date}"
 
         r = await self.bot.http_session.get(s_link)
@@ -120,7 +121,7 @@ class NASA(Cog):
         else:
             return
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
         for index in range(len(res)):
             caption = res[index]["caption"]
             im = res[index]["image"]
@@ -146,7 +147,7 @@ class NASA(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def findasteroid(self, ctx: Context, start: date_parser, end: date_parser):
-        """You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format"""
+        """You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format."""
         link = f"https://api.nasa.gov/neo/rest/v1/feed?start_date={start}&end_date={end}&api_key={NASA_KEY}"
 
         r = await self.bot.http_session.get(link)
@@ -154,7 +155,7 @@ class NASA(Cog):
             res = await r.json()
         else:
             return
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for date in res["near_earth_objects"]:
             for index in range(len(res["near_earth_objects"][date])):
@@ -162,7 +163,7 @@ class NASA(Cog):
                 name_end = res["near_earth_objects"][date][index]["name"]
                 id_end = res["near_earth_objects"][date][index]["neo_reference_id"]
                 dia = round(
-                    float(res["near_earth_objects"][date][index]["estimated_diameter"]["meters"]["estimated_diameter_min"])
+                    float(res["near_earth_objects"][date][index]["estimated_diameter"]["meters"]["estimated_diameter_min"]),
                 )
                 danger = res["near_earth_objects"][date][index]["is_potentially_hazardous_asteroid"]
                 approach_date = res["near_earth_objects"][date][index]["close_approach_data"][0]["close_approach_date"]
@@ -199,7 +200,7 @@ class NASA(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def findasteroididid(self, ctx: Context, asteroid_id: int):
-        """Find any asteroid in the space by ID. "$help findaid" for syntax"""
+        """Find any asteroid in the space by ID. "$help findaid" for syntax."""
         link = f"https://api.nasa.gov/neo/rest/v1/neo/{asteroid_id}?api_key={NASA_KEY}"
 
         r = await self.bot.http_session.get(link)
@@ -238,7 +239,7 @@ class NASA(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def mars(self, ctx: Context, date: date_parser):
-        """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format"""
+        """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format."""
         link = f"https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={date}&api_key={NASA_KEY}"
 
         r = await self.bot.http_session.get(link)
@@ -247,7 +248,7 @@ class NASA(Cog):
         else:
             return
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for index in range(len(res["photos"])):
             img = res["photos"][index]["img_src"]
@@ -273,19 +274,19 @@ class NASA(Cog):
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
     async def nasasearch(self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content):
-        """NASA Image and Video Library"""
+        """NASA Image and Video Library."""
         link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
         if r.status >= 300:
             return await ctx.reply(
-                f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}"
+                f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}",
             )
         res = await r.json()
 
         if not res["collection"]["items"]:
             await ctx.reply(f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.")
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
         for index in range(len(res["collection"]["items"])):
             if data := res["collection"]["items"][index]:
                 try:
@@ -344,13 +345,13 @@ class NASA(Cog):
         self,
         ctx: Context,
     ):
-        """Space Weather Database Of Notifications, Knowledge, Information (DONKI)"""
+        """Space Weather Database Of Notifications, Knowledge, Information (DONKI)."""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)
 
     @donki.command(name="cme")
     async def donki_cme(self, ctx: Context, start: date_parser, end: date_parser):
-        """Coronal Mass Ejection"""
+        """Coronal Mass Ejection."""
         url = f"https://api.nasa.gov/DONKI/CME?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(url, headers={"User-Agent": AGENT})
@@ -360,7 +361,7 @@ class NASA(Cog):
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -391,7 +392,7 @@ Instuments: {instruments}
 
     @donki.command(name="gst")
     async def donki_gst(self, ctx: Context, start: date_parser, end: date_parser):
-        """Geomagnetic Storm"""
+        """Geomagnetic Storm."""
         link = f"https://api.nasa.gov/DONKI/GST?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -401,7 +402,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -419,7 +420,7 @@ Link: {link}
 
     @donki.command(name="ips")
     async def donki_ips(self, ctx: Context, start: date_parser, end: date_parser):
-        """Interplanetary Shock"""
+        """Interplanetary Shock."""
         link = f"https://api.nasa.gov/DONKI/IPS?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -429,7 +430,7 @@ Link: {link}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -455,7 +456,7 @@ Instuments: {instruments}
 
     @donki.command(name="flr")
     async def donki_flr(self, ctx: Context, start: date_parser, end: date_parser):
-        """Solar Flare"""
+        """Solar Flare."""
         link = f"https://api.nasa.gov/DONKI/FLR?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -465,7 +466,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -499,7 +500,7 @@ Link: {link}
 
     @donki.command(name="sep")
     async def donki_sep(self, ctx: Context, start: date_parser, end: date_parser):
-        """Solar Energetic Particle"""
+        """Solar Energetic Particle."""
         link = f"https://api.nasa.gov/DONKI/SEP?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -509,7 +510,7 @@ Link: {link}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -534,7 +535,7 @@ Link: {link}
 
     @donki.command(name="mpc")
     async def donki_mpc(self, ctx: Context, start: date_parser, end: date_parser):
-        """Magnetopause Crossing"""
+        """Magnetopause Crossing."""
         link = f"https://api.nasa.gov/DONKI/MPC?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -544,7 +545,7 @@ Link: {link}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -566,7 +567,7 @@ Instuments: {instruments}
 
     @donki.command(name="rbe")
     async def donki_rbe(self, ctx: Context, start: date_parser, end: date_parser):
-        """Radiation Belt Enhancement"""
+        """Radiation Belt Enhancement."""
         link = f"https://api.nasa.gov/DONKI/RBE?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -576,7 +577,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()
@@ -598,7 +599,7 @@ Instuments: {instruments}
 
     @donki.command(name="hhs")
     async def donki_hhs(self, ctx: Context, start: date_parser, end: date_parser):
-        """Hight Speed Stream"""
+        """Hight Speed Stream."""
         link = f"https://api.nasa.gov/DONKI/HHS?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
@@ -608,7 +609,7 @@ Instuments: {instruments}
         if not res:
             return await ctx.reply(f"{ctx.author.mention} no results")
 
-        em_list: List[discord.Embed] = []
+        em_list: list[discord.Embed] = []
 
         for data in res:
             em = discord.Embed()

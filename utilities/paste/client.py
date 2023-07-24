@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional
+from typing import Optional
 
 import aiohttp
 
@@ -24,7 +24,7 @@ class Client:
         self.http: HTTPClient = HTTPClient(token=token, session=session)
 
     async def close(self) -> None:
-        """|coro|
+        """|coro|.
 
         Closes the internal HTTP session and this client.
         """
@@ -45,7 +45,7 @@ class Client:
     async def create_multifile_paste(
         self,
         *,
-        files: List[File],
+        files: list[File],
         password: Optional[str] = None,
         expires: Optional[datetime.datetime] = None,
     ) -> Paste:
@@ -57,7 +57,7 @@ class Client:
         await self.http.delete_pastes(paste_ids=[paste_id])
 
     @require_authentication
-    async def delete_pastes(self, paste_ids: List[str], /) -> None:
+    async def delete_pastes(self, paste_ids: list[str], /) -> None:
         await self.http.delete_pastes(paste_ids=paste_ids)
 
     async def get_paste(self, paste_id: str, *, password: Optional[str] = None) -> Paste:
@@ -65,7 +65,7 @@ class Client:
         return Paste.from_data(data)
 
     @require_authentication
-    async def get_user_pastes(self, *, limit: int = 100) -> List[Paste]:
+    async def get_user_pastes(self, *, limit: int = 100) -> list[Paste]:
         data = await self.http.get_my_pastes(limit=limit)
 
         return [Paste.from_data(x) for x in data]

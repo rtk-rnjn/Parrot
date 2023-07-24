@@ -12,7 +12,7 @@ async def update_db(*, ctx: Context, key: str, cmd: str, value: Any, op: str) ->
         {
             op: {
                 f"cmd_config.{key}_{cmd.upper().replace(' ', '_')}": value,
-            }
+            },
         },
         upsert=True,
     )
@@ -23,7 +23,7 @@ def get_text(
     ctx: Context,
     cmd_cog: str,
     target: Optional[Union[discord.Role, discord.abc.GuildChannel]],
-    tp: Literal['enable', 'disable'],
+    tp: Literal["enable", "disable"],
 ) -> str:
     is_are = "commands are" if cmd_cog == "all" else "is"
     initial_str = f"{ctx.author.mention} **{cmd_cog}** {is_are} now {tp}"
@@ -52,7 +52,7 @@ async def _enable(
         await update_db(ctx=ctx, key="CMD_ROLE_ENABLE", cmd=cmd_cog, value=target.id, op="$addToSet")
         await update_db(ctx=ctx, key="CMD_ROLE_DISABLE", cmd=cmd_cog, value=target.id, op="$pull")
 
-    await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, target=target, tp='enable'))
+    await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, target=target, tp="enable"))
 
 
 async def _disable(
@@ -72,4 +72,4 @@ async def _disable(
         await update_db(ctx=ctx, key="CMD_ROLE_DISABLE", cmd=cmd_cog, value=target.id, op="$addToSet")
         await update_db(ctx=ctx, key="CMD_ROLE_ENABLE", cmd=cmd_cog, value=target.id, op="$pull")
 
-    await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, target=target, tp='disable'))
+    await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, target=target, tp="disable"))

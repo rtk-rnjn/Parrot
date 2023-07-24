@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import TYPE_CHECKING, List, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Optional, TypeVar
 
 import discord
 
@@ -13,7 +13,7 @@ T = TypeVar("T")
 
 
 class Sudoku:
-    def __init__(self, base: int = 3):
+    def __init__(self, base: int = 3) -> None:
         self.base: int = base
         self.side = base**2
 
@@ -33,7 +33,7 @@ class Sudoku:
     def pattern(self, r: int, c: int) -> int:
         return (self.base * (r % self.base) + r // self.base + c) % self.side
 
-    def suffle(self, s: List[T]) -> List[T]:
+    def suffle(self, s: list[T]) -> list[T]:
         return random.sample(s, len(s))
 
     def expand_line(self, line: str) -> str:
@@ -167,11 +167,11 @@ class Sudoku:
         return self.current_number() == 0 or self.current_number() < 0
 
     @property
-    def cursor_position(self) -> Tuple[int, int]:
+    def cursor_position(self) -> tuple[int, int]:
         return self._current_row, self._current_col
 
     @cursor_position.setter
-    def cursor_position(self, position: Tuple[int, int]) -> None:
+    def cursor_position(self, position: tuple[int, int]) -> None:
         self._current_row, self._current_col = position
 
     def erase_current_position(self) -> None:
@@ -226,7 +226,7 @@ class SudokuView(discord.ui.View):
                     label=str(i),
                     custom_id=f"sudoku_{i}",
                     row=3,
-                )
+                ),
             )
 
         for j in range(6, 9 + 1):
@@ -235,7 +235,7 @@ class SudokuView(discord.ui.View):
                     label=str(j),
                     custom_id=f"sudoku_{j}",
                     row=4,
-                )
+                ),
             )
 
     async def on_timeout(self):

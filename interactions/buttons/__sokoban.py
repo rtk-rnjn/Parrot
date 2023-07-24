@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import time
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import discord
 from core import Context
 
 
 class SokobanGame:
-    """The real sokoban game"""
+    """The real sokoban game."""
 
     legend = {
         " ": "<:blank:922048341964103710>",
@@ -21,13 +21,13 @@ class SokobanGame:
 
     # Do not DM me or mail me how this works
     # Thing is, I myself forget
-    def __init__(self, level: List[List[str]]):
+    def __init__(self, level: list[list[str]]) -> None:
         self.level = level
         self.player = []
         self.blocks = []
         self.target = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.show()
 
     def display_board(self) -> str:
@@ -150,7 +150,7 @@ class SokobanGameView(discord.ui.View):
         level: Optional[int] = None,
         *,
         timeout: float = 60.0,
-    ):
+    ) -> None:
         super().__init__(timeout=timeout)
         self.user = user
         self.game = game

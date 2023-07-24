@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import List
 
 import aiofiles
 import yaml
@@ -22,9 +21,9 @@ def roadmap_pdf(self, endpoint: str) -> discord.File:
         return discord.File(f, filename=f"{endpoint}.pdf")
 
 
-def get_roadmap_select_view(ls: List[str]) -> discord.ui.Select:
+def get_roadmap_select_view(ls: list[str]) -> discord.ui.Select:
     class DropdownFirstHalf(discord.ui.Select):
-        def __init__(self):
+        def __init__(self) -> None:
             options = [discord.SelectOption(label=name, description=f"Roadmap for {name}") for name in ls]
 
             super().__init__(
@@ -67,7 +66,7 @@ def get_roadmap_select_view(ls: List[str]) -> discord.ui.Select:
 class DropdownView(discord.ui.View):
     message: discord.Message
 
-    def __init__(self, ctx: Context):
+    def __init__(self, ctx: Context) -> None:
         super().__init__(timeout=30)
 
         self.ctx = ctx
@@ -80,7 +79,7 @@ class DropdownView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         for item in self.children:
-            if isinstance(item, (discord.ui.Select, discord.ui.Button)):
+            if isinstance(item, discord.ui.Select | discord.ui.Button):
                 item.disabled = True
                 if isinstance(item, discord.ui.Button):
                     item.style = discord.ButtonStyle.gray

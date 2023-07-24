@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # https://github.com/Rapptz/discord-ext-menus/blob/master/discord/ext/menus/__init__.py
 
 import asyncio
@@ -22,29 +21,29 @@ class MenuError(Exception):
 
 
 class CannotEmbedLinks(MenuError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Bot does not have embed links permission in this channel.")
 
 
 class CannotSendMessages(MenuError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Bot cannot send messages in this channel.")
 
 
 class CannotAddReactions(MenuError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Bot cannot add reactions in this channel.")
 
 
 class CannotReadMessageHistory(MenuError):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Bot does not have Read Message History permissions in this channel.")
 
 
 class Position:
     __slots__ = ("number", "bucket")
 
-    def __init__(self, number, *, bucket=1):
+    def __init__(self, number, *, bucket=1) -> None:
         self.bucket = bucket
         self.number = number
 
@@ -68,21 +67,21 @@ class Position:
         r = Position.__lt__(self, other)
         return NotImplemented if r is NotImplemented else not r
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{0.__class__.__name__}: {0.number}>".format(self)
 
 
 class Last(Position):
     __slots__ = ()
 
-    def __init__(self, number=0):
+    def __init__(self, number=0) -> None:
         super().__init__(number, bucket=2)
 
 
 class First(Position):
     __slots__ = ()
 
-    def __init__(self, number=0):
+    def __init__(self, number=0) -> None:
         super().__init__(number, bucket=0)
 
 
@@ -115,7 +114,7 @@ class Button:
     of type :class:`discord.RawReactionActionEvent`.
 
     Attributes
-    ------------
+    ----------
     emoji: :class:`discord.PartialEmoji`
         The emoji to use as the button. Note that passing a string will
         transform it into a :class:`discord.PartialEmoji`.
@@ -137,7 +136,7 @@ class Button:
 
     __slots__ = ("emoji", "_action", "_skip_if", "position", "lock")
 
-    def __init__(self, emoji, action, *, skip_if=None, position=None, lock=True):
+    def __init__(self, emoji, action, *, skip_if=None, position=None, lock=True) -> None:
         self.emoji = _cast_emoji(emoji)
         self.action = action
         self.skip_if = skip_if
@@ -192,7 +191,7 @@ class Button:
             return
         return self._action(menu, payload)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.emoji)
 
     def is_valid(self, menu):
@@ -225,7 +224,7 @@ def button(emoji, **kwargs):
                 await self.message.edit(content=f"That's not nice {self.ctx.author}...")
 
     Parameters
-    ------------
+    ----------
     emoji: Union[:class:`str`, :class:`discord.PartialEmoji`]
         The emoji to use for the button.
     """
@@ -251,7 +250,7 @@ class _MenuMeta(type):
         if _ := kwargs.pop("inherit_buttons", True):
             # walk MRO to get all buttons even in subclasses
             for base in reversed(new_cls.__mro__):
-                for elem, value in base.__dict__.items():
+                for _elem, value in base.__dict__.items():
                     try:
                         value.__menu_button__
                     except AttributeError:
@@ -259,7 +258,7 @@ class _MenuMeta(type):
                     else:
                         buttons.append(value)
         else:
-            for elem, value in attrs.items():
+            for _elem, value in attrs.items():
                 try:
                     value.__menu_button__
                 except AttributeError:
@@ -286,7 +285,7 @@ class Menu(metaclass=_MenuMeta):
     ``payload`` is of type :class:`discord.RawReactionActionEvent`.
 
     Attributes
-    ------------
+    ----------
     timeout: :class:`float`
         The timeout to wait between button inputs.
     delete_message_after: :class:`bool`
@@ -319,7 +318,7 @@ class Menu(metaclass=_MenuMeta):
         clear_reactions_after=False,
         check_embeds=False,
         message=None,
-    ):
+    ) -> None:
         self.timeout = timeout
         self.delete_message_after = delete_message_after
         self.clear_reactions_after = clear_reactions_after
@@ -342,7 +341,7 @@ class Menu(metaclass=_MenuMeta):
         Skipped buttons are not in the resulting dictionary.
 
         Returns
-        ---------
+        -------
         Mapping[:class:`str`, :class:`Button`]
             A mapping of button emoji to the actual button class.
         """
@@ -350,7 +349,7 @@ class Menu(metaclass=_MenuMeta):
         return {button.emoji: button for button in buttons if button.is_valid(self)}
 
     def add_button(self, button, *, react=False):
-        """|maybecoro|
+        """|maybecoro|.
 
         Adds a button to the list of buttons.
 
@@ -369,7 +368,7 @@ class Menu(metaclass=_MenuMeta):
             is not guaranteed.
 
         Parameters
-        ------------
+        ----------
         button: :class:`Button`
             The button to add.
         react: :class:`bool`
@@ -377,13 +376,12 @@ class Menu(metaclass=_MenuMeta):
             Note this turns the method into a coroutine.
 
         Raises
-        ---------
+        ------
         MenuError
             Tried to use ``react`` when the menu had not been started.
         discord.HTTPException
             Adding the reaction failed.
         """
-
         self._buttons[button.emoji] = button
 
         if react:
@@ -402,19 +400,20 @@ class Menu(metaclass=_MenuMeta):
                 return wrapped()
 
             async def dummy():
-                raise MenuError("Menu has not been started yet")
+                msg = "Menu has not been started yet"
+                raise MenuError(msg)
 
             return dummy()
 
     def remove_button(self, emoji, *, react=False):
-        """|maybecoro|
+        """|maybecoro|.
 
         Removes a button from the list of buttons.
 
         This operates similar to :meth:`add_button`.
 
         Parameters
-        ------------
+        ----------
         emoji: Union[:class:`Button`, :class:`str`]
             The emoji or the button to remove.
         react: :class:`bool`
@@ -422,13 +421,12 @@ class Menu(metaclass=_MenuMeta):
             Note this turns the method into a coroutine.
 
         Raises
-        ---------
+        ------
         MenuError
             Tried to use ``react`` when the menu had not been started.
         discord.HTTPException
             Removing the reaction failed.
         """
-
         emoji = emoji.emoji if isinstance(emoji, Button) else _cast_emoji(emoji)
         self._buttons.pop(emoji, None)
 
@@ -445,12 +443,13 @@ class Menu(metaclass=_MenuMeta):
                 return wrapped()
 
             async def dummy():
-                raise MenuError("Menu has not been started yet")
+                msg = "Menu has not been started yet"
+                raise MenuError(msg)
 
             return dummy()
 
     def clear_buttons(self, *, react=False):
-        """|maybecoro|
+        """|maybecoro|.
 
         Removes all buttons from the list of buttons.
 
@@ -460,19 +459,18 @@ class Menu(metaclass=_MenuMeta):
         will need to be awaited.
 
         Parameters
-        ------------
+        ----------
         react: :class:`bool`
             Whether to clear the reactions if the menu has been started.
             Note this turns the method into a coroutine.
 
         Raises
-        ---------
+        ------
         MenuError
             Tried to use ``react`` when the menu had not been started.
         discord.HTTPException
             Clearing the reactions failed.
         """
-
         self._buttons.clear()
 
         if react:
@@ -502,7 +500,8 @@ class Menu(metaclass=_MenuMeta):
                 return wrapped()
 
             async def dummy():
-                raise MenuError("Menu has not been started yet")
+                msg = "Menu has not been started yet"
+                raise MenuError(msg)
 
             return dummy()
 
@@ -531,12 +530,12 @@ class Menu(metaclass=_MenuMeta):
         There should be no reason to override this function for most users.
 
         Parameters
-        ------------
+        ----------
         payload: :class:`discord.RawReactionActionEvent`
             The payload to check.
 
         Returns
-        ---------
+        -------
         :class:`bool`
             Whether the payload should be processed.
         """
@@ -623,12 +622,12 @@ class Menu(metaclass=_MenuMeta):
                 pass
 
     async def update(self, payload):
-        """|coro|
+        """|coro|.
 
         Updates the menu after an event has been received.
 
         Parameters
-        -----------
+        ----------
         payload: :class:`discord.RawReactionActionEvent`
             The reaction event that triggered this update.
         """
@@ -647,7 +646,7 @@ class Menu(metaclass=_MenuMeta):
             await self.on_menu_button_error(exc)
 
     async def on_menu_button_error(self, exc):
-        """|coro|
+        """|coro|.
 
         Handles reporting of errors while updating the menu from events.
         The default behaviour is to log the exception.
@@ -664,12 +663,12 @@ class Menu(metaclass=_MenuMeta):
         log.exception("Unhandled exception during menu update.", exc_info=exc)
 
     async def start(self, ctx, *, channel=None, wait=False):
-        """|coro|
+        """|coro|.
 
         Starts the interactive menu session.
 
         Parameters
-        -----------
+        ----------
         ctx: :class:`Context`
             The invocation context to use.
         channel: :class:`discord.abc.Messageable`
@@ -680,13 +679,12 @@ class Menu(metaclass=_MenuMeta):
             returning back to the caller.
 
         Raises
-        -------
+        ------
         MenuError
             An error happened when verifying permissions.
         discord.HTTPException
             Adding a reaction failed.
         """
-
         # Clear the buttons cache and re-compute if possible.
         try:
             del self.buttons
@@ -725,21 +723,21 @@ class Menu(metaclass=_MenuMeta):
                 await self._event.wait()
 
     async def finalize(self, timed_out):
-        """|coro|
+        """|coro|.
 
         A coroutine that is called when the menu loop has completed
         its run. This is useful if some asynchronous clean-up is
         required after the fact.
 
         Parameters
-        --------------
+        ----------
         timed_out: :class:`bool`
             Whether the menu completed due to timing out.
         """
         return
 
     async def send_initial_message(self, ctx, channel):
-        """|coro|
+        """|coro|.
 
         Sends the initial message for the menu session.
 
@@ -750,14 +748,14 @@ class Menu(metaclass=_MenuMeta):
         menu via :meth:`start`.
 
         Parameters
-        ------------
+        ----------
         ctx: :class:`Context`
             The invocation context to use.
         channel: :class:`discord.abc.Messageable`
             The messageable to send the message to.
 
         Returns
-        --------
+        -------
         :class:`discord.Message`
             The message that has been sent.
         """
@@ -794,7 +792,7 @@ class PageSource:
             self.__prepare = True
 
     async def prepare(self):
-        """|coro|
+        """|coro|.
 
         A coroutine that is called after initialisation
         but before anything else to do some asynchronous set up
@@ -813,7 +811,7 @@ class PageSource:
         Subclasses must implement this.
 
         Returns
-        --------
+        -------
         :class:`bool`
             Whether to trigger pagination.
         """
@@ -826,7 +824,7 @@ class PageSource:
         The default implementation returns ``None``.
 
         Returns
-        --------
+        -------
         Optional[:class:`int`]
             The maximum number of pages required to properly
             paginate the elements, if given.
@@ -834,7 +832,7 @@ class PageSource:
         return None
 
     async def get_page(self, page_number):
-        """|coro|
+        """|coro|.
 
         An abstract method that retrieves an object representing the object to format.
 
@@ -846,12 +844,12 @@ class PageSource:
             if there is a maximum number of pages.
 
         Parameters
-        -----------
+        ----------
         page_number: :class:`int`
             The page number to access.
 
         Returns
-        ---------
+        -------
         Any
             The object represented by that page.
             This is passed into :meth:`format_page`.
@@ -859,7 +857,7 @@ class PageSource:
         raise NotImplementedError
 
     async def format_page(self, menu, page):
-        """|maybecoro|
+        """|maybecoro|.
 
         An abstract method to format the page.
 
@@ -879,14 +877,14 @@ class PageSource:
         ``embed`` and ``content``.
 
         Parameters
-        ------------
+        ----------
         menu: :class:`Menu`
             The menu that wants to format this page.
         page: Any
             The page returned by :meth:`PageSource.get_page`.
 
         Returns
-        ---------
+        -------
         Union[:class:`str`, :class:`discord.Embed`, :class:`dict`]
             See above.
         """
@@ -897,13 +895,13 @@ class MenuPages(Menu):
     """A special type of Menu dedicated to pagination.
 
     Attributes
-    ------------
+    ----------
     current_page: :class:`int`
         The current page that we are in. Zero-indexed
         between [0, :attr:`PageSource.max_pages`).
     """
 
-    def __init__(self, source, **kwargs):
+    def __init__(self, source, **kwargs) -> None:
         self._source = source
         self.current_page = 0
         super().__init__(**kwargs)
@@ -914,7 +912,7 @@ class MenuPages(Menu):
         return self._source
 
     async def change_source(self, source):
-        """|coro|
+        """|coro|.
 
         Changes the :class:`PageSource` to a different one at runtime.
 
@@ -923,13 +921,13 @@ class MenuPages(Menu):
         changes the :attr:`current_page` to 0.
 
         Raises
-        --------
+        ------
         TypeError
             A :class:`PageSource` was not passed.
         """
-
         if not isinstance(source, PageSource):
-            raise TypeError("Expected {0!r} not {1.__class__!r}.".format(PageSource, source))
+            msg = f"Expected {PageSource!r} not {source.__class__!r}."
+            raise TypeError(msg)
 
         self._source = source
         self.current_page = 0
@@ -956,7 +954,7 @@ class MenuPages(Menu):
         await self.message.edit(**kwargs)
 
     async def send_initial_message(self, ctx, channel):
-        """|coro|
+        """|coro|.
 
         The default implementation of :meth:`Menu.send_initial_message`
         for the interactive pagination session.
@@ -995,17 +993,17 @@ class MenuPages(Menu):
         skip_if=_skip_double_triangle_buttons,
     )
     async def go_to_first_page(self, payload):
-        """go to the first page"""
+        """Go to the first page."""
         await self.show_page(0)
 
     @button("\N{BLACK LEFT-POINTING TRIANGLE}\ufe0f", position=First(1))
     async def go_to_previous_page(self, payload):
-        """go to the previous page"""
+        """Go to the previous page."""
         await self.show_checked_page(self.current_page - 1)
 
     @button("\N{BLACK RIGHT-POINTING TRIANGLE}\ufe0f", position=Last(0))
     async def go_to_next_page(self, payload):
-        """go to the next page"""
+        """Go to the next page."""
         await self.show_checked_page(self.current_page + 1)
 
     @button(
@@ -1014,13 +1012,13 @@ class MenuPages(Menu):
         skip_if=_skip_double_triangle_buttons,
     )
     async def go_to_last_page(self, payload):
-        """go to the last page"""
+        """Go to the last page."""
         # The call here is safe because it's guarded by skip_if
         await self.show_page(self._source.get_max_pages() - 1)
 
     @button("\N{BLACK SQUARE FOR STOP}\ufe0f", position=Last(2))
     async def stop_pages(self, payload):
-        """stops the pagination session."""
+        """Stops the pagination session."""
         self.stop()
 
 
@@ -1031,14 +1029,14 @@ class ListPageSource(PageSource):
     to the user. To do so, implement the :meth:`format_page` method.
 
     Attributes
-    ------------
+    ----------
     entries: Sequence[Any]
         The sequence of items to paginate.
     per_page: :class:`int`
         How many elements are in a page.
     """
 
-    def __init__(self, entries, *, per_page):
+    def __init__(self, entries, *, per_page) -> None:
         self.entries = entries
         self.per_page = per_page
 
@@ -1064,7 +1062,7 @@ class ListPageSource(PageSource):
         element. Otherwise it returns at most :attr:`per_page` elements.
 
         Returns
-        ---------
+        -------
         Union[Any, List[Any]]
             The data returned.
         """
@@ -1086,7 +1084,7 @@ class GroupByPageSource(ListPageSource):
     to the user. To do so, implement the :meth:`format_page` method.
 
     Parameters
-    ------------
+    ----------
     entries: Sequence[Any]
         The sequence of items to paginate and group.
     key: Callable[[Any], Any]
@@ -1098,7 +1096,7 @@ class GroupByPageSource(ListPageSource):
         How many elements to have per page of the group.
     """
 
-    def __init__(self, entries, *, key, per_page, sort=True):
+    def __init__(self, entries, *, key, per_page, sort=True) -> None:
         self.__entries = sorted(entries, key=key) if sort else entries
         nested = []
         self.nested_per_page = per_page
@@ -1123,7 +1121,7 @@ class GroupByPageSource(ListPageSource):
         the return type of the ``entry`` parameter is documented.
 
         Parameters
-        ------------
+        ----------
         menu: :class:`Menu`
             The menu that wants to format this page.
         entry
@@ -1132,7 +1130,7 @@ class GroupByPageSource(ListPageSource):
             group.
 
         Returns
-        ---------
+        -------
         :class:`dict`
             A dictionary representing keyword-arguments to pass to
             the message related calls.
@@ -1145,11 +1143,13 @@ def _aiter(obj, *, _isasync=inspect.iscoroutinefunction):
     try:
         async_iter = cls.__aiter__
     except AttributeError:
-        raise TypeError("{0.__name__!r} object is not an async iterable".format(cls))
+        msg = f"{cls.__name__!r} object is not an async iterable"
+        raise TypeError(msg)
 
     async_iter = async_iter(obj)
     if _isasync(async_iter):
-        raise TypeError("{0.__name__!r} object is not an async iterable".format(cls))
+        msg = f"{cls.__name__!r} object is not an async iterable"
+        raise TypeError(msg)
     return async_iter
 
 
@@ -1160,14 +1160,14 @@ class AsyncIteratorPageSource(PageSource):
     to the user. To do so, implement the :meth:`format_page` method.
 
     Parameters
-    ------------
+    ----------
     iter: AsyncIterator[Any]
         The asynchronous iterator to paginate.
     per_page: :class:`int`
         How many elements to have per page.
     """
 
-    def __init__(self, iterator, *, per_page):
+    def __init__(self, iterator, *, per_page) -> None:
         self.iterator = _aiter(iterator)
         self.per_page = per_page
         self._exhausted = False
@@ -1195,7 +1195,8 @@ class AsyncIteratorPageSource(PageSource):
 
     async def _get_single_page(self, page_number):
         if page_number < 0:
-            raise IndexError("Negative page number.")
+            msg = "Negative page number."
+            raise IndexError(msg)
 
         if not self._exhausted and len(self._cache) <= page_number:
             await self._iterate((page_number + 1) - len(self._cache))
@@ -1203,7 +1204,8 @@ class AsyncIteratorPageSource(PageSource):
 
     async def _get_page_range(self, page_number):
         if page_number < 0:
-            raise IndexError("Negative page number.")
+            msg = "Negative page number."
+            raise IndexError(msg)
 
         base = page_number * self.per_page
         max_base = base + self.per_page
@@ -1212,7 +1214,8 @@ class AsyncIteratorPageSource(PageSource):
 
         entries = self._cache[base:max_base]
         if not entries and max_base > len(self._cache):
-            raise IndexError("Went too far")
+            msg = "Went too far"
+            raise IndexError(msg)
         return entries
 
     async def get_page(self, page_number):
@@ -1223,7 +1226,7 @@ class AsyncIteratorPageSource(PageSource):
         element. Otherwise it returns at most :attr:`per_page` elements.
 
         Returns
-        ---------
+        -------
         Union[Any, List[Any]]
             The data returned.
         """

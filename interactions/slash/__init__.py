@@ -10,7 +10,7 @@ from discord.ext import commands
 
 
 class ContextMenu(Cog):
-    def __init__(self, bot: Parrot):
+    def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
         self.__interpret_as_command = app_commands.ContextMenu(
@@ -67,7 +67,7 @@ class ContextMenu(Cog):
                 fmt = await ctx.bot.tree.sync()
 
             await ctx.send(
-                f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced {len(fmt)} commands {'globally' if spec is None else 'to the current guild.'}"
+                f"{ctx.author.mention} \N{SATELLITE ANTENNA} Synced {len(fmt)} commands {'globally' if spec is None else 'to the current guild.'}",
             )
 
         else:

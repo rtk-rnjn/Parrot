@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import discord
 from core import Cog, Parrot
@@ -33,7 +33,7 @@ class Sector17Listeners(Cog):
         self,
         invoker_message: discord.Message,
         *,
-        startswith: Union[str, Tuple[str, ...]] = "",
+        startswith: Union[str, tuple[str, ...]] = "",
         in_channel: Optional[int] = None,
     ):
         def check(message: discord.Message) -> bool:
@@ -50,7 +50,7 @@ class Sector17Listeners(Cog):
             return (
                 message.author.id == OWO_BOT
                 and message.channel.id == (in_channel or invoker_message.channel.id)
-                and invoker_message.author.display_name in getattr(embed.author, "name")
+                and invoker_message.author.display_name in embed.author.name
                 and "Slow down" not in message.content
             )
 
@@ -97,7 +97,7 @@ class Sector17Listeners(Cog):
             self.owo_pray_curse(message, content),
         )
 
-    def _get_command_list(self, data: Dict[str, Union[List[str], str]]) -> Tuple[str, ...]:
+    def _get_command_list(self, data: dict[str, Union[list[str], str]]) -> tuple[str, ...]:
         ls = []
 
         for key, value in data.items():
@@ -109,7 +109,7 @@ class Sector17Listeners(Cog):
                             # f"{self.__current_owo_prefix} {v}",
                             f"owo{v}",
                             f"owo {v}",
-                        )
+                        ),
                     )
             else:
                 ls.extend(
@@ -118,7 +118,7 @@ class Sector17Listeners(Cog):
                         # f"{self.__current_owo_prefix} {value}",
                         f"owo{value}",
                         f"owo {value}",
-                    )
+                    ),
                 )
             ls.extend(
                 (
@@ -126,7 +126,7 @@ class Sector17Listeners(Cog):
                     # f"{self.__current_owo_prefix} {key}",
                     f"owo{key}",
                     f"owo {key}",
-                )
+                ),
             )
 
         log.debug("Command list: %s", ls)

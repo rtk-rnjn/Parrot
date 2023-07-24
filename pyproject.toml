@@ -10,7 +10,7 @@ line_length = 125
 
 [tool.pyright]
 reportUnnecessaryTypeIgnoreComment = "warning"
-pythonVersion = "3.11"
+pythonVersion = "3.10"
 typeCheckingMode = "basic"
 strictParameterNoneValue = false
 include = [
@@ -24,9 +24,11 @@ exclude = [
 
 [tool.ruff]
 line-length = 150
-ignore = [
-    "E501",  # Line too long
-    "F403",  # Import star used
-    "F405",  # Undefined name
-    "E741",  # Ambiguous variable name
-]
+select = ['ASYNC', 'B', 'C', 'COM', 'E', 'EM', 'F', 'FA', 'G', 'Q', 'T10', 'UP', 'W']
+ignore = ['D105', 'D107', 'D401', "F403", "F405", 'UP007', "E501"]
+target-version = "py310"
+exclude = ["discord"]
+
+[tool.ruff.mccabe]
+max-complexity = 15
+

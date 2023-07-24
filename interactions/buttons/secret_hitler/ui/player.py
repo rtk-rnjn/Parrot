@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, List
+from typing import TYPE_CHECKING, ClassVar
 
 import discord
 from discord import Member as User
@@ -20,7 +20,7 @@ __all__ = (
 
 
 class PlayerButton(SelectButton[Player[User], "PlayerUI"]):
-    def __init__(self, item: Player[User], disabled: bool):
+    def __init__(self, item: Player[User], disabled: bool) -> None:
         super().__init__(
             item,
             style=discord.ButtonStyle.secondary,
@@ -32,7 +32,7 @@ class PlayerButton(SelectButton[Player[User], "PlayerUI"]):
 class PlayerUI(SelectUI):
     button_type: ClassVar[type[PlayerButton]] = PlayerButton
 
-    def __init__(self, game: GameUI, target: Player, options: List[Player[User]]):
+    def __init__(self, game: GameUI, target: Player, options: list[Player[User]]) -> None:
         super().__init__(game, target, options)
 
         for player in self.game.game.players:

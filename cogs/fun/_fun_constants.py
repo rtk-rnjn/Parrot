@@ -1,7 +1,6 @@
 import operator
 import random
 from dataclasses import dataclass
-from typing import List
 
 THUMBNAIL_SIZE = (80, 80)
 
@@ -79,7 +78,7 @@ class QuizEntry:
     """Stores quiz entry (a question and a list of answers)."""
 
     question: str
-    answers: List[str]
+    answers: list[str]
     var_tol: int
 
 
@@ -201,7 +200,7 @@ class DynamicQuestionGen:
                 ("+", operator.add),
                 ("-", operator.sub),
                 ("*", operator.mul),
-            )
+            ),
         )
 
         # if the operator is multiplication, lower the values of the two operands to make it easier

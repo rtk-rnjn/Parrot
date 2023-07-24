@@ -1,4 +1,3 @@
-from typing import List
 
 import discord
 from core import Context, Parrot
@@ -16,7 +15,7 @@ async def _create_todo(bot: Parrot, ctx: Context, name: str, text: str):
                 "time": int(discord.utils.utcnow().timestamp()),
                 "deadline": None,
                 "msglink": ctx.message.jump_url,
-            }
+            },
         )
         await ctx.reply(f"{ctx.author.mention} created as your TODO list")
 
@@ -71,7 +70,7 @@ async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
 
 async def _list_todo(bot: Parrot, ctx: Context):
     collection = ctx.user_collection
-    entries: List[str] = []
+    entries: list[str] = []
     async for data in collection.find({}):
         entries.append(f"({data['msglink']}) {data['id']}")
     try:

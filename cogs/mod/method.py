@@ -4,7 +4,8 @@ import asyncio
 import datetime
 import io
 from collections import Counter
-from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
+from collections.abc import Callable
 
 import discord
 from core import Context, Parrot
@@ -245,7 +246,7 @@ async def _mass_ban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[List[discord.Member], discord.Member],
+    members: Union[list[discord.Member], discord.Member],
     days: int = 0,
     reason: str,
     **kwargs: Any,
@@ -253,8 +254,9 @@ async def _mass_ban(
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
+            msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             raise commands.BadArgument(
-                f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+                msg,
             )
         try:
             if member.id in (ctx.author.id, guild.me.id):
@@ -277,15 +279,16 @@ async def _softban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[List[discord.Member], discord.Member],
+    members: Union[list[discord.Member], discord.Member],
     reason: str,
     **kwargs: Any,
 ):
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
+            msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             raise commands.BadArgument(
-                f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+                msg,
             )
         try:
             if member.id in (ctx.author.id, guild.me.id):
@@ -311,7 +314,7 @@ async def _temp_ban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[List[discord.Member], discord.Member],
+    members: Union[list[discord.Member], discord.Member],
     duration: Union[FutureTime, datetime.datetime],
     reason: str,
     silent: bool = True,
@@ -341,7 +344,7 @@ async def _temp_ban(
                 mod_action=mod_action,
             )
             await destination.send(
-                f"{ctx.author.mention} **{member}** will be unbanned {discord.utils.format_dt(duration.dt, 'R')}!"
+                f"{ctx.author.mention} **{member}** will be unbanned {discord.utils.format_dt(duration.dt, 'R')}!",
             )
 
         except Exception as e:
@@ -383,15 +386,16 @@ async def _timeout(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position and not silent:
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     if member.id in (ctx.author.id, guild.me.id) and not silent:
         await destination.send(f"{ctx.author.mention} don't do that, Bot is only trying to help")
         return
     if member.timed_out_until is not None and member.timed_out_until > discord.utils.utcnow():
         return await destination.send(
-            f"{ctx.author.mention} **{member}** is already on timeout. It will be removed **{discord.utils.format_dt(member.timed_out_until, 'R')}**"
+            f"{ctx.author.mention} **{member}** is already on timeout. It will be removed **{discord.utils.format_dt(member.timed_out_until, 'R')}**",
         )
     try:
         await member.edit(
@@ -400,7 +404,7 @@ async def _timeout(
         )
         if not silent:
             await destination.send(
-                f"{ctx.author.mention} **{member}** is on timeout and will be removed **{discord.utils.format_dt(_datetime, 'R')}**"
+                f"{ctx.author.mention} **{member}** is on timeout and will be removed **{discord.utils.format_dt(_datetime, 'R')}**",
             )
     except Exception as e:
         if not silent:
@@ -452,8 +456,9 @@ async def _mute(
         if silent:
             return
 
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     if member.id in (ctx.author.id, guild.me.id):
         if silent:
@@ -502,7 +507,7 @@ async def _mute(
                         connect=False,
                         speak=False,
                     )
-                if isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
+                if isinstance(channel, discord.VoiceChannel | discord.StageChannel):
                     await channel.set_permissions(muted, connect=False)
                 passed += 1
             except discord.HTTPException:
@@ -571,8 +576,9 @@ async def _kick(
 ):
     try:
         if ctx.author.top_role.position < member.top_role.position and not silent:
+            msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             raise commands.BadArgument(
-                f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+                msg,
             )
         if member.id in (ctx.author.id, guild.me.id) and not silent:
             await destination.send(f"{ctx.author.mention} don't do that, Bot is only trying to help")
@@ -591,15 +597,16 @@ async def _mass_kick(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[List[discord.Member], discord.Member],
+    members: Union[list[discord.Member], discord.Member],
     reason: str,
     **kwargs: Any,
 ):
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position:
+            msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             raise commands.BadArgument(
-                f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+                msg,
             )
         try:
             if member.id in (ctx.author.id, guild.me.id):
@@ -611,7 +618,7 @@ async def _mass_kick(
 
         await asyncio.sleep(0.25)
     await destination.send(
-        f"{ctx.author.mention} **{', '.join([str(member) for member in members])}** are kicked from the server!"
+        f"{ctx.author.mention} **{', '.join([str(member) for member in members])}** are kicked from the server!",
     )
 
 
@@ -625,7 +632,7 @@ async def _block(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    members: Union[List[discord.Member], discord.Member],
+    members: Union[list[discord.Member], discord.Member],
     reason: str,
     silent: bool = False,
     **kwargs: Any,
@@ -633,8 +640,9 @@ async def _block(
     members = members if isinstance(members, list) else [members]
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
+            msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
             raise commands.BadArgument(
-                f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+                msg,
             )
         try:
             if member.id in (ctx.author.id, guild.me.id) and not silent:
@@ -660,7 +668,7 @@ async def _block(
             # )
             if not silent:
                 await destination.send(
-                    f"{ctx.author.mention} overwrite permission(s) for **{member}** has been created! **View Channel, and Send Messages** is denied!"
+                    f"{ctx.author.mention} overwrite permission(s) for **{member}** has been created! **View Channel, and Send Messages** is denied!",
                 )
         except Exception as e:
             if not silent:
@@ -674,7 +682,7 @@ async def _unblock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    members: Union[List[discord.Member], discord.Member],
+    members: Union[list[discord.Member], discord.Member],
     reason: str,
     **kwargs: Any,
 ):
@@ -820,8 +828,9 @@ async def _change_nickname(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     try:
         await member.edit(nick=name, reason=f"Action Requested by {ctx.author} ({ctx.author.id})")
@@ -886,7 +895,7 @@ async def _slowmode(
                     reason=f"Action Requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
                 )
                 return await destination.send(
-                    f"{ctx.author.mention} {channel} is now in slowmode of **{seconds}**, to reverse type [p]slowmode 0"
+                    f"{ctx.author.mention} {channel} is now in slowmode of **{seconds}**, to reverse type [p]slowmode 0",
                 )
             if seconds == 0 or (seconds.lower() in ("off", "disable")):
                 await channel.edit(
@@ -896,7 +905,7 @@ async def _slowmode(
                 return await destination.send(f"{ctx.author.mention} **{channel}** is now not in slowmode.")
             if (seconds >= 21600) or (seconds < 0):
                 return await destination.send(
-                    f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds"
+                    f"{ctx.author.mention} you can't set slowmode in negative numbers or more than 21600 seconds",
                 )
 
         except Exception as e:
@@ -935,8 +944,9 @@ async def _voice_mute(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     try:
         await member.edit(
@@ -979,8 +989,9 @@ async def _voice_deafen(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     try:
         await member.edit(
@@ -1023,8 +1034,9 @@ async def _voice_kick(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     try:
         await member.edit(
@@ -1048,8 +1060,9 @@ async def _voice_ban(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
+        msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
         raise commands.BadArgument(
-            f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
+            msg,
         )
     try:
         overwrite = channel.overwrites
@@ -1108,7 +1121,7 @@ async def _sticker_delete(
 ):
     if sticker.guild and sticker.guild.id != guild.id:
         return await destination.send(
-            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker is not in this server"
+            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker is not in this server",
         )
 
     try:
@@ -1131,12 +1144,12 @@ async def _sticker_add(
     url = sticker.url
     if not url:
         return await destination.send(
-            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker has no url"
+            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker has no url",
         )
     res = await ctx.bot.http_session.get(url)
     if res.status != 200:
         return await destination.send(
-            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker has no url"
+            f"{ctx.author.mention} can not {command_name} the {sticker}, as the sticker has no url",
         )
     raw = await res.read()
     buffer = io.BytesIO(raw)
@@ -1190,14 +1203,14 @@ async def _emoji_delete(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
+    emojis: list[Union[discord.Emoji, discord.PartialEmoji]],
     reason: str,
     **kwargs: Any,
 ):
     for emoji in emojis:
         if emoji.guild.id != guild.id:
             return await destination.send(
-                f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server"
+                f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server",
             )
         try:
             if emoji.guild.id == guild.id:
@@ -1213,7 +1226,7 @@ async def _emoji_add(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    emojis: List[Union[discord.Emoji, discord.PartialEmoji]],
+    emojis: list[Union[discord.Emoji, discord.PartialEmoji]],
     reason: str,
     **kwargs: Any,
 ):
@@ -1269,7 +1282,7 @@ async def _emoji_rename(
     try:
         if emoji.guild.id != guild.id:
             return await destination.send(
-                f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server"
+                f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server",
             )
         await emoji.edit(
             name=name,
@@ -1314,7 +1327,7 @@ async def do_removal(
         await ctx.send(to_send, delete_after=10)
 
 
-MEMBER_REACTION: Dict[str, Callable] = {
+MEMBER_REACTION: dict[str, Callable] = {
     "\N{HAMMER}": _ban,
     "\N{WOMANS BOOTS}": _kick,
     "\N{ZIPPER-MOUTH FACE}": _mute,
@@ -1325,20 +1338,20 @@ MEMBER_REACTION: Dict[str, Callable] = {
     "\N{DOWNWARDS BLACK ARROW}": _remove_roles,
     "\N{LOWER LEFT FOUNTAIN PEN}": _change_nickname,
 }
-TEXT_REACTION: Dict[str, Callable] = {
+TEXT_REACTION: dict[str, Callable] = {
     "\N{LOCK}": _text_lock,
     "\N{OPEN LOCK}": _text_unlock,
     "\N{MEMO}": _change_channel_topic,
     "\N{LOWER LEFT FOUNTAIN PEN}": _change_channel_name,
 }
 
-VC_REACTION: Dict[str, Callable] = {
+VC_REACTION: dict[str, Callable] = {
     "\N{LOCK}": _vc_lock,
     "\N{OPEN LOCK}": _vc_unlock,
     "\N{LOWER LEFT FOUNTAIN PEN}": _change_channel_name,
 }
 
-ROLE_REACTION: Dict[str, Callable] = {
+ROLE_REACTION: dict[str, Callable] = {
     "\N{UPWARDS BLACK ARROW}": _role_hoist,
     "\N{DOWNWARDS BLACK ARROW}": _role_hoist,
     "\N{RAINBOW}": _change_role_color,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from core import Context, Parrot
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 async def chat_exporter(channel: discord.TextChannel, limit: Optional[int] = 100) -> None:
     msg = await channel.send("Please wait, exporting chat...")
-    messages: List[discord.Message] = []
+    messages: list[discord.Message] = []
     async for message in channel.history(limit=limit, oldest_first=True):
         messages.append(message)
 
@@ -45,7 +45,7 @@ async def log(guild: discord.Guild, channel: discord.TextChannel, description: s
             color=discord.Color.blue(),
         )
         .add_field(name="Status", value=status)
-        .set_footer(text=f"{guild.name}")
+        .set_footer(text=f"{guild.name}"),
     )
 
 
@@ -129,7 +129,7 @@ async def _new(ctx: Context, args: Optional[str] = None) -> None:
 
     await ticket_channel.send(content=f"{ctx.author.mention}", embed=em)
     await ticket_channel.send(
-        f"To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`"
+        f"To close the ticket, type `{ctx.clean_prefix}close`\nTo save the ticket transcript, type `{ctx.clean_prefix}save`",
     )
 
     pinged_msg_content = ""
@@ -231,7 +231,7 @@ async def _save(ctx: Context, bot: Parrot, limit: int) -> None:
 
 async def _addaccess(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}, upsert=True
+        {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}, upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -245,7 +245,7 @@ async def _addaccess(ctx: Context, role: discord.Role) -> None:
 
 async def _delaccess(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}, upsert=True
+        {"_id": ctx.guild.id}, {"$addToSet": {"valid_roles": role.id}}, upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -259,7 +259,7 @@ async def _delaccess(ctx: Context, role: discord.Role) -> None:
 
 async def _addadimrole(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"verified_roles": role.id}}, upsert=True
+        {"_id": ctx.guild.id}, {"$addToSet": {"verified_roles": role.id}}, upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -273,7 +273,7 @@ async def _addadimrole(ctx: Context, role: discord.Role) -> None:
 
 async def _addpingedrole(ctx: Context, role: discord.Role) -> None:
     await ctx.bot.guild_configurations.update_one(
-        {"_id": ctx.guild.id}, {"$addToSet": {"pinged_roles": role.id}}, upsert=True
+        {"_id": ctx.guild.id}, {"$addToSet": {"pinged_roles": role.id}}, upsert=True,
     )
     em = discord.Embed(
         title="Parrot Ticket Bot",
@@ -335,7 +335,7 @@ async def _setlog(ctx: Context, channel: discord.TextChannel) -> None:
 
 async def _auto(ctx: Context, channel: discord.TextChannel, message: str) -> None:
     embed = discord.Embed(title="Parrot Ticket Bot", description=message, color=discord.Color.blue()).set_footer(
-        text=f"{ctx.guild.name}"
+        text=f"{ctx.guild.name}",
     )
 
     message = await channel.send(embed=embed)

@@ -783,7 +783,7 @@ class Parrot(commands.AutoShardedBot):
         ctx: Context = await self.get_context(message, cls=Context)
 
         if ctx.command is None:
-            TO_INVOKE = False
+            return
 
         if self.UNDER_MAINTENANCE:
             await self.__bot_under_maintenance_message(ctx)

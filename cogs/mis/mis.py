@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from datetime import datetime
 from html import unescape
 from pathlib import Path
-from typing import Any, BinaryIO
+from typing import Annotated, Any, BinaryIO
 
 import qrcode
 import sympy
@@ -921,7 +921,7 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def mine_server_status(self, ctx: Context, address: str, bedrock: convert_bool | None = False):
+    async def mine_server_status(self, ctx: Context, address: str, bedrock: Annotated[bool | None, convert_bool] = False):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command."""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"

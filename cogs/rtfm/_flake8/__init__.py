@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import re
-from typing import Literal
+from typing import Literal, Annotated
 
 from discord.ext import commands
+from pyparsing import Optional
 from utilities.converters import convert_bool
 
 # https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes
@@ -19,11 +20,11 @@ class Flake8Converter(commands.FlagConverter, case_insensitive=True, delimiter="
     max_line_length: int | None = None
     max_doc_length: int | None = None
     max_complexity: int | None = None
-    statistics: convert_bool | None = None
-    doctests: convert_bool | None = None
+    statistics: Annotated[bool | None, convert_bool] = None
+    doctests: Annotated[bool | None, convert_bool] = None
     color: Literal["auto", "always", "never"] | None = None
-    verbose: convert_bool | None = None
-    count: convert_bool | None = None
+    verbose: Annotated[bool | None, convert_bool] = None
+    count: Annotated[bool | None, convert_bool] = None
 
 
 def validate_flake8_code(code: str) -> list[str]:

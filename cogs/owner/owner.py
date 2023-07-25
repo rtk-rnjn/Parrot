@@ -11,7 +11,7 @@ import traceback
 import typing
 import urllib.parse
 from collections import Counter
-from typing import Literal
+from typing import Literal, Annotated, Optional
 
 from aiofile import async_open
 
@@ -513,7 +513,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
-    async def toggle_testing(self, ctx: Context, cog: str, toggle: convert_bool | None) -> None:  # type: ignore
+    async def toggle_testing(self, ctx: Context, cog: str, toggle: Annotated[bool, Optional[convert_bool]] = None) -> None:  # type: ignore
         """Update the cog setting to toggle testing mode.
 
         ```py

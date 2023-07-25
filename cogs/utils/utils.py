@@ -22,7 +22,7 @@ Collection = type[AsyncIOMotorCollection]
 
 class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     ignore_channel: tuple[discord.TextChannel, ...] = []
-    _global: convert_bool | None = commands.flag(name="global", default=False)
+    _global: Annotated[bool | None, convert_bool] = commands.flag(name="global", default=False)
     _for: ShortTime | None = commands.flag(name="for", default=None)
     text: str | None = None
     after: ShortTime | None = None

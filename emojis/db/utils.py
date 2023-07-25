@@ -11,8 +11,8 @@ def get_emoji_aliases():
 
     for emoji in db.EMOJI_DB:
         for alias in emoji.aliases:
-            alias = f":{alias}:"
-            emoji_aliases[alias] = emoji.emoji
+            a = f":{alias}:"
+            emoji_aliases[a] = emoji.emoji
 
     return emoji_aliases
 

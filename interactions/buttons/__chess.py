@@ -257,4 +257,3 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 for _id in (self.white.id, self.black.id)
             ],
         )
-        return

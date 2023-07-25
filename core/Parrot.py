@@ -741,11 +741,9 @@ class Parrot(commands.AutoShardedBot):
 
     async def on_connect(self) -> None:
         log.debug("Connected to discord")
-        return
 
     async def on_disconnect(self) -> None:
         log.debug("Disconnected from discord")
-        return
 
     async def on_shard_resumed(self, shard_id: int) -> None:
         log.debug("Shard %s has resumed", shard_id)

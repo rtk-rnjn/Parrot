@@ -72,7 +72,6 @@ class SokobanGame:
     def _move_up_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0] - 1, self.player[1]]
-        return
 
     def move_down(self) -> None:
         if self.level[self.player[0] + 1][self.player[1]] in (" ", "."):
@@ -90,7 +89,6 @@ class SokobanGame:
     def _move_down_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0] + 1, self.player[1]]
-        return
 
     def move_left(self) -> None:
         if self.level[self.player[0]][self.player[1] - 1] in (" ", "."):
@@ -108,7 +106,6 @@ class SokobanGame:
     def _move_left_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0], self.player[1] - 1]
-        return
 
     def move_right(self) -> None:
         if self.level[self.player[0]][self.player[1] + 1] in (" ", "."):
@@ -126,7 +123,6 @@ class SokobanGame:
     def _move_right_h(self):
         self.level[self.player[0]][self.player[1]] = " " if self.player not in self.target else "."
         self.player = [self.player[0], self.player[1] + 1]
-        return
 
     def is_game_over(self) -> bool:
         self.player = []

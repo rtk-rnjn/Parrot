@@ -252,7 +252,7 @@ class PaginationView(discord.ui.View):
 
     def __init__(
         self,
-        embed_list: list[str | discord.File | discord.Embed] | None = None,
+        embed_list: list[discord.Embed | str | discord.File] | None = None,
         *,
         first_function: Callback | None = None,
         next_function: Callback | None = None,
@@ -317,14 +317,14 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current],
                 content=None,
                 attachments=[],
-                view=self,  # type: ignore
+                view=self,
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
                 attachments=[self.embed_list[self.current]],
                 content=None,
                 embed=None,
-                view=self,  # type: ignore
+                view=self,
             )
         else:
             await interaction.response.edit_message(
@@ -364,14 +364,14 @@ class PaginationView(discord.ui.View):
                 embed=self.embed_list[self.current],
                 content=None,
                 attachments=[],
-                view=self,  # type: ignore
+                view=self,
             )
         elif isinstance(self.embed_list[self.current], discord.File):
             await interaction.response.edit_message(
                 attachments=[self.embed_list[self.current]],
                 content=None,
                 embed=None,
-                view=self,  # type: ignore
+                view=self,
             )
         else:
             await interaction.response.edit_message(

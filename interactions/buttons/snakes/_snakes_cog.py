@@ -810,7 +810,6 @@ class Snakes(Cog):
         )
 
         await ctx.send(embed=embed)
-        return
 
     @snakes_group.command(name="sal")
     @commands.max_concurrency(1, per=BucketType.channel)

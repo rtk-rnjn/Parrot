@@ -469,7 +469,6 @@ class Configuration(Cog):
             {"$addToSet": {"leveling.ignore_role": role.id}},
         )
         await ctx.reply(f"{ctx.author.mention} all leveling for role will be ignored **{role.name}**")
-        return
 
     @leveling_ignore_set.command(
         name="channel",

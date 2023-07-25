@@ -40,6 +40,7 @@ Multi-line comments are also supported: ```jinja
     {{ 1 + 1 }}
     {{ 2 + 2 }}
 #}
+```
 """
 
 if_else = """Jinja2 supports if/else statements. For example, the following is a Jinja2 if/else statement: ```jinja

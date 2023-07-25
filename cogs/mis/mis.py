@@ -791,7 +791,21 @@ class Misc(Cog):
         self,
         ctx: Context,
         *,
-        target: discord.User | discord.Member | discord.Role | discord.Thread | discord.TextChannel | discord.VoiceChannel | discord.StageChannel | discord.Guild | discord.Emoji | discord.Invite | discord.Template | discord.CategoryChannel | discord.DMChannel | discord.GroupChannel | discord.Object,
+        target: discord.User
+        | discord.Member
+        | discord.Role
+        | discord.Thread
+        | discord.TextChannel
+        | discord.VoiceChannel
+        | discord.StageChannel
+        | discord.Guild
+        | discord.Emoji
+        | discord.Invite
+        | discord.Template
+        | discord.CategoryChannel
+        | discord.DMChannel
+        | discord.GroupChannel
+        | discord.Object,
     ):
         """To get the ID of discord models."""
         embed = discord.Embed(

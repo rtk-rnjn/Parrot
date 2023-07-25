@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Annotated
+from typing import Annotated, Literal
 
 from discord.ext import commands
 from utilities.converters import convert_bool

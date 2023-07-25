@@ -11,7 +11,7 @@ import traceback
 import typing
 import urllib.parse
 from collections import Counter
-from typing import Literal, Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 from aiofile import async_open
 

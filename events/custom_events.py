@@ -69,9 +69,7 @@ class EventCustom(Cog):
             return
         if embed is None:
             embed = {}
-        embed: discord.utils.MISSING | discord.Embed = (
-            discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
-        )
+        embed: discord.utils.MISSING | discord.Embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
 
         if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor or 0)):
             with contextlib.suppress(discord.Forbidden):
@@ -167,7 +165,9 @@ class EventCustom(Cog):
         )
         member_ids: list[int] = await end_giveaway(self.bot, **data)
         channel: discord.TextChannel | None = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel"),
+            self.bot.get_channel,
+            self.bot.fetch_channel,
+            kw.get("giveaway_channel"),
         )
         await self.bot.giveaways.find_one_and_update(
             {"message_id": kw.get("message_id"), "status": "ONGOING"},

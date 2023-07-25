@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import discord
 from core import Cog, Parrot
 

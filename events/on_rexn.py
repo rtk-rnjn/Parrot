@@ -10,9 +10,10 @@ import discord
 from core import Cog
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from pymongo.collection import Collection
     from pymongo.typings import _DocumentType
-    from typing import TypeAlias
 
     from core import Parrot
 
@@ -191,7 +192,9 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             return
         else:
             starchannel: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, starboard_channel,
+                self.bot.get_channel,
+                self.bot.fetch_channel,
+                starboard_channel,
             )
 
         msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, data["message_id"]["bot"])  # type: ignore
@@ -277,7 +280,8 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
         starboard_channel: discord.TextChannel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
 
         bot_msg: discord.Message | None = await self.bot.get_or_fetch_message(  # type: ignore
-            starboard_channel, data["message_id"]["bot"],
+            starboard_channel,
+            data["message_id"]["bot"],
         )
 
         if bot_msg:
@@ -318,7 +322,9 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             return
         else:
             starboard_channel: discord.TextChannel = await self.bot.getch(
-                self.bot.get_channel, self.bot.fetch_channel, channel,
+                self.bot.get_channel,
+                self.bot.fetch_channel,
+                channel,
             )
         if not limit:
             return

@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -7,10 +6,10 @@ import random
 import re
 import textwrap
 import urllib.parse
-from contextlib import suppress
-from typing import TYPE_CHECKING, Any
-from re import Pattern
 from collections.abc import Callable, Coroutine
+from contextlib import suppress
+from re import Pattern
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote_plus
 
 import aiohttp
@@ -24,10 +23,11 @@ from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, LINKS_NO_PROTOCOLS
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     from discord.ext.commands.cooldowns import CooldownMapping
     from pymongo.collection import Collection
     from pymongo.typings import _DocumentType
-    from typing import TypeAlias
 
     from core import Parrot
 

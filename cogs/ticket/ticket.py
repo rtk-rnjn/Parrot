@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import discord
 from cogs.ticket import method as mt
 from core import Cog, Context, Parrot

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Annotated
+from typing import Annotated, Literal
+
+from pyparsing import Optional
 
 from discord.ext import commands
-from pyparsing import Optional
 from utilities.converters import convert_bool
 
 # https://pycodestyle.pycqa.org/en/latest/intro.html#error-codes

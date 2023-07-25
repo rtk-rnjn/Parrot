@@ -559,14 +559,10 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         raise errors[retry]
 
-    async def database_game_update(self, game_name: str, *, win: bool = False, loss: bool = False, **kw: Any) -> bool:
-        kwargs: dict[str, Any] = {}
-
-        for key, value in kw.items():
-            new_key = f"${key}"
-            new_value = f"{game_name}_{value}"
-            kwargs[new_key] = new_value
-
+    async def database_game_update(
+        self, game_name: str, *, win: bool = False, loss: bool = False, set: dict = {}, **kw: Any
+    ) -> bool:
+        kwargs: dict[str, Any] = {f"game_{game_name}_{k}": v for k, v in set.items()}
         if not win and not loss:
             update_result: UpdateResult = await self.bot.game_collections.update_one(
                 {

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 from contextlib import suppress
-from typing import TYPE_CHECKING, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal
 
 import arrow
 import wavelink
@@ -106,11 +106,11 @@ class Music(Cog):
     @commands.command()
     @commands.bot_has_guild_permissions(connect=True)
     @in_voice()
-    async def join(self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None):
+    async def join(self, ctx: Context, *, channel: discord.VoiceChannel | None = None):
         """Joins a voice channel. If no channel is given then it will connects to your channel."""
         assert isinstance(ctx.author, discord.Member)
         if ctx.voice_client is not None:
-            vc: Optional[wavelink.Player] = ctx.voice_client
+            vc: wavelink.Player | None = ctx.voice_client
             if vc and vc.is_playing() and vc.channel:
                 await ctx.error(f"{ctx.author.mention} bot is already already playing music in {vc.channel.mention}")
                 return
@@ -134,7 +134,7 @@ class Music(Cog):
 
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
-    async def move(self, ctx: Context, *, channel: Optional[discord.VoiceChannel] = None):
+    async def move(self, ctx: Context, *, channel: discord.VoiceChannel | None = None):
         """Moves the bot to a different voice channel."""
         if ctx.voice_client is None:
             return self.join(ctx, channel)
@@ -147,7 +147,7 @@ class Music(Cog):
     @commands.command()
     @commands.check_any(commands.has_permissions(manage_channels=True), is_dj())
     @same_voice()
-    async def loop(self, ctx: Context, info: Optional[Literal["all", "current"]] = "all"):
+    async def loop(self, ctx: Context, info: Literal["all", "current"] | None = "all"):
         """To loop the current song or the queue."""
         assert isinstance(ctx.author, discord.Member) and isinstance(ctx.guild, discord.Guild)
 
@@ -498,7 +498,7 @@ class Music(Cog):
         self,
         ctx: Context,
         *,
-        search: Union[wavelink.SoundCloudTrack, str],
+        search: wavelink.SoundCloudTrack | str,
     ):
         """Play a song with the given search query. If not connected, connect to your voice channel."""
         if ctx.invoked_subcommand is not None:
@@ -642,7 +642,7 @@ class Music(Cog):
             await ctx.paginate(entries, per_page=5)
 
     @myplaylist.command(name="remove", aliases=["delete", "del"])
-    async def myplaylist_remove(self, ctx: Context, index_or_name: Union[int, str]):
+    async def myplaylist_remove(self, ctx: Context, index_or_name: int | str):
         """Removes the song from your playlist."""
         col: Collection = self.bot.user_collections_ind
         data = await col.find_one(  # type: ignore
@@ -685,7 +685,7 @@ class Music(Cog):
             await ctx.send(f"{ctx.author.mention} Removed song from playlist")
 
     @myplaylist.command(name="add", aliases=["addsong", "add_song"])
-    async def myplaylist_add(self, ctx: Context, *, track: Union[wavelink.SoundCloudTrack, str]):
+    async def myplaylist_add(self, ctx: Context, *, track: wavelink.SoundCloudTrack | str):
         """Add song in the playlist."""
         if isinstance(track, str):
             track = wavelink.GenericTrack.search(track)
@@ -723,7 +723,7 @@ class Music(Cog):
 
     @commands.command(name="next", aliases=["skip"])
     @same_voice()
-    async def _next(self, ctx: Context, *, flag: Optional[Literal["--force"]] = None):
+    async def _next(self, ctx: Context, *, flag: Literal["--force"] | None = None):
         """Skips the currently playing song.
 
         To force the skip use `$skip --force`. This will skip the song without voting.
@@ -971,7 +971,7 @@ class Music(Cog):
     @Cog.listener()
     async def on_wavelink_track_end(self, playload: wavelink.TrackEventPayload):
         player: wavelink.Player = playload.player
-        reason: Optional[str] = playload.reason
+        reason: str | None = playload.reason
 
         if _previous_view := self._cache.get(player.channel.guild.id):
             _previous_view.stop()

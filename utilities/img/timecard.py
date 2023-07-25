@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import io
 import random
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -13,7 +13,7 @@ from utilities.converters import ToAsync
 class Timecard(NamedTuple):
     filename: str
     colour: discord.Colour
-    shadow_colour: Optional[discord.Colour]
+    shadow_colour: discord.Colour | None
 
 
 IMAGES = "extra/timecard/images"

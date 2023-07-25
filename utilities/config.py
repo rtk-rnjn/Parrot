@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
-from typing import Any, Optional, Union, overload
+from typing import Any, overload
 
 import yaml
 
@@ -26,7 +26,7 @@ def parse_env_var(key: str) -> ...:
 
 
 @overload
-def parse_env_var(key: Optional[str], default: ...) -> ...:
+def parse_env_var(key: str | None, default: ...) -> ...:
     ...
 
 
@@ -35,7 +35,7 @@ def parse_env_var(key: ..., default: ...) -> ...:
     ...
 
 
-def parse_env_var(key: Optional[str], default: Any = None) -> Union[str, int, float, bool, list[Any]]:
+def parse_env_var(key: str | None, default: Any = None) -> str | int | float | bool | list[Any]:
     """Parse an environment variable into a Python type."""
     value = os.environ.get(str(key), default)
     if value is None:

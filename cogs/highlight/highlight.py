@@ -4,7 +4,7 @@ import asyncio
 import datetime
 import logging
 import re
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Union
 
 from pymongo import UpdateMany, UpdateOne
 from pymongo.results import BulkWriteResult
@@ -16,8 +16,8 @@ from utilities.formats import plural
 
 log = logging.getLogger("cogs.highlight.highlight")
 
-CACHED_WORDS_HINT = dict[int, list[dict[str, Union[str, int]]]]
-_CACHED_SETTINGS_HINT = dict[str, Union[str, int, list[Any]]]
+CACHED_WORDS_HINT = dict[int, list[dict[str, str | int]]]
+_CACHED_SETTINGS_HINT = dict[str, str | int | list[Any]]
 CACHED_SETTINGS_HINT = dict[int, _CACHED_SETTINGS_HINT]
 ENTITY_HINT = Union[discord.Member, discord.User, discord.TextChannel, discord.CategoryChannel]
 
@@ -144,10 +144,10 @@ class Highlight(Cog):
         self.bot.dispatch("user_activity", reaction.message.channel, user)
 
     @commands.Cog.listener()
-    async def on_highlight(self, message: discord.Message, word: dict[str, Union[str, int]], text: str):
+    async def on_highlight(self, message: discord.Message, word: dict[str, str | int], text: str):
         assert message.guild is not None
 
-        member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
+        member: discord.Member | discord.User | None = await self.bot.get_or_fetch_member(
             message.guild,
             word["user_id"],
         )
@@ -413,7 +413,7 @@ class Highlight(Cog):
         description="Import your highlight words from another server",
         usage="<server ID>",
     )
-    async def transfer(self, ctx: Context, from_guild: Union[discord.Guild, int]):
+    async def transfer(self, ctx: Context, from_guild: discord.Guild | int):
         if not self.cached_words.get(ctx.author.id):
             await ctx.send("You have no highlight words to import.", delete_after=5)
             return
@@ -535,7 +535,7 @@ class Highlight(Cog):
             )
             return f":white_check_mark: Unblocked {entity.mention}."
 
-    async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> Optional[ENTITY_HINT]:
+    async def get_entity(self, ctx: Context, entity: ENTITY_HINT) -> ENTITY_HINT | None:
         converters: list = [
             commands.MemberConverter,
             commands.UserConverter,
@@ -558,7 +558,7 @@ class Highlight(Cog):
         invoke_without_command=True,
     )
     @commands.guild_only()
-    async def block(self, ctx: Context, *, entity: Union[discord.Member, discord.TextChannel]):
+    async def block(self, ctx: Context, *, entity: discord.Member | discord.TextChannel):
         converted_entity = await self.get_entity(ctx, entity)
 
         if not converted_entity or (
@@ -576,7 +576,7 @@ class Highlight(Cog):
         aliases=["unmute"],
         invoke_without_command=True,
     )
-    async def unblock(self, ctx: Context, *, entity: Union[discord.Member, discord.TextChannel]):
+    async def unblock(self, ctx: Context, *, entity: discord.Member | discord.TextChannel):
         converted_entity = await self.get_entity(ctx, entity)
 
         if not converted_entity:

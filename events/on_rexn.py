@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from time import time
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 import pymongo
 
@@ -65,7 +65,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             log.debug("Starboard locked")
             return
 
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
+        msg: discord.Message | None = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id)
         if not msg:
             log.debug("Message not found %s-%s", payload.channel_id, payload.message_id)
             return  # rare case
@@ -103,7 +103,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
 
         return post
 
-    async def get_star_count(self, message: Optional[discord.Message] = None, *, from_db: bool = True) -> int:
+    async def get_star_count(self, message: discord.Message | None = None, *, from_db: bool = True) -> int:
         stars = 0
         if message is None:
             return stars
@@ -263,7 +263,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
     async def _delete_starboard_post(self, payload: discord.RawReactionActionEvent) -> bool:
         collection: Collection = self.bot.starboards
         ch = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, payload.channel_id)
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(ch, payload.message_id)
+        msg: discord.Message | None = await self.bot.get_or_fetch_message(ch, payload.message_id)
         data: DocumentType = await collection.find_one_and_delete(
             {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
         )
@@ -276,7 +276,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
 
         starboard_channel: discord.TextChannel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
 
-        bot_msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(  # type: ignore
+        bot_msg: discord.Message | None = await self.bot.get_or_fetch_message(  # type: ignore
             starboard_channel, data["message_id"]["bot"],
         )
 
@@ -328,7 +328,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             return
 
     @Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User | discord.Member):
         if isinstance(user, discord.User):
             return
         if (
@@ -366,7 +366,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             await self._factory_reactor(payload, tp="add")
 
     @Cog.listener()
-    async def on_reaction_remove(self, reaction: discord.Reaction, user: Union[discord.User, discord.Member]):
+    async def on_reaction_remove(self, reaction: discord.Reaction, user: discord.User | discord.Member):
         if isinstance(user, discord.User):
             return
         if (

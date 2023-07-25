@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import TYPE_CHECKING, Optional, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 import discord
 
@@ -213,7 +213,7 @@ class SudokuView(discord.ui.View):
     message: discord.Message
     ctx: Context
 
-    def __init__(self, timeout: Optional[float] = 300) -> None:
+    def __init__(self, timeout: float | None = 300) -> None:
         super().__init__(timeout=timeout)
 
         self.game = Sudoku()

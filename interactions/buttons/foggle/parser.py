@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
-from typing import Optional
 
-OPS: dict[str, Callable[[int, int], Optional[int]]] = {
+OPS: dict[str, Callable[[int, int], int | None]] = {
     "^": lambda x, y: x**y,
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
@@ -35,7 +34,7 @@ class View:
         while self.peek().isspace():
             self.idx += 1
 
-    def parse_int(self) -> Optional[int]:
+    def parse_int(self) -> int | None:
         n = 0
         got_digit = False
         while re.match(r"[0-9]", self.peek()):  # only digits
@@ -45,7 +44,7 @@ class View:
         self.strip_ws()
         return n if got_digit else None
 
-    def parse_base_expr(self) -> Optional[int]:
+    def parse_base_expr(self) -> int | None:
         if self.peek() != "(":
             return self.parse_int()
         self.idx += 1
@@ -57,7 +56,7 @@ class View:
         self.strip_ws()
         return e
 
-    def parse_prec_lvl(self, ops: tuple[str, ...], below: Callable[[], Optional[int]]) -> Callable[[], Optional[int]]:
+    def parse_prec_lvl(self, ops: tuple[str, ...], below: Callable[[], int | None]) -> Callable[[], int | None]:
         def parser():
             e = below()
             if e is None:
@@ -76,10 +75,10 @@ class View:
 
         return parser
 
-    def parse_expr(self) -> Optional[int]:
+    def parse_expr(self) -> int | None:
         return self.parse_prec_lvl(("+", "-"), self.parse_prec_lvl(("*", "/"), self.parse_base_expr))()
 
-    def parse_full(self) -> Optional[int]:
+    def parse_full(self) -> int | None:
         self.strip_ws()
         e = self.parse_expr()
         return None if self.idx < len(self.string) else e

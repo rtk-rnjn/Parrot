@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import re
 import shlex
-from typing import Annotated, Optional, Union
+from typing import Annotated, Optional
 
 import wavelink
 
@@ -53,7 +53,7 @@ class Moderator(Cog):
         operator: str,
         role: discord.Role,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Gives a role to the all bots.
 
@@ -96,7 +96,7 @@ class Moderator(Cog):
         operator: str,
         role: discord.Role,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Gives a role to the all humans.
 
@@ -139,7 +139,7 @@ class Moderator(Cog):
         member: Annotated[discord.abc.Snowflake, MemberID],
         role: discord.Role,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Gives a role to the specified member(s).
 
@@ -178,7 +178,7 @@ class Moderator(Cog):
         member: Annotated[discord.abc.Snowflake, MemberID],
         role: discord.Role,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Remove the mentioned role from mentioned/id member.
 
@@ -217,7 +217,7 @@ class Moderator(Cog):
         member: Annotated[discord.abc.Snowflake, MemberID],
         days: Annotated[int, Optional[int]] = 0,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Bans a member from the server.
 
@@ -261,9 +261,9 @@ class Moderator(Cog):
         self,
         ctx: Context,
         members: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
-        days: Optional[int] = 0,
+        days: int | None = 0,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Bans multiple members from the server.
 
@@ -301,7 +301,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Soft bans a member from the server.
 
@@ -338,7 +338,7 @@ class Moderator(Cog):
         duration: FutureTime,
         member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Temporarily bans a member for the specified duration.
 
@@ -379,7 +379,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Blocks a user from replying message in that channel.
 
@@ -412,9 +412,9 @@ class Moderator(Cog):
     async def clone(
         self,
         ctx: Context,
-        channel: Optional[discord.TextChannel] = None,
+        channel: discord.TextChannel | None = None,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To clone the channel or to nukes the channel (clones and delete).
 
@@ -449,7 +449,7 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To kick a member from guild.
 
@@ -482,7 +482,7 @@ class Moderator(Cog):
         ctx: Context,
         members: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To kick a members from guild.
 
@@ -513,9 +513,9 @@ class Moderator(Cog):
     async def lock(
         self,
         ctx: Context,
-        channel: commands.Greedy[Union[discord.TextChannel, discord.VoiceChannel, discord.StageChannel]],
+        channel: commands.Greedy[discord.TextChannel | discord.VoiceChannel | discord.StageChannel],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To lock the channel.
 
@@ -562,9 +562,9 @@ class Moderator(Cog):
     async def unlock(
         self,
         ctx: Context,
-        channel: commands.Greedy[Union[discord.abc.Messageable, discord.VoiceChannel, discord.StageChannel]],
+        channel: commands.Greedy[discord.abc.Messageable | discord.VoiceChannel | discord.StageChannel],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To unlock the channel.
 
@@ -613,7 +613,7 @@ class Moderator(Cog):
         ctx: Context,
         duration: ShortTime,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To mute yourself.
 
@@ -645,9 +645,9 @@ class Moderator(Cog):
         self,
         ctx: Context,
         member: discord.Member,
-        duration: Optional[ShortTime] = None,
+        duration: ShortTime | None = None,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To Timeout the member, from chat.
 
@@ -693,7 +693,7 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To allow a member to sending message in the Text Channels, if muted/timeouted.
 
@@ -724,7 +724,7 @@ class Moderator(Cog):
     async def clean(
         self,
         ctx: Context,
-        num: Optional[int] = 100,
+        num: int | None = 100,
     ):
         """Removes messages that meet a criteria.
 
@@ -746,7 +746,7 @@ class Moderator(Cog):
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def embeds(self, ctx: Context, search: Optional[int] = 100):
+    async def embeds(self, ctx: Context, search: int | None = 100):
         """Removes messages that have embeds in them.
 
         **Examples:**
@@ -758,7 +758,7 @@ class Moderator(Cog):
     @clean.command(name="regex")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _regex(self, ctx: Context, pattern: Optional[str] = None, search: Optional[int] = 100):
+    async def _regex(self, ctx: Context, pattern: str | None = None, search: int | None = 100):
         """Removed messages that matches the regex pattern.
 
         **Examples:**
@@ -776,7 +776,7 @@ class Moderator(Cog):
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def files(self, ctx: Context, search: Optional[int] = 100):
+    async def files(self, ctx: Context, search: int | None = 100):
         """Removes messages that have attachments in them.
 
         **Examples:**
@@ -788,7 +788,7 @@ class Moderator(Cog):
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def images(self, ctx: Context, search: Optional[int] = 100):
+    async def images(self, ctx: Context, search: int | None = 100):
         """Removes messages that have embeds or attachments.
 
         **Examples:**
@@ -800,7 +800,7 @@ class Moderator(Cog):
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def user(self, ctx: Context, member: discord.Member, search: Optional[int] = 100):
+    async def user(self, ctx: Context, member: discord.Member, search: int | None = 100):
         """Removes all messages by the member.
 
         **Examples:**
@@ -827,7 +827,7 @@ class Moderator(Cog):
     @clean.command(name="bot", aliases=["bots"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _bot(self, ctx: Context, prefix: Optional[str] = None, search: Optional[int] = 100):
+    async def _bot(self, ctx: Context, prefix: str | None = None, search: int | None = 100):
         """Removes a bot user's messages and messages with their optional prefix.
 
         **Examples:**
@@ -843,7 +843,7 @@ class Moderator(Cog):
     @clean.command(name="emoji", aliases=["emojis"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _emoji(self, ctx: Context, search: Optional[int] = 100):
+    async def _emoji(self, ctx: Context, search: int | None = 100):
         """Removes all messages containing custom emoji.
 
         **Examples:**
@@ -860,7 +860,7 @@ class Moderator(Cog):
     @clean.command(name="reactions")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
-    async def _reactions(self, ctx: Context, search: Optional[int] = 100):
+    async def _reactions(self, ctx: Context, search: int | None = 100):
         """Removes all reactions from messages that have them.
 
         **Examples:**
@@ -886,9 +886,9 @@ class Moderator(Cog):
         self,
         ctx: Context,
         seconds: int,
-        channel: Optional[discord.TextChannel] = None,
+        channel: discord.TextChannel | None = None,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To set slowmode in the specified channel.
 
@@ -1027,7 +1027,7 @@ class Moderator(Cog):
         ctx: Context,
         member: BannedMember,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To Unban a member from a guild.
 
@@ -1061,7 +1061,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Unblocks a user from the text channel.
 
@@ -1095,7 +1095,7 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        name: Optional[commands.clean_content] = None,
+        name: commands.clean_content | None = None,
     ):
         """To change the nickname of the specified member.
 
@@ -1152,7 +1152,7 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice mute.
 
@@ -1185,7 +1185,7 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice unmute.
 
@@ -1222,7 +1222,7 @@ class Moderator(Cog):
         ctx: Context,
         member: discord.Member,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice ban.
 
@@ -1262,7 +1262,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[discord.abc.Snowflake, MemberID],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice unban.
 
@@ -1293,7 +1293,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[discord.abc.Snowflake, MemberID],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice deafen.
 
@@ -1321,7 +1321,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[discord.abc.Snowflake, MemberID],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice undeafen.
 
@@ -1349,7 +1349,7 @@ class Moderator(Cog):
         ctx: Context,
         member: Annotated[discord.abc.Snowflake, MemberID],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice kick.
 
@@ -1375,9 +1375,9 @@ class Moderator(Cog):
     async def voice_limit(
         self,
         ctx: Context,
-        limit: Optional[int] = None,
+        limit: int | None = None,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To set the VC limit.
 
@@ -1408,9 +1408,9 @@ class Moderator(Cog):
         self,
         ctx: Context,
         member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,  # type: ignore
-        channel: Optional[discord.VoiceChannel] = None,
+        channel: discord.VoiceChannel | None = None,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To give the member voice move.
 
@@ -1486,7 +1486,7 @@ class Moderator(Cog):
         ctx: Context,
         emoji: commands.Greedy[discord.Emoji],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To delete the emoji.
 
@@ -1516,7 +1516,7 @@ class Moderator(Cog):
         ctx: Context,
         emoji: commands.Greedy[discord.Emoji],
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To add the emoji.
 
@@ -1545,9 +1545,9 @@ class Moderator(Cog):
         self,
         ctx: Context,
         url: str,
-        name: Optional[commands.clean_content] = "emoji",  # type: ignore
+        name: commands.clean_content | None = "emoji",  # type: ignore
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To add the emoji from url.
 
@@ -1581,7 +1581,7 @@ class Moderator(Cog):
         emoji: discord.Emoji,
         name: commands.clean_content,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To rename the emoji.
 
@@ -1633,9 +1633,9 @@ class Moderator(Cog):
     async def sticker_delete(
         self,
         ctx: Context,
-        sticker: Optional[discord.GuildSticker] = None,
+        sticker: discord.GuildSticker | None = None,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To delete sticker."""
         if not ctx.message.stickers:
@@ -1659,7 +1659,7 @@ class Moderator(Cog):
         emoji: str,
         description: str,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """To add sticker from url."""
         await mt._sticker_addurl(
@@ -1702,9 +1702,9 @@ class Moderator(Cog):
     async def mod(
         self,
         ctx: Context,
-        target: Union[discord.Member, discord.TextChannel, discord.VoiceChannel, discord.Role],
+        target: discord.Member | discord.TextChannel | discord.VoiceChannel | discord.Role,
         *,
-        reason: Annotated[Optional[str], ActionReason] = None,
+        reason: Annotated[str | None, ActionReason] = None,
     ):
         """Why to learn the commands? This is all in one mod command.
 
@@ -1983,7 +1983,7 @@ class Moderator(Cog):
         return await msg.delete(delay=0)
 
     async def execute_action(self, *, ctx: Context, action: str, duration: str, **kw):
-        target: Union[discord.Member, discord.User] = kw.get("target")
+        target: discord.Member | discord.User = kw.get("target")
         perms = ctx.guild.me.guild_permissions
         if not (perms.kick_members and perms.moderate_members and perms.ban_members):
             return  # sob sob sob

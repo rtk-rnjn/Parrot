@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional
 
 import aiohttp
 
@@ -18,8 +17,8 @@ class Client:
     def __init__(
         self,
         *,
-        token: Optional[str] = None,
-        session: Optional[aiohttp.ClientSession] = None,
+        token: str | None = None,
+        session: aiohttp.ClientSession | None = None,
     ) -> None:
         self.http: HTTPClient = HTTPClient(token=token, session=session)
 
@@ -35,8 +34,8 @@ class Client:
         *,
         filename: str,
         content: str,
-        password: Optional[str] = None,
-        expires: Optional[datetime.datetime] = None,
+        password: str | None = None,
+        expires: datetime.datetime | None = None,
     ) -> Paste:
         file = File(filename=filename, content=content)
         data = await self.http.create_paste(file=file, password=password, expires=expires)
@@ -46,8 +45,8 @@ class Client:
         self,
         *,
         files: list[File],
-        password: Optional[str] = None,
-        expires: Optional[datetime.datetime] = None,
+        password: str | None = None,
+        expires: datetime.datetime | None = None,
     ) -> Paste:
         data = await self.http.create_paste(files=files, password=password, expires=expires)
         return Paste.from_data(data)
@@ -60,7 +59,7 @@ class Client:
     async def delete_pastes(self, paste_ids: list[str], /) -> None:
         await self.http.delete_pastes(paste_ids=paste_ids)
 
-    async def get_paste(self, paste_id: str, *, password: Optional[str] = None) -> Paste:
+    async def get_paste(self, paste_id: str, *, password: str | None = None) -> Paste:
         data = await self.http.get_paste(paste_id=paste_id, password=password)
         return Paste.from_data(data)
 

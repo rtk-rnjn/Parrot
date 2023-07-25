@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 from .enums import CardType, Color
 
@@ -88,11 +88,11 @@ class Card:
         *,
         color: Color,
         type: CardType = CardType.number,
-        value: Optional[int] = None,
+        value: int | None = None,
     ) -> None:
         self.color: Color = color
         self.type: CardType = type
-        self.value: Optional[int] = value
+        self.value: int | None = value
 
     def __hash__(self) -> int:
         return hash((self.color, self.type, self.value))

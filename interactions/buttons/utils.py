@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import functools
 from collections.abc import Callable, Coroutine
-from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Final, TypeVar
 
 import discord
 from core import Context, Parrot, ParrotView
@@ -29,7 +29,7 @@ __all__: tuple[str, ...] = (
     "wait_for_delete",
 )
 
-DiscordColor: TypeAlias = Union[discord.Color, int]
+DiscordColor: TypeAlias = discord.Color | int
 
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
@@ -56,9 +56,9 @@ async def wait_for_delete(
     message: discord.Message,
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
-    bot: Optional[discord.Client] = None,
-    user: Optional[Union[discord.User, discord.Member, tuple[discord.User, ...]]] = None,
-    timeout: Optional[float] = None,
+    bot: discord.Client | None = None,
+    user: discord.User | discord.Member | tuple[discord.User, ...] | None = None,
+    timeout: float | None = None,
 ) -> bool:
     if not user:
         user = ctx.author
@@ -87,8 +87,8 @@ async def double_wait(
     task1: Coroutine[Any, Any, A],
     task2: Coroutine[Any, Any, B],
     *,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
-) -> tuple[set[Union[asyncio.Task[A], asyncio.Task[B]]], set[Union[asyncio.Task[A], asyncio.Task[B]]]]:
+    loop: asyncio.AbstractEventLoop | None = None,
+) -> tuple[set[asyncio.Task[A] | asyncio.Task[B]], set[asyncio.Task[A] | asyncio.Task[B]]]:
     if not loop:
         loop = asyncio.get_event_loop()
 

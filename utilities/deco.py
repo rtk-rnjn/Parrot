@@ -7,7 +7,6 @@ from asyncio import Lock
 from collections.abc import Callable, Container, Iterable
 from datetime import datetime
 from functools import wraps
-from typing import Optional, Union
 from weakref import WeakValueDictionary
 
 from discord.ext.commands import Command
@@ -79,7 +78,7 @@ class InTimeCheckFaliure(ParrotCheckFailure):
         super().__init__(error)
 
 
-def seasonal_task(*allowed_months: Month, sleep_time: Union[float, int] = ONE_DAY) -> Callable:
+def seasonal_task(*allowed_months: Month, sleep_time: float | int = ONE_DAY) -> Callable:
     """Perform the decorated method periodically in `allowed_months`.
     This provides a convenience wrapper to avoid code repetition where some task shall
     perform an operation repeatedly in a constant interval, but only in specific months.
@@ -386,17 +385,17 @@ def whitelist_override(bypass_defaults: bool = False, allow_dm: bool = False, **
     return inner
 
 
-def locked() -> Optional[Callable]:
+def locked() -> Callable | None:
     """Allows the user to only run an instance of one decorated command at a time.
     Subsequent calls to the command from the same author are ignored until the command has completed invocation.
     This decorator has to go before (below) the `command` decorator.
     """
 
-    def wrap(func: Callable) -> Optional[Callable]:
+    def wrap(func: Callable) -> Callable | None:
         func.__locks = WeakValueDictionary()
 
         @wraps(func)
-        async def inner(self: Callable, ctx: Context, *args, **kwargs) -> Optional[Callable]:
+        async def inner(self: Callable, ctx: Context, *args, **kwargs) -> Callable | None:
             lock = func.__locks.setdefault(ctx.author.id, Lock())
             if lock.locked():
                 embed = Embed()

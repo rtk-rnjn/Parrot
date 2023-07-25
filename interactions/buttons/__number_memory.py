@@ -5,7 +5,6 @@ import datetime
 import random
 import string
 from io import BytesIO
-from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -84,7 +83,7 @@ class NumView(BaseView):
         game: NumberMemory,
         *,
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> None:
         super().__init__(timeout=timeout)
 
@@ -101,7 +100,7 @@ class NumView(BaseView):
 class NumberMemory:
     def __init__(self, font_size: int = 30) -> None:
         self.file: discord.File = discord.utils.MISSING
-        self.embed: Optional[discord.Embed] = None
+        self.embed: discord.Embed | None = None
         self.level = 1
         self.number = self.generate_number()
 
@@ -155,7 +154,7 @@ class NumberMemory:
         pause_time_increment: float = 1.0,
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> discord.Message:
         self.pause_incr = pause_time_increment
         self.pause_time = initial_pause_time

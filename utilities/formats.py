@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import Any, Union
+from typing import Any
 
 
 class plural:
@@ -80,7 +80,7 @@ class TabularData:
         return "\n".join(to_draw)
 
 
-def format_dt(dt: Union[datetime.datetime, int, float], style: str = None) -> str:
+def format_dt(dt: datetime.datetime | int | float, style: str = None) -> str:
     """Formats a datetime object or timestamp into a Discord-style timestamp."""
     if isinstance(dt, int | float):
         dt = datetime.datetime.utcfromtimestamp(dt)

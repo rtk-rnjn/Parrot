@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 
 import discord
 from core import Cog, Parrot
@@ -10,7 +9,7 @@ class TicketReaction(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    async def log(self, guild, channel: discord.TextChannel, description: str, status: str) -> Optional[discord.Message]:
+    async def log(self, guild, channel: discord.TextChannel, description: str, status: str) -> discord.Message | None:
         await channel.send(
             embed=discord.Embed(
                 title="Parrot Ticket Bot",

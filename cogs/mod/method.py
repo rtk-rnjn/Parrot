@@ -5,7 +5,7 @@ import datetime
 import io
 from collections import Counter
 from collections.abc import Callable
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 import discord
 from core import Context, Parrot
@@ -246,7 +246,7 @@ async def _mass_ban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[list[discord.Member], discord.Member],
+    members: list[discord.Member] | discord.Member,
     days: int = 0,
     reason: str,
     **kwargs: Any,
@@ -279,7 +279,7 @@ async def _softban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[list[discord.Member], discord.Member],
+    members: list[discord.Member] | discord.Member,
     reason: str,
     **kwargs: Any,
 ):
@@ -314,8 +314,8 @@ async def _temp_ban(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[list[discord.Member], discord.Member],
-    duration: Union[FutureTime, datetime.datetime],
+    members: list[discord.Member] | discord.Member,
+    duration: FutureTime | datetime.datetime,
     reason: str,
     silent: bool = True,
     bot: Parrot = None,
@@ -597,7 +597,7 @@ async def _mass_kick(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    members: Union[list[discord.Member], discord.Member],
+    members: list[discord.Member] | discord.Member,
     reason: str,
     **kwargs: Any,
 ):
@@ -632,7 +632,7 @@ async def _block(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    members: Union[list[discord.Member], discord.Member],
+    members: list[discord.Member] | discord.Member,
     reason: str,
     silent: bool = False,
     **kwargs: Any,
@@ -682,7 +682,7 @@ async def _unblock(
     ctx: Context,
     destination: discord.TextChannel,
     channel: discord.TextChannel,
-    members: Union[list[discord.Member], discord.Member],
+    members: list[discord.Member] | discord.Member,
     reason: str,
     **kwargs: Any,
 ):
@@ -738,7 +738,7 @@ async def _vc_lock(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    channel: Union[discord.VoiceChannel, discord.StageChannel],
+    channel: discord.VoiceChannel | discord.StageChannel,
     reason: str = None,
     **kwargs: Any,
 ):
@@ -795,7 +795,7 @@ async def _vc_unlock(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    channel: Union[discord.VoiceChannel, discord.StageChannel],
+    channel: discord.VoiceChannel | discord.StageChannel,
     reason: str = None,
     **kwargs: Any,
 ):
@@ -1055,7 +1055,7 @@ async def _voice_ban(
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
-    channel: Union[discord.VoiceChannel, discord.StageChannel],
+    channel: discord.VoiceChannel | discord.StageChannel,
     reason: str,
     **kwargs: Any,
 ):
@@ -1088,7 +1088,7 @@ async def _voice_unban(
     ctx: Context,
     destination: discord.TextChannel,
     member: discord.Member,
-    channel: Union[discord.VoiceChannel, discord.StageChannel],
+    channel: discord.VoiceChannel | discord.StageChannel,
     reason: str,
     **kwargs: Any,
 ):
@@ -1203,7 +1203,7 @@ async def _emoji_delete(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    emojis: list[Union[discord.Emoji, discord.PartialEmoji]],
+    emojis: list[discord.Emoji | discord.PartialEmoji],
     reason: str,
     **kwargs: Any,
 ):
@@ -1226,7 +1226,7 @@ async def _emoji_add(
     command_name: str,
     ctx: Context,
     destination: discord.TextChannel,
-    emojis: list[Union[discord.Emoji, discord.PartialEmoji]],
+    emojis: list[discord.Emoji | discord.PartialEmoji],
     reason: str,
     **kwargs: Any,
 ):
@@ -1298,8 +1298,8 @@ async def do_removal(
     limit: int,
     predicate: Callable[[discord.Message], Any],
     *,
-    before: Optional[int] = None,
-    after: Optional[int] = None,
+    before: int | None = None,
+    after: int | None = None,
 ):
     if limit > 2000:
         return await ctx.send(f"Too many messages to search given ({limit}/2000)")

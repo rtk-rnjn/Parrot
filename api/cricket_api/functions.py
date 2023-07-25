@@ -5,7 +5,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from html import unescape
-from typing import Any, Optional
+from typing import Any
 from collections.abc import Callable
 
 from bs4 import BeautifulSoup
@@ -19,7 +19,7 @@ except ImportError:
 
 
 class ToAsync:
-    def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
+    def __init__(self, *, executor: ThreadPoolExecutor | None = None) -> None:
         self.executor = executor
 
     def __call__(self, blocking) -> Callable:
@@ -45,7 +45,7 @@ def parse_text(st: str) -> str:
 
 
 @ToAsync()
-def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[str]:
+def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> str | None:
     if finder := soup.find(name, kwargs):
         return __parse_text(finder.text)
 
@@ -53,7 +53,7 @@ def find_one(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[str]:
 
 
 @ToAsync()
-def find_all(soup: BeautifulSoup, name: str, **kwargs: Any) -> Optional[list[str]]:
+def find_all(soup: BeautifulSoup, name: str, **kwargs: Any) -> list[str] | None:
     if finder := soup.find_all(name, kwargs):
         return [__parse_text(i.text) for i in finder]
 

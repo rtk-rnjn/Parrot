@@ -4,7 +4,6 @@ import json
 import random
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 
 import dateutil.parser
 from rapidfuzz import fuzz  # type: ignore
@@ -40,7 +39,7 @@ class Pride(Cog, command_attrs={"hidden": True}):
         except IndexError:
             await ctx.error("No facts available")
 
-    async def send_select_fact(self, target: discord.abc.Messageable, _date: Union[str, datetime]) -> None:
+    async def send_select_fact(self, target: discord.abc.Messageable, _date: str | datetime) -> None:
         """Provides the fact for the specified day, if the day is today, or is in the past."""
         now = discord.utils.utcnow()
         if isinstance(_date, str):
@@ -89,7 +88,7 @@ class Pride(Cog, command_attrs={"hidden": True}):
         """Sends a message with a drag queen name."""
         await ctx.send(random.choice(NAMES))
 
-    def get_video(self, genre: Optional[str] = None) -> dict:
+    def get_video(self, genre: str | None = None) -> dict:
         """Picks a random anthem from the list.
         If `genre` is supplied, it will pick from videos attributed with that genre.
         If none can be found, it will log this as well as provide that information to the user.
@@ -153,7 +152,7 @@ class Pride(Cog, command_attrs={"hidden": True}):
 
     @in_month(Month.JUNE)
     @commands.command(aliases=("pl", "prideleader"))
-    async def pride_leader(self, ctx: Context, *, pride_leader_name: Optional[str]) -> None:
+    async def pride_leader(self, ctx: Context, *, pride_leader_name: str | None) -> None:
         """Information about a Pride Leader.
         Returns information about the specified pride leader
         and if there is no pride leader given, return a random pride leader.

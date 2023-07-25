@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp  # type: ignore
 import uvicorn  # type: ignore
@@ -19,11 +19,11 @@ async def root():
 
 
 @app.get("/cricket_api")
-async def cricket_api(url: Optional[str] = None) -> Optional[dict[str, Any]]:
+async def cricket_api(url: str | None = None) -> dict[str, Any] | None:
     return await _cricket_api(url)
 
 
-async def _cricket_api(url: Optional[str] = None) -> Optional[dict[str, Any]]:
+async def _cricket_api(url: str | None = None) -> dict[str, Any] | None:
     if not url:
         raise HTTPException(status_code=400, detail="URL not provided")
 

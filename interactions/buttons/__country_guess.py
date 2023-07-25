@@ -5,7 +5,7 @@ import difflib
 import os
 import random
 from io import BytesIO
-from typing import TYPE_CHECKING, Final, Optional, Union
+from typing import TYPE_CHECKING, Final
 
 from PIL import Image, ImageFilter, ImageOps
 
@@ -16,7 +16,7 @@ from utilities.converters import ToAsync
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    DiscordColor: TypeAlias = Union[discord.Color, int]
+    DiscordColor: TypeAlias = discord.Color | int
 
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
@@ -25,7 +25,7 @@ class CountryGuesser:
     """CountryGuesser Game."""
 
     embed: discord.Embed
-    accepted_length: Optional[int]
+    accepted_length: int | None
     country: str
 
     def __init__(
@@ -37,7 +37,7 @@ class CountryGuesser:
         guesses: int = 5,
         hints: int = 1,
     ) -> None:
-        self.embed_color: Optional[DiscordColor] = None
+        self.embed_color: DiscordColor | None = None
         self.hints = hints
         self.guesses = guesses
 
@@ -51,7 +51,7 @@ class CountryGuesser:
         self.all_countries = os.listdir(self._countries_path)
 
     @ToAsync()
-    def invert_image(self, image_path: Union[BytesIO, os.PathLike, str]) -> BytesIO:
+    def invert_image(self, image_path: BytesIO | os.PathLike | str) -> BytesIO:
         with Image.open(image_path) as img:
             img = img.convert("RGBA")
             r, g, b, a = img.split()
@@ -66,7 +66,7 @@ class CountryGuesser:
             return buf
 
     @ToAsync()
-    def blur_image(self, image_path: Union[BytesIO, os.PathLike, str]) -> BytesIO:
+    def blur_image(self, image_path: BytesIO | os.PathLike | str) -> BytesIO:
         with Image.open(image_path) as img:
             img = img.convert("RGBA")
             img = img.filter(ImageFilter.GaussianBlur(10))
@@ -124,8 +124,8 @@ class CountryGuesser:
         ctx: Context[Parrot],
         *,
         options: tuple[str, ...] = (),
-        length: Optional[int] = None,
-    ) -> Optional[tuple[discord.Message, str]]:
+        length: int | None = None,
+    ) -> tuple[discord.Message, str] | None:
         def check(m: discord.Message) -> bool:
             if length:
                 return m.channel == ctx.channel and m.author == ctx.author and len(m.content) == length
@@ -143,7 +143,7 @@ class CountryGuesser:
         self,
         ctx: Context[Parrot],
         *,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         embed_color: DiscordColor = DEFAULT_COLOR,
         ignore_diff_len: bool = False,
     ) -> discord.Message:
@@ -347,7 +347,7 @@ class BetaCountryGuesser(CountryGuesser):
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
         ignore_diff_len: bool = False,
-        timeout: Optional[float] = 120,
+        timeout: float | None = 120,
     ) -> discord.Message:
         """Starts the Country Guesser(buttons) Game.
 

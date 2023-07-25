@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-from typing import Optional, Union
 
 import discord
 from core import Context
@@ -145,9 +144,9 @@ class SokobanGameView(discord.ui.View):
     def __init__(
         self,
         game: SokobanGame,
-        user: Union[discord.Member, discord.User],
+        user: discord.Member | discord.User,
         ctx: Context,
-        level: Optional[int] = None,
+        level: int | None = None,
         *,
         timeout: float = 60.0,
     ) -> None:

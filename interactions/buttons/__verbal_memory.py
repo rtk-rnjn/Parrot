@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from typing import Optional
 
 from english_words import get_english_words_set
 
@@ -59,7 +58,7 @@ class VerbalView(BaseView):
         game: VerbalMemory,
         *,
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> None:
         super().__init__(timeout=timeout)
 
@@ -72,9 +71,9 @@ class VerbalView(BaseView):
 
 
 class VerbalMemory:
-    def __init__(self, word_set: Optional[list[str]] = None, sample_size: Optional[int] = 300) -> None:
+    def __init__(self, word_set: list[str] | None = None, sample_size: int | None = 300) -> None:
         self.lives: int = 0
-        self.embed: Optional[discord.Embed] = None
+        self.embed: discord.Embed | None = None
 
         english_words = list(
             get_english_words_set(
@@ -122,8 +121,8 @@ class VerbalMemory:
         lives: int = 3,
         weights: tuple[float, float] = (0.7, 0.3),
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
-        timeout: Optional[float] = None,
-    ) -> Optional[discord.Message]:
+        timeout: float | None = None,
+    ) -> discord.Message | None:
         self.weights = weights
         self.lives = lives
         self.embed = discord.Embed(

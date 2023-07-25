@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 
 from discord.ext import commands
 
 
 class TriviaFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):  # type: ignore
-    token: Optional[str] = None
-    number: Optional[int] = commands.flag(name="number", default=10, aliases=["amount"])
-    category: Optional[str] = None
-    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
-    _type: Optional[Literal["multiple", "boolean"]] = commands.flag(default="multiple", name="type")
+    token: str | None = None
+    number: int | None = commands.flag(name="number", default=10, aliases=["amount"])
+    category: str | None = None
+    difficulty: Literal["easy", "medium", "hard"] | None = None
+    _type: Literal["multiple", "boolean"] | None = commands.flag(default="multiple", name="type")
 
 
 class Category(Enum):

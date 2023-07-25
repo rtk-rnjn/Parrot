@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from discord.ext import commands
 
@@ -10,11 +9,11 @@ POSSIBLE_RUFF_CODE = re.compile(r"([A-Z]\d{2,4})")
 
 class RuffConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
-    ignore: Optional[str] = None
-    select: Optional[str] = None
-    line_length: Optional[int] = None
-    max_doc_length: Optional[int] = None
-    max_complexity: Optional[int] = None
+    ignore: str | None = None
+    select: str | None = None
+    line_length: int | None = None
+    max_doc_length: int | None = None
+    max_complexity: int | None = None
 
 
 def validate_Ruff_code(code: str) -> list[str]:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Union
 
 import discord
 from core import Cog, Parrot
@@ -35,8 +34,8 @@ class GuildChannel(Cog, command_attrs={"hidden": True}):
     @Cog.listener()
     async def on_guild_channel_pins_update(
         self,
-        channel: Union[discord.abc.GuildChannel, discord.Thread],
-        last_pin: Optional[datetime],
+        channel: discord.abc.GuildChannel | discord.Thread,
+        last_pin: datetime | None,
     ):
         pass
 

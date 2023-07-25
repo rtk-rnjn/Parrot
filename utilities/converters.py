@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
 from aiohttp import ClientResponse, ClientSession
 from lru import LRU
@@ -26,7 +26,7 @@ KT = TypeVar("KT", bound=Any)
 VT = TypeVar("VT", bound=Any)
 
 
-def convert_bool(text: Union[str, bool, Any]) -> bool:
+def convert_bool(text: str | bool | Any) -> bool:
     """True/False converter."""
     return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o"}
 
@@ -34,7 +34,7 @@ def convert_bool(text: Union[str, bool, Any]) -> bool:
 class ActionReason(commands.Converter):
     """Action reason converter."""
 
-    async def convert(self, ctx: Context, argument: Optional[str] = None) -> str:
+    async def convert(self, ctx: Context, argument: str | None = None) -> str:
         """Convert the argument to a action string."""
         ret = f"Action requested by {ctx.author} (ID: {ctx.author.id}) | Reason: {argument or 'no reason provided'}"
 
@@ -49,7 +49,7 @@ class ActionReason(commands.Converter):
 class ToAsync:
     """Converts a blocking function to an async function."""
 
-    def __init__(self, *, executor: Optional[ThreadPoolExecutor] = None) -> None:
+    def __init__(self, *, executor: ThreadPoolExecutor | None = None) -> None:
         self.executor = executor or ThreadPoolExecutor()
 
     def __call__(self, blocking) -> Callable[..., Any]:
@@ -63,7 +63,7 @@ class ToAsync:
 class BannedMember(commands.Converter):
     """A coverter that is used for fetching Banned Member of Guild."""
 
-    async def convert(self, ctx: Context, argument: str) -> Optional[discord.User]:
+    async def convert(self, ctx: Context, argument: str) -> discord.User | None:
         if argument.isdigit():
             member_id = int(argument, base=10)
             try:
@@ -104,10 +104,10 @@ def can_execute_action(ctx: Context, user: discord.Member, target: discord.Membe
 class MemberID(commands.Converter):
     """A converter that handles user mentions and user IDs."""
 
-    async def convert(self, ctx: Context, argument: str) -> Optional[discord.Member]:
+    async def convert(self, ctx: Context, argument: str) -> discord.Member | None:
         """Convert a user mention or ID to a member object."""
         try:
-            m: Optional[discord.Member] = await commands.MemberConverter().convert(ctx, argument)  # type: ignore
+            m: discord.Member | None = await commands.MemberConverter().convert(ctx, argument)  # type: ignore
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
@@ -115,7 +115,7 @@ class MemberID(commands.Converter):
                 msg = f"{argument} is not a valid member or member ID."
                 raise commands.BadArgument(msg) from None
             else:
-                m: Optional[Union[discord.Member, discord.User]] = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
+                m: discord.Member | discord.User | None = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:
                     # hackban case
                     return type(  # type: ignore
@@ -140,17 +140,17 @@ class Cache(Generic[KT, VT]):
     def __init__(
         self,
         bot: Parrot,
-        cache_size: Optional[int] = None,
+        cache_size: int | None = None,
         *,
-        callback: Optional[Callable[[KT, VT], Any]] = None,
+        callback: Callable[[KT, VT], Any] | None = None,
     ) -> None:
         self.cache_size: int = cache_size or LRU_CACHE
         self.bot = bot
         self.__internal_cache: LRU = LRU(self.cache_size, callback=callback or lru_callback)
 
         self.items: Callable[[], list[tuple[int, Any]]] = self.__internal_cache.items
-        self.peek_first_item: Callable[[], Optional[tuple[int, Any]]] = self.__internal_cache.peek_first_item
-        self.peek_last_item: Callable[[], Optional[tuple[int, Any]]] = self.__internal_cache.peek_last_item
+        self.peek_first_item: Callable[[], tuple[int, Any] | None] = self.__internal_cache.peek_first_item
+        self.peek_last_item: Callable[[], tuple[int, Any] | None] = self.__internal_cache.peek_last_item
         self.get_size: Callable[[], int] = self.__internal_cache.get_size
         self.set_size: Callable[[int], None] = self.__internal_cache.set_size
         self.has_key: Callable[[object], bool] = self.__internal_cache.has_key
@@ -252,7 +252,7 @@ def from_bottom(text: str) -> str:
     return out.decode()
 
 
-async def get_default_emoji(bot: Parrot, emoji: str, *, svg: bool = True) -> Optional[bytes]:
+async def get_default_emoji(bot: Parrot, emoji: str, *, svg: bool = True) -> bytes | None:
     from .imaging import image as image_mod
 
     try:
@@ -418,7 +418,7 @@ class ImageConverter(commands.Converter):
             del byt
             raise ImageTooLarge(size, max_size)
 
-    async def converted_to_buffer(self, source: Union[discord.Member, discord.User, discord.PartialEmoji, bytes]) -> bytes:
+    async def converted_to_buffer(self, source: discord.Member | discord.User | discord.PartialEmoji | bytes) -> bytes:
         if isinstance(source, discord.Member | discord.User):
             source = await source.display_avatar.read()
 
@@ -427,7 +427,7 @@ class ImageConverter(commands.Converter):
 
         return source
 
-    async def get_attachments(self, ctx: Context, message: Optional[discord.Message] = None) -> Optional[bytes]:
+    async def get_attachments(self, ctx: Context, message: discord.Message | None = None) -> bytes | None:
         source = None
         message = message or ctx.message
 
@@ -447,7 +447,7 @@ class ImageConverter(commands.Converter):
                         continue
         return source
 
-    async def get_sticker_image(self, ctx: Context, stickers: list[discord.StickerItem]) -> Optional[bytes]:
+    async def get_sticker_image(self, ctx: Context, stickers: list[discord.StickerItem]) -> bytes | None:
         for sticker in stickers:
             if sticker.format is not discord.StickerFormatType.lottie:
                 try:
@@ -455,7 +455,7 @@ class ImageConverter(commands.Converter):
                 except commands.BadArgument:
                     continue
 
-    async def get_file_image(self, files: list[discord.Attachment]) -> Optional[bytes]:
+    async def get_file_image(self, files: list[discord.Attachment]) -> bytes | None:
         from .imaging import image as image_mod
 
         for file in files:
@@ -465,7 +465,7 @@ class ImageConverter(commands.Converter):
                     byt = await image_mod.svg_to_png(byt)
                 return byt
 
-    async def convert(self, ctx: Context, argument: str, *, raise_on_failure: bool = True) -> Optional[bytes]:
+    async def convert(self, ctx: Context, argument: str, *, raise_on_failure: bool = True) -> bytes | None:
         for converter in self._converters:
             try:
                 source = await converter().convert(ctx, argument)
@@ -482,7 +482,7 @@ class ImageConverter(commands.Converter):
 
         return await self.converted_to_buffer(source)
 
-    async def get_image(self, ctx: Context, source: Optional[str | bytes], *, max_size: int = 15_000_000) -> BytesIO:
+    async def get_image(self, ctx: Context, source: str | bytes | None, *, max_size: int = 15_000_000) -> BytesIO:
         if isinstance(source, str):
             source = await self.convert(ctx, source, raise_on_failure=False)
 

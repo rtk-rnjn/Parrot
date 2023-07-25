@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 import time
-from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 import discord
 from core import Context, Parrot
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import ParamSpec
 
-    DiscordColor: TypeAlias = Union[discord.Color, int]
+    DiscordColor: TypeAlias = discord.Color | int
 
     P = ParamSpec("P")
     T = TypeVar("T")
@@ -116,7 +116,7 @@ class MemoryView(BaseView):
         button_style: discord.ButtonStyle,
         pause_time: float,
         ctx: Context,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> None:
         super().__init__(timeout=timeout)
 
@@ -124,7 +124,7 @@ class MemoryView(BaseView):
 
         self.button_style = button_style
         self.pause_time = pause_time
-        self.opened: Optional[MemoryButton] = None
+        self.opened: MemoryButton | None = None
         self.ctx = ctx
 
         if not items:
@@ -158,8 +158,8 @@ class MemoryGame:
     """Memory Game."""
 
     def __init__(self) -> None:
-        self.embed_color: Optional[DiscordColor] = None
-        self.embed: Optional[discord.Embed] = None
+        self.embed_color: DiscordColor | None = None
+        self.embed: discord.Embed | None = None
         self.moves: int = 0
 
     async def start(
@@ -170,8 +170,8 @@ class MemoryGame:
         items: list[str] = None,
         pause_time: float = 0.7,
         button_style: discord.ButtonStyle = discord.ButtonStyle.gray,
-        timeout: Optional[float] = None,
-    ) -> Optional[discord.Message]:
+        timeout: float | None = None,
+    ) -> discord.Message | None:
         if items is None:
             items = []
         self.embed_color = embed_color

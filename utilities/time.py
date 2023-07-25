@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -43,7 +43,7 @@ class ShortTime:
         self,
         argument: str,
         *,
-        now: Optional[datetime.datetime] = None,
+        now: datetime.datetime | None = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
     ) -> None:
         match = self.compiled.fullmatch(argument)
@@ -83,7 +83,7 @@ class HumanTime:
         self,
         argument: str,
         *,
-        now: Optional[datetime.datetime] = None,
+        now: datetime.datetime | None = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
     ) -> None:
         now = now or datetime.datetime.now(tzinfo)
@@ -123,7 +123,7 @@ class Time(HumanTime):
         self,
         argument: str,
         *,
-        now: Optional[datetime.datetime] = None,
+        now: datetime.datetime | None = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
     ) -> None:
         try:
@@ -140,7 +140,7 @@ class FutureTime(Time):
         self,
         argument: str,
         *,
-        now: Optional[datetime.datetime] = None,
+        now: datetime.datetime | None = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
     ) -> None:
         super().__init__(argument, now=now, tzinfo=tzinfo)
@@ -188,7 +188,7 @@ class UserFriendlyTime(commands.Converter):
 
     def __init__(
         self,
-        converter: Optional[Union[type[commands.Converter], commands.Converter]] = None,
+        converter: type[commands.Converter] | commands.Converter | None = None,
         *,
         default: Any = None,
     ) -> None:
@@ -301,8 +301,8 @@ class UserFriendlyTime(commands.Converter):
 def human_timedelta(
     dt: datetime.datetime,
     *,
-    source: Optional[datetime.datetime] = None,
-    accuracy: Optional[int] = 3,
+    source: datetime.datetime | None = None,
+    accuracy: int | None = 3,
     brief: bool = False,
     suffix: bool = True,
 ) -> str:

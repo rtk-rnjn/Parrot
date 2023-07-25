@@ -11,7 +11,7 @@ import traceback
 import typing
 import urllib.parse
 from collections import Counter
-from typing import Literal, Optional
+from typing import Literal
 
 from aiofile import async_open
 
@@ -94,7 +94,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         self,
         ctx: Context,
         *,
-        target: typing.Union[discord.User, discord.TextChannel, discord.Thread, None] = None,
+        target: discord.User | discord.TextChannel | discord.Thread | None = None,
     ):
         """Fun command."""
         await ctx.message.delete(delay=0)
@@ -211,8 +211,8 @@ class Owner(Cog, command_attrs={"hidden": True}):
     async def spy_server(
         self,
         ctx: Context,
-        guild: typing.Union[discord.Guild, int, None] = None,
-        channel_member: Optional[str] = None,
+        guild: discord.Guild | int | None = None,
+        channel_member: str | None = None,
     ):
         """This is not really a spy command."""
         guild = guild or ctx.guild
@@ -458,9 +458,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
     async def maintenance(
         self,
         ctx: Context,
-        till: typing.Optional[ShortTime] = None,
+        till: ShortTime | None = None,
         *,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ):
         """To toggle the bot maintenance."""
         ctx.bot.UNDER_MAINTENANCE = not ctx.bot.UNDER_MAINTENANCE
@@ -469,7 +469,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
-    async def member_count(self, ctx: Context, guild: typing.Optional[discord.Object] = None):
+    async def member_count(self, ctx: Context, guild: discord.Object | None = None):
         """Returns member count of the guild.
 
         This is equivalent to:
@@ -491,8 +491,8 @@ class Owner(Cog, command_attrs={"hidden": True}):
     async def playing(
         self,
         ctx: Context[Parrot],
-        shard: Optional[int],
-        status: Optional[Literal["online", "dnd", "offline", "idle"]] = "dnd",
+        shard: int | None,
+        status: Literal["online", "dnd", "offline", "idle"] | None = "dnd",
         *,
         media: str,
     ):
@@ -513,7 +513,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
-    async def toggle_testing(self, ctx: Context, cog: str, toggle: typing.Optional[convert_bool]) -> None:  # type: ignore
+    async def toggle_testing(self, ctx: Context, cog: str, toggle: convert_bool | None) -> None:  # type: ignore
         """Update the cog setting to toggle testing mode.
 
         ```py
@@ -521,7 +521,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             cog.ON_TESTING = not cog.ON_TESTING
         ```
         """
-        cog: Optional[Cog] = self.bot.get_cog(cog)  # type: ignore
+        cog: Cog | None = self.bot.get_cog(cog)  # type: ignore
         assert cog is not None
         if hasattr(cog, "ON_TESTING"):
             true_false = toggle if toggle is not None else not cog.ON_TESTING
@@ -547,8 +547,8 @@ class Owner(Cog, command_attrs={"hidden": True}):
     async def mongo(
         self,
         ctx: Context,
-        db: typing.Optional[str] = None,
-        collection: typing.Optional[str] = None,
+        db: str | None = None,
+        collection: str | None = None,
     ):
         """MongoDB query."""
         if db and collection:
@@ -683,7 +683,7 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         await ctx.send(embed=e)
 
     @commands.group(invoke_without_command=True)
-    async def rtfd(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a specified entity.
         Events, objects, and functions are all supported through
         a cruddy fuzzy algorithm.
@@ -692,47 +692,47 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
             return await self.do_rtfm(ctx, "discord", obj)
 
     @rtfd.command(name="python", aliases=["py"])
-    async def rtfm_python(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfm_python(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a Python entity."""
         await self.do_rtfm(ctx, "python", obj)
 
     @rtfd.command(name="aiohttp")
-    async def rtfd_aiohttp(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_aiohttp(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a aiohttp entity."""
         await self.do_rtfm(ctx, "aiohttp", obj)
 
     @rtfd.command(name="requests", aliases=["request", "req"])
-    async def rtfd_request(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_request(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a request entity."""
         await self.do_rtfm(ctx, "requests", obj)
 
     @rtfd.command(name="flask")
-    async def rtfd_flask(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_flask(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a flask entity."""
         await self.do_rtfm(ctx, "flask", obj)
 
     @rtfd.command(name="numpy", aliases=["np"])
-    async def rtfd_numpy(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_numpy(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a numpy entity."""
         await self.do_rtfm(ctx, "numpy", obj)
 
     @rtfd.command(name="pil")
-    async def rtfd_pil(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_pil(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a PIL entity."""
         await self.do_rtfm(ctx, "pil", obj)
 
     @rtfd.command(name="matplotlib", aliases=["matlab", "plt", "mat"])
-    async def rtfd_matplotlib(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_matplotlib(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a matplotlib entity."""
         await self.do_rtfm(ctx, "matplotlib", obj)
 
     @rtfd.command(name="pandas", aliases=["pd"])
-    async def rtfd_pandas(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_pandas(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a pandas entity."""
         await self.do_rtfm(ctx, "pandas", obj)
 
     @rtfd.command(name="pymongo", aliases=["mongo", "pym"])
-    async def rtfd_pymongo(self, ctx: Context, *, obj: Optional[str] = None):
+    async def rtfd_pymongo(self, ctx: Context, *, obj: str | None = None):
         """Gives you a documentation link for a pymongo entity."""
         await self.do_rtfm(ctx, "pymongo", obj)
 

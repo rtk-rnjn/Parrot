@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from random import choice, random
-from typing import Literal, Optional
+from typing import Literal
 
 import discord
 from core import Cog, Context, Parrot
@@ -27,15 +27,15 @@ class NSFW(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{NO ONE UNDER EIGHTEEN SYMBOL}")
 
-    async def cog_check(self, ctx: Context) -> Optional[bool]:
+    async def cog_check(self, ctx: Context) -> bool | None:
         if not ctx.channel.nsfw:
             raise commands.NSFWChannelRequired(ctx.channel)
         return True
 
-    def _try_from_cache(self, type_str: str) -> Optional[str]:
+    def _try_from_cache(self, type_str: str) -> str | None:
         return choice(self.cached_images.get(type_str, [None]))
 
-    async def get_embed(self, type_str: str) -> Optional[discord.Embed]:
+    async def get_embed(self, type_str: str) -> discord.Embed | None:
         if random() > 0.5 and len(self.cached_images.get(type_str, [])) >= 10:
             url = choice(self.cached_images[type_str])
         else:
@@ -109,7 +109,7 @@ class NSFW(Cog):
     async def n(
         self,
         ctx: Context,
-        count: Optional[int] = 1,
+        count: int | None = 1,
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:

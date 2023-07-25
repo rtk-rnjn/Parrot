@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import typing
 
 import discord
 from core import Context, Parrot
@@ -40,7 +39,7 @@ class NitroView(discord.ui.View):
 
 
 class MongoCollectionView(discord.ui.View):
-    message: typing.Optional[discord.Message] = None
+    message: discord.Message | None = None
 
     def __init__(self, *, timeout: float = 20, db: str, collection: str, ctx: Context) -> None:
         super().__init__(timeout=timeout)
@@ -97,7 +96,7 @@ class MongoCollectionView(discord.ui.View):
 
 
 class MongoViewSelect(discord.ui.Select["MongoView"]):
-    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = None, **kwargs) -> None:
+    def __init__(self, ctx: Context, *, timeout: float | None = None, **kwargs) -> None:
         self.db_name = kwargs.pop("db_name", "")
         super().__init__(min_values=1, max_values=1, **kwargs)
         self.ctx = ctx
@@ -130,9 +129,9 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
 
 
 class MongoView(discord.ui.View):
-    message: typing.Optional[discord.Message] = None
+    message: discord.Message | None = None
 
-    def __init__(self, ctx: Context, *, timeout: typing.Optional[float] = 20, **kwargs) -> None:
+    def __init__(self, ctx: Context, *, timeout: float | None = 20, **kwargs) -> None:
         super().__init__(timeout=timeout)
 
         self.ctx = ctx

@@ -6,7 +6,6 @@ import math
 import random
 from itertools import product
 from pathlib import Path
-from typing import Union
 
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
@@ -380,7 +379,7 @@ class SnakeAndLaddersGame:
         Listen for reactions until players have joined, and the game has been started.
         """
 
-        def startup_event_check(reaction_: Reaction, user_: Union[User, Member]) -> bool:
+        def startup_event_check(reaction_: Reaction, user_: User | Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             return all(
                 (
@@ -433,7 +432,7 @@ class SnakeAndLaddersGame:
                 await self.cancel_game()
                 return  # We're done, no reactions for the last 5 minutes
 
-    async def _add_player(self, user: Union[User, Member]) -> None:
+    async def _add_player(self, user: User | Member) -> None:
         """Add player to game."""
         self.players.append(user)
         self.player_tiles[user.id] = 1
@@ -442,7 +441,7 @@ class SnakeAndLaddersGame:
         im = Image.open(io.BytesIO(avatar_bytes)).resize((BOARD_PLAYER_SIZE, BOARD_PLAYER_SIZE))
         self.avatar_images[user.id] = im
 
-    async def player_join(self, user: Union[User, Member]) -> None:
+    async def player_join(self, user: User | Member) -> None:
         """Handle players joining the game.
         Prevent player joining if they have already joined, if the game is full, or if the game is
         in a waiting state.
@@ -465,7 +464,7 @@ class SnakeAndLaddersGame:
             delete_after=10,
         )
 
-    async def player_leave(self, user: Union[User, Member]) -> bool:
+    async def player_leave(self, user: User | Member) -> bool:
         """Handle players leaving the game.
         Leaving is prevented if the user wasn't part of the game.
         If the number of players reaches 0, the game is terminated. In this case, a sentinel boolean
@@ -497,7 +496,7 @@ class SnakeAndLaddersGame:
         await self.channel.send("**Snakes and Ladders**: Game has been canceled.")
         self._destruct()
 
-    async def start_game(self, user: Union[User, Member]) -> None:
+    async def start_game(self, user: User | Member) -> None:
         """Allow the game author to begin the game.
         The game cannot be started if the game is in a waiting state.
         """
@@ -523,7 +522,7 @@ class SnakeAndLaddersGame:
     async def start_round(self) -> None:
         """Begin the round."""
 
-        def game_event_check(reaction_: Reaction, user_: Union[User, Member]) -> bool:
+        def game_event_check(reaction_: Reaction, user_: User | Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             return all(
                 (
@@ -609,7 +608,7 @@ class SnakeAndLaddersGame:
         if not is_surrendered:
             await self._complete_round()
 
-    async def player_roll(self, user: Union[User, Member]) -> None:
+    async def player_roll(self, user: User | Member) -> None:
         """Handle the player's roll."""
         if user.id not in self.player_tiles:
             await self.channel.send(f"{user.mention} You are not in the match.", delete_after=10)
@@ -653,7 +652,7 @@ class SnakeAndLaddersGame:
         await self.channel.send(f"**Snakes and Ladders**: {winner.mention} has won the game! :tada:")
         self._destruct()
 
-    def _check_winner(self) -> Union[User, Member]:
+    def _check_winner(self) -> User | Member:
         """Return a winning member if we're in the post-round state and there's a winner."""
         if self.state != "post_round":
             return None

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Optional
 
 import discord
 from core import Context, Parrot
@@ -77,7 +76,7 @@ class ChimpView(discord.ui.View):
         game: ChimpTest,
         *,
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> None:
         super().__init__(timeout=timeout)
         self.button_style = button_style
@@ -125,7 +124,7 @@ class ChimpTest:
 
     def __init__(self, count: int = 9) -> None:
         self.lives: int = 0
-        self.initial_sleep: Optional[float] = None
+        self.initial_sleep: float | None = None
         self.highlight_tiles: bool = True
 
         if count not in range(1, 26):
@@ -153,9 +152,9 @@ class ChimpTest:
         *,
         lives: int = 1,
         highlight_tiles: bool = True,
-        initial_sleep: Optional[float] = None,
+        initial_sleep: float | None = None,
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> discord.Message:
         self.lives = lives
         self.initial_sleep = initial_sleep

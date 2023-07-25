@@ -3,7 +3,6 @@
 from collections import defaultdict
 from itertools import chain
 from random import randrange
-from typing import Union
 
 from PIL.Image import Image
 
@@ -110,7 +109,7 @@ class TransparentAnimatedGifConverter:
         return self._img_p
 
 
-def _create_animated_gif(images: list[Image], durations: Union[int, list[int]]) -> tuple[Image, dict]:
+def _create_animated_gif(images: list[Image], durations: int | list[int]) -> tuple[Image, dict]:
     save_kwargs = {}
     new_images: list[Image] = []
 
@@ -135,6 +134,6 @@ def _create_animated_gif(images: list[Image], durations: Union[int, list[int]]) 
     return output_image, save_kwargs
 
 
-def save_transparent_gif(images: list[Image], durations: Union[int, list[int]], save_file) -> None:
+def save_transparent_gif(images: list[Image], durations: int | list[int], save_file) -> None:
     root_frame, save_args = _create_animated_gif(images, durations)
     root_frame.save(save_file, **save_args)

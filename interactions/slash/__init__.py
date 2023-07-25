@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import Literal, Optional
+from typing import Literal
 
 import discord
 from core import Cog, Context, Parrot
@@ -55,7 +55,7 @@ class ContextMenu(Cog):
         self,
         ctx: Context,
         guilds: commands.Greedy[discord.Object],
-        spec: Optional[Literal["~", "*"]] = None,
+        spec: Literal["~", "*"] | None = None,
     ) -> None:
         if not guilds:
             if spec == "~":

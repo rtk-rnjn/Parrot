@@ -2,12 +2,12 @@
 
 from collections.abc import Awaitable, Callable
 from itertools import islice
-from typing import NamedTuple, Optional, TypeVar, Union
+from typing import NamedTuple, TypeVar
 
 import discord
 from core import Context
 
-PageT = TypeVar("PageT", bound=Union[str, int, discord.File, discord.Embed])
+PageT = TypeVar("PageT", bound=str | int | discord.File | discord.Embed)
 Callback = Callable[[discord.Interaction, discord.ui.Button, PageT], Awaitable[None]]
 
 
@@ -31,7 +31,7 @@ class Pages:
         return Page(self.cur_page, self.pages[self.cur_page - 1])
 
     @property
-    def next_page(self) -> Optional[Page]:
+    def next_page(self) -> Page | None:
         if self.cur_page == self.total:
             return None
 
@@ -39,7 +39,7 @@ class Pages:
         return self.current_page
 
     @property
-    def previous_page(self) -> Optional[Page]:
+    def previous_page(self) -> Page | None:
         if self.cur_page == 1:
             return None
 
@@ -70,8 +70,8 @@ class ParrotPaginator:
         timeout=60.0,
         title=None,
         show_page_count=True,
-        embed_url: Optional[str] = None,
-        check_other_ids: Optional[list] = None,
+        embed_url: str | None = None,
+        check_other_ids: list | None = None,
     ) -> None:
         self.ctx = ctx
         self.per_page = per_page
@@ -136,7 +136,7 @@ class PaginatorView(discord.ui.View):
         timeout,
         show_page_count,
         *,
-        check_other_ids: Optional[list] = None,
+        check_other_ids: list | None = None,
     ) -> None:
         super().__init__(timeout=timeout)
 
@@ -252,12 +252,12 @@ class PaginationView(discord.ui.View):
 
     def __init__(
         self,
-        embed_list: Optional[list[Union[str, discord.File, discord.Embed]]] = None,
+        embed_list: list[str | discord.File | discord.Embed] | None = None,
         *,
-        first_function: Optional[Callback] = None,
-        next_function: Optional[Callback] = None,
-        previous_function: Optional[Callback] = None,
-        last_function: Optional[Callback] = None,
+        first_function: Callback | None = None,
+        next_function: Callback | None = None,
+        previous_function: Callback | None = None,
+        last_function: Callback | None = None,
     ) -> None:
         super().__init__(timeout=30)
         if embed_list is None:
@@ -492,7 +492,7 @@ class PaginationView(discord.ui.View):
         self.ctx = ctx
         await self.start(ctx)
 
-    async def add_item_to_embed_list(self, item: Union[str, discord.Embed, discord.File]):
+    async def add_item_to_embed_list(self, item: str | discord.Embed | discord.File):
         self.embed_list.append(item)
         if hasattr(self, "message"):
             self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Callable, Container, Iterable
-from typing import TYPE_CHECKING, Optional, TypeAlias, Union
+from typing import TYPE_CHECKING, TypeAlias
 
 from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
@@ -40,7 +40,7 @@ __all__ = (
 
 
 def in_server(guild_id: int) -> Check[Context]:
-    def predicate(ctx: Context) -> Optional[bool]:
+    def predicate(ctx: Context) -> bool | None:
         guild = ctx.bot.get_guild(guild_id)
         if not guild:
             return False
@@ -55,7 +55,7 @@ def in_server(guild_id: int) -> Check[Context]:
 
 
 def in_support_server() -> Check[Context]:
-    def predicate(ctx: Context) -> Optional[bool]:
+    def predicate(ctx: Context) -> bool | None:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
 
         if ctx.guild.id == ctx.bot.server.id:
@@ -66,7 +66,7 @@ def in_support_server() -> Check[Context]:
 
 
 def voter_only() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         """Returns True if the user is a voter."""
         if is_voter := await ctx.is_voter():
             return is_voter
@@ -77,7 +77,7 @@ def voter_only() -> Check[Context]:
 
 
 def is_guild_owner() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
             return True
         raise ex.NotGuildOwner()
@@ -86,7 +86,7 @@ def is_guild_owner() -> Check[Context]:
 
 
 def is_me() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         if ctx.message.author.id == SUPER_USER:  # `!! Ritik Ranjan [*.*]#9230`
             return True
         raise ex.NotMe()
@@ -95,7 +95,7 @@ def is_me() -> Check[Context]:
 
 
 def has_verified_role_ticket() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         data = ctx.bot.guild_configurations_cache[ctx.guild.id]
         data = data["ticket_config"]
         roles = data["verified_roles"]
@@ -111,7 +111,7 @@ def has_verified_role_ticket() -> Check[Context]:
 
 
 def is_mod() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         bot: Parrot = ctx.bot
         try:
             role = bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0  # role could be `None`
@@ -131,7 +131,7 @@ def is_mod() -> Check[Context]:
 
 
 def in_temp_channel() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         if not ctx.author.voice:
             raise ex.InHubVoice()
 
@@ -149,7 +149,7 @@ def in_temp_channel() -> Check[Context]:
     return commands.check(predicate)  # type: ignore
 
 
-def can_run(ctx: Context) -> Optional[bool]:
+def can_run(ctx: Context) -> bool | None:
     """Return True is the command is whitelisted in specific channel, also with specific role."""
     try:
         if ctx.bot.banned_users[ctx.author.id]["command"]:
@@ -166,7 +166,7 @@ def can_run(ctx: Context) -> Optional[bool]:
         return _can_run(cmd_cog, cmd_config, cmd, ctx)
 
 
-def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional[bool]:
+def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> bool | None:
     CMD_GLOBAL_ENABLE_ = f"CMD_GLOBAL_ENABLE_{cmd_cog}".upper()
     CMD_ROLE_ENABLE_ = f"CMD_ROLE_ENABLE_{cmd_cog}".upper()
     CMD_ROLE_DISABLE_ = f"CMD_ROLE_DISABLE_{cmd_cog}".upper()
@@ -204,7 +204,7 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> Optional
 
 
 def guild_premium() -> Check[Context]:
-    def predicate(ctx: Context) -> Optional[bool]:
+    def predicate(ctx: Context) -> bool | None:
         """Returns True if the guild is premium."""
         if ctx.guild is not None and ctx.bot.guild_configurations[ctx.guild.id].get("premium", False):
             return True
@@ -215,7 +215,7 @@ def guild_premium() -> Check[Context]:
 
 
 def is_dj() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         """Returns True if the user is a DJ."""
         assert isinstance(ctx.author, discord.Member)
         if role := await ctx.dj_role():
@@ -227,7 +227,7 @@ def is_dj() -> Check[Context]:
 
 
 def in_voice() -> Check[Context]:
-    def predicate(ctx: Context) -> Optional[bool]:
+    def predicate(ctx: Context) -> bool | None:
         assert isinstance(ctx.author, discord.Member)
         if ctx.author.voice is None:
             raise ex.NotInVoice()
@@ -237,7 +237,7 @@ def in_voice() -> Check[Context]:
 
 
 def same_voice() -> Check[Context]:
-    async def predicate(ctx: Context) -> Optional[bool]:
+    async def predicate(ctx: Context) -> bool | None:
         if ctx.me.voice is None:
             raise ex.NotBotInVoice()
         if ctx.author.voice is None:
@@ -255,7 +255,7 @@ def cooldown_with_role_bypass(
     per: float,
     _type: BucketType = BucketType.default,
     *,
-    bypass_roles: Iterable[Union[int, str]],
+    bypass_roles: Iterable[int | str],
 ) -> Callable:
     """Applies a cooldown to a command, but allows members with certain roles to be ignored.
     NOTE: this replaces the `Command.before_invoke` callback, which *might* introduce problems in the future.
@@ -321,7 +321,7 @@ def in_whitelist_check(
     channels: Container[int] = (),
     categories: Container[int] = (),
     roles: Container[int] = (),
-    redirect: Optional[int] = None,
+    redirect: int | None = None,
     fail_silently: bool = False,
 ) -> bool:
     """Check if a command was issued in a whitelisted context.
@@ -369,7 +369,7 @@ def in_whitelist_check(
 class InWhitelistCheckFailure(ex.ParrotCheckFailure):
     """Raised when the `in_whitelist` check fails."""
 
-    def __init__(self, redirect_channel: Optional[int]) -> None:
+    def __init__(self, redirect_channel: int | None) -> None:
         self.redirect_channel = redirect_channel
 
         if redirect_channel:

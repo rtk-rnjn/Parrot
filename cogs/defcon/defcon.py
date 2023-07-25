@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import discord
 from core import Cog, Context, Parrot
@@ -442,7 +442,7 @@ class DefensiveCondition(Cog):
 
     @defcon_trustables.command(name="add")
     @commands.has_permissions(manage_guild=True)
-    async def defcon_trustables_add(self, ctx: Context, *roles_or_members: Union[discord.Role, discord.Member]) -> None:
+    async def defcon_trustables_add(self, ctx: Context, *roles_or_members: discord.Role | discord.Member) -> None:
         """To add trustable roles or members."""
         guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 
@@ -481,7 +481,7 @@ class DefensiveCondition(Cog):
 
     @defcon_trustables.command(name="remove")
     @commands.has_permissions(manage_guild=True)
-    async def defcon_trustables_remove(self, ctx: Context, *roles_or_members: Union[discord.Role, discord.Member]) -> None:
+    async def defcon_trustables_remove(self, ctx: Context, *roles_or_members: discord.Role | discord.Member) -> None:
         """To remove trustable roles or members."""
         guild_config = self.bot.guild_configurations_cache[ctx.guild.id]
 

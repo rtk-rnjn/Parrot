@@ -13,7 +13,7 @@ from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
-from typing import Any, Optional, Union
+from typing import Any
 from urllib.parse import quote, quote_plus
 
 import aiohttp  # type: ignore
@@ -107,7 +107,7 @@ class BookmarkForm(discord.ui.Modal):
         self,
         interaction: discord.Interaction,
         target_message: discord.Message,
-        title: Optional[str],
+        title: str | None,
     ) -> None:
         """Sends the target_message as a bookmark to the interaction user's DMs.
 
@@ -144,7 +144,7 @@ class RTFM(Cog):
                 self.parse_readme(raw)
 
     @staticmethod
-    def build_bookmark_dm(target_message: discord.Message, title: Optional[str]) -> discord.Embed:
+    def build_bookmark_dm(target_message: discord.Message, title: str | None) -> discord.Embed:
         """Build the embed to DM the bookmark requester."""
         embed = discord.Embed(
             title=title or "Bookmark",
@@ -186,7 +186,7 @@ class RTFM(Cog):
         await interaction.response.send_modal(bookmark_title_form)
 
     @staticmethod
-    def build_error_embed(user: Union[discord.Member, discord.User, str]) -> discord.Embed:
+    def build_error_embed(user: discord.Member | discord.User | str) -> discord.Embed:
         """Builds an error embed for when a bookmark requester has DMs disabled."""
         if isinstance(user, str):
             return discord.Embed(
@@ -202,7 +202,7 @@ class RTFM(Cog):
     async def action_bookmark(
         self,
         channel: discord.abc.MessageableChannel,
-        user: Union[discord.Member, discord.User],
+        user: discord.Member | discord.User,
         target_message: discord.Message,
         title: str,
     ) -> None:
@@ -241,7 +241,7 @@ class RTFM(Cog):
                 hyper_link = match[0].split("(")[1].replace(")", "")
                 self.headers[match[0]] = f"{BASE_URL}/{hyper_link}"
 
-    def fuzzy_match_header(self, query: str) -> Optional[str]:
+    def fuzzy_match_header(self, query: str) -> str | None:
         match, certainty, _ = rapidfuzz.process.extractOne(query, self.headers.keys())
         return match if certainty > MINIMUM_CERTAINTY else None
 
@@ -304,7 +304,7 @@ class RTFM(Cog):
             description=ERROR_MESSAGE_CHEAT_SHEET,
         )
 
-    def result_fmt(self, url: str, body_text: str) -> tuple[bool, Union[str, discord.Embed]]:
+    def result_fmt(self, url: str, body_text: str) -> tuple[bool, str | discord.Embed]:
         """Format Result."""
         if body_text.startswith("#  404 NOT FOUND"):
             embed = self.fmt_error_embed()
@@ -971,9 +971,9 @@ class RTFM(Cog):
     async def realpython(
         self,
         ctx: Context,
-        amount: Optional[int] = 5,
+        amount: int | None = 5,
         *,
-        user_search: Optional[str] = None,
+        user_search: str | None = None,
     ) -> None:
         """Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to a number between 1 and 5 by specifying an amount before the search query.
@@ -1127,7 +1127,7 @@ class RTFM(Cog):
 
     @commands.command(aliases=["wtfp"])
     @commands.bot_has_permissions(embed_links=True)
-    async def wtfpython(self, ctx: Context, *, query: Optional[str] = None) -> None:
+    async def wtfpython(self, ctx: Context, *, query: str | None = None) -> None:
         """Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
         Usage:
@@ -1178,7 +1178,7 @@ class RTFM(Cog):
     async def bookmark(
         self,
         ctx: Context,
-        target_message: Optional[WrappedMessageConverter],
+        target_message: WrappedMessageConverter | None,
         *,
         title: str = "Bookmark",
     ) -> None:
@@ -1242,7 +1242,7 @@ class RTFM(Cog):
         await self.action_bookmark(ctx.channel, user, target_message, title)
         bookmarked_users.append(user.id)
 
-    async def kata_id(self, search_link: str, params: dict[str, Any]) -> Union[str, discord.Embed]:
+    async def kata_id(self, search_link: str, params: dict[str, Any]) -> str | discord.Embed:
         """Uses bs4 to get the HTML code for the page of katas, where the page is the link of the formatted `search_link`.
         This will webscrape the search page with `search_link` and then get the ID of a kata for the
         codewars.com API to use.
@@ -1270,7 +1270,7 @@ class RTFM(Cog):
 
             return first_kata_div.a["href"].split("/")[-1]
 
-    async def kata_information(self, kata_id: str) -> Union[dict[str, Any], discord.Embed]:
+    async def kata_information(self, kata_id: str) -> dict[str, Any] | discord.Embed:
         """Returns the information about the Kata.
         Uses the codewars.com API to get information about the kata using `kata_id`.
         """
@@ -1388,7 +1388,7 @@ class RTFM(Cog):
 
     @commands.command(aliases=["kata"])
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def challenge(self, ctx: Context, language: str = "python", *, query: Optional[str] = None) -> None:
+    async def challenge(self, ctx: Context, language: str = "python", *, query: str | None = None) -> None:
         """The challenge command pulls a random kata (challenge) from codewars.com.
         The different ways to use this command are:
         `.challenge <language>` - Pulls a random challenge within that language's scope.

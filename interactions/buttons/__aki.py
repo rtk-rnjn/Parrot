@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Final
 
 from akinator import Answer, AsyncAkinator as AkinatorGame, CantGoBackAnyFurther, Language, Theme
 
@@ -17,7 +17,7 @@ STOP = "\N{BLACK SQUARE FOR STOP}"
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-DiscordColor: TypeAlias = Union[discord.Color, int]
+DiscordColor: TypeAlias = discord.Color | int
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
 
@@ -44,12 +44,12 @@ class Akinator:
     def __init__(self) -> None:
         self.aki: AkinatorGame = AkinatorGame()
 
-        self.player: Optional[Union[discord.User, discord.Member]] = None
-        self.win_at: Optional[int] = None
-        self.guess: Optional[dict[str, Any]] = None
-        self.message: Optional[discord.Message] = None
+        self.player: discord.User | discord.Member | None = None
+        self.win_at: int | None = None
+        self.guess: dict[str, Any] | None = None
+        self.message: discord.Message | None = None
 
-        self.embed_color: Optional[DiscordColor] = None
+        self.embed_color: DiscordColor | None = None
         self.back_button: bool = False
         self.delete_button: bool = False
 
@@ -115,13 +115,13 @@ class Akinator:
         embed_color: DiscordColor = DEFAULT_COLOR,
         remove_reaction_after: bool = True,
         win_at: int = 80,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         back_button: bool = False,
         delete_button: bool = False,
         aki_theme: str = "Characters",
         aki_language: str = "English",
         child_mode: bool = False,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message | None:
         self.back_button = back_button
         self.delete_button = delete_button
         self.embed_color = embed_color

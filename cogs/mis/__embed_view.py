@@ -24,7 +24,7 @@ class EmbedSend(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction) -> T.Any:
         try:
-            m: T.Optional[discord.Message] = await self.channel.send(embed=self.view.embed)
+            m: discord.Message | None = await self.channel.send(embed=self.view.embed)
 
         except Exception as e:
             await interaction.response.send_message(f"An error occured: {e}", ephemeral=True)
@@ -87,7 +87,7 @@ class ParrotView(discord.ui.View):
     message: discord.Message
     custom_id = None
 
-    def __init__(self, ctx: Context, *, timeout: T.Optional[float] = 30) -> None:
+    def __init__(self, ctx: Context, *, timeout: float | None = 30) -> None:
         super().__init__(timeout=timeout)
         self.ctx = ctx
         self.bot = ctx.bot
@@ -327,7 +327,7 @@ class EmbedBuilder(ParrotView):
     def formatted(self):
         return self.embed.to_dict()
 
-    async def refresh_view(self, to_del: T.Optional[discord.Message] = None):
+    async def refresh_view(self, to_del: discord.Message | None = None):
         if to_del is not None:
             await to_del.delete(delay=0.5)
 

@@ -25,7 +25,7 @@ exclude = [
 [tool.ruff]
 line-length = 150
 select = ['ASYNC', 'B', 'C', 'COM', 'E', 'EM', 'F', 'FA', 'G', 'Q', 'T10', 'UP', 'W']
-ignore = ['D105', 'D107', 'D401', "F403", "F405", 'UP007', "E501"]
+ignore = ['D105', 'D107', 'D401', "F403", "F405", "E501"]
 target-version = "py310"
 exclude = ["discord"]
 

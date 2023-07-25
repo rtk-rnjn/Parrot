@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional
+from typing import Literal
 
 from discord.ext import commands
 
@@ -17,8 +17,8 @@ class PyLintConverter(commands.FlagConverter, case_insensitive=True, delimiter="
         "undefined",
         "inference",
     ] = "HIGH CONTROL_FLOW INFERENCE_FAILURE UNDEFINED INFERENCE"
-    disable: Optional[str] = None
-    enable: Optional[str] = None
+    disable: str | None = None
+    enable: str | None = None
 
 
 def validate_pylint_code(code: str) -> list[str]:

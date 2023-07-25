@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 
 import discord
 from core import Context, Parrot
@@ -27,7 +26,7 @@ IGNORE = {
 }
 
 
-async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: Optional[discord.Message] = None):
+async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: discord.Message | None = None):
     collection = ctx.bot.tags_collection
     allowed_mentions = discord.AllowedMentions.none()
     if data := await collection.find_one({"tag_id": tag}):

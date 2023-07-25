@@ -6,7 +6,7 @@ from collections.abc import Awaitable, Callable, Iterable
 from io import BytesIO
 from itertools import cycle
 from math import ceil
-from typing import TYPE_CHECKING, Any, Concatenate, Final, Optional, ParamSpec, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Concatenate, Final, ParamSpec, TypeAlias, TypeVar
 
 import cv2
 import numpy as np
@@ -150,7 +150,7 @@ def pil_circle_mask(width: int, height: int) -> Image.Image:
     return mask
 
 
-def wand_circular(img: I_, *, mask: Optional[WandImage] = None) -> I_:
+def wand_circular(img: I_, *, mask: WandImage | None = None) -> I_:
     if not mask:
         mask = wand_circle_mask(img.width, img.height)
 
@@ -162,7 +162,7 @@ def wand_circular(img: I_, *, mask: Optional[WandImage] = None) -> I_:
     return img
 
 
-def pil_circular(img: Image.Image, *, mask: Optional[Image.Image] = None) -> Image.Image:
+def pil_circular(img: Image.Image, *, mask: Image.Image | None = None) -> Image.Image:
     if not mask:
         mask = pil_circle_mask(img.width, img.height)
 
@@ -176,8 +176,8 @@ def pil_circular(img: Image.Image, *, mask: Optional[Image.Image] = None) -> Ima
 
 def _get_prop_size(
     image: Image.Image | WandImage | np.ndarray,
-    width: Optional[int] = None,
-    height: Optional[int] = None,
+    width: int | None = None,
+    height: int | None = None,
 ) -> tuple[int, int]:
     if isinstance(image, Image.Image | WandImage):
         w, h = image.size
@@ -216,8 +216,8 @@ def process_wand_gif(
 
 def resize_pil_prop(
     image: Image.Image,
-    width: Optional[int] = None,
-    height: Optional[int] = None,
+    width: int | None = None,
+    height: int | None = None,
     *,
     process_gif: bool = True,
     resampling: Image.Resampling = Image.Resampling.LANCZOS,
@@ -236,8 +236,8 @@ def resize_pil_prop(
 
 def resize_wand_prop(
     image: WandImage,
-    width: Optional[int] = None,
-    height: Optional[int] = None,
+    width: int | None = None,
+    height: int | None = None,
     *,
     resampling: str = "lanczos",
 ) -> WandImage:
@@ -250,8 +250,8 @@ def resize_wand_prop(
 
 def resize_cv_prop(
     image: np.ndarray,
-    width: Optional[int] = None,
-    height: Optional[int] = None,
+    width: int | None = None,
+    height: int | None = None,
     *,
     resampling: int = cv2.INTER_LANCZOS4,
 ) -> np.ndarray:
@@ -321,7 +321,7 @@ def save_wand_image(
 def save_pil_image(
     image: Image.Image | list[Image.Image],
     *,
-    duration: Optional[int] = None,
+    duration: int | None = None,
     file: bool = True,
 ) -> discord.File | BytesIO:
     if is_gif := isinstance(image, list):
@@ -343,8 +343,8 @@ def save_pil_image(
 
 
 def pil_image(
-    width: Optional[int] = None,
-    height: Optional[int] = None,
+    width: int | None = None,
+    height: int | None = None,
     *,
     process_all_frames: bool = True,
     duration: Duration = None,
@@ -386,8 +386,8 @@ def pil_image(
 
 
 def wand_image(
-    width: Optional[int] = None,
-    height: Optional[int] = None,
+    width: int | None = None,
+    height: int | None = None,
     *,
     process_all_frames: bool = True,
     duration: Duration = None,

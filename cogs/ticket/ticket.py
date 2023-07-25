@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 
 import discord
 from cogs.ticket import method as mt
@@ -23,7 +22,7 @@ class Ticket(Cog):
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(manage_channels=True, embed_links=True, manage_roles=True)
     @Context.with_type
-    async def new(self, ctx: Context, *, args: Optional[str] = None):
+    async def new(self, ctx: Context, *, args: str | None = None):
         """This creates a new ticket.
         Add any words after the command if you'd like to send a message when we initially create your ticket.
         """
@@ -42,7 +41,7 @@ class Ticket(Cog):
     @commands.cooldown(1, 5, commands.BucketType.channel)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def save(self, ctx: Context, limit: Optional[int] = 100):
+    async def save(self, ctx: Context, limit: int | None = 100):
         """Use this to save the transcript of a ticket.
         This command only works in ticket channels.
         """

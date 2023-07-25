@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional
+from typing import Literal
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -14,16 +14,16 @@ POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,4})")
 
 class Flake8Converter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
-    ignore: Optional[str] = None
-    select: Optional[str] = None
-    max_line_length: Optional[int] = None
-    max_doc_length: Optional[int] = None
-    max_complexity: Optional[int] = None
-    statistics: Optional[convert_bool] = None
-    doctests: Optional[convert_bool] = None
-    color: Optional[Literal["auto", "always", "never"]] = None
-    verbose: Optional[convert_bool] = None
-    count: Optional[convert_bool] = None
+    ignore: str | None = None
+    select: str | None = None
+    max_line_length: int | None = None
+    max_doc_length: int | None = None
+    max_complexity: int | None = None
+    statistics: convert_bool | None = None
+    doctests: convert_bool | None = None
+    color: Literal["auto", "always", "never"] | None = None
+    verbose: convert_bool | None = None
+    count: convert_bool | None = None
 
 
 def validate_flake8_code(code: str) -> list[str]:

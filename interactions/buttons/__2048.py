@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 import random
-from typing import Any, Optional, Union
+from typing import Any
 
 import discord
 from core import Parrot
@@ -97,7 +97,7 @@ class Twenty48:
         emoji_array = [[self._conversion[str(i)] for i in row] for row in board]
         return "".join("".join(row) + "\n" for row in emoji_array)
 
-    def lost(self) -> Optional[bool]:
+    def lost(self) -> bool | None:
         if self.has_empty:
             return None
 
@@ -129,7 +129,7 @@ class Twenty48_Button(discord.ui.View):
     def __init__(
         self,
         game: Twenty48,
-        user: Union[discord.Member, discord.User],
+        user: discord.Member | discord.User,
         timeout: float = 60.0,
         *,
         bot: Parrot,

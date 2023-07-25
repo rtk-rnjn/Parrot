@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord.ext import commands, old_menus as menus  # type: ignore
@@ -44,7 +44,7 @@ DISPLAY_COG = (
 class GroupHelpPageSource(menus.ListPageSource):
     def __init__(
         self,
-        group: Union[commands.Group, Cog],
+        group: commands.Group | Cog,
         commands_list: list[commands.Command],
         *,
         prefix: str,
@@ -136,7 +136,7 @@ class FrontPageSource(menus.PageSource):
         # This forces the buttons to appear even in the front page
         return True
 
-    def get_max_pages(self) -> Optional[int]:
+    def get_max_pages(self) -> int | None:
         # There's only one actual page in the front page
         # However we need at least 2 to show all the buttons
         return 2

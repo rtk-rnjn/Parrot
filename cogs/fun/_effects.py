@@ -5,7 +5,7 @@ import random
 from collections.abc import Callable
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageOps
 
@@ -118,7 +118,7 @@ class PfpEffects:
         return image
 
     @staticmethod
-    def easterify_effect(image: Image.Image, overlay_image: Optional[Image.Image] = None) -> Image.Image:
+    def easterify_effect(image: Image.Image, overlay_image: Image.Image | None = None) -> Image.Image:
         """Applies the easter effect to the given image.
         This is done by getting the closest "easter" colour to each pixel and changing the colour
         to the half-way RGB value.

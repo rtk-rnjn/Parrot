@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import discord
 from core import Cog
@@ -76,11 +76,11 @@ class _MemberJoin(Cog):
             except discord.HTTPException:
                 RETRY -= 1
 
-        VANITY_INVITE: Optional[discord.Invite] = None
+        VANITY_INVITE: discord.Invite | None = None
 
         # check if member is joined from VANITY URL
         if "VANITY_URL" in guild.features:
-            VANITY_INVITE: Optional[discord.Invite] = await guild.vanity_invite()  # type: ignore
+            VANITY_INVITE: discord.Invite | None = await guild.vanity_invite()  # type: ignore
 
             if VANITY_INVITE is not None:
                 new_invites.append(VANITY_INVITE)
@@ -111,7 +111,7 @@ class _MemberJoin(Cog):
 
     @Cog.listener("on_invite_create")
     async def on_invite_create(self, invite: discord.Invite) -> None:
-        guild: Union[discord.Guild, discord.PartialInviteGuild, discord.Object, None] = invite.guild
+        guild: discord.Guild | discord.PartialInviteGuild | discord.Object | None = invite.guild
         if guild is None:
             return
         try:
@@ -126,7 +126,7 @@ class _MemberJoin(Cog):
 
     @Cog.listener("on_invite_delete")
     async def on_invite_delete(self, invite: discord.Invite) -> None:
-        guild: Union[discord.Guild, discord.PartialInviteGuild, discord.Object, None] = invite.guild
+        guild: discord.Guild | discord.PartialInviteGuild | discord.Object | None = invite.guild
         if guild is None:
             return
         try:

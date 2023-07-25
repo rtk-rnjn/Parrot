@@ -6,7 +6,7 @@ import random
 from collections import defaultdict
 from collections.abc import Awaitable, Iterable
 from dataclasses import dataclass
-from typing import Literal, NamedTuple, Optional, TypeVar, Union, overload
+from typing import Literal, NamedTuple, TypeVar, overload
 
 import discord
 from core import Context
@@ -547,7 +547,7 @@ class Hand:
     def draw(self, amount: int = 1, /) -> list[Card]:
         ...
 
-    def draw(self, amount: int = 1, /) -> Union[list[Card], Card]:
+    def draw(self, amount: int = 1, /) -> list[Card] | Card:
         if amount == 1:
             return self._draw_one()
 
@@ -620,7 +620,7 @@ class UNO:
                 self._turn = method(self._turn, 1)
 
     @property
-    def current(self) -> Optional[Card]:
+    def current(self) -> Card | None:
         try:
             return self._discard_pile[-1]
         except IndexError:
@@ -639,7 +639,7 @@ class UNO:
         return self.current_hand.player
 
     @property
-    def winner(self) -> Optional[discord.Member]:
+    def winner(self) -> discord.Member | None:
         hand = discord.utils.find(lambda hand: len(hand) <= 0, self.hands)
         if hand is not None:
             return hand.player

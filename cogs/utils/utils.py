@@ -22,10 +22,10 @@ Collection = type[AsyncIOMotorCollection]
 
 class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     ignore_channel: tuple[discord.TextChannel, ...] = []
-    _global: Optional[convert_bool] = commands.flag(name="global", default=False)
-    _for: Optional[ShortTime] = commands.flag(name="for", default=None)
-    text: Optional[str] = None
-    after: Optional[ShortTime] = None
+    _global: convert_bool | None = commands.flag(name="global", default=False)
+    _for: ShortTime | None = commands.flag(name="for", default=None)
+    text: str | None = None
+    after: ShortTime | None = None
 
 
 class Utils(Cog):
@@ -411,7 +411,7 @@ class Utils(Cog):
 
     @commands.command(aliases=["leaderboard"])
     @commands.bot_has_permissions(embed_links=True)
-    async def lb(self, ctx: Context, *, limit: Optional[int] = None):
+    async def lb(self, ctx: Context, *, limit: int | None = None):
         """To display the Leaderboard."""
         limit = limit or 10
         collection = self.bot.guild_level_db[f"{ctx.guild.id}"]

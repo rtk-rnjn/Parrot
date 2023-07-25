@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import urllib.parse
 from functools import partial
-from typing import Any, Optional
+from typing import Any
 
 from bs4 import BeautifulSoup
 
@@ -21,7 +21,7 @@ def get_ele(soup: BeautifulSoup, name: str, **kw: Any):
     return soup.find_all(name, **kw)
 
 
-async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
+async def python_doc(ctx: Context, text: str) -> discord.Message | None:
     """Filters python.org results based on your query."""
     text = text.strip("`")
 
@@ -54,7 +54,7 @@ async def python_doc(ctx: Context, text: str) -> Optional[discord.Message]:
     return await ctx.send(embed=emb)
 
 
-async def _cppreference(language: str, ctx: Context, text: str) -> Optional[discord.Message]:
+async def _cppreference(language: str, ctx: Context, text: str) -> discord.Message | None:
     """Search something on cppreference."""
     text = text.strip("`")
 
@@ -97,7 +97,7 @@ c_doc = partial(_cppreference, "C")
 cpp_doc = partial(_cppreference, "C++")
 
 
-async def haskell_doc(ctx: Context, text: str) -> Optional[discord.Message]:
+async def haskell_doc(ctx: Context, text: str) -> discord.Message | None:
     """Search something on wiki.haskell.org."""
     text = text.strip("`")
 

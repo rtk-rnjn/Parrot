@@ -4,7 +4,7 @@ import asyncio
 from collections.abc import Awaitable
 from io import BytesIO
 from textwrap import dedent, indent
-from typing import Any, Optional
+from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -47,7 +47,7 @@ def _create_rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
         return image
 
 
-def _create_sample(card: Card, *, animated: bool = False) -> Optional[BytesIO]:
+def _create_sample(card: Card, *, animated: bool = False) -> BytesIO | None:
     with Image.new("RGBA", (256, 256)) as image:
         if card.color is not Color.wild:
             _ = Image.new("RGBA", image.size, COLORS[card.color])

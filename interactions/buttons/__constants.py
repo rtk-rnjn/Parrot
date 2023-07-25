@@ -275,7 +275,7 @@ NUMBERS = [
 CROSS_EMOJI = "\u274e"
 HAND_RAISED_EMOJI = "\U0001f64b"
 
-BoardState = list[list[Optional[bool]]]
+BoardState = list[list[bool | None]]
 
 DIAGRAPHS = {"1": "AN", "2": "ER", "3": "HE", "4": "IN", "5": "QU", "6": "TH"}
 

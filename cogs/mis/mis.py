@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from datetime import datetime
 from html import unescape
 from pathlib import Path
-from typing import Any, BinaryIO, Optional, Union
+from typing import Any, BinaryIO
 
 import qrcode
 import sympy
@@ -123,7 +123,7 @@ _SEACH_FLAG_CONVERTERS = {
 }
 
 
-def get_country_code(country: str) -> Optional[str]:
+def get_country_code(country: str) -> str | None:
     for c, n in COUNTRY_CODES.items():
         if country.lower() in (c.lower(), n.lower()):
             return c
@@ -148,7 +148,7 @@ def _process_image(data: bytes, out_file: BinaryIO) -> None:
 class InvalidLatexError(Exception):
     """Represents an error caused by invalid latex."""
 
-    def __init__(self, logs: Optional[str]) -> None:
+    def __init__(self, logs: str | None) -> None:
         super().__init__(logs)
         self.logs = logs
 
@@ -156,9 +156,9 @@ class InvalidLatexError(Exception):
 def _create_qr(
     text: str,
     *,
-    version: Optional[int] = 1,
-    board_size: Optional[int] = 10,
-    border: Optional[int] = 4,
+    version: int | None = 1,
+    board_size: int | None = 10,
+    border: int | None = 4,
     **kw,
 ) -> discord.File:
     qr = qrcode.QRCode(
@@ -178,10 +178,10 @@ def _create_qr(
 
 
 class QRCodeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    board_size: Optional[int] = 10
-    border: Optional[int] = 4
-    module_drawer: Optional[str] = None
-    color_mask: Optional[str] = None
+    board_size: int | None = 10
+    border: int | None = 4
+    module_drawer: str | None = None
+    color_mask: str | None = None
 
 
 qr_modular = {
@@ -212,7 +212,7 @@ class Misc(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
-        self.snipes: dict[int, Union[list[discord.Message], discord.Message, None]] = {}
+        self.snipes: dict[int, list[discord.Message] | discord.Message | None] = {}
 
         self.youtube_search = YoutubeSearch(5)
 
@@ -275,7 +275,7 @@ class Misc(Cog):
         ) as response:
             await _process_image(await response.read(), out_file)
 
-    async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> Optional[str]:
+    async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> str | None:
         """Uploads `text` to the paste service, returning the url if successful."""
         post = await self.bot.http_session.post("https://hastebin.com/documents", data=text)
 
@@ -362,7 +362,7 @@ class Misc(Cog):
         self,
         ctx: Context,
         *,
-        channel: Optional[Union[discord.TextChannel, discord.VoiceChannel]] = None,
+        channel: discord.TextChannel | discord.VoiceChannel | None = None,
     ):
         """To get the first message of the specified channel."""
         channel = channel or ctx.channel  # type: ignore
@@ -763,9 +763,9 @@ class Misc(Cog):
     async def embed(
         self,
         ctx: Context,
-        channel: Optional[discord.TextChannel] = None,
+        channel: discord.TextChannel | None = None,
         *,
-        data: Union[dict, str] = None,
+        data: dict | str = None,
     ):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in.
         You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
@@ -791,23 +791,7 @@ class Misc(Cog):
         self,
         ctx: Context,
         *,
-        target: Union[
-            discord.User,
-            discord.Member,
-            discord.Role,
-            discord.Thread,
-            discord.TextChannel,
-            discord.VoiceChannel,
-            discord.StageChannel,
-            discord.Guild,
-            discord.Emoji,
-            discord.Invite,
-            discord.Template,
-            discord.CategoryChannel,
-            discord.DMChannel,
-            discord.GroupChannel,
-            discord.Object,
-        ],
+        target: discord.User | discord.Member | discord.Role | discord.Thread | discord.TextChannel | discord.VoiceChannel | discord.StageChannel | discord.Guild | discord.Emoji | discord.Invite | discord.Template | discord.CategoryChannel | discord.DMChannel | discord.GroupChannel | discord.Object,
     ):
         """To get the ID of discord models."""
         embed = discord.Embed(
@@ -841,7 +825,7 @@ class Misc(Cog):
     @commands.command(aliases=["src"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def source(self, ctx: Context, *, command: Optional[str] = None):
+    async def source(self, ctx: Context, *, command: str | None = None):
         """Displays my full source code or for a specific command.
 
         To display the source code of a subcommand you can separate it by
@@ -937,7 +921,7 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def mine_server_status(self, ctx: Context, address: str, bedrock: Optional[convert_bool] = False):
+    async def mine_server_status(self, ctx: Context, address: str, bedrock: convert_bool | None = False):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command."""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"

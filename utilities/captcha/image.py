@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import random
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from PIL import Image, ImageFilter, ImageFont
 from PIL.ImageDraw import Draw
@@ -113,8 +113,8 @@ class ImageCaptcha(_Captcha):
         self,
         width: int = 160,
         height: int = 60,
-        fonts: Optional[str] = None,
-        font_sizes: Optional[tuple[int, int, int]] = None,
+        fonts: str | None = None,
+        font_sizes: tuple[int, int, int] | None = None,
     ) -> None:
         self._width = width
         self._height = height
@@ -242,7 +242,7 @@ class ImageCaptcha(_Captcha):
         return im
 
 
-def random_color(start: int, end: int, opacity: Optional[int] = None):
+def random_color(start: int, end: int, opacity: int | None = None):
     red = random.randint(start, end)
     green = random.randint(start, end)
     blue = random.randint(start, end)

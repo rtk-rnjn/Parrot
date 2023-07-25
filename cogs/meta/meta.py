@@ -6,7 +6,6 @@ import itertools
 import os
 from collections import Counter
 from time import time
-from typing import Optional, Union
 
 import psutil
 import pygit2
@@ -491,12 +490,7 @@ class Meta(Cog):
         self,
         ctx: Context,
         *,
-        channel: Union[
-            discord.TextChannel,
-            discord.VoiceChannel,
-            discord.CategoryChannel,
-            discord.StageChannel,
-        ] = None,
+        channel: discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel = None,
     ):
         channel = channel or ctx.channel  # type: ignore
         _id = channel.id  # type: ignore
@@ -615,7 +609,7 @@ class Meta(Cog):
         if (not invite.guild) or (not invite):
             return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
-        fields: list[tuple[str, Optional[str], bool]] = [  # type: ignore
+        fields: list[tuple[str, str | None, bool]] = [  # type: ignore
             ("Member count?", invite.approximate_member_count, True),
             ("Presence Count?", invite.approximate_presence_count, True),
             ("Channel", f"<#{invite.channel.id}>" if invite.channel else "N/A", True),
@@ -650,7 +644,7 @@ class Meta(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
-    async def stickerinfo(self, ctx: Context, sticker: Optional[discord.GuildSticker] = None):
+    async def stickerinfo(self, ctx: Context, sticker: discord.GuildSticker | None = None):
         """Get the info regarding the Sticker."""
         if sticker is None and not ctx.message.stickers:
             return await ctx.error(f"{ctx.author.mention} you did not provide any sticker")

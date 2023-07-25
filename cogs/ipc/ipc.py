@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Any, Optional, Union
+from typing import Any
 
 import wavelink
 from wavelink.ext import spotify
@@ -20,8 +20,8 @@ class IPCRoutes(Cog):
 
     def _overwrite_to_json(
         self,
-        overwrites: dict[Union[discord.User, discord.Role], discord.PermissionOverwrite],
-    ) -> dict[str, Union[str, Optional[bool]]]:
+        overwrites: dict[discord.User | discord.Role, discord.PermissionOverwrite],
+    ) -> dict[str, str | bool | None]:
         try:
             return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}  # type: ignore
         except Exception:
@@ -260,7 +260,7 @@ class IPCRoutes(Cog):
         return {"status": "ok"}
 
     @server.route()
-    async def start_cricket_api(self, data: server.IpcServerResponse) -> Optional[dict[str, Any]]:
+    async def start_cricket_api(self, data: server.IpcServerResponse) -> dict[str, Any] | None:
         url = data.url
         return cricket_api(url) if url else None
 

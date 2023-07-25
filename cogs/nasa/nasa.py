@@ -4,7 +4,6 @@ import io
 import os
 import random
 from datetime import datetime
-from typing import Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -17,7 +16,7 @@ with open(r"extra/user_agents.txt", encoding="utf-8", errors="ignore") as f:
     USER_AGENTS = f.read().splitlines()
 
 
-def date_parser(arg: Optional[str] = None) -> str:
+def date_parser(arg: str | None = None) -> str:
     """Validate whether the given string is in YYYY-MM-DD format."""
     if arg is None:
         return discord.utils.utcnow().strftime("%Y-%m-%d")
@@ -273,7 +272,7 @@ class NASA(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def nasasearch(self, ctx: Context, limit: Optional[int] = 10, *, string: commands.clean_content):
+    async def nasasearch(self, ctx: Context, limit: int | None = 10, *, string: commands.clean_content):
         """NASA Image and Video Library."""
         link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)

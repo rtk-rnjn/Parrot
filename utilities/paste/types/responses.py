@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 __all__ = (
     "FileResponse",
@@ -19,12 +19,12 @@ class FileResponse(TypedDict):
 class PasteResponse(TypedDict):
     id: str
     created_at: str
-    expires: Optional[str]
-    last_edited: Optional[str]
+    expires: str | None
+    last_edited: str | None
     views: int
     files: list[FileResponse]
 
 
 class EditPasteResponse(TypedDict):
     id: str
-    expires: Optional[datetime]
+    expires: datetime | None

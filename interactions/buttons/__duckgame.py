@@ -6,7 +6,6 @@ import re
 from collections import defaultdict
 from itertools import product
 from pathlib import Path
-from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -125,8 +124,8 @@ class DuckGame:
         while len(self.solutions) < minimum_solutions:
             self.board = random.sample(DECK, size)
 
-        self.board_msg: Optional[discord.Message] = None
-        self.found_msg: Optional[discord.Message] = None
+        self.board_msg: discord.Message | None = None
+        self.found_msg: discord.Message | None = None
 
     @property
     def board(self) -> list[tuple[int]]:

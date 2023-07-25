@@ -6,7 +6,6 @@ from contextlib import suppress
 from io import BytesIO
 from json import loads
 from pathlib import Path
-from typing import Optional, Union
 
 from PIL import Image
 
@@ -90,7 +89,7 @@ class Easter(Cog, command_attrs={"hidden": True}):
         self.quiz_messages: dict[int, list[str]] = {}
 
     @staticmethod
-    def replace_invalid(colour: str) -> Optional[int]:
+    def replace_invalid(colour: str) -> int | None:
         """Attempts to match with HTML or XKCD colour names, returning the int value."""
         with suppress(KeyError):
             return int(HTML_COLOURS[colour], 16)
@@ -108,13 +107,13 @@ class Easter(Cog, command_attrs={"hidden": True}):
         await ctx.send(f"Check out this April Fools' video by {channel}.\n\n{url}")
 
     @staticmethod
-    def find_separators(displayname: str) -> Optional[list[str]]:
+    def find_separators(displayname: str) -> list[str] | None:
         """Check if Discord name contains spaces so we can bunnify an individual word in the name."""
         new_name = re.split(r"[_.\s]", displayname)
         return new_name if displayname not in new_name else None
 
     @staticmethod
-    def find_vowels(displayname: str) -> Optional[str]:
+    def find_vowels(displayname: str) -> str | None:
         """Finds vowels in the user's display name.
         If the Discord name contains a vowel and the letter y, it will match one or more of these patterns.
         Only the most recently matched pattern will apply the changes.
@@ -241,7 +240,7 @@ class Easter(Cog, command_attrs={"hidden": True}):
             self.winners.add(message.author.mention)
 
     @commands.command(aliases=("decorateegg",))
-    async def eggdecorate(self, ctx: Context, *colours: Union[discord.Colour, str]) -> Optional[Image.Image]:
+    async def eggdecorate(self, ctx: Context, *colours: discord.Colour | str) -> Image.Image | None:
         """Picks a random egg design and decorates it using the given colours.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
@@ -397,7 +396,7 @@ class Easter(Cog, command_attrs={"hidden": True}):
         await ctx.send(content, embed=a_embed)
 
     @staticmethod
-    async def already_reacted(message: discord.Message, user: Union[discord.Member, discord.User]) -> bool:
+    async def already_reacted(message: discord.Message, user: discord.Member | discord.User) -> bool:
         """Returns whether a given user has reacted more than once to a given message."""
         users = []
 
@@ -411,7 +410,7 @@ class Easter(Cog, command_attrs={"hidden": True}):
     async def on_reaction_add(
         self,
         reaction: discord.Reaction,
-        user: Union[discord.Member, discord.User, discord.abc.Snowflake],
+        user: discord.Member | discord.User | discord.abc.Snowflake,
     ) -> None:
         """Listener to listen specifically for reactions of quiz messages."""
         if user.bot:

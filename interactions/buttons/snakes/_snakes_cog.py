@@ -9,7 +9,7 @@ import string
 import textwrap
 from functools import partial
 from io import BytesIO
-from typing import Any, Optional, Union
+from typing import Any
 
 import async_timeout
 from discord.ext.commands import BucketType, CommandError, bot_has_permissions, group
@@ -137,7 +137,7 @@ ERROR_REPLIES = [
 ]
 
 # snake card consts
-CARD: dict[str, Union[Image.Image, list, ImageFont.FreeTypeFont]] = {
+CARD: dict[str, Image.Image | list | ImageFont.FreeTypeFont] = {
     "top": Image.open("extra/snakes/snake_cards/card_top.png"),
     "frame": Image.open("extra/snakes/snake_cards/card_frame.png"),
     "bottom": Image.open("extra/snakes/snake_cards/card_bottom.png"),
@@ -293,7 +293,7 @@ class Snakes(Cog):
 
         return message
 
-    async def _fetch(self, url: str, params: Optional[dict] = None) -> dict:
+    async def _fetch(self, url: str, params: dict | None = None) -> dict:
         """Asynchronous web request helper method."""
         if params is None:
             params = {}

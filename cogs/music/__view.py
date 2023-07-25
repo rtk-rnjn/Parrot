@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-from typing import Optional, Union
 
 import wavelink
 
@@ -44,9 +43,9 @@ class ModalInput(discord.ui.Modal, title="Name of Song"):
 
 
 class MusicView(discord.ui.View):
-    message: Optional[discord.Message]
+    message: discord.Message | None
 
-    def __init__(self, vc: discord.VoiceChannel, *, timeout: Optional[float] = None, ctx: Context) -> None:
+    def __init__(self, vc: discord.VoiceChannel, *, timeout: float | None = None, ctx: Context) -> None:
         super().__init__(timeout=timeout or 300)
         self.vc = vc
         self.ctx = ctx
@@ -63,7 +62,7 @@ class MusicView(discord.ui.View):
             return False
         return True
 
-    async def __add_to_playlist(self, user: Union[discord.User, discord.Member]):
+    async def __add_to_playlist(self, user: discord.User | discord.Member):
         await self.bot.user_collections_ind.update_one(
             {"_id": user.id},
             {
@@ -78,7 +77,7 @@ class MusicView(discord.ui.View):
             upsert=True,
         )
 
-    async def __remove_from_playlist(self, user: Union[discord.User, discord.Member]):
+    async def __remove_from_playlist(self, user: discord.User | discord.Member):
         await self.bot.user_collections_ind.update_one(
             {"_id": user.id},
             {

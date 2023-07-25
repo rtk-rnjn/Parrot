@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Final, Literal, Optional, TypeVar
+from typing import TYPE_CHECKING, Final, Literal, TypeVar
 
 import discord
 from core import Context, Parrot
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
 
-    Board: TypeAlias = list[list[Optional[Literal["\N{ELECTRIC LIGHT BULB}"]]]]
+    Board: TypeAlias = list[list[Literal["\N{ELECTRIC LIGHT BULB}"] | None]]
 
 BULB: Final[Literal["\N{ELECTRIC LIGHT BULB}"]] = "\N{ELECTRIC LIGHT BULB}"
 
@@ -99,7 +99,7 @@ class LightsOut:
         self.completed: Final[Board] = [[None] * self.count for _ in range(self.count)]
         self.tiles: Board = []
 
-        self.player: Optional[discord.User] = None
+        self.player: discord.User | None = None
         self.button_style: discord.ButtonStyle = discord.ButtonStyle.green
 
     def toggle(self, row: int, col: int) -> None:
@@ -121,7 +121,7 @@ class LightsOut:
         *,
         button_style: discord.ButtonStyle = discord.ButtonStyle.green,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> discord.Message:
         """Starts the Lights Out Game.
 

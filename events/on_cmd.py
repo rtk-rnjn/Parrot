@@ -4,7 +4,7 @@ import asyncio
 import datetime
 import pathlib
 import random
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import discord
 from core import Cog
@@ -24,8 +24,8 @@ class ErrorView(discord.ui.View):
         self,
         author_id,
         *,
-        ctx: Optional[Context] = None,
-        error: Optional[commands.CommandError] = None,
+        ctx: Context | None = None,
+        error: commands.CommandError | None = None,
     ) -> None:
         super().__init__(timeout=300.0)
         self.author_id = author_id
@@ -221,7 +221,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
 
         ERROR_EMBED.timestamp = discord.utils.utcnow()
 
-        msg: Optional[discord.Message] = await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
+        msg: discord.Message | None = await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 
         try:
             if msg:

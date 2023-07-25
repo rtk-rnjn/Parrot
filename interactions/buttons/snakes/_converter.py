@@ -4,7 +4,6 @@ import asyncio
 import json
 import random
 from collections.abc import Iterable
-from typing import Optional
 
 from discord.abc import User
 from discord.ext.commands import BadArgument, Converter, Paginator
@@ -37,7 +36,7 @@ class LinePaginator(Paginator):
         prefix: str = "```",
         suffix: str = "```",
         max_size: int = 2000,
-        max_lines: Optional[int] = None,
+        max_lines: int | None = None,
         linesep: str = "\n",
     ) -> None:
         """Overrides the Paginator.__init__ from inside discord.ext.commands.
@@ -88,7 +87,7 @@ class LinePaginator(Paginator):
         embed: Embed,
         prefix: str = "",
         suffix: str = "",
-        max_lines: Optional[int] = None,
+        max_lines: int | None = None,
         max_size: int = 500,
         empty: bool = True,
         restrict_to_user: User = None,
@@ -249,7 +248,7 @@ async def disambiguate(
     timeout: float = 30,
     entries_per_page: int = 20,
     empty: bool = False,
-    embed: Optional[discord.Embed] = None,
+    embed: discord.Embed | None = None,
 ) -> str:
     """Has the user choose between multiple entries in case one could not be chosen automatically.
     Disambiguation will be canceled after `timeout` seconds.

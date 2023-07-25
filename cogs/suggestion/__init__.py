@@ -4,7 +4,7 @@ import inspect
 import io
 from itertools import zip_longest
 from random import random
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any
 
 import discord
 from core import Cog, Context, Parrot
@@ -58,9 +58,9 @@ class Suggestions(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{SPEECH BALLOON}")
 
-    async def __fetch_suggestion_channel(self, guild: discord.Guild) -> Optional[discord.TextChannel]:
+    async def __fetch_suggestion_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
         try:
-            ch_id: Optional[int] = self.bot.guild_configurations_cache[guild.id]["suggestion_channel"]
+            ch_id: int | None = self.bot.guild_configurations_cache[guild.id]["suggestion_channel"]
         except KeyError as e:
             msg = "No suggestion channel is setup"
             raise commands.BadArgument(msg) from e
@@ -68,7 +68,7 @@ class Suggestions(Cog):
             if not ch_id:
                 msg = "No suggestion channel is setup"
                 raise commands.BadArgument(msg)
-            ch: Optional[discord.TextChannel] = self.bot.get_channel(ch_id)  # type: ignore
+            ch: discord.TextChannel | None = self.bot.get_channel(ch_id)  # type: ignore
             if ch is None:
                 await self.bot.wait_until_ready()
                 ch: discord.TextChannel = await self.bot.fetch_channel(ch_id)  # type: ignore
@@ -81,7 +81,7 @@ class Suggestions(Cog):
         *,
         guild: discord.Guild,
         channel: discord.TextChannel = None,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message | None:
         try:
             self.message[msg_id]
         except KeyError:
@@ -116,7 +116,7 @@ class Suggestions(Cog):
         self,
         msg: discord.Message,
         *,
-        emoji: Union[discord.Emoji, discord.PartialEmoji, str],
+        emoji: discord.Emoji | discord.PartialEmoji | str,
     ):
         for reaction in msg.reactions:
             if str(reaction.emoji) == str(emoji):
@@ -124,13 +124,13 @@ class Suggestions(Cog):
 
     async def __suggest(
         self,
-        content: Optional[str] = None,
+        content: str | None = None,
         *,
         embed: discord.Embed,
         ctx: Context,
-        file: Optional[discord.File] = None,
-    ) -> Optional[discord.Message]:
-        channel: Optional[discord.TextChannel] = await self.__fetch_suggestion_channel(ctx.guild)
+        file: discord.File | None = None,
+    ) -> discord.Message | None:
+        channel: discord.TextChannel | None = await self.__fetch_suggestion_channel(ctx.guild)
         if channel is None:
             msg = f"{ctx.author.mention} error fetching suggestion channel"
             raise commands.BadArgument(msg)
@@ -150,7 +150,7 @@ class Suggestions(Cog):
         self.message[msg.id] = payload
         return msg
 
-    async def __notify_on_suggestion(self, ctx: Context, *, message: Optional[discord.Message]) -> None:
+    async def __notify_on_suggestion(self, ctx: Context, *, message: discord.Message | None) -> None:
         if not message:
             return
 
@@ -172,7 +172,7 @@ class Suggestions(Cog):
     async def __notify_user(
         self,
         ctx: Context,
-        user: Optional[discord.Member] = None,
+        user: discord.Member | None = None,
         *,
         message: discord.Message,
         remark: str,
@@ -213,7 +213,7 @@ class Suggestions(Cog):
                 icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url),
             )
 
-            file: Optional[discord.File] = None
+            file: discord.File | None = None
 
             if ctx.message.attachments and (
                 ctx.message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp"))
@@ -235,7 +235,7 @@ class Suggestions(Cog):
         **Examples:**
         - `[p]suggest delete 123456789`
         """
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
+        msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
@@ -263,7 +263,7 @@ class Suggestions(Cog):
         **Examples:**
         - `[p]suggest stats 123456789`
         """
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
+        msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
@@ -296,7 +296,7 @@ class Suggestions(Cog):
         - `[p]suggest resolved 123456789`
         """
         thread_id = message_id
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(thread_id, guild=ctx.guild)
+        msg: discord.Message | None = await self.get_or_fetch_message(thread_id, guild=ctx.guild)
 
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:  # type: ignore
             return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
@@ -326,7 +326,7 @@ class Suggestions(Cog):
         **Examples:**
         - `[p]suggest note 123456789 This is a note`
         """
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
+        msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
@@ -356,7 +356,7 @@ class Suggestions(Cog):
         **Examples:**
         - `[p]suggest clear 123456789`
         """
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
+        msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
@@ -408,7 +408,7 @@ class Suggestions(Cog):
         - `[p]suggest flag 123456789 INVALID`
         - `[p]suggest flag 123456789 INVALID This is a remark`
         """
-        msg: Optional[discord.Message] = await self.get_or_fetch_message(message_id, guild=ctx.guild)
+        msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
@@ -419,7 +419,7 @@ class Suggestions(Cog):
 
         flag = flag.upper()
         try:
-            payload: dict[str, Union[int, str]] = OTHER_REACTION[flag]
+            payload: dict[str, int | str] = OTHER_REACTION[flag]
         except KeyError:
             return await ctx.send(f"{ctx.author.mention} Invalid Flag")
 
@@ -431,7 +431,7 @@ class Suggestions(Cog):
             embed.clear_fields()
             embed.add_field(name="Remark", value=remark[:250])
 
-        user: Optional[discord.Member] = await self.bot.get_or_fetch_member(ctx.guild, user_id)
+        user: discord.Member | None = await self.bot.get_or_fetch_member(ctx.guild, user_id)
         await self.__notify_user(ctx, user, message=msg, remark=remark)
 
         content = f"Flagged: {flag} | {payload['emoji']}"
@@ -503,7 +503,7 @@ class Suggestions(Cog):
         if str(payload.emoji) == "\N{DOWNWARDS BLACK ARROW}":
             self.message[payload.message_id]["message_downvote"] -= 1
 
-    async def __parse_mod_action(self, message: discord.Message) -> Optional[bool]:
+    async def __parse_mod_action(self, message: discord.Message) -> bool | None:
         assert isinstance(message.author, discord.Member)
 
         if not self.__is_mod(message.author):
@@ -520,7 +520,7 @@ class Suggestions(Cog):
             msg = None
 
             if message.reference is not None:
-                msg: Optional[Union[discord.Message, discord.DeletedReferencedMessage]] = message.reference.resolved
+                msg: discord.Message | discord.DeletedReferencedMessage | None = message.reference.resolved
 
             if not isinstance(msg, discord.Message):
                 return

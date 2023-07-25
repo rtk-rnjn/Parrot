@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Optional
+from typing import Any
 
 import chess
 from pymongo import UpdateOne
@@ -79,12 +79,12 @@ class Chess:
         self.alternate_turn = black
 
         self.game_stop = False
-        self.game_message: Optional[discord.Message] = None
+        self.game_message: discord.Message | None = None
 
     def legal_moves(self) -> list[str]:
         return [self.board.san(move) for move in self.board.legal_moves]
 
-    async def wait_for_move(self) -> Optional[discord.Message]:
+    async def wait_for_move(self) -> discord.Message | None:
         LEGAL_MOVES = self.legal_moves()
 
         def check(m: discord.Message) -> bool:

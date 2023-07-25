@@ -4,7 +4,7 @@ import asyncio
 import difflib
 import inspect
 import re
-from typing import Annotated, Optional, Union
+from typing import Annotated, Optional
 
 import async_timeout
 from jinja2.sandbox import SandboxedEnvironment
@@ -70,7 +70,7 @@ class AutoResponders(Cog):
 
     @autoresponder.command(name="tutorial")
     @commands.has_permissions(manage_guild=True)
-    async def autoresponder_tutorial(self, ctx: Context, *, entity: Optional[str] = None) -> None:
+    async def autoresponder_tutorial(self, ctx: Context, *, entity: str | None = None) -> None:
         """Tutorial for autoresponder commands."""
         # get the entity from TOPICS, use difflib to get the closest match
         if entity:
@@ -143,7 +143,7 @@ class AutoResponders(Cog):
 
     @autoresponder.command(name="ignore")
     @commands.has_permissions(manage_guild=True)
-    async def autoresponder_ignore(self, ctx: Context, name: str, entity: Union[discord.Role, discord.TextChannel]) -> None:
+    async def autoresponder_ignore(self, ctx: Context, name: str, entity: discord.Role | discord.TextChannel) -> None:
         """Ignore a role or channel from an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
             await ctx.reply("An autoresponder with that name does not exist.")

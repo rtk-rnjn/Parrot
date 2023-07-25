@@ -12,7 +12,7 @@ import types
 from collections import Counter, defaultdict, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import aiohttp
 import aiosqlite
@@ -177,7 +177,7 @@ class Parrot(commands.AutoShardedBot):
     __version__: str
 
     user: discord.ClientUser
-    help_command: Optional[commands.HelpCommand]
+    help_command: commands.HelpCommand | None
 
     http_session: ClientSession
     mongo: AsyncIOMotorClient  # type: ignore
@@ -192,7 +192,7 @@ class Parrot(commands.AutoShardedBot):
     tree_cls: type[app_commands.CommandTree]
     tree: app_commands.CommandTree
 
-    owner_id: Optional[int]
+    owner_id: int | None
     owner_ids: Collection[int]
 
     voice_clients: list[discord.VoiceProtocol]
@@ -231,14 +231,14 @@ class Parrot(commands.AutoShardedBot):
         self.color: int = 0x87CEEB
         self.colour: int = self.color
 
-        self.error_channel: Optional[discord.TextChannel] = None
+        self.error_channel: discord.TextChannel | None = None
         self.persistent_views_added: bool = False
         self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(3, 5, commands.BucketType.user)
 
         self._was_ready: bool = False
         self.lock: asyncio.Lock = asyncio.Lock()
-        self.timer_task: Optional[asyncio.Task] = None
-        self._current_timer: Union[dict, None] = {}
+        self.timer_task: asyncio.Task | None = None
+        self._current_timer: dict | None = {}
         self._have_data: asyncio.Event = asyncio.Event()
         self.reminder_event: asyncio.Event = asyncio.Event()
         self.ON_HEROKU: bool = HEROKU
@@ -259,7 +259,7 @@ class Parrot(commands.AutoShardedBot):
         # caching variables
         self.guild_configurations_cache: Cache[int, dict[str, Any]] = Cache(self)
         self.message_cache: dict[int, discord.Message] = {}
-        self.banned_users: dict[int, dict[str, Union[int, str, bool]]] = {}
+        self.banned_users: dict[int, dict[str, int | str | bool]] = {}
         self.afk_users: set[int] = set()
         self.channel_message_cache: dict[int, asyncio.Queue[discord.Message]] = {}
 
@@ -294,13 +294,13 @@ class Parrot(commands.AutoShardedBot):
         }
 
         self.UNDER_MAINTENANCE: bool = False
-        self.UNDER_MAINTENANCE_REASON: Optional[str] = None
-        self.UNDER_MAINTENANCE_OVER: Optional[datetime.datetime] = None
+        self.UNDER_MAINTENANCE_REASON: str | None = None
+        self.UNDER_MAINTENANCE_OVER: datetime.datetime | None = None
 
         self.__app_commands_global: dict[int, app_commands.AppCommand] = {}
         self.__app_commands_guild: dict[int, dict[int, app_commands.AppCommand]] = {}
 
-        self.__global_write_data: dict[str, list[Union[pymongo.UpdateOne, pymongo.UpdateMany]]] = {}
+        self.__global_write_data: dict[str, list[pymongo.UpdateOne | pymongo.UpdateMany]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
 
     async def init_db(self) -> None:
@@ -347,7 +347,7 @@ class Parrot(commands.AutoShardedBot):
         return self.guild_configurations_cache
 
     @property
-    def server(self) -> Optional[discord.Guild]:
+    def server(self) -> discord.Guild | None:
         assert isinstance(SUPPORT_SERVER_ID, int)
 
         guild = self.get_guild(SUPPORT_SERVER_ID)
@@ -382,7 +382,7 @@ class Parrot(commands.AutoShardedBot):
         log.debug("Getting recent message from channel %s", CHANGE_LOG_ID)
         assert isinstance(CHANGE_LOG_ID, int)
 
-        channel: Optional[discord.TextChannel] = self.get_channel(CHANGE_LOG_ID)  # type: ignore
+        channel: discord.TextChannel | None = self.get_channel(CHANGE_LOG_ID)  # type: ignore
 
         if not self._change_log and channel is not None:
             self._change_log = [msg async for msg in channel.history(limit=1)]
@@ -390,7 +390,7 @@ class Parrot(commands.AutoShardedBot):
         return self._change_log[0]
 
     @property
-    def author_obj(self) -> Optional[discord.User]:
+    def author_obj(self) -> discord.User | None:
         assert isinstance(MASTER_OWNER, int)
 
         return self.get_user(MASTER_OWNER)
@@ -487,13 +487,13 @@ class Parrot(commands.AutoShardedBot):
 
     async def _execute_webhook_from_scratch(
         self,
-        webhook: Union[discord.Webhook, str, None],
+        webhook: discord.Webhook | str | None,
         *,
         content: str,
         username: str,
         avatar_url: str,
         **kw: Any,
-    ) -> Optional[dict]:
+    ) -> dict | None:
         payload = {}
         assert isinstance(webhook, discord.Webhook | str)
         URL = webhook.url if isinstance(webhook, discord.Webhook) else webhook
@@ -513,16 +513,16 @@ class Parrot(commands.AutoShardedBot):
 
     async def _execute_webhook(
         self,
-        webhook: Union[str, discord.Webhook, None] = None,  # type: ignore
+        webhook: str | discord.Webhook | None = None,  # type: ignore
         *,
-        webhook_id: Union[str, int, None] = None,
-        webhook_token: Optional[str] = None,
+        webhook_id: str | int | None = None,
+        webhook_token: str | None = None,
         content: str,
         force_file: bool = False,
-        filename: Optional[str] = None,
-        suppressor: Optional[Union[tuple[type[Exception]], type[Exception]]] = Exception,
+        filename: str | None = None,
+        suppressor: tuple[type[Exception]] | type[Exception] | None = Exception,
         **kwargs: Any,
-    ) -> Optional[discord.WebhookMessage]:
+    ) -> discord.WebhookMessage | None:
         if webhook is None and (webhook_id is None and webhook_token is None):
             msg = "must provide atleast webhook_url or webhook_id and webhook_token"
             raise ValueError(msg)
@@ -612,7 +612,7 @@ class Parrot(commands.AutoShardedBot):
         if data["type"] == "test":
             return self.dispatch("dbl_test", data)
         elif data["type"] == "upvote":
-            user: Optional[discord.User] = self.get_user(int(data["user"]))
+            user: discord.User | None = self.get_user(int(data["user"]))
             user = user.name if user is not None else f"Unknown User ({data['user']})"  # type: ignore
 
             await self._execute_webhook(
@@ -669,7 +669,7 @@ class Parrot(commands.AutoShardedBot):
         log.info("Ready: %s (ID: %s)", self.user, self.user.id)
 
         log.debug("Getting all afk users from database")
-        ls: list[Optional[int]] = await self.afk_collection.distinct("afk.messageAuthor")
+        ls: list[int | None] = await self.afk_collection.distinct("afk.messageAuthor")
         log.debug("Got all afk users from database: %s", ls)
         if ls:
             self.afk_users = set(ls)  # type: ignore
@@ -716,7 +716,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.loop.create_task(self.__cache_app_commands(None))
 
-    async def __cache_app_commands(self, guild: Optional[Union[discord.Object, discord.Guild]] = None) -> None:
+    async def __cache_app_commands(self, guild: discord.Object | discord.Guild | None = None) -> None:
         """To cache all application commands."""
         if guild is None:
             commands = await self.tree.fetch_commands()
@@ -731,7 +731,7 @@ class Parrot(commands.AutoShardedBot):
             for command in commands:
                 self.__app_commands_guild[guild.id][command.id] = command
 
-    async def update_app_commands_cache(self, guild: Optional[discord.Guild] = None) -> None:
+    async def update_app_commands_cache(self, guild: discord.Guild | None = None) -> None:
         """To update the application commands cache."""
         await self.__cache_app_commands(guild)
 
@@ -907,8 +907,8 @@ class Parrot(commands.AutoShardedBot):
     async def get_or_fetch_member(
         self,
         guild: ...,
-        member_id: Union[int, str],
-    ) -> Optional[discord.Member]:
+        member_id: int | str,
+    ) -> discord.Member | None:
         ...
 
     @overload
@@ -916,7 +916,7 @@ class Parrot(commands.AutoShardedBot):
         self,
         guild: ...,
         member_id: discord.Object,
-    ) -> Optional[discord.Member]:
+    ) -> discord.Member | None:
         ...
 
     @overload
@@ -925,15 +925,15 @@ class Parrot(commands.AutoShardedBot):
         guild: ...,
         member_id: ...,
         in_guild: bool = ...,
-    ) -> Optional[Union[discord.Member, discord.User]]:
+    ) -> discord.Member | discord.User | None:
         ...
 
     async def get_or_fetch_member(
         self,
         guild: discord.Guild,
-        member_id: Union[int, str, discord.Object],
+        member_id: int | str | discord.Object,
         in_guild: bool = True,
-    ) -> Union[discord.Member, discord.User, None]:
+    ) -> discord.Member | discord.User | None:
         """|coro|.
 
         Looks up a member in cache or fetches if not found.
@@ -968,7 +968,7 @@ class Parrot(commands.AutoShardedBot):
         members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
         return members[0] if members else None
 
-    async def get_prefix(self, message: discord.Message) -> Union[str, Callable, list[str]]:
+    async def get_prefix(self, message: discord.Message) -> str | Callable | list[str]:
         """Dynamic prefixing."""
         if message.guild is None:
             return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
@@ -995,7 +995,7 @@ class Parrot(commands.AutoShardedBot):
             prefix = match[1]
         return commands.when_mentioned_or(prefix)(self, message)
 
-    async def get_guild_prefixes(self, guild: Union[discord.Guild, int]) -> str:  # type: ignore
+    async def get_guild_prefixes(self, guild: discord.Guild | int) -> str:  # type: ignore
         if isinstance(guild, int):
             guild: discord.Object = discord.Object(id=guild)
 
@@ -1011,9 +1011,9 @@ class Parrot(commands.AutoShardedBot):
 
     async def getch(
         self,
-        get_function: Union[Callable, Any],
-        fetch_function: Union[Callable, Awaitable],
-        _id: Union[int, discord.Object, None] = None,
+        get_function: Callable | Any,
+        fetch_function: Callable | Awaitable,
+        _id: int | discord.Object | None = None,
         *,
         force_fetch: bool = True,
     ) -> Any:
@@ -1152,13 +1152,13 @@ class Parrot(commands.AutoShardedBot):
         self,
         *,
         expires_at: float,
-        _event_name: Optional[str] = None,
-        created_at: Optional[float] = None,
-        content: Optional[str] = None,
-        message: Union[discord.Message, int, None] = None,
+        _event_name: str | None = None,
+        created_at: float | None = None,
+        content: str | None = None,
+        message: discord.Message | int | None = None,
         dm_notify: bool = False,
         is_todo: bool = False,
-        extra: Optional[dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kw,
     ) -> InsertOneResult:
         """|coro|.
@@ -1182,9 +1182,9 @@ class Parrot(commands.AutoShardedBot):
         """
         collection: MongoCollection = self.timers
 
-        embed: Optional[dict[str, Any]] = kw.get("embed_like") or kw.get("embed")
-        mod_action: Optional[dict[str, Any]] = kw.get("mod_action")
-        cmd_exec_str: Optional[str] = kw.get("cmd_exec_str")
+        embed: dict[str, Any] | None = kw.get("embed_like") or kw.get("embed")
+        mod_action: dict[str, Any] | None = kw.get("mod_action")
+        cmd_exec_str: str | None = kw.get("cmd_exec_str")
 
         # fmt: off
         post = {
@@ -1255,7 +1255,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         guild: ...,
         fetch: bool = ...,
-    ) -> Optional[app_commands.AppCommand]:
+    ) -> app_commands.AppCommand | None:
         ...
 
     @overload
@@ -1265,7 +1265,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         guild: ...,
         fetch: bool = ...,
-    ) -> Optional[app_commands.AppCommand]:
+    ) -> app_commands.AppCommand | None:
         ...
 
     @overload
@@ -1273,17 +1273,17 @@ class Parrot(commands.AutoShardedBot):
         self,
         cmd: ...,
         **kwargs: Any,
-    ) -> Optional[app_commands.AppCommand]:
+    ) -> app_commands.AppCommand | None:
         ...
 
     async def get_app_command(
         self,
-        cmd: Optional[Union[str, int]],
+        cmd: str | int | None,
         *,
-        guild: Optional[Union[discord.Object, discord.Guild]],
+        guild: discord.Object | discord.Guild | None,
         fetch: bool = False,
         **kwargs: Any,
-    ) -> Optional[app_commands.AppCommand]:
+    ) -> app_commands.AppCommand | None:
         """Get an application command by name or ID from the cache.
 
         If the command is not found, then it will fetch the commands from the API and try again.
@@ -1324,10 +1324,10 @@ class Parrot(commands.AutoShardedBot):
 
     def __get_app_commands(
         self,
-        cmd: Optional[Union[str, int]],
+        cmd: str | int | None,
         commands: dict[int, app_commands.AppCommand],
         **kwargs: Any,
-    ) -> Optional[app_commands.AppCommand]:
+    ) -> app_commands.AppCommand | None:
         if isinstance(cmd, int):
             return commands.get(cmd)
 
@@ -1348,9 +1348,9 @@ class Parrot(commands.AutoShardedBot):
     @overload
     async def get_or_fetch_message(
         self,
-        channel: Union[discord.Object, discord.PartialMessageable],
+        channel: discord.Object | discord.PartialMessageable,
         message: int,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message | None:
         ...
 
     @overload
@@ -1358,7 +1358,7 @@ class Parrot(commands.AutoShardedBot):
         self,
         channel: ...,
         message: str,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message | None:
         ...
 
     @overload
@@ -1371,20 +1371,20 @@ class Parrot(commands.AutoShardedBot):
         partial: bool = ...,
         force_fetch: bool = ...,
         dm_allowed: bool = ...,
-    ) -> Optional[Union[discord.Message, discord.PartialMessage]]:
+    ) -> discord.Message | discord.PartialMessage | None:
         ...
 
     @overload
     async def get_or_fetch_message(
         self,
-        channel: Union[str, int],
-    ) -> Optional[discord.Message]:
+        channel: str | int,
+    ) -> discord.Message | None:
         ...
 
     async def get_or_fetch_message(
         self,
-        channel: Union[discord.Object, str, int, discord.PartialMessageable],
-        message: Optional[Union[int, str]] = None,
+        channel: discord.Object | str | int | discord.PartialMessageable,
+        message: int | str | None = None,
         *,
         fetch: bool = True,
         cache: bool = True,
@@ -1490,7 +1490,7 @@ class Parrot(commands.AutoShardedBot):
     def add_global_write_data(
         self,
         *,
-        db: Optional[str] = None,
+        db: str | None = None,
         col: str,
         query: dict,
         update: dict,
@@ -1514,7 +1514,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         db: ...,
         col: ...,
-    ) -> Optional[list]:
+    ) -> list | None:
         ...
 
     @overload
@@ -1526,9 +1526,9 @@ class Parrot(commands.AutoShardedBot):
     def get_global_write_data(
         self,
         *,
-        db: Optional[str] = None,
-        col: Optional[str] = None,
-    ) -> Optional[list] | dict[str, list]:
+        db: str | None = None,
+        col: str | None = None,
+    ) -> list | None | dict[str, list]:
         if col:
             if db is None:
                 db = "mainDB"

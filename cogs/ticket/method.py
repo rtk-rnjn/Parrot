@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import discord
 from core import Context, Parrot
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from pymongo.collection import Collection
 
 
-async def chat_exporter(channel: discord.TextChannel, limit: Optional[int] = 100) -> None:
+async def chat_exporter(channel: discord.TextChannel, limit: int | None = 100) -> None:
     msg = await channel.send("Please wait, exporting chat...")
     messages: list[discord.Message] = []
     async for message in channel.history(limit=limit, oldest_first=True):
@@ -49,7 +49,7 @@ async def log(guild: discord.Guild, channel: discord.TextChannel, description: s
     )
 
 
-async def _new(ctx: Context, args: Optional[str] = None) -> None:
+async def _new(ctx: Context, args: str | None = None) -> None:
     message_content = args or "Please wait, we will be with you shortly!"
     col: Collection = ctx.bot.guild_configurations
     data = await col.find_one_and_update(

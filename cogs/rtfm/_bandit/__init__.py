@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Literal, Optional
+from typing import Literal
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -11,11 +11,11 @@ POSSIBLE_BANDIT_CODE = re.compile(r"([A-Z]\d{2,3})")
 
 class BanditConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
-    read: Optional[convert_bool] = None
-    verbose: Optional[convert_bool] = None
-    skip: Optional[str] = None
-    level: Optional[Literal["low", "medium", "high"]] = None
-    confidence: Optional[Literal["low", "medium", "high"]] = None
+    read: convert_bool | None = None
+    verbose: convert_bool | None = None
+    skip: str | None = None
+    level: Literal["low", "medium", "high"] | None = None
+    confidence: Literal["low", "medium", "high"] | None = None
 
 
 def validate_bandit_code(code: str) -> list[str]:

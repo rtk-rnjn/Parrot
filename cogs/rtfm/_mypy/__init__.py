@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -9,95 +9,95 @@ from utilities.converters import convert_bool
 class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str
     # Import Discovery
-    no_namespace_packages: Optional[convert_bool] = None
-    ignore_missing_imports: Optional[convert_bool] = None
+    no_namespace_packages: convert_bool | None = None
+    ignore_missing_imports: convert_bool | None = None
     follow_imports: Literal["skip", "silent", "error", "normal"] = "normal"
-    no_site_packages: Optional[convert_bool] = None
-    no_silence_site_packages: Optional[convert_bool] = None
+    no_site_packages: convert_bool | None = None
+    no_silence_site_packages: convert_bool | None = None
 
     # Disallow dynamic typing
-    disallow_any_unimported: Optional[convert_bool] = None
-    disallow_any_expr: Optional[convert_bool] = None
-    disallow_any_decorated: Optional[convert_bool] = None
-    disallow_any_explicit: Optional[convert_bool] = None
+    disallow_any_unimported: convert_bool | None = None
+    disallow_any_expr: convert_bool | None = None
+    disallow_any_decorated: convert_bool | None = None
+    disallow_any_explicit: convert_bool | None = None
 
-    disallow_any_generics: Optional[convert_bool] = None
-    allow_any_generics: Optional[convert_bool] = None
+    disallow_any_generics: convert_bool | None = None
+    allow_any_generics: convert_bool | None = None
 
-    disallow_subclassing_any: Optional[convert_bool] = None
-    allow_subclassing_any: Optional[convert_bool] = None
+    disallow_subclassing_any: convert_bool | None = None
+    allow_subclassing_any: convert_bool | None = None
 
     # Untyped definitions and calls
-    disallow_untyped_calls: Optional[convert_bool] = None
-    allow_untyped_calls: Optional[convert_bool] = None
+    disallow_untyped_calls: convert_bool | None = None
+    allow_untyped_calls: convert_bool | None = None
 
-    disallow_untyped_defs: Optional[convert_bool] = None
-    allow_untyped_defs: Optional[convert_bool] = None
+    disallow_untyped_defs: convert_bool | None = None
+    allow_untyped_defs: convert_bool | None = None
 
-    disallow_incomplete_defs: Optional[convert_bool] = None
-    allow_incomplete_defs: Optional[convert_bool] = None
+    disallow_incomplete_defs: convert_bool | None = None
+    allow_incomplete_defs: convert_bool | None = None
 
-    check_untyped_defs: Optional[convert_bool] = None
-    no_check_untyped_defs: Optional[convert_bool] = None
+    check_untyped_defs: convert_bool | None = None
+    no_check_untyped_defs: convert_bool | None = None
 
-    disallow_untyped_decorators: Optional[convert_bool] = None
-    allow_untyped_decorators: Optional[convert_bool] = None
+    disallow_untyped_decorators: convert_bool | None = None
+    allow_untyped_decorators: convert_bool | None = None
 
     # None and Optional handling
-    implicit_optional: Optional[convert_bool] = None
-    no_implicit_optional: Optional[convert_bool] = None
+    implicit_optional: convert_bool | None = None
+    no_implicit_optional: convert_bool | None = None
 
-    no_strict_optional: Optional[convert_bool] = None
-    strict_optional: Optional[convert_bool] = None
+    no_strict_optional: convert_bool | None = None
+    strict_optional: convert_bool | None = None
 
     # Configuring warnings
-    warn_redunant_casts: Optional[convert_bool] = None
-    no_warn_redunant_casts: Optional[convert_bool] = None
+    warn_redunant_casts: convert_bool | None = None
+    no_warn_redunant_casts: convert_bool | None = None
 
-    warn_unused_ignores: Optional[convert_bool] = None
-    no_warn_unused_ignores: Optional[convert_bool] = None
+    warn_unused_ignores: convert_bool | None = None
+    no_warn_unused_ignores: convert_bool | None = None
 
-    no_warn_no_return: Optional[convert_bool] = None
-    warn_no_return: Optional[convert_bool] = None
+    no_warn_no_return: convert_bool | None = None
+    warn_no_return: convert_bool | None = None
 
-    warn_return_any: Optional[convert_bool] = None
-    no_warn_return_any: Optional[convert_bool] = None
+    warn_return_any: convert_bool | None = None
+    no_warn_return_any: convert_bool | None = None
 
-    warn_unreachable: Optional[convert_bool] = None
-    no_warn_unreachable: Optional[convert_bool] = None
+    warn_unreachable: convert_bool | None = None
+    no_warn_unreachable: convert_bool | None = None
 
     # Miscellaneous strictness flags
-    allow_untyped_globals: Optional[convert_bool] = None
-    disallow_untyped_globals: Optional[convert_bool] = None
+    allow_untyped_globals: convert_bool | None = None
+    disallow_untyped_globals: convert_bool | None = None
 
-    allow_redifinition: Optional[convert_bool] = None
-    disallow_redifinition: Optional[convert_bool] = None
+    allow_redifinition: convert_bool | None = None
+    disallow_redifinition: convert_bool | None = None
 
-    no_implicit_reexport: Optional[convert_bool] = None
-    implicit_reexport: Optional[convert_bool] = None
+    no_implicit_reexport: convert_bool | None = None
+    implicit_reexport: convert_bool | None = None
 
-    strict_equality: Optional[convert_bool] = None
-    no_strict_equality: Optional[convert_bool] = None
+    strict_equality: convert_bool | None = None
+    no_strict_equality: convert_bool | None = None
 
-    strict_concatenate: Optional[convert_bool] = None
-    no_strict_concatenate: Optional[convert_bool] = None
+    strict_concatenate: convert_bool | None = None
+    no_strict_concatenate: convert_bool | None = None
 
-    strict: Optional[convert_bool] = None
+    strict: convert_bool | None = None
 
     # Configuring error messages
-    show_error_context: Optional[convert_bool] = None
-    hide_error_context: Optional[convert_bool] = None
+    show_error_context: convert_bool | None = None
+    hide_error_context: convert_bool | None = None
 
-    show_column_numbers: Optional[convert_bool] = None
-    hide_column_numbers: Optional[convert_bool] = None
+    show_column_numbers: convert_bool | None = None
+    hide_column_numbers: convert_bool | None = None
 
-    show_error_end: Optional[convert_bool] = None
-    hide_error_end: Optional[convert_bool] = None
+    show_error_end: convert_bool | None = None
+    hide_error_end: convert_bool | None = None
 
-    hide_error_codes: Optional[convert_bool] = None
-    show_error_codes: Optional[convert_bool] = None
+    hide_error_codes: convert_bool | None = None
+    show_error_codes: convert_bool | None = None
 
-    pretty: Optional[convert_bool] = None
+    pretty: convert_bool | None = None
 
 
 def validate_flag(flag: MypyConverter) -> str:

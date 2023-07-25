@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from random import choice, random
-from typing import Optional
 
 import discord
 from core import Cog, Context, Parrot
@@ -26,7 +25,7 @@ class Actions(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="Lights_Camera_Action__Emoticon__", id=892434144364220497)
 
-    def _try_from_cache(self, ctx: Context) -> Optional[str]:
+    def _try_from_cache(self, ctx: Context) -> str | None:
         return choice(self.cached_images.get(ctx.command.qualified_name, [None]))
 
     async def send_message(self, ctx: Context, *, url: str = None) -> None:

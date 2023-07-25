@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 import discord
 from discord.ext import commands
@@ -11,7 +11,7 @@ __all__ = ("Cog",)
 class Cog(commands.Cog):
     """A custom implementation of commands.Cog class."""
 
-    app_commands: Optional[discord.app_commands.Group]
+    app_commands: discord.app_commands.Group | None
     description: str
     qualified_name: str
     ON_TESTING: bool = False

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import Any, Optional, Union
+from typing import Any
 
 import discord
 from cogs.giveaway.method import end_giveaway
@@ -24,7 +24,7 @@ class EventCustom(Cog):
     async def mod_parser(
         self,
         *,
-        mod_action: Optional[dict[str, Any]] = None,
+        mod_action: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         if mod_action is None:
@@ -33,7 +33,7 @@ class EventCustom(Cog):
         kw = mod_action
 
         action: str = kw.get("action")  # type: ignore
-        guild: Optional[discord.Guild] = self.bot.get_guild(kw.get("guild", 0))
+        guild: discord.Guild | None = self.bot.get_guild(kw.get("guild", 0))
         if guild is None:
             return
 
@@ -46,7 +46,7 @@ class EventCustom(Cog):
             with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
         if action.upper() == "KICK":
-            member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(guild, target)
+            member: discord.Member | discord.User | None = await self.bot.get_or_fetch_member(guild, target)
             if member is None:
                 return
             with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
@@ -56,20 +56,20 @@ class EventCustom(Cog):
     async def normal_parser(
         self,
         *,
-        embed: Optional[dict[str, Any]] = None,  # type: ignore
-        content: Optional[str] = None,
+        embed: dict[str, Any] | None = None,  # type: ignore
+        content: str | None = None,
         dm_notify: bool = False,
         is_todo: bool = False,
-        messageChannel: Optional[int] = None,
-        messageAuthor: Optional[int] = None,
-        messageURL: Optional[str] = None,
+        messageChannel: int | None = None,
+        messageAuthor: int | None = None,
+        messageURL: str | None = None,
         **kwargs: Any,
     ):
         if not content:
             return
         if embed is None:
             embed = {}
-        embed: Union[discord.utils.MISSING, discord.Embed] = (
+        embed: discord.utils.MISSING | discord.Embed = (
             discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
         )
 
@@ -91,7 +91,7 @@ class EventCustom(Cog):
             return
 
     @Cog.listener("on_timer_complete")
-    async def extra_parser(self, *, extra: Optional[dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser(self, *, extra: dict[str, Any] | None = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -103,7 +103,7 @@ class EventCustom(Cog):
             await self.extra_action_parser(name, **main)
 
     @Cog.listener("on_set_afk_timer_complete")
-    async def extra_parser_set_afk(self, *, extra: Optional[dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser_set_afk(self, *, extra: dict[str, Any] | None = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -113,7 +113,7 @@ class EventCustom(Cog):
             self.bot.afk_users.add(kw.get("messageAuthor", 0))
 
     @Cog.listener("on_remove_afk_timer_complete")
-    async def extra_parser_remove_afk(self, *, extra: Optional[dict[str, Any]] = None, **kw: Any) -> None:
+    async def extra_parser_remove_afk(self, *, extra: dict[str, Any] | None = None, **kw: Any) -> None:
         if not extra:
             return
 
@@ -166,7 +166,7 @@ class EventCustom(Cog):
             },
         )
         member_ids: list[int] = await end_giveaway(self.bot, **data)
-        channel: Optional[discord.TextChannel] = await self.bot.getch(
+        channel: discord.TextChannel | None = await self.bot.getch(
             self.bot.get_channel, self.bot.fetch_channel, kw.get("giveaway_channel"),
         )
         await self.bot.giveaways.find_one_and_update(

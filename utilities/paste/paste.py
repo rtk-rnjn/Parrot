@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -60,9 +60,9 @@ class File:
 
 
 class Paste:
-    _last_edited: Optional[datetime.datetime]
-    _expires: Optional[datetime.datetime]
-    _views: Optional[int]
+    _last_edited: datetime.datetime | None
+    _expires: datetime.datetime | None
+    _views: int | None
 
     __slots__ = (
         "id",
@@ -97,15 +97,15 @@ class Paste:
         return f"https://mystb.in/{self.id}"
 
     @property
-    def last_edited(self) -> Optional[datetime.datetime]:
+    def last_edited(self) -> datetime.datetime | None:
         return self._last_edited
 
     @property
-    def expires(self) -> Optional[datetime.datetime]:
+    def expires(self) -> datetime.datetime | None:
         return self._expires
 
     @property
-    def views(self) -> Optional[int]:
+    def views(self) -> int | None:
         return self._views
 
     @classmethod

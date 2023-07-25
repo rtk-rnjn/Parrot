@@ -8,7 +8,7 @@ import re
 import string
 from collections.abc import Coroutine
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Optional, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Final
 
 from PIL import Image, ImageDraw
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     Coords: TypeAlias = tuple[int, int]
-    DiscordColor: TypeAlias = Union[discord.Color, int]
+    DiscordColor: TypeAlias = discord.Color | int
 
 DEFAULT_COLOR: Final[discord.Color] = discord.Color(0x2F3136)
 
@@ -68,8 +68,8 @@ class Ship:
 
 
 class Board:
-    def __init__(self, player: Union[discord.User, discord.Member], random: bool = True) -> None:
-        self.player: Union[discord.User, discord.Member] = player
+    def __init__(self, player: discord.User | discord.Member, random: bool = True) -> None:
+        self.player: discord.User | discord.Member = player
         self.ships: list[Ship] = []
 
         self.my_hits: list[Coords] = []
@@ -115,7 +115,7 @@ class Board:
     def won(self) -> bool:
         return all(all(ship.hits) for ship in self.ships)
 
-    def draw_dot(self, cur: ImageDraw.Draw, x: int, y: int, fill: Union[int, tuple[int, ...]]) -> None:
+    def draw_dot(self, cur: ImageDraw.Draw, x: int, y: int, fill: int | tuple[int, ...]) -> None:
         x1, y1 = x - 10, y - 10
         x2, y2 = x + 10, y + 10
         cur.ellipse((x1, y1, x2, y2), fill=fill)
@@ -143,7 +143,7 @@ class Board:
         x2, y2 = x + d3, y + d4
         cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
 
-    def get_ship(self, coord: Coords) -> Optional[Ship]:
+    def get_ship(self, coord: Coords) -> Ship | None:
         if s := [ship for ship in self.ships if coord in ship.span]:
             return s[0]
 
@@ -184,15 +184,15 @@ class BattleShip:
 
     def __init__(
         self,
-        player1: Union[discord.User, discord.Member],
-        player2: Union[discord.User, discord.Member],
+        player1: discord.User | discord.Member,
+        player2: discord.User | discord.Member,
         *,
         random: bool = True,
     ) -> None:
-        self.embed_color: Optional[DiscordColor] = None
+        self.embed_color: DiscordColor | None = None
 
-        self.player1: Union[discord.User, discord.Member] = player1
-        self.player2: Union[discord.User, discord.Member] = player2
+        self.player1: discord.User | discord.Member = player1
+        self.player2: discord.User | discord.Member = player2
 
         self.random: bool = random
 
@@ -200,10 +200,10 @@ class BattleShip:
         self.player2_board: Board = Board(player2, random=self.random)
 
         self.turn: discord.User = self.player1
-        self.timeout: Optional[int] = None
+        self.timeout: int | None = None
 
-        self.message1: Optional[discord.Message] = None
-        self.message2: Optional[discord.Message] = None
+        self.message1: discord.Message | None = None
+        self.message2: discord.Message | None = None
 
     def get_board(self, player: discord.User, other: bool = False) -> Board:
         if other:
@@ -259,7 +259,7 @@ class BattleShip:
         x, y = match.group(1), match.group(2)
         return (inp, (self.to_num(x), int(y)))
 
-    def who_won(self) -> Optional[discord.User]:
+    def who_won(self) -> discord.User | None:
         if self.player1_board.won():
             return self.player2
         elif self.player2_board.won():
@@ -330,7 +330,7 @@ class BattleShip:
         self,
         ctx: Context[Parrot],
         *,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> tuple[discord.Message, discord.Message]:
         """Starts the battleship game.
 
@@ -509,7 +509,7 @@ class BattleshipButton(WordInputButton):
 
 
 class CoordButton(discord.ui.Button["BattleshipView"]):
-    def __init__(self, letter_or_num: Union[str, int]) -> None:
+    def __init__(self, letter_or_num: str | int) -> None:
         super().__init__(
             label=str(letter_or_num),
             style=discord.ButtonStyle.green,
@@ -548,8 +548,8 @@ class BattleshipView(BaseView):
 
         self.initialize_view(start=True)
 
-        self.alpha: Optional[str] = None
-        self.digit: Optional[int] = None
+        self.alpha: str | None = None
+        self.digit: int | None = None
 
     def disable(self) -> None:
         self.disable_all()
@@ -699,8 +699,8 @@ class BetaBattleShip(BattleShip):
 
     def __init__(
         self,
-        player1: Union[discord.User, discord.Member],
-        player2: Union[discord.User, discord.Member],
+        player1: discord.User | discord.Member,
+        player2: discord.User | discord.Member,
         *,
         random: bool = True,
     ) -> None:
@@ -781,7 +781,7 @@ class BetaBattleShip(BattleShip):
         *,
         max_log_size: int = 10,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> tuple[discord.Message, discord.Message]:
         """Starts the battleship(buttons) game.
 

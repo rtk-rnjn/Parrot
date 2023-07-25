@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from collections.abc import Callable
 from io import BytesIO
-from typing import Optional
 from urllib.parse import urlencode
 
 import arrow
@@ -100,7 +99,7 @@ def custom_cooldown(*ignore: int) -> Callable:
     return check(predicate)
 
 
-async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> Optional[list[tuple[str, str]]]:
+async def get_pod_pages(ctx: Context, bot: Parrot, query: str) -> list[tuple[str, str]] | None:
     """Get the Wolfram API pod pages for the provided query."""
     async with ctx.typing():
         params = {

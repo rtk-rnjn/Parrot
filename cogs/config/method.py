@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 import discord
 from core import Context
@@ -22,7 +22,7 @@ def get_text(
     *,
     ctx: Context,
     cmd_cog: str,
-    target: Optional[Union[discord.Role, discord.abc.GuildChannel]],
+    target: discord.Role | discord.abc.GuildChannel | None,
     tp: Literal["enable", "disable"],
 ) -> str:
     is_are = "commands are" if cmd_cog == "all" else "is"
@@ -38,7 +38,7 @@ def get_text(
 async def _enable(
     ctx: Context,
     cmd_cog: str,
-    target: Union[discord.abc.GuildChannel, discord.Role, None],
+    target: discord.abc.GuildChannel | discord.Role | None,
 ) -> None:
     assert ctx.guild
     if not target:
@@ -58,7 +58,7 @@ async def _enable(
 async def _disable(
     ctx: Context,
     cmd_cog: str,
-    target: Union[discord.abc.GuildChannel, discord.Role],
+    target: discord.abc.GuildChannel | discord.Role,
 ) -> None:
     assert ctx.guild
     if not target:

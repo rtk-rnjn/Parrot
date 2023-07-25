@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
-from typing import Optional, Union
 
 import discord
 from core import Cog, Parrot
@@ -33,8 +32,8 @@ class Sector17Listeners(Cog):
         self,
         invoker_message: discord.Message,
         *,
-        startswith: Union[str, tuple[str, ...]] = "",
-        in_channel: Optional[int] = None,
+        startswith: str | tuple[str, ...] = "",
+        in_channel: int | None = None,
     ):
         def check(message: discord.Message) -> bool:
             if not message.embeds:
@@ -97,7 +96,7 @@ class Sector17Listeners(Cog):
             self.owo_pray_curse(message, content),
         )
 
-    def _get_command_list(self, data: dict[str, Union[list[str], str]]) -> tuple[str, ...]:
+    def _get_command_list(self, data: dict[str, list[str] | str]) -> tuple[str, ...]:
         ls = []
 
         for key, value in data.items():
@@ -132,7 +131,7 @@ class Sector17Listeners(Cog):
         log.debug("Command list: %s", ls)
         return tuple(set(ls))
 
-    async def change_owo_prefix(self, message: discord.Message, content: str) -> Optional[bool]:
+    async def change_owo_prefix(self, message: discord.Message, content: str) -> bool | None:
         if not content.startswith(self._get_command_list({"prefix": "prefix"})):
             return
 

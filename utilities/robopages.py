@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from discord.ext.commands import Paginator as CommandPaginator
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class NumberedPageModal(discord.ui.Modal, title="Go to page"):
     page = discord.ui.TextInput(label="Page", placeholder="Enter a number", min_length=1)
 
-    def __init__(self, max_pages: Optional[int]) -> None:
+    def __init__(self, max_pages: int | None) -> None:
         super().__init__()
         if max_pages is not None:
             as_string = str(max_pages)
@@ -39,7 +39,7 @@ class RoboPages(discord.ui.View):
         self.source: menus.PageSource = source
         self.check_embeds: bool = check_embeds
         self.ctx: Context = ctx
-        self.message: Optional[discord.Message] = None
+        self.message: discord.Message | None = None
         self.current_page: int = 0
         self.compact: bool = compact
         self.clear_items()
@@ -140,7 +140,7 @@ class RoboPages(discord.ui.View):
         else:
             await interaction.response.send_message("An unknown error occurred, sorry", ephemeral=True)
 
-    async def start(self, *, content: Optional[str] = None, ephemeral: bool = False) -> None:
+    async def start(self, *, content: str | None = None, ephemeral: bool = False) -> None:
         if self.check_embeds and not self.ctx.channel.permissions_for(self.ctx.me).embed_links:  # type: ignore
             await self.ctx.send("Bot does not have embed links permission in this channel.", ephemeral=True)
             return

@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from functools import wraps
-from typing import Literal, NamedTuple, Optional
+from typing import Literal, NamedTuple
 
 import discord
 from core import Cog, Context, Parrot
@@ -255,8 +255,8 @@ class Board:
 
 
 class Game(menus.Menu):
-    name: Optional[str] = "Foggle"
-    footer: Optional[str] = None
+    name: str | None = "Foggle"
+    footer: str | None = None
 
     def __init__(self, *, size: int = ORIGINAL, base: int = 10, **kwargs) -> None:
         self.board = Board(size=size, base=base)

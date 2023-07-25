@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Literal
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -17,18 +17,17 @@ class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimit
 
 
 class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    c2coff: Optional[int] = 0
-    exact_terms: Optional[str] = None
-    exclude_terms: Optional[str] = None
-    file_type: Optional[str] = None
-    filter: Optional[str] = None
-    gl: Optional[str] = None
-    high_range: Optional[str] = None
-    hl: Optional[str] = None
-    hq: Optional[str] = None
-    img_color_type: Optional[Literal["color", "gray", "mono", "trans"]] = None
-    img_dominant_color: Optional[
-        Literal[
+    c2coff: int | None = 0
+    exact_terms: str | None = None
+    exclude_terms: str | None = None
+    file_type: str | None = None
+    filter: str | None = None
+    gl: str | None = None
+    high_range: str | None = None
+    hl: str | None = None
+    hq: str | None = None
+    img_color_type: Literal["color", "gray", "mono", "trans"] | None = None
+    img_dominant_color: Literal[
             "black",
             "blue",
             "brown",
@@ -41,14 +40,12 @@ class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", del
             "teal",
             "white",
             "yellow",
-        ]
-    ] = None
-    img_size: Optional[Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"]] = None
-    img_type: Optional[Literal["face", "photo", "clipart", "lineart", "stock", "animated"]] = None
-    link_site: Optional[str] = None
-    low_range: Optional[str] = None
-    lr: Optional[
-        Literal[
+        ] | None = None
+    img_size: Literal["huge", "icon", "large", "medium", "small", "xlarge", "xxlarge"] | None = None
+    img_type: Literal["face", "photo", "clipart", "lineart", "stock", "animated"] | None = None
+    link_site: str | None = None
+    low_range: str | None = None
+    lr: Literal[
             "lang_ar",
             "lang_bg",
             "lang_cs",
@@ -84,24 +81,21 @@ class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", del
             "lang_tr",
             "lang_zh-CN",
             "lang_zh-TW",
-        ]
-    ] = None
-    num: Optional[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]] = None
-    or_terms: Optional[str] = None
+        ] | None = None
+    num: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | None = None
+    or_terms: str | None = None
     q: str
-    related_site: Optional[str] = None
-    rights: Optional[
-        Literal[
+    related_site: str | None = None
+    rights: Literal[
             "cc_publicdomain",
             "cc_attribute",
             "cc_sharealike",
             "cc_noncommercial",
             "cc_nonderived",
-        ]
-    ] = None
-    safe: Optional[Literal["active", "off"]] = None
-    search_type: Optional[Literal["image"]] = None
-    site_search: Optional[str] = None
-    site_search_filter: Optional[Literal["i", "e"]] = None
-    sort: Optional[str] = None
-    start: Optional[int] = None
+        ] | None = None
+    safe: Literal["active", "off"] | None = None
+    search_type: Literal["image"] | None = None
+    site_search: str | None = None
+    site_search_filter: Literal["i", "e"] | None = None
+    sort: str | None = None
+    start: int | None = None

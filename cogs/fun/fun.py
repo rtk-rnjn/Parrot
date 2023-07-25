@@ -23,7 +23,7 @@ from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
 from random import choice, randint
-from typing import Annotated, Any, Optional, TypeVar, Union, cast
+from typing import Annotated, Any, TypeVar, cast
 
 import aiohttp
 import rapidfuzz
@@ -119,9 +119,9 @@ class Fun(Cog):
         self.player_scores = defaultdict(int)  # A variable to store all player's scores for a bot session.
         self.game_player_scores: dict[
             int,
-            dict[Union[discord.Member, discord.User], int],
+            dict[discord.Member | discord.User, int],
         ] = {}  # A variable to store temporary game player's scores.
-        self.latest_comic_info: dict[str, Union[int, str]] = {}
+        self.latest_comic_info: dict[str, int | str] = {}
         self.categories = {
             "general": "Test your general knowledge.",
             "retro": "Questions related to retro gaming.",
@@ -182,7 +182,7 @@ class Fun(Cog):
 
         colour_embed.set_thumbnail(url="attachment://colour.png")
 
-        msg: Optional[discord.Message] = await ctx.send(file=thumbnail_file, embed=colour_embed)
+        msg: discord.Message | None = await ctx.send(file=thumbnail_file, embed=colour_embed)
 
         assert msg is not None
 
@@ -248,7 +248,7 @@ class Fun(Cog):
         hex_ = "".join([hex(val)[2:].zfill(2) for val in rgb])
         return f"#{hex_}".upper()
 
-    def _rgb_to_name(self, rgb: tuple[int, int, int]) -> Optional[str]:
+    def _rgb_to_name(self, rgb: tuple[int, int, int]) -> str | None:
         """Convert RGB values to a fuzzy matched name."""
         input_hex_colour = self._rgb_to_hex(rgb)
         try:
@@ -262,7 +262,7 @@ class Fun(Cog):
             colour_name = None
         return colour_name
 
-    def match_colour_name(self, ctx: Context, input_colour_name: str) -> Optional[str]:
+    def match_colour_name(self, ctx: Context, input_colour_name: str) -> str | None:
         """Convert a colour name to HEX code."""
         try:
             match, certainty, _ = rapidfuzz.process.extractOne(
@@ -300,7 +300,7 @@ class Fun(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{SMILING FACE WITH OPEN MOUTH}")
 
-    async def _get_discord_message(self, ctx: Context, text: str) -> Union[discord.Message, str, None]:
+    async def _get_discord_message(self, ctx: Context, text: str) -> discord.Message | str | None:
         """Attempts to convert a given `text` to a discord Message object and return it.
         Conversion will succeed if given a discord Message ID or link.
         Returns `text` if the conversion fails.
@@ -312,7 +312,7 @@ class Fun(Cog):
             return msg if msg is not None else text  # type: ignore
         return msg
 
-    async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, Optional[discord.Embed]]:
+    async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, discord.Embed | None]:
         embed = None
 
         assert isinstance(ctx.author, discord.Member)
@@ -428,7 +428,7 @@ class Fun(Cog):
             return json.load(f)
 
     @commands.command(name="xkcd")
-    async def fetch_xkcd_comics(self, ctx: Context, comic: Optional[str]) -> None:
+    async def fetch_xkcd_comics(self, ctx: Context, comic: str | None) -> None:
         """Getting an xkcd comic's information along with the image.
         To get a random comic, don't type any number as an argument. To get the latest, type 'latest'.
         """
@@ -526,7 +526,7 @@ class Fun(Cog):
         else:
             return
 
-    async def __issue_trivia_token(self, ctx: Context) -> Optional[str]:
+    async def __issue_trivia_token(self, ctx: Context) -> str | None:
         request_token = await self.bot.http_session.get("https://opentdb.com/api_token.php?command=request")
         if request_token.status != 200:
             await ctx.send(f"{ctx.author.mention} Could not get a token from the API. Please try again later")
@@ -732,8 +732,8 @@ class Fun(Cog):
     async def quiz_game(
         self,
         ctx: Context,
-        category: Optional[str] = None,
-        questions: Optional[int] = None,
+        category: str | None = None,
+        questions: int | None = None,
     ) -> None:
         """Start a quiz!
         Questions for the quiz can be selected from the following categories:
@@ -1240,7 +1240,7 @@ class Fun(Cog):
             await ctx.error(f"{ctx.author.mention} you don't have permission to create role")
 
     @commands.group(aliases=("color",), invoke_without_command=True)
-    async def colour(self, ctx: Context, *, colour_input: Optional[str] = None) -> None:
+    async def colour(self, ctx: Context, *, colour_input: str | None = None) -> None:
         """Create an embed that displays colour information.
 
         If no subcommand is called, a randomly selected colour will be shown.
@@ -1445,7 +1445,7 @@ class Fun(Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def meme(self, ctx: Context, count: Optional[int] = 1, *, subreddit: str = "memes"):
+    async def meme(self, ctx: Context, count: int | None = 1, *, subreddit: str = "memes"):
         """Random meme generator."""
         link = f"https://meme-api.herokuapp.com/gimme/{subreddit}/{count}"
 
@@ -1838,7 +1838,7 @@ class Fun(Cog):
 > {_1} {_2} {_3}""",
         )
 
-    async def _fetch_user(self, user_id: int) -> Optional[discord.User]:
+    async def _fetch_user(self, user_id: int) -> discord.User | None:
         """Fetches a user and handles errors.
         This helper function is required as the member cache doesn't always have the most up to date
         profile picture. This can lead to errors if the image is deleted from the Discord CDN.
@@ -1883,7 +1883,7 @@ class Fun(Cog):
     @commands.command(
         name="reverseimg",
     )
-    async def reverse(self, ctx: Context, *, text: Optional[str]):
+    async def reverse(self, ctx: Context, *, text: str | None):
         """Reverses the sent text.
         If no text is provided, the user's profile picture will be reversed.
         """
@@ -1918,7 +1918,7 @@ class Fun(Cog):
     @commands.command(
         aliases=("easterify",),
     )
-    async def avatareasterify(self, ctx: Context, *colours: Union[discord.Colour, str]):
+    async def avatareasterify(self, ctx: Context, *colours: discord.Colour | str):
         """This "Easterifies" the user's avatar.
         Given colours will produce a personalised egg in the corner, similar to the egg_decorate command.
         If colours are not given, a nice little chocolate bunny will sit in the corner.
@@ -1926,7 +1926,7 @@ class Fun(Cog):
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
         """
 
-        async def send(*args, **kwargs) -> Optional[str]:
+        async def send(*args, **kwargs) -> str | None:
             """This replaces the original ctx.send.
             When invoking the egg decorating command, the egg itself doesn't print to to the channel.
             Returns the message content so that if any errors occur, the error message can be output.
@@ -2152,7 +2152,7 @@ class Fun(Cog):
     @commands.command(name="cathi")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def fun_animation_cathi(self, ctx: Context, text: Optional[str] = None):
+    async def fun_animation_cathi(self, ctx: Context, text: str | None = None):
         """Make a cat say something."""
         # please dont DM to ask what is this, I forget
         m: discord.Message = await ctx.reply("starting")

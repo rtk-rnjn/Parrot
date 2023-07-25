@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from typing import Annotated, Any, Literal, Optional, Union
+from typing import Annotated, Any, Literal
 
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate
@@ -131,7 +131,7 @@ class Configuration(Cog):
         ctx: Context,
     ):
         """To setup Hub like channel."""
-        overwrites: dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+        overwrites: dict[discord.Role | discord.Member, discord.PermissionOverwrite] = {
             ctx.guild.default_role: discord.PermissionOverwrite(connect=True, read_messages=True),
             ctx.guild.me: discord.PermissionOverwrite(
                 connect=True,
@@ -166,19 +166,19 @@ class Configuration(Cog):
         if ctx.invoked_subcommand:
             return
         try:
-            starboard_data: dict[str, Union[str, int, list[int], bool, None]] = self.bot.guild_configurations_cache[
+            starboard_data: dict[str, str | int | list[int] | bool | None] = self.bot.guild_configurations_cache[
                 ctx.guild.id
             ]["starboard_config"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
 
-        channel: Optional[discord.TextChannel] = ctx.guild.get_channel(starboard_data.get("channel", 0))
-        limit: Optional[int] = starboard_data.get("limit")
-        is_locked: Optional[bool] = starboard_data.get("is_locked")
+        channel: discord.TextChannel | None = ctx.guild.get_channel(starboard_data.get("channel", 0))
+        limit: int | None = starboard_data.get("limit")
+        is_locked: bool | None = starboard_data.get("is_locked")
 
         ignore_channel = ", ".join([f"{ctx.guild.get_channel(c)} ({c})" for c in starboard_data.get("ignore_channel", [])])
-        max_duration: Optional[str] = starboard_data.get("max_duration")
-        can_self_star: Optional[bool] = starboard_data.get("can_self_star")
+        max_duration: str | None = starboard_data.get("max_duration")
+        can_self_star: bool | None = starboard_data.get("can_self_star")
 
         return await ctx.reply(
             f"Configuration of this server [starboard]\n\n"
@@ -192,7 +192,7 @@ class Configuration(Cog):
 
     @starboard.command(name="channel")
     @commands.has_permissions(administrator=True)
-    async def starboard_channel(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None):
+    async def starboard_channel(self, ctx: Context, *, channel: discord.TextChannel | None = None):
         """To setup the channel."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -274,7 +274,7 @@ class Configuration(Cog):
     @config.command()
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def suggestchannel(self, ctx: Context, *, channel: Optional[discord.TextChannel] = None):
+    async def suggestchannel(self, ctx: Context, *, channel: discord.TextChannel | None = None):
         """To configure the suggestion channel. If no channel is provided it will remove the channel."""
         if channel:
             await self.bot.guild_configurations.update_one(
@@ -332,12 +332,12 @@ class Configuration(Cog):
         ctx: Context,
         setting: str = None,
         *,
-        role: Optional[discord.Role] = None,
+        role: discord.Role | None = None,
     ):
         """This command will connect your server with other servers which then connected to #global-chat must try this once."""
         collection: Collection = self.bot.guild_configurations
         if not setting:
-            overwrites: dict[Union[discord.Role, discord.Member], discord.PermissionOverwrite] = {
+            overwrites: dict[discord.Role | discord.Member, discord.PermissionOverwrite] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
                     read_messages=True,
                     send_messages=True,
@@ -611,7 +611,7 @@ class Configuration(Cog):
     @telephone.command(name="block")
     @commands.has_permissions(administrator=True)
     @Context.with_type
-    async def tel_config_block(self, ctx: Context, *, server: Union[discord.Guild, int]):
+    async def tel_config_block(self, ctx: Context, *, server: discord.Guild | int):
         """There are people who are really anonying, you can block them."""
         if server is ctx.guild:
             return await ctx.reply(f"{ctx.author.mention} can't block your own server")
@@ -793,7 +793,7 @@ class Configuration(Cog):
         ctx: Context,
         command: Annotated[str, commands.clean_content],
         *,
-        target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
+        target: discord.TextChannel | discord.VoiceChannel | discord.Thread | discord.Role | None = None,
     ):
         """To enable the command."""
         cmd = self.bot.get_command(command)
@@ -815,7 +815,7 @@ class Configuration(Cog):
         ctx: Context,
         command: Annotated[str, commands.clean_content],
         *,
-        target: Optional[Union[discord.TextChannel, discord.VoiceChannel, discord.Thread, discord.Role]] = None,
+        target: discord.TextChannel | discord.VoiceChannel | discord.Thread | discord.Role | None = None,
     ):
         """To disable the command."""
         cmd = self.bot.get_command(command)
@@ -992,7 +992,7 @@ class Configuration(Cog):
             r"What should be the format of the channel? Example: `Total Channels {}`, `{} Roles in total`. Only the `{}` will be replaced with the counter value.",
         ]
 
-        async def wait_for_response() -> Optional[str]:
+        async def wait_for_response() -> str | None:
             def check(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 
@@ -1096,7 +1096,7 @@ class Configuration(Cog):
         if counter.lower() not in AVAILABLE:
             return await ctx.error(f"{ctx.author.mention} invalid counter! Available counter: `{'`, `'.join(AVAILABLE)}`")
 
-        async def wait_for_response() -> Optional[str]:
+        async def wait_for_response() -> str | None:
             def check(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 

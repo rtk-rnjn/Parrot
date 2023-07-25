@@ -9,7 +9,7 @@ import threading
 import time
 from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any, Optional, Union
+from typing import Any
 
 import aiofiles
 import bandit
@@ -280,19 +280,11 @@ async def lint(cmd: str, filename: str) -> dict[str, str]:
 
 class LintCode:
     source: str
-    language: Optional[str]
+    language: str | None
 
     def __init__(
         self,
-        flag: Union[
-            Flake8Converter,
-            MypyConverter,
-            PyLintConverter,
-            BanditConverter,
-            PyrightConverter,
-            RuffConverter,
-            str,
-        ],
+        flag: Flake8Converter | MypyConverter | PyLintConverter | BanditConverter | PyrightConverter | RuffConverter | str,
     ) -> None:
         self.codeblock = flag if isinstance(flag, str) else flag.code
         self.flag = flag

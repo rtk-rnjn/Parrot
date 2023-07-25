@@ -43,7 +43,7 @@ class Giveaways(Cog):
         duration: ShortTime,
         winners: Annotated[int, Optional[int]] = 1,
         *,
-        prize: Optional[str] = None,
+        prize: str | None = None,
     ):
         """To create giveaway in quick format."""
         if not prize:

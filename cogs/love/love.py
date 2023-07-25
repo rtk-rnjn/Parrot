@@ -10,7 +10,6 @@ from collections.abc import Coroutine
 from datetime import datetime
 from pathlib import Path
 from random import choice
-from typing import Optional, Union
 
 from discord.ext.commands import clean_content
 
@@ -127,7 +126,7 @@ class Love(Cog):
             url=self.zodiac_fact[zodiac]["url"],
         )
 
-    def zodiac_date_verifier(self, query_date: datetime) -> Optional[str]:
+    def zodiac_date_verifier(self, query_date: datetime) -> str | None:
         """Returns zodiac sign by checking date."""
         return next(
             (
@@ -177,7 +176,7 @@ class Love(Cog):
 
     @in_month(Month.FEBRUARY)
     @zodiac.command(name="date")
-    async def date_and_month(self, ctx: Context, date: int, month: Union[int, str]) -> None:
+    async def date_and_month(self, ctx: Context, date: int, month: int | str) -> None:
         """Provides information about zodiac sign by taking month and date as input."""
         if isinstance(month, str):
             month = month.capitalize()
@@ -295,7 +294,7 @@ class Love(Cog):
     @in_month(Month.FEBRUARY)
     @commands.command(aliases=("love_calculator", "love_calc"))
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
-    async def love(self, ctx: Context, who: Member, whom: Optional[Member] = None) -> None:
+    async def love(self, ctx: Context, who: Member, whom: Member | None = None) -> None:
         """Tells you how much the two love each other.
         This command requires at least one member as input, if two are given love will be calculated between
         those two users, if only one is given, the second member is asusmed to be the invoker.

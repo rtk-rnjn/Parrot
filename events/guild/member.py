@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import Optional, Union
 
 from pymongo import UpdateOne
 
@@ -20,7 +19,7 @@ class Member(Cog, command_attrs={"hidden": True}):
     async def on_member_join(self, member: discord.Member):
         try:
             role = int(self.bot.guild_configurations_cache[member.guild.id]["mute_role"] or 0)
-            role: Optional[discord.Role] = member.guild.get_role(role)
+            role: discord.Role | None = member.guild.get_role(role)
         except KeyError:
             role = discord.utils.get(member.guild.roles, name="Muted")
 
@@ -83,7 +82,7 @@ class Member(Cog, command_attrs={"hidden": True}):
 
     async def __on_voice_channel_join(
         self,
-        channel: Union[discord.VoiceChannel, discord.StageChannel],
+        channel: discord.VoiceChannel | discord.StageChannel,
         member: discord.Member,
     ):
         try:
@@ -123,7 +122,7 @@ class Member(Cog, command_attrs={"hidden": True}):
 
     async def __on_voice_channel_remove(
         self,
-        channel: Union[discord.VoiceChannel, discord.StageChannel],
+        channel: discord.VoiceChannel | discord.StageChannel,
         member: discord.Member,
     ):
         if data := await self.bot.guild_configurations.find_one(

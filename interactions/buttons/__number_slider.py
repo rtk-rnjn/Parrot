@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 import discord
 from core import Context
@@ -14,14 +14,14 @@ if TYPE_CHECKING:
     A = TypeVar("A", bool)
     B = TypeVar("B", bool)
 
-    Board: TypeAlias = list[list[Optional[int]]]
+    Board: TypeAlias = list[list[int | None]]
 
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, chunk, double_wait, wait_for_delete
 
 
 class SlideButton(discord.ui.Button["SlideView"]):
-    def __init__(self, label: Union[int, str], *, style: discord.ButtonStyle, row: int) -> None:
+    def __init__(self, label: int | str, *, style: discord.ButtonStyle, row: int) -> None:
         super().__init__(
             label=str(label),
             style=style,
@@ -71,9 +71,9 @@ class NumberSlider:
             msg = "Count must be an integer between 1 and 5"
             raise ValueError(msg)
 
-        self.all_numbers: list[Optional[int]] = list(range(1, count**2))
+        self.all_numbers: list[int | None] = list(range(1, count**2))
 
-        self.player: Optional[Union[discord.Member, discord.User]] = None
+        self.player: discord.Member | discord.User | None = None
 
         self.moves: int = 0
         self.count = count
@@ -83,10 +83,10 @@ class NumberSlider:
         self.wrong_style: discord.ButtonStyle = discord.ButtonStyle.gray
         self.correct_style: discord.ButtonStyle = discord.ButtonStyle.green
 
-    def get_item(self, obj: Optional[int] = None) -> tuple[int, int]:
+    def get_item(self, obj: int | None = None) -> tuple[int, int]:
         return next((x, y) for x, row in enumerate(self.numbers) for y, item in enumerate(row) if item == obj)
 
-    def beside_blank(self) -> list[Optional[int]]:
+    def beside_blank(self) -> list[int | None]:
         nx, ny = self.get_item()
 
         beside_item = [
@@ -105,8 +105,8 @@ class NumberSlider:
         wrong_style: discord.ButtonStyle = discord.ButtonStyle.gray,
         correct_style: discord.ButtonStyle = discord.ButtonStyle.green,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        timeout: Optional[float] = None,
-    ) -> Optional[discord.Message]:
+        timeout: float | None = None,
+    ) -> discord.Message | None:
         self.player = ctx.author
         self.wrong_style = wrong_style
         self.correct_style = correct_style
@@ -134,7 +134,7 @@ class NumberSlider:
 
 
 class SlideView(BaseView):
-    def __init__(self, game: NumberSlider, *, timeout: Optional[float]) -> None:
+    def __init__(self, game: NumberSlider, *, timeout: float | None) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game

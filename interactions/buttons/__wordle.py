@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -19,7 +19,7 @@ from utilities.converters import ToAsync
 
 from .utils import DEFAULT_COLOR, BaseView
 
-DiscordColor: TypeAlias = Union[discord.Color, int]
+DiscordColor: TypeAlias = discord.Color | int
 
 
 BORDER = 40
@@ -40,7 +40,7 @@ with open(r"extra/5_words.txt", encoding="utf-8", errors="ignore") as f:
 
 class Wordle:
     def __init__(self, *, text_size: int = 55) -> None:
-        self.embed_color: Optional[DiscordColor] = None
+        self.embed_color: DiscordColor | None = None
 
         self._valid_words = VALID_WORDS
         self._text_size = text_size
@@ -99,7 +99,7 @@ class Wordle:
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
         **kwargs: Any,
-    ) -> Optional[discord.Message]:
+    ) -> discord.Message | None:
         self.embed_color = embed_color
 
         buf = await self.render_image()
@@ -240,7 +240,7 @@ class BetaWordle(Wordle):
         ctx: Context[Parrot],
         *,
         embed_color: DiscordColor = DEFAULT_COLOR,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> discord.Message:
         """Starts the wordle(buttons) game.
 

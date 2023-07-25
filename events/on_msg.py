@@ -8,7 +8,7 @@ import re
 import textwrap
 import urllib.parse
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 from re import Pattern
 from collections.abc import Callable, Coroutine
 from urllib.parse import quote_plus
@@ -83,9 +83,9 @@ DISCORD_PY_ID = 336642139381301249
 
 
 class Delete(discord.ui.View):
-    message: Optional[discord.Message]
+    message: discord.Message | None
 
-    def __init__(self, user: Union[discord.Member, discord.User]) -> None:
+    def __init__(self, user: discord.Member | discord.User) -> None:
         super().__init__(timeout=30.0)
         self.user = user
         self.value = None
@@ -129,7 +129,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
 
         self.__scam_link_cache: dict[str, bool] = {}
 
-    async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Union[str, dict[str, Any], None]:
+    async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> str | dict[str, Any] | None:
         """Makes http requests using aiohttp."""
         async with self.bot.http_session.get(url, raise_for_status=True, **kwargs) as response:
             if response_format == "text":
@@ -154,8 +154,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         self,
         repo: str,
         path: str,
-        start_line: Optional[Union[str, int]],
-        end_line: Optional[Union[str, int]],
+        start_line: str | int | None,
+        end_line: str | int | None,
     ) -> str:
         """Fetches a snippet from a GitHub repo."""
         # Search the GitHub API for the specified branch
@@ -180,8 +180,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         gist_id: str,
         revision: str,
         file_path: str,
-        start_line: Optional[Union[str, int]],
-        end_line: Optional[Union[str, int]],
+        start_line: str | int | None,
+        end_line: str | int | None,
     ) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json = await self._fetch_response(
@@ -207,8 +207,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         self,
         repo: str,
         path: str,
-        start_line: Optional[Union[str, int]],
-        end_line: Optional[Union[str, int]],
+        start_line: str | int | None,
+        end_line: str | int | None,
     ) -> str:
         """Fetches a snippet from a GitLab repo."""
         enc_repo = quote_plus(repo)
@@ -237,10 +237,10 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
 
     def _snippet_to_codeblock(
         self,
-        file_contents: Optional[Any],
+        file_contents: Any | None,
         file_path: str,
-        start_line: Union[str, int, None],
-        end_line: Union[str, int, None],
+        start_line: str | int | None,
+        end_line: str | int | None,
     ) -> str:
         """Given the entire file contents and target lines, creates a code block.
         First, we split the file contents into a list of lines and then keep and join only the required
@@ -314,7 +314,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
 
         return self.bot.guild_configurations_cache[message.guild.id]["opts"]["equation_enabled"]
 
-    async def query_ddg(self, query: str) -> Optional[str]:
+    async def query_ddg(self, query: str) -> str | None:
         link = f"https://api.duckduckgo.com/?q={query}&format=json&pretty=1"
         # saying `ok google`, and querying from ddg LOL.
         res = await self.bot.http_session.get(link)
@@ -347,7 +347,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             return False
         return all(bad_word.lower() not in msg.replace(",", "").split(" ") for bad_word in bad_dict)
 
-    def is_banned(self, member: Union[discord.User, discord.Member]) -> Optional[bool]:
+    def is_banned(self, member: discord.User | discord.Member) -> bool | None:
         # return True if member is banned else False
         if not hasattr(member, "guild"):
             return
@@ -473,7 +473,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if self.is_banned(message.author):
             return
 
-        data: Optional[DocumentType] = await self.bot.guild_configurations.find_one(
+        data: DocumentType | None = await self.bot.guild_configurations.find_one(
             {
                 "_id": message.guild.id,
                 "global_chat.channel_id": message.channel.id,
@@ -573,7 +573,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if not message.guild or message.author.bot:
             return
 
-        bucket: Optional[commands.Cooldown] = self.message_cooldown.get_bucket(message)
+        bucket: commands.Cooldown | None = self.message_cooldown.get_bucket(message)
         if bucket is None:
             return
 
@@ -641,7 +641,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 )
                 await message.reply("GG! Level up!", file=file)
 
-    async def _scam_detection(self, message: discord.Message) -> Optional[bool]:
+    async def _scam_detection(self, message: discord.Message) -> bool | None:
         if message.guild is None:
             return False
 
@@ -708,7 +708,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
     async def __add_xp(
         self,
         *,
-        member: Union[discord.Member, discord.User],
+        member: discord.Member | discord.User,
         xp: int,
         msg: discord.Message,
     ):
@@ -743,7 +743,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         self,
         member: discord.Member,
         role: discord.abc.Snowflake,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ):
         with suppress(discord.Forbidden, discord.HTTPException):
             await member.add_roles(role, reason=reason)
@@ -838,7 +838,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 )
         self.bot.afk_users = set(await self.bot.afk_collection.distinct("messageAuthor"))
 
-    async def _what_is_this(self, message: Union[discord.Message, str], *, channel: discord.TextChannel) -> None:
+    async def _what_is_this(self, message: discord.Message | str, *, channel: discord.TextChannel) -> None:
         try:
             from cogs.fun.fun import replace_many
         except ImportError:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import urllib.parse
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -13,7 +13,7 @@ BASE_URL = "https://youtube.com"
 class YoutubeSearch:
     search_terms: str
 
-    def __init__(self, max_results: Optional[int] = 5) -> None:
+    def __init__(self, max_results: int | None = 5) -> None:
         self.max_results = max_results
 
         self._cache: dict[str, str] = {}

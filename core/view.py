@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import traceback
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from discord.enums import ButtonStyle
 from discord.interactions import Interaction
@@ -97,7 +97,7 @@ class ParrotButton(discord.ui.Button["ParrotView"]):
         disabled: bool = False,
         custom_id: str = None,
         url: str = None,
-        emoji: Union[str, discord.Emoji, discord.PartialEmoji] = None,
+        emoji: str | discord.Emoji | discord.PartialEmoji = None,
         row: int = None,
         **kwargs,
     ) -> None:

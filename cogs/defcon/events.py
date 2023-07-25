@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional, Union
 
 import discord
 from core import Cog, Parrot
@@ -13,7 +12,7 @@ class DefconListeners(Cog):
         self.bot = bot
         self.settings = bot.guild_configurations_cache
 
-    async def defcon_broadcast(self, message: Union[str, discord.Embed], *, guild: discord.Guild, level: int) -> None:
+    async def defcon_broadcast(self, message: str | discord.Embed, *, guild: discord.Guild, level: int) -> None:
         if self.has_defcon_in(guild) is False:
             await self.bot.guild_configurations.update_one(
                 {"_id": guild.id},
@@ -95,8 +94,8 @@ class DefconListeners(Cog):
 
     def has_defcon_in(
         self,
-        guild: Optional[Union[discord.Guild, discord.Object, discord.PartialInviteGuild]],
-    ) -> Union[bool, int]:
+        guild: discord.Guild | discord.Object | discord.PartialInviteGuild | None,
+    ) -> bool | int:
         if guild is None:
             return False
 

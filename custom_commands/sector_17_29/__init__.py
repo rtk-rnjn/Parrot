@@ -10,7 +10,7 @@ import unicodedata
 from contextlib import suppress
 from datetime import datetime
 from time import time
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import discord
 from core import Cog
@@ -63,7 +63,7 @@ with open("extra/mr_robot.txt", encoding="utf-8", errors="ignore") as f:
 class Sector1729(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self._cache: dict[int, Union[int, float]] = {}
+        self._cache: dict[int, int | float] = {}
         self.vote_reseter.start()
         self.ON_TESTING = False
 
@@ -108,14 +108,14 @@ class Sector1729(Cog):
         ):
             return
         user_id: int = payload.user_id
-        user: Optional[discord.User] = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
+        user: discord.User | None = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
-        channel: Optional[discord.TextChannel] = self.bot.get_channel(payload.channel_id)  # type: ignore
+        channel: discord.TextChannel | None = self.bot.get_channel(payload.channel_id)  # type: ignore
 
         if channel is None:
             return
 
-        msg: Optional[discord.Message] = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
+        msg: discord.Message | None = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
 
         async def __remove_reaction(msg: discord.Message) -> None:
             for reaction in msg.reactions:
@@ -163,7 +163,7 @@ class Sector1729(Cog):
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):
         assert self.bot.server is not None
-        member: Optional[Union[discord.Member, discord.User]] = await self.bot.get_or_fetch_member(
+        member: discord.Member | discord.User | None = await self.bot.get_or_fetch_member(
             self.bot.server,
             data.user,
         )
@@ -304,8 +304,8 @@ class Sector1729(Cog):
         if message.guild is not None and message.guild.id != SUPPORT_SERVER_ID:
             return
 
-        created: Optional[datetime] = getattr(message.author, "created_at", None)
-        joined: Optional[datetime] = getattr(message.author, "joined_at", None)
+        created: datetime | None = getattr(message.author, "created_at", None)
+        joined: datetime | None = getattr(message.author, "joined_at", None)
 
         if not (joined and created):
             return
@@ -337,7 +337,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="color")
     @in_support_server()
-    async def sector_17_29_color(self, ctx: Context, *, color: Optional[str] = None):
+    async def sector_17_29_color(self, ctx: Context, *, color: str | None = None):
         """Assign yourself color role."""
         if not color:
             return
@@ -357,7 +357,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="uncolor")
     @in_support_server()
-    async def sector_17_29_uncolor(self, ctx: Context, *, color: Optional[str] = None):
+    async def sector_17_29_uncolor(self, ctx: Context, *, color: str | None = None):
         """Unassign yourself color role."""
         if not color:
             return
@@ -378,7 +378,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="role")
     @in_support_server()
-    async def sector_17_29_role(self, ctx: Context, *, role: Optional[discord.Role]):
+    async def sector_17_29_role(self, ctx: Context, *, role: discord.Role | None):
         """Assign yourself role."""
         if not role:
             await ctx.error(f"{ctx.author.mention} that role do not exists")
@@ -399,7 +399,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="unrole")
     @in_support_server()
-    async def sector_17_29_unrole(self, ctx: Context, *, role: Optional[discord.Role]):
+    async def sector_17_29_unrole(self, ctx: Context, *, role: discord.Role | None):
         """Unassign yourself role."""
         if not role:
             await ctx.error(f"{ctx.author.mention} that role do not exists")
@@ -461,7 +461,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="lock")
     @commands.has_permissions(manage_channels=True)
-    async def lock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
+    async def lock_sector_17_29(self, ctx: Context, *, reason: str | None = None):
         """Lock updating general chat and railway role. And all messagable channels."""
         self._is_locked = True
 
@@ -486,7 +486,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="unlock", aliases=["release"])
     @commands.has_permissions(manage_channels=True)
-    async def unlock_sector_17_29(self, ctx: Context, *, reason: Optional[str] = None):
+    async def unlock_sector_17_29(self, ctx: Context, *, reason: str | None = None):
         """Unlock updating general chat and railway role. And unlock all messagable channels."""
         self._is_locked = False
 

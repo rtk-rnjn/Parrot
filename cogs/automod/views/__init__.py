@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import discord
 from core import Context, ParrotModal, ParrotSelect, ParrotView
@@ -18,6 +19,17 @@ with open(CONDITION_PATH) as f:
 
 with open(TRIGGER_PATH) as f:
     TRIGGERS: dict[str, list[dict[str, str]]] = json.load(f)
+
+
+def parse_dict(data: dict[str, Any]) -> str:
+    st = ""
+    for i, (k, v) in enumerate(data.items()):
+        if i == 0:
+            st += f"`{k}`: `{v}`"
+        else:
+            st += f"`   {k}`: `{v}`"
+
+    return st
 
 
 class Automod(ParrotView):
@@ -42,17 +54,17 @@ class Automod(ParrotView):
             )
             .add_field(
                 name="Triggers",
-                value="\n".join([f"{i + 1}. {t}" for i, t in enumerate(self.triggers)]) or "\u200b",
+                value="\n".join([f"`{i + 1}.` {parse_dict(t)}" for i, t in enumerate(self.triggers)]) or "\u200b",
                 inline=False,
             )
             .add_field(
                 name="Conditions",
-                value="\n".join([f"{i + 1}. {c}" for i, c in enumerate(self.conditions)]) or "\u200b",
+                value="\n".join([f"`{i + 1}.` {parse_dict(c)}" for i, c in enumerate(self.conditions)]) or "\u200b",
                 inline=False,
             )
             .add_field(
                 name="Actions",
-                value="\n".join([f"{i + 1}. {a}" for i, a in enumerate(self.actions)]) or "\u200b",
+                value="\n".join([f"`{i + 1}.` {parse_dict(a)}" for i, a in enumerate(self.actions)]) or "\u200b",
                 inline=False,
             )
         )
@@ -110,7 +122,8 @@ class _Parser:
         convert_bool(value)
 
     def parse_list(self, value: str):
-        return value.split(",")
+        data = value.replace("<@", "").replace("<#", "").replace(">", "").replace(" ", ",").strip().split(",")
+        return [i.strip() for i in data if i.strip()]
 
 
 titles = {

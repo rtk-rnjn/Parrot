@@ -10,9 +10,6 @@
             "threshold": "int"
         },
         {
-            "type": "any_link"
-        },
-        {
             "type": "voilation",
             "voilation_name": "str",
             "threshold": "int",
@@ -25,9 +22,6 @@
         {
             "type": "word_whitelist",
             "words": "List[str]"
-        },
-        {
-            "type": "server_invites"
         },
         {
             "type": "scam_links"
@@ -57,15 +51,7 @@
             "regex": "str"
         },
         {
-            "type": "message_not_match_regex",
-            "regex": "str"
-        },
-        {
             "type": "nickname_match_regex",
-            "regex": "str"
-        },
-        {
-            "type": "nickname_not_match_regex",
             "regex": "str"
         },
         {
@@ -88,10 +74,6 @@
         },
         {
             "type": "join_username_match_regex",
-            "regex": "str"
-        },
-        {
-            "type": "join_username_not_match_regex",
             "regex": "str"
         },
         {

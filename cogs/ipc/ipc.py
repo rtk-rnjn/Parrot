@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import os
 from typing import Any
+import async_timeout
 
 import wavelink
 from wavelink.ext import spotify
@@ -53,7 +54,7 @@ class IPCRoutes(Cog):
         return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
 
     @server.route()
-    async def commands(self, data: server.IpcServerResponse) -> list[dict[str, str]]:
+    async def commands(self, data: server.IpcServerResponse) -> list[dict[str, Any]]:
         if name := getattr(data, "name", None):
             cmds = [self.bot.get_command(name)]
         else:
@@ -69,7 +70,7 @@ class IPCRoutes(Cog):
                 "hidden": command.hidden,
                 "cog": command.cog_name,
             }
-            for command in cmds
+            for command in cmds if command is not None
         ]
 
     @server.route()
@@ -151,14 +152,14 @@ class IPCRoutes(Cog):
                         "created_at": thread.created_at.isoformat(),
                         "owner_id": thread.owner_id,
                         "parent_id": thread.parent_id,
-                        "slowmod_delay": thread.slowmod_delay,
+                        "slowmod_delay": thread.slowmode_delay,
                         "archived": thread.archived,
                         "locked": thread.locked,
                     }
                     for thread in guild.threads
                 ],
             }
-            for guild in guilds
+            for guild in guilds if guild is not None
         ]
 
     @server.route()
@@ -179,7 +180,7 @@ class IPCRoutes(Cog):
                 "created_at": user.created_at.isoformat(),
                 "system": user.system,
             }
-            for user in users
+            for user in users if user is not None
         ]
 
     @server.route()
@@ -242,7 +243,7 @@ class IPCRoutes(Cog):
         port = data.port
         password = data.password
         try:
-            async with asyncio.timeout(5):
+            async with async_timeout.timeout(5):
                 if hasattr(self.bot, "wavelink"):
                     node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="MAIN")
                     await self.bot.wavelink.connect(

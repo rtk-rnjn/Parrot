@@ -782,7 +782,7 @@ class Music(Cog):
         if members > 2:
             vote = 1
             required_vote = int(members / 2)
-            msg: discord.Message = await ctx.send(  # type: ignore
+            msg: discord.Message = await ctx.send(
                 f"{ctx.author.mention} wants to skip the current song need {required_vote} votes to skip",
             )
             emoji = "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}"

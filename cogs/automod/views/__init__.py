@@ -82,6 +82,18 @@ class Automod(ParrotView):
 
         await interaction.response.send_message("Saved", ephemeral=True)
 
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, row=3)
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await interaction.response.send_message("Cancelled", ephemeral=True)
+        self.disable_all()
+        self.stop()
+        await self.message.edit(view=self)
+
+    @discord.ui.button(label="Refrest", style=discord.ButtonStyle.blurple, row=3)
+    async def refresh(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await interaction.response.send_message("Refreshed", ephemeral=True)
+        await self.message.edit(embed=self.embed)
+
     async def start(self) -> None:
         self.message = await self.ctx.send(embed=self.embed, view=self)
 

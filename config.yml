@@ -37,13 +37,13 @@ all_extensions:
   - interactions.buttons.snakes
   - interactions.slash
   - jishaku
-  # - custom_commands
-  # - cogs.highlight
-  # - cogs.defcon
-  # - cogs.suggestion
-  # - cogs.tags
-  # - cogs.todo
-  # - cogs.giveaway
+  - custom_commands
+  - cogs.highlight
+  - cogs.defcon
+  - cogs.suggestion
+  - cogs.tags
+  - cogs.todo
+  - cogs.giveaway
   # - cogs.autoresponder
 
 dev_logo: >-

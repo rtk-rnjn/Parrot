@@ -315,8 +315,6 @@ class Fun(Cog):
     async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, discord.Embed | None]:
         embed = None
 
-        assert isinstance(ctx.author, discord.Member)
-
         msg = await self._get_discord_message(ctx, text)
         # Ensure the user has read permissions for the channel the message is in
         if isinstance(msg, discord.Message) and msg.channel.permissions_for(ctx.author).read_messages:

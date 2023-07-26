@@ -310,7 +310,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         if args.user:
             kwargs["user"] = args.user
 
-        kwargs["limit"] = args.limit or 100
+        kwargs["limit"] = max(args.limit or 0, 100)
         if args.action:
             kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
 
@@ -826,7 +826,7 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message):
             return m.author == ctx.me or m.content.startswith(prefixes)
 
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # type: ignore
         return Counter(m.author.display_name for m in deleted)
 
     async def _regular_user_cleanup_strategy(self, ctx: Context, search: int):
@@ -835,5 +835,5 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not m.mentions and not m.role_mentions
 
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # type: ignore
         return Counter(m.author.display_name for m in deleted)

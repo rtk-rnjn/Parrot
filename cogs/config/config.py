@@ -9,8 +9,8 @@ from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate
 
 import discord
-from cogs.config import method as mt_
-from cogs.ticket import method as mt
+from cogs.config import method as config_method
+from cogs.ticket import method as ticket_method
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import has_verified_role_ticket
@@ -698,7 +698,7 @@ class Configuration(Cog):
         """Automatic ticket making system. On reaction basis."""
         channel = channel or ctx.channel
         message = message or "React to \N{ENVELOPE} to create ticket"
-        await mt._auto(ctx, channel, message)
+        await ticket_method._auto(ctx, channel, message)
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
@@ -706,7 +706,7 @@ class Configuration(Cog):
     @Context.with_type
     async def setcategory(self, ctx: Context, *, channel: discord.CategoryChannel):
         """Where the new ticket will created? In category or on the TOP."""
-        await mt._setcategory(ctx, channel)
+        await ticket_method._setcategory(ctx, channel)
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
@@ -714,7 +714,7 @@ class Configuration(Cog):
     @Context.with_type
     async def setlog(self, ctx: Context, *, channel: discord.TextChannel):
         """Where the tickets action will logged? To config the ticket log."""
-        await mt._setlog(ctx, channel)
+        await ticket_method._setlog(ctx, channel)
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
@@ -725,7 +725,7 @@ class Configuration(Cog):
 
         Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
-        await mt._addaccess(ctx, role)
+        await ticket_method._addaccess(ctx, role)
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
@@ -736,7 +736,7 @@ class Configuration(Cog):
 
         Parrot Ticket `Admin-Level` role or Administrator permission for the user.
         """
-        await mt._delaccess(ctx, role)
+        await ticket_method._delaccess(ctx, role)
 
     @ticketconfig.command()
     @commands.has_permissions(administrator=True)
@@ -746,7 +746,7 @@ class Configuration(Cog):
         """This command gives all users with a specific role access to the admin-level commands for the bot,
         such as `Addpingedrole` and `Addaccess`.
         """
-        await mt._addadimrole(ctx, role)
+        await ticket_method._addadimrole(ctx, role)
 
     @ticketconfig.command(hidden=False)
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
@@ -756,7 +756,7 @@ class Configuration(Cog):
         """This command adds a role to the list of roles that are pinged when a new ticket is created.
         This command can only be run if you have an admin-level role for this bot.
         """
-        await mt._addpingedrole(ctx, role)
+        await ticket_method._addpingedrole(ctx, role)
 
     @ticketconfig.command()
     @commands.has_permissions(administrator=True)
@@ -766,7 +766,7 @@ class Configuration(Cog):
         """This command removes access for all users with the specified role to the admin-level commands for the bot,
         such as `Addpingedrole` and `Addaccess`.
         """
-        await mt._deladminrole(ctx, role)
+        await ticket_method._deladminrole(ctx, role)
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
@@ -774,7 +774,7 @@ class Configuration(Cog):
     @Context.with_type
     async def delpingedrole(self, ctx: Context, *, role: discord.Role):
         """This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""
-        await mt._delpingedrole(ctx, role)
+        await ticket_method._delpingedrole(ctx, role)
 
     @config.group(name="command", aliases=["cmd"])
     @commands.has_permissions(administrator=True)
@@ -798,11 +798,11 @@ class Configuration(Cog):
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
-            await mt_._enable(ctx, cmd.qualified_name, target)
+            await config_method._enable(ctx, cmd.qualified_name, target)
         elif cog is not None:
-            await mt_._enable(ctx, cog.qualified_name, target)
+            await config_method._enable(ctx, cog.qualified_name, target)
         elif command == "all":
-            await mt_._enable(ctx, "all", target)
+            await config_method._enable(ctx, "all", target)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
 
@@ -820,11 +820,11 @@ class Configuration(Cog):
         cmd = self.bot.get_command(command)
         cog = self.bot.get_cog(command)
         if cmd is not None:
-            await mt_._disable(ctx, cmd.qualified_name, target)
+            await config_method._disable(ctx, cmd.qualified_name, target)
         elif cog is not None:
-            await mt_._disable(ctx, cog.qualified_name, target)
+            await config_method._disable(ctx, cog.qualified_name, target)
         elif command == "all":
-            await mt_._disable(ctx, "all", target)
+            await config_method._disable(ctx, "all", target)
         else:
             await ctx.send(f"{ctx.author.mention} {command} is nither command nor any category")
 

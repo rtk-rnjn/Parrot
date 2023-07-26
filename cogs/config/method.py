@@ -40,7 +40,6 @@ async def _enable(
     cmd_cog: str,
     target: discord.abc.GuildChannel | discord.Role | None,
 ) -> None:
-    assert ctx.guild
     if not target:
         await update_db(ctx=ctx, key="CMD_GLOBAL_ENABLE", cmd=cmd_cog, value=True, op="$set")
 
@@ -60,7 +59,6 @@ async def _disable(
     cmd_cog: str,
     target: discord.abc.GuildChannel | discord.Role,
 ) -> None:
-    assert ctx.guild
     if not target:
         await update_db(ctx=ctx, key="CMD_GLOBAL_ENABLE", cmd=cmd_cog, value=False, op="$set")
 

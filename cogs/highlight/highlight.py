@@ -147,7 +147,7 @@ class Highlight(Cog):
     async def on_highlight(self, message: discord.Message, word: dict[str, str | int], text: str):
         assert message.guild is not None
 
-        member: discord.Member | discord.User | None = await self.bot.get_or_fetch_member(
+        member: discord.Member | None = await self.bot.get_or_fetch_member(
             message.guild,
             word["user_id"],
         )

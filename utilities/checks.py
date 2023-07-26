@@ -167,40 +167,27 @@ def can_run(ctx: Context) -> bool | None:
 
 
 def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> bool | None:
-    CMD_GLOBAL_ENABLE_ = f"CMD_GLOBAL_ENABLE_{cmd_cog}".upper()
-    CMD_ROLE_ENABLE_ = f"CMD_ROLE_ENABLE_{cmd_cog}".upper()
-    CMD_ROLE_DISABLE_ = f"CMD_ROLE_DISABLE_{cmd_cog}".upper()
-    CMD_CHANNEL_ENABLE_ = f"CMD_CHANNEL_ENABLE_{cmd_cog}".upper()
-    CMD_CHANNEL_DISABLE_ = f"CMD_CHANNEL_DISABLE_{cmd_cog}".upper()
-    CMD_CATEGORY_ENABLE_ = f"CMD_CATEGORY_ENABLE_{cmd_cog}".upper()
-    CMD_CATEGORY_DISABLE_ = f"CMD_CATEGORY_DISABLE_{cmd_cog}".upper()
-    CMD_ENABLE_ = f"CMD_ENABLE_{cmd_cog}".upper()
+    # fmt: off
+    global_check          = f"CMD_GLOBAL_ENABLE_{cmd_cog}".upper()  # noqa
+    role_check_enable     = f"CMD_ROLE_ENABLE_{cmd_cog}".upper()  # noqa
+    role_check_disable    = f"CMD_ROLE_DISABLE_{cmd_cog}".upper()  # noqa
+    channel_check_enable  = f"CMD_CHANNEL_ENABLE_{cmd_cog}".upper()  # noqa
+    channel_check_disable = f"CMD_CHANNEL_DISABLE_{cmd_cog}".upper()  # noqa
+    # fmt: on
 
-    if cmd_config.get(CMD_GLOBAL_ENABLE_) is not None:
-        return cmd_config.get(CMD_GLOBAL_ENABLE_) is True
-
-    if any(r.id in cmd_config.get(CMD_ROLE_ENABLE_, []) for r in ctx.author.roles):
+    if any(r.id in cmd_config.get(role_check_enable, []) for r in ctx.author.roles):
         return True
 
-    if ctx.channel.id in cmd_config.get(CMD_CHANNEL_ENABLE_, []):
+    if ctx.channel.id in cmd_config.get(channel_check_enable, []):
         return True
 
-    if ctx.channel.id in cmd_config.get(CMD_CATEGORY_ENABLE_, []):
-        return True
-
-    if any(r.id in cmd_config.get(CMD_ROLE_DISABLE_, []) for r in ctx.author.roles):
+    if any(r.id in cmd_config.get(role_check_disable, []) for r in ctx.author.roles):
         return False
 
-    if ctx.channel.id in cmd_config.get(CMD_CHANNEL_DISABLE_, []):
+    if ctx.channel.id in cmd_config.get(channel_check_disable, []):
         return False
 
-    if ctx.channel.id in cmd_config.get(CMD_CATEGORY_DISABLE_, []):
-        return False
-
-    if cmd_config.get(CMD_ENABLE_) is False:
-        return False
-
-    return True
+    return cmd_config.get(global_check)
 
 
 def guild_premium() -> Check[Context]:

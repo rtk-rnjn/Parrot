@@ -197,7 +197,6 @@ async def _view_tag(bot: Parrot, ctx: Context, tag: str):
     collection = ctx.bot.tags_collection
     if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):
         text_len = len(data["text"])
-        assert ctx.guild
         owner = await bot.get_or_fetch_member(ctx.guild, data["owner"])
         nsfw = data["nsfw"]
         count = data["count"]

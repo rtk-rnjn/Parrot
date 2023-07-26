@@ -1,41 +1,41 @@
 all_extensions:
-  # - cogs.actions
-  # - cogs.api
-  # - cogs.config
-  # - cogs.fun
-  # - cogs.holidays
-  # - cogs.holidays.easter
+  - cogs.actions
+  - cogs.api
+  - cogs.config
+  - cogs.fun
+  - cogs.holidays
+  - cogs.holidays.easter
   - cogs.ipc
-  # - cogs.love
-  # - cogs.meta
-  # - cogs.mis
-  # - cogs.mod
-  # - cogs.music
-  # - cogs.nasa
-  # - cogs.nsfw
-  # - cogs.owner
-  # - cogs.rtfm
-  # - cogs.sports
-  # - cogs.telephone
-  # - cogs.ticket
-  # - cogs.utils
-  # - cogs.wolfram
-  # - events.custom_events
-  # - events.guild.channel
-  # - events.guild.extra
-  # - events.guild.join
-  # - events.guild.member
-  # - events.guild.role_emoji
-  # - events.guild.thread
-  # - events.on_cmd
-  # - events.on_msg
-  # - events.on_rexn
-  # - events.user
-  # - events.arbitrary_events
-  # - interactions.buttons
-  # - interactions.buttons.foggle
-  # - interactions.buttons.snakes
-  # - interactions.slash
+  - cogs.love
+  - cogs.meta
+  - cogs.mis
+  - cogs.mod
+  - cogs.music
+  - cogs.nasa
+  - cogs.nsfw
+  - cogs.owner
+  - cogs.rtfm
+  - cogs.sports
+  - cogs.telephone
+  - cogs.ticket
+  - cogs.utils
+  - cogs.wolfram
+  - events.custom_events
+  - events.guild.channel
+  - events.guild.extra
+  - events.guild.join
+  - events.guild.member
+  - events.guild.role_emoji
+  - events.guild.thread
+  - events.on_cmd
+  - events.on_msg
+  - events.on_rexn
+  - events.user
+  - events.arbitrary_events
+  - interactions.buttons
+  - interactions.buttons.foggle
+  - interactions.buttons.snakes
+  - interactions.slash
   - jishaku
   # - custom_commands
   # - cogs.highlight

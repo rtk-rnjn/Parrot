@@ -18,6 +18,7 @@ attrs
 autopep8
 bandit
 beautifulsoup4
+better-ipc
 black
 blinker
 braceexpand

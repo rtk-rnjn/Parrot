@@ -27,7 +27,7 @@ from pymongo.results import DeleteResult, InsertOneResult
 
 import discord
 from discord import app_commands
-from discord.ext import commands, ipc, tasks  # type: ignore
+from discord.ext import commands, ipc, tasks
 
 try:
     import topgg
@@ -213,7 +213,7 @@ class Parrot(commands.AutoShardedBot):
             allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=1,
-            max_messages=1000 if HEROKU else 5000,
+            max_messages=2 ** 10,
             chunk_guilds_at_startup=False,
             enable_debug_events=False,
             help_command=PaginatedHelpCommand(),
@@ -244,7 +244,7 @@ class Parrot(commands.AutoShardedBot):
         self.ON_HEROKU: bool = HEROKU
 
         # Top.gg
-        self.HAS_TOP_GG = HAS_TOP_GG
+        self.HAS_TOP_GG = True
         if self.HAS_TOP_GG:
             self.topgg: topgg.DBLClient  # type: ignore
             self.topgg_webhook: topgg.WebhookManager  # type: ignore
@@ -269,15 +269,15 @@ class Parrot(commands.AutoShardedBot):
 
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
-        self.ipc_server: ipc.Server = ipc.Server(
-            bot=self,
+        self.ipc_server: "ipc.server.Server" = ipc.server.Server(
+            self,  # type: ignore
             host=LOCALHOST,
-            port=IPC_PORT,
+            standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
-        self.ipc_client: ipc.Client = ipc.Client(
+        self.ipc_client: "ipc.client.Client" = ipc.client.Client(
             host=LOCALHOST,
-            port=IPC_PORT,
+            standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
 
@@ -290,7 +290,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.GLOBAL_HEADERS: dict[str, str] = {
             "Accept": "application/json",
-            "User-Agent": f"Discord Bot '{self.user}' {getattr(self, '__version__', VERSION)} @ {self.github}",
+            "User-Agent": f"DiscordBot '{self.user}' {getattr(self, '__version__', VERSION)} @ {self.github}",
         }
 
         self.UNDER_MAINTENANCE: bool = False
@@ -347,7 +347,7 @@ class Parrot(commands.AutoShardedBot):
         return self.guild_configurations_cache
 
     @property
-    def server(self) -> discord.Guild | None:
+    def server(self) -> discord.Guild:
         assert isinstance(SUPPORT_SERVER_ID, int)
 
         guild = self.get_guild(SUPPORT_SERVER_ID)
@@ -420,6 +420,7 @@ class Parrot(commands.AutoShardedBot):
                 os.environ["TOPGG"],
                 autopost=True,
                 post_shard_count=True,
+                autopost_interval=60 * 60 * 12,  # 12 hours
                 session=self.http_session,
             )
             self.topgg_webhook = topgg.WebhookManager(self)  # type: ignore
@@ -689,7 +690,7 @@ class Parrot(commands.AutoShardedBot):
             content += "\n- Running on local machine"
 
         if self._failed_to_load:
-            content += "\n- Failed to load {len(self._failed_to_load)} cogs"
+            content += f"\n- Failed to load {len(self._failed_to_load)} cogs"
         else:
             content += "\n- All cogs loaded successfully"
         content += "```"

@@ -25,9 +25,9 @@ def parse_dict(data: dict[str, Any]) -> str:
     st = ""
     for i, (k, v) in enumerate(data.items()):
         if i == 0:
-            st += f"`{k}`: `{v}`\n"
+            st += f"`{k}: {v}`\n"
         else:
-            st += f"`   {k}`: `{v}`\n"
+            st += f"`   {k}: {v}`\n"
 
     return st
 
@@ -40,9 +40,9 @@ class Automod(ParrotView):
         self.conditions = []
         self.triggers = []
 
-        self.add_item(get_item(self.triggers, tp="triggers"))
-        self.add_item(get_item(self.conditions, tp="conditions"))
-        self.add_item(get_item(self.actions, tp="actions"))
+        self.add_item(get_item(self.triggers, type_="triggers"))
+        self.add_item(get_item(self.conditions, type_="conditions"))
+        self.add_item(get_item(self.actions, type_="actions"))
 
     @property
     def embed(self) -> discord.Embed:
@@ -54,17 +54,17 @@ class Automod(ParrotView):
             )
             .add_field(
                 name="Triggers",
-                value="\n".join([f"`{i + 1}.` {parse_dict(t)}" for i, t in enumerate(self.triggers[:5])]) or "\u200b",
+                value="\n".join([f"{i + 1}. {parse_dict(t)}" for i, t in enumerate(self.triggers[:5])]) or "\u200b",
                 inline=False,
             )
             .add_field(
                 name="Conditions",
-                value="\n".join([f"`{i + 1}.` {parse_dict(c)}" for i, c in enumerate(self.conditions[:5])]) or "\u200b",
+                value="\n".join([f"{i + 1}. {parse_dict(c)}" for i, c in enumerate(self.conditions[:5])]) or "\u200b",
                 inline=False,
             )
             .add_field(
                 name="Actions",
-                value="\n".join([f"`{i + 1}.` {parse_dict(a)}" for i, a in enumerate(self.actions[:5])]) or "\u200b",
+                value="\n".join([f"{i + 1}. {parse_dict(a)}" for i, a in enumerate(self.actions[:5])]) or "\u200b",
                 inline=False,
             )
         )
@@ -151,7 +151,7 @@ auto_mod_dict = {
 }
 
 
-def get_item(main_data, *, tp: str) -> ParrotSelect:
+def get_item(main_data, *, type_: str) -> ParrotSelect:
     class Select(ParrotSelect):
         def __init__(self) -> None:
             options = [
@@ -159,10 +159,10 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
                     label=action["type"].replace("_", " ").title(),
                     value=f"{json.dumps(action)}",
                 )
-                for action in auto_mod_dict[tp][f"{tp}"]
+                for action in auto_mod_dict[type_][f"{type_}"]
             ]
             super().__init__(
-                placeholder=titles[tp],
+                placeholder=titles[type_],
                 max_values=1,
                 min_values=1,
                 options=options[:25],
@@ -171,17 +171,17 @@ def get_item(main_data, *, tp: str) -> ParrotSelect:
         async def callback(self, interaction: discord.Interaction) -> None:
             assert isinstance(self.view, Automod)
 
-            if len(getattr(self.view, tp)) >= 5:
+            if len(getattr(self.view, type_)) >= 5:
                 return await interaction.response.send_message("You can only add 5 items", ephemeral=True)
 
             data = json.loads(self.values[0])
             if len(data.keys()) == 1:
-                getattr(self.view, tp).append(data)
+                getattr(self.view, type_).append(data)
                 await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)
             else:
                 modal = Modal(data=self.values[0], main_data=main_data)
                 await interaction.response.send_modal(modal)
-                setattr(self.view, tp, main_data)
+                setattr(self.view, type_, main_data)
 
             await self.view.message.edit(embed=self.view.embed)
 
@@ -197,15 +197,15 @@ def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
 
 
 class Modal(ParrotModal):
-    def __init__(self, *, data: str, **kw) -> None:
-        d: dict = json.loads(data)
-        self.main_data = kw.pop("main_data")
-        self.__type = tp = d.pop("type")
-        super().__init__(title=tp, **kw)
-        self.data = d
+    def __init__(self, *, data: str, main_data: list, **kw) -> None:  # type: ignore
+        data: dict = json.loads(data)
+        self.main_data = main_data
+        self.__type = tp = data.pop("type")
+        super().__init__(title=tp.replace("_", " ").title(), **kw)
+        self.data = data
 
-        for k in d:
-            i = get_text_input(name=k, value=d[k])
+        for k in data:
+            i = get_text_input(name=k, value=data[k])
             self.add_item(i)
             setattr(self, f"_I_{k}", i)
 
@@ -216,7 +216,7 @@ class Modal(ParrotModal):
             method = i.custom_id.split("_")[-1]
             value = i.value
             data[k] = _Parser(value, method)()
-        
+
         data["type"] = self.__type
         self.main_data.append(data)
         await interaction.response.send_message("Your response is carefully recorded", ephemeral=True)

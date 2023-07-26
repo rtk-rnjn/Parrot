@@ -11,7 +11,8 @@ from wavelink.ext import spotify
 import discord
 from api import cricket_api
 from core import Cog, Parrot
-from discord.ext.ipc import server
+from discord.ext.ipc.server import Server
+from discord.ext.ipc.objects import ClientPayload
 
 
 class IPCRoutes(Cog):
@@ -28,12 +29,12 @@ class IPCRoutes(Cog):
         except Exception:
             return {}
 
-    @server.route()
-    async def echo(self, data: server.IpcServerResponse) -> dict[str, Any]:
-        return data.to_json()
+    @Server.route()
+    async def echo(self, data: ClientPayload) -> dict[str, Any]:
+        return data.raw
 
-    @server.route()
-    async def db_exec_find_one(self, data: server.IpcServerResponse) -> dict[str, Any]:
+    @Server.route()
+    async def db_exec_find_one(self, data: ClientPayload) -> dict[str, Any]:
         db = data.db
         collection = data.collection
 
@@ -42,8 +43,8 @@ class IPCRoutes(Cog):
 
         return await self.bot.mongo[db][collection].find_one(query, projection)
 
-    @server.route()
-    async def db_exec_update_one(self, data: server.IpcServerResponse) -> Any:
+    @Server.route()
+    async def db_exec_update_one(self, data: ClientPayload) -> Any:
         db: str = data.db
         collection: str = data.collection
 
@@ -53,8 +54,8 @@ class IPCRoutes(Cog):
 
         return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
 
-    @server.route()
-    async def commands(self, data: server.IpcServerResponse) -> list[dict[str, Any]]:
+    @Server.route()
+    async def commands(self, data: ClientPayload) -> list[dict[str, Any]]:
         if name := getattr(data, "name", None):
             cmds = [self.bot.get_command(name)]
         else:
@@ -73,8 +74,8 @@ class IPCRoutes(Cog):
             for command in cmds if command is not None
         ]
 
-    @server.route()
-    async def guilds(self, data: server.IpcServerResponse) -> list[dict[str, Any]]:
+    @Server.route()
+    async def guilds(self, data: ClientPayload) -> list[dict[str, Any]]:
         if _id := getattr(data, "id", None):
             guilds = [self.bot.get_guild(_id)]
         elif name := getattr(data, "name", None):
@@ -162,8 +163,8 @@ class IPCRoutes(Cog):
             for guild in guilds if guild is not None
         ]
 
-    @server.route()
-    async def users(self, data: server.IpcServerResponse) -> list[dict[str, Any]]:
+    @Server.route()
+    async def users(self, data: ClientPayload) -> list[dict[str, Any]]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
         elif name := getattr(data, "name", None):
@@ -183,8 +184,8 @@ class IPCRoutes(Cog):
             for user in users if user is not None
         ]
 
-    @server.route()
-    async def get_message(self, data: server.IpcServerResponse) -> dict[str, Any]:
+    @Server.route()
+    async def get_message(self, data: ClientPayload) -> dict[str, Any]:
         channel = self.bot.get_channel(data.channel_id)
         message = await self.bot.get_or_fetch_message(
             channel,
@@ -208,8 +209,8 @@ class IPCRoutes(Cog):
             else {}
         )
 
-    @server.route()
-    async def announce_global(self, data: server.IpcServerResponse) -> list[dict[str, str]]:
+    @Server.route()
+    async def announce_global(self, data: ClientPayload) -> list[dict[str, str]]:
         MESSAGES = []
         async for data in self.bot.guild_configurations.find({}):
             webhook = data["global_chat"]
@@ -235,8 +236,8 @@ class IPCRoutes(Cog):
                     )
         return MESSAGES
 
-    @server.route()
-    async def start_wavelink_nodes(self, data: server.IpcServerResponse) -> dict[str, str]:
+    @Server.route()
+    async def start_wavelink_nodes(self, data: ClientPayload) -> dict[str, str]:
         if self.bot.ON_HEROKU:
             return {"status": "error: cannot start wavelink on heroku"}
         host = data.host
@@ -260,13 +261,13 @@ class IPCRoutes(Cog):
 
         return {"status": "ok"}
 
-    @server.route()
-    async def start_cricket_api(self, data: server.IpcServerResponse) -> dict[str, Any] | None:
+    @Server.route()
+    async def start_cricket_api(self, data: ClientPayload) -> dict[str, Any] | None:
         url = data.url
-        return cricket_api(url) if url else None
+        return await cricket_api(url) if url else None
 
-    @server.route()
-    async def start_dbl_server(self, data: server.IpcServerResponse) -> dict[str, str]:
+    @Server.route()
+    async def start_dbl_server(self, data: ClientPayload) -> dict[str, str]:
         if self.bot.HAS_TOP_GG:
             port = data.port or 1019
             end_point = data.end_point or "/dblwebhook"
@@ -283,8 +284,8 @@ class IPCRoutes(Cog):
 
         return {"status": "error: top.gg not installed"}
 
-    @server.route()
-    async def stop_dbl_server(self, data: server.IpcServerResponse) -> dict[str, str]:
+    @Server.route()
+    async def stop_dbl_server(self, data: ClientPayload) -> dict[str, str]:
         if self.bot.HAS_TOP_GG:
             self.bot.topgg_webhook.close()
             self.bot.DBL_SERVER_RUNNING = False

@@ -17,7 +17,7 @@ with open("config.yml", encoding="utf-8", errors="ignore") as f:
 
 VERSION = "v5.0.0"
 
-HEROKU: bool = True
+HEROKU: bool = False
 
 
 @overload

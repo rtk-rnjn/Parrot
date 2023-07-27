@@ -1784,9 +1784,9 @@ class Moderator(Cog):
             "\N{DOWNWARDS BLACK ARROW}",
             "\N{UPWARDS BLACK ARROW}",
         }:
-            temp: discord.Message = await ctx.send(f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]")
+            await ctx.send(f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]")
             role = await commands.RoleConverter().convert(ctx, await self.get_response(ctx))
-            await func(
+            return await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
                 ctx=ctx,
@@ -1798,12 +1798,9 @@ class Moderator(Cog):
             )
 
         if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-            await ctx.send(
-                f"{ctx.author.mention} Enter the Nickname, [Not more than 32 char]",
-                delete_after=30,
-            )
+            await ctx.send(f"{ctx.author.mention} Enter the Nickname, [Not more than 32 char]")
 
-            await func(
+            return await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
                 ctx=ctx,
@@ -1812,7 +1809,7 @@ class Moderator(Cog):
                 name=(await self.get_response(ctx))[:32:],
             )
 
-        await func(
+        return await func(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1837,10 +1834,9 @@ class Moderator(Cog):
             await ctx.send(
                 f"{ctx.author.mention} Enter the Channel Topic"
                 if str(reaction.emoji) == "\N{MEMO}"
-                else f"{ctx.author.mention} Enter the Channel Name",
-                delete_after=60,
+                else f"{ctx.author.mention} Enter the Channel Name"
             )
-            await func(
+            return await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
                 ctx=ctx,
@@ -1850,7 +1846,7 @@ class Moderator(Cog):
                 text=await self.get_response(ctx),
             )
 
-        await func(
+        return await func(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1880,7 +1876,7 @@ class Moderator(Cog):
 
         if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
             await ctx.send(f"{ctx.author.mention} Enter the Channel Name")
-            await func(
+            return await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
                 ctx=ctx,
@@ -1889,7 +1885,7 @@ class Moderator(Cog):
                 text=await self.get_response(ctx),
             )
 
-        await func(
+        return await func(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1912,11 +1908,9 @@ class Moderator(Cog):
         func = mod_method.ROLE_REACTION[str(reaction.emoji)]
 
         if str(reaction.emoji) == "\N{RAINBOW}":
-            await ctx.send(
-                f"{ctx.author.mention} Enter the Colour, in whole number",
-            )
+            await ctx.send(f"{ctx.author.mention} Enter the Colour, in whole number")
 
-            await func(
+            return await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
                 ctx=ctx,
@@ -1927,8 +1921,8 @@ class Moderator(Cog):
             )
 
         if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-            await ctx.send(f"{ctx.author.mention} Enter the Role Name", delete_after=60)
-            await mod_method._change_role_name(
+            await ctx.send(f"{ctx.author.mention} Enter the Role Name")
+            return await mod_method._change_role_name(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
                 ctx=ctx,
@@ -1938,7 +1932,7 @@ class Moderator(Cog):
                 reason=reason,
             )
 
-        await func(
+        return await func(
             guild=ctx.guild,
             command_name=ctx.command.name,
             ctx=ctx,
@@ -1958,62 +1952,26 @@ class Moderator(Cog):
         perms = ctx.guild.me.guild_permissions
         if not (perms.kick_members and perms.moderate_members and perms.ban_members):
             return  # sob sob sob
+
+        common_kw = {
+            "guild": ctx.guild,
+            "command_name": ctx.command.qualified_name,
+            "ctx": ctx,
+            "destination": ctx.channel,
+            "member": target,
+            "members": target,
+            "reason": f"Automod. {target} reached warncount threshold",
+            "silent": True,
+        }
         if action == "kick":
-            return await mod_method._kick(
-                guild=ctx.guild,
-                command_name=ctx.command.qualified_name,
-                ctx=ctx,
-                destination=ctx.channel,
-                member=target,
-                members=target,
-                reason=f"Automod. {target} reached warncount threshold",
-                silent=True,
-            )
+            return await mod_method._kick(**common_kw)
         if action == "ban":
-            return await mod_method._ban(
-                guild=ctx.guild,
-                command_name=ctx.command.qualified_name,
-                ctx=ctx,
-                destination=ctx.channel,
-                member=target,
-                members=target,
-                reason=f"Automod. {target} reached warncount threshold",
-                silent=True,
-            )
+            return await mod_method._ban(**common_kw)
         if action == "mute":
-            return await mod_method._mute(
-                guild=ctx.guild,
-                command_name=ctx.command.qualified_name,
-                ctx=ctx,
-                destination=ctx.channel,
-                member=target,
-                members=target,
-                reason=f"Automod. {target} reached warncount threshold",
-                silent=True,
-            )
+            return await mod_method._mute(**common_kw)
         if duration:
             dt = ShortTime(duration)
             if action == "timeout":
-                return await mod_method._timeout(
-                    guild=ctx.guild,
-                    command_name=ctx.command.qualified_name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    member=target,
-                    members=target,
-                    _datetime=dt.dt,
-                    reason=f"Automod. {target} reached warncount threshold",
-                    silent=True,
-                )
+                return await mod_method._timeout(**common_kw, _datetime=dt.dt)
             if action == "tempban":
-                return await mod_method._temp_ban(
-                    guild=ctx.guild,
-                    command_name=ctx.command.qualified_name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    member=target,
-                    members=target,
-                    duration=dt.dt,
-                    reason=f"Automod. {target} reached warncount threshold",
-                    silent=True,
-                )
+                return await mod_method._temp_ban(**common_kw, duration=dt.dt)

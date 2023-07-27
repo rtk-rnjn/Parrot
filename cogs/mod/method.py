@@ -168,12 +168,15 @@ async def _change_role_name(
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
-        return await destination.send(f"{ctx.author.mention} can not assign/remove/edit the role which is above you")
+        await destination.send(f"{ctx.author.mention} can not assign/remove/edit the role which is above you")
+        return
     if role.permissions.administrator:
-        return await destination.send(f"{ctx.author.mention} can not assign/remove/edit admin role.")
+        await destination.send(f"{ctx.author.mention} can not assign/remove/edit admin role.")
+        return
     is_mod = await ctx.modrole()
     if is_mod and (is_mod.id == role.id):
-        return await destination.send(f"{ctx.author.mention} can not assign/remove/edit mod role")
+        await destination.send(f"{ctx.author.mention} can not assign/remove/edit mod role")
+        return
     try:
         await role.edit(
             name=text,

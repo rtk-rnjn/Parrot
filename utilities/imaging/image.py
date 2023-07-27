@@ -491,7 +491,7 @@ async def _do_command_body(
     **kwargs: Any,
 ) -> None:
     start = time.perf_counter()
-    file = asyncio.to_thread(func, ctx, image, **kwargs)
+    file = await asyncio.to_thread(func, ctx, image, **kwargs)
     end = time.perf_counter()
     elapsed = (end - start) * 1000
 

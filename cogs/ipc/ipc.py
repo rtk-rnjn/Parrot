@@ -2,16 +2,16 @@ from __future__ import annotations
 
 import os
 from typing import Any
-import async_timeout
 
+import async_timeout
 import wavelink
+from discord.ext.ipc.objects import ClientPayload
+from discord.ext.ipc.server import Server
 from wavelink.ext import spotify
 
 import discord
 from api import cricket_api
 from core import Cog, Parrot
-from discord.ext.ipc.server import Server
-from discord.ext.ipc.objects import ClientPayload
 
 
 class IPCRoutes(Cog):
@@ -70,7 +70,8 @@ class IPCRoutes(Cog):
                 "hidden": command.hidden,
                 "cog": command.cog_name,
             }
-            for command in cmds if command is not None
+            for command in cmds
+            if command is not None
         ]
 
     @Server.route()
@@ -159,7 +160,8 @@ class IPCRoutes(Cog):
                     for thread in guild.threads
                 ],
             }
-            for guild in guilds if guild is not None
+            for guild in guilds
+            if guild is not None
         ]
 
     @Server.route()
@@ -180,7 +182,8 @@ class IPCRoutes(Cog):
                 "created_at": user.created_at.isoformat(),
                 "system": user.system,
             }
-            for user in users if user is not None
+            for user in users
+            if user is not None
         ]
 
     @Server.route()

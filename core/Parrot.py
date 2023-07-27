@@ -207,7 +207,7 @@ class Parrot(commands.AutoShardedBot):
             allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             shard_count=1,
-            max_messages=2 ** 10,
+            max_messages=2**10,
             chunk_guilds_at_startup=False,
             enable_debug_events=False,
             help_command=PaginatedHelpCommand(),

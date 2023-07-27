@@ -22,11 +22,9 @@ with open(TRIGGER_PATH) as f:
 
 LIMIT = 5
 
+
 def parse_dict(data: dict[str, Any]) -> str:
-    return "".join(
-        f"`{k}: {v}`\n" if i == 0 else f"`   {k}: {v}`\n"
-        for i, (k, v) in enumerate(data.items())
-    )
+    return "".join(f"`{k}: {v}`\n" if i == 0 else f"`   {k}: {v}`\n" for i, (k, v) in enumerate(data.items()))
 
 
 class Automod(ParrotView):

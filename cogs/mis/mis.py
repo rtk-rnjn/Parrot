@@ -1,6 +1,6 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 import hashlib
 import inspect
 import io

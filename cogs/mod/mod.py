@@ -1697,7 +1697,8 @@ class Moderator(Cog):
                 timeout=60,
             )
         except asyncio.TimeoutError as e:
-            raise commands.BadArgument("You took too long to respond.") from e
+            msg = "You took too long to respond."
+            raise commands.BadArgument(msg) from e
         else:
             if in_check and isinstance(check, dict) and reaction.emoji in check.keys():
                 return reaction
@@ -1708,7 +1709,12 @@ class Moderator(Cog):
         return reaction
 
     def _fmt_embed(
-        self, embed: discord.Embed, *, ctx: Context, target: discord.abc.Snowflake, reason: str | None
+        self,
+        embed: discord.Embed,
+        *,
+        ctx: Context,
+        target: discord.abc.Snowflake,
+        reason: str | None,
     ) -> discord.Embed:
         embed.description = (
             f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
@@ -1834,7 +1840,7 @@ class Moderator(Cog):
             await ctx.send(
                 f"{ctx.author.mention} Enter the Channel Topic"
                 if str(reaction.emoji) == "\N{MEMO}"
-                else f"{ctx.author.mention} Enter the Channel Name"
+                else f"{ctx.author.mention} Enter the Channel Name",
             )
             return await func(
                 guild=ctx.guild,
@@ -1857,7 +1863,11 @@ class Moderator(Cog):
         )
 
     async def _mod_action_voice(
-        self, *, ctx: Context, target: discord.VoiceChannel | discord.StageChannel, reason: str | None
+        self,
+        *,
+        ctx: Context,
+        target: discord.VoiceChannel | discord.StageChannel,
+        reason: str | None,
     ) -> None:
         if not isinstance(
             target,

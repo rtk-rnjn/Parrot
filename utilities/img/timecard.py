@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 import discord
 
+
 class Timecard(NamedTuple):
     filename: str
     colour: discord.Colour

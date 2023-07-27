@@ -137,6 +137,7 @@ def _clean_implicit_mul(equation: str) -> str:
     equation = equation.replace(")(", ")*(")
     return equation
 
+
 def plotfn(_: Context, equation: str, *, xrange: tuple[int, int] = (-20, 20)) -> discord.File:
     x = symbols("x")
     equation = _clean_implicit_mul(equation)

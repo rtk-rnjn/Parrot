@@ -42,6 +42,11 @@ class Endpoints:
     EARTH = "https://api.nasa.gov/planetary/earth/imagery"
     APOD = "https://api.nasa.gov/planetary/apod"
     EPIC = "https://epic.gsfc.nasa.gov/api/images.php"
+    NEO_FIND = "https://api.nasa.gov/neo/rest/v1/feed"
+    NEO_FIND_ID = "https://api.nasa.gov/neo/rest/v1/neo/{}"
+    MARS = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos"
+    NASA_SEARCH = "https://images-api.nasa.gov/search"
+    DONKI = "https://api.nasa.gov/DONKI/{}"
 
 
 ENDPOINTS = Endpoints()
@@ -80,7 +85,9 @@ class NASA(Cog):
         }
 
         res = await self.bot.http_session.get(
-            link, params={**self._api_params, **parameters}, headers=self.bot.GLOBAL_HEADERS,
+            link,
+            params={**self._api_params, **parameters},
+            headers=self.bot.GLOBAL_HEADERS,
         )
         file = discord.File(io.BytesIO(await res.read()), filename="earth.jpg")
         embed = (
@@ -167,9 +174,12 @@ class NASA(Cog):
     @Context.with_type
     async def findasteroid(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format."""
-        link = f"https://api.nasa.gov/neo/rest/v1/feed?start_date={start}&end_date={end}&api_key={NASA_KEY}"
 
-        r = await self.bot.http_session.get(link)
+        r = await self.bot.http_session.get(
+            ENDPOINTS.NEO_FIND,
+            params={"start_date": start, "end_date": end, **self._api_params},
+            headers=self.bot.GLOBAL_HEADERS,
+        )
         if r.status == 200:
             res = await r.json()
         else:
@@ -222,9 +232,9 @@ class NASA(Cog):
     @Context.with_type
     async def findasteroididid(self, ctx: Context, asteroid_id: int):
         """Find any asteroid in the space by ID. "$help findaid" for syntax."""
-        link = f"https://api.nasa.gov/neo/rest/v1/neo/{asteroid_id}?api_key={NASA_KEY}"
-
-        r = await self.bot.http_session.get(link)
+        r = await self.bot.http_session.get(
+            ENDPOINTS.NEO_FIND_ID.format(asteroid_id), params=self._api_params, headers=self.bot.GLOBAL_HEADERS
+        )
         if r.status == 200:
             res = await r.json()
         else:
@@ -262,9 +272,10 @@ class NASA(Cog):
     @Context.with_type
     async def mars(self, ctx: Context, date: Annotated[str, date_parser]):
         """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format."""
-        link = f"https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={date}&api_key={NASA_KEY}"
 
-        r = await self.bot.http_session.get(link)
+        r = await self.bot.http_session.get(
+            ENDPOINTS.MARS, params={**self._api_params, "earth_date": date}, headers=self.bot.GLOBAL_HEADERS
+        )
         if r.status == 200:
             res = await r.json()
         else:
@@ -298,9 +309,9 @@ class NASA(Cog):
     @Context.with_type
     async def nasasearch(self, ctx: Context, limit: int | None = 10, *, string: commands.clean_content):
         """NASA Image and Video Library."""
-        link = f"https://images-api.nasa.gov/search?q={string}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        limit = max(1, min(limit or 1, 10))
+        r = await self.bot.http_session.get(ENDPOINTS.NASA_SEARCH, headers={"User-Agent": AGENT}, params={"q": string})
         if r.status >= 300:
             return await ctx.reply(
                 f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library | Http status: {r.status}",
@@ -374,9 +385,12 @@ class NASA(Cog):
     @donki.command(name="cme")
     async def donki_cme(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Coronal Mass Ejection."""
-        url = f"https://api.nasa.gov/DONKI/CME?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(url, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("CME"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find CME in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -386,8 +400,6 @@ class NASA(Cog):
         em_list: list[discord.Embed] = []
 
         for data in res:
-            em = discord.Embed()
-
             activity_id = data["activityID"]
             catalog = data["catalog"]
             start_time = data["startTime"]
@@ -397,16 +409,18 @@ class NASA(Cog):
             data["note"]
             instruments = ", ".join(i["displayName"] for i in data.get("instruments", []))
 
-            em.description = inspect.cleandoc(
-                f"""
-                Activity ID: {activity_id}
-                Catalog: {catalog}
-                Start Time: {start_time}
-                Source Location: {source_location}
-                Active Region Num: {active_region_num}
-                Link: {link}
-                Instuments: {instruments}
-                """,
+            em = discord.Embed(
+                description=inspect.cleandoc(
+                    f"""
+                    Activity ID: {activity_id}
+                    Catalog: {catalog}
+                    Start Time: {start_time}
+                    Source Location: {source_location}
+                    Active Region Num: {active_region_num}
+                    Link: {link}
+                    Instuments: {instruments}
+                    """,
+                )
             )
             em.title = catalog
             em.url = link
@@ -417,9 +431,12 @@ class NASA(Cog):
     @donki.command(name="gst")
     async def donki_gst(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Geomagnetic Storm."""
-        link = f"https://api.nasa.gov/DONKI/GST?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("GST"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find GST in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -447,9 +464,12 @@ class NASA(Cog):
     @donki.command(name="ips")
     async def donki_ips(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Interplanetary Shock."""
-        link = f"https://api.nasa.gov/DONKI/IPS?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("IPS"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find IPS in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -485,9 +505,12 @@ class NASA(Cog):
     @donki.command(name="flr")
     async def donki_flr(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Solar Flare."""
-        link = f"https://api.nasa.gov/DONKI/FLR?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("FLR"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find FLR in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -531,9 +554,12 @@ class NASA(Cog):
     @donki.command(name="sep")
     async def donki_sep(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Solar Energetic Particle."""
-        link = f"https://api.nasa.gov/DONKI/SEP?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("SEP"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find SEP in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -566,9 +592,12 @@ Link: {link}
     @donki.command(name="mpc")
     async def donki_mpc(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Magnetopause Crossing."""
-        link = f"https://api.nasa.gov/DONKI/MPC?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("MPC"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find MPC in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -600,9 +629,12 @@ Link: {link}
     @donki.command(name="rbe")
     async def donki_rbe(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Radiation Belt Enhancement."""
-        link = f"https://api.nasa.gov/DONKI/RBE?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("RBE"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find RBE in DONKI | Http status: {r.status}")
         res = await r.json()
@@ -634,9 +666,12 @@ Link: {link}
     @donki.command(name="hhs")
     async def donki_hhs(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
         """Hight Speed Stream."""
-        link = f"https://api.nasa.gov/DONKI/HHS?startDate={start}&endDate={end}&api_key={NASA_KEY}"
         AGENT = self.random_agent(USER_AGENTS)
-        r = await self.bot.http_session.get(link, headers={"User-Agent": AGENT})
+        r = await self.bot.http_session.get(
+            ENDPOINTS.DONKI.format("HHS"),
+            params={**self._api_params, "startDate": start, "endDate": end},
+            headers={"User-Agent": AGENT},
+        )
         if r.status >= 300:
             return await ctx.reply(f"{ctx.author.mention} could not find HHS in DONKI | Http status: {r.status}")
         res = await r.json()

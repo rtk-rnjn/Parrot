@@ -4,12 +4,12 @@ import argparse
 import asyncio
 import re
 import shlex
-from typing import Annotated, Optional
+from typing import Annotated, Literal
 
 import wavelink
 
 import discord
-from cogs.mod import method as mt
+from cogs.mod import method as mod_method
 from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_CHANNEL_EMBED
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -50,7 +50,7 @@ class Moderator(Cog):
     async def add_role_bots(
         self,
         ctx: Context,
-        operator: str,
+        operator: Literal["+", "-"],
         role: discord.Role,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -76,7 +76,7 @@ class Moderator(Cog):
         - `[p]role bots + @Role reason`
         - `[p]role bots - @Role reason`
         """
-        await mt._add_roles_bot(
+        await mod_method._add_roles_bot(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -93,7 +93,7 @@ class Moderator(Cog):
     async def add_role_human(
         self,
         ctx: Context,
-        operator: str,
+        operator: Literal["+", "-"],
         role: discord.Role,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -119,7 +119,7 @@ class Moderator(Cog):
         - `[p]role humans + @Role reason`
         - `[p]role humans - @Role reason`
         """
-        await mt._add_roles_humans(
+        await mod_method._add_roles_humans(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -136,7 +136,7 @@ class Moderator(Cog):
     async def add_role(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
+        member: Annotated[discord.Member, MemberID],
         role: discord.Role,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -158,7 +158,7 @@ class Moderator(Cog):
         - `[p]role add @Member @Role reason`
         - `[p]role add 123456789012345678 @Role reason`
         """
-        await mt._add_roles(
+        await mod_method._add_roles(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -175,7 +175,7 @@ class Moderator(Cog):
     async def remove_role(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
+        member: Annotated[discord.Member, MemberID],
         role: discord.Role,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -197,7 +197,7 @@ class Moderator(Cog):
         - `[p]role remove @Member @Role reason`
         - `[p]role remove 123456789012345678 @Role reason`
         """
-        await mt._remove_roles(
+        await mod_method._remove_roles(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -214,8 +214,8 @@ class Moderator(Cog):
     async def ban(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
-        days: Annotated[int, Optional[int]] = 0,
+        member: Annotated[discord.Member, MemberID],
+        days: Annotated[int, int | None] = 0,
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -242,7 +242,7 @@ class Moderator(Cog):
         - `[p]ban @Member 7`
         - `[p]ban 123456789012345678 7`
         """
-        await mt._ban(
+        await mod_method._ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -260,7 +260,7 @@ class Moderator(Cog):
     async def mass_ban(
         self,
         ctx: Context,
-        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        members: Annotated[list[discord.Member], commands.Greedy[MemberID]],
         days: int | None = 0,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -282,7 +282,7 @@ class Moderator(Cog):
         - `[p]massban 123456789012345678 123456789012345678 reason`
         - `[p]massban 123456789012345678 123456789012345678 7 reason`
         """
-        await mt._mass_ban(
+        await mod_method._mass_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -299,7 +299,7 @@ class Moderator(Cog):
     async def softban(
         self,
         ctx: Context,
-        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.Member], commands.Greedy[MemberID]],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -319,7 +319,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]softban @Member reason`
         """
-        await mt._softban(
+        await mod_method._softban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -336,7 +336,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         duration: FutureTime,
-        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.Member], commands.Greedy[MemberID]],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -359,7 +359,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]tempban 30d @Member reason`
         """
-        await mt._temp_ban(
+        await mod_method._temp_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -377,7 +377,7 @@ class Moderator(Cog):
     async def block(
         self,
         ctx: Context,
-        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.Member], commands.Greedy[MemberID]],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -394,7 +394,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]block @Member reason`
         """
-        await mt._block(
+        await mod_method._block(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -431,7 +431,7 @@ class Moderator(Cog):
         - `[p]clone reason`
         - `[p]clone #channel reason`
         """
-        await mt._clone(
+        await mod_method._clone(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -464,7 +464,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]kick @Member reason`
         """
-        await mt._kick(
+        await mod_method._kick(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -480,7 +480,7 @@ class Moderator(Cog):
     async def mass_kick(
         self,
         ctx: Context,
-        members: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        members: Annotated[list[discord.Member], commands.Greedy[MemberID]],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -497,7 +497,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]masskick @Member @Member reason`
         """
-        await mt._mass_kick(
+        await mod_method._mass_kick(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -537,7 +537,7 @@ class Moderator(Cog):
         channel = channel or [ctx.channel]
         for chn in channel:
             if isinstance(chn, discord.abc.Messageable):
-                await mt._text_lock(
+                await mod_method._text_lock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
                     ctx=ctx,
@@ -546,7 +546,7 @@ class Moderator(Cog):
                     reason=reason,
                 )
             elif isinstance(chn, discord.VoiceChannel | discord.StageChannel):
-                await mt._vc_lock(
+                await mod_method._vc_lock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
                     ctx=ctx,
@@ -586,7 +586,7 @@ class Moderator(Cog):
         channel = channel or [ctx.channel]
         for chn in channel:
             if isinstance(chn, discord.abc.Messageable):
-                await mt._text_unlock(
+                await mod_method._text_unlock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
                     ctx=ctx,
@@ -596,7 +596,7 @@ class Moderator(Cog):
                 )
 
             elif isinstance(chn, discord.VoiceChannel | discord.StageChannel):
-                await mt._vc_unlock(
+                await mod_method._vc_unlock(
                     guild=ctx.guild,
                     command_name=ctx.command.qualified_name,
                     ctx=ctx,
@@ -627,7 +627,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]selfmute 1h reason`
         """
-        await mt._self_mute(
+        await mod_method._self_mute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -665,7 +665,7 @@ class Moderator(Cog):
         - `[p]timeout @member 1h reason`
         """
         if duration:
-            await mt._timeout(
+            await mod_method._timeout(
                 guild=ctx.guild,
                 command_name=ctx.command.qualified_name,
                 ctx=ctx,
@@ -675,7 +675,7 @@ class Moderator(Cog):
                 reason=reason,
             )
         else:
-            await mt._mute(
+            await mod_method._mute(
                 guild=ctx.guild,
                 command_name=ctx.command.qualified_name,
                 ctx=ctx,
@@ -708,7 +708,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]unmute @member reason`
         """
-        await mt._unmute(
+        await mod_method._unmute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -741,7 +741,7 @@ class Moderator(Cog):
             def check(message: discord.Message) -> bool:
                 return True
 
-            await mt.do_removal(ctx, num, check)
+            await mod_method.do_removal(ctx, num, check)
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -753,7 +753,7 @@ class Moderator(Cog):
         - `[p]clean embeds`
         - `[p]clean embeds 10`
         """
-        await mt.do_removal(ctx, search, lambda e: len(e.embeds))
+        await mod_method.do_removal(ctx, search, lambda e: len(e.embeds))
 
     @clean.command(name="regex")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -771,7 +771,7 @@ class Moderator(Cog):
         def check(m: discord.Message) -> bool:
             return bool(re.match(rf"{pattern}", m.content))
 
-        await mt.do_removal(ctx, search, check)
+        await mod_method.do_removal(ctx, search, check)
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -783,7 +783,7 @@ class Moderator(Cog):
         - `[p]clean files`
         - `[p]clean files 10`
         """
-        await mt.do_removal(ctx, search, lambda e: len(e.attachments))
+        await mod_method.do_removal(ctx, search, lambda e: len(e.attachments))
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -795,7 +795,7 @@ class Moderator(Cog):
         - `[p]clean images`
         - `[p]clean images 10`
         """
-        await mt.do_removal(ctx, search, lambda e: len(e.embeds) or len(e.attachments))
+        await mod_method.do_removal(ctx, search, lambda e: len(e.embeds) or len(e.attachments))
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -807,7 +807,7 @@ class Moderator(Cog):
         - `[p]clean user @member`
         - `[p]clean user @member 10`
         """
-        await mt.do_removal(ctx, search, lambda e: e.author == member)
+        await mod_method.do_removal(ctx, search, lambda e: e.author == member)
 
     @clean.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -822,7 +822,7 @@ class Moderator(Cog):
         if len(substr) < 3:
             await ctx.send("The substring length must be at least 3 characters.")
         else:
-            await mt.do_removal(ctx, 100, lambda e: substr in e.content)
+            await mod_method.do_removal(ctx, 100, lambda e: substr in e.content)
 
     @clean.command(name="bot", aliases=["bots"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -838,7 +838,7 @@ class Moderator(Cog):
         def predicate(m: discord.Message):
             return (m.webhook_id is None and m.author.bot) or (prefix and m.content.startswith(prefix))
 
-        await mt.do_removal(ctx, search, predicate)
+        await mod_method.do_removal(ctx, search, predicate)
 
     @clean.command(name="emoji", aliases=["emojis"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -855,7 +855,7 @@ class Moderator(Cog):
         def predicate(m):
             return custom_emoji.search(m.content)
 
-        await mt.do_removal(ctx, search, predicate)
+        await mod_method.do_removal(ctx, search, predicate)
 
     @clean.command(name="reactions")
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
@@ -899,7 +899,7 @@ class Moderator(Cog):
         - `[p]slowmode 5`
         - `[p]slowmode 5 #general`
         """
-        await mt._slowmode(
+        await mod_method._slowmode(
             guild=ctx.guild,
             command_name=ctx.command.name,
             ctx=ctx,
@@ -1016,7 +1016,7 @@ class Moderator(Cog):
             args.search = 100
 
         args.search = max(0, min(2000, args.search))  # clamp from 0-2000
-        await mt.do_removal(ctx, args.search, predicate, before=args.before, after=args.after)
+        await mod_method.do_removal(ctx, args.search, predicate, before=args.before, after=args.after)
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(ban_members=True))
@@ -1040,7 +1040,7 @@ class Moderator(Cog):
         You can also provide reason for the unban.
         - `[p]unban @Member reason`
         """
-        await mt._unban(
+        await mod_method._unban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1076,7 +1076,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]unblock @Member reason`
         """
-        await mt._unblock(
+        await mod_method._unblock(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1105,7 +1105,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]nick @Member nickname`
         """
-        await mt._change_nickname(
+        await mod_method._change_nickname(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1167,7 +1167,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]voice mute @Member reason`
         """
-        await mt._voice_mute(
+        await mod_method._voice_mute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1200,7 +1200,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]voice unmute @Member reason`
         """
-        await mt._voice_unmute(
+        await mod_method._voice_unmute(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1239,7 +1239,7 @@ class Moderator(Cog):
         """
         if member.voice is None:
             return await ctx.error(f"{ctx.author.mention} {member} is not in Voice Channel")
-        await mt._voice_ban(
+        await mod_method._voice_ban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1260,7 +1260,7 @@ class Moderator(Cog):
     async def voice_unban(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
+        member: Annotated[discord.Member, MemberID],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -1274,7 +1274,7 @@ class Moderator(Cog):
         """
         if member.voice is None:
             return await ctx.error(f"{ctx.author.mention} {member} is not in Voice Channel")
-        await mt._voice_unban(
+        await mod_method._voice_unban(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1291,7 +1291,7 @@ class Moderator(Cog):
     async def voice_deafen(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
+        member: Annotated[discord.Member, MemberID],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -1303,7 +1303,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]voice deafen @Member`
         """
-        await mt._voice_deafen(
+        await mod_method._voice_deafen(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1319,7 +1319,7 @@ class Moderator(Cog):
     async def voice_undeafen(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
+        member: Annotated[discord.Member, MemberID],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -1331,7 +1331,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]voice undeafen @Member`
         """
-        await mt._voice_undeafen(
+        await mod_method._voice_undeafen(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1347,7 +1347,7 @@ class Moderator(Cog):
     async def voice_kick(
         self,
         ctx: Context,
-        member: Annotated[discord.abc.Snowflake, MemberID],
+        member: Annotated[discord.Member, MemberID],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -1359,7 +1359,7 @@ class Moderator(Cog):
         **Examples:**
         - `[p]voice kick @Member`
         """
-        await mt._voice_kick(
+        await mod_method._voice_kick(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1407,7 +1407,7 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]] = None,  # type: ignore
+        member: Annotated[list[discord.Member], commands.Greedy[MemberID]] = None,  # type: ignore
         channel: discord.VoiceChannel | None = None,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -1498,7 +1498,7 @@ class Moderator(Cog):
         """
         if not emoji:
             return await ctx.error(f"{ctx.author.mention} you must specify the emoji to delete")
-        await mt._emoji_delete(
+        await mod_method._emoji_delete(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1528,7 +1528,7 @@ class Moderator(Cog):
         """
         if not emoji:
             return
-        await mt._emoji_add(
+        await mod_method._emoji_add(
             guild=ctx.guild,
             command_name=ctx.command.name,
             ctx=ctx,
@@ -1545,7 +1545,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         url: str,
-        name: commands.clean_content | None = "emoji",  # type: ignore
+        name: Annotated[str, commands.clean_content | None] = "emoji",
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -1561,7 +1561,7 @@ class Moderator(Cog):
         **Note:**
         - The name must be less than 32 characters.
         """
-        await mt._emoji_addurl(
+        await mod_method._emoji_addurl(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1579,7 +1579,7 @@ class Moderator(Cog):
         self,
         ctx: Context,
         emoji: discord.Emoji,
-        name: commands.clean_content,
+        name: Annotated[str, commands.clean_content],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):
@@ -1594,7 +1594,7 @@ class Moderator(Cog):
         **Note:**
         - The name must be less than 32 characters.
         """
-        await mt._emoji_rename(
+        await mod_method._emoji_rename(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1618,7 +1618,7 @@ class Moderator(Cog):
         if not ctx.message.stickers:
             return await ctx.send(f"{ctx.author.mention} You did not provide any sticker")
 
-        await mt._sticker_add(
+        await mod_method._sticker_add(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1641,7 +1641,7 @@ class Moderator(Cog):
         if not ctx.message.stickers:
             return await ctx.send(f"{ctx.author.mention} You did not provide any sticker")
         sticker = sticker or ctx.message.stickers[0]
-        await mt._sticker_delete(
+        await mod_method._sticker_delete(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1662,7 +1662,7 @@ class Moderator(Cog):
         reason: Annotated[str | None, ActionReason] = None,
     ):
         """To add sticker from url."""
-        await mt._sticker_addurl(
+        await mod_method._sticker_addurl(
             guild=ctx.guild,
             command_name=ctx.command.qualified_name,
             ctx=ctx,
@@ -1673,6 +1673,50 @@ class Moderator(Cog):
             emoji=emoji,
             description=description,
         )
+
+    async def get_response(self, ctx: Context, *, convert=None):
+        try:
+            msg = await self.bot.wait_for(
+                "message",
+                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
+                timeout=60,
+            )
+        except asyncio.TimeoutError as e:
+            raise commands.BadArgument("You took too long to respond.") from e
+        else:
+            if convert:
+                return await discord.utils.maybe_coroutine(convert, msg.content)
+
+            return msg.content
+
+    async def get_reaction(self, ctx: Context, *, check: str | dict, in_check: bool = False):
+        try:
+            reaction, _ = await self.bot.wait_for(
+                "reaction_add",
+                check=lambda r, u: u == ctx.author and r.message.channel == ctx.channel,
+                timeout=60,
+            )
+        except asyncio.TimeoutError as e:
+            raise commands.BadArgument("You took too long to respond.") from e
+        else:
+            if in_check and isinstance(check, dict) and reaction.emoji in check.keys():
+                return reaction
+
+            if reaction.emoji == check:
+                return reaction
+
+        return reaction
+
+    def _fmt_embed(
+        self, embed: discord.Embed, *, ctx: Context, target: discord.abc.Snowflake, reason: str | None
+    ) -> discord.Embed:
+        embed.description = (
+            f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
+        )
+        embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
+        if ctx.guild.icon:
+            embed.set_thumbnail(url=ctx.guild.icon.url)
+        return embed
 
     @commands.command()
     @commands.check_any(
@@ -1704,7 +1748,7 @@ class Moderator(Cog):
         ctx: Context,
         target: discord.Member | discord.TextChannel | discord.VoiceChannel | discord.Role,
         *,
-        reason: Annotated[str | None, ActionReason] = None,
+        reason: Annotated[str, ActionReason | None] = None,
     ):
         """Why to learn the commands? This is all in one mod command.
 
@@ -1714,261 +1758,168 @@ class Moderator(Cog):
         - `[p]mod @role`
         """
 
-        def check_msg(m: discord.Message) -> bool:
-            return m.author == ctx.author and m.channel == ctx.channel
-
         if not target:
             return await ctx.send_help(ctx.command)
 
-        guild = ctx.guild
-
         if isinstance(target, discord.Member):
-            member_embed = MEMBER_EMBED.copy()
-            member_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
-            )
-            member_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
-            if guild.icon is not None:
-                member_embed.set_thumbnail(url=target.display_avatar.url)
+            await self._mod_action_member(ctx=ctx, target=target, reason=reason)
 
-            msg = await ctx.send(embed=member_embed)
-            await ctx.bulk_add_reactions(msg, *mt.MEMBER_REACTION)
+        elif isinstance(target, discord.TextChannel):
+            await self._mod_action_text_channel(ctx=ctx, target=target, reason=reason)
 
-            def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                return str(reaction.emoji) in mt.MEMBER_REACTION and user == ctx.author and reaction.message.id == msg.id
+        elif isinstance(target, discord.VoiceChannel):
+            await self._mod_action_voice(ctx=ctx, target=target, reason=reason)
 
-            try:
-                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check)
-                reaction: discord.Reaction = reaction
-            except asyncio.TimeoutError:
-                return await msg.delete(delay=0)
+        elif isinstance(target, discord.Role):
+            await self._mod_action_role(ctx=ctx, target=target, reason=reason)
 
-            func = mt.MEMBER_REACTION[str(reaction.emoji)]
+    async def _mod_action_member(self, *, ctx: Context, target: discord.Member, reason: str | None) -> None:
+        if not isinstance(target, discord.Member):
+            return
+        member_embed = self._fmt_embed(MEMBER_EMBED.copy(), ctx=ctx, target=target, reason=reason)
+        msg = await ctx.send(embed=member_embed)
+        await ctx.bulk_add_reactions(msg, *mod_method.MEMBER_REACTION)
+        reaction = await self.get_reaction(ctx, check=mod_method.MEMBER_REACTION, in_check=True)
 
-            if str(reaction.emoji) in {
-                "\N{DOWNWARDS BLACK ARROW}",
-                "\N{UPWARDS BLACK ARROW}",
-            }:
-                temp: discord.Message = await ctx.send(f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]")
-                try:
-                    m: discord.Message = await ctx.wait_for("message", timeout=30, check=check_msg)
-                except asyncio.TimeoutError:
-                    return await msg.delete(delay=0)
-                role = await commands.RoleConverter().convert(ctx, m.content)
-                await temp.delete()
-                await func(
-                    guild=ctx.guild,
-                    command_name=ctx.command.name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    member=target,
-                    members=target,
-                    role=role,
-                    reason=reason,
-                )
-                return await msg.delete(delay=0)
+        func = mod_method.MEMBER_REACTION[str(reaction.emoji)]
 
-            if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-                await ctx.send(
-                    f"{ctx.author.mention} Enter the Nickname, [Not more than 32 char]",
-                    delete_after=30,
-                )
-                try:
-                    m: discord.Message = await ctx.wait_for("message", timeout=30, check=check_msg)
-                except asyncio.TimeoutError:
-                    return await msg.delete(delay=0)
-
-                await func(
-                    guild=ctx.guild,
-                    command_name=ctx.command.name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    member=target,
-                    name=(m.content)[:32:],
-                )
-                return await msg.delete(delay=0)
-
+        if str(reaction.emoji) in {
+            "\N{DOWNWARDS BLACK ARROW}",
+            "\N{UPWARDS BLACK ARROW}",
+        }:
+            temp: discord.Message = await ctx.send(f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]")
+            role = await commands.RoleConverter().convert(ctx, await self.get_response(ctx))
+            await temp.delete()
             await func(
                 guild=ctx.guild,
-                command_name=ctx.command.qualified_name,
+                command_name=ctx.command.name,
                 ctx=ctx,
                 destination=ctx.channel,
-                reason=reason,
                 member=target,
                 members=target,
+                role=role,
+                reason=reason,
             )
 
-        if isinstance(target, discord.TextChannel):
-            tc_embed = TEXT_CHANNEL_EMBED.copy()
-            tc_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
+        if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
+            await ctx.send(
+                f"{ctx.author.mention} Enter the Nickname, [Not more than 32 char]",
+                delete_after=30,
             )
-            tc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
-            if guild.icon:
-                tc_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg: discord.Message = await ctx.send(embed=tc_embed)
-            await ctx.bulk_add_reactions(msg, *mt.TEXT_REACTION)
-
-            def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                return str(reaction.emoji) in mt.TEXT_REACTION and user == ctx.author and reaction.message.id == msg.id
-
-            def check_msg(m: discord.Message) -> bool:
-                return m.author == ctx.author and m.channel == ctx.channel
-
-            try:
-                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check)
-                reaction: discord.Reaction = reaction
-            except asyncio.TimeoutError:
-                return await msg.delete(delay=0)
-
-            func = mt.TEXT_REACTION[str(reaction.emoji)]
-
-            if str(reaction.emoji) in {"\N{MEMO}", "\N{LOWER LEFT FOUNTAIN PEN}"}:
-                await ctx.send(
-                    f"{ctx.author.mention} Enter the Channel Topic"
-                    if str(reaction.emoji) == "\N{MEMO}"
-                    else f"{ctx.author.mention} Enter the Channel Name",
-                    delete_after=60,
-                )
-                try:
-                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
-                except asyncio.TimeoutError:
-                    return await msg.delete(delay=0)
-                await func(
-                    guild=ctx.guild,
-                    command_name=ctx.command.name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    channel=target,
-                    channels=target,
-                    text=m.content,
-                )
-                return await msg.delete(delay=0)
 
             await func(
                 guild=ctx.guild,
-                command_name=ctx.command.qualified_name,
+                command_name=ctx.command.name,
                 ctx=ctx,
                 destination=ctx.channel,
-                reason=reason,
-                channel=target,
-                channels=target,
+                member=target,
+                name=(await self.get_response(ctx))[:32:],
             )
 
-        if isinstance(
+        await func(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            member=target,
+            members=target,
+        )
+
+    async def _mod_action_text_channel(self, *, ctx: Context, target: discord.TextChannel, reason: str | None) -> None:
+        if not isinstance(target, discord.TextChannel):
+            return
+        tc_embed = self._fmt_embed(TEXT_CHANNEL_EMBED.copy(), ctx=ctx, target=target, reason=reason)
+        msg: discord.Message = await ctx.send(embed=tc_embed)
+        await ctx.bulk_add_reactions(msg, *mod_method.TEXT_REACTION)
+
+        reaction = await self.get_reaction(ctx, check=mod_method.TEXT_REACTION, in_check=True)
+
+        func = mod_method.TEXT_REACTION[str(reaction.emoji)]
+
+        if str(reaction.emoji) in {"\N{MEMO}", "\N{LOWER LEFT FOUNTAIN PEN}"}:
+            await ctx.send(
+                f"{ctx.author.mention} Enter the Channel Topic"
+                if str(reaction.emoji) == "\N{MEMO}"
+                else f"{ctx.author.mention} Enter the Channel Name",
+                delete_after=60,
+            )
+            await func(
+                guild=ctx.guild,
+                command_name=ctx.command.name,
+                ctx=ctx,
+                destination=ctx.channel,
+                channel=target,
+                channels=target,
+                text=await self.get_response(ctx),
+            )
+
+        await func(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            channel=target,
+            channels=target,
+        )
+
+    async def _mod_action_voice(
+        self, *, ctx: Context, target: discord.VoiceChannel | discord.StageChannel, reason: str | None
+    ) -> None:
+        if not isinstance(
             target,
             discord.VoiceChannel | discord.StageChannel,
         ):
-            vc_embed = VOICE_CHANNEL_EMBED
-            vc_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
-            )
-            vc_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
-            if guild.icon:
-                vc_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg: discord.Message = await ctx.send(embed=vc_embed)
-            await ctx.bulk_add_reactions(msg, *mt.VC_REACTION)
+            return
 
-            def check_reaction_vc(reaction: discord.Reaction, user: discord.User) -> bool:
-                return str(reaction.emoji) in mt.VC_REACTION and user == ctx.author and reaction.message.id == msg.id
+        vc_embed = self._fmt_embed(VOICE_CHANNEL_EMBED.copy(), ctx=ctx, target=target, reason=reason)
 
-            try:
-                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check_reaction_vc)
-                reaction: discord.Reaction = reaction
-            except asyncio.TimeoutError:
-                return await msg.delete(delay=0)
+        msg: discord.Message = await ctx.send(embed=vc_embed)
+        await ctx.bulk_add_reactions(msg, *mod_method.VC_REACTION)
 
-            func = mt.VC_REACTION[str(reaction.emoji)]
+        reaction = await self.get_reaction(ctx, check=mod_method.VC_REACTION, in_check=True)
 
-            if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-                await ctx.send(f"{ctx.author.mention} Enter the Channel Name", delete_after=60)
-                try:
-                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
-                except asyncio.TimeoutError:
-                    return await msg.delete(delay=0)
-                await func(
-                    guild=ctx.guild,
-                    command_name=ctx.command.name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    channel=ctx.channel,
-                    text=m.content,
-                )
-                return await msg.delete(delay=0)
+        func = mod_method.VC_REACTION[str(reaction.emoji)]
 
+        if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
+            await ctx.send(f"{ctx.author.mention} Enter the Channel Name", delete_after=60)
             await func(
-                guild=guild,
-                command_name=ctx.command.qualified_name,
+                guild=ctx.guild,
+                command_name=ctx.command.name,
                 ctx=ctx,
                 destination=ctx.channel,
-                reason=reason,
-                channel=target,
-                channels=target,
+                channel=ctx.channel,
+                text=await self.get_response(ctx),
             )
 
-        if isinstance(target, discord.Role):
-            role_embed = ROLE_EMBED
-            role_embed.description = (
-                f"Reason: {reason or 'no reason provided'}\n" f"Action will be performed on: {target} ({target.id})"
+        await func(
+            guild=ctx.guild,
+            command_name=ctx.command.qualified_name,
+            ctx=ctx,
+            destination=ctx.channel,
+            reason=reason,
+            channel=target,
+            channels=target,
+        )
+
+    async def _mod_action_role(self, *, ctx: Context, target: discord.Role, reason: str | None) -> None:
+        if not isinstance(target, discord.Role):
+            return
+
+        role_embed = self._fmt_embed(ROLE_EMBED.copy(), ctx=ctx, target=target, reason=reason)
+        msg: discord.Message = await ctx.send(embed=role_embed)
+        await ctx.bulk_add_reactions(msg, *mod_method.ROLE_REACTION)
+
+        reaction = await self.get_reaction(ctx, check=mod_method.ROLE_REACTION, in_check=True)
+
+        func = mod_method.ROLE_REACTION[str(reaction.emoji)]
+
+        if str(reaction.emoji) == "\N{RAINBOW}":
+            await ctx.send(
+                f"{ctx.author.mention} Enter the Colour, in whole number",
+                delete_after=60,
             )
-            role_embed.set_footer(text=f"{ctx.author.guild.name} mod tool")
-            if ctx.guild.icon:
-                role_embed.set_thumbnail(url=ctx.guild.icon.url)
-            msg: discord.Message = await ctx.send(embed=role_embed)
-            await ctx.bulk_add_reactions(msg, *mt.ROLE_REACTION)
-
-            def check_reaction_role(reaction: discord.Reaction, user: discord.User):
-                return str(reaction.emoji) in mt.ROLE_REACTION and user == ctx.author and reaction.message.id == msg.id
-
-            try:
-                reaction, _ = await ctx.wait_for("reaction_add", timeout=60.0, check=check_reaction_role)
-                reaction: discord.Reaction = reaction
-            except asyncio.TimeoutError:
-                return await msg.delete(delay=0)
-
-            func = mt.ROLE_REACTION[str(reaction.emoji)]
-
-            if str(reaction.emoji) == "\N{RAINBOW}":
-                await ctx.send(
-                    f"{ctx.author.mention} Enter the Colour, in whole number",
-                    delete_after=60,
-                )
-                try:
-                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
-                except asyncio.TimeoutError:
-                    return await msg.delete(delay=0)
-                try:
-                    color = int(m.content)
-                except ValueError:
-                    return await ctx.send(f"{ctx.author.mention} invalid color")
-
-                await func(
-                    guild=ctx.guild,
-                    command_name=ctx.command.name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    role=target,
-                    int_=color,
-                    reason=reason,
-                )
-                return await msg.delete(delay=0)
-
-            if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-                await ctx.send(f"{ctx.author.mention} Enter the Role Name", delete_after=60)
-                try:
-                    m: discord.Message = await ctx.wait_for("message", timeout=60, check=check_msg)
-                except asyncio.TimeoutError:
-                    return await msg.delete(delay=0)
-                await mt._change_role_name(
-                    guild=ctx.guild,
-                    command_name=ctx.command.name,
-                    ctx=ctx,
-                    destination=ctx.channel,
-                    role=target,
-                    text=m.content,
-                    reason=reason,
-                )
-                return await msg.delete(delay=0)
 
             await func(
                 guild=ctx.guild,
@@ -1976,21 +1927,46 @@ class Moderator(Cog):
                 ctx=ctx,
                 destination=ctx.channel,
                 role=target,
-                _bool=str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}",
+                int_=await self.get_response(ctx, convert=int),
                 reason=reason,
             )
 
-        return await msg.delete(delay=0)
+        if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
+            await ctx.send(f"{ctx.author.mention} Enter the Role Name", delete_after=60)
+            await mod_method._change_role_name(
+                guild=ctx.guild,
+                command_name=ctx.command.name,
+                ctx=ctx,
+                destination=ctx.channel,
+                role=target,
+                text=await self.get_response(ctx),
+                reason=reason,
+            )
 
-    async def execute_action(self, *, ctx: Context, action: str, duration: str, **kw):
-        target: discord.Member | discord.User = kw.get("target")
+        await func(
+            guild=ctx.guild,
+            command_name=ctx.command.name,
+            ctx=ctx,
+            destination=ctx.channel,
+            role=target,
+            _bool=str(reaction.emoji) == "\N{UPWARDS BLACK ARROW}",
+            reason=reason,
+        )
+
+    async def execute_action(self, *, ctx: Context, action: str, duration: str, target: discord.Member, **kw):
+        tg = None
+        if isinstance(target, discord.User):
+            tg = ctx.guild.get_member(target.id)
+        if not isinstance(tg, discord.Member):
+            return
+
         perms = ctx.guild.me.guild_permissions
         if not (perms.kick_members and perms.moderate_members and perms.ban_members):
             return  # sob sob sob
         if action == "kick":
-            return await mt._kick(
+            return await mod_method._kick(
                 guild=ctx.guild,
-                command_name=ctx.command,
+                command_name=ctx.command.qualified_name,
                 ctx=ctx,
                 destination=ctx.channel,
                 member=target,
@@ -1999,9 +1975,9 @@ class Moderator(Cog):
                 silent=True,
             )
         if action == "ban":
-            return await mt._ban(
+            return await mod_method._ban(
                 guild=ctx.guild,
-                command_name=ctx.command,
+                command_name=ctx.command.qualified_name,
                 ctx=ctx,
                 destination=ctx.channel,
                 member=target,
@@ -2010,9 +1986,9 @@ class Moderator(Cog):
                 silent=True,
             )
         if action == "mute":
-            return await mt._mute(
+            return await mod_method._mute(
                 guild=ctx.guild,
-                command_name=ctx.command,
+                command_name=ctx.command.qualified_name,
                 ctx=ctx,
                 destination=ctx.channel,
                 member=target,
@@ -2023,9 +1999,9 @@ class Moderator(Cog):
         if duration:
             dt = ShortTime(duration)
             if action == "timeout":
-                return await mt._timeout(
+                return await mod_method._timeout(
                     guild=ctx.guild,
-                    command_name=ctx.command,
+                    command_name=ctx.command.qualified_name,
                     ctx=ctx,
                     destination=ctx.channel,
                     member=target,
@@ -2035,9 +2011,9 @@ class Moderator(Cog):
                     silent=True,
                 )
             if action == "tempban":
-                return await mt._temp_ban(
+                return await mod_method._temp_ban(
                     guild=ctx.guild,
-                    command_name=ctx.command,
+                    command_name=ctx.command.qualified_name,
                     ctx=ctx,
                     destination=ctx.channel,
                     member=target,

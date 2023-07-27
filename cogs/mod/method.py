@@ -1295,14 +1295,13 @@ async def _emoji_rename(
 
 async def do_removal(
     ctx: Context,
-    limit: int,
+    limit: int | None,
     predicate: Callable[[discord.Message], Any],
     *,
     before: int | None = None,
     after: int | None = None,
 ):
-    if limit > 2000:
-        return await ctx.send(f"Too many messages to search given ({limit}/2000)")
+    limit = max(1, min(limit or 1, 2000))
 
     passed_before = ctx.message if before is None else discord.Object(id=before)
     passed_after = discord.Object(id=after) if after is not None else None

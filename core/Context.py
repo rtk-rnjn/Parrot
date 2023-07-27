@@ -122,7 +122,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     async def dj_role(self) -> discord.Role | None:
         assert self.guild is not None and isinstance(self.author, discord.Member)
 
-        if channel := self.author.voice.channel:
+        if self.author.voice and (channel := self.author.voice.channel):
             # channel: discord.VoiceChannel
             members = sum(not m.bot for m in channel.members)  # channel is surely the voice channel
             if members <= 3:
@@ -419,11 +419,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 return None
             raise
 
-    async def wait_for_value(self, *, convert: Callable[[str], T], **kwargs: Any) -> T:
-        """Wait for a value."""
-        message: discord.Message = await self.wait_for("message", **kwargs)
-        return convert(message.content)
-
     async def paginate(
         self,
         entries: list[Any] | str,
@@ -565,7 +560,13 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         raise errors[retry]
 
     async def database_game_update(
-        self, game_name: str, *, win: bool = False, loss: bool = False, set: dict = {}, **kw: Any,
+        self,
+        game_name: str,
+        *,
+        win: bool = False,
+        loss: bool = False,
+        set: dict = {},
+        **kw: Any,
     ) -> bool:
         set_kwargs: dict[str, Any] = {f"game_{game_name}_{k}": v for k, v in set.items()}
         kwargs = {"$set": set_kwargs}

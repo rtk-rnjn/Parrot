@@ -100,7 +100,7 @@ class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" "
     pretty: Annotated[bool | None, convert_bool] = None
 
 
-def validate_flag(flag: MypyConverter) -> str:
+def validate_flag(flag: MypyConverter) -> str:  # noqa: C901
     cmd_str = "mypy"
 
     if flag.no_namespace_packages:

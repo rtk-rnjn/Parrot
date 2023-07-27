@@ -137,9 +137,9 @@ class ContentView(discord.ui.Select):
                 _ADD_LINE = not _ADD_LINE
                 continue
             if _ADD_LINE:
-                line = self.remove_img_links(line)
-                line = self.replace_partial_links(line)
-                page.add_line(line)
+                new_line = self.remove_img_links(line)
+                new_line = self.replace_partial_links(new_line)
+                page.add_line(new_line)
 
         interference = PaginatorEmbedInterface(self.view.ctx, page, owner=self.view.ctx.author)
         await interference.send_to(interaction.followup)  # type: ignore

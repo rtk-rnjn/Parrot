@@ -4,7 +4,7 @@ import asyncio
 import datetime
 import logging
 import re
-from typing import Any, Literal, Union
+from typing import Any, Literal
 
 from pymongo import UpdateMany, UpdateOne
 from pymongo.results import BulkWriteResult
@@ -19,7 +19,7 @@ log = logging.getLogger("cogs.highlight.highlight")
 CACHED_WORDS_HINT = dict[int, list[dict[str, str | int]]]
 _CACHED_SETTINGS_HINT = dict[str, str | int | list[Any]]
 CACHED_SETTINGS_HINT = dict[int, _CACHED_SETTINGS_HINT]
-ENTITY_HINT = Union[discord.Member, discord.User, discord.TextChannel, discord.CategoryChannel]
+ENTITY_HINT = discord.Member | discord.User | discord.TextChannel | discord.CategoryChannel
 
 
 def format_join(iterable, *, seperator=", ", last="or"):

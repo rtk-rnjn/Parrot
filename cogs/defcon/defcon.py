@@ -228,7 +228,7 @@ class DefensiveCondition(Cog):
                         )
                         count += 1
                     except discord.Forbidden:
-                        log.warning(f"Failed to reset channel {channel.id} in guild {ctx.guild.id}")
+                        log.warning("failed to reset channel %s in guild %s", channel.id, ctx.guild.id)
 
         if settings.get("LOCK_TEXT_CHANNELS"):
             for channel_id in guild_config["default_defcon"].get("locked_channels", []):
@@ -244,7 +244,7 @@ class DefensiveCondition(Cog):
                         )
                         count += 1
                     except discord.Forbidden:
-                        log.warning(f"Failed to reset channel {channel.id} in guild {ctx.guild.id}")
+                        log.warning("failed to reset channel %s in guild %s", channel.id, ctx.guild.id)
 
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -269,7 +269,7 @@ class DefensiveCondition(Cog):
                     )
                     slow_mode_count += 1
                 except discord.Forbidden:
-                    log.warning(f"Failed to reset slowmode in channel {channel.id} in guild {ctx.guild.id}")
+                    log.warning("failed to reset slowmode in channel %s in guild %s", channel.id, ctx.guild.id)
 
         if cog := self.bot.get_cog("DefconListeners"):
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(

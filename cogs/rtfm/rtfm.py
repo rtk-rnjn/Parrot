@@ -699,9 +699,9 @@ class RTFM(Cog):
 
                 await ctx.reply(embed=emb)
 
-    @run.command()
+    @run.command(name="list", aliases=["ls"])
     @commands.bot_has_permissions(embed_links=True)
-    async def list(self, ctx: Context, *, group=None):
+    async def run_list(self, ctx: Context, *, group=None):
         """Lists available choices for other commands."""
         choices = {
             "documentations": self.documented,

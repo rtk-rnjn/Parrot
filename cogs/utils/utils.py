@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pymongo import ReturnDocument
@@ -204,7 +204,7 @@ class Utils(Cog):
             await ctx.reply(text)
 
     @commands.group(invoke_without_command=True)
-    async def afk(self, ctx: Context, *, text: Annotated[str, Optional[commands.clean_content]] = None):
+    async def afk(self, ctx: Context, *, text: Annotated[str, commands.clean_content | None] = None):
         """To set AFK.
 
         AFK will be removed once you message.

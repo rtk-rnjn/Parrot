@@ -31,10 +31,12 @@ exclude = ["discord"]
 format = "text"
 
 [tool.ruff.mccabe]
-max-complexity = 20
+max-complexity = 35
 
 [tool.ruff.pylint]
-max-args = 10
-max-branches = 20
+max-args = 15
+max-branches = 35
+max-returns = 15
+max-statements = 80
 
 

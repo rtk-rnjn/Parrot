@@ -278,11 +278,12 @@ class PaginatedHelpCommand(commands.HelpCommand):
         if not self.__all_commands:
             entries = bot.cogs
             all_commands: dict[Cog, list[commands.Command]] = {}
-            for cog in entries:
-                cog = bot.get_cog(cog)
-                _cmds = [c for c in cog.get_commands() if not c.hidden]
-                if cog is not None and _cmds:
-                    all_commands[cog] = sorted(cog.get_commands(), key=lambda c: c.qualified_name)
+            for real_cog in entries:
+                cog: Cog = bot.get_cog(real_cog)  # type: ignore
+                if cog:
+                    _cmds = [c for c in cog.get_commands() if not c.hidden]
+                    if cog is not None and _cmds:
+                        all_commands[cog] = sorted(cog.get_commands(), key=lambda c: c.qualified_name)
 
             self.__all_commands = all_commands
 

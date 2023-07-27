@@ -2451,16 +2451,15 @@ class Fun(Cog):
                     "game_reaction_test_played": 1,
                 },
             )
-        else:
-            if data.get("game_reaction_test_time", 0) > end - start:
-                await self.bot.game_collections.update_one(
-                    {"_id": ctx.author.id},
-                    {
-                        "$set": {"game_reaction_test_time": end - start},
-                        "$inc": {"game_reaction_test_played": 1},
-                    },
-                    upsert=True,
-                )
+        elif data.get("game_reaction_test_time", 0) > end - start:
+            await self.bot.game_collections.update_one(
+                {"_id": ctx.author.id},
+                {
+                    "$set": {"game_reaction_test_time": end - start},
+                    "$inc": {"game_reaction_test_played": 1},
+                },
+                upsert=True,
+            )
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):

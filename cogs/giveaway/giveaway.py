@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 import cogs.giveaway.method as mt
 import discord
@@ -41,7 +41,7 @@ class Giveaways(Cog):
         self,
         ctx: Context,
         duration: ShortTime,
-        winners: Annotated[int, Optional[int]] = 1,
+        winners: Annotated[int, int | None] = 1,
         *,
         prize: str | None = None,
     ):

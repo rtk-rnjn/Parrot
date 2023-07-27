@@ -263,7 +263,7 @@ class ToImage(commands.Converter):
         else:
             converted_union = await commands.run_converters(
                 ctx,
-                Union[
+                Union[  # noqa: UP007
                     discord.PartialEmoji,
                     discord.Emoji,
                     discord.Member,

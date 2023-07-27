@@ -998,8 +998,9 @@ class Configuration(Cog):
             try:
                 msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=60)
                 return msg.content.lower()
-            except asyncio.TimeoutError:
-                raise commands.BadArgument(f"{ctx.author.mention} You took too long to respond!")
+            except asyncio.TimeoutError as e:
+                err = f"{ctx.author.mention} You took too long to respond!"
+                raise commands.BadArgument(err) from e
 
         await ctx.send(f"{ctx.author.mention} {QUES[0]}")
         counter = await wait_for_response()
@@ -1102,8 +1103,9 @@ class Configuration(Cog):
             try:
                 msg: discord.Message = await ctx.wait_for("message", check=check, timeout=60)
                 return msg.content.lower()
-            except asyncio.TimeoutError:
-                raise commands.BadArgument(f"{ctx.author.mention} You took too long to respond!")
+            except asyncio.TimeoutError as e:
+                err = f"{ctx.author.mention} You took too long to respond!"
+                raise commands.BadArgument(err) from e
 
         if counter == "role":
             await ctx.send(f"{ctx.author.mention} Enter the role name/ID or you can even mention it")

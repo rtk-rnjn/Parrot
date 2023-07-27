@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from yaml import safe_load as yaml_load  # type: ignore
+from yaml import safe_load as yaml_load
 
 import discord
 from core import Parrot
@@ -132,7 +132,7 @@ async def execute_run(
     if "\n" in code:
         firstLine = code.splitlines()[0]  # type: ignore
         if re.fullmatch(r"([0-9A-z]*)\b", firstLine):
-            code = code[len(firstLine) + 1 :]
+            code = code[len(firstLine) + 1:]
 
     if options["--wrapped"]:
         if not (any(lang.split("-")[0] == x for x in wrapping)) or lang in (
@@ -161,7 +161,7 @@ async def execute_run(
         try:
             start = result.rindex("Real time: ")
             end = result.rindex("%\nExit code: ")
-            result = result[:start] + result[end + 2 :]
+            result = result[:start] + result[end + 2:]
         except ValueError:
             # Too much output removes this markers
             pass

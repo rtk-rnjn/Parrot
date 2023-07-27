@@ -485,5 +485,5 @@ class Utils(Cog):
                             )
 
     @server_stats_updater.before_loop
-    async def before_server_stats_updater(self):
+    async def before_server_stats_updater(self) -> None:
         await self.bot.wait_until_ready()

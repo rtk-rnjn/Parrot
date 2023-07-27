@@ -117,13 +117,13 @@ class Variables:
 
     async def _create_channel(self, name: str, position: int = None, category: int = None):
         """Create a channel in the same category as the message channel."""
-        cat = (
-            self.__message.guild.get_channel(category) if category else None  # type: discord.CategoryChannel # type: ignore
+        cat: discord.CategoryChannel = (
+            self.__message.guild.get_channel(category) if category else None  # type: ignore
         )
         chn = await self.__message.guild.create_text_channel(  # type: ignore
             name,
             position=position or discord.utils.MISSING,
-            category=cat,  # type: ignore
+            category=cat,
         )
         return chn.id
 
@@ -170,6 +170,3 @@ class Variables:
             msg = "The number is too big"
             raise ValueError(msg)
         return a * b
-
-
-# print(dir(Variables))

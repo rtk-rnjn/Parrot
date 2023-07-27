@@ -571,14 +571,13 @@ class Meta(Cog):
     @Context.with_type
     async def announcement(self, ctx: Context):
         """To get the latest news from the support server | Change Log."""
+        change_log: discord.Message = await self.bot.change_log()
         embed = discord.Embed(
             title="Announcement",
-            timestamp=discord.utils.utcnow(),
+            timestamp=change_log.created_at,
             color=ctx.author.color,
-        )
-        embed.set_footer(text=f"{ctx.author}")
-        change_log: discord.Message = await self.bot.change_log()
-        embed.description = f"Message at: {discord.utils.format_dt(change_log.created_at)}\n\n{change_log.content}"
+            description=f"{change_log.content}",
+        ).set_footer(text=f"Message by: {ctx.author}")
         await ctx.reply(embed=embed)
 
     @commands.command()

@@ -13,18 +13,28 @@ reportUnnecessaryTypeIgnoreComment = "warning"
 pythonVersion = "3.10"
 typeCheckingMode = "basic"
 strictParameterNoneValue = false
-include = [
-    "cogs",
-]
-exclude = [
-    "**/__pycache__",
-    "build",
-    "dist"
-]
+include = ["cogs"]
+exclude = ["**/__pycache__", "build", "dist"]
 
 [tool.ruff]
 line-length = 150
-select = ['A', 'ASYNC', 'B', 'C', 'COM', 'E', 'EM', 'F', 'FA', 'G', 'PL', 'Q', 'T10', 'UP', 'W']
+select = [
+    'A',
+    'ASYNC',
+    'B',
+    'C',
+    'COM',
+    'E',
+    'EM',
+    'F',
+    'FA',
+    'G',
+    'PL',
+    'Q',
+    'T10',
+    'UP',
+    'W',
+]
 ignore = ['D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004"]
 target-version = "py310"
 exclude = ["discord"]
@@ -38,5 +48,3 @@ max-args = 15
 max-branches = 35
 max-returns = 15
 max-statements = 80
-
-

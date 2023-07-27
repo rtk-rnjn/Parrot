@@ -1758,19 +1758,16 @@ class Moderator(Cog):
         - `[p]mod @role`
         """
 
-        if not target:
-            return await ctx.send_help(ctx.command)
-
         if isinstance(target, discord.Member):
             await self._mod_action_member(ctx=ctx, target=target, reason=reason)
 
-        elif isinstance(target, discord.TextChannel):
+        if isinstance(target, discord.TextChannel):
             await self._mod_action_text_channel(ctx=ctx, target=target, reason=reason)
 
-        elif isinstance(target, discord.VoiceChannel):
+        if isinstance(target, discord.VoiceChannel):
             await self._mod_action_voice(ctx=ctx, target=target, reason=reason)
 
-        elif isinstance(target, discord.Role):
+        if isinstance(target, discord.Role):
             await self._mod_action_role(ctx=ctx, target=target, reason=reason)
 
     async def _mod_action_member(self, *, ctx: Context, target: discord.Member, reason: str | None) -> None:
@@ -1789,7 +1786,6 @@ class Moderator(Cog):
         }:
             temp: discord.Message = await ctx.send(f"{ctx.author.mention} Enter the Role, [ID, NAME, MENTION]")
             role = await commands.RoleConverter().convert(ctx, await self.get_response(ctx))
-            await temp.delete()
             await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
@@ -1883,7 +1879,7 @@ class Moderator(Cog):
         func = mod_method.VC_REACTION[str(reaction.emoji)]
 
         if str(reaction.emoji) == "\N{LOWER LEFT FOUNTAIN PEN}":
-            await ctx.send(f"{ctx.author.mention} Enter the Channel Name", delete_after=60)
+            await ctx.send(f"{ctx.author.mention} Enter the Channel Name")
             await func(
                 guild=ctx.guild,
                 command_name=ctx.command.name,
@@ -1918,7 +1914,6 @@ class Moderator(Cog):
         if str(reaction.emoji) == "\N{RAINBOW}":
             await ctx.send(
                 f"{ctx.author.mention} Enter the Colour, in whole number",
-                delete_after=60,
             )
 
             await func(

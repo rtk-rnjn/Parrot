@@ -3,8 +3,6 @@ from __future__ import annotations
 import asyncio
 import re
 from collections.abc import Callable, Iterator
-from concurrent.futures import ThreadPoolExecutor
-from functools import partial, wraps
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
@@ -44,20 +42,6 @@ class ActionReason(commands.Converter):
             msg = f"Reason is too long ({LEN}/{reason_max})"
             raise commands.BadArgument(msg)
         return ret
-
-
-class ToAsync:
-    """Converts a blocking function to an async function."""
-
-    def __init__(self, *, executor: ThreadPoolExecutor | None = None) -> None:
-        self.executor = executor or ThreadPoolExecutor()
-
-    def __call__(self, blocking) -> Callable[..., Any]:
-        @wraps(blocking)
-        async def wrapper(*args, **kwargs) -> Any:
-            return await asyncio.get_event_loop().run_in_executor(self.executor, partial(blocking, *args, **kwargs))
-
-        return wrapper
 
 
 class BannedMember(commands.Converter):
@@ -132,8 +116,8 @@ class MemberID(commands.Converter):
         return m
 
 
-def lru_callback(key: KT, value: VT) -> None:  # type: ignore
-    value = str(value)[:20]  # type: ignore
+def lru_callback(key, value) -> None:
+    value = str(value)[:20]
 
 
 class Cache(Generic[KT, VT]):
@@ -267,7 +251,7 @@ async def get_default_emoji(bot: Parrot, emoji: str, *, svg: bool = True) -> byt
         async with bot.http_session.get(url) as r:
             if r.ok:
                 byt = await r.read()
-                return await image_mod.svg_to_png(byt) if svg else byt
+                return await asyncio.to_thread(image_mod.svg_to_png, byt) if svg else byt
     except Exception:
         return None
 
@@ -322,11 +306,10 @@ class DefaultEmojiConverter(commands.Converter):
     async def convert(self, ctx: Context, argument: str) -> bytes:
         emoji = await get_default_emoji(ctx.bot, argument)
 
-        if not emoji:
-            msg = "Invalid Emoji"
-            raise commands.BadArgument(msg)
-        else:
+        if emoji:
             return emoji
+        msg = "Invalid Emoji"
+        raise commands.BadArgument(msg)
 
 
 class UrlConverter(commands.Converter):
@@ -346,7 +329,7 @@ class UrlConverter(commands.Converter):
             raise bad_arg from e
 
     async def find_imgur_img(self, ctx: Context, match: re.Match) -> bytes:
-        name = match.group(2)
+        name = match[2]
         raw_url = f"https://i.imgur.com/{name}.gif"
 
         bad_arg = commands.BadArgument("An Error occured when fetching the imgur GIF")
@@ -370,7 +353,7 @@ class UrlConverter(commands.Converter):
                     if r.content_type.startswith("image/"):
                         byt = await r.read()
                         if r.content_type.startswith("image/svg"):
-                            byt = await image_mod.svg_to_png(byt)
+                            byt = await asyncio.to_thread(image_mod.svg_to_png, byt)
                         return byt
                     elif TENOR_PAGE_REGEX.fullmatch(argument):
                         return await self.find_tenor_gif(ctx, r)
@@ -462,7 +445,7 @@ class ImageConverter(commands.Converter):
             if file.content_type and file.content_type.startswith("image/"):
                 byt = await file.read()
                 if file.content_type.startswith("image/svg"):
-                    byt = await image_mod.svg_to_png(byt)
+                    byt = await asyncio.to_thread(image_mod.svg_to_png, byt)
                 return byt
 
     async def convert(self, ctx: Context, argument: str, *, raise_on_failure: bool = True) -> bytes | None:
@@ -474,12 +457,11 @@ class ImageConverter(commands.Converter):
             else:
                 break
         else:
-            if raise_on_failure:
-                msg = "Failed to fetch an image from argument"
-                raise commands.BadArgument(msg)
-            else:
+            if not raise_on_failure:
                 return None
 
+            msg = "Failed to fetch an image from argument"
+            raise commands.BadArgument(msg)
         return await self.converted_to_buffer(source)
 
     async def get_image(self, ctx: Context, source: str | bytes | None, *, max_size: int = 15_000_000) -> BytesIO:

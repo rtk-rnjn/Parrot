@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 import hashlib
 import inspect
@@ -38,7 +39,7 @@ import discord
 from core import Cog, Context, Parrot
 from discord import Embed
 from discord.ext import commands
-from utilities.converters import ToAsync, convert_bool
+from utilities.converters import convert_bool
 from utilities.imaging.graphing import boxplot, plotfn
 from utilities.imaging.image import do_command
 from utilities.paginator import PaginationView
@@ -136,7 +137,6 @@ def _prepare_input(text: str) -> str:
     return text
 
 
-@ToAsync()
 def _process_image(data: bytes, out_file: BinaryIO) -> None:
     image = Image.open(io.BytesIO(data)).convert("RGBA")
     width, height = image.size
@@ -273,7 +273,7 @@ class Misc(Cog):
             f"{LATEX_API_URL}/{response_json['filename']}",
             raise_for_status=True,
         ) as response:
-            await _process_image(await response.read(), out_file)
+            await asyncio.to_thread(_process_image, await response.read(), out_file)
 
     async def _upload_to_pastebin(self, text: str, lang: str = "txt") -> str | None:
         """Uploads `text` to the paste service, returning the url if successful."""
@@ -927,7 +927,7 @@ class Misc(Cog):
             payload["image_factory"] = StyledPilImage
         payload["board_size"] = flags.board_size
         payload["border"] = flags.border
-        file = await self.bot.func(_create_qr, text, **payload)
+        file = await asyncio.to_thread(_create_qr, text, **payload)
         e = discord.Embed().set_image(url="attachment://qr.png")
         await ctx.reply(embed=e, file=file)
 

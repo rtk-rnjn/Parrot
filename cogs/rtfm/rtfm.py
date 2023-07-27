@@ -345,7 +345,7 @@ class RTFM(Cog):
             await self.build_python_cache()
 
         # get closest match
-        match = await self.bot.func(extractOne, text, self._python_cached.keys())
+        match = await asyncio.to_thread(extractOne, text, self._python_cached.keys())
         if match[1] < 50:
             return await ctx.send(
                 embed=discord.Embed(

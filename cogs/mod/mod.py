@@ -1059,7 +1059,7 @@ class Moderator(Cog):
     async def unblock(
         self,
         ctx: Context,
-        member: Annotated[list[discord.abc.Snowflake], commands.Greedy[MemberID]],
+        member: Annotated[list[discord.Member], commands.Greedy[MemberID]],
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):

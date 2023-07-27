@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 import datetime
 import hashlib
@@ -668,7 +669,7 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
 
         cache = list(self._rtfm_cache[key].items())
 
-        matches = (await ctx.bot.func(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False))[:8]
+        matches = (await asyncio.to_thread(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False))[:8]
 
         e = discord.Embed(title="Read the Fucking Documentation", timestamp=discord.utils.utcnow())
         if len(matches) == 0:

@@ -37,7 +37,7 @@ class ParrotView(discord.ui.View):
     message: discord.Message
     ctx: Context
 
-    def __init__(self, *, timeout: float = 60, delete_message: bool = False, **kwargs) -> None:
+    def __init__(self, *, timeout: float | None = 60, delete_message: bool = False, **kwargs) -> None:
         super().__init__(timeout=timeout)
         self.delete_message = delete_message
         if ctx := kwargs.get("ctx"):

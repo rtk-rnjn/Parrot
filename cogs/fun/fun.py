@@ -176,8 +176,8 @@ class Fun(Cog):
         thumbnail = Image.new("RGB", THUMBNAIL_SIZE, color=rgb)
         buffer = io.BytesIO()
 
-        await ctx.bot.func(thumbnail.save, buffer, "PNG")
-        await ctx.bot.func(buffer.seek, 0)
+        await asyncio.to_thread(thumbnail.save, buffer, "PNG")
+        await asyncio.to_thread(buffer.seek, 0)
         thumbnail_file = discord.File(buffer, filename="colour.png")
 
         colour_embed.set_thumbnail(url="attachment://colour.png")
@@ -1858,7 +1858,7 @@ class Fun(Cog):
         image_bytes = await user.display_avatar.replace(size=1024).read()
         file_name = file_safe_name("eightbit_avatar", ctx.author.display_name)
 
-        file = await self.bot.func(
+        file = await asyncio.to_thread(
             PfpEffects.apply_effect,
             image_bytes,
             PfpEffects.eight_bitify_effect,
@@ -1898,7 +1898,7 @@ class Fun(Cog):
             image_bytes = await user.display_avatar.replace(size=1024).read()
             filename = file_safe_name("reverse_avatar", ctx.author.display_name)
 
-            file = await self.bot.func(PfpEffects.apply_effect, image_bytes, PfpEffects.flip_effect, filename)
+            file = await asyncio.to_thread(PfpEffects.apply_effect, image_bytes, PfpEffects.flip_effect, filename)
 
             embed = discord.Embed(
                 title="Your reversed avatar.",
@@ -1951,7 +1951,7 @@ class Fun(Cog):
             image_bytes = await user.display_avatar.replace(size=256).read()
             file_name = file_safe_name("easterified_avatar", ctx.author.display_name)
 
-            file = await self.bot.func(
+            file = await asyncio.to_thread(
                 PfpEffects.apply_effect,
                 image_bytes,
                 PfpEffects.easterify_effect,
@@ -1977,7 +1977,7 @@ class Fun(Cog):
         async with ctx.typing():
             file_name = file_safe_name("pride_avatar", ctx.author.display_name)
 
-            file = await ctx.bot.func(
+            file = await asyncio.to_thread(
                 PfpEffects.apply_effect,
                 image_bytes,
                 PfpEffects.pridify_effect,
@@ -2049,7 +2049,7 @@ class Fun(Cog):
 
             file_name = file_safe_name("spooky_avatar", ctx.author.display_name)
 
-            file = await self.bot.func(
+            file = await asyncio.to_thread(
                 PfpEffects.apply_effect,
                 image_bytes,
                 spookifications.get_random_effect,
@@ -2119,7 +2119,7 @@ class Fun(Cog):
 
             img_bytes = await user.display_avatar.replace(size=1024).read()
 
-            file = await self.bot.func(
+            file = await asyncio.to_thread(
                 PfpEffects.apply_effect,
                 img_bytes,
                 PfpEffects.mosaic_effect,
@@ -2351,14 +2351,14 @@ class Fun(Cog):
         text = text.replace("\n", " ")
         text = text[:24]
         text = f"{text[:12]}\n{text[12:24]}"
-        file = await imagine(text)
+        file = await asyncio.to_thread(imagine, text)
         await ctx.reply(file=file)
 
     @commands.command(name="timecard")
     @commands.bot_has_permissions(embed_links=True, attach_files=True)
     async def _timecard_spn(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Generates a timecard."""
-        await ctx.send(file=await timecard(text))
+        await ctx.send(file=await asyncio.to_thread(timecard, text))
 
     @commands.command(name="typingtest")
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
@@ -2465,7 +2465,7 @@ class Fun(Cog):
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Bottomify your text."""
-        text = await self.bot.func(to_bottom, text)
+        text = await asyncio.to_thread(to_bottom, text)
         if len(text) > 2000:
             await ctx.reply(text[:2000])
         else:
@@ -2474,7 +2474,7 @@ class Fun(Cog):
     @commands.command(name="debottomify", aliases=["debottom"])
     async def _debottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
         """Debottomify your text."""
-        text = await self.bot.func(from_bottom, text)
+        text = await asyncio.to_thread(from_bottom, text)
         if len(text) > 2000:
             await ctx.reply(text[:2000])
         else:
@@ -2489,7 +2489,7 @@ class Fun(Cog):
             return await ctx.reply("Level must be between 1 and 50")
 
         view = PourView(ctx, level)
-        img_buf = await view.draw_image()
+        img_buf = await asyncio.to_thread(view.draw_image)
         embed = discord.Embed(
             title="Pour puzzle",
             description=f"Level: {level}",

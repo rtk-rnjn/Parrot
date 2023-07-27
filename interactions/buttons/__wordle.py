@@ -15,7 +15,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 import discord
 from core import Context, Parrot
-from utilities.converters import ToAsync
 
 from .utils import DEFAULT_COLOR, BaseView
 
@@ -60,7 +59,6 @@ class Wordle:
 
         return guess == self.word
 
-    @ToAsync()
     def render_image(self) -> BytesIO:
         with Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255)) as img:
             cursor = ImageDraw.Draw(img)
@@ -102,7 +100,7 @@ class Wordle:
     ) -> discord.Message | None:
         self.embed_color = embed_color
 
-        buf = await self.render_image()
+        buf = await asyncio.to_thread(self.render_image)
 
         embed = discord.Embed(title="Wordle!", color=self.embed_color)
         embed.description = "`QUIT` to end the game"
@@ -132,7 +130,7 @@ class Wordle:
                 )
             else:
                 won = self.parse_guess(content)
-                buf = await self.render_image()
+                buf = await asyncio.to_thread(self.render_image)
 
                 await message.delete()
 
@@ -183,6 +181,7 @@ class WordInput(discord.ui.Modal, title="Word Input"):
         embed.set_image(url="attachment://wordle.png")
         file = discord.File(buf, "wordle.png")
 
+        lost = False
         if won:
             await interaction.message.reply("Game Over! You won!", mention_author=True)
         elif lost := len(game.guesses) >= 6:
@@ -204,10 +203,9 @@ class WordInputButton(discord.ui.Button["WordleView"]):
             label="Cancel" if cancel_button else "Make a guess!",
             style=discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple,
         )
-        self.view.game: WordleView
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        assert interaction.message is not None
+        assert interaction.message is not None and isinstance(self.view, WordleView)
 
         game = self.view.game
         if interaction.user != game.player:
@@ -221,7 +219,7 @@ class WordInputButton(discord.ui.Button["WordleView"]):
 
 
 class WordleView(BaseView):
-    def __init__(self, game: BetaWordle, *, timeout: float) -> None:
+    def __init__(self, game: BetaWordle, *, timeout: float | None) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game
@@ -230,7 +228,7 @@ class WordleView(BaseView):
 
 
 class BetaWordle(Wordle):
-    player: discord.User
+    player: discord.User | discord.Member
     """
     Wordle(buttons) game
     """
@@ -261,7 +259,7 @@ class BetaWordle(Wordle):
         self.embed_color = embed_color
         self.player = ctx.author
 
-        buf = await self.render_image()
+        buf = await asyncio.to_thread(self.render_image)
         embed = discord.Embed(title="Wordle!", color=self.embed_color)
         embed.set_image(url="attachment://wordle.png")
 

@@ -7,8 +7,6 @@ from typing import NamedTuple
 from PIL import Image, ImageDraw, ImageFont
 
 import discord
-from utilities.converters import ToAsync
-
 
 class Timecard(NamedTuple):
     filename: str
@@ -109,7 +107,6 @@ TIMECARDS = [
 ]
 
 
-@ToAsync()
 def timecard(text: str) -> discord.File:
     timecard: Timecard = random.choice(TIMECARDS)
 

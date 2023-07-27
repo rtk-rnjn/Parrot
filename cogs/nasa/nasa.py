@@ -80,7 +80,7 @@ class NASA(Cog):
         }
 
         res = await self.bot.http_session.get(
-            link, params={**self._api_params, **parameters}, headers=self.bot.GLOBAL_HEADERS
+            link, params={**self._api_params, **parameters}, headers=self.bot.GLOBAL_HEADERS,
         )
         file = discord.File(io.BytesIO(await res.read()), filename="earth.jpg")
         embed = (
@@ -212,6 +212,7 @@ class NASA(Cog):
                     .set_thumbnail(url=ENDPOINTS.NASA_LOGO)
                     .set_footer(text=f"Page {index+1}/{len(date)} | {ctx.author.name}")
                 )
+                em_list.append(embed)
         if not em_list:
             return await ctx.send(f"{ctx.author.mention} no results")
         await PaginationView(em_list).start(ctx=ctx)
@@ -405,7 +406,7 @@ class NASA(Cog):
                 Active Region Num: {active_region_num}
                 Link: {link}
                 Instuments: {instruments}
-                """
+                """,
             )
             em.title = catalog
             em.url = link
@@ -438,7 +439,7 @@ class NASA(Cog):
                 GST ID: {gstID}
                 Start Time: {startTime}
                 Link: {link}
-                """
+                """,
             )
             em_list.append(em)
         await PaginationView(em_list).start(ctx=ctx)
@@ -473,7 +474,7 @@ class NASA(Cog):
                 Event Time: {eventTime}
                 Link: {link}
                 Instuments: {instruments}
-                """
+                """,
             )
             em.title = catalog
             em.url = link
@@ -519,7 +520,7 @@ class NASA(Cog):
                 Active Region Num: {activeRegionNum}
                 Linked Events: {linkedEvents}
                 Link: {link}
-                """
+                """,
             )
             em.title = flrID
             em.url = link
@@ -588,7 +589,7 @@ Link: {link}
                 Event Time: {eventTime}
                 Link: {link}
                 Instuments: {instruments}
-                """
+                """,
             )
             em.title = mpcID
             em.url = link
@@ -622,7 +623,7 @@ Link: {link}
                 Event Time: {eventTime}
                 Link: {link}
                 Instuments: {instruments}
-                """
+                """,
             )
             em.title = rbeID
             em.url = link
@@ -656,7 +657,7 @@ Link: {link}
                 Event Time: {eventTime}
                 Link: {link}
                 Instuments: {instruments}
-                """
+                """,
             )
             em.title = hhsID
             em.url = link

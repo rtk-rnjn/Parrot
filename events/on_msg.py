@@ -630,7 +630,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 level = int((data["xp"] // 42) ** 0.55)
                 xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
                 rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore
-                file: discord.File = await rank_card(
+                file: discord.File = await asyncio.to_thread(
+                    rank_card,
                     level,
                     rank,
                     message.author,

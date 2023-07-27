@@ -11,7 +11,6 @@ from PIL import Image, ImageFilter, ImageOps
 
 import discord
 from core import Context, Parrot
-from utilities.converters import ToAsync
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -50,8 +49,7 @@ class CountryGuesser:
 
         self.all_countries = os.listdir(self._countries_path)
 
-    @ToAsync()
-    def invert_image(self, image_path: BytesIO | os.PathLike | str) -> BytesIO:
+    def invert_image(self, image_path: BytesIO | str) -> BytesIO:
         with Image.open(image_path) as img:
             img = img.convert("RGBA")
             r, g, b, a = img.split()
@@ -60,21 +58,20 @@ class CountryGuesser:
             rgb = rgb.split()
             img = Image.merge("RGBA", rgb + (a,))
 
-            buf = BytesIO()
-            img.save(buf, "PNG")
-            buf.seek(0)
-            return buf
+            return self._return_buf_from(img)
 
-    @ToAsync()
-    def blur_image(self, image_path: BytesIO | os.PathLike | str) -> BytesIO:
+    def blur_image(self, image_path: BytesIO | str) -> BytesIO:
         with Image.open(image_path) as img:
             img = img.convert("RGBA")
             img = img.filter(ImageFilter.GaussianBlur(10))
 
-            buf = BytesIO()
-            img.save(buf, "PNG")
-            buf.seek(0)
-            return buf
+            return self._return_buf_from(img)
+
+    def _return_buf_from(self, img: Image.Image) -> BytesIO:
+        buf = BytesIO()
+        img.save(buf, "PNG")
+        buf.seek(0)
+        return buf
 
     async def get_country(self) -> discord.File:
         country_file = random.choice(self.all_countries)
@@ -83,10 +80,10 @@ class CountryGuesser:
         file = os.path.join(self._countries_path, country_file)
 
         if self.hard_mode:
-            file = await self.blur_image(file)
+            file = await asyncio.to_thread(self.blur_image, file)
 
         if self.light_mode:
-            file = await self.invert_image(file)
+            file = await asyncio.to_thread(self.invert_image, file)
 
         return discord.File(file, "country.png")
 

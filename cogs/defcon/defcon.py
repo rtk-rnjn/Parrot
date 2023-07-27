@@ -110,7 +110,7 @@ class DefensiveCondition(Cog):
                         )
                         channel_hidded.append(channel.id)
                     except discord.Forbidden:
-                        log.warning(f"Failed to hide channel {channel.id} in guild {ctx.guild.id}")
+                        log.warning("failed to hide channel %s in guild %s", channel.id, ctx.guild.id)
 
         if channel_hidded:
             await self.bot.guild_configurations.update_one(
@@ -134,7 +134,7 @@ class DefensiveCondition(Cog):
                         )
                         channel_locked.append(channel.id)
                     except discord.Forbidden:
-                        log.warning(f"Failed to lock channel {channel.id} in guild {ctx.guild.id}")
+                        log.warning("failed to lock channel %s in guild %s", channel.id, ctx.guild.id)
 
         if settings.get("LOCK_TEXT_CHANNELS"):
             for channel in ctx.guild.text_channels:
@@ -150,7 +150,7 @@ class DefensiveCondition(Cog):
                         )
                         channel_locked.append(channel.id)
                     except discord.Forbidden:
-                        log.warning(f"Failed to lock channel {channel.id} in guild {ctx.guild.id}")
+                        log.warning("failed to lock channel %s in guild %s", channel.id, ctx.guild.id)
 
         if channel_locked:
             await self.bot.guild_configurations.update_one(
@@ -171,7 +171,7 @@ class DefensiveCondition(Cog):
                     )
                     count += 1
                 except discord.Forbidden:
-                    log.warning(f"Failed to set slowmode in channel {channel.id} in guild {ctx.guild.id}")
+                    log.warning("failed to set slowmode in channel %s in guild %s", channel.id, ctx.guild.id)
 
         cog: DefconListeners = self.bot.get_cog("DefconListeners")  # type: ignore
         if cog:
@@ -211,7 +211,7 @@ class DefensiveCondition(Cog):
                         )
 
                     except discord.Forbidden:
-                        log.warning(f"Failed to reset channel {channel.id} in guild {ctx.guild.id}")
+                        log.warning("failed to reset channel %s in guild %s", channel.id, ctx.guild.id)
 
         count = 0
         if settings.get("LOCK_VOICE_CHANNELS"):

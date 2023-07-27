@@ -6,14 +6,12 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 
 import discord
-from utilities.converters import ToAsync
 
 
-@ToAsync()
 def rank_card(
     level: int,
     rank: int,
-    member: discord.Member,
+    member: discord.Member | discord.User,
     *,
     current_xp: int,
     custom_background: str,

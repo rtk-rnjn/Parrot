@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+from typing import Literal
 
 import discord
 from core import Cog, Parrot
@@ -20,13 +21,13 @@ log = logging.getLogger("custom_commands.listeners")
 class Sector17Listeners(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.__current_owo_prefix = "owo"
+        self.__current_owo_prefix = "o"
 
         self.allowed_channels = {SECTOR_BOT_SPAM_CHANNEL, QUOTIENT_HQ_PLAYGROUND}
         self.allowed_guilds = set()
 
     async def cog_load(self) -> None:
-        self.allowed_guilds.add(self.bot.server.id)  # type: ignore
+        self.allowed_guilds.add(self.bot.server.id)
 
     async def wait_for_owo(
         self,
@@ -34,9 +35,10 @@ class Sector17Listeners(Cog):
         *,
         startswith: str | tuple[str, ...] = "",
         in_channel: int | None = None,
+        message_type: Literal["message", "embed"] = "message",
     ):
         def check(message: discord.Message) -> bool:
-            if not message.embeds:
+            if not message.embeds and message_type == "message":
                 return (
                     message.author.id == OWO_BOT
                     and message.channel.id == (in_channel or invoker_message.channel.id)
@@ -44,14 +46,18 @@ class Sector17Listeners(Cog):
                     and invoker_message.author.display_name in message.content
                     and "Slow down" not in message.content
                 )
+            elif message_type == "embed":
+                if not message.embeds:
+                    return False
 
-            embed = message.embeds[0]
-            return (
-                message.author.id == OWO_BOT
-                and message.channel.id == (in_channel or invoker_message.channel.id)
-                and invoker_message.author.display_name in embed.author.name
-                and "Slow down" not in message.content
-            )
+                embed = message.embeds[0]
+                return (
+                    message.author.id == OWO_BOT
+                    and message.channel.id == (in_channel or invoker_message.channel.id)
+                    and invoker_message.author.display_name in (embed.author.name or "")
+                    and "Slow down" not in message.content
+                )
+            return False
 
         try:
             return await self.bot.wait_for("message", check=check, timeout=10)
@@ -64,7 +70,7 @@ class Sector17Listeners(Cog):
         if message.guild is None:
             return
 
-        if message.guild.id == self.bot.server.id:  # type: ignore
+        if message.guild.id == self.bot.server.id:
             self.bot.dispatch("sector_17_19_message", message)
 
         if message.guild.id == QUOTIENT_HQ:
@@ -96,43 +102,27 @@ class Sector17Listeners(Cog):
             self.owo_pray_curse(message, content),
         )
 
-    def _get_command_list(self, data: dict[str, list[str] | str]) -> tuple[str, ...]:
-        ls = []
+    def _get_command_list(self, content: str, data: dict[str, list[str] | str]) -> dict[str, str] | None:
+        prefixes = "|".join(list({"owo", self.__current_owo_prefix}))
 
-        for key, value in data.items():
-            if isinstance(value, list):
-                for v in value:
-                    ls.extend(
-                        (
-                            # f"{self.__current_owo_prefix}{v}",
-                            # f"{self.__current_owo_prefix} {v}",
-                            f"owo{v}",
-                            f"owo {v}",
-                        ),
-                    )
+        cmds = []
+        for commands, aliases in data.items():
+            if isinstance(aliases, list):
+                cmds.extend(aliases)
             else:
-                ls.extend(
-                    (
-                        # f"{self.__current_owo_prefix}{value}",
-                        # f"{self.__current_owo_prefix} {value}",
-                        f"owo{value}",
-                        f"owo {value}",
-                    ),
-                )
-            ls.extend(
-                (
-                    # f"{self.__current_owo_prefix}{key}",
-                    # f"{self.__current_owo_prefix} {key}",
-                    f"owo{key}",
-                    f"owo {key}",
-                ),
-            )
+                cmds.append(aliases)
 
-        log.debug("Command list: %s", ls)
-        return tuple(set(ls))
+            cmds.append(commands)
+
+        cmds = "|".join(set(cmds))
+
+        regex = rf"(?P<prefix>{prefixes})\s*(?P<command>{cmds})"
+
+        if match := re.search(regex, content):
+            return match.groupdict()
 
     async def change_owo_prefix(self, message: discord.Message, content: str) -> bool | None:
-        if not content.startswith(self._get_command_list({"prefix": "prefix"})):
+        if not self._get_command_list(content, {"prefix": "prefix"}):
             return
 
         owo_message = await self.wait_for_owo(message, startswith="**\N{GEAR}")
@@ -146,16 +136,16 @@ class Sector17Listeners(Cog):
         return False
 
     async def owo_battle(self, message: discord.Message, content: str):
-        if not content.startswith(self._get_command_list({"battle": "b"})):
+        if not self._get_command_list(content, {"battle": "b"}):
             return
-        owo_message = await self.wait_for_owo(message)
+        owo_message = await self.wait_for_owo(message, message_type="embed")
         if owo_message is not None:
             await asyncio.sleep(14.5)
 
             await message.channel.send(f"{message.author.mention} Battle", reference=owo_message)
 
     async def owo_hunt(self, message: discord.Message, content: str):
-        if not content.startswith(self._get_command_list({"hunt": "h"})):
+        if not self._get_command_list(content, {"hunt": "h"}):
             return
         owo_message = await self.wait_for_owo(message, startswith="**\N{SEEDLING}")
         if owo_message is not None:
@@ -164,11 +154,15 @@ class Sector17Listeners(Cog):
             await message.channel.send(f"{message.author.mention} Hunt", reference=owo_message)
 
     async def owo_hunt_bot(self, message: discord.Message, content: str):
-        if not content.startswith(self._get_command_list({"huntbot": ["autohunt", "hb", "ah"]})):
+        if not self._get_command_list(content, {"huntbot": ["autohunt", "hb", "ah"]}):
             return
         owo_message = await self.wait_for_owo(message)
 
-        if owo_message is not None and "BEEP BOOP" not in owo_message.content and "YOU SPENT" not in owo_message.content:
+        if (
+            (owo_message is not None)
+            and ("BEEP BOOP" not in owo_message.content)
+            and ("YOU SPENT" not in owo_message.content)
+        ):
             return
 
         if owo_message is not None and owo_message.embeds:
@@ -176,7 +170,7 @@ class Sector17Listeners(Cog):
 
         try:
             if owo_message is not None:
-                main = owo_message.content.split("\n")[1].split(" ")[7]  # get time # TODO: fix this temp solution
+                main = owo_message.content.split("\n")[1].split(" ")[7]
             else:
                 main = "0M"
         except IndexError:
@@ -202,7 +196,7 @@ class Sector17Listeners(Cog):
             await owo_message.add_reaction("\N{ALARM CLOCK}")
 
     async def owo_pray_curse(self, message: discord.Message, content: str):
-        if not content.startswith(self._get_command_list({"pray": "curse"})):
+        if not self._get_command_list(content, {"pray": "curse"}):
             return
         owo_message = await self.wait_for_owo(message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}"))
 

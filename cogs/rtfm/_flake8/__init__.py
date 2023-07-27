@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from typing import Annotated, Literal
 
-from pyparsing import Optional
 
 from discord.ext import commands
 from utilities.converters import convert_bool

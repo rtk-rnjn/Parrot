@@ -587,7 +587,7 @@ class LintCode:
 
     async def run_black(self, ctx: Context) -> None:
         ini = time.perf_counter()
-        res = await ctx.bot.func(format_str, self.source, mode=FileMode())
+        res = await asyncio.to_thread(format_str, self.source, mode=FileMode())
         end = time.perf_counter()
 
         if res == self.source:
@@ -602,7 +602,7 @@ class LintCode:
 
     async def run_isort(self, ctx: Context) -> None:
         ini = time.perf_counter()
-        res: str = await ctx.bot.func(isort.code, self.source)
+        res: str = await asyncio.to_thread(isort.code, self.source)
         end = time.perf_counter()
 
         if res == self.source:
@@ -618,7 +618,7 @@ class LintCode:
 
     async def run_autopep8(self, ctx: Context) -> None:
         ini = time.perf_counter()
-        res = await ctx.bot.func(autopep8.fix_code, self.source)
+        res = await asyncio.to_thread(autopep8.fix_code, self.source)
         end = time.perf_counter()
 
         if res == self.source:
@@ -633,7 +633,7 @@ class LintCode:
 
     async def run_yapf(self, ctx: Context) -> None:
         ini = time.perf_counter()
-        res = await ctx.bot.func(yapf_format, self.source)
+        res = await asyncio.to_thread(yapf_format, self.source)
         if isinstance(res, tuple):
             res = res[0]
 
@@ -654,8 +654,8 @@ class LintCode:
         from black import FileMode, format_str
 
         ini = time.perf_counter()
-        res = await ctx.bot.func(isort.code, self.source)
-        res = await ctx.bot.func(format_str, res, mode=FileMode())
+        res = await asyncio.to_thread(isort.code, self.source)
+        res = await asyncio.to_thread(format_str, res, mode=FileMode())
         end = time.perf_counter()
 
         if res == self.source:

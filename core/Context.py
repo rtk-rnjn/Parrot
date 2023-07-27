@@ -20,7 +20,7 @@ from PIL import Image
 
 import discord
 from discord.ext import commands
-from utilities.converters import ToAsync, ToImage, emoji_to_url
+from utilities.converters import ToImage, emoji_to_url
 from utilities.emotes import emojis
 from utilities.regex import LINKS_RE
 
@@ -419,6 +419,11 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 return None
             raise
 
+    async def wait_for_value(self, *, convert: Callable[[str], T], **kwargs: Any) -> T:
+        """Wait for a value."""
+        message: discord.Message = await self.wait_for("message", **kwargs)
+        return convert(message.content)
+
     async def paginate(
         self,
         entries: list[Any] | str,
@@ -560,7 +565,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         raise errors[retry]
 
     async def database_game_update(
-        self, game_name: str, *, win: bool = False, loss: bool = False, set: dict = {}, **kw: Any
+        self, game_name: str, *, win: bool = False, loss: bool = False, set: dict = {}, **kw: Any,
     ) -> bool:
         set_kwargs: dict[str, Any] = {f"game_{game_name}_{k}": v for k, v in set.items()}
         kwargs = {"$set": set_kwargs}
@@ -737,7 +742,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             response = await self.bot.http_session.get(url)
             if "https://tenor.com" in url or "https://media.tenor" in url:
                 html = await response.read()
-                url_tenor = await self.__scrape_tenor(html)
+                url_tenor = await asyncio.to_thread(self.__scrape_tenor, html)
                 resp = await self.bot.http_session.get(url_tenor)
                 entity = BytesIO(await resp.read())
             else:
@@ -746,7 +751,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         return self.check_buffer(entity)
 
-    @ToAsync()
     def __scrape_tenor(self, html: str) -> str:
         soup = BeautifulSoup(html, features=HTML_PARSER)
         find = soup.find("div", {"class": "Gif"})

@@ -20,16 +20,13 @@ with open(CONDITION_PATH) as f:
 with open(TRIGGER_PATH) as f:
     TRIGGERS: dict[str, list[dict[str, str]]] = json.load(f)
 
+LIMIT = 5
 
 def parse_dict(data: dict[str, Any]) -> str:
-    st = ""
-    for i, (k, v) in enumerate(data.items()):
-        if i == 0:
-            st += f"`{k}: {v}`\n"
-        else:
-            st += f"`   {k}: {v}`\n"
-
-    return st
+    return "".join(
+        f"`{k}: {v}`\n" if i == 0 else f"`   {k}: {v}`\n"
+        for i, (k, v) in enumerate(data.items())
+    )
 
 
 class Automod(ParrotView):
@@ -171,7 +168,7 @@ def get_item(main_data, *, type_: str) -> ParrotSelect:
         async def callback(self, interaction: discord.Interaction) -> None:
             assert isinstance(self.view, Automod)
 
-            if len(getattr(self.view, type_)) >= 5:
+            if len(getattr(self.view, type_)) >= LIMIT:
                 return await interaction.response.send_message("You can only add 5 items", ephemeral=True)
 
             data = json.loads(self.values[0])

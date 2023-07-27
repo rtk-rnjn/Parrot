@@ -1220,14 +1220,14 @@ class Games(Cog):
         """Create and send an embed to display the board."""
         image = assemble_board_image(game.board, game.rows, game.columns)
         with io.BytesIO() as image_stream:
-            await ctx.bot.func(image.save, image_stream, format="png")
+            await asyncio.to_thread(image.save, image_stream, format="png")
             image_stream.seek(0)
             file = discord.File(fp=image_stream, filename="board.png")
         embed = discord.Embed(
             title="Duck Duck Duck Goose!",
             color=discord.Color.dark_purple(),
         ).set_image(url="attachment://board.png")
-        return await ctx.send(embed=embed, file=file)  # type: ignore
+        return await ctx.send(embed=embed, file=file)
 
     async def send_found_embed(self, ctx: Context) -> discord.Message:
         """Create and send an embed to display claimed answers. This will be edited as the game goes on."""
@@ -1236,7 +1236,7 @@ class Games(Cog):
             title="Flights Found",
             color=discord.Color.dark_purple(),
         )
-        return await ctx.send(embed=embed)  # type: ignore
+        return await ctx.send(embed=embed)
 
     async def append_to_found_embed(self, game: DuckGame, text: str) -> None:
         """Append text to the claimed answers embed."""

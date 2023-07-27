@@ -18,7 +18,7 @@ from wand.sequence import Sequence
 import discord
 from discord.ext import commands
 
-from ..converters import ImageConverter, ToAsync
+from ..converters import ImageConverter
 from ..exceptions import TooManyFrames
 
 if TYPE_CHECKING:
@@ -74,7 +74,6 @@ MAX_FRAMES: Final[int] = 200
 FORMATS: Final[tuple[str, ...]] = ("png", "gif")
 
 
-@ToAsync()
 def svg_to_png(
     svg_bytes: bytes,
     *,

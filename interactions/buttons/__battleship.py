@@ -14,7 +14,6 @@ from PIL import Image, ImageDraw
 
 import discord
 from core import Context, Parrot
-from utilities.converters import ToAsync
 
 from .__wordle import WordInputButton
 from .utils import BaseView
@@ -147,7 +146,6 @@ class Board:
         if s := [ship for ship in self.ships if coord in ship.span]:
             return s[0]
 
-    @ToAsync()
     def to_image(self, hide: bool = False) -> BytesIO:
         RED = (255, 0, 0)
         GRAY = (128, 128, 128)
@@ -234,10 +232,10 @@ class BattleShip:
         hide: bool = True,
     ) -> tuple[discord.Embed, discord.File, discord.Embed, discord.File]:
         board = self.get_board(player)
-        image1 = await board.to_image()
+        image1 = await asyncio.to_thread(board.to_image)
 
         board2 = self.get_board(player, other=True)
-        image2 = await board2.to_image(hide=hide)
+        image2 = await asyncio.to_thread(board2.to_image, hide=hide)
 
         file1 = discord.File(image1, "board1.png")
         file2 = discord.File(image2, "board2.png")

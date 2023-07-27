@@ -5,7 +5,6 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 
 import discord
-from utilities.converters import ToAsync
 
 IMAGE = "extra/imagine.png"
 TITLE_FONT = "extra/GintoNord-Black.ttf"
@@ -60,7 +59,6 @@ def draw_text(
         y_pos += int(_line_height * line_height) + 100
 
 
-@ToAsync()
 def imagine(text: str) -> discord.File:
     image = Image.open(IMAGE)
     draw = ImageDraw.Draw(image)

@@ -4,7 +4,7 @@ import asyncio
 import difflib
 import inspect
 import re
-from typing import Annotated, Optional
+from typing import Annotated
 
 import async_timeout
 from jinja2.sandbox import SandboxedEnvironment
@@ -177,7 +177,7 @@ class AutoResponders(Cog):
         ctx: Context,
         name: str,
         *,
-        res: Annotated[str, Optional[commands.clean_content]] = None,
+        res: Annotated[str, commands.clean_content | None] = None,
     ) -> None:
         """Add a new autoresponder.
 
@@ -237,7 +237,7 @@ class AutoResponders(Cog):
         ctx: Context,
         name: str,
         *,
-        res: Annotated[str, Optional[commands.clean_content]] = None,
+        res: Annotated[str, commands.clean_content | None] = None,
     ) -> None:
         """Edit an autoresponder."""
         if name not in self.cache[ctx.guild.id]:
@@ -375,7 +375,7 @@ class AutoResponders(Cog):
         try:
             async with async_timeout.timeout(delay=1):
                 try:
-                    template = await self.bot.func(self.jinja_env.from_string, response)
+                    template = await asyncio.to_thread(self.jinja_env.from_string, response)
                     return_data = await template.render_async(**variables)
                     if len(return_data) > 1990:
                         return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Response is too long`", False

@@ -393,8 +393,9 @@ class Utils(Cog):
             ):
                 level = int((data["xp"] // 42) ** 0.55)
                 xp = await self.__get_required_xp(level + 1)
-                rank = await self.__get_rank(collection=collection, member=member)
-                file = await rank_card(
+                rank = await self.__get_rank(collection=collection, member=member) or 0
+                file = await asyncio.to_thread(
+                    rank_card,
                     level,
                     rank,
                     member,

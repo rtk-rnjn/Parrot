@@ -1,1 +1,1 @@
-from ..types import responses as responses
+from ..types import responses  # noqa: F401, pylint: disable=unused-import

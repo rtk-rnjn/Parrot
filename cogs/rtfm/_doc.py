@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import urllib.parse
 from functools import partial
 from typing import Any
@@ -36,7 +37,7 @@ async def python_doc(ctx: Context, text: str) -> discord.Message | None:
     def soup_match(tag):
         return all(string in tag.text for string in text.strip().split()) and tag.name == "li"
 
-    elements = await ctx.bot.func(soup.find_all, soup_match, limit=10)
+    elements = await asyncio.to_thread(soup.find_all, soup_match, limit=10)
     links = [tag.select_one("li > a") for tag in elements]
     links = [link for link in links if link is not None]
 
@@ -67,7 +68,7 @@ async def _cppreference(language: str, ctx: Context, text: str) -> discord.Messa
         return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
 
     soup = BeautifulSoup(await response.text(), HTML_PARSER)
-    uls = await ctx.bot.func(soup.find_all, "ul", class_="mw-search-results")
+    uls = await asyncio.to_thread(soup.find_all, "ul", class_="mw-search-results")
 
     if not uls:
         return await ctx.send(f"{ctx.author.mention} no results")
@@ -124,7 +125,7 @@ async def haskell_doc(ctx: Context, text: str) -> discord.Message | None:
     )
 
     content = []
-    ls = await ctx.bot.func(ul.find_all, "li", limit=10)
+    ls = await asyncio.to_thread(ul.find_all, "li", limit=10)
     for li in ls:
         a = li.find("div", class_="mw-search-result-heading").find("a")
         content.append(f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})")

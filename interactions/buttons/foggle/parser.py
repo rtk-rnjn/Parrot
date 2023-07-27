@@ -65,10 +65,10 @@ class View:
                 op = OPS[self.peek()]
                 self.idx += 1
                 self.strip_ws()
-                next = below()
-                if next is None:
+                nxt = below()
+                if nxt is None:
                     return None
-                e = op(e, next)
+                e = op(e, nxt)
                 if e is None:
                     return None
             return e

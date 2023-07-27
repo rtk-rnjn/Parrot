@@ -13,7 +13,6 @@ from sympy import lambdify, symbols, sympify
 
 import discord
 from core import Context
-from utilities.converters import ToAsync as to_thread
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -31,8 +30,7 @@ CODEFONT: FontProperties = FontProperties(
 )
 
 
-@to_thread()
-def boxplot(_, data: list[float], *, fill_boxes: bool = True) -> discord.File:
+def boxplot(_: Context, data: list[float], *, fill_boxes: bool = True) -> discord.File:
     fig: Figure = plt.figure()
     ax: Axes = fig.add_subplot()
     ax.set_title("Box & Whisker Plot", pad=15)
@@ -139,8 +137,6 @@ def _clean_implicit_mul(equation: str) -> str:
     equation = equation.replace(")(", ")*(")
     return equation
 
-
-@to_thread()
 def plotfn(_: Context, equation: str, *, xrange: tuple[int, int] = (-20, 20)) -> discord.File:
     x = symbols("x")
     equation = _clean_implicit_mul(equation)

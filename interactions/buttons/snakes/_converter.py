@@ -304,18 +304,18 @@ async def disambiguate(
         # Love that duplicate code
         for coro in pending:
             coro.cancel()
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as e:
         msg = "Timed out."
-        raise BadArgument(msg)
+        raise BadArgument(msg) from e
 
     # Guaranteed to not error because of isdecimal() in check
     index = int(result.content)
 
     try:
         return entries[index - 1]
-    except IndexError:
+    except IndexError as e:
         msg = "Invalid choice."
-        raise BadArgument(msg)
+        raise BadArgument(msg) from e
 
 
 class Snake(Converter):

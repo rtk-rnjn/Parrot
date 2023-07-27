@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 import re
 from io import BytesIO
@@ -8,12 +9,10 @@ from PIL import Image
 
 import discord
 from core import Context
-from utilities.converters import ToAsync
 
 from .__constants import code_dict, codes, selector_back, selector_front
 
 
-@ToAsync()
 def isometric_func(shape, selector_pos=None):
     """Creates static isometric drawing."""
     t = 4
@@ -298,7 +297,7 @@ class Minecraft(discord.ui.View):
         if "2" in code or "v" in code:
             code = liquid(code)
 
-        buf, c = await isometric_func(code.split(), self.selector_pos)
+        buf, c = await asyncio.to_thread(isometric_func, code.split(), self.selector_pos)
         c -= 1
         buf_file = discord.File(buf, "interactive_iso.png")
 
@@ -351,7 +350,7 @@ class Minecraft(discord.ui.View):
         if "2" in code or "v" in code:
             code = liquid(code)
 
-        buf, _ = await isometric_func(code.split())
+        buf, _ = await asyncio.to_thread(isometric_func, code.split())
         await self.ctx.reply(file=discord.File(buf, "interactive_iso.png"), mention_author=False)
 
         for child in self.children[:]:

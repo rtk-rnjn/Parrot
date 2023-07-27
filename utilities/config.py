@@ -35,7 +35,7 @@ def parse_env_var(key: ..., default: ...) -> ...:
     ...
 
 
-def parse_env_var(key: str | None, default: Any = None) -> str | int | float | bool | list[Any]:
+def parse_env_var(key: str | None, default: Any = None) -> str | int | float | bool | list:
     """Parse an environment variable into a Python type."""
     value = os.environ.get(str(key), default)
     if value is None:

@@ -18,10 +18,10 @@ async def _add_roles_bot(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -48,10 +48,10 @@ async def _add_roles_humans(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     operator: Literal["+", "add", "give", "-", "remove", "take"],
     role: discord.Role,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -77,10 +77,10 @@ async def _add_roles(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     role: discord.Role,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -105,10 +105,10 @@ async def _remove_roles(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     role: discord.Role,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -133,10 +133,10 @@ async def _role_hoist(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     role: discord.Role,
     _bool: bool,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -161,10 +161,10 @@ async def _change_role_name(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     role: discord.Role,
     text: str,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -189,10 +189,10 @@ async def _change_role_color(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     role: discord.Role,
     int_: int,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < role.position:
@@ -217,10 +217,10 @@ async def _ban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     days: int = 0,
-    reason: str,
+    reason: str | None,
     silent: bool = False,
     **kwargs: Any,
 ):
@@ -245,10 +245,10 @@ async def _mass_ban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     members: list[discord.Member] | discord.Member,
     days: int = 0,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     members = members if isinstance(members, list) else [members]
@@ -278,9 +278,9 @@ async def _softban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     members: list[discord.Member] | discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     members = members if isinstance(members, list) else [members]
@@ -313,10 +313,10 @@ async def _temp_ban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     members: list[discord.Member] | discord.Member,
     duration: FutureTime | datetime.datetime,
-    reason: str,
+    reason: str | None,
     silent: bool = True,
     bot: Parrot = None,
     **kwargs: Any,
@@ -357,9 +357,9 @@ async def _unban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -378,10 +378,10 @@ async def _timeout(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     _datetime: datetime.datetime,
-    reason: str,
+    reason: str | None,
     silent: bool = False,
     **kwargs: Any,
 ):
@@ -416,10 +416,10 @@ async def _self_mute(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     _datetime: datetime.datetime,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     val = await ctx.prompt("Are you sure want to get muted? Don't DM mod for unmute")
@@ -446,9 +446,9 @@ async def _mute(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     silent: bool = False,
     **kwargs: Any,
 ):
@@ -531,9 +531,9 @@ async def _unmute(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if member.timed_out_until:
@@ -568,9 +568,9 @@ async def _kick(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     silent: bool = False,
     **kwargs: Any,
 ):
@@ -596,9 +596,9 @@ async def _mass_kick(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     members: list[discord.Member] | discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     members = members if isinstance(members, list) else [members]
@@ -630,10 +630,10 @@ async def _block(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
     members: list[discord.Member] | discord.Member,
-    reason: str,
+    reason: str | None,
     silent: bool = False,
     **kwargs: Any,
 ):
@@ -680,10 +680,10 @@ async def _unblock(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
     members: list[discord.Member] | discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     members = members if isinstance(members, list) else [members]
@@ -708,7 +708,7 @@ async def _text_lock(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
     reason: str = None,
     **kwargs: Any,
@@ -737,7 +737,7 @@ async def _vc_lock(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.VoiceChannel | discord.StageChannel,
     reason: str = None,
     **kwargs: Any,
@@ -765,7 +765,7 @@ async def _text_unlock(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
     reason: str = None,
     **kwargs: Any,
@@ -794,7 +794,7 @@ async def _vc_unlock(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.VoiceChannel | discord.StageChannel,
     reason: str = None,
     **kwargs: Any,
@@ -822,7 +822,7 @@ async def _change_nickname(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     name: str,
     **kwargs: Any,
@@ -844,7 +844,7 @@ async def _change_channel_topic(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
     text: str,
     **kwargs: Any,
@@ -864,7 +864,7 @@ async def _change_channel_name(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
     text: str,
     **kwargs: Any,
@@ -881,10 +881,10 @@ async def _slowmode(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     seconds: int,
     channel: discord.TextChannel,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if seconds:
@@ -917,9 +917,9 @@ async def _clone(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     channel: discord.TextChannel,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -938,9 +938,9 @@ async def _voice_mute(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
@@ -963,9 +963,9 @@ async def _voice_unmute(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -983,9 +983,9 @@ async def _voice_deafen(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
@@ -1008,9 +1008,9 @@ async def _voice_undeafen(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -1028,9 +1028,9 @@ async def _voice_kick(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
@@ -1053,10 +1053,10 @@ async def _voice_ban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     channel: discord.VoiceChannel | discord.StageChannel,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if ctx.author.top_role.position < member.top_role.position:
@@ -1086,10 +1086,10 @@ async def _voice_unban(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     member: discord.Member,
     channel: discord.VoiceChannel | discord.StageChannel,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -1114,9 +1114,9 @@ async def _sticker_delete(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     sticker: discord.GuildSticker,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     if sticker.guild and sticker.guild.id != guild.id:
@@ -1136,9 +1136,9 @@ async def _sticker_add(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     sticker: discord.GuildSticker,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     url = sticker.url
@@ -1172,11 +1172,11 @@ async def _sticker_addurl(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     url: str,
     name: str,
     emoji: str,
-    reason: str,
+    reason: str | None,
     description: str,
     **kwargs: Any,
 ):
@@ -1202,9 +1202,9 @@ async def _emoji_delete(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     emojis: list[discord.Emoji | discord.PartialEmoji],
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     for emoji in emojis:
@@ -1225,9 +1225,9 @@ async def _emoji_add(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     emojis: list[discord.Emoji | discord.PartialEmoji],
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     for emoji in emojis:
@@ -1249,10 +1249,10 @@ async def _emoji_addurl(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     url: str,
     name: str,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -1273,10 +1273,10 @@ async def _emoji_rename(
     guild: discord.Guild,
     command_name: str,
     ctx: Context,
-    destination: discord.TextChannel,
+    destination: discord.abc.Messageable,
     emoji: discord.Emoji,
     name: str,
-    reason: str,
+    reason: str | None,
     **kwargs: Any,
 ):
     try:
@@ -1325,6 +1325,8 @@ async def do_removal(
         await ctx.send(f"Successfully removed {deleted} messages.", delete_after=10)
     else:
         await ctx.send(to_send, delete_after=10)
+
+    await ctx.message.delete(delay=10)
 
 
 MEMBER_REACTION: dict[str, Callable] = {

@@ -1,10 +1,12 @@
+from __future__ import annotations
+
+import asyncio
 from collections import namedtuple
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
 import discord
-from utilities.converters import ToAsync
 
 from .levels import levels
 
@@ -81,7 +83,7 @@ class BottleButton(discord.ui.Button["PourView"]):
 
             self.view.state = 0
             embed = self.view.msg.embeds[0]
-            img_buf = await self.view.draw_image()
+            img_buf = await asyncio.to_thread(self.view.draw_image)
 
             img_file = discord.File(img_buf, "pour_game.png")
             embed.set_image(url="attachment://pour_game.png")
@@ -131,7 +133,6 @@ class PourView(discord.ui.View):
                 ),
             )
 
-    @ToAsync()
     def draw_image(self):
         n_bottle = len(levels[self.level])
         img = Image.new("RGBA", (50 + 50 * n_bottle, 200), (255, 242, 161))
@@ -226,7 +227,7 @@ class PourView(discord.ui.View):
             )
 
         embed = self.msg.embeds[0]
-        img_buf = await self.draw_image()
+        img_buf = await asyncio.to_thread(self.draw_image)
 
         img_file = discord.File(img_buf, "pour_game.png")
         embed.set_image(url="attachment://pour_game.png")
@@ -285,7 +286,7 @@ class PourView(discord.ui.View):
 
         embed = self.msg.embeds[0]
         embed.description = f"Level : {self.level}"
-        img_buf = await self.draw_image()
+        img_buf = await asyncio.to_thread(self.draw_image)
         img_file = discord.File(img_buf, "pour_game.png")
 
         embed.set_image(url="attachment://pour_game.png")

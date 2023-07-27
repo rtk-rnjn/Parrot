@@ -59,7 +59,7 @@ from utilities.config import (
     WEBHOOK_STARTUP_LOGS,
     WEBHOOK_VOTE_LOGS,
 )
-from utilities.converters import Cache, ToAsync
+from utilities.converters import Cache
 from utilities.paste import Client
 from utilities.regex import LINKS_RE
 
@@ -152,12 +152,6 @@ logger.addHandler(stream_handler)
 logger.addHandler(hndlr)
 
 log = logging.getLogger("core.parrot")
-
-
-@ToAsync()
-def func(function: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-    return function(*args, **kwargs)
-
 
 __all__ = ("Parrot",)
 
@@ -263,19 +257,17 @@ class Parrot(commands.AutoShardedBot):
         self.afk_users: set[int] = set()
         self.channel_message_cache: dict[int, asyncio.Queue[discord.Message]] = {}
 
-        self.func: Callable[..., Any] = func
-
         self.before_invoke(self.__before_invoke)
 
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
-        self.ipc_server: "ipc.server.Server" = ipc.server.Server(
+        self.ipc_server: ipc.server.Server = ipc.server.Server(
             self,  # type: ignore
             host=LOCALHOST,
             standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
         )
-        self.ipc_client: "ipc.client.Client" = ipc.client.Client(
+        self.ipc_client: ipc.client.Client = ipc.client.Client(
             host=LOCALHOST,
             standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
@@ -1348,7 +1340,7 @@ class Parrot(commands.AutoShardedBot):
     async def get_or_fetch_message(
         self,
         channel: discord.Object | discord.PartialMessageable,
-        message: int,
+        message: ...,
     ) -> discord.Message | None:
         ...
 
@@ -1356,7 +1348,7 @@ class Parrot(commands.AutoShardedBot):
     async def get_or_fetch_message(
         self,
         channel: ...,
-        message: str,
+        message: str | int,
     ) -> discord.Message | None:
         ...
 

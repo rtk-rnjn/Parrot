@@ -8,6 +8,10 @@ from discord.ext import commands
 
 from ._actions import ENDPOINTS
 
+HALF = 0.5
+MAX_IMAGES = 10
+HTTP_RESPONSE = 200
+
 
 class Actions(Cog):
     """Action commands like hug and kiss."""
@@ -29,11 +33,11 @@ class Actions(Cog):
         return choice(self.cached_images.get(ctx.command.qualified_name, [None]))
 
     async def send_message(self, ctx: Context, *, url: str = None) -> None:
-        if random() > 0.5 and len(self.cached_images.get(ctx.command.qualified_name, [])) >= 10:
+        if random() > HALF and len(self.cached_images.get(ctx.command.qualified_name, [])) >= MAX_IMAGES:
             url = url or choice(self.cached_images[ctx.command.qualified_name])
         else:
             response = await self.bot.http_session.get(url or f"{self.url}/{ctx.command.name}")
-            if response.status != 200:
+            if response.status != HTTP_RESPONSE:
                 url = self._try_from_cache(ctx)
                 if url is None:
                     await ctx.send(f"{ctx.author.mention} Something went wrong, try again later")

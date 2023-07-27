@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from string import ascii_uppercase
-from typing import Optional, Union
 
 from PIL import Image
 
@@ -218,8 +217,8 @@ STATES = (
 NUMBERS = list(Emojis.number_emojis.values())
 CROSS_EMOJI = Emojis.incident_unactioned
 
-Coordinate = Optional[tuple[int, int]]
-EMOJI_CHECK = Union[discord.Emoji, discord.PartialEmoji, str]
+Coordinate = tuple[int, int] | None
+EMOJI_CHECK = discord.Emoji | discord.PartialEmoji | str
 
 CHOICES = ["rock", "paper", "scissors"]
 SHORT_CHOICES = ["r", "p", "s"]

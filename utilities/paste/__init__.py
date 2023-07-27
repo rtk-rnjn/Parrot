@@ -1,8 +1,8 @@
 from typing import Literal, NamedTuple
 
-from .client import Client as Client
+from .client import Client  # noqa: F401  # pylint: disable=unused-import
 from .errors import *  # noqa: F401, F403  # pylint: disable=unused-wildcard-import
-from .paste import File as File, Paste as Paste
+from .paste import File, Paste  # noqa: F401  # pylint: disable=unused-import
 
 
 class VersionInfo(NamedTuple):

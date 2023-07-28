@@ -29,6 +29,7 @@ class Environment(SandboxedEnvironment):
 
 
 class AutoResponders(Cog):
+    """Autoresponders for your server."""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.cache = {}

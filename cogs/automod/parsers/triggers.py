@@ -11,6 +11,11 @@ from discord import Member, Message
 from discord.ext import commands
 from utilities.regex import INVITE_RE, LINKS_RE
 
+OPERATRORS = {
+    "all": all,
+    "any": any,
+}
+
 
 class Trigger:
     def __init__(self, bot: Parrot, data: list[dict], operator: str = "all") -> None:
@@ -29,12 +34,15 @@ class Trigger:
         self.cd_x_user_links_in_y_seconds = None
         self.cd_x_channel_links_in_y_seconds = None
 
-        self.operator = all if operator == "all" else any
+        self.operator = OPERATRORS[operator]
 
         self.build_cooldowns()
+    
+    def __repr__(self) -> str:
+        return f"<Trigger data={self.data}>"
 
     async def check(self, **kw) -> bool:
-        return self.operator(getattr(self, tgr["type"])(**{**kw, **tgr["kwargs"]}) for tgr in self.data)
+        return self.operator(getattr(self, tgr["type"])(**{**kw, **tgr}) for tgr in self.data)
 
     def build_cooldowns(self) -> None:
         for tgr in self.data:

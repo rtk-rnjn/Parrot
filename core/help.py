@@ -318,7 +318,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 else:
                     all_commands.append(command)
 
-        return sorted(all_commands)
+        return sorted(all_commands, key=lambda c: c.qualified_name)
 
     async def send_cog_help(self, cog: Cog):
         await self.context.typing()

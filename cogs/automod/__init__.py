@@ -110,7 +110,7 @@ class AutomaticModeration(Cog):
             return
 
         self._was_ready = True
-        await self.__cache_build()
+        await self.bot.loop.create_task(self.__cache_build())
 
     async def __cache_build(self):
         for guild in self.bot.guilds:

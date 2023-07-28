@@ -36,9 +36,14 @@ class Automod(ParrotView):
         self.conditions = []
         self.triggers = []
 
+        self.__cancelled = False
         self.add_item(get_item(self.triggers, type_="triggers"))
         self.add_item(get_item(self.conditions, type_="conditions"))
         self.add_item(get_item(self.actions, type_="actions"))
+
+    @property
+    def cancelled(self) -> bool:
+        return self.__cancelled
 
     @property
     def embed(self) -> discord.Embed:
@@ -71,18 +76,22 @@ class Automod(ParrotView):
             return await interaction.response.send_message("Please add at least one action", ephemeral=True)
 
         if not self.conditions:
-            return await interaction.response.send_message("Please add at least one condition", ephemeral=True)
+            return await interaction.response.send_message("Please add at least one condition. `new_message` for no condition", ephemeral=True)
 
         if not self.triggers:
             return await interaction.response.send_message("Please add at least one trigger", ephemeral=True)
 
-        await interaction.response.send_message("Saved", ephemeral=True)
+        await interaction.response.send_message(f"{interaction.user.mention} Saved response successfully.", ephemeral=True)
+        self.disable_all()
+        self.stop()
+        await self.message.edit(view=self)
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red, row=3)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_message("Cancelled", ephemeral=True)
         self.disable_all()
         self.stop()
+        self.__cancelled = True
         await self.message.edit(view=self)
 
     @discord.ui.button(label="Refresh", style=discord.ButtonStyle.blurple, row=3)
@@ -95,7 +104,7 @@ class Automod(ParrotView):
 
 
 class _Parser:
-    def __init__(self, value: str, method) -> None:
+    def __init__(self, value: str, method: str) -> None:
         self.value = value
         self.method = method.lower()
 

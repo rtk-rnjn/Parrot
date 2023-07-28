@@ -22,6 +22,7 @@ __all__ = (
 DISPLAY_COG = (
     "AUTORESPONDERS",
     "CONFIGURATION",
+    "AUTOMATICMODERATION",
     "DEFENSIVECONDITION",
     "FUN",
     "GAMES",
@@ -114,7 +115,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
         if value == "__index":
             await self.view.rebind(FrontPageSource(self.bot), interaction)
         else:
-            cog = self.bot.get_cog(value)
+            cog: Cog = self.bot.get_cog(value)  # type: ignore
             if cog is None:
                 await interaction.response.send_message("Somehow this category does not exist?", ephemeral=True)
                 return
@@ -158,7 +159,7 @@ class FrontPageSource(menus.PageSource):
             Use "`{menu.ctx.clean_prefix}help command`" for more info on a command.
             Use "`{menu.ctx.clean_prefix}help category`" for more info on a category.
             Use the dropdown menu below to select a category.
-        """,
+            """
         )
 
         embed.add_field(
@@ -235,6 +236,9 @@ class HelpMenu(RoboPages):
 
 
 class PaginatedHelpCommand(commands.HelpCommand):
+    bot: Parrot
+    context: Context
+
     def __init__(self) -> None:
         super().__init__(
             command_attrs={
@@ -290,11 +294,30 @@ class PaginatedHelpCommand(commands.HelpCommand):
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
         menu.add_categories(self.__all_commands)
         await menu.start()
+    
+    def __get_all_commands(self, group: commands.Group | Cog) -> list[commands.Command]:
+        # recursive function to get all commands from a group
+        all_commands = []
+        if isinstance(group, Cog):
+            cmds = group.get_commands()
+            for cmd in cmds:
+                if isinstance(cmd, commands.Group):
+                    all_commands.extend(self.__get_all_commands(cmd))
+                else:
+                    all_commands.append(cmd)
+        else:
+            for command in group.commands:
+                if isinstance(command, commands.Group):
+                    all_commands.extend(self.__get_all_commands(command))
+                else:
+                    all_commands.append(command)
+        
+        return all_commands
 
     async def send_cog_help(self, cog: Cog):
         await self.context.typing()
         # entries = await self.filter_commands(cog.get_commands(), sort=True)
-        entries = cog.get_commands()
+        entries = self.__get_all_commands(cog)
         menu = HelpMenu(
             GroupHelpPageSource(cog, entries, prefix=self.context.clean_prefix),
             ctx=self.context,
@@ -335,7 +358,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             await self.context.typing()
         except discord.Forbidden:
             await self.context.reply(f"{self.context.author.mention} preparing help menu...")
-        subcommands = list(group.commands)
+        subcommands = self.__get_all_commands(group)
         if not subcommands:
             return await self.send_command_help(group)
         entries = subcommands

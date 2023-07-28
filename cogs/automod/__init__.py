@@ -10,7 +10,7 @@ from .parsers import Action, Condition, Trigger
 from .views import Automod
 
 
-class AutoMod(Cog):
+class AutomaticModeration(Cog):
     """Hihghly customizable automod system for your server!"""
 
     def __init__(self, bot: Parrot) -> None:
@@ -241,6 +241,9 @@ class AutoMod(Cog):
         await view.start()
         await view.wait()
 
+        if view.cancelled:
+            return
+
         if not (view.triggers and view.actions and view.conditions):
             return
 
@@ -314,4 +317,4 @@ class AutoMod(Cog):
 
 
 async def setup(bot: Parrot) -> None:
-    await bot.add_cog(AutoMod(bot))
+    await bot.add_cog(AutomaticModeration(bot))

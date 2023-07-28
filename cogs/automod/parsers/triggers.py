@@ -44,7 +44,7 @@ class Trigger:
     async def check(self, **kw) -> bool:
         if not self.data:
             return False
-        return self.operator(getattr(self, tgr["type"])(**{**kw, **tgr}) for tgr in self.data)
+        return self.operator(getattr(self, tgr["type"])(**kw, **tgr) for tgr in self.data)
 
     def build_cooldowns(self) -> None:
         for tgr in self.data:

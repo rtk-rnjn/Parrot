@@ -8,7 +8,6 @@ from core import Cog, Parrot
 
 # fmt: off
 CAPTURE_CODES = {
-    -999: "EMERGENCY_REVOKE_TOKEN",
     999 : "EMERGENCY_SHUTDOWN",
     1   : "EMERGENCY_UNLOAD_ALL_COGS",
     2   : "EMERGENCY_FORCE_MAINTAINCE_ON",

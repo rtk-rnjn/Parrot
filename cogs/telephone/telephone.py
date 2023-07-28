@@ -26,7 +26,6 @@ class Telephone(Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
     @commands.bot_has_permissions(add_reactions=True)
-    @Context.with_type
     async def dial(self, ctx: Context, *, server: discord.Guild):
         """To dial to other server. Do not misuse this."""
         if not server:
@@ -48,7 +47,6 @@ class Telephone(Cog):
     @commands.command(name="redial", aliases=["recall"])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
-    @Context.with_type
     async def redial_call(self, ctx: Context):
         """To redial the recently called server, if any."""
         try:
@@ -73,7 +71,6 @@ class Telephone(Cog):
     @commands.command(aliases=["reversecall"])
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.cooldown(1, 180, commands.BucketType.guild)
-    @Context.with_type
     async def reversedial(self, ctx: Context, *, server: discord.Guild):
         """To make the calls but contents are reverted."""
         if not server:

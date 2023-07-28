@@ -25,7 +25,7 @@ class Action:
 
     async def execute(self, **kw) -> None:
         for action in self.data:
-            await getattr(self, action["type"])(**kw)
+            await getattr(self, action["type"])(**kw, **action)
 
     async def delete_message(self, *, message: Message, **kw) -> None:
         await message.delete(delay=0)
@@ -120,13 +120,14 @@ class Action:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)
         await message.channel.edit(slowmode_delay=duration)
 
-    async def lock_channel(self, *, message: Message, msg: str, **kw) -> None:
+    async def lock_channel(self, *, message: Message, msg: str = None, **kw) -> None:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)
         overwrite = message.channel.overwrites
         overwrite.update({message.guild.default_role: PermissionOverwrite(send_messages=False)})
 
         await message.channel.edit(overwrites=overwrite)
-        await message.channel.send(msg)
+        if msg is not None:
+            await message.channel.send(msg)
 
     async def give_role(self, *, member: Member, role: int, **kw) -> None:
         await member.add_roles(Object(id=role), reason="Automod")

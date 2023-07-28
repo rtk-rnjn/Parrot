@@ -298,7 +298,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
     def __get_all_commands(self, group: commands.Group | Cog) -> list[commands.Command]:
         # recursive function to get all commands from a group
         all_commands = []
-        if isinstance(group, Cog):
+        if isinstance(group, commands.Cog):
             cmds = group.get_commands()
             for cmd in cmds:
                 if isinstance(cmd, commands.Group):

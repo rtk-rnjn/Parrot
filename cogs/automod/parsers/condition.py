@@ -24,7 +24,7 @@ class Condition:
             return True
 
         for condition in self.data:
-            func = getattr(self, condition["name"])
+            func = getattr(self, condition["type"])
             if not await maybe_coroutine(func, **kw):
                 return False
         return True

@@ -209,8 +209,12 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}")
 
         elif isinstance(error, commands.InvalidEndOfQuotedStringError):
-            ERROR_EMBED.description = "Invalid end of quoted string. Expected space after closing quotation mark."
+            ERROR_EMBED.description = "Invalid end of quoted string. Expected space after closing quotation mark. Did you forget to close the quotation mark?"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Invalid End Of Quoted String Error {QUESTION_MARK}")
+        
+        elif isinstance(error, commands.UnexpectedQuoteError):
+            ERROR_EMBED.description = "Unexpected quote mark. Did you forget to close the quotation mark?"
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Quote Error {QUESTION_MARK}")
 
         else:
             ERROR_EMBED.description = (

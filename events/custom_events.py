@@ -9,11 +9,6 @@ from core import Cog, Parrot
 from utilities.time import ShortTime
 
 
-class FakeMessage:
-    def __init__(self, **kwargs: Any) -> None:
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
 
 class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:

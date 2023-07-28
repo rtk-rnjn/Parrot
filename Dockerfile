@@ -15,9 +15,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN chmod +x git-check.sh
-RUN ./git-check.sh
-
 EXPOSE 1730
 
 CMD [ "python", "main.py" ]

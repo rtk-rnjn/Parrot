@@ -105,8 +105,7 @@ class AutoMod(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{SHIELD}")  
 
-    @Cog.listener()
-    async def on_ready(self) -> None:
+    async def cog_load(self) -> None:
         if self._was_ready:
             return
 

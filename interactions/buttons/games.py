@@ -1338,7 +1338,7 @@ class Games(Cog):
         interactive_view = Minecraft(ctx, [50, 50, 50])
         code = "- ".join([" ".join(["".join(row) for row in lay]) for lay in interactive_view.box])
 
-        buf, c = await isometric_func(code.split(), interactive_view.selector_pos)
+        buf, c = await asyncio.to_thread(isometric_func, code.split(), interactive_view.selector_pos)
         c -= 1
         buf_file = discord.File(buf, "interactive_iso.png")
         # link = await ctx.upload_bytes(buf.getvalue(), 'image/png', 'interactive_iso')

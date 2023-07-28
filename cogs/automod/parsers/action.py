@@ -25,7 +25,7 @@ class Action:
 
     async def execute(self, **kw) -> None:
         for action in self.data:
-            await getattr(self, action["name"])(**kw)
+            await getattr(self, action["type"])(**kw)
 
     async def delete_message(self, *, message: Message, **kw) -> None:
         await message.delete(delay=0)
@@ -83,11 +83,11 @@ class Action:
         except Exception:
             pass
 
-    async def ban_user(self, *, member: Member, **kw) -> None:
+    async def ban_user(self, *, member: Member, msg: str, **kw) -> None:
         await member.guild.ban(member, reason="Automod")
 
         try:
-            await member.send(reason_init.format(reason="Banned", guild=member.guild))
+            await member.send(reason_init.format(reason=msg or "Banned", guild=member.guild))
         except Exception:
             pass
 

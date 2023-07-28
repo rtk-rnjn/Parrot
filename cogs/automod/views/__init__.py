@@ -24,7 +24,8 @@ LIMIT = 5
 
 
 def parse_dict(data: dict[str, Any]) -> str:
-    return "".join(f"`{k}: {v}`\n" if i == 0 else f"`   {k}: {v}`\n" for i, (k, v) in enumerate(data.items()))
+    data = {k: v for k, v in data.items() if v}
+    return f"`{data}`"
 
 
 class Automod(ParrotView):

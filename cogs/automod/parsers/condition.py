@@ -20,6 +20,9 @@ class Condition:
         return f"<Condition data={self.data}>"
 
     async def check(self, **kw) -> bool:
+        if not self.data:
+            return True
+
         for condition in self.data:
             func = getattr(self, condition["name"])
             if not await maybe_coroutine(func, **kw):

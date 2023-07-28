@@ -287,32 +287,38 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 if cog:
                     _cmds = [c for c in cog.get_commands() if not c.hidden]
                     if cog is not None and _cmds:
-                        all_commands[cog] = sorted(cog.get_commands(), key=lambda c: c.qualified_name)
+                        all_commands[cog] = self.__get_all_commands(cog)
 
             self.__all_commands = all_commands
 
         menu = HelpMenu(FrontPageSource(bot), ctx=self.context)
         menu.add_categories(self.__all_commands)
         await menu.start()
-    
+
     def __get_all_commands(self, group: commands.Group | Cog) -> list[commands.Command]:
         # recursive function to get all commands from a group
         all_commands = []
         if isinstance(group, commands.Cog):
             cmds = group.get_commands()
             for cmd in cmds:
+                if cmd.hidden:
+                    continue
+
                 if isinstance(cmd, commands.Group):
                     all_commands.extend(self.__get_all_commands(cmd))
                 else:
                     all_commands.append(cmd)
         else:
             for command in group.commands:
+                if command.hidden:
+                    continue
+
                 if isinstance(command, commands.Group):
                     all_commands.extend(self.__get_all_commands(command))
                 else:
                     all_commands.append(command)
-        
-        return all_commands
+
+        return sorted(all_commands)
 
     async def send_cog_help(self, cog: Cog):
         await self.context.typing()

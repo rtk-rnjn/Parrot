@@ -790,7 +790,7 @@ class Parrot(commands.AutoShardedBot):
             log.debug("Command %s cannot be run in this context", ctx.command)
             return
 
-        if not getattr(ctx.cog, "ON_TESTING", False):
+        if getattr(ctx.cog, "ON_TESTING", False):
             return
 
         if not self.is_ready():

@@ -9,7 +9,6 @@ from core import Cog, Parrot
 from utilities.time import ShortTime
 
 
-
 class EventCustom(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

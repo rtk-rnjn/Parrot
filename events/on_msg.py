@@ -18,6 +18,7 @@ from pymongo import ReturnDocument
 
 import discord
 import emojis
+from core import Cog
 from discord.ext import commands
 from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, LINKS_NO_PROTOCOLS
@@ -35,7 +36,7 @@ if TYPE_CHECKING:
 
     from cogs.utils import Utils
 
-from core import Cog
+from .on_msg_caching import OnMsgCaching
 
 with open("extra/profanity.json", encoding="utf-8", errors="ignore") as f:
     bad_dict: dict[str, bool] = json.load(f)
@@ -776,14 +777,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 "$and": [
                     {
                         "$or": [
-                            {
-                                "messageAuthor": interacted_user.id,
-                                "guild": message.guild.id,
-                            },
-                            {
-                                "messageAuthor": interacted_user.id,
-                                "global": True,
-                            },
+                            {"messageAuthor": interacted_user.id, "guild": message.guild.id},
+                            {"messageAuthor": interacted_user.id, "global": True},
                         ],
                     },
                     {"ignoreChannel": {"$nin": [message.channel.id]}},
@@ -817,14 +812,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                         "$and": [
                             {
                                 "$or": [
-                                    {
-                                        "messageAuthor": user.id,
-                                        "guild": message.guild.id,
-                                    },
-                                    {
-                                        "messageAuthor": user.id,
-                                        "global": True,
-                                    },
+                                    {"messageAuthor": user.id, "guild": message.guild.id},
+                                    {"messageAuthor": user.id, "global": True},
                                 ],
                             },
                             {"ignoreChannel": {"$nin": [message.channel.id]}},
@@ -856,100 +845,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 await channel.send(f"**{data['word'].title()}**: {data['meaning'].split('.')[0]}")
             return
 
-    # Internal Message Cache Updater Events
-    # caching variable `Parrot.message_cache`
-
-    def get_raw_message(self, message: discord.Message) -> dict:
-        return {
-            "id": message.id,
-            "content": message.content,
-            "author": message.author.id,
-            "channel": message.channel.id,
-            "guild": getattr(message.guild, "id", None),
-            "timestamp": message.created_at.timestamp(),
-            "reference": getattr(message.reference, "message_id", None),
-            "bot": message.author.bot,
-            "attachments": [attachment.proxy_url for attachment in message.attachments],
-            "embeds": [embed.to_dict() for embed in message.embeds],
-            "reactions": [
-                {
-                    "emoji": str(reaction.emoji),
-                    "count": reaction.count,
-                    "me": reaction.me,
-                }
-                for reaction in message.reactions
-            ],
-            "jump_url": message.jump_url,
-            "type": str(message.type),
-        }
-
-    @Cog.listener("on_message")
-    async def on_message_updater(self, message: discord.Message) -> None:
-        if message.author.id in self.bot.message_cache:
-            self.bot.message_cache[message.author.id] = message
-
-        query = {
-            "_id": message.author.id,
-        }
-        update = {
-            "$inc": {
-                "messageCount": 1,
-            },
-            "$set": {
-                "lastMessage": {
-                    "content": message.content,
-                    "channel": message.channel.id,
-                    "guild": getattr(message.guild, "id", None),
-                    "timestamp": message.created_at.timestamp(),
-                },
-            },
-            "$addToSet": {
-                "messageCollection": self.get_raw_message(message),
-            },
-        }
-        self.bot.add_global_write_data(col="messageCollections", query=query, update=update, cls="UpdateOne")
-
-    @Cog.listener("on_message_delete")
-    async def on_message_delete_updater(self, message: discord.Message) -> None:
-        if message.author.id in self.bot.message_cache:
-            del self.bot.message_cache[message.author.id]
-
-    @Cog.listener("on_message_edit")
-    async def on_message_edit_updater(self, before: discord.Message, after: discord.Message) -> None:
-        if before.author.id in self.bot.message_cache:
-            self.bot.message_cache[before.author.id] = after
-
-        message = after
-        query = {
-            "_id": message.author.id,
-        }
-        update = {
-            "$addToSet": {
-                "messageCollection": self.get_raw_message(message),
-            },
-        }
-        self.bot.add_global_write_data(col="messageCollections", query=query, update=update, cls="UpdateOne")
-
-    @Cog.listener("on_reaction_add")
-    async def on_reaction_add_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
-        if reaction.message.id in self.bot.message_cache:
-            self.bot.message_cache[reaction.message.id] = reaction.message
-
-    @Cog.listener("on_reaction_remove")
-    async def on_reaction_remove_updater(self, reaction: discord.Reaction, _: discord.User) -> None:
-        if reaction.message.id in self.bot.message_cache:
-            self.bot.message_cache[reaction.message.id] = reaction.message
-
-    @Cog.listener("on_reaction_clear")
-    async def on_reaction_clear_updater(self, message: discord.Message, _: list[discord.Reaction]) -> None:
-        if message.id in self.bot.message_cache:
-            self.bot.message_cache[message.id] = message
-
-    @Cog.listener("on_reaction_clear_emoji")
-    async def on_reaction_clear_emoji_updater(self, reaction: discord.Reaction) -> None:
-        if reaction.message.id in self.bot.message_cache:
-            self.bot.message_cache[reaction.message.id] = reaction.message
-
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(OnMsg(bot))
+    await bot.add_cog(OnMsgCaching(bot))

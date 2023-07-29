@@ -55,14 +55,14 @@ class _Captcha:
         out.seek(0)
         return out
 
-    def write(self, chars: str, output: str, format: str = "png"):
+    def write(self, chars: str, output: str, fmt: str = "png"):
         """Generate and write an image CAPTCHA data to the output.
         :param chars: text to be generated.
         :param output: output destination.
         :param format: image file format.
         """
         im = self.generate_image(chars)
-        return im.save(output, format=format)
+        return im.save(output, format=fmt)
 
 
 class WheezyCaptcha(_Captcha):

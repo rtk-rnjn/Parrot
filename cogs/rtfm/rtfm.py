@@ -89,7 +89,6 @@ class BookmarkForm(discord.ui.Modal):
         """Sends the bookmark embed to the user with the newly chosen title."""
         title = self.bookmark_title.value or self.bookmark_title.default
         try:
-            interaction.guild
             await self.dm_bookmark(interaction, self.message, title)
         except discord.Forbidden:
             await interaction.response.send_message(
@@ -720,7 +719,7 @@ class RTFM(Cog):
         if group not in choices:
             emb: discord.Embed = discord.Embed(
                 title="Available listed commands",
-                description=f"`languages`, `{'`, `'.join(choices)}`"
+                description=f"`languages`, `{'`, `'.join(choices)}`",
             )
             return await ctx.reply(embed=emb)
 

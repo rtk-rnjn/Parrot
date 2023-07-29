@@ -15,7 +15,7 @@ class Condition:
     def __init__(self, bot: Parrot, data: list[dict]) -> None:
         self.bot = bot
         self.data = data
-    
+
     def __repr__(self) -> str:
         return f"<Condition data={self.data}>"
 

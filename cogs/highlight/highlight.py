@@ -327,7 +327,11 @@ class Highlight(Cog):
                 delete_after=5,
             )
 
-    @highlight.command(name="remove", description="Remove a word from your highlight word list", aliases=["delete", "rm", "del"])
+    @highlight.command(
+        name="remove",
+        description="Remove a word from your highlight word list",
+        aliases=["delete", "rm", "del"],
+    )
     async def remove(self, ctx: Context, *, word: str):
         word = word.lower()
 

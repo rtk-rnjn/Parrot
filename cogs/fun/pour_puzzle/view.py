@@ -34,10 +34,10 @@ class Bottle:
         return not self.liquids
 
     def is_completed(self):
-        return self.is_full() and len({l.color for l in self.liquids}) == 1
+        return self.is_full() and len({liq.color for liq in self.liquids}) == 1
 
     def __repr__(self) -> str:
-        return f'Bottle(num={self.num}, Liquids[{", ".join(l.color for l in self.liquids)}])'
+        return f'Bottle(num={self.num}, Liquids[{", ".join(liq.color for liq in self.liquids)}])'
 
 
 class BottleButton(discord.ui.Button["PourView"]):

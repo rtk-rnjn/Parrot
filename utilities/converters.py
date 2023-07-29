@@ -126,7 +126,7 @@ class Cache(Generic[KT, VT]):
         bot: Parrot,
         cache_size: int | None = None,
         *,
-        callback: Callable[[KT, VT], Any] | None = None,
+        callback: Callable[[KT, VT], None] | None = None,
     ) -> None:
         self.cache_size: int = cache_size or LRU_CACHE
         self.bot = bot

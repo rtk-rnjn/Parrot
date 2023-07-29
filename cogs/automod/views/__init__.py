@@ -76,7 +76,10 @@ class Automod(ParrotView):
             return await interaction.response.send_message("Please add at least one action", ephemeral=True)
 
         if not self.conditions:
-            return await interaction.response.send_message("Please add at least one condition. `new_message` for no condition", ephemeral=True)
+            return await interaction.response.send_message(
+                "Please add at least one condition. `new_message` for no condition",
+                ephemeral=True,
+            )
 
         if not self.triggers:
             return await interaction.response.send_message("Please add at least one trigger", ephemeral=True)

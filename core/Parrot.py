@@ -255,7 +255,7 @@ class Parrot(commands.AutoShardedBot):
         self.message_cache: dict[int, discord.Message] = {}
         self.banned_users: dict[int, dict[str, int | str | bool]] = {}
         self.afk_users: set[int] = set()
-        self.channel_message_cache: dict[int, asyncio.Queue[discord.Message]] = {}
+        self.channel_message_cache: Cache[int, deque[discord.Message]] = Cache(self, cache_size=2**10)
 
         self.before_invoke(self.__before_invoke)
 

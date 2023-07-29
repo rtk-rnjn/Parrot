@@ -159,7 +159,7 @@ class FrontPageSource(menus.PageSource):
             Use "`{menu.ctx.clean_prefix}help command`" for more info on a command.
             Use "`{menu.ctx.clean_prefix}help category`" for more info on a category.
             Use the dropdown menu below to select a category.
-            """
+            """,
         )
 
         embed.add_field(

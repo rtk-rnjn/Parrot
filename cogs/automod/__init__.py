@@ -103,7 +103,7 @@ class AutomaticModeration(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name="\N{SHIELD}")  
+        return discord.PartialEmoji(name="\N{SHIELD}")
 
     async def cog_load(self) -> None:
         if self._was_ready:
@@ -267,7 +267,7 @@ class AutomaticModeration(Cog):
         )
         await self.refresh_cache_specific(ctx.guild.id)
 
-    @automod_group.command(name="list")
+    @automod_group.command(name="list", aliases=["ls", "all"])
     @commands.has_permissions(manage_guild=True)
     async def automod_list(self, ctx: Context) -> None:
         """List all the automod rules."""
@@ -277,7 +277,7 @@ class AutomaticModeration(Cog):
             return
 
         embed = discord.Embed(title="Automod Rules", color=discord.Color.blurple())
-        embed.description = "\n".join(f"- {rule}" for rule in data.keys())
+        embed.description = "\n".join(f"- {rule}" for rule in data.keys() if rule not in ("_id", "guild_id"))
 
         await ctx.reply(embed=embed)
 

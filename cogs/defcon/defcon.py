@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import discord
 from core import Cog, Context, Parrot
@@ -286,11 +286,8 @@ class DefensiveCondition(Cog):
 
     @defcon.command(name="set")
     @commands.has_permissions(manage_guild=True)
-    async def _defcon_set(self, ctx: Context, *, level: int = 1) -> None:
+    async def _defcon_set(self, ctx: Context, *, level: Literal[1, 2, 3, 4, 5] = 1) -> None:
         """Set the level of defcon."""
-        if level > 5 or level < 1:
-            await ctx.reply("Defcon level must be between 0 and 5 (inclusive).")
-            return
 
         prompt = await ctx.prompt(
             f"**Are you sure you want to set defcon to {level}?**",

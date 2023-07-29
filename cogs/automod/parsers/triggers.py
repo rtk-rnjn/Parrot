@@ -37,7 +37,7 @@ class Trigger:
         self.operator = OPERATRORS[operator]
 
         self.build_cooldowns()
-    
+
     def __repr__(self) -> str:
         return f"<Trigger data={self.data}>"
 

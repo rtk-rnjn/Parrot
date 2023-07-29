@@ -110,9 +110,9 @@ class VerbalMemory:
 
     def update_description(self, score_incr: bool = False, lives_decr: bool = False) -> None:
         assert self.embed
-        s = "+" if score_incr else "•"
-        l = "-" if lives_decr else "•"
-        self.embed.description = f"```diff\n{s} Score | {self.score}\n{l} Lives | {self.lives}\n```"
+        score = "+" if score_incr else "•"
+        lives = "-" if lives_decr else "•"
+        self.embed.description = f"```diff\n{score} Score | {self.score}\n{lives} Lives | {self.lives}\n```"
 
     async def start(
         self,

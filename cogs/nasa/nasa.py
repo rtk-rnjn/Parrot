@@ -233,7 +233,9 @@ class NASA(Cog):
     async def findasteroididid(self, ctx: Context, asteroid_id: int):
         """Find any asteroid in the space by ID. "$help findaid" for syntax."""
         r = await self.bot.http_session.get(
-            ENDPOINTS.NEO_FIND_ID.format(asteroid_id), params=self._api_params, headers=self.bot.GLOBAL_HEADERS
+            ENDPOINTS.NEO_FIND_ID.format(asteroid_id),
+            params=self._api_params,
+            headers=self.bot.GLOBAL_HEADERS,
         )
         if r.status == 200:
             res = await r.json()
@@ -274,7 +276,9 @@ class NASA(Cog):
         """Mars Rovers Pictures. Date must be in "YYYY-MM-DD" format."""
 
         r = await self.bot.http_session.get(
-            ENDPOINTS.MARS, params={**self._api_params, "earth_date": date}, headers=self.bot.GLOBAL_HEADERS
+            ENDPOINTS.MARS,
+            params={**self._api_params, "earth_date": date},
+            headers=self.bot.GLOBAL_HEADERS,
         )
         if r.status == 200:
             res = await r.json()
@@ -420,7 +424,7 @@ class NASA(Cog):
                     Link: {link}
                     Instuments: {instruments}
                     """,
-                )
+                ),
             )
             em.title = catalog
             em.url = link

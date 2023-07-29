@@ -8,13 +8,13 @@ import json
 import os
 import random
 import re
-import time
 import string
+import time
 import traceback
 import typing
 import urllib.parse
 from collections import Counter
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal
 
 from aiofile import async_open
 from tabulate import tabulate
@@ -517,7 +517,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
-    async def toggle_testing(self, ctx: Context, cog: str, toggle: Annotated[bool, Optional[convert_bool]] = None) -> None:  # type: ignore
+    async def toggle_testing(self, ctx: Context, cog: str, toggle: Annotated[bool | None, convert_bool] = None) -> None:  # type: ignore
         """Update the cog setting to toggle testing mode.
 
         ```py

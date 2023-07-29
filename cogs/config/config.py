@@ -408,18 +408,10 @@ class Configuration(Cog):
             role = ctx.guild.get_role(i["role"]) or None
             rwrd_tble.append([i["lvl", role.name if role else None]])
         ignored_roles = ", ".join(
-            [
-                str(ctx.guild.get_role(r))
-                for r in leveling.get("ignore_role", [])
-                if ctx.guild.get_role(r)
-            ],
+            [str(ctx.guild.get_role(r)) for r in leveling.get("ignore_role", []) if ctx.guild.get_role(r)],
         )
         ignored_channel = ", ".join(
-            [
-                str(ctx.guild.get_channel(r))
-                for r in leveling.get("ignore_channel", [])
-                if ctx.guild.get_channel(r)
-            ],
+            [str(ctx.guild.get_channel(r)) for r in leveling.get("ignore_channel", []) if ctx.guild.get_channel(r)],
         )
 
         await ctx.reply(

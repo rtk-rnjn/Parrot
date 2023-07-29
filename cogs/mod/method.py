@@ -491,7 +491,6 @@ async def _mute(
                 if isinstance(channel, discord.TextChannel):
                     await channel.set_permissions(
                         muted,
-                        end_messages=False,
                         add_reactions=False,
                         use_application_commands=False,
                         create_private_threads=False,
@@ -501,7 +500,6 @@ async def _mute(
                 if isinstance(channel, discord.CategoryChannel):
                     await channel.set_permissions(
                         muted,
-                        end_messages=False,
                         add_reactions=False,
                         use_application_commands=False,
                         create_private_threads=False,
@@ -644,31 +642,17 @@ async def _block(
     for member in members:
         if ctx.author.top_role.position < member.top_role.position and not silent:
             msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-            raise commands.BadArgument(
-                msg,
-            )
+            raise commands.BadArgument(msg)
         try:
             if member.id in (ctx.author.id, guild.me.id) and not silent:
                 await destination.send(f"{ctx.author.mention} don't do that, Bot is only trying to help")
                 return
             overwrite = channel.overwrites
-            if member_overwrite := overwrite.get(member):
-                member_overwrite.update(
-                    send_messages=False,
-                    view_channel=False,
-                )
-            else:
-                overwrite[member] = discord.PermissionOverwrite(
-                    send_messages=False,
-                    view_channel=False,
-                )
+            try:
+                overwrite[member].update(send_messages=False, view_channel=False)
+            except KeyError:
+                overwrite[member] = discord.PermissionOverwrite(send_messages=False, view_channel=False)
             await channel.edit(overwrites=overwrite, reason=reason)
-            # await channel.set_permissions(
-            #     member,
-            #     send_messages=False,
-            #     view_channel=False,
-            #     reason=reason,
-            # )
             if not silent:
                 await destination.send(
                     f"{ctx.author.mention} overwrite permission(s) for **{member}** has been created! **View Channel, and Send Messages** is denied!",
@@ -696,7 +680,10 @@ async def _unblock(
                 await destination.send(f"{ctx.author.mention} {member.name} is already unblocked. They can send message")
             else:
                 overwrite = channel.overwrites
-                overwrite.pop(member, None)
+                try:
+                    overwrite[member].update(send_messages=None, view_channel=None)
+                except KeyError:
+                    overwrite[member] = discord.PermissionOverwrite(send_messages=None, view_channel=None)
                 await channel.edit(overwrites=overwrite, reason=reason)
             await destination.send(f"{ctx.author.mention} overwrite permission(s) for **{member}** has been deleted!")
         except Exception as e:
@@ -718,18 +705,8 @@ async def _text_lock(
 ):
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.default_role):
-            _overwrite.update(
-                send_messages=False,
-            )
-        else:
-            overwrite[guild.default_role] = discord.PermissionOverwrite(
-                send_messages=False,
-            )
+        overwrite[guild.default_role].update(send_messages=False)
         await channel.edit(overwrites=overwrite, reason=reason)
-        # await channel.set_permissions(
-        #     guild.default_role, send_messages=False, reason=reason
-        # )
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**")
@@ -749,12 +726,8 @@ async def _vc_lock(
         return
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.default_role):
-            _overwrite.update(connect=False)
-        else:
-            overwrite[guild.default_role] = discord.PermissionOverwrite(connect=False)
+        overwrite[guild.default_role].update(connect=False)
         await channel.edit(overwrites=overwrite, reason=reason)
-        # await channel.set_permissions(guild.default_role, connect=False, reason=reason)
         await destination.send(f"{ctx.author.mention} channel locked.")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**")
@@ -775,18 +748,8 @@ async def _text_unlock(
 ):
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.default_role):
-            _overwrite.update(
-                send_messages=None,
-            )
-        else:
-            overwrite[guild.default_role] = discord.PermissionOverwrite(
-                send_messages=None,
-            )
+        overwrite[guild.default_role].update(send_messages=None)
         await channel.edit(overwrites=overwrite, reason=reason)
-        # await channel.set_permissions(
-        #     guild.default_role, send_messages=None, reason=reason
-        # )
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**")
@@ -806,12 +769,8 @@ async def _vc_unlock(
         return
     try:
         overwrite = channel.overwrites
-        if _overwrite := overwrite.get(guild.default_role):
-            _overwrite.update(connect=None)
-        else:
-            overwrite[guild.default_role] = discord.PermissionOverwrite(connect=None)
+        overwrite[guild.default_role].update(connect=None)
         await channel.edit(overwrites=overwrite, reason=reason)
-        # await channel.set_permissions(guild.default_role, connect=None, reason=reason)
         await destination.send(f"{ctx.author.mention} channel unlocked.")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**")
@@ -885,7 +844,7 @@ async def _slowmode(
     command_name: str,
     ctx: Context,
     destination: discord.abc.Messageable,
-    seconds: int,
+    seconds: int | Literal["off", "disable"],
     channel: discord.TextChannel,
     reason: str | None,
     **kwargs: Any,
@@ -928,6 +887,7 @@ async def _clone(
     try:
         new_channel = await channel.clone(reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}")
         await channel.delete(reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}")
+        await new_channel.edit(position=channel.position)
         await new_channel.send(f"{ctx.author.mention}", delete_after=5)
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{channel.name}**. Error raised: **{e}**")
@@ -948,14 +908,9 @@ async def _voice_mute(
 ):
     if ctx.author.top_role.position < member.top_role.position:
         msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-        raise commands.BadArgument(
-            msg,
-        )
+        raise commands.BadArgument(msg)
     try:
-        await member.edit(
-            mute=True,
-            reason=reason,
-        )
+        await member.edit(mute=True, reason=reason)
         await destination.send(f"{ctx.author.mention} voice muted **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -972,10 +927,7 @@ async def _voice_unmute(
     **kwargs: Any,
 ):
     try:
-        await member.edit(
-            mute=False,
-            reason=reason,
-        )
+        await member.edit(mute=False, reason=reason)
         await destination.send(f"{ctx.author.mention} voice unmuted **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -993,14 +945,9 @@ async def _voice_deafen(
 ):
     if ctx.author.top_role.position < member.top_role.position:
         msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-        raise commands.BadArgument(
-            msg,
-        )
+        raise commands.BadArgument(msg)
     try:
-        await member.edit(
-            deafen=True,
-            reason=reason,
-        )
+        await member.edit(deafen=True, reason=reason)
         await destination.send(f"{ctx.author.mention} voice deafened **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -1017,10 +964,7 @@ async def _voice_undeafen(
     **kwargs: Any,
 ):
     try:
-        await member.edit(
-            deafen=False,
-            reason=reason,
-        )
+        await member.edit(deafen=False, reason=reason)
         await destination.send(f"{ctx.author.mention} voice undeafened **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -1038,14 +982,9 @@ async def _voice_kick(
 ):
     if ctx.author.top_role.position < member.top_role.position:
         msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-        raise commands.BadArgument(
-            msg,
-        )
+        raise commands.BadArgument(msg)
     try:
-        await member.edit(
-            voice_channel=None,
-            reason=reason,
-        )
+        await member.edit(voice_channel=None, reason=reason)
         await destination.send(f"{ctx.author.mention} voice kicked **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -1064,21 +1003,14 @@ async def _voice_ban(
 ):
     if ctx.author.top_role.position < member.top_role.position:
         msg = f"{ctx.author.mention} can not {command_name} the {member}, as the their's role is above you"
-        raise commands.BadArgument(
-            msg,
-        )
+        raise commands.BadArgument(msg)
     try:
         overwrite = channel.overwrites
-        if member_overwrite := overwrite.get(member):
-            member_overwrite.update(connect=False)
-        else:
+        try:
+            overwrite[member].update(connect=False)
+        except KeyError:
             overwrite[member] = discord.PermissionOverwrite(connect=False)
         await channel.edit(overwrites=overwrite, reason=reason)
-        # await channel.set_permissions(
-        #     member,
-        #     connect=False,
-        #     reason=reason,
-        # )
         await destination.send(f"{ctx.author.mention} voice banned **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -1097,16 +1029,10 @@ async def _voice_unban(
 ):
     try:
         overwrite = channel.overwrites
-        if member_overwrite := overwrite.get(member):
-            member_overwrite.update(connect=None)
-        else:
+        try:
+            overwrite[member].update(connect=None)
+        except KeyError:
             overwrite[member] = discord.PermissionOverwrite(connect=None)
-        await channel.edit(overwrites=overwrite, reason=reason)
-        # await channel.set_permissions(
-        #     member,
-        #     reason=reason,
-        #     connect=None,
-        # )
         await destination.send(f"{ctx.author.mention} voice unbanned **{member}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
@@ -1261,11 +1187,7 @@ async def _emoji_addurl(
     try:
         res = await ctx.bot.http_session.get(url)
         raw = await res.read()
-        emoji = await guild.create_custom_emoji(
-            name=name,
-            image=raw,
-            reason=reason,
-        )
+        emoji = await guild.create_custom_emoji(name=name, image=raw, reason=reason)
         await destination.send(f"{ctx.author.mention} emoji created {emoji}")
     except Exception as e:
         await destination.send(f"Can not able to {command_name}. Error raised: **{e}**")
@@ -1287,10 +1209,7 @@ async def _emoji_rename(
             return await destination.send(
                 f"{ctx.author.mention} can not {command_name} the {emoji}, as the emoji is not in this server",
             )
-        await emoji.edit(
-            name=name,
-            reason=reason,
-        )
+        await emoji.edit(name=name, reason=reason)
         await destination.send(f"{ctx.author.mention} {emoji} name edited to **{name}**")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{emoji.name} ({emoji.id})**. Error raised: **{e}**")

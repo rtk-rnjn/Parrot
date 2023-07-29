@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 import discord
-from core import Context, Parrot, ParrotView
+from core import Context, Parrot
 from utilities.paginator import PaginationView
 
 
@@ -127,11 +127,9 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
         )
 
 
-class MongoView(ParrotView):
-    message: discord.Message
-
+class MongoView(discord.ui.View):
     def __init__(self, ctx: Context, *, timeout: float | None = 20, **kwargs) -> None:
-        super().__init__(timeout=timeout, ctx=ctx, **kwargs)
+        super().__init__(timeout=timeout, **kwargs)
 
         self.ctx = ctx
 
@@ -175,3 +173,12 @@ class MongoView(ParrotView):
             )
 
         self.message = await self.ctx.send(embed=embed, view=self)
+
+    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
+        return await self.ctx.bot.is_owner(interaction.user)
+
+    async def on_timeout(self) -> None:
+        if hasattr(self, "message"):
+            for child in self.children:
+                if isinstance(child, discord.ui.Select | discord.ui.Button):
+                    child.disabled = True

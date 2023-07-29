@@ -770,41 +770,38 @@ class Parrot(commands.AutoShardedBot):
         )
 
     async def process_commands(self, message: discord.Message) -> None:
-        TO_INVOKE = True
         ctx: Context = await self.get_context(message, cls=Context)
+
+        if await self.is_owner(ctx.author) and ctx.valid:
+            await self.invoke(ctx)
+            return
 
         if ctx.command is None:
             return
 
         if self.UNDER_MAINTENANCE:
             await self.__bot_under_maintenance_message(ctx)
-            TO_INVOKE = False
 
         if bucket := self.spam_control.get_bucket(message):
             if bucket.update_rate_limit(message.created_at.timestamp()):
                 self._auto_spam_count[message.author.id] += 1
                 if self._auto_spam_count[message.author.id] >= 3:
                     log.info("Auto spam detected, ignoring command. Context %s", ctx)
-                    TO_INVOKE = False
             else:
                 self._auto_spam_count.pop(message.author.id, None)
 
         if can_run(ctx) is False:
             log.debug("Command %s cannot be run in this context", ctx.command)
-            TO_INVOKE = False
+            return
 
         if not getattr(ctx.cog, "ON_TESTING", False):
-            TO_INVOKE = True
-        elif await self.is_owner(ctx.author):
-            TO_INVOKE = True
-        else:
-            log.debug("Command %s is on testing, ignoring", ctx.command)
-            TO_INVOKE = False
+            return
+
 
         if not self.is_ready():
             await self.wait_until_ready()
 
-        if TO_INVOKE and ctx.valid:
+        if ctx.valid:
             await self.invoke(ctx)
 
     async def on_message(self, message: discord.Message) -> None:

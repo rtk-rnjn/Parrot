@@ -720,7 +720,7 @@ class RTFM(Cog):
         if group not in choices:
             emb: discord.Embed = discord.Embed(
                 title="Available listed commands",
-                description=f"`languages`, `{'`, `'.join(choices)}`",
+                description=f"`languages`, `{'`, `'.join(choices)}`"
             )
             return await ctx.reply(embed=emb)
 

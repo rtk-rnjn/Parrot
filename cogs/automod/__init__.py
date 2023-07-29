@@ -253,7 +253,7 @@ class AutomaticModeration(Cog):
         )
         await self.refresh_cache_specific(ctx.guild.id)
 
-    @automod_group.command(name="remove")
+    @automod_group.command(name="remove", aliases=["delete", "rm", "del"])
     @commands.has_permissions(manage_guild=True)
     async def automod_remove(self, ctx: Context, *, rule: str) -> None:
         """Remove an existing automod rule."""

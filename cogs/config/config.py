@@ -242,7 +242,7 @@ class Configuration(Cog):
 
     @starboard.command(name="lock", aliases=["locked"])
     @commands.has_permissions(administrator=True)
-    async def starboard_lock(self, ctx: Context, toggle: convert_bool = False):
+    async def starboard_lock(self, ctx: Context, toggle: Annotated[bool, convert_bool] = False):
         """To lock the starboard channel."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -252,7 +252,7 @@ class Configuration(Cog):
 
     @starboard.command(name="selfstar", aliases=["self-star"])
     @commands.has_permissions(administrator=True)
-    async def starboard_self_star(self, ctx: Context, *, toggle: convert_bool = False):
+    async def starboard_self_star(self, ctx: Context, *, toggle: Annotated[bool, convert_bool] = False):
         """To allow self star."""
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -387,7 +387,7 @@ class Configuration(Cog):
     @config.group(name="leveling", aliases=["lvl"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def leveling(self, ctx: Context, toggle: convert_bool = True):
+    async def leveling(self, ctx: Context, toggle: Annotated[bool, convert_bool] = True):
         """To configure leveling."""
         if not ctx.invoked_subcommand:
             await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"leveling.enable": toggle}})
@@ -409,23 +409,23 @@ class Configuration(Cog):
             rwrd_tble.append([i["lvl", role.name if role else None]])
         ignored_roles = ", ".join(
             [
-                getattr(ctx.guild.get_role(r), "name", None)
+                str(ctx.guild.get_role(r))
                 for r in leveling.get("ignore_role", [])
-                if getattr(ctx.guild.get_role(r), "name", None)
+                if ctx.guild.get_role(r)
             ],
         )
         ignored_channel = ", ".join(
             [
-                getattr(ctx.guild.get_channel(r), "name", None)
+                str(ctx.guild.get_channel(r))
                 for r in leveling.get("ignore_channel", [])
-                if getattr(ctx.guild.get_channel(r), "name", None)
+                if ctx.guild.get_channel(r)
             ],
         )
 
         await ctx.reply(
             f"""Configuration of this server [leveling system]:
 `Enabled :` **{leveling.get("enable", False)}**
-`Channel :` **{getattr(ctx.guild.get_channel(leveling.get("channel", 0))), "name", "None"}**
+`Channel :` **{getattr(ctx.guild.get_channel(leveling.get("channel", 0)), "name", "None")}**
 `Ignore Roles   :` **{ignored_roles}**
 `Ignore Channels:` **{ignored_channel}** ```
 {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
@@ -552,8 +552,8 @@ class Configuration(Cog):
         if not ctx.invoked_subcommand:
             data = await self.bot.guild_configurations.find_one({"_id": ctx.guild.id})
             if data:
-                role = ctx.guild.get_role(data["pingrole"]).name if data.get("pingrole") else None
-                channel = ctx.guild.get_channel(data["channel"]).name if data.get("channel") else None
+                role = str(ctx.guild.get_role(data["pingrole"])) if data.get("pingrole") else None
+                channel = str(ctx.guild.get_channel(data["channel"])) if data.get("channel") else None
                 member = (
                     await self.bot.get_or_fetch_member(ctx.guild, data["memberping"]) if data.get("memberping") else None
                 )
@@ -991,7 +991,7 @@ class Configuration(Cog):
             r"What should be the format of the channel? Example: `Total Channels {}`, `{} Roles in total`. Only the `{}` will be replaced with the counter value.",
         ]
 
-        async def wait_for_response() -> str | None:
+        async def wait_for_response() -> str:
             def check(m: discord.Message) -> bool:
                 return m.author == ctx.author and m.channel == ctx.channel
 

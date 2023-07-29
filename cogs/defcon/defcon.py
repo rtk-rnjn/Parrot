@@ -479,7 +479,7 @@ class DefensiveCondition(Cog):
             upsert=True,
         )
 
-    @defcon_trustables.command(name="remove")
+    @defcon_trustables.command(name="remove", aliases=["delete", "del", "rm"])
     @commands.has_permissions(manage_guild=True)
     async def defcon_trustables_remove(self, ctx: Context, *roles_or_members: discord.Role | discord.Member) -> None:
         """To remove trustable roles or members."""

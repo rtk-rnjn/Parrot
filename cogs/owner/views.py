@@ -96,11 +96,10 @@ class MongoCollectionView(discord.ui.View):
 
 
 class MongoViewSelect(discord.ui.Select["MongoView"]):
-    def __init__(self, ctx: Context, *, timeout: float | None = None, **kwargs) -> None:
+    def __init__(self, ctx: Context, **kwargs) -> None:
         self.db_name = kwargs.pop("db_name", "")
         super().__init__(min_values=1, max_values=1, **kwargs)
         self.ctx = ctx
-        self.timeout = timeout
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None and self.view.message is not None
@@ -129,7 +128,7 @@ class MongoViewSelect(discord.ui.Select["MongoView"]):
 
 
 class MongoView(ParrotView):
-    message: discord.Message | None = None
+    message: discord.Message
 
     def __init__(self, ctx: Context, *, timeout: float | None = 20, **kwargs) -> None:
         super().__init__(timeout=timeout, ctx=ctx, **kwargs)
@@ -163,10 +162,10 @@ class MongoView(ParrotView):
             self.add_item(
                 MongoViewSelect(
                     self.ctx,
-                    timeout=60.0,
-                    options=options,
+                    options=options[:25],
                     placeholder=f"Database - {name}",
                     db_name=name,
+                    row=i,
                 ),
             )
 

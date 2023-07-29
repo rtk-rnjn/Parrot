@@ -772,15 +772,11 @@ class Parrot(commands.AutoShardedBot):
     async def process_commands(self, message: discord.Message) -> None:
         ctx: Context = await self.get_context(message, cls=Context)
 
-        if await self.is_owner(ctx.author) and ctx.valid:
-            await self.invoke(ctx)
-            return
-
         if ctx.command is None:
             return
 
         if self.UNDER_MAINTENANCE:
-            await self.__bot_under_maintenance_message(ctx)
+            return await self.__bot_under_maintenance_message(ctx)
 
         if bucket := self.spam_control.get_bucket(message):
             if bucket.update_rate_limit(message.created_at.timestamp()):
@@ -797,12 +793,10 @@ class Parrot(commands.AutoShardedBot):
         if not getattr(ctx.cog, "ON_TESTING", False):
             return
 
-
         if not self.is_ready():
             await self.wait_until_ready()
 
-        if ctx.valid:
-            await self.invoke(ctx)
+        await self.invoke(ctx)
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1

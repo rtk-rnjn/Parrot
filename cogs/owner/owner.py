@@ -3,10 +3,12 @@ from __future__ import annotations
 import asyncio
 import datetime
 import hashlib
+import io
 import json
 import os
 import random
 import re
+import time
 import string
 import traceback
 import typing
@@ -15,6 +17,7 @@ from collections import Counter
 from typing import Annotated, Literal, Optional
 
 from aiofile import async_open
+from tabulate import tabulate
 
 import discord
 from core import Cog, Context, Parrot
@@ -560,6 +563,26 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
         view = MongoView(ctx)
         await view.init()
+
+    @commands.command(alises=["sql3", "sqlite3", "sqlite"])
+    async def sql(self, ctx: Context, *, query: str):
+        """SQL query."""
+        sql = self.bot.sql  # sqlite3
+        query = query.strip("`").strip()
+        ini = time.perf_counter()
+        cursor = await sql.execute(query)
+        rslt = await cursor.fetchall()
+        total_rows_affected = cursor.rowcount
+        fin = time.perf_counter() - ini
+
+        colums = [i[0] for i in cursor.description]
+        table = tabulate(rslt, headers=colums, tablefmt="psql")
+
+        if len(table) > 2000:
+            file = discord.File(io.BytesIO(table.encode()), filename="table.sql")
+            await ctx.send(file=file)
+        else:
+            await ctx.send(f"```sql\n{table}``` Rows affected: {total_rows_affected} | Time taken: {fin:.2f}s")
 
 
 class DiscordPy(Cog, command_attrs={"hidden": True}):

@@ -105,7 +105,7 @@ class DefconListeners(Cog):
             return False
 
         level = self.settings[guild.id]["default_defcon"].get("level", -1)
-        return False if level == -1 else level
+        return False if level < 0 else level
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member):

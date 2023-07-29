@@ -137,6 +137,11 @@ class MongoView(ParrotView):
 
     async def init(self):
         names: list[str] = await self.ctx.bot.mongo.list_database_names()
+        for name in ("admin", "local", "config"):
+            try:
+                names.remove(name)
+            except ValueError:
+                pass
 
         def to_emoji(c):
             return chr(127462 + c)

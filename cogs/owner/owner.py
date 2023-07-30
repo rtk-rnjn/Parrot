@@ -566,7 +566,15 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
     @commands.command(alises=["sql3", "sqlite3", "sqlite"])
     async def sql(self, ctx: Context, *, query: str):
-        """SQL query."""
+        """SQL query.
+        
+        This is equivalent to:
+        ```py
+        sql = ctx.bot.sql
+        cursor = await sql.execute(query)
+        ...
+        ```
+        """
         sql = self.bot.sql  # sqlite3
         query = query.strip("`").strip()
         ini = time.perf_counter()
@@ -575,6 +583,10 @@ class Owner(Cog, command_attrs={"hidden": True}):
         total_rows_affected = cursor.rowcount
         fin = time.perf_counter() - ini
 
+        if not rslt:
+            await ctx.send(f"Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
+            return
+
         colums = [i[0] for i in cursor.description]
         table = tabulate(rslt, headers=colums, tablefmt="psql")
 
@@ -582,7 +594,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             file = discord.File(io.BytesIO(table.encode()), filename="table.sql")
             await ctx.send(file=file)
         else:
-            await ctx.send(f"```sql\n{table}``` Rows affected: {total_rows_affected} | Time taken: {fin:.2f}s")
+            await ctx.send(f"```sql\n{table}``` Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
 
 
 class DiscordPy(Cog, command_attrs={"hidden": True}):

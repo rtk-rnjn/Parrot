@@ -51,6 +51,10 @@ class Gist(Cog, command_attrs={"hidden": True}):
         self.token = os.environ["GITHUB_TOKEN"]
 
         self.__internal_token_caching = set()
+    
+    @property
+    def internal_token_cache(self) -> set[str]:
+        return self.__internal_token_caching
 
     async def github_request(self, method, url, *, params=None, data=None, headers=None, repo=None):
         hdrs = {
@@ -122,7 +126,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
 
         if tokens and message.author.id != self.bot.user.id:
             url = await self.create_gist("\n".join(tokens), description="Discord tokens detected")
-            msg = f"{message.author.mention}, I have found tokens and sent them to <{url}> to be invalidated for you."
+            msg = f"{message.author.mention}, found tokens and sent them to <{url}> to be invalidated for you."
             self.__internal_token_caching.update(set(tokens))
             with suppress(discord.HTTPException):
                 await message.channel.send(msg)

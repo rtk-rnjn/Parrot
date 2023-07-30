@@ -37,7 +37,7 @@ class ParentView(ParrotView):
         self.link_groups.disabled = True
         self.videos.disabled = True
 
-        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
+        await interaction.response.edit_message(embed=self.embed.set_footer(text="Select a folder..."), view=self)
 
     @discord.ui.button(label="Best Practices", style=discord.ButtonStyle.blurple)
     async def best_practices(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -54,7 +54,7 @@ class ParentView(ParrotView):
         self.link_groups.disabled = True
         self.videos.disabled = True
 
-        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
+        await interaction.response.edit_message(embed=self.embed.set_footer(text="Select a folder..."), view=self)
 
     @discord.ui.button(label="Link Groups", style=discord.ButtonStyle.blurple)
     async def link_groups(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -72,7 +72,7 @@ class ParentView(ParrotView):
         self.best_practices.disabled = True
         self.videos.disabled = True
 
-        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
+        await interaction.response.edit_message(embed=self.embed.set_footer(text="Select a folder..."), view=self)
 
     @discord.ui.button(label="Videos", style=discord.ButtonStyle.blurple)
     async def videos(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -89,16 +89,17 @@ class ParentView(ParrotView):
         self.best_practices.disabled = True
         self.link_groups.disabled = True
 
-        await interaction.response.edit_message(embed=discord.Embed(description="Select a folder..."), view=self)
+        await interaction.response.edit_message(embed=self.embed.set_footer(text="Select a folder..."), view=self)
 
     async def start(self, ctx: Context) -> None:
         self.ctx = ctx
+        self.embed = discord.Embed(
+            title="Developer Roadmaps",
+            description="[roadmap.sh](https://roadmap.sh) is a community effort to create roadmaps, guides and other educational content to help guide developers in picking up a path and guide their learnings.",
+            url="https://roadmap.sh/",
+        )
         self.message = await ctx.send(
-            embed=discord.Embed(
-                title="Developer Roadmaps",
-                description="[roadmap.sh](https://roadmap.sh) is a community effort to create roadmaps, guides and other educational content to help guide developers in picking up a path and guide their learnings.",
-                url="https://roadmap.sh/",
-            ),
+            embed=self.embed,
             view=self,
         )
 
@@ -129,7 +130,7 @@ class ContentView(discord.ui.Select):
         async with aiofiles.open(path, mode="r", encoding="utf-8") as f:
             content = await f.read()
 
-        page = commands.Paginator(prefix="", suffix="")
+        page = commands.Paginator(prefix="", suffix="", max_size=1990)
         _ADD_LINE = True
 
         for line in content.splitlines():
@@ -141,8 +142,11 @@ class ContentView(discord.ui.Select):
                 new_line = self.replace_partial_links(new_line)
                 page.add_line(new_line)
 
-        interference = PaginatorEmbedInterface(self.view.ctx, page, owner=self.view.ctx.author)
-        await interference.send_to(interaction.followup)  # type: ignore
+        if page.pages:
+            interference = PaginatorEmbedInterface(self.view.ctx, page, owner=self.view.ctx.author)
+            await interference.send_to(interaction.followup)  # type: ignore
+        else:
+            await interaction.followup.send("No content found.")
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
@@ -157,4 +161,11 @@ class ContentView(discord.ui.Select):
             select = ContentView(folders=[f"{folder}/{i}" for i in files])
             self.view.add_item(select)
 
-            await interaction.followup.send(embed=discord.Embed(description="Select a file..."), view=self.view)
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="Developer Roadmaps",
+                    description="[roadmap.sh](https://roadmap.sh) is a community effort to create roadmaps, guides and other educational content to help guide developers in picking up a path and guide their learnings.",
+                    url="https://roadmap.sh/",
+                ).set_footer(text="Select a file..."),
+                view=self.view,
+            )

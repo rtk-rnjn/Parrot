@@ -221,14 +221,14 @@ async def _ban(
     command_name: str,
     ctx: Context,
     destination: discord.abc.Messageable,
-    member: discord.Member,
+    member: discord.User | int,
     days: int = 0,
     reason: str | None,
     silent: bool = False,
     **kwargs: Any,
 ):
     try:
-        if member.id in (ctx.author.id, guild.me.id) and not silent:
+        if member in (ctx.author.id, guild.me.id, ctx.author, guild.me) and not silent:
             await destination.send(f"{ctx.author.mention} don't do that, Bot is only trying to help")
             return
         await guild.ban(

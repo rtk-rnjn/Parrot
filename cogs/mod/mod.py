@@ -14,7 +14,7 @@ from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod
-from utilities.converters import ActionReason, BannedMember, MemberID
+from utilities.converters import ActionReason, BannedMember, MemberID, UserID
 from utilities.time import FutureTime, ShortTime
 
 
@@ -214,7 +214,7 @@ class Moderator(Cog):
     async def ban(
         self,
         ctx: Context,
-        member: Annotated[discord.Member, MemberID],
+        member: Annotated[discord.User, UserID],
         days: Annotated[int, int | None] = 0,
         *,
         reason: Annotated[str | None, ActionReason] = None,
@@ -260,8 +260,8 @@ class Moderator(Cog):
     async def mass_ban(
         self,
         ctx: Context,
-        members: Annotated[list[discord.Member], commands.Greedy[MemberID]],
-        days: int | None = 0,
+        members: Annotated[list[discord.Member], commands.Greedy[UserID]],
+        days: Annotated[int, int | None] = 0,
         *,
         reason: Annotated[str | None, ActionReason] = None,
     ):

@@ -206,7 +206,7 @@ async def _change_role_color(
     if is_mod and (is_mod.id == role.id):
         return await destination.send(f"{ctx.author.mention} can not assign/remove/edit mod role")
     try:
-        await role.edit(color=discord.Color.value(int_), reason=reason)
+        await role.edit(color=discord.Color(int_), reason=reason)
         await destination.send(f"{ctx.author.mention} **{role.name} ({role.id})** color changed successfully")
     except Exception as e:
         await destination.send(f"Can not able to {command_name} **{role.name} ({role.id})**. Error raised: **{e}**")
@@ -298,13 +298,7 @@ async def _softban(
                 await destination.send(f"{ctx.author.mention} don't do that, Bot is only trying to help")
                 return
             await member.ban(reason=reason)
-
-            banned_users = await guild.bans()
-            member_n, member_d = member.name, member.discriminator
-            for ban_entry in banned_users:
-                user = ban_entry.user
-                if (user.name, user.discriminator) == (member_n, member_d):
-                    await guild.unban(user)
+            await guild.unban(member, reason=reason)
 
             await destination.send(f"{ctx.author.mention} **{member}** is soft banned!")
         except Exception as e:

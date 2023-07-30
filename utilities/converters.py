@@ -26,7 +26,7 @@ VT = TypeVar("VT", bound=Any)
 
 def convert_bool(text: str | bool | Any) -> bool:
     """True/False converter."""
-    return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o"}
+    return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o", "ok", "sure", "yeah", "yup"}
 
 
 class ActionReason(commands.Converter):
@@ -116,7 +116,33 @@ class MemberID(commands.Converter):
         return m
 
 
-def lru_callback(key, value) -> None:
+class UserID(commands.Converter):
+    """A converter that handles user mentions and user IDs."""
+
+    async def convert(self, ctx: Context, argument: str) -> discord.Member | discord.User | None:
+        try:
+            u: discord.Member | discord.User | None = await commands.UserConverter().convert(ctx, argument)
+        except commands.BadArgument:
+            try:
+                user_id = int(argument, base=10)
+            except ValueError:
+                msg = f"{argument} is not a valid user or user ID."
+                raise commands.BadArgument(msg) from None
+            else:
+                u: discord.Member | discord.User | None = await ctx.bot.get_or_fetch_member(
+                    ctx.guild, user_id, in_guild=False
+                )
+                if u is None:
+                    return type(  # type: ignore
+                        "_User",
+                        (),
+                        {"id": user_id, "__str__": lambda s: f"User ID {s.id}"},
+                    )()
+
+        return u
+
+
+def lru_callback(_, value) -> None:
     value = str(value)[:20]
 
 

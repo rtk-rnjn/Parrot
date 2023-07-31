@@ -112,8 +112,8 @@ class Parser:
                             main[__head][f"sub_head_list_{idx}"] = self._parse_list_item(tag)
                             idx += 1
 
-                    if tag.name == "p":
-                        main[__head][f"sub_head_para_{idx}"] = self._parse_list_item(tag)
+                    if tag.name == "p" and (text := self._parse_list_item(tag)):
+                        main[__head][f"sub_head_para_{idx}"] = text
                         idx += 1
 
                     if tag.name == "div":

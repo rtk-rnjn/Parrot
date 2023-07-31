@@ -608,8 +608,11 @@ class Owner(Cog, command_attrs={"hidden": True}):
             await ctx.send(f"```sql\n{table}``` Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
 
     @commands.command()
-    async def howto(self, ctx: Context, *, query: str | int) -> None:
+    async def howto(self, ctx: Context, *, query: int | str) -> None:
         """WikiHow search."""
+        if query.isdigit():
+            query = int(query)
+
         if isinstance(query, int):
             data = await self.wikihow_parser.get_wikihow_article(query)
             if not data["real"]["intro"]:
@@ -653,6 +656,14 @@ class Owner(Cog, command_attrs={"hidden": True}):
                 warnings = _join_values(real["Warnings"].values())
                 page.add_line(f"# Warnings\n> {warnings}")
 
+            if real.get("Test Your Knowledge"):
+                test = _join_values(real["Test Your Knowledge"].values())
+                page.add_line(f"# Test Your Knowledge\n> {test}")
+
+            if real.get("Video"):
+                video = _join_values(real["Video"].values())
+                page.add_line(f"# Video\n> {video}")
+
             if real.get("Related wikiHows"):
                 related = _join_values(real["Related wikiHows"].values())
                 page.add_line(f"# Related wikiHows\n{related}")
@@ -671,7 +682,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         else:
             initial_data = await self.wikihow_parser.get_wikihow(query)
             if not initial_data:
-                await ctx.send("No results found.")
+                await ctx.reply("No results found. Try again with a different query.")
                 return
 
             page = commands.Paginator(prefix="", suffix="", max_size=1500)

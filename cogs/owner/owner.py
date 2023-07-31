@@ -17,8 +17,8 @@ from collections import Counter
 from typing import Annotated, Literal
 
 import jishaku
-import jishaku.paginators
 from aiofile import async_open
+from jishaku.paginators import PaginatorEmbedInterface
 from tabulate import tabulate
 
 import discord
@@ -619,10 +619,13 @@ class Owner(Cog, command_attrs={"hidden": True}):
                 await ctx.send("No results found.")
                 return
 
-            page = commands.Paginator(prefix="", suffix="", max_size=1500)
+            page = commands.Paginator(prefix="", suffix="")
             real = data["real"]
             if real.get("intro"):
-                page.add_line(f"# Intro\n> {real['intro']}\n")
+                page.add_line(f"# Intro\n> {real['intro']}")
+
+            interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
+            await interface.send_to(ctx)
 
             def _join_values(values: list[str] | list[list[str]]) -> str:
                 if isinstance(values, list) and isinstance(values[0], list):
@@ -631,53 +634,50 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if real.get("Things You Should Know"):
                 things = _join_values(real["Things You Should Know"].values())
-                page.add_line(
+                await interface.add_line(
                     f"# Things You Should Know\n> {things}",
                 )
 
             if steps := real.get("Steps"):
                 for step in steps:
-                    page.add_line(f"# {step}")
+                    await interface.add_line(f"# {step}")
                     if isinstance(step, str):
-                        page.add_line(f"> {steps[step]}")
+                        await interface.add_line(f"> {steps[step]}")
                     if isinstance(step, list):
                         for sub_step in step:
                             if sub_step.endswith("jpg"):
-                                page.add_line(f"- [Link To Image]({sub_step})")
+                                await interface.add_line(f"- [Link To Image]({sub_step})")
                             else:
-                                page.add_line(f"- {sub_step}")
-                    page.add_line("")
+                                await interface.add_line(f"- {sub_step}")
+                    await interface.add_line("")
 
             if real.get("Tips"):
                 tips = _join_values(real["Tips"].values())
-                page.add_line(f"# Tips\n> {tips}")
+                await interface.add_line(f"# Tips\n> {tips}")
 
             if real.get("Warnings"):
                 warnings = _join_values(real["Warnings"].values())
-                page.add_line(f"# Warnings\n> {warnings}")
+                await interface.add_line(f"# Warnings\n> {warnings}")
 
             if real.get("Test Your Knowledge"):
                 test = _join_values(real["Test Your Knowledge"].values())
-                page.add_line(f"# Test Your Knowledge\n> {test}")
+                await interface.add_line(f"# Test Your Knowledge\n> {test}")
 
             if real.get("Video"):
                 video = _join_values(real["Video"].values())
-                page.add_line(f"# Video\n> {video}")
+                await interface.add_line(f"# Video\n> {video}")
 
             if real.get("Related wikiHows"):
                 related = _join_values(real["Related wikiHows"].values())
-                page.add_line(f"# Related wikiHows\n{related}")
+                await interface.add_line(f"# Related wikiHows\n{related}")
 
             if real.get("References"):
                 references = _join_values(real["References"].values())
-                page.add_line(f"# References\n{references}")
+                await interface.add_line(f"# References\n{references}")
 
             if real.get("Summary"):
                 summary = _join_values(real["Summary"].values())
-                page.add_line(f"# Summary\n{summary}")
-
-            interface = jishaku.paginators.PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
-            await interface.send_to(ctx)
+                await interface.add_line(f"# Summary\n{summary}")
 
         else:
             initial_data = await self.wikihow_parser.get_wikihow(query)

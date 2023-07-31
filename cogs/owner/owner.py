@@ -620,11 +620,11 @@ class Owner(Cog, command_attrs={"hidden": True}):
                 return
 
             page = commands.Paginator(prefix="", suffix="")
+            interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
             real = data["real"]
             if real.get("intro"):
-                page.add_line(f"# Intro\n> {real['intro']}")
+                await interface.add_line(f"# Intro\n> {real['intro']}")
 
-            interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
             await interface.send_to(ctx)
 
             def _join_values(values: list[str] | list[list[str]]) -> str:
@@ -686,12 +686,10 @@ class Owner(Cog, command_attrs={"hidden": True}):
                 return
 
             page = commands.Paginator(prefix="", suffix="", max_size=1500)
+            interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
             for title, snippet, _id in initial_data:
-                page.add_line(f"[{title}] {_id}\n> {snippet}\n")
-
-            interface = jishaku.paginators.PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
+                await interface.add_line(f"[{title}] {_id}\n> {snippet}\n")
             await interface.send_to(ctx)
-
 
 class DiscordPy(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:

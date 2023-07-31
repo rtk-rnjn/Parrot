@@ -643,7 +643,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 )
                 await message.reply("GG! Level up!", file=file)
 
-    async def _scam_detection(self, message: discord.Message) -> bool | None:
+    async def _scam_detection(self, message: discord.Message, *, to_send: bool = True) -> bool | None:
         if message.guild is None:
             return False
 
@@ -663,17 +663,19 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         for i in match_list:
             cursor = await self.bot.sql.execute("""SELECT * FROM scam_links WHERE link = ?""", (i,))
             if await cursor.fetchone():
-                await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{i}`",
-                )
+                if to_send:
+                    await message.channel.send(
+                        f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: `{i}`",
+                    )
                 return True
 
         if any(self.__scam_link_cache.get(i, False) for i in set(match_list)):
             with suppress(discord.Forbidden):
-                await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. "
-                    f"Match: `{'`, `'.join(k for k, v in self.__scam_link_cache.items() if v and k in match_list)}`",
-                )
+                if to_send:
+                    await message.channel.send(
+                        f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. "
+                        f"Match: `{'`, `'.join(k for k, v in self.__scam_link_cache.items() if v and k in match_list)}`",
+                    )
             return True
 
         if match_list and all(not self.__scam_link_cache.get(i, True) for i in set(match_list)):
@@ -694,14 +696,15 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             data = await response.json()
 
             if data["match"]:
-                await message.channel.send(
-                    f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: "
-                    + (
-                        f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
-                        if len(data["matches"]) < 10
-                        else str(len(data["matches"]))
-                    ),
-                )
+                if to_send:
+                    await message.channel.send(
+                        f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: "
+                        + (
+                            f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
+                            if len(data["matches"]) < 10
+                            else str(len(data["matches"]))
+                        ),
+                    )
                 for match in data["matches"]:
                     self.__scam_link_cache[match["domain"]] = True
                     await asyncio.sleep(0)

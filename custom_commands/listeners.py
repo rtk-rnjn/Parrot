@@ -100,6 +100,7 @@ class Sector17Listeners(Cog):
             self.owo_battle(message, content),
             self.owo_hunt_bot(message, content),
             self.owo_pray_curse(message, content),
+            self.owo_daily(message, content),
         )
 
     def _get_command_list(self, content: str, data: dict[str, list[str] | str]) -> dict[str, str] | None:
@@ -204,3 +205,20 @@ class Sector17Listeners(Cog):
             await asyncio.sleep(300)
 
             await message.channel.send(f"{message.author.mention} Pray/Curse", reference=owo_message)
+
+    async def owo_daily(self, message: discord.Message, content: str):
+        if not self._get_command_list(content, {"daily": "ddaily"}):
+            return
+        owo_message = await self.wait_for_owo(message, startswith="\N{MONEY BAG}")
+
+        if owo_message is not None:
+            await self.bot.create_timer(
+                expires_at=owo_message.created_at.timestamp() + 60 * 60 * 24,
+                created_at=message.created_at.timestamp(),
+                content=f"{message.author.mention} your Daily is ready!",
+                message=message,
+                dm_notify=False,
+            )
+
+            await owo_message.add_reaction("\N{ALARM CLOCK}")
+

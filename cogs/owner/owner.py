@@ -16,6 +16,8 @@ import urllib.parse
 from collections import Counter
 from typing import Annotated, Literal
 
+import jishaku
+import jishaku.paginators
 from aiofile import async_open
 from tabulate import tabulate
 
@@ -31,6 +33,7 @@ from . import fuzzy
 from .flags import AuditFlag, BanFlag, SubscriptionFlag
 from .utils import SphinxObjectFileReader
 from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
+from .wikihow import Parser as WikihowParser
 
 
 class Owner(Cog, command_attrs={"hidden": True}):
@@ -39,8 +42,15 @@ class Owner(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.count = 0
+        self.wikihow_parser = WikihowParser()
 
         self.bot.get_user_data = self.get_user_data
+
+    async def cog_load(self):
+        await self.wikihow_parser.init()
+
+    async def cog_unload(self):
+        await self.wikihow_parser.close()
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -53,7 +63,6 @@ class Owner(Cog, command_attrs={"hidden": True}):
     @Context.with_type
     async def gitload(self, ctx: Context, *, link: str) -> None:
         """To load the cog extension from github."""
-        ctx.author.display_name
         r = await self.bot.http_session.get(link)
         data = await r.read()
         name = f"temp/temp{self.count}"
@@ -537,11 +546,13 @@ class Owner(Cog, command_attrs={"hidden": True}):
         else:
             await ctx.send(f"{ctx.author.mention} cog ({cog}) does not exist")
 
-    async def get_user_data(self, *, user: discord.Object) -> typing.Any:
+    async def get_user_data(self, *, user: discord.Object | int) -> typing.Any:
         """Illegal way to get presence of a user."""
         from utilities.object import objectify
 
-        url = f"https://japi.rest/discord/v1/user/{user.id}"
+        _id: int = user.id if isinstance(user, discord.Object) else user
+
+        url = f"https://japi.rest/discord/v1/user/{_id}"
         async with self.bot.http_session.get(url) as resp:
             data = await resp.json()
 
@@ -567,7 +578,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
     @commands.command(alises=["sql3", "sqlite3", "sqlite"])
     async def sql(self, ctx: Context, *, query: str):
         """SQL query.
-        
+
         This is equivalent to:
         ```py
         sql = ctx.bot.sql
@@ -595,6 +606,80 @@ class Owner(Cog, command_attrs={"hidden": True}):
             await ctx.send(file=file)
         else:
             await ctx.send(f"```sql\n{table}``` Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
+
+    @commands.command()
+    async def howto(self, ctx: Context, *, query: str | int) -> None:
+        """WikiHow search."""
+        if isinstance(query, int):
+            data = await self.wikihow_parser.get_wikihow_article(query)
+            if not data["real"]["intro"]:
+                await ctx.send("No results found.")
+                return
+
+            page = commands.Paginator(prefix="", suffix="", max_size=1500)
+            real = data["real"]
+            if real.get("intro"):
+                page.add_line(f"# Intro\n> {real['intro']}\n")
+
+            def _join_values(values: list[str] | list[list[str]]) -> str:
+                if isinstance(values, list) and isinstance(values[0], list):
+                    return "\n".join([" ".join(i) for i in values])
+                return "\n".join(values)
+
+            if real.get("Things You Should Know"):
+                things = _join_values(real["Things You Should Know"].values())
+                page.add_line(
+                    f"# Things You Should Know\n> {things}",
+                )
+
+            if steps := real.get("Steps"):
+                for step in steps:
+                    page.add_line(f"# {step}")
+                    if isinstance(step, str):
+                        page.add_line(f"> {steps[step]}")
+                    if isinstance(step, list):
+                        for sub_step in step:
+                            if sub_step.endswith("jpg"):
+                                page.add_line(f"- [Link To Image]({sub_step})")
+                            else:
+                                page.add_line(f"- {sub_step}")
+                    page.add_line("")
+
+            if real.get("Tips"):
+                tips = _join_values(real["Tips"].values())
+                page.add_line(f"# Tips\n> {tips}")
+
+            if real.get("Warnings"):
+                warnings = _join_values(real["Warnings"].values())
+                page.add_line(f"# Warnings\n> {warnings}")
+
+            if real.get("Related wikiHows"):
+                related = _join_values(real["Related wikiHows"].values())
+                page.add_line(f"# Related wikiHows\n{related}")
+
+            if real.get("References"):
+                references = _join_values(real["References"].values())
+                page.add_line(f"# References\n{references}")
+
+            if real.get("Summary"):
+                summary = _join_values(real["Summary"].values())
+                page.add_line(f"# Summary\n{summary}")
+
+            interface = jishaku.paginators.PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
+            await interface.send_to(ctx)
+
+        else:
+            initial_data = await self.wikihow_parser.get_wikihow(query)
+            if not initial_data:
+                await ctx.send("No results found.")
+                return
+
+            page = commands.Paginator(prefix="", suffix="", max_size=1500)
+            for title, snippet, _id in initial_data:
+                page.add_line(f"[{title}] {_id}\n> {snippet}\n")
+
+            interface = jishaku.paginators.PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author, timeout=60)
+            await interface.send_to(ctx)
 
 
 class DiscordPy(Cog, command_attrs={"hidden": True}):
@@ -704,7 +789,8 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
 
         cache = list(self._rtfm_cache[key].items())
 
-        matches = (await asyncio.to_thread(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False))[:8]
+        _matches = await asyncio.to_thread(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False)
+        matches = list(_matches)[:8]
 
         e = discord.Embed(title="Read the Fucking Documentation", timestamp=discord.utils.utcnow())
         if len(matches) == 0:
@@ -872,4 +958,5 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not m.mentions and not m.role_mentions
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # type: ignore
+        return Counter(m.author.display_name for m in deleted)
         return Counter(m.author.display_name for m in deleted)

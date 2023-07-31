@@ -410,7 +410,7 @@ class Easter(Cog, command_attrs={"hidden": True}):
     async def on_reaction_add(
         self,
         reaction: discord.Reaction,
-        user: discord.Member | discord.User | discord.abc.Snowflake,
+        user: discord.Member | discord.User,
     ) -> None:
         """Listener to listen specifically for reactions of quiz messages."""
         if user.bot:

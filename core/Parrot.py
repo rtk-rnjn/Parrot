@@ -136,7 +136,7 @@ class CustomFormatter(logging.Formatter):
     }
     # fmt: on
 
-    def format(self, record: logging.LogRecord) -> str:
+    def format(self, record: logging.LogRecord) -> str:  # noqa: A003
         log_fmt = self.formats.get(record.levelno)
         formatter = logging.Formatter(log_fmt, DT_FMT)
         return formatter.format(record)
@@ -346,7 +346,7 @@ class Parrot(commands.AutoShardedBot):
         if guild is None:
 
             class A:
-                id = SUPPORT_SERVER_ID
+                id = SUPPORT_SERVER_ID  # noqa: A003
                 name = "SECTOR 17-29"
 
             return A()  # type: ignore
@@ -1349,11 +1349,8 @@ class Parrot(commands.AutoShardedBot):
         channel: ...,
         message: ...,
         *,
-        cache: bool = ...,
         partial: bool = ...,
-        force_fetch: bool = ...,
-        dm_allowed: bool = ...,
-    ) -> discord.Message | discord.PartialMessage | None:
+    ) -> discord.PartialMessage | None:
         ...
 
     @overload
@@ -1361,6 +1358,16 @@ class Parrot(commands.AutoShardedBot):
         self,
         channel: str | int,
     ) -> discord.Message | None:
+        ...
+
+    @overload
+    async def get_or_fetch_message(
+        self,
+        channel: ...,
+        message: ...,
+        *,
+        force_fetch: bool = True,
+    ) -> discord.Message:
         ...
 
     async def get_or_fetch_message(
@@ -1433,7 +1440,7 @@ class Parrot(commands.AutoShardedBot):
             self.message_cache[message] = msg
             return msg
 
-        if cache and (msg := self._connection._get_message(message)):
+        if msg := self._connection._get_message(message):
             self.message_cache[message] = msg
             return msg
 

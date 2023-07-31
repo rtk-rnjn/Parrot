@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 import dateutil.parser
-from rapidfuzz import fuzz  # type: ignore
+from rapidfuzz import fuzz
 
 import discord
 from core import Cog, Context, Parrot

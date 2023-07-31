@@ -3,26 +3,21 @@ from __future__ import annotations
 import discord
 from core import Context, Parrot
 
+# fmt: off
 IGNORE = {
-    "all",
-    "delete",
-    "del",
-    "create",
-    "add",
-    "editname",
-    "edittext",
-    "owner",
-    "info",
-    "snipe",
-    "steal",
-    "claim",
-    "tnsfw",
-    "nsfw",
-    "tooglensfw",
-    "give",
-    "transfer",
-    "raw",
+    "create", "add", "new", "make", "mk",
+    "delete", "del", "rm",
+    "editname", "rename", "edit-name", "edit_name",
+    "edittext", "edit-text", "edit_text",
+    "owner", "info", "details", "whois", "detail",
+    "snipe", "steal", "claim", "take",
+    "togglensfw", "tnsfw", "nsfw",
+    "give", "transfer", "share",
+    "all", "list", "show", "ls",
+    "mine", "my", "owned", "own",
+    "raw", "source", "code",
 }
+# fmt: on
 
 
 async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: discord.Message | None = None):

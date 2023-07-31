@@ -132,8 +132,8 @@ class Suggestions(Cog):
     ) -> discord.Message | None:
         channel: discord.TextChannel | None = await self.__fetch_suggestion_channel(ctx.guild)
         if channel is None:
-            msg = f"{ctx.author.mention} error fetching suggestion channel"
-            raise commands.BadArgument(msg)
+            err = f"{ctx.author.mention} error fetching suggestion channel"
+            raise commands.BadArgument(err)
         file = file or discord.utils.MISSING
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
 

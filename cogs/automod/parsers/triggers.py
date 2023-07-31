@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core import Parrot
+    from events.on_msg import OnMsg
 
 import re
 
@@ -223,3 +224,10 @@ class Trigger:
 
     def message_with_less_than_x_characters(self, *, message: Message, characters: int, **kw) -> bool:
         return len(message.content) < characters
+
+    async def scam_links(self, *, message: Message, **kw) -> bool:
+        cog: OnMsg = self.bot.get_cog("OnMsg")  # type: ignore
+        if not cog:
+            return False
+        has_scam_link = await cog._scam_detection(message, to_send=False)
+        return bool(has_scam_link)

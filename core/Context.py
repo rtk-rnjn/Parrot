@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable, Iterable
 from contextlib import suppress
 from io import BytesIO
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
 
 import aiohttp
 import humanize
@@ -43,7 +43,7 @@ else:
     BotT = TypeVar("BotT", bound="commands.Bot")
 
 T = TypeVar("T")
-MaybeAwaitable = Union[T, Awaitable[T]]
+MaybeAwaitable = T | Awaitable[T]
 
 Callback = MaybeAwaitable
 
@@ -491,7 +491,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         for pending in pendings:
             pending.cancel()
-            log.info(f"Cancelled pending task {pending}")
+            log.info("Cancelled pending task %s", pending.get_name() or "unnamed")
 
         return [r.result() for r in completed]
 

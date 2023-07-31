@@ -608,9 +608,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
             await ctx.send(f"```sql\n{table}``` Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
 
     @commands.command()
-    async def howto(self, ctx: Context, *, query: int | str) -> None:
+    async def wikihow(self, ctx: Context, *, query: int | str) -> None:
         """WikiHow search."""
-        if query.isdigit():
+        if isinstance(query, str) and query.isdigit():
             query = int(query)
 
         if isinstance(query, int):

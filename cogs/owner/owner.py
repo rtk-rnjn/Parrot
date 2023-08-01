@@ -629,15 +629,22 @@ class Owner(Cog, command_attrs={"hidden": True}):
             await interface.send_to(ctx)
 
             def _join_values(values: list[str] | list[list[str]]) -> str:
-                if isinstance(values, list) and isinstance(values[0], list):
-                    return "\n".join([" ".join(i) for i in values])
-                return "\n".join(" ".join(i) for i in values)
+                val: list[str] = []
+                for value in values:
+                    if isinstance(value, list):
+                        val.append(" ".join(value))
+                    else:
+                        val.append(value)
+                return "\n".join(val)
 
             if real.get("Things You Should Know"):
                 things = _join_values(real["Things You Should Know"].values())
-                await interface.add_line(
-                    f"# Things You Should Know\n> {things}",
-                )
+                await interface.add_line("# Things You Should Know")
+                _things = things.split("\n")
+                for thing in _things:
+                    if not thing:
+                        continue
+                    await interface.add_line(f"- {thing}")
 
             wiki_steps: dict[
                 str, list[list[str | list[str]] | str],
@@ -662,11 +669,21 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if real.get("Tips"):
                 tips = _join_values(real["Tips"].values())
-                await interface.add_line(f"# Tips\n> {tips}")
+                await interface.add_line("# Tips")
+                _tips = tips.split("\n")
+                for tip in _tips:
+                    if not tip:
+                        continue
+                    await interface.add_line(f"- {tip}")
 
             if real.get("Warnings"):
                 warnings = _join_values(real["Warnings"].values())
-                await interface.add_line(f"# Warnings\n> {warnings}")
+                await interface.add_line("# Warnings")
+                _warnings = warnings.split("\n")
+                for warning in _warnings:
+                    if not warning:
+                        continue
+                    await interface.add_line(f"- {warning}")
 
             if real.get("Test Your Knowledge"):
                 test = _join_values(real["Test Your Knowledge"].values())
@@ -688,7 +705,12 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if real.get("Related wikiHows"):
                 related = _join_values(real["Related wikiHows"].values())
-                await interface.add_line(f"# Related wikiHows\n{related}")
+                await interface.add_line("# Related wikiHows")
+                _related = related.split("\n")
+                for rel in _related:
+                    if not rel:
+                        continue
+                    await interface.add_line(f"- {rel}")
 
             if real.get("References"):
                 references = _join_values(real["References"].values())

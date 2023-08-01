@@ -14,7 +14,7 @@ class SnipeMessageListener(Cog):
         self.edit_snipes: dict[int, deque[tuple[discord.Message, discord.Message]]] = {}
 
     @Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message_delete(self, message: discord.Message):
         if message.author.bot:
             return
         if not message.guild:

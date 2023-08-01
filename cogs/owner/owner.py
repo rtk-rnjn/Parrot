@@ -631,7 +631,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             def _join_values(values: list[str] | list[list[str]]) -> str:
                 if isinstance(values, list) and isinstance(values[0], list):
                     return "\n".join([" ".join(i) for i in values])
-                return "\n".join(values)
+                return "\n".join(" ".join(i) for i in values)
 
             if real.get("Things You Should Know"):
                 things = _join_values(real["Things You Should Know"].values())
@@ -639,19 +639,17 @@ class Owner(Cog, command_attrs={"hidden": True}):
                     f"# Things You Should Know\n> {things}",
                 )
 
-            if steps := real.get("Steps"):
-                for hd, stps in steps.items():
+            if wiki_steps := real.get("Steps"):
+                for hd, steps in wiki_steps.items():
                     await interface.add_line(f"## {hd}")
-                    if isinstance(steps, list):
-                        for sub_step in stps:
-                            if sub_step.endswith("jpg"):
-                                await interface.add_line(f"- [Link To Image]({sub_step})")
-                            if isinstance(sub_step, list):
-                                for sub_sub_step in sub_step:
-                                    await interface.add_line(f" - {sub_sub_step}")
-                            else:
-                                await interface.add_line(f"- {sub_step}")
-                    await interface.add_line("")
+                    for points in steps:
+                        for sub_head, sub_steps in points:
+                            await interface.add_line(f"### {sub_head}")
+                            for step in sub_steps:
+                                if step.endswith("jpg"):
+                                    await interface.add_line(f"[Link To Image]({step})")
+                                else:
+                                    await interface.add_line(f"- {step}")
 
             if real.get("Tips"):
                 tips = _join_values(real["Tips"].values())

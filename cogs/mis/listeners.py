@@ -25,6 +25,11 @@ class SnipeMessageListener(Cog):
 
         self.snipes[message.channel.id].appendleft(message)
 
+    @Cog.listener()
+    async def on_bulk_message_delete(self, messages: list[discord.Message]):
+        for msg in messages:
+            await self.on_message_delete(msg)
+
     def get_snipe(self, channel: discord.TextChannel, *, index: int) -> discord.Message:
         if channel.id not in self.snipes:
             msg = "No messages have been sniped in this channel"
@@ -78,12 +83,12 @@ class SnipeMessageListener(Cog):
 
     def delete_snipe(self, channel: discord.TextChannel, *, index: int) -> None:
         try:
-            self.snipes[channel.id].remove(self.snipes[channel.id][index])
+            self.snipes[channel.id].remove(self.snipes[channel.id][index - 1])
         except Exception:
             pass
 
     def delete_edit_snipe(self, channel: discord.TextChannel, *, index: int) -> None:
         try:
-            self.edit_snipes[channel.id].remove(self.edit_snipes[channel.id][index])
+            self.edit_snipes[channel.id].remove(self.edit_snipes[channel.id][index - 1])
         except Exception:
             pass

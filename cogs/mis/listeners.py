@@ -37,7 +37,11 @@ class SnipeMessageListener(Cog):
         if index > len(self.snipes[channel.id]):
             msg = f"Index must be less than {len(self.snipes[channel.id])}"
             raise commands.BadArgument(msg)
-        return self.snipes[channel.id][index]
+        try:
+            return self.snipes[channel.id][index]
+        except Exception as e:
+            err = "Message not found"
+            raise commands.BadArgument(err) from e
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -66,7 +70,11 @@ class SnipeMessageListener(Cog):
         if index > len(self.edit_snipes[channel.id]):
             msg = f"Index must be less than {len(self.edit_snipes[channel.id])}"
             raise commands.BadArgument(msg)
-        return self.edit_snipes[channel.id][index]
+        try:
+            return self.edit_snipes[channel.id][index]
+        except Exception as e:
+            err = "Message not found"
+            raise commands.BadArgument(err) from e
 
     def delete_snipe(self, channel: discord.TextChannel, *, index: int) -> None:
         try:

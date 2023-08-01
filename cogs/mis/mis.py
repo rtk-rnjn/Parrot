@@ -528,7 +528,7 @@ class Misc(Cog):
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
 
-        snipe: discord.Message = snipes.get_snipe(channel or ctx.channel, index)  # type: ignore
+        snipe: discord.Message = snipes.get_snipe(channel or ctx.channel, index=index)  # type: ignore
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
 
@@ -575,7 +575,7 @@ class Misc(Cog):
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
 
-        snipe: tuple[discord.Message, discord.Message] = snipes.get_edit_snipe(channel or ctx.channel, index)  # type: ignore
+        snipe: tuple[discord.Message, discord.Message] = snipes.get_edit_snipe(channel or ctx.channel, index=index)  # type: ignore
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
 

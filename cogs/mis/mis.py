@@ -9,11 +9,10 @@ import os
 import re
 import string
 import urllib.parse
-from collections.abc import Iterable
 from datetime import datetime
 from html import unescape
 from pathlib import Path
-from typing import Annotated, Any, BinaryIO
+from typing import TYPE_CHECKING, Annotated, Any, BinaryIO
 
 import qrcode
 import sympy
@@ -50,6 +49,9 @@ from utilities.youtube_search import YoutubeSearch
 
 from .__embed_view import EmbedBuilder, EmbedCancel, EmbedSend
 from .__flags import SearchFlag, TTFlag
+
+if TYPE_CHECKING:
+    from .listeners import SnipeMessageListener
 
 google_key: str = os.environ["GOOGLE_KEY"]
 cx: str = os.environ["GOOGLE_CX"]
@@ -212,24 +214,7 @@ class Misc(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.ON_TESTING = False
-        self.snipes: dict[int, list[discord.Message] | discord.Message | None] = {}
-
         self.youtube_search = YoutubeSearch(5)
-
-        @bot.listen("on_message_delete")
-        async def on_message_delete(msg: discord.Message):
-            await self.bot.wait_until_ready()
-            if msg.author.bot:
-                return
-            self.snipes[msg.channel.id] = msg
-
-        @bot.listen("on_message_edit")
-        async def on_message_edit(before: discord.Message, after: discord.Message):
-            await self.bot.wait_until_ready()
-            if before.author.bot or after.author.bot:
-                return
-            if before.content != after.content:
-                self.snipes[before.channel.id] = [before, after]
 
     async def wiki_request(self, _: discord.TextChannel, search: str) -> list[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
@@ -533,51 +518,81 @@ class Misc(Cog):
         page = SimplePages(entries=pages, ctx=ctx, per_page=3)
         await page.start()
 
-    @commands.command()
+    @commands.command(name="snipe")
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def snipe(self, ctx: Context):
+    async def snipe_message(self, ctx: Context, channel: discord.TextChannel | None = None, index: int = 1):
         """Snipes someone's message that's deleted."""
-        snipe = self.snipes.get(ctx.channel.id)
+        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # type: ignore
+        if snipes is None:
+            return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
+
+        snipe: discord.Message = snipes.get_snipe(channel or ctx.channel, index)  # type: ignore
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
-        emb = discord.Embed()
 
-        if isinstance(snipe, list | Iterable):  # edit snipe
-            emb.set_author(name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url)
-            emb.colour = snipe[0].author.colour
-            emb.add_field(name="Before", value=self.sanitise(snipe[0].content), inline=False)
-            emb.add_field(name="After", value=self.sanitise(snipe[1].content), inline=False)
-            emb.timestamp = snipe[0].created_at
+        # if isinstance(snipe, list):  # edit snipe
+        #     emb.set_author(name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url)
+        #     emb.colour = snipe[0].author.colour
+        #     emb.add_field(name="Before", value=self.sanitise(snipe[0].content), inline=False)
+        #     emb.add_field(name="After", value=self.sanitise(snipe[1].content), inline=False)
+        #     emb.timestamp = snipe[0].created_at
 
-        else:  # delete snipe
-            emb.set_author(name=snipe.author, icon_url=snipe.author.display_avatar.url)
-            emb.colour = snipe.author.colour
-            emb.timestamp = snipe.created_at
-            emb.set_footer(
+        emb = (
+            discord.Embed(color=snipe.author.color, timestamp=snipe.created_at)
+            .set_author(name=snipe.author, icon_url=snipe.author.display_avatar.url)
+            .set_footer(
                 text=f"Message sniped by {str(ctx.author)}",
                 icon_url=ctx.author.display_avatar.url,
             )
-            if snipe.attachments:
-                url = snipe.attachments[0].proxy_url
-                if url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
-                    emb.set_image(url=url)
+        )
+        if snipe.attachments:
+            url = snipe.attachments[0].proxy_url
+            if url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+                emb.set_image(url=url)
 
-            # check if the snipe.content is url and ends with ("png", "jpeg", "jpg", "gif", "webp")
+        ref = snipe.reference.resolved if snipe.reference else None
+        if LINKS_RE.fullmatch(snipe.content) and snipe.content.endswith(("png", "jpeg", "jpg", "gif", "webp")):
+            if isinstance(ref, discord.Message):
+                emb.description = f"Replied to: **[{ref.author}]({ref.jump_url})**"
+            emb.set_image(url=snipe.content)
+        elif isinstance(ref, discord.Message):
+            emb.description = f"- **Replied to: [`{ref.author}`]({ref.jump_url})**\n\n{self.sanitise(snipe.content)}"
 
-            ref = snipe.reference.resolved if snipe.reference else None
-            if LINKS_RE.fullmatch(snipe.content) and snipe.content.endswith(("png", "jpeg", "jpg", "gif", "webp")):
-                if isinstance(ref, discord.Message):
-                    emb.description = f"Replied to: **[{ref.author}]({ref.jump_url})**"
-                emb.set_image(url=snipe.content)
-            elif isinstance(ref, discord.Message):
-                emb.description = f"- **Replied to: [`{ref.author}`]({ref.jump_url})**\n\n{self.sanitise(snipe.content)}"
-
+        else:
             emb.description = self.sanitise(snipe.content)
 
         await ctx.reply(embed=emb)
-        self.snipes[ctx.channel.id] = None
+
+    @commands.command(name="editsnipe", aliases=["esnipe"])
+    @commands.bot_has_permissions(read_message_history=True, embed_links=True)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def edit_snipe_message(self, ctx: Context, channel: discord.TextChannel | None = None, index: int = 1):
+        """Snipes someone's message that's deleted."""
+        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # type: ignore
+        if snipes is None:
+            return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
+
+        snipe: tuple[discord.Message, discord.Message] = snipes.get_edit_snipe(channel or ctx.channel, index)  # type: ignore
+        if snipe is None:
+            return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
+
+        emb = (
+            discord.Embed(color=snipe[0].author.color, timestamp=snipe[0].created_at)
+            .set_author(name=snipe[0].author, icon_url=snipe[0].author.display_avatar.url)
+            .set_footer(
+                text=f"Message sniped by {str(ctx.author)}",
+                icon_url=ctx.author.display_avatar.url,
+            )
+        )
+        if snipe[0].content and snipe[1].content:
+            emb.description = (
+                f"**Before:**\n{self.sanitise(snipe[0].content)}\n\n**After:**\n{self.sanitise(snipe[1].content)}"
+            )
+
+        await ctx.reply(embed=emb)
 
     @commands.command(aliases=["trutht", "tt", "ttable"])
     @commands.max_concurrency(1, per=commands.BucketType.user)

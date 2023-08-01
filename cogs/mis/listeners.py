@@ -67,3 +67,15 @@ class SnipeMessageListener(Cog):
             msg = f"Index must be less than {len(self.edit_snipes[channel.id])}"
             raise commands.BadArgument(msg)
         return self.edit_snipes[channel.id][index]
+
+    def delete_snipe(self, channel: discord.TextChannel, *, index: int) -> None:
+        try:
+            self.snipes[channel.id].remove(self.snipes[channel.id][index])
+        except Exception:
+            pass
+
+    def delete_edit_snipe(self, channel: discord.TextChannel, *, index: int) -> None:
+        try:
+            self.edit_snipes[channel.id].remove(self.edit_snipes[channel.id][index])
+        except Exception:
+            pass

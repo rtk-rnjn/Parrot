@@ -532,12 +532,11 @@ class Misc(Cog):
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
 
-        # if isinstance(snipe, list):  # edit snipe
-        #     emb.set_author(name=str(snipe[0].author), icon_url=snipe[0].author.display_avatar.url)
-        #     emb.colour = snipe[0].author.colour
-        #     emb.add_field(name="Before", value=self.sanitise(snipe[0].content), inline=False)
-        #     emb.add_field(name="After", value=self.sanitise(snipe[1].content), inline=False)
-        #     emb.timestamp = snipe[0].created_at
+        if channel and not channel.permissions_for(ctx.author).read_message_history:
+            channel = ctx.channel
+
+        if not ctx.author.guild_permissions.manage_messages:
+            index = 1
 
         emb = (
             discord.Embed(color=snipe.author.color, timestamp=snipe.created_at)
@@ -564,6 +563,7 @@ class Misc(Cog):
             emb.description = self.sanitise(snipe.content)
 
         await ctx.reply(embed=emb)
+        snipes.delete_snipe(channel or ctx.channel, index=index)
 
     @commands.command(name="editsnipe", aliases=["esnipe"])
     @commands.bot_has_permissions(read_message_history=True, embed_links=True)
@@ -571,6 +571,12 @@ class Misc(Cog):
     @Context.with_type
     async def edit_snipe_message(self, ctx: Context, channel: discord.TextChannel | None = None, index: int = 1):
         """Snipes someone's message that's deleted."""
+        if channel and not channel.permissions_for(ctx.author).read_message_history:
+            channel = ctx.channel
+
+        if not ctx.author.guild_permissions.manage_messages:
+            index = 1
+
         snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # type: ignore
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
@@ -593,6 +599,7 @@ class Misc(Cog):
             )
 
         await ctx.reply(embed=emb)
+        snipes.delete_edit_snipe(channel or ctx.channel, index=index)
 
     @commands.command(aliases=["trutht", "tt", "ttable"])
     @commands.max_concurrency(1, per=commands.BucketType.user)

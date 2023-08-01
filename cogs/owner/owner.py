@@ -641,15 +641,19 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if wiki_steps := real.get("Steps"):
                 for hd, steps in wiki_steps.items():
+                    if not steps:
+                        continue
                     await interface.add_line(f"## {hd}")
                     for points in steps:
-                        for sub_head, sub_steps in points:
-                            await interface.add_line(f"### {sub_head}")
-                            for step in sub_steps:
-                                if step.endswith("jpg"):
-                                    await interface.add_line(f"[Link To Image]({step})")
-                                else:
-                                    await interface.add_line(f"- {step}")
+                        for point in points:
+                            if isinstance(point, str):
+                                await interface.add_line(f"### {point}")
+                            else:
+                                for sub_point in point:
+                                    if sub_point.endswith("jpg"):
+                                        await interface.add_line(f"- [Image]({sub_point})")
+                                    else:
+                                        await interface.add_line(f"- {sub_point}")
 
             if real.get("Tips"):
                 tips = _join_values(real["Tips"].values())

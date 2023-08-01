@@ -637,17 +637,21 @@ class Owner(Cog, command_attrs={"hidden": True}):
                         val.append(value)
                 return "\n".join(val)
 
+            async def add_page(interface: PaginatorEmbedInterface, *, title: str, data: list[str] | list[list[str]]) -> None:
+                if not data:
+                    return
+                await interface.add_line(f"# {title}")
+                _data = _join_values(data)
+                _data = _data.split("\n")
+                for d in _data:
+                    await interface.add_line(f"- {d}")
+
             if real.get("Things You Should Know"):
-                things = _join_values(real["Things You Should Know"].values())
-                await interface.add_line("# Things You Should Know")
-                _things = things.split("\n")
-                for thing in _things:
-                    if not thing:
-                        continue
-                    await interface.add_line(f"- {thing}")
+                await add_page(interface, title="Things You Should Know", data=real["Things You Should Know"].values())
 
             wiki_steps: dict[
-                str, list[list[str | list[str]] | str],
+                str,
+                list[list[str | list[str]] | str],
             ] = real.pop("Steps", {})
 
             for hd, steps in wiki_steps.items():
@@ -668,67 +672,25 @@ class Owner(Cog, command_attrs={"hidden": True}):
                         await interface.add_line(f"- {point}")
 
             if real.get("Tips"):
-                tips = _join_values(real["Tips"].values())
-                await interface.add_line("# Tips")
-                _tips = tips.split("\n")
-                for tip in _tips:
-                    if not tip:
-                        continue
-                    await interface.add_line(f"- {tip}")
+                await add_page(interface, title="Tips", data=real["Tips"].values())
 
             if real.get("Warnings"):
-                warnings = _join_values(real["Warnings"].values())
-                await interface.add_line("# Warnings")
-                _warnings = warnings.split("\n")
-                for warning in _warnings:
-                    if not warning:
-                        continue
-                    await interface.add_line(f"- {warning}")
+                await add_page(interface, title="Warnings", data=real["Warnings"].values())
 
             if real.get("Test Your Knowledge"):
-                test = _join_values(real["Test Your Knowledge"].values())
-                await interface.add_line("# Test Your Knowledge")
-                _test = test.split("\n")
-                for tst in _test:
-                    if not tst:
-                        continue
-                    await interface.add_line(f"- {tst}")
+                await add_page(interface, title="Test Your Knowledge", data=real["Test Your Knowledge"].values())
 
             if real.get("Video"):
-                video = _join_values(real["Video"].values())
-                await interface.add_line("# Video")
-                _video = video.split("\n")
-                for vid in _video:
-                    if not vid:
-                        continue
-                    await interface.add_line(f"- {vid}")
+                await add_page(interface, title="Video", data=real["Video"].values())
 
             if real.get("Related wikiHows"):
-                related = _join_values(real["Related wikiHows"].values())
-                await interface.add_line("# Related wikiHows")
-                _related = related.split("\n")
-                for rel in _related:
-                    if not rel:
-                        continue
-                    await interface.add_line(f"- {rel}")
+                await add_page(interface, title="Related wikiHows", data=real["Related wikiHows"].values())
 
             if real.get("References"):
-                references = _join_values(real["References"].values())
-                await interface.add_line("# References")
-                _references = references.split("\n")
-                for reference in _references:
-                    if not reference:
-                        continue
-                    await interface.add_line(f"- {reference}")
+                await add_page(interface, title="References", data=real["References"].values())
 
             if real.get("Summary"):
-                summary = _join_values(real["Summary"].values())
-                await interface.add_line("# Summary")
-                _summary = summary.split("\n")
-                for summ in _summary:
-                    if not summ:
-                        continue
-                    await interface.add_line(f"- {summ}")
+                await add_page(interface, title="Summary", data=real["Summary"].values())
 
         else:
             initial_data = await self.wikihow_parser.get_wikihow(query)

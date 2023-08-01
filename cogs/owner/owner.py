@@ -642,6 +642,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             wiki_steps: dict[
                 str, list[list[str | list[str]] | str],
             ] = real.pop("Steps", {})
+
             for hd, steps in wiki_steps.items():
                 if not steps:
                     continue
@@ -653,15 +654,11 @@ class Owner(Cog, command_attrs={"hidden": True}):
                     continue
 
                 for points in steps:
+                    if isinstance(points, str):
+                        await interface.add_line(f"**{points}**")
+                        continue
                     for point in points:
-                        if isinstance(point, str):
-                            await interface.add_line(f"### {point}")
-                            continue
-                        for sub_point in point:
-                            if sub_point.endswith("jpg"):
-                                await interface.add_line(f"- [Image]({sub_point})")
-                            else:
-                                await interface.add_line(f"- {sub_point}")
+                        await interface.add_line(f"- {point}")
 
             if real.get("Tips"):
                 tips = _join_values(real["Tips"].values())
@@ -673,11 +670,21 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if real.get("Test Your Knowledge"):
                 test = _join_values(real["Test Your Knowledge"].values())
-                await interface.add_line(f"# Test Your Knowledge\n> {test}")
+                await interface.add_line("# Test Your Knowledge")
+                _test = test.split("\n")
+                for tst in _test:
+                    if not tst:
+                        continue
+                    await interface.add_line(f"- {tst}")
 
             if real.get("Video"):
                 video = _join_values(real["Video"].values())
-                await interface.add_line(f"# Video\n> {video}")
+                await interface.add_line("# Video")
+                _video = video.split("\n")
+                for vid in _video:
+                    if not vid:
+                        continue
+                    await interface.add_line(f"- {vid}")
 
             if real.get("Related wikiHows"):
                 related = _join_values(real["Related wikiHows"].values())
@@ -685,11 +692,21 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
             if real.get("References"):
                 references = _join_values(real["References"].values())
-                await interface.add_line(f"# References\n{references}")
+                await interface.add_line("# References")
+                _references = references.split("\n")
+                for reference in _references:
+                    if not reference:
+                        continue
+                    await interface.add_line(f"- {reference}")
 
             if real.get("Summary"):
                 summary = _join_values(real["Summary"].values())
-                await interface.add_line(f"# Summary\n{summary}")
+                await interface.add_line("# Summary")
+                _summary = summary.split("\n")
+                for summ in _summary:
+                    if not summ:
+                        continue
+                    await interface.add_line(f"- {summ}")
 
         else:
             initial_data = await self.wikihow_parser.get_wikihow(query)

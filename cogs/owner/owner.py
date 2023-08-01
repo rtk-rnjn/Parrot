@@ -16,8 +16,9 @@ import urllib.parse
 from collections import Counter
 from typing import Annotated, Literal
 
-import jishaku
 from aiofile import async_open
+import jishaku
+import jishaku.paginators  # noqa: F401
 from jishaku.paginators import PaginatorEmbedInterface
 from tabulate import tabulate
 
@@ -639,14 +640,15 @@ class Owner(Cog, command_attrs={"hidden": True}):
                 )
 
             if steps := real.get("Steps"):
-                for step in steps:
-                    await interface.add_line(f"# {step}")
-                    if isinstance(step, str):
-                        await interface.add_line(f"> {steps[step]}")
-                    if isinstance(step, list):
-                        for sub_step in step:
+                for hd, stps in steps.items():
+                    await interface.add_line(f"## {hd}")
+                    if isinstance(steps, list):
+                        for sub_step in stps:
                             if sub_step.endswith("jpg"):
                                 await interface.add_line(f"- [Link To Image]({sub_step})")
+                            if isinstance(sub_step, list):
+                                for sub_sub_step in sub_step:
+                                    await interface.add_line(f" - {sub_sub_step}")
                             else:
                                 await interface.add_line(f"- {sub_step}")
                     await interface.add_line("")
@@ -967,5 +969,4 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not m.mentions and not m.role_mentions
 
         deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # type: ignore
-        return Counter(m.author.display_name for m in deleted)
         return Counter(m.author.display_name for m in deleted)

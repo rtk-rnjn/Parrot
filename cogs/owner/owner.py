@@ -16,9 +16,9 @@ import urllib.parse
 from collections import Counter
 from typing import Annotated, Literal
 
-from aiofile import async_open
 import jishaku
 import jishaku.paginators  # noqa: F401
+from aiofile import async_open
 from jishaku.paginators import PaginatorEmbedInterface
 from tabulate import tabulate
 
@@ -639,21 +639,29 @@ class Owner(Cog, command_attrs={"hidden": True}):
                     f"# Things You Should Know\n> {things}",
                 )
 
-            if wiki_steps := real.get("Steps"):
-                for hd, steps in wiki_steps.items():
-                    if not steps:
-                        continue
-                    await interface.add_line(f"## {hd}")
-                    for points in steps:
-                        for point in points:
-                            if isinstance(point, str):
-                                await interface.add_line(f"### {point}")
+            wiki_steps: dict[
+                str, list[list[str | list[str]] | str],
+            ] = real.pop("Steps", {})
+            for hd, steps in wiki_steps.items():
+                if not steps:
+                    continue
+                await interface.add_line(f"## {hd}")
+                if isinstance(steps, str):
+                    _steps = steps.split("\n")
+                    for step in _steps:
+                        await interface.add_line(f"- {step}")
+                    continue
+
+                for points in steps:
+                    for point in points:
+                        if isinstance(point, str):
+                            await interface.add_line(f"### {point}")
+                            continue
+                        for sub_point in point:
+                            if sub_point.endswith("jpg"):
+                                await interface.add_line(f"- [Image]({sub_point})")
                             else:
-                                for sub_point in point:
-                                    if sub_point.endswith("jpg"):
-                                        await interface.add_line(f"- [Image]({sub_point})")
-                                    else:
-                                        await interface.add_line(f"- {sub_point}")
+                                await interface.add_line(f"- {sub_point}")
 
             if real.get("Tips"):
                 tips = _join_values(real["Tips"].values())
@@ -694,6 +702,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             for title, snippet, _id in initial_data:
                 await interface.add_line(f"[{title}] {_id}\n> {snippet}\n")
             await interface.send_to(ctx)
+
 
 class DiscordPy(Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot) -> None:

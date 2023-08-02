@@ -47,6 +47,7 @@ from utilities.config import (
     HEROKU,
     MASTER_OWNER,
     OWNER_IDS,
+    STRAW_POLL,
     STRIP_AFTER_PREFIX,
     SUPPORT_SERVER,
     SUPPORT_SERVER_ID,
@@ -62,6 +63,7 @@ from utilities.config import (
 from utilities.converters import Cache
 from utilities.paste import Client
 from utilities.regex import LINKS_RE
+from utilities.strawpoll import HTTPClient as StrawpollHTTPClient
 
 from .__template import post as POST
 from .Context import Context
@@ -70,8 +72,9 @@ from .help import PaginatedHelpCommand
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from discord.ext.commands.cooldowns import CooldownMapping
     from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+
+    from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
 
@@ -295,6 +298,8 @@ class Parrot(commands.AutoShardedBot):
         self.__global_write_data: dict[str, list[pymongo.UpdateOne | pymongo.UpdateMany]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
 
+        self.strawpoll: StrawpollHTTPClient = StrawpollHTTPClient(token=STRAW_POLL)
+
     async def init_db(self) -> None:
         # MongoDB Database variables
         # Main DB
@@ -457,6 +462,8 @@ class Parrot(commands.AutoShardedBot):
         self.global_write_data.start()
         self.update_banned_members.start()
         self.update_scam_link_db.start()
+
+        self.strawpoll.session = self.http_session
 
     async def db_latency(self) -> float:
         ini = perf_counter()

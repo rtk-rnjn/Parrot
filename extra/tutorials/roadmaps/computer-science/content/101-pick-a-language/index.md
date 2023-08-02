@@ -12,7 +12,7 @@ Visit the following resources to learn more:
 - [Learn C++ - W3Schools](https://www.w3schools.com/cpp/)
 - [Learn C++ - Tutorials Point](https://www.tutorialspoint.com/cplusplus/index.htm)
 - [C++ Programming Course - Beginner to Advanced](https://www.youtube.com/watch?v=8jLOx1hD3_o)
-- [C++ Tutorial for Beginners - Full Course](https://www.youtube.com/watch?v=vLnPwxZdW4Y)
+- [C++ Tutorial for Beginners - Full Course](https://youtu.be/vLnPwxZdW4Y)
 - [Learn C - W3Schools](https://www.w3schools.com/c/)
 - [Learn C - Tutorials Point](https://www.tutorialspoint.com/cprogramming/index.htm)
 - [C Programming Tutorial for Beginners](https://www.youtube.com/watch?v=KJgsSFOSQv0)

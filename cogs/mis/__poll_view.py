@@ -155,7 +155,12 @@ class PollSelect(ParrotSelect):
         await interaction.response.defer()
         self.view.poll_type = self.values[0]
 
+        modal = PollModal(self.values[0], self.view)
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+
         self.view.remove_item(self)
+        await self.view.message.edit(view=self.view)
 
 
 class PollView(ParrotView):
@@ -223,4 +228,4 @@ class PollView(ParrotView):
 
     async def start(self):
         self.message = await self.ctx.send("Setting up Poll", view=self)
-        self.message = await self.message.edit(embed=self.embed, view=self)
+        self.message = await self.message.edit(content=None, embed=self.embed, view=self)

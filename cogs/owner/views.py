@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 
+from jishaku.paginators import PaginatorInterface
+
 import discord
 from core import Context, Parrot
-from utilities.paginator import PaginationView
+from discord.ext import commands
 
 
 class NitroView(discord.ui.View):
@@ -57,31 +59,14 @@ class MongoCollectionView(discord.ui.View):
 
         collection = self.ctx.bot.mongo[self.db][self.collection]
 
-        view = PaginationView([])
-        view._str_prefix = "```json\n"
-        view._str_suffix = "\n```"
-        await view.start(self.ctx)
+        page = commands.Paginator(prefix="```json", suffix="```", max_size=1980)
+        async for document in collection.find():
+            _id = document.pop("_id")  # cause, _id could be ObjectId
+            document["_id"] = _id if isinstance(_id, int) else str(_id)
+            page.add_line(json.dumps(document, indent=4))
 
-        index = 0
-        async for data in collection.find():
-            _id = data.pop("_id")
-            data["_id"] = str(_id)
-
-            data = json.dumps(data, indent=4).split("\n")
-            new_data = []
-            for ind, line in enumerate(data):
-                if ind == 20:
-                    break
-                new_data.append(line)
-            new_data.append("...")
-
-            await view.add_item_to_embed_list("\n".join(new_data))
-
-            if index == 100:
-                break
-
-            index += 1
-        await view._update_message()
+        interface = PaginatorInterface(self.ctx.bot, page, owner=self.ctx.author, timeout=120)
+        await interface.send_to(self.message.channel)
 
     async def disable_all(self):
         assert self.message is not None

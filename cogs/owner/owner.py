@@ -590,7 +590,11 @@ class Owner(Cog, command_attrs={"hidden": True}):
         sql = self.bot.sql  # sqlite3
         query = query.strip("`").strip()
         ini = time.perf_counter()
-        cursor = await sql.execute(query)
+        try:
+            cursor = await sql.execute(query)
+        except Exception as e:
+            await ctx.send(f"```py\n{e}```")
+            return
         rslt = await cursor.fetchall()
         total_rows_affected = cursor.rowcount
         fin = time.perf_counter() - ini

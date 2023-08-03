@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import heapq
 import re
+from collections.abc import Iterator
 from difflib import SequenceMatcher
+from typing import TypeVar
+
+KT = TypeVar("KT")
+VT = TypeVar("VT")
 
 
 def ratio(a: str, b: str):
@@ -61,7 +66,12 @@ def partial_token_sort_ratio(a, b):
     return partial_ratio(a, b)
 
 
-def _extraction_generator(query, choices, scorer=quick_ratio, score_cutoff=0):
+def _extraction_generator(
+    query: str,
+    choices: dict[KT, VT] | list[str],
+    scorer=quick_ratio,
+    score_cutoff: int = 0,
+) -> Iterator[tuple[KT, int, VT] | tuple[str, int]]:
     try:
         for key, value in choices.items():
             score = scorer(query, key)

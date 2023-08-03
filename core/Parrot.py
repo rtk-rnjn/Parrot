@@ -20,7 +20,6 @@ import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
 from aiohttp import ClientSession
-from colorama import Fore
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError
 from pymongo.results import DeleteResult, InsertOneResult
@@ -68,13 +67,13 @@ from utilities.strawpoll import HTTPClient as StrawpollHTTPClient
 from .__template import post as POST
 from .Context import Context
 from .help import PaginatedHelpCommand
+from .utils import CustomFormatter, handler
 
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-
     from discord.ext.commands.cooldowns import CooldownMapping
+    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
     from .Cog import Cog
 
@@ -101,55 +100,11 @@ DEFAULT_PREFIX: Literal["$"] = "$"
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
 
-
-def hander(filename: str) -> logging.handlers.RotatingFileHandler:
-    return logging.handlers.RotatingFileHandler(
-        filename=filename,
-        encoding="utf-8",
-        maxBytes=1 * 1024 * 1024,  # 1 MiB
-        backupCount=1,  # Rotate through 1 files
-    )
-
-
-DT_FMT = "%Y-%m-%d %H:%M:%S"
-
-
-class CustomFormatter(logging.Formatter):
-    GRAY = f"{Fore.LIGHTBLACK_EX}"
-    GREY = GRAY
-
-    RED = f"{Fore.RED}"
-    YELLOW = f"{Fore.YELLOW}"
-    GREEN = f"{Fore.GREEN}"
-    WHITE = f"{Fore.WHITE}"
-    BLUE = f"{Fore.BLUE}"
-    CYAN = f"{Fore.CYAN}"
-
-    RESET = f"{Fore.RESET}"
-
-    fmt = "{} %(asctime)s {} - {} %(name)s {} - {} %(levelname)s {} - {} %(message)s {} ({}%(filename)s/%(module)s.%(funcName)s{}:{}%(lineno)d{}){}"
-
-    # fmt: off
-    formats = {
-        logging.DEBUG   : fmt.format(WHITE, WHITE, YELLOW, WHITE, GRAY  , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.INFO    : fmt.format(WHITE, WHITE, YELLOW, WHITE, GREEN , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.WARNING : fmt.format(WHITE, WHITE, YELLOW, WHITE, YELLOW, WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.ERROR   : fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-        logging.CRITICAL: fmt.format(WHITE, WHITE, YELLOW, WHITE, RED   , WHITE, BLUE, WHITE, CYAN, YELLOW, GREEN, WHITE, RED),
-    }
-    # fmt: on
-
-    def format(self, record: logging.LogRecord) -> str:  # noqa: A003
-        log_fmt = self.formats.get(record.levelno)
-        formatter = logging.Formatter(log_fmt, DT_FMT)
-        return formatter.format(record)
-
-
 formatter = CustomFormatter()
 
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
-hndlr = hander(".log")
+hndlr = handler(".log")
 hndlr.setFormatter(formatter)
 logger.addHandler(stream_handler)
 logger.addHandler(hndlr)

@@ -19,20 +19,6 @@ class Pagination(BaseModel):
     total: PositiveInt
 
 
-class PollOption(BaseModel):
-    id: str | None = None
-    type: Literal["text", "image", "date", "time_range"] | None = None
-    position: int | None = None
-    vote_count: int | None = None
-    max_votes: int | None = None
-    description: str | None = None
-    is_write_in: bool | None = None
-
-
-class TextPollOption(PollOption):
-    value: str | None = None
-
-
 class Media(BaseModel):
     id: str | None = None
     type: str | None = None
@@ -53,12 +39,29 @@ class Workspace(BaseModel):
     updated_at: int | None = None
 
 
+class PollOption(BaseModel):
+    id: str | None = None
+    type: Literal["text", "image", "date", "time_range"] | None = None
+    position: int | None = None
+    vote_count: int | None = None
+    max_votes: int | None = None
+    description: str | None = None
+    is_write_in: bool | None = None
+
+
+class TextPollOption(PollOption):
+    value: str | None = None
+    type: Literal["text"] | None = "text"
+
+
 class ImagePollOption(TextPollOption):
     media: Media | None = None
+    type: Literal["image"] | None = "image"
 
 
 class DatePollOption(PollOption):
     date: str | None = None
+    type: Literal["date"] | None = "date"
 
     @field_validator("date")
     def validate_date(cls, date: str) -> datetime.datetime | None:
@@ -66,6 +69,7 @@ class DatePollOption(PollOption):
 
 
 class TimeRangePollOption(PollOption):
+    type: Literal["time_range"] | None = "time_range"
     start_time: int | None = None
     end_time: int | None = None
 

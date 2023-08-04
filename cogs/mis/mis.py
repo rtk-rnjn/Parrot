@@ -216,6 +216,9 @@ class Misc(Cog):
         self.ON_TESTING = False
         self.youtube_search = YoutubeSearch(5)
 
+    async def cog_unload(self) -> None:
+        await self.youtube_search.close()
+
     async def wiki_request(self, _: discord.TextChannel, search: str) -> list[str]:
         """Search wikipedia search string and return formatted first 10 pages found."""
         params = {**WIKI_PARAMS, "srlimit": 10, "srsearch": search}

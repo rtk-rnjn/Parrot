@@ -278,13 +278,27 @@ class Highlight(Cog):
         except discord.Forbidden:
             log.warning("Forbidden to DM user ID %s (guild ID %s)", member.id, message.guild.id)
 
-    @commands.group(name="highlight", description="Manage your highlight settings")
+    @commands.group(name="highlight")
     async def highlight(self, ctx: Context):
+        """Manage your highlight settings.
+
+        Highlighting allows you to be notified when someone mentions a particular word in a message.
+        That word can be anything, as it is set by you.
+
+        You can also disable highlighting for a particular server, channel, or user.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @highlight.command(name="add", description="Add a word to your highlight word list")
+    @highlight.command(name="add")
     async def add(self, ctx: Context, *, word: str):
+        """Add a word to your highlight word list.
+
+        You will be notified when someone mentions this word in a message.
+
+        **Examples:**
+        - `[p]highlight add discord`
+        """
         try:
             await ctx.author.send()
         except discord.HTTPException as exc:
@@ -329,10 +343,14 @@ class Highlight(Cog):
 
     @highlight.command(
         name="remove",
-        description="Remove a word from your highlight word list",
         aliases=["delete", "rm", "del"],
     )
     async def remove(self, ctx: Context, *, word: str):
+        """Remove a word from your highlight word list.
+
+        **Examples:**
+        - `[p]highlight remove discord`
+        """
         word = word.lower()
 
         result_data = await self.bot.user_collections_ind.update_one(
@@ -357,10 +375,14 @@ class Highlight(Cog):
 
     @highlight.command(
         name="show",
-        description="See all your highlight words",
-        aliases=["words", "list"],
+        aliases=["words", "list", "ls"],
     )
     async def show(self, ctx: Context):
+        """See all your highlight words.
+
+        **Examples:**
+        - `[p]highlight show`
+        """
         ls = self.cached_words.get(ctx.author.id, [])
 
         words = [word["word"] for word in ls if word["guild_id"] == ctx.guild.id and word["word"]]
@@ -377,8 +399,15 @@ class Highlight(Cog):
 
             await ctx.send(embed=em, delete_after=10)
 
-    @highlight.command(name="clear", description="Clear your highlight words in this server")
+    @highlight.command(name="clear")
     async def clear(self, ctx: Context, toggle: Literal["--all", "--guild-only"] = "--guild-only"):
+        """Clear your highlight words in this server.
+
+        **Examples:**
+        - `[p]highlight clear`
+        - `[p]highlight clear --all`
+        - `[p]highlight clear --guild-only`
+        """
         if toggle == "--all":
             result = await self.bot.user_collections_ind.update_one(
                 {"_id": ctx.author.id},
@@ -414,10 +443,14 @@ class Highlight(Cog):
 
     @highlight.command(
         name="import",
-        description="Import your highlight words from another server",
         usage="<server ID>",
     )
     async def transfer(self, ctx: Context, from_guild: discord.Guild | int):
+        """Import your highlight words from another server.
+
+        **Examples:**
+        - `[p]highlight import 1234567890`
+        """
         if not self.cached_words.get(ctx.author.id):
             await ctx.send("You have no highlight words to import.", delete_after=5)
             return
@@ -556,13 +589,20 @@ class Highlight(Cog):
     # Block and unblock text commands
     @highlight.command(
         name="block",
-        description="Block a user or channel",
         usage="<user or channel>",
         aliases=["ignore", "mute"],
         invoke_without_command=True,
     )
     @commands.guild_only()
     async def block(self, ctx: Context, *, entity: discord.Member | discord.TextChannel):
+        """Block a user or channel.
+
+        This will prevent the bot from sending any highlight messages in the specified channel or from the specified user.
+
+        **Examples:**
+        - `[p]highlight block @user`
+        - `[p]highlight block #channel`
+        """
         converted_entity = await self.get_entity(ctx, entity)
 
         if not converted_entity or (
@@ -575,12 +615,16 @@ class Highlight(Cog):
 
     @highlight.command(
         name="unblock",
-        description="Unblock a user or channel",
         usage="<user or channel>",
         aliases=["unmute"],
         invoke_without_command=True,
     )
     async def unblock(self, ctx: Context, *, entity: discord.Member | discord.TextChannel):
+        """Unblock a user or channel.
+
+        **Examples:**
+        - `[p]highlight unblock @user`
+        - `[p]highlight unblock #channel`"""
         converted_entity = await self.get_entity(ctx, entity)
 
         if not converted_entity:
@@ -591,10 +635,14 @@ class Highlight(Cog):
 
     @highlight.group(
         name="blocked",
-        description="Show your blocked list",
         invoke_without_command=True,
     )
     async def blocked(self, ctx: Context):
+        """Show your blocked list.
+
+        **Examples:**
+        - `[p]highlight blocked`
+        """
         settings = await self.get_user_settings(ctx.author.id)
 
         em = discord.Embed(description="", color=discord.Color.blurple())
@@ -629,10 +677,15 @@ class Highlight(Cog):
         if not channels and not users:
             em.description += "No users or channels are blocked."
 
-        await ctx.send(embed=em, delete_after=10, ephemeral=True)
+        await ctx.send(embed=em, delete_after=10)
 
-    @blocked.command(name="clear", description="Clear your blocked list")
+    @blocked.command(name="clear")
     async def blocked_clear(self, ctx: Context):
+        """Clear your blocked list.
+
+        **Examples:**
+        - `[p]highlight blocked clear`
+        """
         data = await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id},
             {
@@ -652,11 +705,16 @@ class Highlight(Cog):
 
         await ctx.send(":white_check_mark: Your blocked users and channels have been cleared.")
 
-    @highlight.command(name="enable", description="Enable highlight for yourself")
+    @highlight.command(name="enable")
     async def enable(self, ctx: Context):
+        """Enable highlight for yourself.
+
+        **Examples:**
+        - `[p]highlight enable`
+        """
         settings = await self.get_user_settings(ctx.author.id)
         if not settings["disabled"]:
-            return await ctx.send("You already have highlight enabled.", delete_after=5, ephemeral=True)
+            return await ctx.send("You already have highlight enabled.", delete_after=5)
 
         await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id},
@@ -670,12 +728,16 @@ class Highlight(Cog):
             ephemeral=True,
         )
 
-    @highlight.command(name="disable", description="Disable highlight for yourself", aliases=["dnd"])
-    @commands.guild_only()
+    @highlight.command(name="disable", aliases=["dnd"])
     async def disable(self, ctx: Context):
+        """Disable highlight for yourself.
+
+        **Examples:**
+        - `[p]highlight disable`
+        """
         settings = await self.get_user_settings(ctx.author.id)
         if settings["disabled"]:
-            return await ctx.send("You already have highlight disabled.", delete_after=5, ephemeral=True)
+            return await ctx.send("You already have highlight disabled.", delete_after=5)
 
         await self.bot.user_collections_ind.update_one(
             {"_id": ctx.author.id},

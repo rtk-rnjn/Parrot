@@ -560,7 +560,13 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         raise errors[retry]
 
     async def database_game_update(
-        self, game_name: str, *, win: bool = False, loss: bool = False, set: dict = None, **kw: Any,
+        self,
+        game_name: str,
+        *,
+        win: bool = False,
+        loss: bool = False,
+        set: dict = None,
+        **kw: Any,
     ) -> bool:
         if set is None:
             set = {}

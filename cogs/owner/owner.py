@@ -29,12 +29,12 @@ from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
 from utilities.robopages import SimplePages
 from utilities.time import ShortTime
+from utilities.wikihow import Parser as WikihowParser
 
 from . import fuzzy
 from .flags import AuditFlag, BanFlag, SubscriptionFlag
 from .utils import SphinxObjectFileReader
 from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
-from .wikihow import Parser as WikihowParser
 
 
 class Owner(Cog, command_attrs={"hidden": True}):

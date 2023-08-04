@@ -51,7 +51,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
         self.token = os.environ["GITHUB_TOKEN"]
 
         self.__internal_token_caching = set()
-    
+
     @property
     def internal_token_cache(self) -> set[str]:
         return self.__internal_token_caching

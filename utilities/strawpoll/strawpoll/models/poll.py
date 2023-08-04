@@ -122,7 +122,7 @@ class Poll(BaseModel):
     poll_options: list[PollOptions]
     poll_config: PollConfig | None = None
     poll_meta: PollMeta | None = None
-    type: Literal["multiple_choice", "image_poll", "meeting", "ranked_choice"] | None
+    type: Literal["multiple_choice", "image_poll", "meeting", "ranked_choice"] | None = "multiple_choice"
     version: str | None = None
     updated_at: int | None = None
     reset_at: int | None = None

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import re
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from html import unescape
 from typing import Any
-from collections.abc import Callable
 
 from bs4 import BeautifulSoup
 

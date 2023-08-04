@@ -221,4 +221,3 @@ class Sector17Listeners(Cog):
             )
 
             await owo_message.add_reaction("\N{ALARM CLOCK}")
-

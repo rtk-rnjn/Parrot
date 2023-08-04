@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 
 import aiohttp
 import aiosqlite
-
-import logging
 
 log = logging.getLogger("updater")
 

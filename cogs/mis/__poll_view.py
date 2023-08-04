@@ -8,7 +8,7 @@ from discord.interactions import Interaction
 
 import discord
 from core import Context, Parrot, ParrotModal, ParrotSelect, ParrotView
-from utilities.strawpoll import DatePollOption, ImagePollOption, Media, TextPollOption, TimeRangePollOption
+from utilities.strawpoll import DatePollOption, ImagePollOption, Media, Poll, TextPollOption, TimeRangePollOption
 from utilities.time import ShortTime
 
 options_lookup = {
@@ -229,3 +229,17 @@ class PollView(ParrotView):
     async def start(self):
         self.message = await self.ctx.send("Setting up Poll", view=self)
         self.message = await self.message.edit(content=None, embed=self.embed, view=self)
+
+    @discord.ui.button(label="Submit Poll")
+    async def submit(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        if not (self.question and self.options):
+            await interaction.followup.send("You need to add a question and at least one option.", ephemeral=True)
+            return
+
+        poll = Poll(
+            title=self.question,
+            poll_options=self.options,
+        )
+        await self.ctx.bot.strawpoll.create_poll(poll)
+        await interaction.followup.send("Poll Submitted!", ephemeral=True)

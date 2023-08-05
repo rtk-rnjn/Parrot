@@ -1055,3 +1055,19 @@ class Misc(Cog):
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; {e}")
         except (SyntaxError, sympy.SympifyError, ZeroDivisionError) as e:
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")
+
+    @commands.command(name="whispers", aliases=("whisper", "whisp"))
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def _whispers(self, ctx: Context) -> None:
+        """Shows all the messages you got from whispers, once views it will be deleted."""
+        collection = self.bot.user_collections_ind
+        data = await collection.find_one({"_id": ctx.author.id, "whisper_messages": {"$exists": True}})
+        if not data:
+            await ctx.error(f"{ctx.author.mention} you don't have any whispers.")
+            return
+
+        if not data["whisper_messages"]:
+            await ctx.error(f"{ctx.author.mention} you don't have any whispers.")
+            return

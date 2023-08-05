@@ -16,8 +16,8 @@ from random import choice
 from typing import Any
 from urllib.parse import quote, quote_plus
 
-import aiohttp  # type: ignore
-import rapidfuzz  # type: ignore
+import aiohttp
+import rapidfuzz
 from aiofile import async_open
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
@@ -244,7 +244,7 @@ class RTFM(Cog):
         match, certainty, _ = rapidfuzz.process.extractOne(query, self.headers.keys())
         return match if certainty > MINIMUM_CERTAINTY else None
 
-    def get_content(self, tag):
+    def get_content(self, tag: BeautifulSoup):
         """Returns content between two h2 tags."""
         bssiblings = tag.next_siblings
         siblings = []

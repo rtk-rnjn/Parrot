@@ -122,7 +122,7 @@ def _create_sample(card: Card, *, animated: bool = False) -> BytesIO | None:
         return buffer
 
 
-def create_sample(card: Card, *, animated: bool = False) -> Awaitable[BytesIO]:
+def create_sample(card: Card, *, animated: bool = False) -> Awaitable[BytesIO | None]:
     return asyncio.to_thread(_create_sample, card, animated=animated)
 
 

@@ -32,6 +32,8 @@ class PeggyPlayZ(Cog):
         if member.guild.id == PEGGY_PLAYZ:
             channel = self.bot.get_channel(RULES_CHANNEL_ID)
             if channel is not None:
+                if not channel.permissions_for(member.guild.me).send_messages:  # type: ignore
+                    return
                 await channel.send(member.mention, delete_after=1)  # type: ignore
 
     @Cog.listener("on_message")

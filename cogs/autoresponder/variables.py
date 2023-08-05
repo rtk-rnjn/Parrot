@@ -85,20 +85,27 @@ class Variables:
         """Get message author."""
         return str(self.__message.author)
 
+    async def send(self, *, channel: discord.TextChannel | None, content: str, **kw: Any):
+        """Send a message to a channel."""
+        if not channel:
+            return
+
+        if channel.permissions_for(channel.guild.me).send_messages:
+            await channel.send(content, **kw)
+
     async def _send_message_after(self, channel: int, message: str, delay: int = 0):
         """Send a message after a delay."""
         delay = max(0, delay)
         if delay > 15 * 60:
             return
-        if chn := self.__message.guild.get_channel(channel):  # type: ignore
-            await chn.send(message[:1990], delete_after=delay or None)  # type: ignore
+        await self.send(channel=self.__message.guild.get_channel(channel), content=message, delete_after=delay or None)  # type: ignore
 
     async def _reply_message_after(self, message: str, delay: int = 0):
         """Reply to a message after a delay."""
         delay = max(0, delay)
         if delay > 15 * 60:
             return
-        await self.__message.reply(message[:1990], delete_after=delay or None)  # type: ignore
+        await self.send(channel=self.__message.channel, content=message, delete_after=delay or None, reference=self.__message)  # type: ignore
 
     def _get_role_name(self, role_id: int):
         """Get role name from role id."""

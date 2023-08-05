@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from itertools import islice
-from typing import NamedTuple, TypeVar, overload
+from typing import TYPE_CHECKING, NamedTuple, TypeVar, overload
 
 import discord
 from core import Context
@@ -64,7 +64,7 @@ class Pages:
 class ParrotPaginator:
     def __init__(
         self,
-        ctx,
+        ctx: Context,
         *,
         per_page=10,
         timeout=60.0,
@@ -81,8 +81,10 @@ class ParrotPaginator:
         self.check_other_ids = check_other_ids
 
         self.lines: list[str] = []
-        self.pages = None
         self.embed_url = embed_url
+
+        if TYPE_CHECKING:
+            self.pages: Pages
 
     def add_line(self, line: str, sep="\n"):
         self.lines.append(f"{line}{sep}")
@@ -329,28 +331,7 @@ class PaginationView(discord.ui.View):
             return
 
         current_entity = self.embed_list[self.current]
-
-        if isinstance(current_entity, discord.Embed):
-            await interaction.response.edit_message(
-                embed=current_entity,
-                content=None,
-                attachments=[],
-                view=self,
-            )
-        elif isinstance(current_entity, discord.File):
-            await interaction.response.edit_message(
-                attachments=[current_entity],
-                content=None,
-                embed=None,
-                view=self,
-            )
-        else:
-            await interaction.response.edit_message(
-                content=f"{self._str_prefix}{current_entity}{self._str_suffix}",
-                embed=None,
-                attachments=[],
-                view=self,
-            )
+        await self.edit(interaction, current_entity)
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.green, disabled=True)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -378,28 +359,7 @@ class PaginationView(discord.ui.View):
             return
 
         current_entity = self.embed_list[self.current]
-
-        if isinstance(current_entity, discord.Embed):
-            await interaction.response.edit_message(
-                embed=current_entity,
-                content=None,
-                attachments=[],
-                view=self,
-            )
-        elif isinstance(current_entity, discord.File):
-            await interaction.response.edit_message(
-                attachments=[current_entity],
-                content=None,
-                embed=None,
-                view=self,
-            )
-        else:
-            await interaction.response.edit_message(
-                content=f"{self._str_prefix}{current_entity}{self._str_suffix}",
-                embed=None,
-                attachments=[],
-                view=self,
-            )
+        await self.edit(interaction, current_entity)
 
     @discord.ui.button(style=discord.ButtonStyle.blurple)
     async def count(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -431,28 +391,7 @@ class PaginationView(discord.ui.View):
             return
 
         current_entity = self.embed_list[self.current]
-
-        if isinstance(current_entity, discord.Embed):
-            await interaction.response.edit_message(
-                embed=current_entity,
-                content=None,
-                attachments=[],
-                view=self,
-            )
-        elif isinstance(current_entity, discord.File):
-            await interaction.response.edit_message(
-                attachments=[current_entity],
-                content=None,
-                embed=None,
-                view=self,
-            )
-        else:
-            await interaction.response.edit_message(
-                content=f"{self._str_prefix}{current_entity}{self._str_suffix}",
-                embed=None,
-                attachments=[],
-                view=self,
-            )
+        await self.edit(interaction, current_entity)
 
     @discord.ui.button(label="Last", style=discord.ButtonStyle.red, disabled=False)
     async def _last(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -474,7 +413,9 @@ class PaginationView(discord.ui.View):
             return
 
         current_entity = self.embed_list[self.current]
+        await self.edit(interaction, current_entity)
 
+    async def edit(self, interaction: discord.Interaction, current_entity: discord.Embed | discord.File | str) -> None:
         if isinstance(current_entity, discord.Embed):
             await interaction.response.edit_message(
                 embed=current_entity,
@@ -497,7 +438,37 @@ class PaginationView(discord.ui.View):
                 view=self,
             )
 
-    async def start(self, ctx: Context):
+    async def start(self, ctx: Context | discord.Interaction):
+        if isinstance(ctx, discord.Interaction):
+            self.ctx = ctx
+            currnet_entity = self.embed_list[self.current]
+
+            if isinstance(currnet_entity, discord.Embed):
+                await ctx.response.send_message(
+                    embed=currnet_entity,
+                    content=None,
+                    files=[],
+                    view=self,
+                    ephemeral=True,
+                )
+            elif isinstance(currnet_entity, discord.File):
+                await ctx.response.send_message(
+                    files=[currnet_entity],
+                    content=None,
+                    embed=None,
+                    view=self,
+                    ephemeral=True,
+                )
+            else:
+                await ctx.response.send_message(
+                    content=f"{self._str_prefix}{currnet_entity}{self._str_suffix}",
+                    embed=None,
+                    files=[],
+                    view=self,
+                    ephemeral=True,
+                )
+            return
+
         self.ctx = ctx
         if not self.embed_list:
             self.message = await ctx.send("Loading...")
@@ -513,7 +484,6 @@ class PaginationView(discord.ui.View):
         return self.message
 
     async def paginate(self, ctx: Context):
-        self.ctx = ctx
         await self.start(ctx)
 
     async def add_item_to_embed_list(self, item: str | discord.Embed | discord.File):
@@ -548,3 +518,22 @@ class PaginationView(discord.ui.View):
                 attachments=[],
                 view=self,
             )
+
+    @classmethod
+    async def paginate_embed(cls, ctx: Context, embed_list: list[discord.Embed | discord.File | str]):
+        paginator = cls(embed_list)
+        await paginator.start(ctx)
+
+    @classmethod
+    async def paginate_embeds_ephemeral(cls, ctx: Context, embed_list: list[discord.Embed | discord.File | str]):
+        paginator = cls(embed_list)
+
+        class View(discord.ui.View):
+            def __init__(self):
+                super().__init__(timeout=10)
+
+            @discord.ui.button(label="Start", style=discord.ButtonStyle.red)
+            async def start(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await paginator.start(interaction)
+
+        await ctx.send("Click the button to start", view=View())

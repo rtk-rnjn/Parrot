@@ -293,10 +293,11 @@ class PaginationView(discord.ui.View):
         self._str_suffix = ""
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if self.ctx.author == interaction.user:
+        author = self.ctx.author if isinstance(self.ctx, Context) else self.ctx.user
+        if author == interaction.user:
             return True
         await interaction.response.send_message(
-            f"Only **{self.ctx.author}** can interact. Run the command if you want to.",
+            f"Only **{author}** can interact. Run the command if you want to.",
             ephemeral=True,
         )
         return False
@@ -416,22 +417,26 @@ class PaginationView(discord.ui.View):
         await self.edit(interaction, current_entity)
 
     async def edit(self, interaction: discord.Interaction, current_entity: discord.Embed | discord.File | str) -> None:
+        func = interaction.response.edit_message
+        if isinstance(self.ctx, discord.Interaction):
+            func = self.ctx.edit_original_response
+
         if isinstance(current_entity, discord.Embed):
-            await interaction.response.edit_message(
+            await func(
                 embed=current_entity,
                 content=None,
                 attachments=[],
                 view=self,
             )
         elif isinstance(current_entity, discord.File):
-            await interaction.response.edit_message(
+            await func(
                 attachments=[current_entity],
                 content=None,
                 embed=None,
                 view=self,
             )
         else:
-            await interaction.response.edit_message(
+            await func(
                 content=f"{self._str_prefix}{current_entity}{self._str_suffix}",
                 embed=None,
                 attachments=[],

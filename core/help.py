@@ -34,6 +34,7 @@ DISPLAY_COG = (
     "MISC",
     "MODERATOR",
     "NASA",
+    "REMINDERS",
     "RTFM",
     "SUGGESTIONS",
     "TAGS",

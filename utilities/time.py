@@ -13,8 +13,6 @@ from dateutil.relativedelta import relativedelta
 from core import Context
 from discord.ext import commands
 
-from .formats import human_join, plural
-
 # Monkey patch mins and secs into the units
 units = pdt.pdtLocales["en_US"].units
 units["minutes"].append("mins")

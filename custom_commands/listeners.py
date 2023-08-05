@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+from collections import Counter
 from typing import Literal
 
 import discord
@@ -17,6 +18,8 @@ QUOTIENT_HQ = 746337818388987967
 
 log = logging.getLogger("custom_commands.listeners")
 
+OWO_COOLDOWN = re.compile(r"(\*\*⏱ )\|( .+)(\*\*!)( Slow down and try the command again )(\*\*)((<t:)(\d+)(:R>)?)(\*\*)")
+
 
 class Sector17Listeners(Cog):
     def __init__(self, bot: Parrot) -> None:
@@ -25,6 +28,10 @@ class Sector17Listeners(Cog):
 
         self.allowed_channels = {SECTOR_BOT_SPAM_CHANNEL, QUOTIENT_HQ_PLAYGROUND}
         self.allowed_guilds = set()
+
+        self.counter: dict[int, int] = Counter()
+        # {user_id: count}
+        # every user must have a count of 1 or 0
 
     async def cog_load(self) -> None:
         self.allowed_guilds.add(self.bot.server.id)
@@ -37,6 +44,10 @@ class Sector17Listeners(Cog):
         in_channel: int | None = None,
         message_type: Literal["message", "embed"] = "message",
     ):
+        count = self.counter.get(invoker_message.author.id, 0)
+        if count == 1:
+            return None
+
         def check(message: discord.Message) -> bool:
             if not message.embeds and message_type == "message":
                 return (
@@ -44,7 +55,7 @@ class Sector17Listeners(Cog):
                     and message.channel.id == (in_channel or invoker_message.channel.id)
                     and message.content.startswith(startswith)
                     and invoker_message.author.display_name in message.content
-                    and "Slow down" not in message.content
+                    and not OWO_COOLDOWN.search(message.content)
                 )
             elif message_type == "embed":
                 if not message.embeds:

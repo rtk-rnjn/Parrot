@@ -46,6 +46,7 @@ all_extensions:
   - cogs.todo
   - cogs.giveaway
   - cogs.autoresponder
+  - cogs.reminder
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

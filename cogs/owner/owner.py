@@ -579,7 +579,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await view.init()
 
     @commands.command(alises=["sql3", "sqlite3", "sqlite"])
-    async def sql(self, ctx: Context, *, queries: str):
+    async def sql(self, ctx: Context, *, queries: str):  # type: ignore
         """SQL query.
 
         This is equivalent to:
@@ -590,7 +590,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
         ...
         ```
         """
-        queries: list[str] = queries.split(";")
+        queries = queries.replace("```sql", "").replace("```", "").strip("`").strip()  # type: ignore
+
+        queries: list[str] = queries.split(";")  # type: ignore
         sql = self.bot.sql  # sqlite3
 
         super_ini = time.perf_counter()

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import hashlib
+import inspect
 import io
 import json
 import os
@@ -16,9 +17,10 @@ import urllib.parse
 from collections import Counter
 from typing import Annotated, Literal
 
-import jishaku
+import jishaku  # noqa: F401
 import jishaku.paginators  # noqa: F401
 from aiofile import async_open
+from aiosqlite.cursor import Cursor
 from jishaku.paginators import PaginatorEmbedInterface
 from tabulate import tabulate
 
@@ -577,40 +579,67 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await view.init()
 
     @commands.command(alises=["sql3", "sqlite3", "sqlite"])
-    async def sql(self, ctx: Context, *, query: str):
+    async def sql(self, ctx: Context, *, queries: str):
         """SQL query.
 
         This is equivalent to:
         ```py
         sql = ctx.bot.sql
-        cursor = await sql.execute(query)
+        for query in queries.split(";"):
+            cursor = await sql.execute(query)
         ...
         ```
         """
+        queries: list[str] = queries.split(";")
         sql = self.bot.sql  # sqlite3
-        query = query.strip("`").strip()
-        ini = time.perf_counter()
-        try:
-            cursor = await sql.execute(query)
-        except Exception as e:
-            await ctx.send(f"```py\n{e}```")
+
+        super_ini = time.perf_counter()
+        results: list[tuple[str, Cursor, int, float]] = []
+        # list of tuples of str, Cursor, affected rows, time taken
+
+        for query in queries:
+            if not query:
+                continue
+
+            ini = time.perf_counter()
+            try:
+                cursor = await sql.execute(query)
+            except Exception as e:
+                await ctx.send(f"```py\n{e}```")
+                return
+            total_rows_affected = cursor.rowcount
+            fin = time.perf_counter() - ini
+
+            results.append((query.upper(), cursor, total_rows_affected, fin))
+
+        super_fin = time.perf_counter() - super_ini
+
+        to_send = ""
+        if not results:
+            await ctx.send(f"Rows affected: **-1** | Time taken: **{super_fin:.3f}s**")
             return
-        rslt = await cursor.fetchall()
-        total_rows_affected = cursor.rowcount
-        fin = time.perf_counter() - ini
 
-        if not rslt:
-            await ctx.send(f"Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
+        for q, cursor, total_rows_affected, fin in results:
+            colums = [i[0] for i in cursor.description]
+            rslt = await cursor.fetchall()
+            table = tabulate(rslt, headers=colums, tablefmt="psql")
+            to_send += inspect.cleandoc(
+                f"""
+                ```sql
+                SQLite > {q}
+                {table}
+                Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
+                ```
+                """,
+            )
+
+        if len(to_send) < 2000:
+            await ctx.send(to_send)
             return
 
-        colums = [i[0] for i in cursor.description]
-        table = tabulate(rslt, headers=colums, tablefmt="psql")
-
-        if len(table) > 2000:
-            file = discord.File(io.BytesIO(table.encode()), filename="table.sql")
-            await ctx.send(file=file)
-        else:
-            await ctx.send(f"```sql\n{table}``` Rows affected: **{total_rows_affected}** | Time taken: **{fin:.3f}s**")
+        file = discord.File(io.BytesIO(to_send.encode()), filename="table.sql")
+        await ctx.send(file=file)
+        return
 
     @commands.command()
     async def wikihow(self, ctx: Context, *, query: int | str) -> None:

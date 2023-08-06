@@ -626,13 +626,11 @@ class Owner(Cog, command_attrs={"hidden": True}):
             rslt = await cursor.fetchall()
             table = tabulate(rslt, headers=colums, tablefmt="psql")
             to_send += inspect.cleandoc(
-                f"""
-                ```sql
+                f"""```sql
                 SQLite > {q}
                 {table}
                 Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
-                ```
-                """,
+                ```""",
             )
 
         if len(to_send) < 2000:

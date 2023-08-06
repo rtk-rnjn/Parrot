@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import hashlib
-import inspect
 import io
 import json
 import os
@@ -625,13 +624,11 @@ class Owner(Cog, command_attrs={"hidden": True}):
             colums = [i[0] for i in cursor.description]
             rslt = await cursor.fetchall()
             table = tabulate(rslt, headers=colums, tablefmt="psql")
-            to_send += inspect.cleandoc(
-                f"""```sql
-                SQLite > {q}
-                {table}
-                Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
-                ```""",
-            )
+            to_send += f"""```sql
+SQLite > {q}
+{table}
+Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
+```"""
 
         if len(to_send) < 2000:
             await ctx.send(to_send)

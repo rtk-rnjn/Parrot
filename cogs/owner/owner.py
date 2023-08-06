@@ -625,7 +625,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             rslt = await cursor.fetchall()
             table = tabulate(rslt, headers=colums, tablefmt="psql")
             to_send += f"""```sql
-SQLite > {q.strip()}
+SQLite > {q.strip(' ')}
 {table}
 Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
 ```"""

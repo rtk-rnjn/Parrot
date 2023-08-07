@@ -359,7 +359,7 @@ class Sector1729(Cog):
                 inline=False,
             )
 
-        await self.bot._execute_webhook(webhook=, embed=embed)
+        await self.bot._execute_webhook(webhook=self.message_delete_webhook, embed=embed)
 
     @commands.group(name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True)
     async def sector_17_29(self, ctx: Context):

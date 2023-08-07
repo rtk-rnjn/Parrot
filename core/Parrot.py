@@ -460,7 +460,7 @@ class Parrot(commands.AutoShardedBot):
         if avatar_url:
             payload["avatar_url"] = avatar_url
         if embed := kw.get("embed"):
-            payload["embeds"] = [json.loads(embed.to_dict())]
+            payload["embeds"] = [json.dumps(embed.to_dict())]
 
         if self.http_session.closed:
             log.debug("HTTP session is closed. Creating new session")

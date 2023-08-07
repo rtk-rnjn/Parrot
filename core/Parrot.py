@@ -444,7 +444,7 @@ class Parrot(commands.AutoShardedBot):
         self,
         webhook: discord.Webhook | str | None,
         *,
-        content: str,
+        content: str | None = None,
         username: str,
         avatar_url: str,
         **kw: Any,
@@ -458,6 +458,8 @@ class Parrot(commands.AutoShardedBot):
             payload["username"] = username
         if avatar_url:
             payload["avatar_url"] = avatar_url
+        if embed := kw.get("embed"):
+            payload["embeds"] = [embed.to_dict()]
 
         if self.http_session.closed:
             log.debug("HTTP session is closed. Creating new session")
@@ -472,7 +474,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         webhook_id: str | int | None = None,
         webhook_token: str | None = None,
-        content: str,
+        content: str | None = None,
         force_file: bool = False,
         filename: str | None = None,
         suppressor: tuple[type[Exception]] | type[Exception] | None = Exception,

@@ -301,7 +301,7 @@ class Sector1729(Cog):
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
-        if message.guild is not None and message.guild.id != SUPPORT_SERVER_ID:
+        if message.guild is None or message.guild.id != SUPPORT_SERVER_ID:
             return
 
         created: datetime | None = getattr(message.author, "created_at", None)
@@ -317,6 +317,49 @@ class Sector1729(Cog):
                     discord.Object(id=QU_ROLE),
                     reason="Account age crosses 1d",
                 )
+
+    @Cog.listener()
+    async def on_message_delete(self, message: discord.Message) -> None:
+        await self.bot.wait_until_ready()
+        if message.guild is None or message.guild.id != SUPPORT_SERVER_ID:
+            return
+
+        if not hasattr(self, "message_delete_webhook"):
+            message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")  # type: ignore
+            webhooks = await message_delete.webhooks()
+            webhook = webhooks[0]
+            self.message_delete_webhook = webhook
+
+        if message.author.bot:
+            return
+
+        embed = (
+            discord.Embed(
+                title="Message Deleted",
+                description=message.content,
+            )
+            .set_author(
+                name=f"{message.author} ({message.author.id})",
+                icon_url=message.author.display_avatar.url,
+            )
+            .add_field(
+                name="Channel",
+                value=f"{message.channel.mention} ({message.channel.id})",
+                inline=False,
+            )
+            .set_thumbnail(
+                url=message.guild.icon.url,
+            )
+        )
+
+        if message.attachments:
+            embed.add_field(
+                name="Attachments",
+                value="\n".join(attachment.proxy_url for attachment in message.attachments),
+                inline=False,
+            )
+
+        await self.bot._execute_webhook(webhook=, embed=embed)
 
     @commands.group(name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True)
     async def sector_17_29(self, ctx: Context):

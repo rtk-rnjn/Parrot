@@ -467,7 +467,7 @@ class Parrot(commands.AutoShardedBot):
             self.http_session = aiohttp.ClientSession(loop=self.loop)
         log.debug("Executing webhook from scratch (%s). Payload: %s", URL, payload)
         async with self.http_session.post(URL, json=payload, headers=self.GLOBAL_HEADERS) as resp:
-            return await resp.json(content_type="text/plain")
+            return await resp.json(content_type="application/json")
 
     async def _execute_webhook(
         self,

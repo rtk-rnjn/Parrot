@@ -446,8 +446,8 @@ class Parrot(commands.AutoShardedBot):
         webhook: discord.Webhook | str | None,
         *,
         content: str | None = None,
-        username: str,
-        avatar_url: str,
+        username: str | None = None,
+        avatar_url: str | None = None,
         **kw: Any,
     ) -> dict | None:
         payload = {}
@@ -460,14 +460,17 @@ class Parrot(commands.AutoShardedBot):
         if avatar_url:
             payload["avatar_url"] = avatar_url
         if embed := kw.get("embed"):
-            payload["embeds"] = [json.dumps(embed.to_dict())]
+            payload["embeds"] = [embed.to_dict()]
+
+        if not payload:
+            return
 
         if self.http_session.closed:
             log.debug("HTTP session is closed. Creating new session")
             self.http_session = aiohttp.ClientSession(loop=self.loop)
         log.debug("Executing webhook from scratch (%s). Payload: %s", URL, payload)
         async with self.http_session.post(URL, json=payload, headers=self.GLOBAL_HEADERS) as resp:
-            return await resp.json(content_type="application/json")
+            return await resp.json(content_type=None)
 
     async def _execute_webhook(
         self,
@@ -490,11 +493,11 @@ class Parrot(commands.AutoShardedBot):
             BASE_URL = "https://discordapp.com/api/webhooks"
             URL = f"{BASE_URL}/{webhook_id}/{webhook_token}"
 
-        elif isinstance(webhook, str) and not self.http_session.closed:
+        elif isinstance(webhook, str) and self.http_session:
             URL = webhook
 
             webhook: discord.Webhook = discord.Webhook.from_url(URL, session=self.http_session)
-        else:
+        elif self.http_session.closed:
             await self._execute_webhook_from_scratch(
                 webhook,
                 content=content,

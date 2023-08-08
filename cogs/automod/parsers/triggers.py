@@ -11,6 +11,7 @@ import re
 from discord import Member, Message
 from discord.ext import commands
 from utilities.regex import INVITE_RE, LINKS_RE
+from discord.utils import maybe_coroutine
 
 OPERATRORS = {
     "all": all,
@@ -45,7 +46,14 @@ class Trigger:
     async def check(self, **kw) -> bool:
         if not self.data:
             return False
-        return self.operator(getattr(self, tgr["type"])(**kw, **tgr) for tgr in self.data)
+        ls = []
+        for tgr in self.data:
+            func = getattr(self, tgr["type"])
+            value = await maybe_coroutine(func, **kw, **tgr)
+            ls.append(value)
+
+        return self.operator(ls)
+
 
     def build_cooldowns(self) -> None:
         for tgr in self.data:

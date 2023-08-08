@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 from discord.abc import GuildChannel
-from discord.utils import utcnow
+from discord.utils import utcnow, maybe_coroutine
 
 from discord import Member, Message, Object, PermissionOverwrite
 
@@ -25,7 +25,11 @@ class Action:
 
     async def execute(self, **kw) -> None:
         for action in self.data:
-            await getattr(self, action["type"])(**kw, **action)
+            func = getattr(self, action["type"], None)
+            if func is None:
+                continue
+
+            await maybe_coroutine(func, **kw, **action)
 
     async def delete_message(self, *, message: Message, **kw) -> None:
         await message.delete(delay=0)

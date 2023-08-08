@@ -326,6 +326,9 @@ class Sector1729(Cog):
 
         if not hasattr(self, "message_delete_webhook"):
             message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")  # type: ignore
+            if message_delete is None:
+                return
+
             webhooks = await message_delete.webhooks()
             webhook = webhooks[0]
             self.message_delete_webhook = webhook

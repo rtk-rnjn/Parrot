@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import io
-import json
 import logging
 import logging.handlers
 import os
@@ -73,8 +72,9 @@ from .utils import CustomFormatter, handler
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from discord.ext.commands.cooldowns import CooldownMapping
     from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+
+    from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
 
@@ -460,7 +460,18 @@ class Parrot(commands.AutoShardedBot):
         if avatar_url:
             payload["avatar_url"] = avatar_url
         if embed := kw.get("embed"):
-            payload["embeds"] = [embed.to_dict()]
+            if isinstance(embed, discord.Embed):
+                payload["embeds"] = [embed.to_dict()]
+            else:
+                payload["embeds"] = [embed]
+        if embeds := kw.get("embeds"):
+            if isinstance(embeds, list):
+                _embeds = [embed.to_dict() for embed in embeds]
+            else:
+                _embeds = embeds
+
+            if "embeds" in payload:
+                payload["embeds"].extend(_embeds)
 
         if not payload:
             return

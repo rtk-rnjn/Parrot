@@ -911,7 +911,7 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         """Gives you a documentation link for a pymongo entity."""
         await self.do_rtfm(ctx, "pymongo", obj)
 
-    @rtfd.command(name="showall", aliases=["show"])
+    @rtfd.command(name="showall", aliases=["show", "list", "all", "ls"])
     async def rtfd_showall(
         self,
         ctx: Context,

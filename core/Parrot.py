@@ -472,6 +472,8 @@ class Parrot(commands.AutoShardedBot):
 
             if "embeds" in payload:
                 payload["embeds"].extend(_embeds)
+            else:
+                payload["embeds"] = _embeds
 
         if not payload:
             return

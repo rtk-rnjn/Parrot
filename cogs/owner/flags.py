@@ -8,16 +8,6 @@ from utilities.converters import convert_bool
 from utilities.time import ShortTime
 
 
-class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    guild: discord.Guild | None = None
-    limit: int | None = 100
-    action: str | None = None
-    before: ShortTime | None = None
-    after: ShortTime | None = None
-    oldest_first: Annotated[bool | None, convert_bool] = False
-    user: discord.User | discord.Member | None = None
-
-
 class BanFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     reason: str | None = None
     _global: Annotated[bool | None, convert_bool] = commands.flag(name="global", default=False)

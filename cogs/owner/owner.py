@@ -28,12 +28,11 @@ from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.converters import convert_bool
 from utilities.paginator import PaginationView
-from utilities.robopages import SimplePages
 from utilities.time import ShortTime
 from utilities.wikihow import Parser as WikihowParser
 
 from . import fuzzy
-from .flags import AuditFlag, BanFlag, SubscriptionFlag
+from .flags import BanFlag, SubscriptionFlag
 from .utils import SphinxObjectFileReader
 from .views import MongoCollectionView, MongoView, MongoViewSelect, NitroView
 
@@ -312,45 +311,6 @@ class Owner(Cog, command_attrs={"hidden": True}):
             await PaginationView(em_list).start(ctx=ctx)
         elif channel_member.lower() in ("members",):
             await PaginationView(em_list_member).start(ctx=ctx)
-
-    @commands.command(aliases=["auditlogs"])
-    @commands.bot_has_permissions(view_audit_log=True, attach_files=True)
-    async def auditlog(self, ctx: Context, *, args: AuditFlag):
-        """To get the audit log of the server, in nice format."""
-        ls = []
-        guild = args.guild or ctx.guild
-
-        kwargs = {}
-
-        if args.user:
-            kwargs["user"] = args.user
-
-        kwargs["limit"] = max(args.limit or 0, 100)
-        if args.action:
-            kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
-
-        if args.before:
-            kwargs["before"] = args.before.dt
-
-        if args.after:
-            kwargs["after"] = args.after.dt
-
-        if args.oldest_first:
-            kwargs["oldest_first"] = args.oldest_first
-
-        assert guild is not None
-
-        async for entry in guild.audit_logs(**kwargs):
-            st = f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
-> Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
-`Responsible Moderator`: {f'<@{str(entry.user.id)}>' if entry.user else 'Can not determine the Moderator'}
-`Action performed on  `: {entry.target or 'Can not determine the Target'}
-"""
-
-            ls.append(st)
-
-        p = SimplePages(ls, ctx=ctx, per_page=5)
-        await p.start()
 
     @commands.command()
     async def announce_global(self, ctx: Context, *, announcement: str):

@@ -12,6 +12,7 @@ post: dict[str, Any] = {
     "muted": [],
     "warn_count": 0,
     "suggestion_channel": None,
+    "auditlog": None,
     "global_chat": {
         "enable": False,
         "channel_id": None,

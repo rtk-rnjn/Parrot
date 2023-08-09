@@ -1211,6 +1211,27 @@ class Configuration(Cog):
         else:
             await ctx.send(f"{ctx.author.mention} This code is invalid. Please ask for new code in support server")
 
+    @config.command(name="auditlog", aliases=["auditlogs"])
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.has_permissions(administrator=True)
+    async def config_auditlog(self, ctx: Context, channel: discord.TextChannel = None):
+        """Set the auditlog channel."""
+        if channel is None:
+            await self.bot.guild_configurations.update_one(
+                {"_id": ctx.guild.id},
+                {"$set": {"auditlog": None}},
+                upsert=True,
+            )
+            return await ctx.send(f"{ctx.author.mention} auditlog channel deleted")
+
+        webhook = await channel.create_webhook(name="Auditlog")
+        await self.bot.guild_configurations.update_one(
+            {"_id": ctx.guild.id},
+            {"$set": {"auditlog": webhook.url}},
+            upsert=True,
+        )
+        await ctx.send(f"{ctx.author.mention} auditlog channel set to {channel.mention}")
+
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):
         if ctx.cog and ctx.cog.qualified_name == "Configuration":

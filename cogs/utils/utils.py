@@ -55,7 +55,7 @@ class Utils(Cog):
     @commands.command(aliases=["auditlogs"])
     @commands.bot_has_permissions(view_audit_log=True)
     @commands.has_permissions(view_audit_log=True)
-    @commands.cooldown(1, 5, commands.BucketType.guild)
+    @commands.cooldown(1, 30, commands.BucketType.guild)
     async def auditlog(self, ctx: Context, *, args: AuditFlag):
         """To get the audit log of the server, in nice format."""
         ls = []
@@ -107,7 +107,7 @@ class Utils(Cog):
 
             return all(ls) if ls else True
 
-        if self._audit_log_cache.get(guild.id):
+        if self._audit_log_cache.get(guild.id) and len(self._audit_log_cache[guild.id]) == 100:
             entries = self._audit_log_cache[guild.id]
             for entry in entries:
                 if finder(entry):

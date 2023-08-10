@@ -114,7 +114,7 @@ log = logging.getLogger("core.parrot")
 
 __all__ = ("Parrot",)
 
-LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
+LOCALHOST = "0.0.0.0"
 # LOCALHOST = "localhost"
 IPC_PORT = 1730
 LAVALINK_PORT = 1018
@@ -404,7 +404,7 @@ class Parrot(commands.AutoShardedBot):
 
                     # start webserver to receive Top.GG webhooks
                     success = await self.ipc_client.request("start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook")
-                    log.debug("Top.GG webhook server started: %s", success)
+                    log.info("Top.GG webhook server started: %s", success)
                 except aiohttp.ClientConnectionError as e:
                     log.warning("Failed to start IPC server", exc_info=e)
                     traceback.print_exc()
@@ -562,44 +562,38 @@ class Parrot(commands.AutoShardedBot):
         await super().before_identify_hook(shard_id, initial=initial)
 
     async def on_autopost_success(self) -> None:
-        if self.HAS_TOP_GG:
-            st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
-            await self._execute_webhook(
-                self._startup_log_token,
-                content=f"```css\n{st}```",
-            )
-            log.debug(
-                "Posted server count (%s), shard count (%s)",
-                self.topgg.guild_count,
-                self.shard_count,
-            )
+        st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
+        await self._execute_webhook(
+            self._startup_log_token,
+            content=f"```css\n{st}```",
+        )
+        log.debug(
+            "Posted server count (%s), shard count (%s)",
+            self.topgg.guild_count,
+            self.shard_count,
+        )
 
     async def on_autopost_error(self, exception: Exception) -> None:
-        if self.HAS_TOP_GG:
-            await self._execute_webhook(
-                self._error_log_token,
-                content=f"```css\n{exception}```",
-            )
-            log.error("Failed to post server count (%s)", exception, exc_info=True)
+        await self._execute_webhook(
+            self._error_log_token,
+            content=f"```css\n{exception}```",
+        )
+        log.error("Failed to post server count (%s)", exception, exc_info=True)
 
     async def on_dbl_vote(self, data: BotVoteData) -> None:
-        if data["type"] == "test":
-            return self.dispatch("dbl_test", data)
-        elif data["type"] == "upvote":
-            user: discord.User | None = self.get_user(int(data["user"]))
-            user = user.name if user is not None else f"Unknown User ({data['user']})"  # type: ignore
+        user: discord.User | None = self.get_user(int(data["user"]))
+        user = user.name if user is not None else "Unknown User"  # type: ignore
 
-            await self._execute_webhook(
-                self._vote_log_token,
-                content=f"```css\n{user} ({data['user']}) has upvoted the bot```",
-            )
+        await self._execute_webhook(
+            self._vote_log_token,
+            content=f"```css\n{user} ({data['user']}) has upvoted the bot```",
+        )
 
     async def on_dbl_test(self, data: BotVoteData) -> None:
-        if data["type"] == "test":
-            await self._execute_webhook(
-                self._vote_log_token,
-                content=f"```css\nReceived a test vote from {data['user']} ({data['user']})```",
-            )
+        await self._execute_webhook(
+            self._vote_log_token,
+            content=f"```css\nReceived a test vote from {data['user']} ({data['user']})```",
+        )
 
     def run(self) -> None:
         """To run connect and login into discord."""

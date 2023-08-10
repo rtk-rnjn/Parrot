@@ -561,40 +561,6 @@ class Parrot(commands.AutoShardedBot):
         self.identifies[shard_id].append(discord.utils.utcnow())
         await super().before_identify_hook(shard_id, initial=initial)
 
-    async def on_autopost_success(self) -> None:
-        st = f"[{self.user.name.title()}] Posted server count ({self.topgg.guild_count}), shard count ({self.shard_count})"
-        await self._execute_webhook(
-            self._startup_log_token,
-            content=f"```css\n{st}```",
-        )
-        log.debug(
-            "Posted server count (%s), shard count (%s)",
-            self.topgg.guild_count,
-            self.shard_count,
-        )
-
-    async def on_autopost_error(self, exception: Exception) -> None:
-        await self._execute_webhook(
-            self._error_log_token,
-            content=f"```css\n{exception}```",
-        )
-        log.error("Failed to post server count (%s)", exception, exc_info=True)
-
-    async def on_dbl_vote(self, data: BotVoteData) -> None:
-        user: discord.User | None = self.get_user(int(data["user"]))
-        user = user.name if user is not None else "Unknown User"  # type: ignore
-
-        await self._execute_webhook(
-            self._vote_log_token,
-            content=f"```css\n{user} ({data['user']}) has upvoted the bot```",
-        )
-
-    async def on_dbl_test(self, data: BotVoteData) -> None:
-        await self._execute_webhook(
-            self._vote_log_token,
-            content=f"```css\nReceived a test vote from {data['user']} ({data['user']})```",
-        )
-
     def run(self) -> None:
         """To run connect and login into discord."""
         super().run(TOKEN, reconnect=True)

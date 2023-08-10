@@ -278,7 +278,7 @@ class IPCRoutes(Cog):
         authentication = os.environ["TOPGG_AUTH"]
         try:
             self.bot.topgg_webhook.dbl_webhook(end_point, authentication)
-            self.bot.topgg_webhook.run(port)
+            await self.bot.topgg_webhook.run(port)
 
             self.bot.DBL_SERVER_RUNNING = True
             return {"status": "ok"}
@@ -288,7 +288,7 @@ class IPCRoutes(Cog):
     @Server.route()
     async def stop_dbl_server(self, data: ClientPayload) -> dict[str, str]:
         if self.bot.HAS_TOP_GG:
-            self.bot.topgg_webhook.close()
+            await self.bot.topgg_webhook.close()
             self.bot.DBL_SERVER_RUNNING = False
             return {"status": "ok"}
         return {"status": "error: no top.gg webhook"}

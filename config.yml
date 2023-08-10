@@ -31,6 +31,7 @@ all_extensions:
   - events.on_cmd
   - events.on_msg
   - events.on_rexn
+  - events.topgg
   - events.user
   - events.arbitrary_events
   - interactions.buttons

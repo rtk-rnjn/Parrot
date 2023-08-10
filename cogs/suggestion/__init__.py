@@ -509,9 +509,12 @@ class Suggestions(Cog):
         if not self.__is_mod(message.author):
             return
 
+        if ">" not in message.content:
+            return
+
         command, remark = message.content.split(">", 1)
-        command = command.strip().upper()
-        remark = remark.strip() or ""
+        command = command.strip(" ").upper()
+        remark = remark.strip(" ") or ""
 
         if command in OTHER_REACTION:
             context: Context = await self.bot.get_context(message, cls=Context)

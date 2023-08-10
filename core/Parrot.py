@@ -114,8 +114,8 @@ log = logging.getLogger("core.parrot")
 
 __all__ = ("Parrot",)
 
-# LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
-LOCALHOST = "localhost"
+LOCALHOST = "0.0.0.0" if HEROKU else "127.0.0.1"
+# LOCALHOST = "localhost"
 IPC_PORT = 1730
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"

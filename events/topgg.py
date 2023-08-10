@@ -10,7 +10,7 @@ from core import Cog, Parrot
 log = logging.getLogger("events.topgg")
 
 
-class TopggEventListerer(Cog):
+class TopggEventListener(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
@@ -58,4 +58,4 @@ class TopggEventListerer(Cog):
 
 
 async def setup(bot: Parrot) -> None:
-    await bot.add_cog(TopggEventListerer(bot))
+    await bot.add_cog(TopggEventListener(bot))

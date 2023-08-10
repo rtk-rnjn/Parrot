@@ -98,7 +98,7 @@ dbl_token = os.environ["TOPGG"]
 CHANGE_LOG_ID = CHANGE_LOG_CHANNEL_ID
 DEFAULT_PREFIX: Literal["$"] = "$"
 
-logger = logging.getLogger("discord")
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 formatter = CustomFormatter()
@@ -198,7 +198,7 @@ class Parrot(commands.AutoShardedBot):
 
         # Top.gg
         self.HAS_TOP_GG = True
-        if self.HAS_TOP_GG:
+        if TYPE_CHECKING or self.HAS_TOP_GG:
             self.topgg: topgg.DBLClient  # type: ignore
             self.topgg_webhook: topgg.WebhookManager  # type: ignore
 

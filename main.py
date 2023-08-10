@@ -11,6 +11,8 @@ from core import Parrot
 from updater import init
 from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION
 
+from app import runner
+
 bot: Parrot = Parrot()
 
 if os.name == "nt":
@@ -29,7 +31,7 @@ async def main() -> None:
         async with bot:
             bot.http_session = http_session
             bot.sql = await init()
-            bot.database = bot.sql
+            bot.database = bot.sql  # type: ignore
 
             if not hasattr(bot, "__version__"):
                 bot.__version__ = VERSION
@@ -38,7 +40,8 @@ async def main() -> None:
                 DATABASE_URI.format(DATABASE_KEY),
             )
             await bot.init_db()
-            await bot.start(TOKEN)
+
+            await asyncio.gather(bot.start(TOKEN), runner())
 
 
 if __name__ == "__main__":

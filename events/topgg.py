@@ -21,7 +21,7 @@ class TopggEventListener(Cog):
             self.bot._startup_log_token,
             content=f"```css\n{st}```",
         )
-        log.debug(
+        log.info(
             "Posted server count (%s), shard count (%s)",
             self.bot.topgg.guild_count,
             self.bot.shard_count,

@@ -78,9 +78,6 @@ if TYPE_CHECKING:
 
     from .Cog import Cog
 
-    if HAS_TOP_GG:
-        from topgg.types import BotVoteData
-
     MongoCollection: TypeAlias = AsyncIOMotorCollection  # type: ignore
     MongoDatabase: TypeAlias = AsyncIOMotorDatabase  # type: ignore
 
@@ -114,8 +111,8 @@ log = logging.getLogger("core.parrot")
 
 __all__ = ("Parrot",)
 
-LOCALHOST = "0.0.0.0"
-# LOCALHOST = "localhost"
+# LOCALHOST = "0.0.0.0"
+LOCALHOST = "localhost"
 IPC_PORT = 1730
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"

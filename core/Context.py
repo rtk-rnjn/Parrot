@@ -47,7 +47,7 @@ MaybeAwaitable = T | Awaitable[T]
 
 Callback = MaybeAwaitable
 
-# VOTER_ROLE_ID = 836492413312040990
+VOTER_ROLE_ID = 1139439408723013672
 log = logging.getLogger("core.context")
 
 

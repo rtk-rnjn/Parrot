@@ -8,7 +8,7 @@ import random
 import re
 import unicodedata
 from contextlib import suppress
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import time
 from typing import TYPE_CHECKING
 
@@ -41,7 +41,7 @@ from utilities.config import SUPPORT_SERVER_ID
 
 EMOJI = "\N{WASTEBASKET}"
 MESSAGE_ID = 1025455601398075535
-VOTER_ROLE_ID = 836492413312040990
+VOTER_ROLE_ID = 1139439408723013672
 QU_ROLE = 851837681688248351
 MEMBER_ROLE_ID = 1022216700650868916
 GENERAL_CHAT = 1022211381031866459
@@ -64,7 +64,6 @@ class Sector1729(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self._cache: dict[int, int | float] = {}
-        self.vote_reseter.start()
         self.ON_TESTING = False
 
         self.lock: asyncio.Lock = asyncio.Lock()
@@ -95,9 +94,6 @@ class Sector1729(Cog):
 
         if self.change_rainbow_role.is_running():
             self.change_rainbow_role.cancel()
-
-        if self.vote_reseter.is_running():
-            self.vote_reseter.cancel()
 
     @Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
@@ -162,8 +158,7 @@ class Sector1729(Cog):
 
     @Cog.listener("on_dbl_vote")
     async def on_dbl_vote(self, data: BotVoteData):
-        assert self.bot.server is not None
-        member: discord.Member | discord.User | None = await self.bot.get_or_fetch_member(
+        member: discord.Member | None = await self.bot.get_or_fetch_member(
             self.bot.server,
             data.user,
         )
@@ -208,39 +203,43 @@ class Sector1729(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @in_support_server()
     async def my_votes(self, ctx: Context):
-        if data := await self.bot.mongo.user_misc.find_one({"_id": ctx.author.id, "topgg_votes": {"$exists": True}}):
+        if data := await self.bot.user_collections_ind.find_one({"_id": ctx.author.id, "topgg_votes": {"$exists": True}}):
             await ctx.send(f"You voted for **{self.bot.user}** for **{len(data['topgg_votes'])}** times on Top.gg")
         else:
             await ctx.send("You haven't voted for the bot on Top.gg yet.")
 
     async def __add_to_db(self, member: discord.Member) -> None:
         col: Collection = self.bot.user_collections_ind
-        now = time()
         await col.update_one(
             {"_id": member.id},
             {
-                "$set": {
-                    "topgg_vote_time": now,
-                    "topgg_vote_expires": now + 43200,
-                },
                 "$inc": {"topgg_votes": 1},
             },
             upsert=True,
         )  # type: ignore
 
-    @tasks.loop(minutes=5)
-    async def vote_reseter(self):
-        async with self.lock:
-            col: Collection = self.bot.user_collections_ind
-            now_plus_12_hours = time() + 43200
+        await self.bot.create_timer(
+            message=int(discord.utils.utcnow().timestamp() * 10),
+            expires_at=(discord.utils.utcnow() + timedelta(hours=12)).timestamp(),
+            _event_name="vote_timer",
+            content=f"You can vote for the bot again on Top.gg.\nClick **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
+            dm_notify=True,
+        )
 
-            async for doc in col.find({"topgg_vote_expires": {"$lte": now_plus_12_hours}}):  # type: ignore
-                guild = self.bot.server
-                role = discord.Object(id=VOTER_ROLE_ID)
+        mod_action = {
+            "action": "REMOVE_ROLE",
+            "reason": "Vote expires",
+            "role_id": VOTER_ROLE_ID,
+            "guild": SUPPORT_SERVER_ID,
+            "member": member.id,
+        }
 
-                await col.update_one({"_id": doc["_id"]}, {"$set": {"topgg_vote_expires": 0}})  # type: ignore
-                if guild and (member := guild.get_member(doc["_id"])):
-                    await member.remove_roles(role, reason="Top.gg vote expired")
+        await self.bot.create_timer(
+            message=int(discord.utils.utcnow().timestamp() * 10) + 1,
+            expires_at=(discord.utils.utcnow() + timedelta(hours=12)).timestamp(),
+            _event_name="mod_action",
+            mod_action=mod_action,
+        )
 
     @tasks.loop(minutes=30)
     async def change_channel_name(self):
@@ -293,10 +292,6 @@ class Sector1729(Cog):
                 )
             except discord.HTTPException:
                 pass
-
-    @vote_reseter.before_loop
-    async def before_vote_reseter(self):
-        await self.bot.wait_until_ready()
 
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

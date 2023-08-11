@@ -14,7 +14,7 @@ class EventCustom(Cog):
         self.bot = bot
         self.ON_TESTING = False
 
-    @Cog.listener("on_unban_timer_complete")
+    @Cog.listener("on_mod_action_timer_complete")
     async def mod_parser(
         self,
         *,
@@ -40,11 +40,20 @@ class EventCustom(Cog):
             with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
                 await guild.ban(discord.Object(target), reason=kw.get("reason"))
         if action.upper() == "KICK":
-            member: discord.Member | discord.User | None = await self.bot.get_or_fetch_member(guild, target)
+            member: discord.Member | None = await self.bot.get_or_fetch_member(guild, target)
             if member is None:
                 return
             with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
                 await guild.kick(member, reason=kw.get("reason"))
+        if action.upper() == "REMOVE_ROLE":
+            role_id: int | None = kw.get("role_id")
+            member: discord.Member | None = await self.bot.get_or_fetch_member(guild, target)
+
+            if member is None or role_id is None:
+                return
+
+            with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
+                await member.remove_roles(discord.Object(role_id), reason=kw.get("reason"))
 
     @Cog.listener("on_timer_complete")
     async def normal_parser(

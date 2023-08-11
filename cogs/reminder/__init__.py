@@ -92,11 +92,13 @@ class Reminders(Cog):
         """To get all your reminders of first 10 active reminders."""
         ls = []
         log.info("Fetching reminders for %s from database.", ctx.author)
+
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
             self.bot.get_guild(data.get("guild", 0))
-            ls.append(f"<t:{int(data['expires_at'])}:R> - {data['messageURL']}\n" f"> {data['content']}")
+            ls.append(f"<t:{int(data['expires_at'])}:R> - {data['messageURL']} (`{data['_id']}`)\n" f"> {data['content']}")
             if len(ls) == 10:
                 break
+
         if not ls:
             await ctx.send(f"{ctx.author.mention} you don't have any reminders")
             return
@@ -107,6 +109,15 @@ class Reminders(Cog):
     @Context.with_type
     async def delremind(self, ctx: Context, message: int) -> None:
         """To delete the reminder."""
+        timer = await self.bot.get_timer(_id=message)
+        if not timer:
+            await ctx.reply(f"{ctx.author.mention} reminder of ID: **{message}** not found")
+            return
+
+        if timer["messageAuthor"] != ctx.author.id:
+            await ctx.reply(f"{ctx.author.mention} you can't delete other's reminder")
+            return
+
         log.info("Deleting reminder of message id %s", message)
         delete_result = await self.bot.delete_timer(_id=message)
         if delete_result.deleted_count == 0:

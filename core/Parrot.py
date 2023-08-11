@@ -1147,6 +1147,10 @@ class Parrot(commands.AutoShardedBot):
 
         return insert_data
 
+    async def get_timer(self, **kw: Any) -> dict[str, Any] | None:
+        collection: MongoCollection = self.timers
+        return await collection.find_one({"_id": kw["_id"]})
+
     async def delete_timer(self, **kw: Any) -> DeleteResult:
         collection: MongoCollection = self.timers
         data = await collection.delete_one({"_id": kw["_id"]})

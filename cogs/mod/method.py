@@ -334,10 +334,10 @@ async def _temp_ban(
             }
 
             await ctx.bot.create_timer(
-                _event_name="unban",
+                _event_name="mod_action",
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
-                message=ctx.message,
+                message=ctx.message.id,
                 mod_action=mod_action,
             )
             await destination.send(
@@ -1322,7 +1322,7 @@ async def instant_action_parser(*, name: str, ctx: Context, message: discord.Mes
             }
 
             await ctx.bot.create_timer(
-                _event_name="unban",
+                _event_name="mod_action",
                 expires_at=duration.dt.timestamp(),
                 created_at=discord.utils.utcnow().timestamp(),
                 message=ctx.message,

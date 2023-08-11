@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 
 import aiohttp
@@ -21,13 +20,14 @@ ORIGINAL_REPO = _ORIGINAL_REPO.format(REPO=REPO)
 async def init():
     db = await aiosqlite.connect("cached.sqlite")
 
-    query = """CREATE TABLE IF NOT EXISTS scam_links (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        link TEXT NOT NULL,
-        UNIQUE(link)
-    )"""
+    query = """
+        BEGIN;
+        CREATE TABLE IF NOT EXISTS scam_links (id INTEGER PRIMARY KEY AUTOINCREMENT, link TEXT NOT NULL, UNIQUE(link));
+        CREATE TABLE IF NOT EXISTS discord_tokens (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL, UNIQUE(token));
+        COMMIT;
+    """
 
-    await db.execute(query)
+    await db.executescript(query)
     await db.commit()
 
     return db
@@ -90,32 +90,3 @@ async def insert_new(db: aiosqlite.Connection):
                 log.info("deleted link: %s", link)
 
     await db.commit()
-
-
-async def main():
-    db = await init()
-    await insert_new(db)
-
-    while True:
-        user_input = input("SQLite > ")
-        if user_input == "exit":
-            break
-
-        try:
-            result = await db.execute(user_input)
-            await db.commit()
-            rows = await result.fetchall()
-            if rows and user_input.lower().startswith("select"):
-                for row in rows:
-                    print(row)
-            else:
-                print("Affected Rows:", result.rowcount)
-
-        except Exception as e:
-            print(e)
-
-    await db.close()
-
-
-if __name__ == "__main__":
-    _ = asyncio.run(main())

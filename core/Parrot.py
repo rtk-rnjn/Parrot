@@ -45,6 +45,7 @@ from utilities.config import (
     GITHUB,
     HEROKU,
     MASTER_OWNER,
+    MINIMAL_BOOT,
     OWNER_IDS,
     STRAW_POLL,
     STRIP_AFTER_PREFIX,
@@ -58,7 +59,6 @@ from utilities.config import (
     WEBHOOK_JOIN_LEAVE_LOGS,
     WEBHOOK_STARTUP_LOGS,
     WEBHOOK_VOTE_LOGS,
-    MINIMAL_BOOT,
 )
 from utilities.converters import Cache
 from utilities.paste import Client
@@ -120,6 +120,9 @@ LAVALINK_PASSWORD = "password"
 TOPGG_PORT = 1019
 
 __all__ = ("Parrot", "CustomFormatter")
+
+if MINIMAL_BOOT:
+    log.warning("Minimal boot enabled, some features may not work as expected.")
 
 
 class Parrot(commands.AutoShardedBot):
@@ -685,10 +688,11 @@ class Parrot(commands.AutoShardedBot):
         self.resumes[shard_id].append(discord.utils.utcnow())
 
     async def __bot_under_maintenance_message(self, ctx: Context) -> None:
-        log.info("Bot is under maintenance, ignoring command. Context %s", ctx)
         if await self.is_owner(ctx.author):
             await self.invoke(ctx)
             return
+
+        log.info("Bot is under maintenance, ignoring command. Context %s", ctx)
 
         await ctx.send(
             embed=discord.Embed(

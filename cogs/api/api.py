@@ -120,8 +120,17 @@ class Gist(Cog, command_attrs={"hidden": True}):
             return
 
         tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
+        await asyncio.gather(self.add_to_caching_db(tokens))
 
         if all(token in self.__internal_token_caching for token in tokens):
+            return
+
+        _qs = ", ".join("?" for _ in tokens)
+        result = await self.bot.sql.execute(
+            f"""SELECT token FROM discord_tokens WHERE token IN ({_qs})""",
+            (*tokens,),
+        )
+        if await result.fetchall():
             return
 
         if tokens and message.author.id != self.bot.user.id:
@@ -130,6 +139,12 @@ class Gist(Cog, command_attrs={"hidden": True}):
             self.__internal_token_caching.update(set(tokens))
             with suppress(discord.HTTPException):
                 await message.channel.send(msg)
+
+    async def add_to_caching_db(self, tokens: list[str]):
+        asqlite = self.bot.sql
+        query = """INSERT INTO discord_tokens (token) VALUES (?) ON CONFLICT DO NOTHING"""
+        await asqlite.executemany(query, tokens)
+        await asqlite.commit()
 
     @commands.group(name="gist")
     @commands.is_owner()

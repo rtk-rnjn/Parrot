@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from quart import Response, jsonify
+from quart import Response, jsonify, request
 
 from ..quart_app import app, ipc
 
@@ -10,9 +10,10 @@ async def index() -> Response:
     return jsonify({"status": "running"})
 
 
-@app.route("/echo")
+@app.route("/echo/<msg>", methods=["GET", "POST"])
 async def echo(msg: str) -> Response:
-    return jsonify({"status": "running", "message": msg})
+    get_raw_data = dict(request.args)
+    return jsonify({"status": "running", "message": msg, "GET": get_raw_data})
 
 
 @app.route("/get/guilds")

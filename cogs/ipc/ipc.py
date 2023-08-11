@@ -158,19 +158,19 @@ class IPCRoutes(Cog):
             guilds = self.bot.guilds
 
         roles = getattr(data, "roles", False)
-        role_id = getattr(data, "role_id", True)
+        role_id = getattr(data, "role_id", 0)
 
         members = getattr(data, "members", False)
-        member_id = getattr(data, "member_id", True)
+        member_id = getattr(data, "member_id", 0)
 
         channels = getattr(data, "channels", False)
         channel_id = getattr(data, "channel_id", 0)
 
         emojis = getattr(data, "emojis", False)
-        emoji_id = getattr(data, "emoji_id", True)
+        emoji_id = getattr(data, "emoji_id", 0)
 
         threads = getattr(data, "threads", False)
-        thread_id = getattr(data, "thread_id", True)
+        thread_id = getattr(data, "thread_id", 0)
 
         return {
             "guilds": [
@@ -207,7 +207,7 @@ class IPCRoutes(Cog):
             users = self.bot.users
 
         return {
-            "users": [user_to_json(user) for user in users if user is not None],
+            "users": [user_to_json(user) for user in users if user],
         }
 
     @Server.route()

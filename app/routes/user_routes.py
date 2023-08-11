@@ -17,7 +17,7 @@ async def get_users() -> Response:
 async def get_user(user: str) -> Response:
     kw = {}
     if user.isdigit():
-        kw["id"] = user
+        kw["id"] = int(user)
     else:
         kw["name"] = user
     ipc_response = await ipc.request("users", **kw)

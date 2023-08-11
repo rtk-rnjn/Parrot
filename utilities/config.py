@@ -83,3 +83,8 @@ DATABASE_URI: str = parse_env_var("DATABASE_URI")
 CHANGE_LOG_CHANNEL_ID: int = parse_env_var("CHANGE_LOG_CHANNEL_ID")
 JEYY_API_TOKEN: str = parse_env_var("JEYY_API")
 STRAW_POLL: str = parse_env_var("STRAW_POLL")
+
+MINIMAL_BOOT: bool = parse_env_var("MINIMAL_BOOT", False)
+
+if MINIMAL_BOOT:
+    EXTENSIONS = ["cogs.ipc", "jishaku"]

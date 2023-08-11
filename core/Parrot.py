@@ -58,6 +58,7 @@ from utilities.config import (
     WEBHOOK_JOIN_LEAVE_LOGS,
     WEBHOOK_STARTUP_LOGS,
     WEBHOOK_VOTE_LOGS,
+    MINIMAL_BOOT,
 )
 from utilities.converters import Cache
 from utilities.paste import Client
@@ -640,6 +641,9 @@ class Parrot(commands.AutoShardedBot):
                 content="```css\n- Unloaded music cog due to wavelink node not running```",
             )
 
+        if MINIMAL_BOOT:
+            return
+
         VOICE_CHANNEL_ID = 1116780108074713098
         channel: discord.VoiceChannel = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)
         if channel is not None:
@@ -713,7 +717,7 @@ class Parrot(commands.AutoShardedBot):
         if ctx.command is None:
             return
 
-        if self.UNDER_MAINTENANCE:
+        if self.UNDER_MAINTENANCE or MINIMAL_BOOT:
             return await self.__bot_under_maintenance_message(ctx)
 
         if bucket := self.spam_control.get_bucket(message):

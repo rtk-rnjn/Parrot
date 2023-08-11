@@ -12,6 +12,9 @@ from wavelink.ext import spotify
 import discord
 from api import cricket_api
 from core import Cog, Parrot
+from discord.ext import commands
+
+from .methods import channel_to_json, emoji_to_json, member_to_json, role_to_json, thread_to_json, user_to_json
 
 
 class IPCRoutes(Cog):
@@ -21,10 +24,10 @@ class IPCRoutes(Cog):
 
     def _overwrite_to_json(
         self,
-        overwrites: dict[discord.User | discord.Role, discord.PermissionOverwrite],
-    ) -> dict[str, str | bool | None]:
+        overwrites: dict[discord.Member | discord.Role | discord.Object, discord.PermissionOverwrite],
+    ) -> dict[str, dict[str, bool | None]]:
         try:
-            return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}  # type: ignore
+            return {str(target.id): overwrite._values for target, overwrite in overwrites.items()}
         except Exception:
             return {}
 
@@ -53,29 +56,100 @@ class IPCRoutes(Cog):
 
         return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
 
-    @Server.route()
-    async def commands(self, data: ClientPayload) -> list[dict[str, Any]]:
+    def _get_all_commands(self):
+        # recusively get all commands
+        for cmd in self.bot.commands:
+            yield cmd
+            if isinstance(cmd, commands.Group):
+                yield from cmd.commands
+
+    @Server.route(name="commands")
+    async def _commands(self, data: ClientPayload) -> dict[str, Any]:
         if name := getattr(data, "name", None):
             cmds = [self.bot.get_command(name)]
         else:
-            cmds = list(self.bot.commands)
+            cmds = list(self._get_all_commands())
 
-        return [
-            {
-                "name": command.qualified_name,
-                "aliases": command.aliases,
-                "description": command.description,
-                "usage": command.signature,
-                "enabled": command.enabled,
-                "hidden": command.hidden,
-                "cog": command.cog_name,
-            }
-            for command in cmds
-            if command is not None
-        ]
+        return {
+            "commands": [
+                {
+                    "name": command.qualified_name,
+                    "aliases": command.aliases,
+                    "description": command.description,
+                    "usage": command.signature,
+                    "enabled": command.enabled,
+                    "hidden": command.hidden,
+                    "cog": command.cog_name,
+                    "help": command.help,
+                    "brief": command.brief,
+                }
+                for command in cmds
+                if command is not None
+            ],
+        }
+
+    def __guild_channel(self, guild: discord.Guild, *, channels: bool, channel_id: int):
+        if not channels:
+            return []
+
+        if not channel_id:
+            return [channel_to_json(self, channel) for channel in guild.channels]
+
+        for channel in guild.channels:
+            if channel_id == channel.id:
+                return [channel_to_json(self, channel)]
+        return []
+
+    def __guild_role(self, guild: discord.Guild, *, roles: bool, role_id: int):
+        if not roles:
+            return []
+
+        if not role_id:
+            return [role_to_json(role) for role in guild.roles]
+
+        for role in guild.roles:
+            if role_id == role.id:
+                return [role_to_json(role)]
+        return []
+
+    def __guild_emoji(self, guild: discord.Guild, *, emojis: bool, emoji_id: int):
+        if not emojis:
+            return []
+
+        if not emoji_id:
+            return [emoji_to_json(emoji) for emoji in guild.emojis]
+
+        for emoji in guild.emojis:
+            if emoji_id == emoji.id:
+                return [emoji_to_json(emoji)]
+        return []
+
+    def __guild_thread(self, guild: discord.Guild, *, threads: bool, thread_id: int):
+        if not threads:
+            return []
+
+        if not thread_id:
+            return [thread_to_json(channel) for channel in guild.threads]
+
+        for channel in guild.threads:
+            if thread_id == channel.id:
+                return [thread_to_json(channel)]
+        return []
+
+    def __guild_member(self, guild: discord.Guild, *, members: bool, member_id: int):
+        if not members:
+            return []
+
+        if not member_id:
+            return [member_to_json(member) for member in guild.members]
+
+        for member in guild.members:
+            if member_id == member.id:
+                return [member_to_json(member)]
+        return []
 
     @Server.route()
-    async def guilds(self, data: ClientPayload) -> list[dict[str, Any]]:
+    async def guilds(self, data: ClientPayload) -> dict[str, Any]:
         if _id := getattr(data, "id", None):
             guilds = [self.bot.get_guild(_id)]
         elif name := getattr(data, "name", None):
@@ -83,89 +157,48 @@ class IPCRoutes(Cog):
         else:
             guilds = self.bot.guilds
 
-        return [
-            {
-                "id": guild.id,
-                "name": guild.name,
-                "owner": {
-                    "id": guild.owner.id,
-                    "name": guild.owner.name,
-                    "avatar_url": guild.owner.display_avatar.url,
+        roles = getattr(data, "roles", False)
+        role_id = getattr(data, "role_id", True)
+
+        members = getattr(data, "members", False)
+        member_id = getattr(data, "member_id", True)
+
+        channels = getattr(data, "channels", False)
+        channel_id = getattr(data, "channel_id", 0)
+
+        emojis = getattr(data, "emojis", False)
+        emoji_id = getattr(data, "emoji_id", True)
+
+        threads = getattr(data, "threads", False)
+        thread_id = getattr(data, "thread_id", True)
+
+        return {
+            "guilds": [
+                {
+                    "id": guild.id,
+                    "name": guild.name,
+                    "owner": {
+                        "id": guild.owner.id,
+                        "name": guild.owner.name,
+                        "avatar_url": guild.owner.display_avatar.url,
+                    }
+                    if guild.owner is not None
+                    else {},
+                    "icon_url": guild.icon.url if guild.icon is not None else None,
+                    "member_count": guild.member_count,
+                    "channels": self.__guild_channel(guild, channels=channels, channel_id=channel_id),
+                    "roles": self.__guild_role(guild, roles=roles, role_id=role_id),
+                    "members": self.__guild_member(guild, members=members, member_id=member_id),
+                    "emojis": self.__guild_emoji(guild, emojis=emojis, emoji_id=emoji_id),
+                    "threads": self.__guild_thread(guild, threads=threads, thread_id=thread_id),
                 }
-                if guild.owner is not None
-                else {},
-                "icon_url": guild.icon.url if guild.icon is not None else None,
-                "member_count": guild.member_count,
-                "channels": [
-                    {
-                        "id": channel.id,
-                        "name": channel.name,
-                        "type": str(channel.type),
-                        "position": channel.position,
-                        "overwrites": self._overwrite_to_json(channel.overwrites),
-                    }
-                    for channel in guild.channels
-                ],
-                "roles": [
-                    {
-                        "id": role.id,
-                        "name": role.name,
-                        "color": role.color.value,
-                        "position": role.position,
-                        "permissions": role.permissions.value,
-                        "managed": role.managed,
-                        "hoist": role.hoist,
-                        "mentionable": role.mentionable,
-                    }
-                    for role in guild.roles
-                ],
-                "members": [
-                    {
-                        "id": member.id,
-                        "name": member.name,
-                        "avatar_url": member.display_avatar.url,
-                        "bot": member.bot,
-                        "roles": [role.id for role in member.roles],
-                        "joined_at": member.joined_at.isoformat(),
-                        "display_name": member.display_name,
-                        "nick": member.nick,
-                        "color": member.color.value,
-                    }
-                    for member in guild.members
-                ],
-                "emojis": [
-                    {
-                        "id": emoji.id,
-                        "name": emoji.name,
-                        "url": emoji.url,
-                        "roles": [role.id for role in emoji.roles],
-                        "require_colons": emoji.require_colons,
-                        "managed": emoji.managed,
-                        "animated": emoji.animated,
-                        "available": emoji.available,
-                    }
-                    for emoji in guild.emojis
-                ],
-                "threads": [
-                    {
-                        "id": thread.id,
-                        "name": thread.name,
-                        "created_at": thread.created_at.isoformat(),
-                        "owner_id": thread.owner_id,
-                        "parent_id": thread.parent_id,
-                        "slowmod_delay": thread.slowmode_delay,
-                        "archived": thread.archived,
-                        "locked": thread.locked,
-                    }
-                    for thread in guild.threads
-                ],
-            }
-            for guild in guilds
-            if guild is not None
-        ]
+                for guild in guilds
+                if guild is not None
+            ],
+        }
 
     @Server.route()
-    async def users(self, data: ClientPayload) -> list[dict[str, Any]]:
+    async def users(self, data: ClientPayload) -> dict[str, Any]:
         if _id := getattr(data, "id", None):
             users = [self.bot.get_user(_id)]
         elif name := getattr(data, "name", None):
@@ -173,21 +206,12 @@ class IPCRoutes(Cog):
         else:
             users = self.bot.users
 
-        return [
-            {
-                "id": user.id,
-                "name": user.name,
-                "avatar_url": user.display_avatar.url,
-                "bot": user.bot,
-                "created_at": user.created_at.isoformat(),
-                "system": user.system,
-            }
-            for user in users
-            if user is not None
-        ]
+        return {
+            "users": [user_to_json(user) for user in users if user is not None],
+        }
 
     @Server.route()
-    async def get_message(self, data: ClientPayload) -> dict[str, Any]:
+    async def messages(self, data: ClientPayload) -> dict[str, Any]:
         channel = self.bot.get_channel(data.channel_id)
         message = await self.bot.get_or_fetch_message(
             channel,
@@ -202,8 +226,8 @@ class IPCRoutes(Cog):
                     "name": message.author.name,
                     "avatar_url": message.author.display_avatar.url,
                     "bot": message.author.bot,
-                    "system": message.author.system,
                 },
+                "system": message.author.system,
                 "content": message.content,
                 "embeds": [embed.to_dict() for embed in message.embeds],
             }

@@ -14,7 +14,7 @@ Returns a list of guilds the bot is in.
 
 **Example Response**
 
-```json
+```python
 {
     "status": "success",
     "guilds": [

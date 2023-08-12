@@ -113,19 +113,22 @@ class Gist(Cog, command_attrs={"hidden": True}):
         js = await self.github_request("POST", "issues", data=data, headers=headers, repo="rtk-rnjn/Parrot")
         return js["html_url"]
 
+    def get_tokens(self, argument: str) -> list[str]:
+        return [token for token in TOKEN_REGEX.findall(argument) if validate_token(token)]
+
     @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
         if not message.guild or message.guild.id == DISCORD_PY_ID:
             return
 
-        tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
+        tokens = self.get_tokens(message.content)
         await asyncio.gather(self.add_to_caching_db(tokens))
 
         if all(token in self.__internal_token_caching for token in tokens):
             return
 
-        _qs = ", ".join("?" for _ in tokens)
+        _qs = ", ".join(["?" for _ in range(len(tokens))])
         result = await self.bot.sql.execute(
             f"""SELECT token FROM discord_tokens WHERE token IN ({_qs})""",
             (*tokens,),
@@ -137,6 +140,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
             url = await self.create_gist("\n".join(tokens), description="Discord tokens detected")
             msg = f"{message.author.mention}, found tokens and sent them to <{url}> to be invalidated for you."
             self.__internal_token_caching.update(set(tokens))
+
             with suppress(discord.HTTPException):
                 await message.channel.send(msg)
 

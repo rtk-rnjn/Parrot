@@ -13,7 +13,7 @@ async def index() -> Response:
 @app.route("/echo/<msg>", methods=["GET", "POST"])
 async def echo(msg: str) -> Response:
     get_raw_data = dict(request.args)
-    return jsonify({"status": "running", "message": msg, "GET": get_raw_data})
+    return jsonify({"status": "running", "message": msg, "GET": get_raw_data, "POST": await request.get_json()})
 
 
 @app.route("/get/guilds")

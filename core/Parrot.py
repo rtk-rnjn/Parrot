@@ -729,6 +729,7 @@ class Parrot(commands.AutoShardedBot):
                 self._auto_spam_count[message.author.id] += 1
                 if self._auto_spam_count[message.author.id] >= 3:
                     log.info("Auto spam detected, ignoring command. Context %s", ctx)
+                    return
             else:
                 self._auto_spam_count.pop(message.author.id, None)
 

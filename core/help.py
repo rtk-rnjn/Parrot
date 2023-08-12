@@ -305,19 +305,20 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 if cmd.hidden:
                     continue
 
+                all_commands.append(cmd)
+
                 if isinstance(cmd, commands.Group):
                     all_commands.extend(self.__get_all_commands(cmd))
-                else:
-                    all_commands.append(cmd)
         else:
             for command in group.commands:
                 if command.hidden:
                     continue
 
+                all_commands.append(command)
+
                 if isinstance(command, commands.Group):
                     all_commands.extend(self.__get_all_commands(command))
-                else:
-                    all_commands.append(command)
+
 
         return sorted(all_commands, key=lambda c: c.qualified_name)
 

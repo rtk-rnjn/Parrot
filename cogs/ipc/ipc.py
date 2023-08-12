@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from typing import Any
 
 import async_timeout
@@ -55,6 +56,20 @@ class IPCRoutes(Cog):
         upsert: bool = getattr(data, "upsert", False)
 
         return await self.bot.mongo[db][collection].update_one(query, update, upsert=upsert)
+
+    @Server.route()
+    async def sql_execute(self, data: ClientPayload) -> Any:
+        args = [data.query]
+        if values := getattr(data, "values", None):
+            args.append(values)
+
+        ini = time.perf_counter()
+        cursor = await self.bot.sql.execute(*args)
+        fin = time.perf_counter() - ini
+
+        rows = [i[0] for i in cursor.description]
+        affected = cursor.rowcount
+        return {"result": await cursor.fetchall(), "affected": affected, "rows": rows, "timetaken": fin}
 
     def _get_all_commands(self):
         # recusively get all commands

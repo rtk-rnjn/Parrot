@@ -35,7 +35,7 @@ select = [
     'UP',
     'W',
 ]
-ignore = ['D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004"]
+ignore = ['A003', 'D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004"]
 target-version = "py310"
 exclude = ["discord"]
 format = "text"

@@ -123,7 +123,8 @@ class Gist(Cog, command_attrs={"hidden": True}):
             return
 
         tokens = self.get_tokens(message.content)
-        await asyncio.gather(self.add_to_caching_db(tokens))
+        if not tokens:
+            return
 
         if all(token in self.__internal_token_caching for token in tokens):
             return
@@ -143,6 +144,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
 
             with suppress(discord.HTTPException):
                 await message.channel.send(msg)
+        await asyncio.gather(self.add_to_caching_db(tokens))
 
     async def add_to_caching_db(self, tokens: list[str]):
         asqlite = self.bot.sql

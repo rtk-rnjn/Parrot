@@ -147,7 +147,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
     async def add_to_caching_db(self, tokens: list[str]):
         asqlite = self.bot.sql
         query = """INSERT INTO discord_tokens (token) VALUES (?) ON CONFLICT DO NOTHING"""
-        await asqlite.executemany(query, tokens)
+        await asqlite.executemany(query, [tuple(tokens)])
         await asqlite.commit()
 
     @commands.group(name="gist")

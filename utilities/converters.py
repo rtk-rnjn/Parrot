@@ -130,7 +130,9 @@ class UserID(commands.Converter):
                 raise commands.BadArgument(msg) from None
             else:
                 u: discord.Member | discord.User | None = await ctx.bot.get_or_fetch_member(
-                    ctx.guild, user_id, in_guild=False,
+                    ctx.guild,
+                    user_id,
+                    in_guild=False,
                 )
                 if u is None:
                     return type(  # type: ignore

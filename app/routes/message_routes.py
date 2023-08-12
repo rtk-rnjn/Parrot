@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from ..quart_app import app, ipc
-
 from quart import Response, jsonify
+
+from ..quart_app import app, ipc
 
 
 @app.route("/get/messages/<channel>/<message>")

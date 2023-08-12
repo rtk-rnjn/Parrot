@@ -8,10 +8,11 @@ if TYPE_CHECKING:
 
 import re
 
+from discord.utils import maybe_coroutine
+
 from discord import Member, Message
 from discord.ext import commands
 from utilities.regex import INVITE_RE, LINKS_RE
-from discord.utils import maybe_coroutine
 
 OPERATRORS = {
     "all": all,
@@ -53,7 +54,6 @@ class Trigger:
             ls.append(value)
 
         return self.operator(ls)
-
 
     def build_cooldowns(self) -> None:
         for tgr in self.data:

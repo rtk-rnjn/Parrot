@@ -319,7 +319,6 @@ class PaginatedHelpCommand(commands.HelpCommand):
                 if isinstance(command, commands.Group):
                     all_commands.extend(self.__get_all_commands(command))
 
-
         return sorted(all_commands, key=lambda c: c.qualified_name)
 
     async def send_cog_help(self, cog: Cog):

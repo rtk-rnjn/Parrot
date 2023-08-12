@@ -7,11 +7,10 @@ import socket
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from motor.motor_asyncio import AsyncIOMotorClient
 
+from app import runner
 from core import Parrot
 from updater import init
 from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION
-
-from app import runner
 
 bot: Parrot = Parrot()
 

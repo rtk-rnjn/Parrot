@@ -73,9 +73,8 @@ from .utils import CustomFormatter, handler
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-
     from discord.ext.commands.cooldowns import CooldownMapping
+    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
     from .Cog import Cog
 

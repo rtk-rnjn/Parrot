@@ -490,7 +490,7 @@ class PaginationView(discord.ui.View):
         await paginator.start(ctx)
 
     @classmethod
-    async def paginate_embeds_ephemeral(cls, ctx: Context, embed_list: list[discord.Embed | discord.File | str]):
+    async def paginate_embeds_ephemeral(cls, ctx: Context, embed_list: list[PageT], *, label: str = "Start"):
         paginator = cls(embed_list)
 
         class View(discord.ui.View):
@@ -499,9 +499,10 @@ class PaginationView(discord.ui.View):
             def __init__(self):
                 super().__init__(timeout=10)
 
-            @discord.ui.button(label="Start", style=discord.ButtonStyle.red)
+            @discord.ui.button(label=label, style=discord.ButtonStyle.red)
             async def start(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
                 await paginator.start(interaction)
+                await interaction.response.defer()
 
             async def on_timeout(self) -> None:
                 for child in self.children:
@@ -509,6 +510,9 @@ class PaginationView(discord.ui.View):
                         child.disabled = True
                 if hasattr(self, "message"):
                     await self.message.edit(view=self)
+
+            async def on_error(self, interaction: discord.Interaction, exception: Exception) -> None:
+                interaction.client.dispatch("error", interaction, exception)
 
         view = View()
         view.message = await ctx.send("Click the button to start", view=view)

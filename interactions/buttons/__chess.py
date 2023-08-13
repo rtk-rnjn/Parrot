@@ -140,22 +140,27 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                 await self.ctx.send(f"**Game over! **{self.turn}** wins by check-mate**")
                 self.game_stop = True
                 await self.add_db(winner=self.turn.id, draw=False)
+
             elif self.board.is_stalemate():
                 await self.ctx.send("**Game over! Ended with draw!**")
                 self.game_stop = True
                 await self.add_db(winner=None, draw=True)
+
             elif self.board.is_insufficient_material():
                 await self.ctx.send("**Game over! Insfficient material left to continue the game! Draw**!")
                 self.game_stop = True
                 await self.add_db(winner=None, draw=True)
+
             elif self.board.is_seventyfive_moves():
                 await self.ctx.send("**Game over! 75-moves rule | Game Draw!**")
                 self.game_stop = True
                 await self.add_db(winner=None, draw=True)
+
             elif self.board.is_fivefold_repetition():
                 await self.ctx.send("**Game over! Five-fold repitition. | Game Draw!**")
                 self.game_stop = True
                 await self.add_db(winner=None, draw=True)
+
             else:
                 self.game_stop = False
         return self.game_stop

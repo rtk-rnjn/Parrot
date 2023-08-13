@@ -131,6 +131,7 @@ class ParrotPaginator:
 class PaginatorView(discord.ui.View):
     message: discord.Message
 
+    children: list[discord.ui.Button | discord.ui.Select]
     def __init__(
         self,
         ctx: Context,
@@ -149,8 +150,8 @@ class PaginatorView(discord.ui.View):
         self.show_page_count = show_page_count
         self.check_other_ids = check_other_ids
         if self.pages.cur_page == 1:
-            self.children[0].disabled = False  # type: ignore
-            self.children[1].disabled = False  # type: ignore
+            self.children[0].disabled = False
+            self.children[1].disabled = False
 
     def lock_bro(self):
         if self.pages.cur_page == self.pages.total:
@@ -159,18 +160,17 @@ class PaginatorView(discord.ui.View):
             self._extracted_from_lock_bro_4()
         elif 1 < self.pages.cur_page < self.pages.total:
             for b in self.children:
-                if isinstance(b, discord.ui.Button):
-                    b.disabled = False
+                b.disabled = False
 
     # TODO Rename this here and in `lock_bro`
     def _extracted_from_lock_bro_4(self):
-        self.children[0].disabled = False  # type: ignore
-        self.children[1].disabled = False  # type: ignore
-        self.children[2].disabled = False  # type: ignore
-        self.children[3].disabled = False  # type: ignore
+        self.children[0].disabled = False
+        self.children[1].disabled = False
+        self.children[2].disabled = False
+        self.children[3].disabled = False
 
-    def update_embed(self, page: Page):
-        if self.show_page_count:
+    def update_embed(self, page: Page | None):
+        if self.show_page_count and page is not None:
             try:
                 self.embed.set_footer(text=f"Page {page.index} of {self.pages.total}")
             except Exception:
@@ -253,9 +253,11 @@ class PaginationView(discord.ui.View):
     message: discord.Message
     current: int = 0
 
+    ctx: Context
+
     def __init__(
         self,
-        embed_list: list[PageT] | None = None,
+        embed_list: list[PageT] = None,
     ) -> None:
         super().__init__(timeout=30)
         if embed_list is None:
@@ -375,10 +377,8 @@ class PaginationView(discord.ui.View):
         current_entity = self.embed_list[self.current]
         await self.edit(interaction, current_entity)
 
-    async def edit(self, interaction: discord.Interaction, current_entity: str | int | discord.File | discord.Embed) -> None:
+    async def edit(self, interaction: discord.Interaction, current_entity: PageT) -> PageT:
         func = interaction.response.edit_message
-        if isinstance(self.ctx, discord.Interaction):
-            func = self.ctx.edit_original_response
 
         if isinstance(current_entity, discord.Embed):
             await func(
@@ -401,38 +401,9 @@ class PaginationView(discord.ui.View):
                 attachments=[],
                 view=self,
             )
+        return current_entity
 
-    async def start(self, ctx: Context | discord.Interaction[Parrot]):
-        if isinstance(ctx, discord.Interaction):
-            self.ctx = ctx
-            currnet_entity = self.embed_list[self.current]
-
-            if isinstance(currnet_entity, discord.Embed):
-                await ctx.response.send_message(
-                    embed=currnet_entity,
-                    content=None,
-                    files=[],
-                    view=self,
-                    ephemeral=True,
-                )
-            elif isinstance(currnet_entity, discord.File):
-                await ctx.response.send_message(
-                    files=[currnet_entity],
-                    content=None,
-                    embed=None,
-                    view=self,
-                    ephemeral=True,
-                )
-            else:
-                await ctx.response.send_message(
-                    content=f"{self._str_prefix}{currnet_entity}{self._str_suffix}",
-                    embed=None,
-                    files=[],
-                    view=self,
-                    ephemeral=True,
-                )
-            return
-
+    async def start(self, ctx: Context):
         self.ctx = ctx
         if not self.embed_list:
             self.message = await ctx.send("Loading...")
@@ -485,40 +456,9 @@ class PaginationView(discord.ui.View):
             )
 
     @classmethod
-    async def paginate_embed(cls, ctx: Context, embed_list: list[discord.Embed | discord.File | str]):
+    async def paginate_embed(cls, ctx: Context, embed_list: list[PageT]):
         paginator = cls(embed_list)
         await paginator.start(ctx)
-
-    @classmethod
-    async def paginate_embeds_ephemeral(cls, ctx: Context, embed_list: list[PageT], *, label: str = "Start"):
-        paginator = cls(embed_list)
-
-        class View(discord.ui.View):
-            message: discord.Message
-
-            def __init__(self):
-                super().__init__(timeout=10)
-
-            @discord.ui.button(label=label, style=discord.ButtonStyle.red)
-            async def start(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
-                await paginator.start(interaction)
-                await interaction.response.defer()
-                if hasattr(self, "message"):
-                    await self.message.delete(delay=0)
-                self.stop()
-
-            async def on_timeout(self) -> None:
-                for child in self.children:
-                    if isinstance(child, discord.ui.Button):
-                        child.disabled = True
-                if hasattr(self, "message"):
-                    await self.message.edit(view=self)
-
-            async def on_error(self, interaction: discord.Interaction, exception: Exception) -> None:
-                interaction.client.dispatch("error", interaction, exception)
-
-        view = View()
-        view.message = await ctx.send("Click the button to start", view=view)
 
     async def on_error(self, interaction: discord.Interaction, exception: Exception) -> None:
         bot: Parrot = self.ctx.bot if isinstance(self.ctx, Context) else self.ctx.client

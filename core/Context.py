@@ -60,10 +60,7 @@ if importlib.util.find_spec("lxml") is not None:
 class Context(commands.Context[commands.Bot], Generic[BotT]):
     """A custom implementation of commands.Context class."""
 
-    if TYPE_CHECKING:
-        from .Parrot import Parrot
-
-    bot: Parrot
+    bot: BotT
     guild: discord.Guild
     command: commands.Command
     me: discord.Member

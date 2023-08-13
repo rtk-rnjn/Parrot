@@ -1071,3 +1071,18 @@ class Misc(Cog):
         if not data["whisper_messages"]:
             await ctx.error(f"{ctx.author.mention} you don't have any whispers.")
             return
+        ls = []
+        for message in data["whisper_messages"]:
+            embed = discord.Embed(
+                title="Whisper Message",
+                description=f"""Server: **{self.bot.get_guild(message["guild_id"]) or 'Not Found'}** **[`This Message`](https://discord.com/channels/{message["guild_id"]}/{message["channel_id"]}/{message["message_id"]})**
+**Message by {self.bot.get_user(message["author_id"]) or 'Not Found'}**:
+{message["content"]}
+""",
+                color=discord.Color.blurple(),
+                timestamp=message["timestamp"],
+            ).set_footer(text=f"Message ID: {message['message_id']} | Sent at")
+            ls.append(embed)
+        view = PaginationView(ls)
+        await view.start(ctx)
+

@@ -35,7 +35,7 @@ from qrcode.image.styles.moduledrawers import (
 )
 
 import discord
-from core import Cog, Context, Parrot
+from core import Cog, Context, Parrot, ParrotView
 from discord import Embed
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -1083,6 +1083,24 @@ class Misc(Cog):
                 timestamp=message["timestamp"],
             ).set_footer(text=f"Message ID: {message['message_id']} | Sent at")
             ls.append(embed)
-        view = PaginationView(ls)
-        await view.start(ctx)
 
+        view = PaginationView(ls)
+        view.ctx = ctx
+
+        class V(ParrotView):
+            @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
+            async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await interaction.response.defer()
+                await self.message.delete()
+                await collection.update_one({"_id": ctx.author.id}, {"$set": {"whisper_messages": []}})
+
+            @discord.ui.button(label="Show", style=discord.ButtonStyle.green)
+            async def show(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await interaction.response.defer()
+                await interaction.followup.send(view=view, ephemeral=True)
+
+        main_view = V(timeout=10, ctx=ctx)
+        main_view.message = await ctx.send(
+            "Click `Show` to view your Whispers\nClick `Delete` to delete all your whispers",
+            view=main_view,
+        )

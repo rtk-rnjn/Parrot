@@ -76,6 +76,7 @@ class ContextMenu(Cog):
         if message.author.bot:
             await interaction.response.send_message(
                 f"{interaction.user.mention} the message is from a bot. Can't whisper message.",
+                ephemeral=True,
             )
             return
 

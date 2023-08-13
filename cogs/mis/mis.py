@@ -1076,6 +1076,7 @@ class Misc(Cog):
             embed = discord.Embed(
                 title="Whisper Message",
                 description=f"""Server: **{self.bot.get_guild(message["guild_id"]) or 'Not Found'}** **[`This Message`](https://discord.com/channels/{message["guild_id"]}/{message["channel_id"]}/{message["message_id"]})**
+
 **Message by {self.bot.get_user(message["author_id"]) or 'Not Found'}**:
 {message["message"]}
 """,
@@ -1097,7 +1098,7 @@ class Misc(Cog):
             @discord.ui.button(label="Show", style=discord.ButtonStyle.green)
             async def show(self, interaction: discord.Interaction, button: discord.ui.Button):
                 await interaction.response.defer()
-                await interaction.followup.send(view=view, ephemeral=True)
+                await interaction.followup.send(embed=ls[0], view=view, ephemeral=True)
 
         main_view = V(timeout=10, ctx=ctx)
         main_view.message = await ctx.send(

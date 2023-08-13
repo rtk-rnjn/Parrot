@@ -1080,7 +1080,7 @@ class Misc(Cog):
 {message["message"]}
 """,
                 color=discord.Color.blurple(),
-                timestamp=message["timestamp"],
+                timestamp=message["created_at"],
             ).set_footer(text=f"Message ID: {message['message_id']} | Sent at")
             ls.append(embed)
 

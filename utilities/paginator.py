@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
 from itertools import islice
-from typing import TYPE_CHECKING, NamedTuple, TypeVar, overload
+from typing import TYPE_CHECKING, NamedTuple, TypeVar
 
 import discord
-from core import Context
+from core import Context, Parrot
 
 PageT = TypeVar("PageT", bound=str | int | discord.File | discord.Embed)
+
 Callback = Callable[[discord.Interaction, discord.ui.Button, PageT], Awaitable[None]]
 
 
@@ -252,30 +253,9 @@ class PaginationView(discord.ui.View):
     message: discord.Message
     current: int = 0
 
-    @overload
-    def __init__(self, embed_list: list) -> None:
-        ...
-
-    @overload
     def __init__(
         self,
-        embed_list: list[discord.Embed | str | discord.File] | None = None,
-        *,
-        first_function: Callback | None = None,
-        next_function: Callback | None = None,
-        previous_function: Callback | None = None,
-        last_function: Callback | None = None,
-    ) -> None:
-        ...
-
-    def __init__(
-        self,
-        embed_list: list[discord.Embed | str | discord.File] | None = None,
-        *,
-        first_function: Callback | None = None,
-        next_function: Callback | None = None,
-        previous_function: Callback | None = None,
-        last_function: Callback | None = None,
+        embed_list: list[PageT] | None = None,
     ) -> None:
         super().__init__(timeout=30)
         if embed_list is None:
@@ -283,11 +263,6 @@ class PaginationView(discord.ui.View):
 
         self.embed_list = embed_list
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-
-        self.first_function = first_function
-        self.next_function = next_function
-        self.previous_function = previous_function
-        self.last_function = last_function
 
         self._str_prefix = ""
         self._str_suffix = ""
@@ -327,10 +302,6 @@ class PaginationView(discord.ui.View):
             self.next.disabled = True
             self._last.disabled = True
 
-        if self.first_function:
-            await discord.utils.maybe_coroutine(self.first_function, interaction, button, self.embed_list)
-            return
-
         current_entity = self.embed_list[self.current]
         await self.edit(interaction, current_entity)
 
@@ -354,10 +325,6 @@ class PaginationView(discord.ui.View):
             button.disabled = False
 
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
-
-        if self.previous_function:
-            await discord.utils.maybe_coroutine(self.previous_function, interaction, button, self.embed_list)
-            return
 
         current_entity = self.embed_list[self.current]
         await self.edit(interaction, current_entity)
@@ -387,10 +354,6 @@ class PaginationView(discord.ui.View):
 
         self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
 
-        if self.next_function:
-            await discord.utils.maybe_coroutine(self.next_function, interaction, button, self.embed_list)
-            return
-
         current_entity = self.embed_list[self.current]
         await self.edit(interaction, current_entity)
 
@@ -409,14 +372,10 @@ class PaginationView(discord.ui.View):
             self.first.disabled = True
             self.previous.disabled = True
 
-        if self.last_function:
-            await discord.utils.maybe_coroutine(self.last_function, interaction, button, self.embed_list)
-            return
-
         current_entity = self.embed_list[self.current]
         await self.edit(interaction, current_entity)
 
-    async def edit(self, interaction: discord.Interaction, current_entity: discord.Embed | discord.File | str) -> None:
+    async def edit(self, interaction: discord.Interaction, current_entity: str | int | discord.File | discord.Embed) -> None:
         func = interaction.response.edit_message
         if isinstance(self.ctx, discord.Interaction):
             func = self.ctx.edit_original_response
@@ -443,7 +402,7 @@ class PaginationView(discord.ui.View):
                 view=self,
             )
 
-    async def start(self, ctx: Context | discord.Interaction):
+    async def start(self, ctx: Context | discord.Interaction[Parrot]):
         if isinstance(ctx, discord.Interaction):
             self.ctx = ctx
             currnet_entity = self.embed_list[self.current]
@@ -491,13 +450,14 @@ class PaginationView(discord.ui.View):
     async def paginate(self, ctx: Context):
         await self.start(ctx)
 
-    async def add_item_to_embed_list(self, item: str | discord.Embed | discord.File):
+    async def add_item_to_embed_list(self, item: PageT) -> PageT:
         self.embed_list.append(item)
         if hasattr(self, "message"):
             self.count.label = f"Page {self.current + 1}/{len(self.embed_list)}"
             if len(self.embed_list) >= 1 and self.current < len(self.embed_list) - 1:
                 self._last.disabled = False
                 self.next.disabled = False
+        return item
 
     async def _update_message(self) -> None:
         currnet_entity = self.embed_list[self.current]
@@ -534,11 +494,28 @@ class PaginationView(discord.ui.View):
         paginator = cls(embed_list)
 
         class View(discord.ui.View):
+            message: discord.Message
+
             def __init__(self):
                 super().__init__(timeout=10)
 
             @discord.ui.button(label="Start", style=discord.ButtonStyle.red)
-            async def start(self, interaction: discord.Interaction, button: discord.ui.Button):
+            async def start(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
                 await paginator.start(interaction)
 
-        await ctx.send("Click the button to start", view=View())
+            async def on_timeout(self) -> None:
+                for child in self.children:
+                    if isinstance(child, discord.ui.Button):
+                        child.disabled = True
+                if hasattr(self, "message"):
+                    await self.message.edit(view=self)
+
+        view = View()
+        view.message = await ctx.send("Click the button to start", view=view)
+
+    async def on_error(self, interaction: discord.Interaction, exception: Exception) -> None:
+        bot: Parrot = self.ctx.bot if isinstance(self.ctx, Context) else self.ctx.client
+
+        bot.dispatch("error", interaction, exception)
+        if await bot.is_owner(interaction.user):
+            await interaction.response.send_message(f"```py\n{str(exception)[:1980]}\n```", ephemeral=True)

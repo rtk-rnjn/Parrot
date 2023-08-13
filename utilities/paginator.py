@@ -503,6 +503,9 @@ class PaginationView(discord.ui.View):
             async def start(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
                 await paginator.start(interaction)
                 await interaction.response.defer()
+                if hasattr(self, "message"):
+                    await self.message.delete(delay=0)
+                self.stop()
 
             async def on_timeout(self) -> None:
                 for child in self.children:

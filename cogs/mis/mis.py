@@ -1077,7 +1077,7 @@ class Misc(Cog):
                 title="Whisper Message",
                 description=f"""Server: **{self.bot.get_guild(message["guild_id"]) or 'Not Found'}** **[`This Message`](https://discord.com/channels/{message["guild_id"]}/{message["channel_id"]}/{message["message_id"]})**
 **Message by {self.bot.get_user(message["author_id"]) or 'Not Found'}**:
-{message["content"]}
+{message["message"]}
 """,
                 color=discord.Color.blurple(),
                 timestamp=message["timestamp"],

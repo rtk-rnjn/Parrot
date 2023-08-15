@@ -67,12 +67,13 @@ class EventCustom(Cog):
         messageAuthor: int | None = None,
         messageURL: str | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         if not content:
             return
         if embed is None:
-            embed = {}
-        embed: discord.utils.MISSING | discord.Embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
+            embed = discord.utils.MISSING
+        else:
+            embed: discord.Embed = discord.Embed.from_dict(embed) if embed else discord.utils.MISSING
 
         if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor or 0)):
             with contextlib.suppress(discord.Forbidden):

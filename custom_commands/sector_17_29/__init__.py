@@ -221,8 +221,8 @@ class Sector1729(Cog):
         await self.bot.create_timer(
             message=int(discord.utils.utcnow().timestamp() * 10),
             expires_at=(discord.utils.utcnow() + timedelta(hours=12)).timestamp(),
-            _event_name="vote_timer",
-            content=f"You can vote for the bot again on Top.gg.\nClick **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
+            messageAuthor=member.id,
+            content=f"You can vote for the bot again on Top.gg.\n> Click **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
             dm_notify=True,
         )
 

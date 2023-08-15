@@ -178,4 +178,4 @@ wsproto
 yapf
 yarl
 youtube-dl
-uvloop
+uvloop; sys_platform != "win32"

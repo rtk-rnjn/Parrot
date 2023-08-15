@@ -86,7 +86,7 @@ class ContextMenu(Cog):
     @commands.is_owner()
     async def sync(
         self,
-        ctx: Context,
+        ctx: Context[Parrot],
         guilds: commands.Greedy[discord.Object],
         spec: Literal["~", "*"] | None = None,
     ) -> None:

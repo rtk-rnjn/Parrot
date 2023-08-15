@@ -51,16 +51,16 @@ VOTER_ROLE_ID = 1139439408723013672
 log = logging.getLogger("core.context")
 
 
-HTML_PARSER = "html.parser"
-
 if importlib.util.find_spec("lxml") is not None:
     HTML_PARSER = "lxml"
+else:
+    HTML_PARSER = "html.parser"
 
 
 class Context(commands.Context[commands.Bot], Generic[BotT]):
     """A custom implementation of commands.Context class."""
 
-    bot: BotT
+    bot: BotT | Parrot
     guild: discord.Guild
     command: commands.Command
     me: discord.Member
@@ -87,34 +87,30 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
 
     async def ok(self) -> None:
-        log.debug("Adding ok reaction to message %s", self.message.id)
         return await self.tick()
 
     async def wrong(self, emoji: discord.PartialEmoji | discord.Emoji | str | None = None) -> None:
-        log.debug("Adding wrong reaction to message %s", self.message.id)
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
 
     async def cross(self) -> None:
         return await self.wrong()
 
     async def is_voter(self) -> bool | None:
-        # if member := self.bot.server.get_member(self.author.id):
-        #     return member._roles.has(VOTER_ROLE_ID)
+        if member := self.bot.server.get_member(self.author.id):
+            return member._roles.has(VOTER_ROLE_ID)
 
-        # if data := await self.bot.user_collections_ind.find_one(
+        # if await self.bot.user_collections_ind.find_one(
         #     {
         #         "_id": self.author.id,
         #         "topgg_vote_expires": {"$gte": discord.utils.utcnow()},
-        #     }
+        #     },
         # ):
         #     return True
 
-        # if self.bot.HAS_TOP_GG:
-        #     return await self.bot.topgg.get_user_vote(self.author.id)
+        if self.bot.HAS_TOP_GG:
+            return await self.bot.topgg.get_user_vote(self.author.id)
 
-        # TODO: FIX VOTING ROLE ADDING SYSTEM
-
-        return True
+        return False
 
     async def dj_role(self) -> discord.Role | None:
         assert self.guild is not None and isinstance(self.author, discord.Member)

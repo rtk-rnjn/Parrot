@@ -29,3 +29,12 @@ async def routes() -> Response:
     rules = app.url_map.iter_rules()
     ls = [{"methods": rule.methods, "path": str(rule)} for rule in rules]
     return jsonify({"status": "success", "routes": ls})
+
+
+ERROR_CODES = [400, 401, 403, 404, 405, 500, 501, 502, 503, 504]
+
+for code in ERROR_CODES:
+
+    @app.errorhandler(code)
+    async def error_handler(e: Exception) -> Response:
+        return jsonify({"status": "error", "message": str(e), "code": code})

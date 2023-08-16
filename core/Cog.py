@@ -24,4 +24,4 @@ class Cog(commands.Cog):
         return self.__class__.__name__
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"<{self.__class__.__name__} name={self.qualified_name} commands={len(self.__cog_commands__) + len(self.__cog_app_commands__)} listners={len(self.get_listeners())}>"

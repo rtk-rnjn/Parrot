@@ -352,6 +352,9 @@ class Parrot(commands.AutoShardedBot):
     def author_name(self) -> str:
         return str(self.author_obj)
 
+    def get_cog(self, name: str) -> Cog | None:
+        return super().get_cog(name)  # type: ignore
+
     async def setup_hook(self) -> None:
         for ext in EXTENSIONS:
             try:

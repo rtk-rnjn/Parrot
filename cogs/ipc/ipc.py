@@ -71,17 +71,25 @@ class IPCRoutes(Cog):
         affected = cursor.rowcount
         return {"result": await cursor.fetchall(), "affected": affected, "rows": rows, "timetaken": fin}
 
-    def _get_all_commands(self):
+    def _get_all_commands(self, cog_group: Cog | commands.Group | None = None):
         # recusively get all commands
-        for cmd in self.bot.commands:
-            yield cmd
-            if isinstance(cmd, commands.Group):
-                yield from cmd.commands
+        if cog_group is None:
+            for cmd in self.bot.commands:
+                yield cmd
+                if isinstance(cmd, commands.Group):
+                    yield from cmd.commands
+        else:
+            for cmd in cog_group.walk_commands():
+                yield cmd
+                if isinstance(cmd, commands.Group):
+                    yield from cmd.commands
 
     @Server.route(name="commands")
     async def _commands(self, data: ClientPayload) -> dict[str, Any]:
         if name := getattr(data, "name", None):
             cmds = [self.bot.get_command(name)]
+        elif cog := getattr(data, "cog", None):
+            cmds = list(self._get_all_commands(self.bot.get_cog(cog)))
         else:
             cmds = list(self._get_all_commands())
 

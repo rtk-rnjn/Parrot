@@ -22,3 +22,8 @@ async def get_guilds() -> Response:
     if not ipc_response:
         return jsonify({"status": "error", "message": "No guilds found"})
     return jsonify({"status": "success", **ipc_response.response})  # type: ignore
+
+
+@app.route("/routes")
+async def routes() -> Response:
+    return jsonify({"status": "success", "routes": app.url_map.iter_rules()})

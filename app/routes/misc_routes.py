@@ -26,4 +26,6 @@ async def get_guilds() -> Response:
 
 @app.route("/routes")
 async def routes() -> Response:
-    return jsonify({"status": "success", "routes": app.url_map.iter_rules()})
+    rules = app.url_map.iter_rules()
+    ls = [{"methods": rule.methods, "path": str(rule)} for rule in rules]
+    return jsonify({"status": "success", "routes": ls})

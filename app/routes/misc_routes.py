@@ -27,7 +27,8 @@ async def get_guilds() -> Response:
 @app.route("/routes")
 async def routes() -> Response:
     rules = app.url_map.iter_rules()
-    ls = [{"methods": rule.methods, "path": str(rule)} for rule in rules]
+
+    ls = [{"methods": list(rule.methods) if rule.methods else [], "path": str(rule)} for rule in rules]
     return jsonify({"status": "success", "routes": ls})
 
 
@@ -37,4 +38,4 @@ for code in ERROR_CODES:
 
     @app.errorhandler(code)
     async def error_handler(e: Exception) -> Response:
-        return jsonify({"status": "error", "message": str(e), "code": code})
+        return jsonify({"status": "error", "message": str(e)})

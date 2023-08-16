@@ -6,14 +6,14 @@ from typing import Any
 
 import async_timeout
 import wavelink
-from discord.ext.ipc.objects import ClientPayload
-from discord.ext.ipc.server import Server
 from wavelink.ext import spotify
 
 import discord
 from api import cricket_api
 from core import Cog, Parrot
 from discord.ext import commands
+from discord.ext.ipc.objects import ClientPayload
+from discord.ext.ipc.server import Server
 
 from .methods import channel_to_json, emoji_to_json, member_to_json, role_to_json, thread_to_json, user_to_json
 
@@ -339,3 +339,15 @@ class IPCRoutes(Cog):
             self.bot.DBL_SERVER_RUNNING = False
             return {"status": "ok"}
         return {"status": "error: no top.gg webhook"}
+
+    @Server.route()
+    async def bot_dispatch(self, data: ClientPayload) -> dict[str, str]:
+        raw = data.raw
+        if not raw:
+            return {"status": "error"}
+
+        if event := raw.pop("event", None):
+            self.bot.dispatch(event, raw)
+            return {"status": "ok"}
+        else:
+            return {"status": "error"}

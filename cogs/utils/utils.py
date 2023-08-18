@@ -387,6 +387,9 @@ class Utils(Cog):
             webhook = self.bot.guild_configurations_cache[guild_id]["auditlog"]
         except KeyError:
             return
+        else:
+            if not webhook:
+                return
 
         action_name = ACTION_NAMES.get(entry.action)
 

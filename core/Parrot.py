@@ -453,8 +453,11 @@ class Parrot(commands.AutoShardedBot):
         avatar_url: str | None = None,
         **kw: Any,
     ) -> dict | None:
+        if not webhook:
+            return
+
         payload = {}
-        assert isinstance(webhook, discord.Webhook | str)
+
         URL = webhook.url if isinstance(webhook, discord.Webhook) else webhook
         if content:
             payload["content"] = content

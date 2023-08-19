@@ -35,7 +35,6 @@ class JinjaAllowedMentions(JinjaBase, discord.AllowedMentions):
 
 class utils:  # pylint: disable=invalid-name
     MISSING = discord.utils.MISSING
-    sleep_until = discord.utils.sleep_until
     get = discord.utils.get
     find = discord.utils.find
 

@@ -28,13 +28,17 @@ class JinjaMessage:
         return self.__message.content
 
     @property
-    def author(self):
+    def author(self) -> JinjaMember:
         """Get message author."""
+        from .member import JinjaMember
+
         return JinjaMember(member=self.__message.author)
 
     @property
-    def channel(self):
+    def channel(self) -> JinjaChannel:
         """Get message channel."""
+        from .channel import JinjaChannel
+
         return JinjaChannel(channel=self.__message.channel)  # type: ignore
 
     @property

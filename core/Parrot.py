@@ -485,7 +485,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         if self.http_session.closed:
-            log.debug("HTTP session is closed. Creating new session")
+            log.warning("HTTP session is closed. Creating new session")
             self.http_session = aiohttp.ClientSession(loop=self.loop)
         log.debug("Executing webhook from scratch (%s). Payload: %s", URL, payload)
         async with self.http_session.post(URL, json=payload, headers=self.GLOBAL_HEADERS) as resp:

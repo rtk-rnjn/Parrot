@@ -9,16 +9,16 @@ log = logging.getLogger("updater")
 
 # SCAM LINK URL
 _COMMIT_URL = "https://api.github.com/repos/{REPO}/commits"
-_ORIGINAL_REPO = "https://raw.githubusercontent.com/{REPO}"
+_ORIGINAL_RAW_REPO = "https://raw.githubusercontent.com/{REPO}"
 
 REPO = "Discord-AntiScam/scam-links"
 
 COMMIT_URL = _COMMIT_URL.format(REPO=REPO)
-ORIGINAL_REPO = _ORIGINAL_REPO.format(REPO=REPO)
+ORIGINAL_REPO = _ORIGINAL_RAW_REPO.format(REPO=REPO)
 
 
 async def init():
-    db = await aiosqlite.connect("cached.sqlite")
+    db = await aiosqlite.connect("cached.sqlite", iter_chunk_size=2**8, cached_statements=2**10)
 
     query = """
         BEGIN;
@@ -49,7 +49,7 @@ async def insert_all_scams(db: aiosqlite.Connection):
         data = await response.json(content_type="text/plain")
         log.debug("parsed data from %s. Total Links: %s", url, len(data))
 
-    query = "INSERT INTO scam_links (link) VALUES (?) ON CONFLICT DO NOTHING"
+    query = """INSERT INTO scam_links (link) VALUES (?) ON CONFLICT DO NOTHING"""
 
     for link in data:
         await db.execute(query, (link,))
@@ -73,8 +73,8 @@ async def insert_new(db: aiosqlite.Connection):
         data = await response.json()
         log.debug("parsed data from %s. Total Links: %s", COMMIT_URL, len(data))
 
-    insert_query = "INSERT INTO scam_links (link) VALUES (?) ON CONFLICT DO NOTHING"
-    delete_query = "DELETE FROM scam_links WHERE link = ?"
+    insert_query = """INSERT INTO scam_links (link) VALUES (?) ON CONFLICT DO NOTHING"""
+    delete_query = """DELETE FROM scam_links WHERE link = ?"""
 
     for commit in data:
         message = commit["commit"]["message"]

@@ -78,7 +78,7 @@ class EventCustom(Cog):
         if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor or 0)):
             with contextlib.suppress(discord.Forbidden):
                 await user.send(
-                    content=f"{user.mention} this is reminder for: **{content}**\n>>> {messageURL}",
+                    content=f"{user.mention} this is reminder for: **{content}**" + f"\n>>> {messageURL}" if messageURL else "",
                     embed=embed,
                 )
             return
@@ -87,7 +87,7 @@ class EventCustom(Cog):
             assert isinstance(channel, discord.abc.Messageable)
             with contextlib.suppress(discord.Forbidden):
                 await channel.send(
-                    content=f"<@{messageAuthor}> this is reminder for: **{content}**\n>>> {messageURL}",
+                    content=f"<@{messageAuthor}> this is reminder for: **{content}**" + f"\n>>> {messageURL}" if messageURL else "",
                     embed=embed,
                 )
             return

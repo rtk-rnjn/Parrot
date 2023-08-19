@@ -222,7 +222,7 @@ class Sector1729(Cog):
             message=int(discord.utils.utcnow().timestamp() * 10),
             expires_at=(discord.utils.utcnow() + timedelta(hours=12)).timestamp(),
             messageAuthor=member.id,
-            content=f"You can vote for the bot again on Top.gg.\n> Click **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
+            content=f"You can vote for the bot again on Top.gg.\n>>> Click **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
             dm_notify=True,
         )
 

@@ -30,6 +30,8 @@ from discord.ext import commands, tasks
 from utilities.converters import WrappedMessageConverter
 from utilities.robopages import SimplePages
 
+from jishaku.paginators import PaginatorEmbedInterface
+
 from . import _doc, _ref
 from ._used import execute_run, get_raw, prepare_payload, wrapping
 from ._utils import (
@@ -302,25 +304,6 @@ class RTFM(Cog):
             title="! You done? !",
             description=ERROR_MESSAGE_CHEAT_SHEET,
         )
-
-    def result_fmt(self, url: str, body_text: str) -> tuple[bool, str | discord.Embed]:
-        """Format Result."""
-        if body_text.startswith("#  404 NOT FOUND"):
-            embed = self.fmt_error_embed()
-            return True, embed
-
-        body_space = min(1986 - len(url), 1000)
-
-        if len(body_text) > body_space:
-            description = (
-                f"**Result Of cht.sh**\n"
-                f"```python\n{body_text[:body_space]}\n"
-                f"... (truncated - too many lines)\n```\n"
-                f"Full results: {url} "
-            )
-        else:
-            description = f"**Result Of cht.sh**\n" f"```python\n{body_text}\n```\n" f"{url}"
-        return False, description
 
     async def get_package(self, url: str):
         return await self.session.get(url=url)
@@ -1097,32 +1080,29 @@ class RTFM(Cog):
         aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],
     )
     @commands.bot_has_permissions(embed_links=True)
+    @Context.with_type
     async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
         """Search cheat.sh.
         Gets a post from https://cheat.sh/python/ by default.
         Usage:
         --> $cht read json.
         """
-        async with ctx.typing():
-            search_string = quote_plus(" ".join(search_terms))
+        search_string = quote_plus(" ".join(search_terms))
 
-            async with self.bot.http_session.get(
-                URL.format(
-                    search=search_string,
-                ),
-                headers=HEADERS,
-            ) as response:
-                result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
+        async with self.bot.http_session.get(
+            URL.format(
+                search=search_string,
+            ),
+            headers=HEADERS,
+        ) as response:
+            result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
-            is_embed, description = self.result_fmt(
-                URL.format(search=search_string),
-                result,
-            )
-            if is_embed:
-                await ctx.send(embed=description)
-            else:
-                assert isinstance(description, str)
-                await ctx.send(content=description)
+        page = commands.Paginator(prefix="```", suffix="```", max_size=1980)
+        for line in result.splitlines():
+            page.add_line(line)
+
+        interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author)
+        await interface.send_to(ctx)
 
     @commands.command(aliases=["wtfp"])
     @commands.bot_has_permissions(embed_links=True)

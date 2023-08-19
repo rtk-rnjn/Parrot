@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
     from .guild import JinjaGuild
+    from .message import JinjaMessage
 
 import discord
 
@@ -85,8 +86,12 @@ class JinjaChannel(JinjaChannelBase):
             return
         await self.__channel.delete()
 
-    async def send(self, *args, **kwargs):
+    async def send(self, *args, **kwargs) -> JinjaMessage | None:
         """Send message to channel."""
+        from .message import JinjaMessage
+
         if not self._check_perms(send_messages=True):
             return
-        await self.__channel.send(*args, **kwargs)  # type: ignore
+        msg = await self.__channel.send(*args, **kwargs)  # type: ignore
+        return JinjaMessage(message=msg)
+

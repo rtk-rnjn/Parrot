@@ -38,6 +38,9 @@ class utils:  # pylint: disable=invalid-name
     get = discord.utils.get
     find = discord.utils.find
 
+    def __repr__(self) -> str:
+        return "<Module discord.utils>"
+
 
 class _discord:
     Embed = JinjaEmbed
@@ -46,7 +49,12 @@ class _discord:
     PermissionOverwrite = JinjaPermissionOverwrite
     AllowedMentions = JinjaAllowedMentions
     Object = discord.Object
-    utils = utils()
+
+    def __init__(self) -> None:
+        self.utils = utils()
+
+    def __repr__(self) -> str:
+        return "<Module discord>"
 
 
 class http:  # pylint: disable=invalid-name
@@ -56,8 +64,9 @@ class http:  # pylint: disable=invalid-name
 
 
 class bot:  # pylint: disable=invalid-name
-    def __init__(self, bot: Parrot) -> None:
+    def __init__(self, bot: Parrot, message: discord.Message) -> None:
         self.__bot = bot
+        self.__message = message
 
     http = http()
     token = "what is love?"
@@ -67,6 +76,9 @@ class bot:  # pylint: disable=invalid-name
     users = []
     channels = []
     voice_clients = []
+
+    def __repr__(self) -> str:
+        return "<Module commands.Bot>"
 
     def run(self) -> None:
         pass
@@ -99,20 +111,48 @@ class Variables:
         self.__message = message
         self.__bot = bot
 
-    def build_base(self) -> dict:
+    def build_base(self, get: str | None = None) -> dict:
         from .channel import JinjaChannel
         from .guild import JinjaGuild
         from .member import JinjaMember
         from .message import JinjaMessage
 
-        return {
-            "channel": JinjaChannel(channel=self.__message.channel),  # type: ignore
-            "guild": JinjaGuild(guild=self.__message.guild),  # type: ignore
-            "member": JinjaMember(member=self.__message.author),
-            "message": JinjaMessage(message=self.__message),
+        _channel = JinjaChannel(channel=self.__message.channel)  # type: ignore
+        _guild = JinjaGuild(guild=self.__message.guild)  # type: ignore
+        _member = JinjaMember(member=self.__message.author)
+        _message = JinjaMessage(message=self.__message)
+        _bot = bot(bot=self.__bot, message=self.__message)
+
+        class ctx:
+            prefix = ""
+            command = None
+            token = "what is love?"
+
+            def __init__(self):
+                self.channel = _channel
+                self.guild = _guild
+                self.author = _member
+                self.message = _message
+
+                self.bot = _bot
+
+            def __repr__(self) -> str:
+                return "<Module commands.Context>"
+
+            async def send(self, *args, **kwargs) -> JinjaMessage | None:
+                """Send message to channel."""
+                return await _channel.send(*args, **kwargs)
+
+        data = {
+            "channel": _channel,
+            "guild": _guild,
+            "member": _member,
+            "message": _message,
             "discord": _discord(),
-            "bot": bot(bot=self.__bot),
+            "ctx": ctx(),
+            "bot": _bot,
         }
+        return data[get] if get else data
 
     def multiply(self, a: int, b: int):
         if max(a, b) > 100000:

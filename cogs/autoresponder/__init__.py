@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import difflib
-import inspect
 import re
 from typing import Annotated
 
@@ -343,7 +342,7 @@ class AutoResponders(Cog):
                 if name == message.content:
                     content, _ = await self.execute_jinja(name, response, **variables)
 
-            if content and (not self.is_ratelimited(message)) and (str(content).lower().strip() != "none"):
+            if content and (not self.is_ratelimited(message)) and (str(content).lower().strip(" ") != "none"):
                 await message.channel.send(content)
 
     def is_ratelimited(self, message: discord.Message):

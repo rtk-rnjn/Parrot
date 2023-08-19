@@ -34,7 +34,7 @@ class JinjaAllowedMentions(JinjaBase, discord.AllowedMentions):
 
 
 class utils:  # pylint: disable=invalid-name
-    MISSING = discord.utils.MISSING
+    MISSING = discord.utils._MissingSentinel()  # pylint: disable=protected-access
     get = discord.utils.get
     find = discord.utils.find
 

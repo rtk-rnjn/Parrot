@@ -368,7 +368,7 @@ class AutoResponders(Cog):
                 trim_blocks=True,
                 lstrip_blocks=True,
                 keep_trailing_newline=False,
-                autoescape=True,
+                autoescape=False,
             )
 
         trigger = discord.utils.escape_mentions(trigger)

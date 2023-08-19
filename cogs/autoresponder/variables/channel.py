@@ -28,6 +28,8 @@ class JinjaChannelBase:
     @property
     def guild(self) -> JinjaGuild | None:
         """Get channel guild."""
+        from .guild import JinjaGuild
+
         return JinjaGuild(guild=self.__channel.guild) if self.__channel.guild else None
 
     @property

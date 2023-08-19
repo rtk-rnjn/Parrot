@@ -110,8 +110,8 @@ class AutoResponders(Cog):
                 name="For make the response more dynamic",
                 value=(
                     "You can use Jinja2 template to make the response more dynamic. "
-                    "For example, you can use `<@{{ message_author_id }}>` to mention the user who sent the message. "
-                    "You can also use `{{ message_author_name }}` to get the name of the user who sent the message. "
+                    "For example, you can use `<@{{ message.author.id }}>` to mention the user who sent the message. "
+                    "You can also use `{{ message.author.id }}` to get the name of the user who sent the message. "
                 ),
                 inline=False,
             )
@@ -375,7 +375,7 @@ class AutoResponders(Cog):
         executing_what = "autoresponder" if from_auto_response else "jinja2"
 
         try:
-            async with async_timeout.timeout(delay=1):
+            async with async_timeout.timeout(delay=0.8):
                 try:
                     template = await asyncio.to_thread(self.jinja_env.from_string, response)
                     return_data = await template.render_async(**variables)

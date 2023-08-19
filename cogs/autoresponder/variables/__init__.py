@@ -35,23 +35,25 @@ class JinjaAllowedMentions(JinjaBase, discord.AllowedMentions):
 
 class utils:  # pylint: disable=invalid-name
     MISSING = discord.utils._MissingSentinel()  # pylint: disable=protected-access
-    get = discord.utils.get
-    find = discord.utils.find
+
+    def __init__(self) -> None:
+        self.get = discord.utils.get
+        self.find = discord.utils.find
 
     def __repr__(self) -> str:
         return "<Module discord.utils>"
 
 
-class _discord:
-    Embed = JinjaEmbed
-    Permisisons = JinjaPermissions
-    Colour = JinjaColour
-    PermissionOverwrite = JinjaPermissionOverwrite
-    AllowedMentions = JinjaAllowedMentions
-    Object = discord.Object
-
+class _discord:  # pylint: disable=invalid-name
     def __init__(self) -> None:
         self.utils = utils()
+
+        self.Embed = JinjaEmbed
+        self.Permisisons = JinjaPermissions
+        self.Colour = JinjaColour
+        self.PermissionOverwrite = JinjaPermissionOverwrite
+        self.AllowedMentions = JinjaAllowedMentions
+        self.Object = discord.Object
 
     def __repr__(self) -> str:
         return "<Module discord>"

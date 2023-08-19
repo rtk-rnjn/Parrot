@@ -407,7 +407,7 @@ class AutoResponders(Cog):
         except Exception as e:
             content = f"Failed to execute jinja2 code.\nReason: `{e.__class__.__name__}: {e}`"
 
-        if not content:
+        if not content or content.lower().strip(" ") == "none":
             content = "_No output_"
 
         await ctx.reply(content)

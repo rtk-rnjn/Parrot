@@ -43,6 +43,12 @@ class JinjaChannel(JinjaChannelBase):
         super().__init__(channel=channel)
         self.__channel = channel
 
+    def __repr__(self) -> str:
+        return f"<JinjaChannel id={self.id} name={self.name} type={self.type}>"
+
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def name(self) -> str:
         """Get channel name."""

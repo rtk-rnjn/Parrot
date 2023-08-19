@@ -279,8 +279,7 @@ class Suggestions(Cog):
         ls = list(zip_longest(upvoter, downvoter, fillvalue=""))
         table.add_rows(ls)
 
-        embed = discord.Embed(title=f"Suggestion Statistics of message ID: {message_id}")
-        embed.description = f"```\n{table.render()}```"
+        embed = discord.Embed(title=f"Suggestion Statistics of message ID: {message_id}", description=f"```\n{table.render()}```")
 
         if msg.content:
             embed.add_field(name="Flagged", value=msg.content)
@@ -301,15 +300,15 @@ class Suggestions(Cog):
         if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:  # type: ignore
             return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
-        thread: discord.Thread = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id)
-        if thread.locked and thread.archived:
-            await ctx.send(f"{ctx.author.mention} This suggestion is already resolved", delete_after=5)
-            return
-
+        thread: discord.Thread | None = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id)
         if not msg or not thread:
             return await ctx.send(
                 f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid",
             )
+        if thread.locked and thread.archived:
+            await ctx.send(f"{ctx.author.mention} This suggestion is already resolved", delete_after=5)
+            return
+
         await thread.send("This suggestion has been resolved")
         await thread.edit(
             archived=True,

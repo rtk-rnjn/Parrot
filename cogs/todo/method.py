@@ -67,7 +67,7 @@ async def _update_todo_text(bot: Parrot, ctx: Context, name: str, text: str):
         await ctx.reply(f"{ctx.author.mention} you don't have any TODO list with name `{name}`")
 
 
-async def _list_todo(bot: Parrot, ctx: Context):
+async def _list_todo(bot: Parrot, ctx: Context) -> None:
     collection = ctx.user_collection
     entries: list[str] = []
     async for data in collection.find({}):

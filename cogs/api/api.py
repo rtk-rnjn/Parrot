@@ -167,7 +167,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
         )
         await ctx.send(f"Created gist at <{url}>")
 
-    @gist.command(name="delete")
+    @gist.command(name="delete", aliases=["remove", "del", "rm"])
     @commands.is_owner()
     async def gist_delete(self, ctx: Context, gist_id: str):
         """Delete a gist."""

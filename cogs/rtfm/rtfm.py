@@ -1097,7 +1097,7 @@ class RTFM(Cog):
         ) as response:
             result = ANSI_RE.sub("", await response.text()).translate(ESCAPE_TT)
 
-        page = commands.Paginator(prefix="```", suffix="```", max_size=1980)
+        page = commands.Paginator(prefix="```python", suffix="```", max_size=1980)
         for line in result.splitlines():
             page.add_line(line)
 

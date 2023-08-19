@@ -1477,7 +1477,7 @@ class Moderator(Cog):
         if ctx.invoked_subcommand is None:
             await self.bot.invoke_help_command(ctx)
 
-    @emoji.command(name="delete")
+    @emoji.command(name="delete", aliases=["del", "remove", "rm"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_emojis=True))
     @commands.bot_has_guild_permissions(manage_emojis=True, embed_links=True)
     @Context.with_type

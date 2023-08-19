@@ -124,7 +124,7 @@ class AutoResponders(Cog):
         )
         await ctx.reply(embed=embed)
 
-    @autoresponder.command(name="variables")
+    @autoresponder.command(name="variables", aliases=["vars"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_variables(self, ctx: Context) -> None:
         """Show variables that can be used in autoresponder response."""
@@ -401,9 +401,8 @@ class AutoResponders(Cog):
         owner = await self.bot.is_owner(ctx.author)
 
         if not owner:
-            for name, func in inspect.getmembers(variables):
-                if inspect.ismethod(func) or inspect.isfunction(func):
-                    variables.pop(name, None)
+            variables = {}
+
         try:
             content, error = await self.execute_jinja("None", code, from_auto_response=False, **variables)
         except Exception as e:

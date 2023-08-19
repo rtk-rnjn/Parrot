@@ -6,6 +6,12 @@ class JinjaMember:
         assert isinstance(member, discord.Member)
         self.__member = member
 
+    def __repr__(self) -> str:
+        return f"<JinjaMember id={self.id} name={self.name}>"
+
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def id(self):
         """Get member id."""
@@ -71,3 +77,10 @@ class JinjaMember:
             return
 
         await self.__member.add_roles(role, reason=reason)
+
+    async def remove_role(self, *, role: discord.Object, reason: str = None):
+        """Remove role from member."""
+        if not await self._check_perms(manage_roles=True):
+            return
+
+        await self.__member.remove_roles(role, reason=reason)

@@ -14,6 +14,12 @@ class JinjaGuild:
     def __init__(self, *, guild: discord.Guild) -> None:
         self.__guild = guild
 
+    def __repr__(self) -> str:
+        return f"<JinjaGuild id={self.id} name={self.name}>"
+
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def id(self):
         """Get guild id."""

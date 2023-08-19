@@ -12,7 +12,7 @@ import types
 from collections import Counter, defaultdict, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, overload, TypeVar
 
 import aiohttp
 import aiosqlite
@@ -109,8 +109,6 @@ logger.addHandler(hndlr)
 
 log = logging.getLogger("core.parrot")
 
-__all__ = ("Parrot",)
-
 # LOCALHOST = "0.0.0.0"
 LOCALHOST = "localhost"
 IPC_PORT = 1730
@@ -123,6 +121,7 @@ __all__ = ("Parrot", "CustomFormatter")
 if MINIMAL_BOOT:
     log.warning("Minimal boot enabled, some features may not work as expected.")
 
+T = TypeVar("T")
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -945,12 +944,13 @@ class Parrot(commands.AutoShardedBot):
 
     async def getch(
         self,
-        get_function: Callable | Any,
-        fetch_function: Callable | Awaitable,
-        _id: int | discord.Object | None = None,
+        get_function: Callable[..., T],
+        fetch_function: Callable[..., Awaitable[T]] | Awaitable[T],
+        _id: int | discord.Object | None = None,  # type: ignore
         *,
         force_fetch: bool = True,
-    ) -> Any:
+    ) -> T | None:
+        _id: int = getattr(_id, "id", _id)  # type: ignore
         if _id is None:
             something = None
             if not callable(get_function):
@@ -960,7 +960,6 @@ class Parrot(commands.AutoShardedBot):
             return something
 
         with suppress(discord.HTTPException):
-            _id = _id.id if isinstance(_id, discord.Object) else int(_id)
             something = get_function(_id)
             if something is None and force_fetch and callable(fetch_function):
                 return await fetch_function(_id)

@@ -1845,9 +1845,7 @@ class Fun(Cog):
         """
         return await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
-    @commands.command(
-        name="8bitify",
-    )
+    @commands.command(name="8bitify")
     async def eightbit_command(self, ctx: Context):
         """Pixelates your avatar and changes the palette to an 8bit one."""
         user = await self._fetch_user(ctx.author.id)

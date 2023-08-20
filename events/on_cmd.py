@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import pathlib
 import random
 from typing import TYPE_CHECKING
 
+import arrow
 import discord
 from core import Cog
 from discord.ext import commands
@@ -67,7 +67,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
 
         # get the original exception
         error = getattr(error, "original", error)
-        TO_RAISE_ERROR = False
+        TO_RAISE_ERROR, DELETE_AFTER = False, None
 
         ignore = (
             commands.CommandNotFound,
@@ -91,7 +91,8 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             ERROR_EMBED.set_author(name=(f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"))
 
         elif isinstance(error, commands.CommandOnCooldown):
-            now = discord.utils.utcnow() + datetime.timedelta(seconds=error.retry_after)
+            now = arrow.utcnow().shift(seconds=error.retry_after).datetime
+            DELETE_AFTER = error.retry_after
             discord_time = discord.utils.format_dt(now, "R")
             ERROR_EMBED.description = f"You are on command cooldown, please retry **{discord_time}**"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}")
@@ -232,7 +233,8 @@ class Cmd(Cog, command_attrs={"hidden": True}):
                 await ctx.wait_for("message_delete", timeout=10, check=lambda m: m.id == ctx.message.id)
                 await msg.delete(delay=0)
         except asyncio.TimeoutError:
-            pass
+            if DELETE_AFTER:
+                await msg.delete(delay=max(DELETE_AFTER - 10, 0))
 
         if TO_RAISE_ERROR:
             raise error

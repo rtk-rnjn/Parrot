@@ -8,19 +8,12 @@ from collections import defaultdict
 from functools import cached_property, wraps
 from typing import (
     TYPE_CHECKING,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
     Literal,
     NamedTuple,
-    Optional,
-    Sequence,
-    Tuple,
     TypedDict,
-    Union,
     overload,
 )
+from collections.abc import Iterable, Iterator, Sequence
 
 from discord.utils import MISSING
 
@@ -62,8 +55,8 @@ class MadlibsTemplate(TypedDict):
     """Structure of a template in the madlibs JSON file."""
 
     title: str
-    blanks: List[str]
-    value: List[str]
+    blanks: list[str]
+    value: list[str]
 
 
 class BoardBoogle:
@@ -79,7 +72,7 @@ class BoardBoogle:
 
         self.columns = board
 
-    def board_contains(self, word: str, pos: Position = None, passed: List[Position] = None) -> bool:
+    def board_contains(self, word: str, pos: Position = None, passed: list[Position] = None) -> bool:
         if passed is None:
             passed = []
         # Empty words
@@ -133,8 +126,8 @@ class BoardBoogle:
 
 
 class GameBoogle(menus.Menu):
-    name: Optional[str] = "Boggle"
-    footer: Optional[str] = None
+    name: str | None = "Boggle"
+    footer: str | None = None
 
     def __init__(self, *, size=ORIGINAL, **kwargs):
         self.board = BoardBoogle(size=size)
@@ -254,7 +247,7 @@ class DiscordGame(GameBoogle):
 
     def setup(self):
         self.all_words: set[str] = set()
-        self.words: Dict[Union[discord.Member, discord.User], set[str]] = defaultdict(set)
+        self.words: dict[discord.Member | discord.User, set[str]] = defaultdict(set)
 
     async def check_message(self, message: discord.Message):
         word = message.content
@@ -357,9 +350,9 @@ class ClassicGame(GameBoogle):
     def setup(self):
         self.over = False
         self.used_words: set[str] = set()
-        self.word_lists: Dict[Union[discord.Member, discord.User], str] = {}
-        self.words: Dict[Union[discord.Member, discord.User], set[str]] = defaultdict(set)
-        self.unique_words: Dict[Union[discord.Member, discord.User], set[str]] = defaultdict(set)
+        self.word_lists: dict[discord.Member | discord.User, str] = {}
+        self.words: dict[discord.Member | discord.User, set[str]] = defaultdict(set)
+        self.unique_words: dict[discord.Member | discord.User, set[str]] = defaultdict(set)
 
     async def finalize(self, timed_out: bool):
         await super().finalize(timed_out)
@@ -424,7 +417,8 @@ def boggle_game(game_type: type[Game]):
 
             # Raise if game already running
             if ctx.channel in self.games_boogle:
-                raise commands.CheckFailure("There is already a game running in this channel.")
+                msg = "There is already a game running in this channel."
+                raise commands.CheckFailure(msg)
 
             # Start the game
             self.games_boogle[ctx.channel] = game = game_type(size=check_size(ctx))
@@ -450,13 +444,15 @@ def fenPass(fen: str) -> bool:
             fen,
         )
     ):
+        msg = "FEN doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "
         raise commands.BadArgument(
-            "FEN doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "
+            msg,
         )
     regexList = regexMatch.groups()
     fen = regexList[0].split("/")
     if len(fen) != 8:
-        raise commands.BadArgument("Expected 8 rows in position part of FEN: `{0}`".format(repr(fen)))
+        msg = f"Expected 8 rows in position part of FEN: `{repr(fen)}`"
+        raise commands.BadArgument(msg)
 
     for fenPart in fen:
         field_sum = 0
@@ -465,23 +461,27 @@ def fenPass(fen: str) -> bool:
         for c in fenPart:
             if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                 if previous_was_digit:
-                    raise commands.BadArgument("Two subsequent digits in position part of FEN: `{0}`".format(repr(fen)))
+                    msg = f"Two subsequent digits in position part of FEN: `{repr(fen)}`"
+                    raise commands.BadArgument(msg)
                 field_sum += int(c)
                 previous_was_digit = True
                 previous_was_piece = False
             elif c == "~":
                 if not previous_was_piece:
-                    raise commands.BadArgument("~ not after piece in position part of FEN: `{0}`".format(repr(fen)))
+                    msg = f"~ not after piece in position part of FEN: `{repr(fen)}`"
+                    raise commands.BadArgument(msg)
                 previous_was_digit, previous_was_piece = False, False
             elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
                 field_sum += 1
                 previous_was_digit = False
                 previous_was_piece = True
             else:
-                raise commands.BadArgument("Invalid character in position part of FEN: `{0}`".format(repr(fen)))
+                msg = f"Invalid character in position part of FEN: `{repr(fen)}`"
+                raise commands.BadArgument(msg)
 
         if field_sum != 8:
-            raise commands.BadArgument("Expected 8 columns per row in position part of FEN: `{0}`".format(repr(fen)))
+            msg = f"Expected 8 columns per row in position part of FEN: `{repr(fen)}`"
+            raise commands.BadArgument(msg)
 
 
 class GameC4:
@@ -494,8 +494,8 @@ class GameC4:
         self,
         bot: Parrot,
         channel: discord.TextChannel,
-        player1: Union[discord.Member, discord.User],
-        player2: Optional[Union[discord.Member, discord.User]],
+        player1: discord.Member | discord.User,
+        player2: discord.Member | discord.User | None,
         tokens: list,
         size: int = 7,
     ):
@@ -510,13 +510,13 @@ class GameC4:
 
         self.unicode_numbers = [emojis.encode(i) for i in NUMBERS[: self.grid_size]]
 
-        self.message: Optional[discord.Message] = None
+        self.message: discord.Message | None = None
 
-        self.player_active: Union[AI_C4, Union[discord.Member, discord.User], None] = None
-        self.player_inactive: Union[AI_C4, Union[discord.Member, discord.User], None] = None
+        self.player_active: AI_C4 | discord.Member | discord.User | None = None
+        self.player_inactive: AI_C4 | discord.Member | discord.User | None = None
 
     @staticmethod
-    def generate_board(size: int) -> List[List[int]]:
+    def generate_board(size: int) -> list[list[int]]:
         """Generate the connect 4 board."""
         return [[0 for _ in range(size)] for _ in range(size)]
 
@@ -541,8 +541,8 @@ class GameC4:
     async def game_over(
         self,
         action: str,
-        player1: Union[discord.User, discord.Member, discord.ClientUser],
-        player2: Union[discord.User, discord.Member, discord.ClientUser],
+        player1: discord.User | discord.Member | discord.ClientUser,
+        player2: discord.User | discord.Member | discord.ClientUser,
     ) -> None:
         """Announces to public chat."""
         if action == "win":
@@ -595,10 +595,10 @@ class GameC4:
             and str(reaction.emoji) in (*self.unicode_numbers, CROSS_EMOJI)
         )
 
-    async def player_turn(self) -> Optional[Coordinate]:
+    async def player_turn(self) -> Coordinate | None:
         """Initiate the player's turn."""
         message = await self.channel.send(
-            f"{self.player_active.mention}, it's your turn! React with the column you want to place your token in."
+            f"{self.player_active.mention}, it's your turn! React with the column you want to place your token in.",
         )
         player_num = 1 if self.player_active == self.player1 else 2
         while True:
@@ -661,7 +661,7 @@ class AI_C4:
         self.game = game
         self.mention = bot.user.mention
 
-    def get_possible_places(self) -> List[Coordinate]:
+    def get_possible_places(self) -> list[Coordinate]:
         """Gets all the coordinates where the AI_C4 could possibly place a counter."""
         possible_coords = []
         for column_num in range(self.game.grid_size):
@@ -672,7 +672,7 @@ class AI_C4:
                     break
         return possible_coords
 
-    def check_ai_win(self, coord_list: List[Coordinate]) -> Optional[Coordinate]:
+    def check_ai_win(self, coord_list: list[Coordinate]) -> Coordinate | None:
         """
         Check AI_C4 win.
         Check if placing a counter in any possible coordinate would cause the AI_C4 to win
@@ -685,7 +685,7 @@ class AI_C4:
             None,
         )
 
-    def check_player_win(self, coord_list: List[Coordinate]) -> Optional[Coordinate]:
+    def check_player_win(self, coord_list: list[Coordinate]) -> Coordinate | None:
         """
         Check Player win.
         Check if placing a counter in possible coordinates would stop the player
@@ -699,11 +699,11 @@ class AI_C4:
         )
 
     @staticmethod
-    def random_coords(coord_list: List[Coordinate]) -> Coordinate:
+    def random_coords(coord_list: list[Coordinate]) -> Coordinate:
         """Picks a random coordinate from the possible ones."""
         return random.choice(coord_list)
 
-    def play(self) -> Union[Coordinate, bool]:
+    def play(self) -> Coordinate | bool:
         """
         Plays for the AI_C4.
         Gets all possible coords, and determins the move:
@@ -736,10 +736,10 @@ class Board:
     ) -> None:
         self.state = state
         self.current_player = current_player
-        self.winner: Optional[bool] = MISSING
+        self.winner: bool | None = MISSING
 
     @property
-    def legal_moves(self) -> Iterator[Tuple[int, int]]:
+    def legal_moves(self) -> Iterator[tuple[int, int]]:
         for c, r in itertools.product(range(3), range(3)):
             if self.state[r][c] is None:
                 yield (r, c)
@@ -789,7 +789,8 @@ class Board:
 
     def move(self, r: int, c: int) -> Board:
         if (r, c) not in self.legal_moves:
-            raise ValueError("Illegal Move")
+            msg = "Illegal Move"
+            raise ValueError(msg)
 
         new_state = [[self.state[r][c] for c in range(3)] for r in range(3)]
         new_state[r][c] = self.current_player
@@ -831,7 +832,7 @@ class NegamaxAI(AI):
         alpha: float = ...,
         beta: float = ...,
         sign: int = ...,
-    ) -> Tuple[int, int]:
+    ) -> tuple[int, int]:
         ...
 
     @overload
@@ -852,7 +853,7 @@ class NegamaxAI(AI):
         alpha: float = float("-inf"),
         beta: float = float("inf"),
         sign: int = 1,
-    ) -> Union[float, Tuple[int, int]]:
+    ) -> float | tuple[int, int]:
         if game.over:
             return sign * self.heuristic(game, sign)
 
@@ -922,7 +923,7 @@ class ButtonTicTacToe(discord.ui.Button["GameTicTacToe"]):
 class GameTicTacToe(discord.ui.View):
     children: Sequence[ButtonTicTacToe]
 
-    def __init__(self, players: Tuple[discord.Member, discord.Member]):
+    def __init__(self, players: tuple[discord.Member, discord.Member]):
         self.players = list(players)
         random.shuffle(self.players)
         super().__init__(timeout=None)
@@ -994,7 +995,7 @@ class Game(boardgames.Board[Cell]):
     def __init__(self, size_x=10, size_y=7):
         super().__init__(size_x, size_y)
         self.record = None
-        self.last_state: Optional[discord.Message] = None
+        self.last_state: discord.Message | None = None
 
         self._state = [[Cell(self, y, x) for x in range(self.size_x)] for y in range(self.size_y)]
 
@@ -1051,7 +1052,8 @@ class Game(boardgames.Board[Cell]):
     def click(self, y: int, x: int):
         """Clicks on a cell"""
         if self.size_x < x or self.size_y < y:
-            raise commands.BadArgument("Cell out side the board.")
+            msg = "Cell out side the board."
+            raise commands.BadArgument(msg)
 
         cell = self[x, y]
 
@@ -1059,19 +1061,22 @@ class Game(boardgames.Board[Cell]):
             self.setup(y, x)
 
         if cell.flagged:
-            raise commands.BadArgument("You cannot click on a flagged cell.")
+            msg = "You cannot click on a flagged cell."
+            raise commands.BadArgument(msg)
 
         cell.clicked = True
 
     def flag(self, y: int, x: int):
         """Flags a cell"""
         if self.size_x < x or self.size_y < y:
-            raise commands.BadArgument("Cell out side the board.")
+            msg = "Cell out side the board."
+            raise commands.BadArgument(msg)
 
         cell = self[x, y]
 
         if cell.clicked:
-            raise commands.BadArgument("You cannot flag a revealed cell.")
+            msg = "You cannot flag a revealed cell."
+            raise commands.BadArgument(msg)
 
         cell.flagged = not cell.flagged
 
@@ -1126,7 +1131,7 @@ class Button(discord.ui.Button["GameUI"]):
 
 
 class GameUI(discord.ui.View):
-    children: List[Button]
+    children: list[Button]
 
     def __init__(self, meta: MetaGameUI, offset: int):
         self.meta = meta
@@ -1179,7 +1184,8 @@ class MetaGameUI:
 
 def is_no_game(ctx: Context):
     if ctx.channel in ctx.cog._games:
-        raise commands.CheckFailure("There is already a Minesweeper game running.")
+        msg = "There is already a Minesweeper game running."
+        raise commands.CheckFailure(msg)
     return True
 
 
@@ -1188,4 +1194,5 @@ def is_game(ctx: Context):
         is_no_game(ctx)
     except commands.CheckFailure:
         return True
-    raise commands.CheckFailure("No Connect Four game is running.")
+    msg = "No Connect Four game is running."
+    raise commands.CheckFailure(msg)

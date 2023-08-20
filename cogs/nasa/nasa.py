@@ -4,9 +4,9 @@ import inspect
 import io
 import os
 import random
-from datetime import datetime
 from typing import Annotated
 
+import arrow
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -23,7 +23,7 @@ def date_parser(arg: str | None = None) -> str:
     if arg is None:
         return discord.utils.utcnow().strftime("%Y-%m-%d")
     try:
-        datetime.strptime(arg, "%Y-%m-%d")
+        arrow.get(arg)
     except ValueError:
         msg = "Invalid date format. Use YYYY-MM-DD"
         raise commands.BadArgument(msg) from None

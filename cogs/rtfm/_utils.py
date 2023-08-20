@@ -8,9 +8,9 @@ import re
 import threading
 import time
 from collections.abc import Callable
-from datetime import datetime, timezone
 from typing import Any
 
+import arrow
 import aiofiles
 import bandit
 import pkg_resources
@@ -223,7 +223,8 @@ class InformationDropdown(discord.ui.Select):
 
 
 async def code_to_file(code: str) -> str:
-    filename = f"temp/runner_{int(datetime.now(timezone.utc).timestamp()*1000)}.py"
+    now = arrow.utcnow().timestamp()
+    filename = f"temp/runner_{int(now*1000)}.py"
     async with aiofiles.open(filename, "w") as f:
         await f.write(code)
 
@@ -527,7 +528,10 @@ class LintCode:
             await interface.send_to(ctx)
 
             # Generated at: Ex format: 2023-06-11T17:51:53Z
-            generated_at = datetime.strptime(json_data["generated_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y %H:%M:%S")
+            from_fmt = "%Y-%m-%dT%H:%M:%SZ"
+            to_fmt = "%d/%m/%Y %H:%M:%S"
+            generated_at = arrow.get(json_data["generated_at"], from_fmt).to("local").format(to_fmt)
+
             await interface.add_line(f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}\n")
 
             confidence_high = json_data["metrics"]["_totals"]["CONFIDENCE.HIGH"]

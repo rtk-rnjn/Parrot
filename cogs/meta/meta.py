@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import datetime
 import io
 import itertools
 import os
 from collections import Counter
-from time import time
 
+import arrow
 import psutil
 import pygit2
 
@@ -33,10 +32,10 @@ class Meta(Cog):
     @Context.with_type
     async def ping(self, ctx: Context):
         """Get the latency of bot."""
-        start = time()
+        start = arrow.utcnow().timestamp()
         message = await ctx.reply("Pinging...")
         db = await self.bot.db_latency()
-        end = time()
+        end = arrow.utcnow().timestamp()
         await message.edit(
             content=(
                 f"Pong! latency: {self.bot.latency*1000:,.0f} ms. "
@@ -70,23 +69,22 @@ class Meta(Cog):
         """Core and sole maintainer of this bot."""
         from utilities.config import AUTHOR_DISCRIMINATOR, AUTHOR_NAME, SUPER_USER
 
-        owner = self.bot.get_user(int(SUPER_USER))
-        if not owner:
-            return await ctx.reply("Owner not found, for some reason.")
-
-        await ctx.reply(
-            embed=discord.Embed(
-                title="Owner Info",
-                description=(
-                    f"This bot is being hosted and created by `{owner}` (He/Him). "
-                    f"Previously known as {AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}. "
-                    f"He is actually a dumb bot developer. He do not know why he made this shit bot. But it's cool"
+        if owner := self.bot.get_user(int(SUPER_USER)):
+            await ctx.reply(
+                embed=discord.Embed(
+                    title="Owner Info",
+                    description=(
+                        f"This bot is being hosted and created by `{owner}` (He/Him). "
+                        f"Previously known as {AUTHOR_NAME}#{AUTHOR_DISCRIMINATOR}. "
+                        f"He is actually a dumb bot developer. He do not know why he made this shit bot. But it's cool"
+                    ),
+                    timestamp=discord.utils.utcnow(),
+                    color=ctx.author.color,
+                    url=f"https://discord.com/users/{owner.id}",
                 ),
-                timestamp=discord.utils.utcnow(),
-                color=ctx.author.color,
-                url=f"https://discord.com/users/{owner.id}",
-            ),
-        )
+            )
+        else:
+            return await ctx.reply("Owner not found, for some reason.")
 
     @commands.command(aliases=["guildavatar", "serverlogo", "servericon"])
     @commands.bot_has_permissions(embed_links=True)
@@ -233,30 +231,24 @@ class Meta(Cog):
 
         await ctx.reply(embed=embed)
 
-    def format_commit(self, commit):
+    def format_commit(self, commit: pygit2.Commit):
         short, _, _ = commit.message.partition("\n")
         short_sha2 = commit.hex[:6]
-        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
-        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
-
-        # [`hash`](url) message (offset)
-        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
+        commit_tz = arrow.now().to("local").tzinfo
+        commit_time = arrow.Arrow.fromtimestamp(commit.commit_time).to("local").astimezone(commit_tz)
+        offset = discord.utils.format_dt(commit_time, "R")
         return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})"
 
     def format_commit_from_json(self, commit: dict):
-        # sourcery skip: aware-datetime-for-utc
         commit_hex = commit["sha"]
         short_sha2 = commit_hex[:6]
-        commit_time = datetime.datetime.strptime(commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ")
-        utc_offset = datetime.datetime.now() - datetime.datetime.utcnow()  # type: datetime.timedelta
-        commit_tz = datetime.timezone(datetime.timedelta(minutes=utc_offset.total_seconds() // 60))
+        commit_time = arrow.Arrow.strptime(commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ")
+        commit_tz = arrow.now().to("local").tzinfo
         commit_time = commit_time.astimezone(commit_tz)
-
-        # [`hash`](url) message (offset)
-        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
+        offset = discord.utils.format_dt(commit_time, "R")
         return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit_hex}) {commit['commit']['message']} ({offset})"
 
-    def get_last_commits(self, count=3):
+    def get_last_commits(self, count=3) -> str | None:
         # check if the `.git` directory exists
         if not os.path.isdir(".git"):
             return
@@ -578,7 +570,7 @@ class Meta(Cog):
             color=ctx.author.color,
             description=f"{change_log.content}",
         ).set_footer(text=f"Message by: {ctx.author}")
-        await ctx.reply(embed=embed)
+        await ctx.reply(embed=embed, view=ctx.link_view(url=change_log.jump_url, label="Click to Jump"))
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
@@ -595,7 +587,10 @@ class Meta(Cog):
         )
         embed.set_footer(text=f"{ctx.author}")
         embed.set_thumbnail(url=ctx.guild.me.display_avatar.url)
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            embed=embed,
+            view=ctx.link_view(url=f"https://top.gg/bot/{self.bot.user.id}/vote", label="Click to Vote"),
+        )
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -656,32 +651,26 @@ class Meta(Cog):
             .add_field(
                 name="Name",
                 value=sticker.name,
-                inline=True,
             )
             .add_field(
                 name="ID",
                 value=sticker.id,
-                inline=True,
             )
             .add_field(
                 name="Created At",
                 value=discord.utils.format_dt(sticker.created_at),
-                inline=True,
             )
             .add_field(
                 name="User",
                 value=sticker.user.mention,
-                inline=True,
             )
             .add_field(
                 name="Available",
                 value=sticker.available,
-                inline=True,
             )
             .add_field(
                 name="Emoji",
                 value=sticker.emoji,
-                inline=True,
             )
             .set_thumbnail(
                 url=sticker.url,

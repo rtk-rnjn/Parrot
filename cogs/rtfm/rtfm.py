@@ -8,7 +8,6 @@ import sys
 import unicodedata
 import urllib.parse
 from collections.abc import Callable
-from datetime import datetime
 from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
@@ -16,6 +15,7 @@ from random import choice
 from typing import Any
 from urllib.parse import quote, quote_plus
 
+import arrow
 import aiohttp
 import rapidfuzz
 from aiofile import async_open
@@ -850,7 +850,7 @@ class RTFM(Cog):
                     description=f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else "",
                     colour=discord.Colour.og_blurple(),
                     url=user_data["html_url"],
-                    timestamp=datetime.strptime(user_data["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                    timestamp=arrow.get(user_data["created_at"]).datetime,
                 )
                 .set_thumbnail(url=user_data["avatar_url"])
                 .set_footer(text="Account created at")
@@ -933,8 +933,8 @@ class RTFM(Cog):
             icon_url=repo_owner["avatar_url"],
         )
 
-        repo_created_at = datetime.strptime(repo_data["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y")
-        last_pushed = datetime.strptime(repo_data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%d/%m/%Y at %H:%M")
+        repo_created_at = arrow.get(repo_data["created_at"]).humanize()
+        last_pushed = arrow.get(repo_data["pushed_at"]).humanize()
 
         embed.set_footer(
             text=(
@@ -1450,9 +1450,10 @@ class RTFM(Cog):
 
         def get_datetime(st: str) -> int:
             try:
-                return int(datetime.strptime(st, "%Y-%m-%dT%H:%M:%S.%fZ").timestamp())
-            except ValueError:
-                return int(datetime.strptime(st, "%Y-%m-%d %H:%M:%S UTC").timestamp())
+                return int(arrow.get(st).timestamp())
+            except arrow.parser.ParserError:
+                fmt = "%Y-%m-%d %H:%M:%S UTC"
+                return int(arrow.get(st, fmt).timestamp())
 
         ls = []
 

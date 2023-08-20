@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import hashlib
 import io
 import json
@@ -9,7 +8,6 @@ import os
 import random
 import re
 import string
-import time
 import traceback
 import typing
 import urllib.parse
@@ -23,6 +21,7 @@ from aiosqlite.cursor import Cursor
 from jishaku.paginators import PaginatorEmbedInterface
 from tabulate import tabulate
 
+import arrow
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -357,7 +356,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
     @commands.command(hidden=True)
     async def gateway(self, ctx: Context):
         """Gateway related stats."""
-        yesterday = discord.utils.utcnow() - datetime.timedelta(days=1)
+        yesterday = arrow.utcnow().shift(days=-1).datetime
 
         # fmt: off
         identifies = {
@@ -496,7 +495,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             cog.ON_TESTING = not cog.ON_TESTING
         ```
         """
-        cog: Cog | None = self.bot.get_cog(cog)  # type: ignore
+        cog: Cog | None = self.bot.get_cog(cog)
         assert cog is not None
         if hasattr(cog, "ON_TESTING"):
             true_false = toggle if toggle is not None else not cog.ON_TESTING
@@ -554,7 +553,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         queries: list[str] = queries.split(";")  # type: ignore
         sql = self.bot.sql  # sqlite3
 
-        super_ini = time.perf_counter()
+        super_ini = arrow.utcnow().timestamp()
         results: list[tuple[str, Cursor, int, float]] = []
         # list of tuples of str, Cursor, affected rows, time taken
 
@@ -562,18 +561,18 @@ class Owner(Cog, command_attrs={"hidden": True}):
             if not query:
                 continue
 
-            ini = time.perf_counter()
+            ini = arrow.utcnow().timestamp()
             try:
                 cursor = await sql.execute(query)
             except Exception as e:
                 await ctx.send(f"```py\n{e}```")
                 return
             total_rows_affected = cursor.rowcount
-            fin = time.perf_counter() - ini
+            fin = arrow.utcnow().timestamp() - ini
 
             results.append((query.upper(), cursor, total_rows_affected, fin))
 
-        super_fin = time.perf_counter() - super_ini
+        super_fin = arrow.utcnow().timestamp() - super_ini
 
         to_send = ""
         if not results:

@@ -9,11 +9,11 @@ import os
 import re
 import string
 import urllib.parse
-from datetime import datetime
 from html import unescape
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, BinaryIO
 
+import arrow
 import qrcode
 import sympy
 from PIL import Image
@@ -671,8 +671,8 @@ class Misc(Cog):
         wind_deg = res["wind"]["deg"]
         cloudiness = res["clouds"]["all"]
         visibliity = res["visibility"]
-        sunrise = datetime.fromtimestamp(res["sys"]["sunrise"])
-        sunset = datetime.fromtimestamp(res["sys"]["sunset"])
+        sunrise = arrow.Arrow.fromtimestamp(res["sys"]["sunrise"])
+        sunset = arrow.Arrow.fromtimestamp(res["sys"]["sunset"])
         country = res["sys"]["country"]
         _id = res["id"]
         name = res["name"]

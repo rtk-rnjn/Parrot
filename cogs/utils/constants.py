@@ -70,17 +70,17 @@ ACTION_EMOJIS = {
     discord.AuditLogAction.ban: discord.PartialEmoji.from_str("<:log_member_minus:1112472097323745300>"),
     discord.AuditLogAction.unban: discord.PartialEmoji.from_str("<:log_member_plus:1112472154181750865>"),
     discord.AuditLogAction.stage_instance_create: discord.PartialEmoji.from_str(
-        "<:log_stage_instance_plus:1112333263348965497>"
+        "<:log_stage_instance_plus:1112333263348965497>",
     ),
     discord.AuditLogAction.stage_instance_update: discord.PartialEmoji.from_str(
-        "<:log_stage_instance_update:1112332826369589319>"
+        "<:log_stage_instance_update:1112332826369589319>",
     ),
     discord.AuditLogAction.stage_instance_delete: discord.PartialEmoji.from_str(
-        "<:log_stage_instance_minus:1112332874939637810>"
+        "<:log_stage_instance_minus:1112332874939637810>",
     ),
     discord.AuditLogAction.integration_create: discord.PartialEmoji.from_str("<:log_integration_plus:1080195469503905793>"),
     discord.AuditLogAction.integration_update: discord.PartialEmoji.from_str(
-        "<:log_integration_update:1080194889536516207>"
+        "<:log_integration_update:1080194889536516207>",
     ),
     discord.AuditLogAction.integration_delete: discord.PartialEmoji.from_str("<:log_integration_minus:1080530500806000640>"),
     discord.AuditLogAction.role_create: discord.PartialEmoji.from_str("<:log_role_plus:1080529743591518228>"),

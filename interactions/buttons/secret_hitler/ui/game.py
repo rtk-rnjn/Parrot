@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Collection
-from typing import Dict, List, Optional, Union
 
 import discord
 from discord import Member as User
@@ -83,22 +82,22 @@ class BlankButton(discord.ui.Button["GameUI"]):
 
 
 class GameUI(discord.ui.View):
-    children: List[discord.ui.Button]
+    children: list[discord.ui.Button]
 
     def __init__(
         self,
         message: discord.Message,
         host: User,
         users: Collection[User],
-        games: Dict[int, discord.ui.View],
+        games: dict[int, discord.ui.View],
     ):
         self.host: User = host
         self.game: Game[User] = Game[User](users)
-        self.interactions: Dict[User, discord.Interaction] = {}
+        self.interactions: dict[User, discord.Interaction] = {}
         self.message = message
         self.games = games
         self.waiting = asyncio.Event()
-        self.view: Optional[Union[SelectUI, VoteUI]] = None
+        self.view: SelectUI | VoteUI | None = None
 
         super().__init__(timeout=None)
 
@@ -136,14 +135,14 @@ class GameUI(discord.ui.View):
         if isinstance(self.view, SelectUI) and isinstance(self.view, PeekUI):
             interaction = self.interactions.pop(self.view.target.identifier)
             await interaction.followup.send(self.view.tooltip, view=self.view, ephemeral=True)
-        elif isinstance(self.view, (SelectUI, VoteUI)):
+        elif isinstance(self.view, SelectUI | VoteUI):
             await self.channel.send(self.view.tooltip, reference=self.message, view=self.view)
 
     async def update(self) -> None:
         state = self.game.state
 
         # determine view type.
-        if isinstance(state, (SelectGameState, PolicyListPeek, PlayerWasInvestigated)):
+        if isinstance(state, SelectGameState | PolicyListPeek | PlayerWasInvestigated):
             # Determine target
             if isinstance(self.game.state, ChancellorDiscardsPolicy):
                 target = self.game.chancellor
@@ -193,8 +192,8 @@ class GameUI(discord.ui.View):
         cls,
         message: discord.Message,
         host: User,
-        users: Dict[User, discord.Interaction],
-        games: Dict[int, discord.ui.View],
+        users: dict[User, discord.Interaction],
+        games: dict[int, discord.ui.View],
     ) -> None:
         games[message.channel.id] = self = cls(message, host, users.keys(), games)
 

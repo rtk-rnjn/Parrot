@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import random
 import string
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
+import arrow
 
 import discord
 from discord.ext import commands
@@ -130,7 +130,7 @@ class NumberMemory:
             self.embed.description = "```yml\nGuess!\n```"
             self.file = discord.utils.MISSING
         else:
-            time = discord.utils.utcnow() + datetime.timedelta(seconds=self.pause_time + 1)
+            time = arrow.utcnow().shift(seconds=self.pause_time + 1).datetime
             pause = discord.utils.format_dt(time, style="R")
             file = await self.generate_image()
             file = discord.File(file, "number.png")

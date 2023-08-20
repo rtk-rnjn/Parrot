@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import discord
 from core import Context, Parrot
@@ -21,7 +21,7 @@ async def _create_giveaway_post(
     required_role: int = None,
     required_guild: int = None,
     required_level: int = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     post_extra = {
         "message_id": message.id,
         "author_id": message.author.id,
@@ -43,7 +43,7 @@ async def _create_giveaway_post(
     }
 
 
-async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
+async def end_giveaway(bot: Parrot, **kw: Any) -> list[int]:
     channel: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
     msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)  # type: ignore
@@ -57,7 +57,7 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
     if not reactors:
         for reaction in msg.reactions:
             if str(reaction.emoji) == "\N{PARTY POPPER}":
-                reactors: List[int] = [user.id async for user in reaction.users()]
+                reactors: list[int] = [user.id async for user in reaction.users()]
                 break
             reactors = []
 
@@ -68,7 +68,7 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
 
     win_count = kw.get("winners", 1)
 
-    real_winners: List[int] = []
+    real_winners: list[int] = []
 
     while True:
         if win_count > len(reactors):
@@ -93,12 +93,12 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> List[int]:
         await asyncio.sleep(0)
 
 
-async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
+async def __check_requirements(bot: Parrot, **kw: Any) -> list[int]:
     # vars
-    real_winners: List[int] = kw.get("winners", [])
+    real_winners: list[int] = kw.get("winners", [])
 
     current_guild: discord.Guild = bot.get_guild(kw.get("guild_id"))  # type: ignore
-    required_guild: Optional[discord.Guild] = bot.get_guild(kw.get("required_guild", 0))
+    required_guild: discord.Guild | None = bot.get_guild(kw.get("required_guild", 0))
     required_role: int = kw.get("required_role", 0)
     required_level: int = kw.get("required_level", 0)
 
@@ -121,12 +121,12 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> List[int]:
     return real_winners
 
 
-async def __update_giveaway_reactors(*, bot: Parrot, reactors: List[int], message_id: int) -> None:
+async def __update_giveaway_reactors(*, bot: Parrot, reactors: list[int], message_id: int) -> None:
     collection = bot.giveaways
     await collection.update_one({"message_id": message_id}, {"$set": {"reactors": reactors}})
 
 
-def __item__remove(ls: List[Any], item: Any) -> Optional[List[Any]]:
+def __item__remove(ls: list[Any], item: Any) -> list[Any] | None:
     try:
         ls.remove(item)
     except (ValueError, KeyError):
@@ -146,7 +146,7 @@ async def __wait_for__message(ctx: Context) -> str:
         return msg.content
 
 
-async def _make_giveaway(ctx: Context) -> Dict[str, Any]:
+async def _make_giveaway(ctx: Context) -> dict[str, Any]:
     bot: Parrot = ctx.bot
     quest = [
         "In what channel you want to host giveaway? (Channel ID, Channel Name, Channel Mention)",
@@ -252,7 +252,7 @@ async def _make_giveaway_drop(ctx: Context, *, duration: ShortTime, winners: int
     return main_post
 
 
-def __is_int(st: str, error: str) -> Optional[int]:
+def __is_int(st: str, error: str) -> int | None:
     if st.lower() in {"skip", "none", "no"}:
         return None
     try:

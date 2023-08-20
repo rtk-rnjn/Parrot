@@ -9,10 +9,11 @@ import io
 import json
 import random
 import re
-from functools import partial, wraps
+from functools import partial
 from pathlib import Path
-from random import choice, sample
-from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
+from random import choice
+from typing import Any, Literal
+from collections.abc import Callable
 
 import pymongo
 from aiofile import async_open
@@ -21,7 +22,7 @@ from discord.utils import MISSING
 import discord
 import emojis
 from core import Cog, Context, Parrot
-from discord.ext import boardgames, commands, old_menus as menus  # type: ignore
+from discord.ext import boardgames, commands  # type: ignore
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.robopages import SimplePages
@@ -84,26 +85,26 @@ class Games(Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.ON_TESTING = False
-        self.games: List[Game] = []
-        self.waiting: List[Union[discord.Member, discord.User]] = []
-        self._games: Dict[Union[discord.TextChannel, discord.abc.Messageable], Game] = {}
-        self.games_c4: List[GameC4] = []
-        self.waiting_c4: List[Union[discord.Member, discord.User]] = []
-        self.games_boogle: Dict[discord.TextChannel, GameBoogle] = {}
+        self.games: list[Game] = []
+        self.waiting: list[discord.Member | discord.User] = []
+        self._games: dict[discord.TextChannel | discord.abc.Messageable, Game] = {}
+        self.games_c4: list[GameC4] = []
+        self.waiting_c4: list[discord.Member | discord.User] = []
+        self.games_boogle: dict[discord.TextChannel, GameBoogle] = {}
         self.tokens = [":white_circle:", ":blue_circle:", ":red_circle:"]
-        self.games_hitler: Dict[int, discord.ui.View] = {}
-        self.chess_games: List[int] = []
+        self.games_hitler: dict[int, discord.ui.View] = {}
+        self.chess_games: list[int] = []
 
         self.max_board_size = 9
         self.min_board_size = 5
         self.templates = self._load_templates()
-        self.edited_content: Dict[int, str] = {}
-        self.checks: Set[Callable] = set()
-        self.current_games: Dict[int, DuckGame] = {}
-        self.uno_games: Dict[int, UNO] = {}
+        self.edited_content: dict[int, str] = {}
+        self.checks: set[Callable] = set()
+        self.current_games: dict[int, DuckGame] = {}
+        self.uno_games: dict[int, UNO] = {}
 
     @staticmethod
-    def _load_templates() -> List[MadlibsTemplate]:
+    def _load_templates() -> list[MadlibsTemplate]:
         madlibs_stories = Path("extra/madlibs_templates.json")
 
         with open(madlibs_stories, encoding="utf-8", errors="ignore") as file:
@@ -160,7 +161,7 @@ class Games(Cog):
 
             if user in self.waiting:
                 self.bot.loop.create_task(
-                    ctx.send(f"{user.mention} Please cancel your game first before joining another one.")
+                    ctx.send(f"{user.mention} Please cancel your game first before joining another one."),
                 )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
@@ -169,15 +170,15 @@ class Games(Cog):
 
         return user.id == ctx.author.id and str(reaction.emoji) == CROSS_EMOJI and reaction.message.id == announcement.id
 
-    def already_playing(self, player: Union[discord.Member, discord.User]) -> bool:
+    def already_playing(self, player: discord.Member | discord.User) -> bool:
         """Check if someone is already in a game."""
         return any(player in (game.p1.user, game.p2.user) for game in self.games)
 
-    async def _get_opponent(self, ctx: Context) -> Optional[discord.Member]:
+    async def _get_opponent(self, ctx: Context) -> discord.Member | None:
         message = await ctx.channel.send(
             embed=discord.Embed(description=f"{ctx.author.mention} wants to play Tic-Tac-Toe.").set_footer(
-                text="react with \N{WHITE HEAVY CHECK MARK} to accept the challenge."
-            )
+                text="react with \N{WHITE HEAVY CHECK MARK} to accept the challenge.",
+            ),
         )
         await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -208,7 +209,7 @@ class Games(Cog):
         if not self.min_board_size <= board_size <= self.max_board_size:
             await ctx.send(
                 f"{board_size} is not a valid board size. A valid board size is "
-                f"between `{self.min_board_size}` and `{self.max_board_size}`."
+                f"between `{self.min_board_size}` and `{self.max_board_size}`.",
             )
             return False
 
@@ -237,7 +238,7 @@ class Games(Cog):
 
             if user in self.waiting_c4:
                 self.bot.loop.create_task(
-                    ctx.send(f"{user.mention} Please cancel your game first before joining another one.")
+                    ctx.send(f"{user.mention} Please cancel your game first before joining another one."),
                 )
                 self.bot.loop.create_task(announcement.remove_reaction(reaction, user))
                 return False
@@ -246,12 +247,12 @@ class Games(Cog):
 
         return user.id == ctx.author.id and str(reaction.emoji) == CROSS_EMOJI and reaction.message.id == announcement.id
 
-    def already_playing_cf(self, player: Union[discord.Member, discord.User]) -> bool:
+    def already_playing_cf(self, player: discord.Member | discord.User) -> bool:
         """Check if someone is already in a game."""
         return any(player in (game.player1, game.player2) for game in self.games_c4)
 
     @staticmethod
-    def check_emojis(e1: EMOJI_CHECK, e2: EMOJI_CHECK) -> Tuple[bool, Optional[str]]:
+    def check_emojis(e1: EMOJI_CHECK, e2: EMOJI_CHECK) -> tuple[bool, str | None]:
         """Validate the emojis, the user put."""
         if isinstance(e1, str) and emoji.count(e1) != 1:
             return False, e1
@@ -262,7 +263,7 @@ class Games(Cog):
     async def _play_game(
         self,
         ctx: Context,
-        user: Optional[discord.Member],
+        user: discord.Member | None,
         board_size: int,
         emoji1: Any,
         emoji2: Any,
@@ -279,7 +280,7 @@ class Games(Cog):
         except Exception as e:
             # End the game in the event of an unforeseen error so the players aren't stuck in a game
             await ctx.send(
-                f"{ctx.author.mention} {user.mention if user else ''} An error occurred. Game failed | Error: {e}"
+                f"{ctx.author.mention} {user.mention if user else ''} An error occurred. Game failed | Error: {e}",
             )
             if game in self.games_c4:
                 self.games_c4.remove(game)
@@ -294,9 +295,9 @@ class Games(Cog):
     async def connect_four(
         self,
         ctx: Context,
-        board_size: Optional[int] = None,
-        emoji1: Optional[EMOJI_CHECK] = None,
-        emoji2: Optional[EMOJI_CHECK] = None,
+        board_size: int | None = None,
+        emoji1: EMOJI_CHECK | None = None,
+        emoji2: EMOJI_CHECK | None = None,
     ) -> None:
         """
         Play the classic game of Connect Four with someone!
@@ -318,7 +319,7 @@ class Games(Cog):
         announcement: discord.Message = await ctx.send(  # type: ignore
             "**Connect Four**: A new game is about to start!\n"
             f"Press {Emojis.hand_raised} to play against {ctx.author.mention}!\n"
-            f"(Cancel the game with {CROSS_EMOJI}.)"
+            f"(Cancel the game with {CROSS_EMOJI}.)",
         )
         self.waiting_c4.append(ctx.author)
         await announcement.add_reaction(Emojis.hand_raised)
@@ -335,7 +336,7 @@ class Games(Cog):
             await announcement.delete()
             await ctx.send(
                 f"{ctx.author.mention} Seems like there's no one here to play. "
-                f"Use `{ctx.prefix}{ctx.invoked_with} ai` to play against a computer."
+                f"Use `{ctx.prefix}{ctx.invoked_with} ai` to play against a computer.",
             )
             return
 
@@ -381,7 +382,7 @@ class Games(Cog):
     @commands.command(aliases=["tic", "tic_tac_toe", "ttt"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def tictactoe(self, ctx: Context, *, opponent: Optional[discord.Member] = None):
+    async def tictactoe(self, ctx: Context, *, opponent: discord.Member | None = None):
         """Start a Tic-Tac-Toe game!
         `opponent`: Another member of the server to play against. If not is set an open challenge is started.
         """
@@ -389,7 +390,8 @@ class Games(Cog):
             opponent = await self._get_opponent(ctx)
         else:
             if opponent == ctx.author:
-                raise commands.BadArgument("You cannot play against yourself.")
+                msg = "You cannot play against yourself."
+                raise commands.BadArgument(msg)
             if not opponent.bot and not await ctx.confirm(
                 ctx.channel,
                 opponent,
@@ -399,7 +401,8 @@ class Games(Cog):
 
         # If challenge timed out
         if opponent is None:
-            raise commands.BadArgument("Challenge cancelled.")
+            msg = "Challenge cancelled."
+            raise commands.BadArgument(msg)
 
         game = GameTicTacToe((ctx.author, opponent))
 
@@ -422,7 +425,7 @@ class Games(Cog):
         """Starts a easy difficulty Minesweeper game"""
         game = self._games[ctx.channel] = Game(5, 5)
         game.last_state = await ctx.send(
-            f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`."
+            f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`.",
         )
 
     @ms_start.command(name="easy")
@@ -430,7 +433,7 @@ class Games(Cog):
         """Starts a easy difficulty Minesweeper game"""
         game = self._games[ctx.channel] = Game(10, 7)
         game.last_state = await ctx.send(
-            f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`."
+            f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`.",
         )
 
     @ms_start.command(name="medium")
@@ -438,7 +441,7 @@ class Games(Cog):
         """Starts a medium difficulty Minesweeper game"""
         game = self._games[ctx.channel] = Game(17, 8)
         game.last_state = await ctx.send(
-            f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`."
+            f"Minesweeper Game Started!\n>>> {game}\n\nReveal cells with `{ctx.prefix}ms click`.",
         )
 
     @minesweeper.command(name="click")
@@ -494,7 +497,8 @@ class Games(Cog):
         player_mention = ctx.author.mention
 
         if move not in CHOICES and move not in SHORT_CHOICES:
-            raise commands.BadArgument(f"Invalid move. Please make move from options: {', '.join(CHOICES).upper()}.")
+            msg = f"Invalid move. Please make move from options: {', '.join(CHOICES).upper()}."
+            raise commands.BadArgument(msg)
 
         bot_move = choice(CHOICES)
         # value of player_result will be from (-1, 0, 1) as (lost, tied, won).
@@ -514,7 +518,7 @@ class Games(Cog):
     async def sokoban(
         self,
         ctx: Context,
-        level: Optional[int] = None,
+        level: int | None = None,
     ):
         """A classic sokoban game"""
         if ctx.invoked_subcommand:
@@ -524,7 +528,7 @@ class Games(Cog):
             return await ctx.send(f"{ctx.author.mention} for now existing levels are from range 1-10")
         async with async_open(f"extra/sokoban/level{level or 1}.txt", "r") as fp:
             lvl_str = await fp.read()
-        ls = [list(list(i)) for i in lvl_str.split("\n")]
+        ls = [list(i) for i in lvl_str.split("\n")]
         game = SokobanGame(ls)
         game._get_cords()
         main_game = SokobanGameView(game, ctx.author, level=level, ctx=ctx)
@@ -539,7 +543,7 @@ class Games(Cog):
         - There should be equal number of `.` (target) and `$` (box)
         """
         level = text.strip("```")
-        ls = [list(list(i)) for i in level.split("\n")]
+        ls = [list(i) for i in level.split("\n")]
         game = SokobanGame(ls)
         game._get_cords()
         main_game = SokobanGameView(game, ctx.author, level=None, ctx=ctx)
@@ -578,7 +582,7 @@ class Games(Cog):
         announcement: discord.Message = await ctx.send(  # type: ignore
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
-            f"(Cancel the game with {CROSS_EMOJI}.)"
+            f"(Cancel the game with {CROSS_EMOJI}.)",
         )
         self.waiting.append(ctx.author)
         await announcement.add_reaction(HAND_RAISED_EMOJI)
@@ -617,7 +621,7 @@ class Games(Cog):
         announcement: discord.Message = await ctx.send(  # type: ignore
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
-            f"(Cancel the game with {CROSS_EMOJI}.)"
+            f"(Cancel the game with {CROSS_EMOJI}.)",
         )
         self.waiting.append(ctx.author)
         await announcement.add_reaction(HAND_RAISED_EMOJI)
@@ -708,7 +712,7 @@ class Games(Cog):
             description="The goal of Boggle is to using at least 3 adjacent letters, create words, longer words score more points.",
         )
         embed.set_image(
-            url="https://cdn.discordapp.com/attachments/735564593048584343/811590353748230184/boggle-rules-jpeg-900x1271_orig.png"
+            url="https://cdn.discordapp.com/attachments/735564593048584343/811590353748230184/boggle-rules-jpeg-900x1271_orig.png",
         )
         await ctx.send(embed=embed)
 
@@ -726,7 +730,8 @@ class Games(Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def secrethitler(self, ctx: Context) -> None:
         if ctx.channel.id in self.games_hitler:
-            raise commands.BadArgument("There is already a game running in this channel.")
+            msg = "There is already a game running in this channel."
+            raise commands.BadArgument(msg)
 
         self.games_hitler[ctx.channel.id] = MISSING
         await JoinUI.start(ctx, self.games_hitler)
@@ -837,7 +842,7 @@ class Games(Cog):
         announcement: discord.Message = await ctx.send(  # type: ignore
             "**Battleship**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
-            f"(Cancel the game with {CROSS_EMOJI}.)"
+            f"(Cancel the game with {CROSS_EMOJI}.)",
         )
         self.waiting.append(ctx.author)
         await announcement.add_reaction(HAND_RAISED_EMOJI)
@@ -883,7 +888,7 @@ class Games(Cog):
     async def twenty_four_eight_stats(
         self,
         ctx: Context,
-        user: Optional[Union[discord.User, discord.Member]] = None,
+        user: discord.User | discord.Member | None = None,
         *,
         flag: GameCommandFlag,
     ):
@@ -916,7 +921,7 @@ class Games(Cog):
                 f"""User: `{user or 'NA'}`
 `Games Played`: {data['game_twenty48_played']} games played
 `Total Moves `: {data['game_twenty48_moves']} moves
-"""
+""",
             )
             if i > LIMIT:
                 break
@@ -932,7 +937,7 @@ class Games(Cog):
     async def country_guess_stats(
         self,
         ctx: Context,
-        user: Optional[discord.User] = None,
+        user: discord.User | None = None,
         *,
         flag: GameCommandFlag,
     ):
@@ -951,7 +956,7 @@ class Games(Cog):
     async def hangman_stats(
         self,
         ctx: Context,
-        user: Optional[discord.User] = None,
+        user: discord.User | None = None,
         *,
         flag: GameCommandFlag,
     ):
@@ -970,7 +975,7 @@ class Games(Cog):
         *,
         game_type: str,
         ctx: Context,
-        user: Optional[Union[discord.User, discord.Member]] = None,
+        user: discord.User | discord.Member | None = None,
         flag: GameCommandFlag,
     ):
         user = user or ctx.author
@@ -999,7 +1004,7 @@ class Games(Cog):
 `Games Played`: {data[f'game_{game_type}_played']} games played
 `Total Wins  `: {data[f'game_{game_type}_won']} Wins
 `Total Loss  `: {data[f'game_{game_type}_loss']} Loss
-"""
+""",
             )
             if i > LIMIT:
                 break
@@ -1015,7 +1020,7 @@ class Games(Cog):
     async def chess_stats(
         self,
         ctx: Context,
-        user: Optional[discord.User] = None,
+        user: discord.User | None = None,
         *,
         flag: GameCommandFlag,
     ):
@@ -1029,7 +1034,6 @@ class Games(Cog):
         user = user or ctx.author  # type: ignore
         col = self.bot.game_collections
 
-        sort_by = flag.sort_by
 
         data = await col.find_one(
             {"_id": user.id, "game_chess_played": {"$exists": True}},
@@ -1050,13 +1054,13 @@ class Games(Cog):
                 entries.append(
                     f"""**{user1 or 'NA'} vs {user2 or 'NA'}**
 `Winner`: {i["game_chess_winner"]}
-"""
+""",
                 )
             else:
                 entries.append(
                     f"""{user1 or 'NA'} vs {user2 or 'NA'}
 `Winner`: {i["game_chess_winner"]}
-"""
+""",
                 )
         p = SimplePages(entries, ctx=ctx)
         await p.start()
@@ -1098,7 +1102,7 @@ class Games(Cog):
         LIMIT = flag.limit or float("inf")
         col = self.bot.game_collections
         async for data in col.find(FILTER).sort(
-            sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING
+            sort_by, pymongo.ASCENDING if flag.order_by == "asc" else pymongo.DESCENDING,
         ):
             user = await self.bot.get_or_fetch_member(ctx.guild, data["_id"], in_guild=False)
             if user is None:
@@ -1108,13 +1112,13 @@ class Games(Cog):
                 entries.append(
                     f"""**{user or 'NA'}**
 `{sort_by.replace('_', ' ').title()}`: {data[sort_by]}
-"""
+""",
                 )
             else:
                 entries.append(
                     f"""{user or 'NA'}
 `{sort_by.replace('_', ' ').title()}`: {data[sort_by]}
-"""
+""",
                 )
             if i >= LIMIT:
                 break
@@ -1201,7 +1205,7 @@ class Games(Cog):
         answer = tuple(sorted(int(m) for m in match.groups()))
 
         # Be forgiving for answers that use indices not on the board.
-        if any((0 <= n < len(game.board) for n in answer)):
+        if any(0 <= n < len(game.board) for n in answer):
             return
 
         # Also be forgiving for answers that have already been claimed (and avoid penalizing for racing conditions).
@@ -1254,7 +1258,7 @@ class Games(Cog):
             title=end_message,
             color=discord.Color.dark_purple(),
         )
-        scores: List[discord.Member, int] = sorted(
+        scores: list[discord.Member, int] = sorted(
             game.scores.items(),
             key=lambda item: item[1],
             reverse=True,

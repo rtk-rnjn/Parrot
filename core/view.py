@@ -10,6 +10,7 @@ import discord
 
 if TYPE_CHECKING:
     from . import Context
+    from . import Parrot
 
 __all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView", "ParrotModal")
 
@@ -34,14 +35,17 @@ class ParrotModal(discord.ui.Modal):
 
 
 class ParrotView(discord.ui.View):
-    message: discord.Message
-    ctx: Context
+    if TYPE_CHECKING:
+        message: discord.Message
+        ctx: Context
+        bot: Parrot
 
     def __init__(self, *, timeout: float | None = 60, delete_message: bool = False, **kwargs) -> None:
         super().__init__(timeout=timeout)
         self.delete_message = delete_message
         if ctx := kwargs.get("ctx"):
-            self.ctx = ctx
+            self.ctx: Context = ctx
+            self.bot = self.ctx.bot
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         author = self.ctx.author if hasattr(self, "ctx") else None

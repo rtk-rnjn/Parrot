@@ -2,6 +2,60 @@ from __future__ import annotations
 
 import discord
 
+_black_jack_cards = {
+    "0C": discord.PartialEmoji(name="0C", id=1137283528640434196),
+    "0D": discord.PartialEmoji(name="0D", id=1137283545224724531),
+    "0H": discord.PartialEmoji(name="0H", id=1137283484742852628),
+    "0S": discord.PartialEmoji(name="0S", id=1137283517777186848),
+    "2C": discord.PartialEmoji(name="2C", id=1137283494985334785),
+    "2D": discord.PartialEmoji(name="2D", id=1137283504590295060),
+    "2H": discord.PartialEmoji(name="2H", id=1137283540053143572),
+    "2S": discord.PartialEmoji(name="2S", id=1137283532427898991),
+    "3C": discord.PartialEmoji(name="3C", id=1137283515994603570),
+    "3D": discord.PartialEmoji(name="3D", id=1137283482129813644),
+    "3H": discord.PartialEmoji(name="3H", id=1137283535116451880),
+    "3S": discord.PartialEmoji(name="3S", id=1137283559200129065),
+    "4C": discord.PartialEmoji(name="4C", id=1137283487179739196),
+    "4D": discord.PartialEmoji(name="4D", id=1137283542586503198),
+    "4H": discord.PartialEmoji(name="4H", id=1137283578267455621),
+    "4S": discord.PartialEmoji(name="4S", id=1137283530049736824),
+    "5C": discord.PartialEmoji(name="5C", id=1137283523468865576),
+    "5D": discord.PartialEmoji(name="5D", id=1137283556331237457),
+    "5H": discord.PartialEmoji(name="5H", id=1137283462399799336),
+    "5S": discord.PartialEmoji(name="5S", id=1137283554938736761),
+    "6C": discord.PartialEmoji(name="6C", id=1137283450253082654),
+    "6D": discord.PartialEmoji(name="6D", id=1137283477000167454),
+    "6H": discord.PartialEmoji(name="6H", id=1137283489557913681),
+    "6S": discord.PartialEmoji(name="6S", id=1137283464870248469),
+    "7C": discord.PartialEmoji(name="7C", id=1137283575318843425),
+    "7D": discord.PartialEmoji(name="7D", id=1137283474269687878),
+    "7H": discord.PartialEmoji(name="7H", id=1137283510114193419),
+    "7S": discord.PartialEmoji(name="7S", id=1137283478879211531),
+    "8C": discord.PartialEmoji(name="8C", id=1137283459774161006),
+    "8D": discord.PartialEmoji(name="8D", id=1137283566527594538),
+    "8H": discord.PartialEmoji(name="8H", id=1137283507752800306),
+    "8S": discord.PartialEmoji(name="8S", id=1137283521166180422),
+    "9C": discord.PartialEmoji(name="9C", id=1137283565172838490),
+    "9H": discord.PartialEmoji(name="9H", id=1137402224507617340),
+    "9D": discord.PartialEmoji(name="9D", id=1137283471753084978),
+    "9S": discord.PartialEmoji(name="9S", id=1137283569425842246),
+    "AC": discord.PartialEmoji(name="AC", id=1137283549721014273),
+    "AD": discord.PartialEmoji(name="AD", id=1137283537750462568),
+    "AH": discord.PartialEmoji(name="AH", id=1137283453080051742),
+    "AS": discord.PartialEmoji(name="AS", id=1137403003918372884),
+    "JC": discord.PartialEmoji(name="JC", id=1137283581262188564),
+    "JD": discord.PartialEmoji(name="JD", id=1137283526711058443),
+    "JH": discord.PartialEmoji(name="JH", id=1137283562417160192),
+    "JS": discord.PartialEmoji(name="JS", id=1137283468494127114),
+    "KC": discord.PartialEmoji(name="KC", id=1137283513259937863),
+    "KD": discord.PartialEmoji(name="KD", id=1137283573569818694),
+    "KH": discord.PartialEmoji(name="KH", id=1137283456825557032),
+    "KS": discord.PartialEmoji(name="KS", id=1137283552577327205),
+    "QC": discord.PartialEmoji(name="QC", id=1137283502178566146),
+    "QD": discord.PartialEmoji(name="QD", id=1137283498495971442),
+    "QH": discord.PartialEmoji(name="QH", id=1137283548622106775),
+    "QS": discord.PartialEmoji(name="QS", id=1137283492619767818),
+}
 # fmt: off
 
 EMOJIS: dict[str, discord.PartialEmoji] = {
@@ -62,3 +116,4 @@ EMOJIS: dict[str, discord.PartialEmoji] = {
 # fmt: on
 
 emojis = EMOJIS  # beauty of code do matter
+BLACK_JACK_CARDS = _black_jack_cards

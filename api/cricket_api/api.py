@@ -3,9 +3,9 @@ from __future__ import annotations
 import random
 from typing import Any
 
-import aiohttp  # type: ignore
-import uvicorn  # type: ignore
-from fastapi import FastAPI, HTTPException  # type: ignore
+import aiohttp
+import uvicorn
+from fastapi import FastAPI, HTTPException
 
 from .functions import find_all, find_one, get_batting, get_bowling, parse_url
 from .random_agents import AGENTS
@@ -59,4 +59,5 @@ async def _cricket_api(url: str | None = None) -> dict[str, Any] | None:
 
 
 def runner() -> None:
-    uvicorn.run(app, port=1729, debug=False)
+    uvicorn.run(app, port=1729)
+

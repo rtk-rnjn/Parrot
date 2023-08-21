@@ -24,7 +24,7 @@ class BlackJack:
         if card_value == "A":
             return A
 
-        return 10 if card_value in ("J", "Q", "K") else int(card.name[1:])
+        return 10 if card_value in ("J", "Q", "K") else int(card.name[:1])
 
     def _get_card_name(self, card: discord.PartialEmoji) -> str:
         return card.name[:-1]

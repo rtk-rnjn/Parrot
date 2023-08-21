@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from core import ParrotView, Context
-from utilities.emotes import BLACK_JACK_CARDS
+import random
 
 import discord
+from core import Context, ParrotView
+from utilities.emotes import BLACK_JACK_CARDS
 
-
-import random
 
 class BlackJack:
     def __init__(self, *, player: discord.User | discord.Member) -> None:
@@ -14,6 +13,7 @@ class BlackJack:
         self.player_cards: list[discord.PartialEmoji] = []
         self.computer_cards: list[discord.PartialEmoji] = []
         self.__cards: dict[str, discord.PartialEmoji] = BLACK_JACK_CARDS.copy()
+        self._standed = False
 
         for _ in range(2):
             self.player_cards.append(self.deal_card())
@@ -46,8 +46,14 @@ class BlackJack:
 
     def hit(self) -> None:
         self.player_cards.append(self.deal_card())
+        if self.calculate_score(self.player_cards) > 21:
+            self._standed = True
 
     def stand(self) -> None:
+        self._standed = True
+        self._evaluate_computer_cards()
+
+    def _evaluate_computer_cards(self) -> None:
         while self.calculate_score(self.computer_cards) < 17:
             self.computer_cards.append(self.deal_card())
 
@@ -75,16 +81,15 @@ class BlackJack:
 
     @property
     def computer_cards_string(self) -> str:
+        if self.game_over:
+            return " ".join(str(card) for card in self.computer_cards)
         BACK_CARD = discord.PartialEmoji.from_str("<:CARD_BACK:1143090855910051851>")
         return str(self.computer_cards[0]) + (f" {str(BACK_CARD)}" * (len(self.computer_cards) - 1))
 
     @property
     def game_over(self) -> bool:
-        return (
-            self.player_score == 0
-            or self.computer_score == 0
-            or self.player_score > 21
-            or self.computer_score > 21
+        return self._standed or (
+            self.player_score == 0 or self.computer_score == 0 or self.player_score > 21 or self.computer_score > 21
         )
 
     def get_game_over_description(self) -> str:
@@ -103,10 +108,7 @@ class BlackJack:
 
     @property
     def player_won(self) -> bool:
-        return (
-            self.player_score > self.computer_score
-            and self.game_over
-        )
+        return self.player_score > self.computer_score and self.game_over
 
 
 class BlackJackView(ParrotView):
@@ -116,14 +118,22 @@ class BlackJackView(ParrotView):
 
     @property
     def embed(self) -> discord.Embed:
-        embed = discord.Embed(
-            title="BlackJack Game",
-            description=f"**{self.game.player.mention} vs Computer**",
-            color=discord.Color.blurple(),
-        ).add_field(
-            name=f"Your Card [{self.game.player_display_score}]", value=self.game.player_cards_string, inline=False,
-        ).add_field(
-            name=f"Computer Card [{self.game.computer_display_score}]", value=self.game.computer_cards_string, inline=False,
+        embed = (
+            discord.Embed(
+                title="BlackJack Game",
+                description=f"**{self.game.player.mention} vs Computer**",
+                color=discord.Color.blurple(),
+            )
+            .add_field(
+                name=f"Your Card [{self.game.player_display_score}]",
+                value=self.game.player_cards_string,
+                inline=False,
+            )
+            .add_field(
+                name=f"Computer Card [{self.game.computer_display_score}]",
+                value=self.game.computer_cards_string,
+                inline=False,
+            )
         )
 
         if self.game.game_over:
@@ -135,18 +145,18 @@ class BlackJackView(ParrotView):
     @discord.ui.button(label="Hit", style=discord.ButtonStyle.green)
     async def hit_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.game.hit()
-        await interaction.response.edit_message(embed=self.embed, view=self)
-
         if self.game.game_over:
             self.stop()
+            self.disable_all()
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
     @discord.ui.button(label="Stand", style=discord.ButtonStyle.red)
     async def stand_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         self.game.stand()
-        await interaction.response.edit_message(embed=self.embed, view=self)
-
         if self.game.game_over:
             self.stop()
+            self.disable_all()
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
     async def start(self, ctx: Context) -> None:
         self.message = await ctx.send(embed=self.embed, view=self)

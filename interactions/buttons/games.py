@@ -31,6 +31,7 @@ from utilities.uno.game import UNO
 from .__2048 import Twenty48, Twenty48_Button
 from .__aki import Akinator
 from .__battleship import BetaBattleShip
+from .__black_jack import BlackJackView
 from .__chess import Chess
 from .__chimp import ChimpTest
 from .__command_flags import GameCommandFlag
@@ -1353,3 +1354,10 @@ class Games(Cog):
             view=interactive_view,
             mention_author=False,
         )
+
+    @commands.command()
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def blackjack(self, ctx: Context):
+        """Blackjack game."""
+        game = BlackJackView(player=ctx.author)
+        await game.start(ctx)

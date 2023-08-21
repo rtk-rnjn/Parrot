@@ -163,4 +163,5 @@ class BlackJackView(ParrotView):
         await interaction.response.edit_message(embed=self.embed, view=self)
 
     async def start(self, ctx: Context) -> None:
+        self.ctx = ctx
         self.message = await ctx.send(embed=self.embed, view=self)

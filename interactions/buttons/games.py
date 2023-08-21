@@ -1302,7 +1302,7 @@ class Games(Cog):
         file = discord.File(HELP_IMAGE_PATH, filename="help.png")
         embed.set_image(url="attachment://help.png")
         embed.set_footer(text="Tip: using Discord's compact message display mode can help keep the board on the screen")
-        return await ctx.send(file=file, embed=embed)  # type: ignore
+        return await ctx.send(file=file, embed=embed)
 
     @commands.command("uno", aliases=["unogame"])
     @commands.max_concurrency(1, commands.BucketType.user)

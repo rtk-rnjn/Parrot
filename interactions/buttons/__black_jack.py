@@ -24,7 +24,7 @@ class BlackJack:
         if card_value == "A":
             return A
 
-        return 10 if card_value in ("J", "Q", "K") else int(card.name[:1])
+        return 10 if card_value in ("J", "Q", "K", "0") else int(card.name[:1])
 
     def _get_card_name(self, card: discord.PartialEmoji) -> str:
         return card.name[:-1]
@@ -95,14 +95,18 @@ class BlackJack:
     def get_game_over_description(self) -> str:
         if self.player_score == 0:
             return "You got a Blackjack! You win!"
-        elif self.computer_score == 0:
-            return "Computer got a Blackjack. You lose!"
-        elif self.player_score > 21 and self.computer_score > 21:
+        if self.computer_score == 0:
+            return "Dealer got a Blackjack. You lose!"
+        if self.player_score > 21 and self.computer_score > 21:
             return "You went over. You lose!"
-        elif self.player_score > 21:
+        if self.player_score > 21:
             return "You went over. You lose!"
-        elif self.computer_score > 21:
-            return "Computer went over. You win!"
+        if self.computer_score > 21:
+            return "Dealer went over. You win!"
+        if self.player_score > self.computer_score:
+            return "You win!"
+        if self.player_score < self.computer_score:
+            return "You lose!"
 
         return ""
 
@@ -121,7 +125,7 @@ class BlackJackView(ParrotView):
         embed = (
             discord.Embed(
                 title="BlackJack Game",
-                description=f"**{self.game.player.mention} vs Computer**",
+                description=f"**{self.game.player.mention} vs {self.ctx.bot.user.mention}**",
                 color=discord.Color.blurple(),
             )
             .add_field(
@@ -130,7 +134,7 @@ class BlackJackView(ParrotView):
                 inline=False,
             )
             .add_field(
-                name=f"Computer Card [{self.game.computer_display_score}]",
+                name=f"Dealer Card [{self.game.computer_display_score}]",
                 value=self.game.computer_cards_string,
                 inline=False,
             )

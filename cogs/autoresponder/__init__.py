@@ -109,12 +109,12 @@ class AutoResponders(Cog):
                 value=(
                     "You can use Jinja2 template to make the response more dynamic. "
                     "For example, you can use `<@{{ message.author.id }}>` to mention the user who sent the message. "
-                    "You can also use `{{ message.author.id }}` to get the name of the user who sent the message. "
+                    "You can also use `{{ message.author.name }}` to get the name of the user who sent the message. "
                 ),
                 inline=False,
             )
             .add_field(
-                name="Details Documentation of variables",
+                name="Detail Documentation of variables",
                 value=(
                     "- [Autoresponder Docs](https://github.com/rtk-rnjn/Parrot/wiki/Autoresponder)\n"
                     "- [Autoresponder Variable Docs](https://github.com/rtk-rnjn/Parrot/wiki/Autoresponder-Variables-Docs)"

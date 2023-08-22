@@ -1311,13 +1311,6 @@ class Parrot(commands.AutoShardedBot):
     @overload
     async def get_or_fetch_message(
         self,
-        channel: str | int,
-    ) -> discord.Message | None:
-        ...
-
-    @overload
-    async def get_or_fetch_message(
-        self,
         channel: ...,
         message: ...,
         *,
@@ -1358,17 +1351,6 @@ class Parrot(commands.AutoShardedBot):
         Optional[discord.Message]
             The Message or None if not found.
         """
-        if message is None:
-            dummy_message = str(channel)
-            if link := LINKS_RE.match(dummy_message):
-                dummy_message_id = int(link.string.split("/")[-1])
-                if dummy_message_id in self.message_cache:
-                    return self.message_cache[dummy_message_id]
-
-            try:
-                return self.message_cache[int(dummy_message)]
-            except (ValueError, KeyError):
-                return None
 
         message = int(message)
 

@@ -70,7 +70,6 @@ class AutoResponders(Cog):
             await ctx.send_help(ctx.command)
 
     @autoresponder.command(name="tutorial")
-    @commands.has_permissions(manage_guild=True)
     async def autoresponder_tutorial(self, ctx: Context, *, entity: str | None = None) -> None:
         """Tutorial for autoresponder commands."""
         # get the entity from TOPICS, use difflib to get the closest match
@@ -111,6 +110,14 @@ class AutoResponders(Cog):
                     "You can use Jinja2 template to make the response more dynamic. "
                     "For example, you can use `<@{{ message.author.id }}>` to mention the user who sent the message. "
                     "You can also use `{{ message.author.id }}` to get the name of the user who sent the message. "
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Details Documentation of variables",
+                value=(
+                    "- [Autoresponder Docs](https://github.com/rtk-rnjn/Parrot/wiki/Autoresponder)\n"
+                    "- [Autoresponder Variable Docs](https://github.com/rtk-rnjn/Parrot/wiki/Autoresponder-Variables-Docs)"
                 ),
                 inline=False,
             )

@@ -186,3 +186,30 @@ async def get_guild_thread(guild: str, thread: str) -> Response:
     if not ipc_response:
         return jsonify({"status": "error", "message": "Guild or thread not found"})
     return jsonify({"status": "success", **ipc_response.response})  # type: ignore
+
+
+@app.route("/get/guilds/<guild>/exists")
+async def guild_exists(guild: str) -> Response:
+    kw = {}
+    if guild.isdigit():
+        kw["id"] = int(guild)
+    else:
+        kw["name"] = guild
+    ipc_response = await ipc.request("guild_exists", **kw)
+    if not ipc_response:
+        return jsonify({"status": "error", "message": "Guild not found"})
+    return jsonify({"status": "success", **ipc_response.response})  # type: ignore
+
+
+@app.route("/get/guilds/<guild>/config")
+async def get_guild_config(guild: str) -> Response:
+    kw = {}
+    if guild.isdigit():
+        kw["id"] = int(guild)
+    else:
+        kw["name"] = guild
+
+    ipc_response = await ipc.request("guild_config", **kw)
+    if not ipc_response:
+        return jsonify({"status": "error", "message": "Guild not found"})
+    return jsonify({"status": "success", **ipc_response.response})  # type: ignore

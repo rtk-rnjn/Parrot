@@ -351,3 +351,29 @@ class IPCRoutes(Cog):
             return {"status": "ok"}
         else:
             return {"status": "error"}
+
+    @Server.route()
+    async def guild_exists(self, data: ClientPayload) -> dict[str, bool]:
+        if _id := getattr(data, "id", None):
+            guild = self.bot.get_guild(int(_id))
+        elif name := getattr(data, "name", None):
+            guild = discord.utils.get(self.bot.guilds, name=name)
+        else:
+            return {"exists": False}
+
+        return {"exists": guild is not None}
+
+    @Server.route()
+    async def guild_config(self, data: ClientPayload) -> dict[str, dict]:
+        if _id := getattr(data, "id", None):
+            guild = self.bot.get_guild(int(_id))
+        elif name := getattr(data, "name", None):
+            guild = discord.utils.get(self.bot.guilds, name=name)
+        else:
+            return {}
+
+        if not guild:
+            return {}
+
+        d = await self.bot.guild_configurations.find_one({"_id": guild.id})
+        return dict(d) if d else {}

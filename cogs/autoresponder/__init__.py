@@ -130,7 +130,7 @@ class AutoResponders(Cog):
         )
         await ctx.reply(embed=embed)
 
-    @autoresponder.command(name="variables", aliases=["vars"])
+    @autoresponder.command(name="variables", aliases=["vars", "var"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_variables(self, ctx: Context) -> None:
         """Show variables that can be used in autoresponder response."""
@@ -226,7 +226,7 @@ class AutoResponders(Cog):
         del self.cache[ctx.guild.id][name]
         await ctx.reply(f"Removed autoresponder `{name}`.")
 
-    @autoresponder.command(name="list", aliases=["ls"])
+    @autoresponder.command(name="list", aliases=["ls", "all"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_list(self, ctx: Context) -> None:
         """List all autoresponders."""
@@ -277,7 +277,7 @@ class AutoResponders(Cog):
 
         await ctx.reply(embed=embed)
 
-    @autoresponder.command(name="enable", aliases=["on"])
+    @autoresponder.command(name="enable", aliases=["on", "boot", "enabled", "start"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_enable(self, ctx: Context, name: str) -> None:
         """Enable an autoresponder."""
@@ -292,7 +292,7 @@ class AutoResponders(Cog):
         self.cache[ctx.guild.id][name]["enabled"] = True
         await ctx.reply(f"Enabled autoresponder `{name}`.")
 
-    @autoresponder.command(name="disable", aliases=["off"])
+    @autoresponder.command(name="disable", aliases=["off", "shutdown", "disabled", "mute", "stop"])
     @commands.has_permissions(manage_guild=True)
     async def autoresponder_disable(self, ctx: Context, name: str) -> None:
         """Disable an autoresponder."""

@@ -1,5 +1,5 @@
 {# Greeting Example #}
 
-{% if message_author_id != 800780974274248764 and message_content == "hi" %}
-    Hi {{ message_author }}! How are you?
+{% if message.author.id != 800780974274248764 and message_content == "hi" %}
+    Hi {{ message.author.mention }}! How are you?
 {% endif %}

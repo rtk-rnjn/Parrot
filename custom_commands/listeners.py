@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+from functools import wraps
 import logging
 import re
 from collections import Counter
-from typing import Literal
+from typing import Callable, Literal
+from weakref import WeakValueDictionary
 
 import discord
 from core import Cog, Parrot
@@ -19,6 +21,22 @@ QUOTIENT_HQ = 746337818388987967
 log = logging.getLogger("custom_commands.listeners")
 
 OWO_COOLDOWN = re.compile(r"(\*\*⏱ )\|( .+)(\*\*!)( Slow down and try the command again )(\*\*)((<t:)(\d+)(:R>)?)(\*\*)")
+
+def owo_lock() -> Callable:
+    def wrap(func: Callable) -> Callable | None:
+        func.__locks = WeakValueDictionary()
+
+        @wraps(func)
+        async def inner(self: Callable, message: discord.Message, *args, **kwargs) -> Callable | None:
+            lock = func.__locks.setdefault(message.author.id, asyncio.Lock())
+            if lock.locked():
+                return
+
+            async with func.__locks.setdefault(message.author.id, asyncio.Lock()):
+                return await func(self, message, *args, **kwargs)
+
+        return inner
+    return wrap
 
 
 class Sector17Listeners(Cog):
@@ -128,7 +146,7 @@ class Sector17Listeners(Cog):
 
         cmds = "|".join(set(cmds))
 
-        regex = rf"(?P<prefix>{prefixes})\s*(?P<command>{cmds})"
+        regex = rf"(?P<prefix>{prefixes})\s*(?P<command>{cmds})$"
 
         if match := re.search(regex, content):
             return match.groupdict()
@@ -147,6 +165,7 @@ class Sector17Listeners(Cog):
 
         return False
 
+    @owo_lock()
     async def owo_battle(self, message: discord.Message, content: str):
         if not self._get_command_list(content, {"battle": "b"}):
             return
@@ -156,6 +175,7 @@ class Sector17Listeners(Cog):
 
             await message.channel.send(f"{message.author.mention} Battle", reference=owo_message)
 
+    @owo_lock()
     async def owo_hunt(self, message: discord.Message, content: str):
         if not self._get_command_list(content, {"hunt": "h"}):
             return
@@ -165,6 +185,7 @@ class Sector17Listeners(Cog):
 
             await message.channel.send(f"{message.author.mention} Hunt", reference=owo_message)
 
+    @owo_lock()
     async def owo_hunt_bot(self, message: discord.Message, content: str):
         if not self._get_command_list(content, {"huntbot": ["autohunt", "hb", "ah"]}):
             return
@@ -207,7 +228,8 @@ class Sector17Listeners(Cog):
 
             await owo_message.add_reaction("\N{ALARM CLOCK}")
 
-    async def owo_pray_curse(self, message: discord.Message, content: str):
+    @owo_lock()
+    async def owo_pray_curse(self, message: discord.Message, content: str) -> None:
         if not self._get_command_list(content, {"pray": "curse"}):
             return
         owo_message = await self.wait_for_owo(message, startswith=("**\N{GHOST}", "**\N{PERSON WITH FOLDED HANDS}"))

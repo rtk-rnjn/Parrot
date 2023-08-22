@@ -5,7 +5,7 @@
 {# ACTUAL CODE BELOW #}
 
 {# CHECK IF THE MESSAGE IS IN THE COUNTING CHANNEL #}
-{% if message_channel_id == counting_channel %}
+{% if message.channel.id == counting_channel %}
 
     {# GET THE CURRENT NUMBER #}
     {% set current_number = get_db(counting_channel) %}

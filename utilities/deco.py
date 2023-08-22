@@ -398,14 +398,6 @@ def locked() -> Callable | None:
         async def inner(self: Callable, ctx: Context, *args, **kwargs) -> Callable | None:
             lock = func.__locks.setdefault(ctx.author.id, Lock())
             if lock.locked():
-                embed = Embed()
-                embed.colour = Colour.red()
-
-                embed.description = (
-                    "You're already using this command. Please wait until " "it is done before you use it again."
-                )
-                embed.title = random.choice(ERROR_REPLIES)
-                await ctx.send(embed=embed)
                 return
 
             async with func.__locks.setdefault(ctx.author.id, Lock()):

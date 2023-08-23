@@ -62,8 +62,6 @@ from utilities.config import (
 )
 from utilities.converters import Cache
 from utilities.paste import Client
-from utilities.regex import LINKS_RE
-from utilities.strawpoll import HTTPClient as StrawpollHTTPClient
 
 from .__template import post as POST
 from .Context import Context
@@ -252,8 +250,6 @@ class Parrot(commands.AutoShardedBot):
 
         self.__global_write_data: dict[str, list[pymongo.UpdateOne | pymongo.UpdateMany]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
-
-        self.strawpoll: StrawpollHTTPClient = StrawpollHTTPClient(token=STRAW_POLL)
 
     async def init_db(self) -> None:
         # MongoDB Database variables
@@ -652,7 +648,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         VOICE_CHANNEL_ID = 1116780108074713098
-        channel: discord.VoiceChannel = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)
+        channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)
         if channel is not None:
             await channel.connect(self_deaf=True, reconnect=True)
 
@@ -945,28 +941,20 @@ class Parrot(commands.AutoShardedBot):
 
     async def getch(
         self,
-        get_function: Callable[..., T],
-        fetch_function: Callable[..., Awaitable[T]] | Awaitable[T],
-        _id: int | discord.Object | None = None,  # type: ignore
+        get_function: Callable[[int], T | None],
+        fetch_function: Callable[[int], Awaitable[T | None]],
+        _id: int | discord.Object,  # type: ignore
         *,
-        force_fetch: bool = True,
+        force_fetch: bool = False,
     ) -> T | None:
         _id: int = getattr(_id, "id", _id)  # type: ignore
         if _id is None:
-            something = None
-            if not callable(get_function):
-                something = get_function
-            if isinstance(fetch_function, Awaitable) and something is None and force_fetch:
-                return await fetch_function
-            return something
+            return None
 
-        with suppress(discord.HTTPException):
-            something = get_function(_id)
-            if something is None and force_fetch and callable(fetch_function):
-                return await fetch_function(_id)
-            return something
+        if force_fetch:
+            log.warning("`force_fetch` don't do anything, it's just a placeholder")
 
-        return None
+        return get_function(_id) or (await fetch_function(_id))
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):
@@ -1357,12 +1345,12 @@ class Parrot(commands.AutoShardedBot):
 
         if isinstance(channel, int):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel, force_fetch=True)
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel)
             else:
                 channel = self.get_channel(channel)  # type: ignore
         elif isinstance(channel, discord.Object | discord.PartialMessageable):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id, force_fetch=True)
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id)
             else:
                 channel = self.get_channel(channel.id)  # type: ignore
 

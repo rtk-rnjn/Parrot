@@ -19,7 +19,8 @@ converted via Object.to/from_dict().
 """
 
 import sys
-from typing import Any, Self, TypeVar
+from typing import Any, TypeVar
+from typing_extensions import Self
 
 __version__ = "2.0.2"
 VERSION = tuple(map(int, __version__.split(".")))

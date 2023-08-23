@@ -185,7 +185,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.error_channel: discord.TextChannel | None = None
         self.persistent_views_added: bool = False
-        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
+        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(10, 12, commands.BucketType.user)
 
         self._was_ready: bool = False
         self.lock: asyncio.Lock = asyncio.Lock()

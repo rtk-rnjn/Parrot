@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from functools import wraps
 import logging
 import re
 from collections import Counter
-from typing import Callable, Literal
+from collections.abc import Callable
+from functools import wraps
+from typing import Literal
 from weakref import WeakValueDictionary
 
 import discord
@@ -22,6 +23,7 @@ log = logging.getLogger("custom_commands.listeners")
 
 OWO_COOLDOWN = re.compile(r"(\*\*⏱ )\|( .+)(\*\*!)( Slow down and try the command again )(\*\*)((<t:)(\d+)(:R>)?)(\*\*)")
 
+
 def owo_lock() -> Callable:
     def wrap(func: Callable) -> Callable | None:
         func.__locks = WeakValueDictionary()
@@ -36,6 +38,7 @@ def owo_lock() -> Callable:
                 return await func(self, message, *args, **kwargs)
 
         return inner
+
     return wrap
 
 

@@ -15,7 +15,7 @@ with contextlib.suppress(ImportError):
 with open("config.yml", encoding="utf-8", errors="ignore") as f:
     data: dict[str, Any] = yaml.safe_load(f.read())
 
-VERSION = "v5.0.0"
+VERSION = "v5.1.0"
 
 HEROKU: bool = False
 

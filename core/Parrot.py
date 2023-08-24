@@ -946,7 +946,7 @@ class Parrot(commands.AutoShardedBot):
         force_fetch: bool = False,
     ) -> T | None:
         _id: int = getattr(_id, "id", _id)  # type: ignore
-        if _id is None:
+        if not _id:
             return None
 
         result = get_function(_id)

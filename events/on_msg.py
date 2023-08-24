@@ -613,7 +613,12 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             return
         else:
             collection: Collection = self.bot.guild_level_db[f"{message.guild.id}"]
-            ch: discord.TextChannel | None = await self.bot.get_channel(announce_channel)
+            ch: discord.TextChannel | None = await self.bot.getch(
+                self.bot.get_channel,
+                self.bot.fetch_channel,
+                announce_channel,
+                force_fetch=True,
+            )
             if ch and (
                 data := await collection.find_one_and_update(
                     {"_id": message.author.id},

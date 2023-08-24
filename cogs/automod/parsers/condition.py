@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from core import Parrot
 
+from discord import Member, Message
 from discord.abc import GuildChannel
 from discord.utils import maybe_coroutine, utcnow
-
-from discord import Member, Message
 
 
 class Condition:
@@ -35,11 +34,11 @@ class Condition:
     def require_roles(self, *, member: Member, roles: list[int], **kw) -> bool:
         return all(role.id in roles for role in member.roles)
 
-    def ignore_channel(self, *, message: Message, channels: list[int], **kw) -> bool:
-        return message.channel.id in channels
+    def ignore_channel(self, *, message: Message | None = None, channels: list[int], **kw) -> bool:
+        return message.channel.id in channels if message else False
 
-    def require_channel(self, *, message: Message, channels: list[int], **kw) -> bool:
-        return message.channel.id not in channels
+    def require_channel(self, *, message: Message | None = None, channels: list[int], **kw) -> bool:
+        return message.channel.id not in channels if message else False
 
     def ignore_bots(self, *, member: Member, **kw) -> bool:
         return not member.bot
@@ -47,19 +46,23 @@ class Condition:
     def require_bots(self, *, member: Member, **kw) -> bool:
         return member.bot
 
-    def ignore_categories(self, *, message: Message, categories: list[int], **kw) -> bool:
+    def ignore_categories(self, *, message: Message | None = None, categories: list[int], **kw) -> bool:
+        if not message:
+            return False
         assert isinstance(message.channel, GuildChannel)
         return message.channel.category.id in categories if message.channel.category else False
 
-    def require_categories(self, *, message: Message, categories: list[int], **kw) -> bool:
+    def require_categories(self, *, message: Message | None = None, categories: list[int], **kw) -> bool:
+        if not message:
+            return False
         assert isinstance(message.channel, GuildChannel)
         return message.channel.category.id not in categories if message.channel.category else False
 
-    def new_message(self, *, message: Message, **kw) -> bool:
-        return not bool(message.edited_at) and not message.is_system()
+    def new_message(self, *, message: Message | None = None, **kw) -> bool:
+        return not bool(message.edited_at) and not message.is_system() if message else False
 
-    def edited_message(self, *, message: Message, **kw) -> bool:
-        return bool(message.edited_at) and not message.is_system()
+    def edited_message(self, *, message: Message | None = None, **kw) -> bool:
+        return bool(message.edited_at) and not message.is_system() if message else False
 
     def account_age_below(self, *, member: Member, age_in_min: int, **kw) -> bool:
         return ((utcnow() - member.created_at).total_seconds() / 60) < age_in_min

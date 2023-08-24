@@ -16,7 +16,7 @@ class PyLintConverter(commands.FlagConverter, case_insensitive=True, delimiter="
         "inference_failure",
         "undefined",
         "inference",
-    ] = "HIGH CONTROL_FLOW INFERENCE_FAILURE UNDEFINED INFERENCE"
+    ] = "high"
     disable: str | None = None
     enable: str | None = None
 

@@ -13,7 +13,7 @@ from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 
 from .jinja_help import TOPICS
-from .variables import Variables
+from .variables import Variables, db
 
 
 class Environment(SandboxedEnvironment):

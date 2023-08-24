@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from core import Parrot
-
+from functools import wraps
 import discord
+
+if TYPE_CHECKING:
+    from pymongo.collection import ReturnDocument
+
+    from core import Parrot
 
 
 class JinjaBase:
@@ -36,12 +39,14 @@ class JinjaAllowedMentions(JinjaBase, discord.AllowedMentions):
 class utils:  # pylint: disable=invalid-name
     MISSING = discord.utils._MissingSentinel()  # pylint: disable=protected-access
 
-    def __init__(self) -> None:
-        self.get = discord.utils.get
-        self.find = discord.utils.find
-
     def __repr__(self) -> str:
         return "<Module discord.utils>"
+
+    def get(self, *args, **kwargs) -> discord.Object:
+        return discord.utils.get(*args, **kwargs)
+
+    def find(self, *args, **kwargs) -> discord.Object:
+        return discord.utils.find(*args, **kwargs)
 
 
 class _discord:  # pylint: disable=invalid-name
@@ -66,10 +71,6 @@ class http:  # pylint: disable=invalid-name
 
 
 class bot:  # pylint: disable=invalid-name
-    def __init__(self, bot: Parrot, message: discord.Message) -> None:
-        self.__bot = bot
-        self.__message = message
-
     http = http()
     token = "what is love?"
     user = "love is something that you can't explain"
@@ -78,6 +79,12 @@ class bot:  # pylint: disable=invalid-name
     users = []
     channels = []
     voice_clients = []
+
+    def __init__(self, bot: Parrot, message: discord.Message) -> None:
+        self.__bot = bot
+        self.__message = message
+
+        self.db = db(bot=self.__bot, guild=self.__message.guild)  # type: ignore
 
     def __repr__(self) -> str:
         return "<Module commands.Bot>"
@@ -88,22 +95,109 @@ class bot:  # pylint: disable=invalid-name
     async def start(self, *args, **kwargs) -> None:
         pass
 
-    async def get_db(self, key: str):
+    async def close(self) -> None:
+        pass
+
+    async def logout(self) -> None:
+        pass
+
+    async def get_context(self, *args, **kwargs) -> None:
+        pass
+
+    async def on_ready(self) -> None:
+        pass
+
+    async def set_db(self, *args, **kwargs):
+        await self.db.set_db(*args, **kwargs)
+
+    async def get_db(self, *args, **kwargs):
+        return await self.db.get_db(*args, **kwargs)
+
+    async def delete_db(self, *args, **kwargs):
+        await self.db.delete_db(*args, **kwargs)
+
+
+class db:  # pylint: disable=invalid-name
+    def __init__(self, bot: Parrot, guild: discord.Guild) -> None:
+        self.__bot = bot
+        self.__guild = guild
+
+        self.__cache: dict[int, dict[str | int, dict | list | str | int | float | bool | None]] = {}
+
+    @property
+    def cache(self) -> dict:
+        return self.__cache[self.__guild.id]
+
+    @property
+    def bucket_exceeded(self) -> bool:
+        return len(self.__cache[self.__guild.id]) >= 1000
+
+    def __repr__(self) -> str:
+        return "<Module commands.Bot.db>"
+
+    def _raise_if_bucket_exceeded(self):
+        if self.bucket_exceeded:
+            msg = "Bucket exceeded"
+            raise ValueError(msg)
+
+    async def get_db(self, key: str | int) -> dict | list | str | int | float | bool | None:
         """Get the database."""
-        data = await self.__bot.auto_responders.find_one({"_id": self.__message.guild.id, key: {"$exists": True}})  # type: ignore
+        if val := self.__cache.get(self.__guild.id, {}).get(key, None):
+            return val
+
+        data = await self.__bot.auto_responders.find_one({"_id": self.__guild.id, key: {"$exists": True}})
+        self.__cache[self.__guild.id] = data
         return data[key] if data else None
 
-    async def set_db(self, key: str, value: str | int):
+    async def set_db(self, key: str | int, value: dict | list | str | int | float | bool):
         """Set the database."""
-        await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}}, upsert=True)  # type: ignore
+        self._raise_if_bucket_exceeded()
 
-    async def delete_db(self, key: str):
+        if key == "_id":
+            msg = "Cannot set _id"
+            raise ValueError(msg)
+
+        if not isinstance(value, dict | list | str | int | float | bool):
+            msg = "Value must be a dict, list, str, int, float, or bool"
+            raise ValueError(msg)
+
+        data = await self.__bot.auto_responders.find_one_and_update(
+            {"_id": self.__guild.id},
+            {"$set": {key: value}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+        self.__cache[self.__guild.id] = data
+
+    async def delete_db(self, key: str | int) -> None:
         """Delete the database."""
-        await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$unset": {key: ""}})  # type: ignore
+        if key == "_id":
+            msg = "Cannot delete _id"
+            raise ValueError(msg)
 
-    async def update_db(self, key: str, value: str | int):
+        data = await self.__bot.auto_responders.find_one_and_update(
+            {"_id": self.__guild.id},
+            {"$unset": {key: ""}},
+            return_document=ReturnDocument.AFTER,
+        )
+        self.__cache[self.__guild.id] = data
+
+    async def update_db(self, key: str | int, value: dict | list | str | int | float | bool) -> None:
         """Update the database."""
-        await self.__bot.auto_responders.update_one({"_id": self.__message.guild.id}, {"$set": {key: value}})  # type: ignore
+        if key == "_id":
+            msg = "Cannot update _id"
+            raise ValueError(msg)
+
+        if not isinstance(value, dict | list | str | int | float | bool):
+            msg = "Value must be a dict, list, str, int, float, or bool"
+            raise ValueError(msg)
+
+        data = await self.__bot.auto_responders.find_one_and_update(
+            {"_id": self.__guild.id},
+            {"$set": {key: value}},
+            return_document=ReturnDocument.AFTER,
+        )
+        self.__cache[self.__guild.id] = data
 
 
 class Variables:
@@ -123,7 +217,7 @@ class Variables:
         _guild = JinjaGuild(guild=self.__message.guild)  # type: ignore
         _member = JinjaMember(member=self.__message.author)
         _message = JinjaMessage(message=self.__message)
-        _bot = bot(bot=self.__bot, message=self.__message)
+        _bot = bot(self.__bot, self.__message)
 
         class ctx:
             prefix = ""

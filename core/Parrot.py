@@ -417,8 +417,6 @@ class Parrot(commands.AutoShardedBot):
         self.update_banned_members.start()
         self.update_scam_link_db.start()
 
-        self.strawpoll.session = self.http_session
-
     async def db_latency(self) -> float:
         ini = perf_counter()
         await self.guild_configurations.find_one({})

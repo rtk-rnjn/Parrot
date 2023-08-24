@@ -949,10 +949,10 @@ class Parrot(commands.AutoShardedBot):
         if _id is None:
             return None
 
-        if force_fetch:
-            log.warning("`force_fetch` don't do anything, it's just a placeholder")
-
-        return get_function(_id) or (await fetch_function(_id))
+        result = get_function(_id)
+        if result is None:
+            result = await fetch_function(_id)
+        return result
 
     @tasks.loop(count=1)
     async def update_server_config_cache(self, guild_id: int):

@@ -275,16 +275,10 @@ class Meta(Cog):
     async def show_bot_stats(self, ctx: Context):
         """Get the bot stats."""
         revision = self.get_last_commits(3) or await self.get_last_commits_async(3)
-        embed = discord.Embed(
-            title="Official Bot Server Invite",
-            colour=ctx.author.colour,
-            timestamp=discord.utils.utcnow(),
-            description="Latest Changes:\n" + revision,
-            url=SUPPORT_SERVER,
-        )
         support_guild = self.bot.get_guild(SUPPORT_SERVER_ID)
-        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)  # type: ignore  i am owner
-        embed.set_author(name=str(owner), icon_url=owner.display_avatar.url)
+        process = psutil.Process()
+        memory_usage = process.memory_full_info().uss / 1024**2
+        cpu_usage = process.cpu_percent() / psutil.cpu_count()
 
         # statistics
         total_members = 0
@@ -305,23 +299,30 @@ class Meta(Cog):
                 elif isinstance(channel, discord.VoiceChannel | discord.StageChannel):
                     voice += 1
 
-        embed.add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
-        embed.add_field(name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice")
-        process = psutil.Process()
-        memory_usage = process.memory_full_info().uss / 1024**2
-        cpu_usage = process.cpu_percent() / psutil.cpu_count()
-        embed.add_field(name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
-
         version = discord_version
-        embed.add_field(name="Guilds", value=guilds)
-        embed.add_field(name="Bot Version", value=VERSION)
-        embed.add_field(name="Uptime", value=discord.utils.format_dt(self.bot.uptime, "R"))
-        embed.set_footer(
-            text=f"Made with discord.py v{version}",
-            icon_url="http://i.imgur.com/5BFecvA.png",
+        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)  # type: ignore  i am owner
+        embed = (
+            discord.Embed(
+                title="Official Bot Server Invite",
+                colour=ctx.author.colour,
+                timestamp=discord.utils.utcnow(),
+                description="Latest Changes:\n" + revision,
+                url=SUPPORT_SERVER,
+            )
+            .set_author(name=str(owner), icon_url=owner.display_avatar.url)
+            .add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
+            .add_field(name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice")
+            .add_field(name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
+            .add_field(name="Guilds", value=guilds)
+            .add_field(name="Bot Version", value=VERSION)
+            .add_field(name="Uptime", value=discord.utils.format_dt(self.bot.uptime, "R"))
+            .set_footer(
+                text=f"Made with discord.py v{version}",
+                icon_url="http://i.imgur.com/5BFecvA.png",
+            )
         )
         embed.timestamp = discord.utils.utcnow()
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, view=ctx.link_view(url=self.bot.invite, label="Invite me!"))
 
     @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
     @commands.bot_has_permissions(embed_links=True)
@@ -385,7 +386,7 @@ class Meta(Cog):
         url = self.bot.invite
         em: discord.Embed = (
             discord.Embed(
-                title="Click here to add",
+                title="Thank you for choosing Parrot!",
                 description=f"```ini\n[Default Prefix: `@{self.bot.user}`]\n```\n**Bot Owned and created by `{self.bot.author_name}`**",
                 url=url,
                 timestamp=discord.utils.utcnow(),
@@ -393,7 +394,7 @@ class Meta(Cog):
             .set_footer(text=f"{ctx.author}")
             .set_thumbnail(url=ctx.guild.me.display_avatar.url)
         )
-        await ctx.reply(embed=em)
+        await ctx.reply(embed=em, view=ctx.link_view(url=url, label="Invite me!"))
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

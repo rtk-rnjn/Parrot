@@ -86,6 +86,9 @@ class bot:  # pylint: disable=invalid-name
 
         self.db = db(bot=self.__bot, guild=self.__message.guild)  # type: ignore
 
+    async def init_db(self) -> None:
+        await self.db.init_cache()
+
     def __repr__(self) -> str:
         return "<Module commands.Bot>"
 
@@ -139,6 +142,11 @@ class db:  # pylint: disable=invalid-name
         if self.bucket_exceeded:
             msg = "Bucket exceeded"
             raise ValueError(msg)
+
+    async def init_cache(self) -> None:
+        """Initialize the cache."""
+        data = await self.__bot.auto_responders.find_one({"_id": self.__guild.id})
+        self.__cache[self.__guild.id] = data or {}
 
     async def get_db(self, key: str | int) -> dict | list | str | int | float | bool | None:
         """Get the database."""
@@ -207,7 +215,7 @@ class Variables:
         self.__message = message
         self.__bot = bot
 
-    def build_base(self, get: str | None = None) -> dict:
+    async def build_base(self, get: str | None = None) -> dict:
         from .channel import JinjaChannel
         from .guild import JinjaGuild
         from .member import JinjaMember
@@ -218,6 +226,7 @@ class Variables:
         _member = JinjaMember(member=self.__message.author)
         _message = JinjaMessage(message=self.__message)
         _bot = bot(self.__bot, self.__message)
+        await _bot.init_db()
 
         class ctx:
             prefix = ""

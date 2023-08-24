@@ -13,7 +13,7 @@ from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 
 from .jinja_help import TOPICS
-from .variables import Variables, db
+from .variables import Variables
 
 
 class Environment(SandboxedEnvironment):
@@ -135,7 +135,7 @@ class AutoResponders(Cog):
     async def autoresponder_variables(self, ctx: Context) -> None:
         """Show variables that can be used in autoresponder response."""
         var = Variables(message=ctx.message, bot=self.bot)
-        variables = var.build_base()
+        variables = await var.build_base()
 
         def format_var(v: str) -> str:
             return "{{ " + v + " }}"
@@ -200,7 +200,7 @@ class AutoResponders(Cog):
             return
 
         ins = Variables(message=ctx.message, bot=self.bot)
-        variables = ins.build_base()
+        variables = await ins.build_base()
         content, err = await self.execute_jinja(name, res, from_auto_response=False, **variables)
 
         if err:
@@ -327,7 +327,7 @@ class AutoResponders(Cog):
         assert isinstance(message.author, discord.Member)
 
         var = Variables(message=message, bot=self.bot)
-        variables = var.build_base()
+        variables = await var.build_base()
 
         for name, data in self.cache[message.guild.id].items():
             if not data.get("enabled"):
@@ -402,7 +402,7 @@ class AutoResponders(Cog):
         code = code.strip("`").strip("\n").strip("")
 
         variables = Variables(message=ctx.message, bot=self.bot)
-        variables = variables.build_base()
+        variables = await variables.build_base()
 
         owner = await self.bot.is_owner(ctx.author)
 

@@ -6,6 +6,7 @@ import io
 import logging
 import logging.handlers
 import os
+import random
 import re
 import traceback
 import types
@@ -65,6 +66,7 @@ from .__template import post as POST
 from .Context import Context
 from .help import PaginatedHelpCommand
 from .utils import CustomFormatter, handler
+from .tips import TIPS
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -745,6 +747,8 @@ class Parrot(commands.AutoShardedBot):
             await self.wait_until_ready()
 
         await self.invoke(ctx)
+        if random.randint(1, 20) == random.randint(1, 20):
+            await ctx.send(f"**Do you know?**\n{random.choice(TIPS)}", delete_after=5)
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1

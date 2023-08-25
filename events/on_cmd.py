@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 import pathlib
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
+from collections.abc import Sequence
 
 import arrow
 import discord
@@ -11,8 +12,12 @@ from core import Cog
 from discord.ext import commands
 from utilities.exceptions import ParrotCheckFailure
 
+from rapidfuzz import fuzz, process
+
 if TYPE_CHECKING:
     from core import Context, Parrot
+
+T = TypeVar("T", bound=discord.Member | discord.Emoji | discord.TextChannel | discord.Role | discord.VoiceChannel)
 
 quote_ = pathlib.Path("extra/quote.txt").read_text()
 quote = quote_.split("\n")
@@ -58,8 +63,20 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             success=not ctx.command_failed,
         )
 
+    def _get_object_by_fuzzy(self, *, argument: str, objects: Sequence[T]) -> tuple[T | None, str | None, int | None] | None:
+        """Get an object from a list of objects by fuzzy matching."""
+        if not argument:
+            return None
+        CUT_OFF = 90
+        names = [o.name for o in objects]
+        algorithms = [fuzz.ratio, fuzz.partial_ratio, fuzz.token_sort_ratio, fuzz.token_set_ratio, fuzz.WRatio]
+        for algo in algorithms:
+            if data := process.extractOne(argument, names, scorer=algo, score_cutoff=CUT_OFF):
+                result, score, position = data
+                return objects[position], result, int(score)
+
     @Cog.listener()
-    async def on_command_error(self, ctx: Context, error: commands.CommandError):
+    async def on_command_error(self, ctx: Context, error: commands.CommandError):  # noqa: PLR0912, PLR0915, C901
         await self.bot.wait_until_ready()
         # elif command has local error handler, return
         if hasattr(ctx.command, "on_error"):
@@ -68,7 +85,6 @@ class Cmd(Cog, command_attrs={"hidden": True}):
         # get the original exception
         error = getattr(error, "original", error)
         TO_RAISE_ERROR, DELETE_AFTER = False, None
-
         ignore = (
             commands.CommandNotFound,
             discord.NotFound,
@@ -140,6 +156,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
 
         elif isinstance(error, commands.BadArgument):
             ctx.command.reset_cooldown(ctx)
+            objects = []
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = "Message ID/Link you provied is either invalid or deleted"
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}")
@@ -147,6 +164,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             elif isinstance(error, commands.MemberNotFound):
                 ERROR_EMBED.description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}")
+                objects = ctx.guild.members
 
             elif isinstance(error, commands.UserNotFound):
                 ERROR_EMBED.description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
@@ -155,17 +173,26 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             elif isinstance(error, commands.ChannelNotFound):
                 ERROR_EMBED.description = "Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}")
+                objects = ctx.guild.text_channels + ctx.guild.voice_channels
 
             elif isinstance(error, commands.RoleNotFound):
                 ERROR_EMBED.description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}")
+                objects = ctx.guild.roles
 
             elif isinstance(error, commands.EmojiNotFound):
                 ERROR_EMBED.description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}")
+                objects = ctx.guild.emojis
             else:
                 ERROR_EMBED.description = f"{error}"
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}")
+
+            if objects:
+                if (obj := self._get_object_by_fuzzy(argument=error.argument, objects=objects)):  # type: ignore
+                    _, result, score = obj
+                    ERROR_EMBED.description += f"\n\nDid you mean `{result}`?"
+                    ERROR_EMBED.set_footer(text=f"Confidence: {score}%")
 
         elif isinstance(
             error,

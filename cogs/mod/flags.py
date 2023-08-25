@@ -11,6 +11,6 @@ class reasonFlag(commands.FlagConverter, case_insensitive=True, prefix="--", del
 class WarnFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     message: int | None = None
     warn_id: int | None = None
-    moderator: discord.Member | discord.User = None
-    target: discord.Member | discord.User = None
-    channel: discord.TextChannel | discord.Thread = None
+    moderator: discord.Member | discord.User | None = None
+    target: discord.Member | discord.User | None = None
+    channel: discord.TextChannel | discord.Thread | None = None

@@ -10,7 +10,7 @@ from collections.abc import Coroutine
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, ClassVar, Final
 
-from PIL import Image, ImageDraw, ImageColor
+from PIL import Image, ImageDraw
 
 import discord
 from core import Context, Parrot
@@ -159,11 +159,10 @@ class Board:
 
         cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=self.rgb_tuple_to_int(ship.color))
 
-    def rgb_tuple_to_int(self, rgb_tuple: tuple[int, int, int]) -> int:
-            rgb_values = [int(value) for value in rgb_tuple]
-            hex_digits = [f"{value:02x}" for value in rgb_values]
-            color_hex = f"{''.join(hex_digits)}"
-            return int(color_hex, 16)
+    def rgb_tuple_to_int(self, rgb_tuple: tuple[int, int, int], inverted: bool = False) -> int:
+        if inverted:
+            return rgb_tuple[2] + (rgb_tuple[1] << 8) + (rgb_tuple[0] << 16)
+        return rgb_tuple[0] + (rgb_tuple[1] << 8) + (rgb_tuple[2] << 16)
 
     def get_ship(self, coord: Coords) -> Ship:  # type: ignore
         if s := [ship for ship in self.ships if coord in ship.span]:

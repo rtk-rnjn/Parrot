@@ -7,8 +7,6 @@ from typing import Any
 import discord
 from core import Parrot
 
-URL_THUMBNAIL = "https://cdn.discordapp.com/attachments/894938379697913916/922771882904793120/41NgOgTVblL.png"
-
 
 class Twenty48:
     def __init__(self, number_to_display_dict, *, size: int = 4) -> None:
@@ -196,11 +194,7 @@ class Twenty48_Button(discord.ui.View):
     async def null_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.game = self.make_original_instance()
         self._moves = 0
-        board_string = self.game.number_to_emoji()
-        embed = discord.Embed(
-            title="2048 Game",
-            description=f"{board_string}",
-        ).set_footer(text=f"Total Moves: {self._moves}")
+        embed = self.embed
         await self.update_to_db()
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
@@ -214,11 +208,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.move_up()
         self._moves += 1
         self.game.spawn_new()
-        board_string = self.game.number_to_emoji()
-        embed: discord.Embed = discord.Embed(
-            title="2048 Game",
-            description=f"{board_string}",
-        ).set_footer(text=f"Total Moves: {self._moves}")
+        embed = self.embed
         await self._game_lost(embed)
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
@@ -246,11 +236,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.move_left()
         self._moves += 1
         self.game.spawn_new()
-        board_string = self.game.number_to_emoji()
-        embed: discord.Embed = discord.Embed(
-            title="2048 Game",
-            description=f"{board_string}",
-        ).set_footer(text=f"Total Moves: {self._moves}")
+        embed = self.embed
         await self._game_lost(embed)
 
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
@@ -266,11 +252,7 @@ class Twenty48_Button(discord.ui.View):
         self.game.move_down()
         self._moves += 1
         self.game.spawn_new()
-        board_string = self.game.number_to_emoji()
-        embed: discord.Embed = discord.Embed(
-            title="2048 Game",
-            description=f"{board_string}",
-        ).set_footer(text=f"Total Moves: {self._moves}")
+        embed = self.embed
         await self._game_lost(embed)
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
 
@@ -285,10 +267,13 @@ class Twenty48_Button(discord.ui.View):
         self.game.move_right()
         self._moves += 1
         self.game.spawn_new()
-        board_string = self.game.number_to_emoji()
-        embed: discord.Embed = discord.Embed(
-            title="2048 Game",
-            description=f"{board_string}",
-        ).set_footer(text=f"Total Moves: {self._moves}")
+        embed = self.embed
         await self._game_lost(embed)
         await interaction.response.edit_message(content=f"{interaction.user.mention}", embed=embed, view=self)
+
+    @property
+    def embed(self) -> discord.Embed:
+        return discord.Embed(
+            title="2048 Game",
+            description=f"{self.game.number_to_emoji()}",
+        ).set_footer(text=f"Total Moves: {self._moves}")

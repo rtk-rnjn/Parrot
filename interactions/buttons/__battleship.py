@@ -10,7 +10,7 @@ from collections.abc import Coroutine
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, ClassVar, Final
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageColor
 
 import discord
 from core import Context, Parrot
@@ -123,6 +123,8 @@ class Board:
     ) -> None:
         x1, y1 = x - 10, y - 10
         x2, y2 = x + 10, y + 10
+        if isinstance(fill, tuple):
+            fill = self.rgb_tuple_to_int(fill)
         cur.ellipse((x1, y1, x2, y2), fill=fill)
 
     def draw_sq(
@@ -154,7 +156,14 @@ class Board:
         d1, d2, d3, d4 = diffs
         x1, y1 = x - d1, y - d2
         x2, y2 = x + d3, y + d4
-        cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
+
+        cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=self.rgb_tuple_to_int(ship.color))
+
+    def rgb_tuple_to_int(self, rgb_tuple: tuple[int, int, int]) -> int:
+            rgb_values = [int(value) for value in rgb_tuple]
+            hex_digits = [f"{value:02x}" for value in rgb_values]
+            color_hex = f"{''.join(hex_digits)}"
+            return int(color_hex, 16)
 
     def get_ship(self, coord: Coords) -> Ship:  # type: ignore
         if s := [ship for ship in self.ships if coord in ship.span]:
@@ -731,7 +740,7 @@ class BetaBattleShip(BattleShip):
             return self.player1_board if player == self.player1.player else self.player2_board
 
     async def get_ship_inputs(self, user: Player) -> Coroutine[Any, Any, bool]:
-        embed, file, _, _ = await self.get_file(user)
+        embed, file, _, _ = await self.get_file(user)  # type: ignore
 
         embed1 = discord.Embed(
             description="**Press the buttons to place your ships!**",

@@ -114,12 +114,26 @@ class Board:
     def won(self) -> bool:
         return all(all(ship.hits) for ship in self.ships)
 
-    def draw_dot(self, cur: ImageDraw.Draw, x: int, y: int, fill: int | tuple[int, ...]) -> None:
+    def draw_dot(
+        self,
+        cur: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        fill: int | tuple[int, ...],
+    ) -> None:
         x1, y1 = x - 10, y - 10
         x2, y2 = x + 10, y + 10
         cur.ellipse((x1, y1, x2, y2), fill=fill)
 
-    def draw_sq(self, cur: ImageDraw.Draw, x: int, y: int, *, coord: Coords, ship: Ship) -> None:
+    def draw_sq(
+        self,
+        cur: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        *,
+        coord: Coords,
+        ship: Ship,
+    ) -> None:
         vertical = ship.vertical
         left_end = ship.span.index(coord) == 0
         right_end = ship.span.index(coord) == ship.size - 1
@@ -142,7 +156,7 @@ class Board:
         x2, y2 = x + d3, y + d4
         cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
 
-    def get_ship(self, coord: Coords) -> Ship | None:
+    def get_ship(self, coord: Coords) -> Ship:  # type: ignore
         if s := [ship for ship in self.ships if coord in ship.span]:
             return s[0]
 
@@ -197,13 +211,13 @@ class BattleShip:
         self.player1_board: Board = Board(player1, random=self.random)
         self.player2_board: Board = Board(player2, random=self.random)
 
-        self.turn: discord.User = self.player1
+        self.turn: discord.User | discord.Member = self.player1
         self.timeout: int | None = None
 
         self.message1: discord.Message | None = None
         self.message2: discord.Message | None = None
 
-    def get_board(self, player: discord.User, other: bool = False) -> Board:
+    def get_board(self, player: discord.User | discord.Member, other: bool = False) -> Board:
         if other:
             return self.player2_board if player == self.player1 else self.player1_board
         else:
@@ -227,7 +241,7 @@ class BattleShip:
 
     async def get_file(
         self,
-        player: discord.User,
+        player: discord.User | discord.Member,
         *,
         hide: bool = True,
     ) -> tuple[discord.Embed, discord.File, discord.Embed, discord.File]:
@@ -254,10 +268,10 @@ class BattleShip:
     def get_coords(self, inp: str) -> tuple[str, Coords]:
         inp = re.sub(r"\s+", "", inp).lower()
         match = self.inputpat.match(inp)
-        x, y = match.group(1), match.group(2)
+        x, y = match.group(1), match.group(2)  # type: ignore
         return (inp, (self.to_num(x), int(y)))
 
-    def who_won(self) -> discord.User | None:
+    def who_won(self) -> discord.User | discord.Member | None:
         if self.player1_board.won():
             return self.player2
         elif self.player2_board.won():
@@ -265,10 +279,10 @@ class BattleShip:
         else:
             return None
 
-    async def get_ship_inputs(self, ctx: Context[Parrot], user: discord.User) -> bool:
+    async def get_ship_inputs(self, ctx: Context[Parrot], user: discord.User | discord.Member) -> bool:
         board = self.get_board(user)
 
-        async def place_ship(ship: str, size: int, color: tuple[int, int, int]) -> bool:
+        async def place_ship(ship: str, size: int, color: tuple[int, int, int]):
             embed, file, _, _ = await self.get_file(user)
             await user.send(
                 f"Where do you want to place your `{ship}`?\nSend the start coordinate... e.g. (`a1`)",
@@ -276,7 +290,7 @@ class BattleShip:
                 file=file,
             )
 
-            def check(msg: discord.Message) -> bool:
+            def check(msg: discord.Message) -> bool | None:  # type: ignore
                 if not msg.guild and msg.author == user:
                     content = re.sub(r"\s+", "", message.content).lower()
                     return bool(self.inputpat.match(content))
@@ -291,7 +305,7 @@ class BattleShip:
 
             await user.send("Do you want it to be vertical?\nSay `yes` or `no`")
 
-            def check(msg: discord.Message) -> bool:
+            def check(msg: discord.Message) -> bool | None:
                 if not msg.guild and msg.author == user:
                     content = msg.content.replace(" ", "").lower()
                     return content in ("yes", "no")
@@ -361,7 +375,7 @@ class BattleShip:
 
         while not ctx.bot.is_closed():
 
-            def check(msg: discord.Message) -> bool:
+            def check(msg: discord.Message) -> bool | None:
                 if not msg.guild and msg.author == self.turn:
                     content = msg.content.replace(" ", "").lower()
                     return bool(self.inputpat.match(content))
@@ -409,7 +423,7 @@ class BattleShip:
 
 
 class Player:
-    def __init__(self, player: discord.User, *, game: BetaBattleShip) -> None:
+    def __init__(self, player: discord.User | discord.Member, *, game: BetaBattleShip) -> None:
         self.game = game
         self.player = player
 
@@ -514,7 +528,7 @@ class CoordButton(discord.ui.Button["BattleshipView"]):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        assert self.view is not None
+        assert self.view is not None and self.label is not None
 
         game = self.view.game
 

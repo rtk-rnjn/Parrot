@@ -11,8 +11,7 @@ import traceback
 import types
 from collections import Counter, defaultdict, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
-from contextlib import suppress
-from typing import TYPE_CHECKING, Any, Literal, overload, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 import aiohttp
 import aiosqlite
@@ -47,7 +46,6 @@ from utilities.config import (
     MASTER_OWNER,
     MINIMAL_BOOT,
     OWNER_IDS,
-    STRAW_POLL,
     STRIP_AFTER_PREFIX,
     SUPPORT_SERVER,
     SUPPORT_SERVER_ID,
@@ -71,8 +69,9 @@ from .utils import CustomFormatter, handler
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from discord.ext.commands.cooldowns import CooldownMapping
     from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+
+    from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
 
@@ -120,6 +119,7 @@ if MINIMAL_BOOT:
     log.warning("Minimal boot enabled, some features may not work as expected.")
 
 T = TypeVar("T")
+
 
 class Parrot(commands.AutoShardedBot):
     """A custom way to organise a commands.AutoSharedBot."""
@@ -250,6 +250,8 @@ class Parrot(commands.AutoShardedBot):
 
         self.__global_write_data: dict[str, list[pymongo.UpdateOne | pymongo.UpdateMany]] = {}
         # {"database.collection": [pymongo.UpdateOne(), ...]}
+
+        self.__user_timezone_cache: dict[int, str] = {}
 
     async def init_db(self) -> None:
         # MongoDB Database variables
@@ -1456,3 +1458,19 @@ class Parrot(commands.AutoShardedBot):
 
         async with self.lock:
             await insert_new(self.sql)
+
+    async def get_user_timezone(self, user_id: int) -> str:
+        if tz := self.__user_timezone_cache.get(user_id):
+            return tz
+
+        data = await self.user_collections_ind.find_one({"_id": user_id})
+        if data is None:
+            return "UTC"
+        try:
+            return data["timezone"]
+        except KeyError:
+            return "UTC"
+
+    async def set_user_timezone(self, user_id: int, timezone: str) -> None:
+        await self.user_collections_ind.update_one({"_id": user_id}, {"$set": {"timezone": timezone}}, upsert=True)
+        self.__user_timezone_cache[user_id] = timezone

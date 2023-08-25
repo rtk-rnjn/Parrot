@@ -360,10 +360,10 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     def outer_check(
         self,
-        check: Callable[..., bool] | None = None,
+        check: Callable[..., bool | None] | None = None,
         operator: Callable[[Iterable[object]], bool] = all,
         **kw: Any,
-    ) -> Callable[..., bool]:
+    ) -> Callable[..., bool | None]:
         """Check function for the event."""
         if check is not None:
             return check
@@ -392,7 +392,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         _event_name: str,
         *,
         timeout: float | None = None,
-        check: Callable[..., bool] | None = None,
+        check: Callable[..., bool | None] | None = None,
         suppress_error: bool = False,
         operator: Callable[[Iterable[object]], bool] = all,
         **kwargs: Any,

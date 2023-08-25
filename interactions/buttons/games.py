@@ -840,7 +840,7 @@ class Games(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def battleship(self, ctx: Context):
         """Solo Battleship Game"""
-        announcement: discord.Message = await ctx.send(  # type: ignore
+        announcement: discord.Message = await ctx.send(
             "**Battleship**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)",

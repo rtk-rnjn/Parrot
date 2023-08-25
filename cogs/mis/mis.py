@@ -983,20 +983,21 @@ class Misc(Cog):
         except KeyError:
             return await ctx.error(f"{ctx.author.mention} no server exists")
 
-        embed = discord.Embed(
-            title="SERVER STATUS",
-            description=f"IP: {ip}\n```\n{motd}\n```",
-            timestamp=discord.utils.utcnow(),
-            color=ctx.author.color,
+        embed = (
+            discord.Embed(
+                title="SERVER STATUS",
+                description=f"IP: {ip}\n```\n{motd}\n```",
+                timestamp=discord.utils.utcnow(),
+                color=ctx.author.color,
+            )
+            .add_field(name="Hostname", value=hostname, inline=True)
+            .add_field(name="Max Players", value=players_max, inline=True)
+            .add_field(name="Player Online", value=players_onl, inline=True)
+            .add_field(name="Protocol", value=protocol, inline=True)
+            .add_field(name="Port", value=port, inline=True)
+            .add_field(name="MC Version", value=version, inline=True)
+            .set_footer(text=f"{ctx.author}")
         )
-        embed.add_field(name="Hostname", value=hostname, inline=True)
-        embed.add_field(name="Max Players", value=players_max, inline=True)
-        embed.add_field(name="Player Online", value=players_onl, inline=True)
-        embed.add_field(name="Protocol", value=protocol, inline=True)
-        embed.add_field(name="Port", value=port, inline=True)
-        embed.add_field(name="MC Version", value=version, inline=True)
-
-        embed.set_footer(text=f"{ctx.author}")
 
         await ctx.send(embed=embed)
 
@@ -1105,3 +1106,38 @@ class Misc(Cog):
             "Click `Show` to view your Whispers\nClick `Delete` to delete all your whispers",
             view=main_view,
         )
+
+    @commands.command(name="timezone", aliases=["tz", "mytimezone", "mytz"])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def _timezone(self, ctx: Context, *, tz: str | None = None):
+        """Shows your current timezone, or sets a new one.
+        Ex: `$timezone America/New_York`.
+        """
+        timestamp_r_utc = discord.utils.format_dt(arrow.utcnow().datetime, "R")
+        timestamp_f_utc = discord.utils.format_dt(arrow.utcnow().datetime, "f")
+        if not tz:
+            timezone = await self.bot.get_user_timezone(ctx.author.id)
+            now = arrow.utcnow().to(timezone).datetime
+            timestamp_r = discord.utils.format_dt(now, "R")
+            timestamp_f = discord.utils.format_dt(now, "f")
+
+            await ctx.send(embed=discord.Embed(description=f"""
+## UTC
+- Relative: `{timestamp_r_utc}`
+- Full: `{timestamp_f_utc}`
+
+## Your Timezone `{timezone}`
+- Relative: `{timestamp_r}`
+- Full: `{timestamp_f}`
+"""))
+            return
+
+        try:
+            arrow.utcnow().to(tz).datetime  # noqa: B018
+        except arrow.parser.ParserError:
+            return await ctx.error(f"{ctx.author.mention} that is not a valid timezone.")
+
+        await self.bot.set_user_timezone(ctx.author.id, tz)
+        await ctx.reply(f"{ctx.author.mention} Set your timezone to `{tz}`")

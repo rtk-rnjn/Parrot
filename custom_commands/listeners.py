@@ -188,7 +188,6 @@ class Sector17Listeners(Cog):
 
             await message.channel.send(f"{message.author.mention} Hunt", reference=owo_message)
 
-    @owo_lock()
     async def owo_hunt_bot(self, message: discord.Message, content: str):
         if not self._get_command_list(content, {"huntbot": ["autohunt", "hb", "ah"]}):
             return
@@ -243,7 +242,7 @@ class Sector17Listeners(Cog):
             await message.channel.send(f"{message.author.mention} Pray/Curse", reference=owo_message)
 
     async def owo_daily(self, message: discord.Message, content: str):
-        if not self._get_command_list(content, {"daily": "ddaily"}):
+        if not self._get_command_list(content, {"daily": "daily"}):
             return
         owo_message = await self.wait_for_owo(message, startswith="\N{MONEY BAG}")
 

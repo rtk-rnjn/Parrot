@@ -89,7 +89,7 @@ class ChimpView(discord.ui.View):
                 self.add_item(button)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.game.message.author.id:
+        if interaction.user.id != self.game.ctx.author.id:
             await interaction.response.send_message(
                 "You cannot play this game as you are not the author of the message.",
                 ephemeral=True,
@@ -120,6 +120,7 @@ class ChimpView(discord.ui.View):
 
 
 class ChimpTest:
+    ctx: Context[Parrot]
     """ChimpTest Memory Game."""
 
     def __init__(self, count: int = 9) -> None:
@@ -156,6 +157,7 @@ class ChimpTest:
         button_style: discord.ButtonStyle = discord.ButtonStyle.blurple,
         timeout: float | None = None,
     ) -> discord.Message:
+        self.ctx = ctx
         self.lives = lives
         self.initial_sleep = initial_sleep
         self.highlight_tiles = highlight_tiles

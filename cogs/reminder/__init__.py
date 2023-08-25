@@ -6,6 +6,8 @@ from typing import Annotated
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
+from dateutil import tz
+import arrow
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
@@ -57,7 +59,7 @@ class Reminders(Cog):
     @Context.with_type
     async def remindme(
         self,
-        ctx: Context,
+        ctx: Context[Parrot],
         *,
         when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
     ) -> None:
@@ -74,17 +76,18 @@ class Reminders(Cog):
         Times are in UTC unless a timezone is specified
         using the "timezone set" command.
         """
+        timestamp = await self._get_timestamp(ctx.author.id, when)
+
         if not ctx.invoked_subcommand:
-            seconds = when.dt.timestamp()
-            await self.notify_reminder_msg(ctx, timestamp=seconds)
+            await self.notify_reminder_msg(ctx, timestamp=timestamp)
 
             await self.create_timer(
-                expires_at=seconds,
+                expires_at=timestamp,
                 created_at=ctx.message.created_at.timestamp(),
                 content=when.arg,
                 message=ctx.message,
             )
-            log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, seconds)
+            log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, timestamp)
 
     @remindme.command(name="list", aliases=["all", "ls", "show"])
     @Context.with_type
@@ -134,17 +137,17 @@ class Reminders(Cog):
         when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
     ) -> None:
         """Same as remindme, but you will be mentioned in DM. Make sure you have DM open for the bot."""
-        seconds = when.dt.timestamp()
-        await self.notify_reminder_msg(ctx, timestamp=seconds)
+        timestamp = await self._get_timestamp(ctx.author.id, when)
+        await self.notify_reminder_msg(ctx, timestamp=timestamp)
 
         await self.create_timer(
-            expires_at=seconds,
+            expires_at=timestamp,
             created_at=ctx.message.created_at.timestamp(),
             content=when.arg,
             message=ctx.message,
             dm_notify=True,
         )
-        log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, seconds)
+        log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, timestamp)
 
     @remindme.command(name="loop", aliases=["repeat"])
     @Context.with_type
@@ -159,14 +162,16 @@ class Reminders(Cog):
         `$remind loop 1d To vote the bot`
         This will make a reminder for everyday `To vote the bot`
         """
-        seconds = when.dt.timestamp()
+        timestamp = when.dt.timestamp()
         now = discord.utils.utcnow().timestamp()
-        if seconds - now <= 300:
+        if timestamp - now <= 300:
             return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
+
+        timestamp = await self._get_timestamp(ctx.author.id, when)
 
         post = {
             "_id": ctx.message.id,
-            "expires_at": seconds,
+            "expires_at": timestamp,
             "created_at": ctx.message.created_at.timestamp(),
             "content": when.arg,
             "embed": None,
@@ -183,15 +188,28 @@ class Reminders(Cog):
         log.info(
             "Created a loop reminder for %s. reminder exipres at %s",
             ctx.author,
-            seconds,
+            timestamp,
         )
-        await self.notify_reminder_msg(ctx, timestamp=seconds)
+        await self.notify_reminder_msg(ctx, timestamp=timestamp)
 
     @commands.command(name="reminders")
     @Context.with_type
     async def reminders(self, ctx: Context) -> None:
         """To get all your reminders of first 10 active reminders. Alias of `remind list`"""
         return await self._list(ctx)
+
+    async def _get_timestamp(self, user_id: int, when: FriendlyTimeResult) -> float:
+        try:
+            timezone = await self.bot.get_user_timezone(user_id)
+            if tzinfo := tz.gettz(timezone):
+                now = arrow.get(when.dt, tzinfo)
+            else:
+                now = arrow.get(when.dt)
+        except Exception:  # noqa
+            now = arrow.get(when.dt)
+
+        timestamp = now.datetime.timestamp()
+        return timestamp
 
 
 async def setup(bot: Parrot) -> None:

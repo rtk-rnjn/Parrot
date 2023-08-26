@@ -902,7 +902,7 @@ class Parrot(commands.AutoShardedBot):
         members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
         return members[0] if members else None
 
-    async def get_prefix(self, message: discord.Message) -> str | Callable | list[str]:
+    async def get_prefix(self, message: discord.Message) -> list[str]:
         """Dynamic prefixing."""
         if message.guild is None:
             return commands.when_mentioned_or(DEFAULT_PREFIX)(self, message)
@@ -961,7 +961,7 @@ class Parrot(commands.AutoShardedBot):
         return result
 
     @tasks.loop(count=1)
-    async def update_server_config_cache(self, guild_id: int):
+    async def update_server_config_cache(self, guild_id: int) -> None:
         if isinstance(guild_id, discord.Guild):
             guild_id = guild_id.id
 
@@ -1158,8 +1158,7 @@ class Parrot(commands.AutoShardedBot):
         return await collection.find_one({"_id": kw["_id"]})
 
     async def delete_timer(self, **kw: Any) -> DeleteResult:
-        collection: MongoCollection = self.timers
-        data = await collection.delete_one({"_id": kw["_id"]})
+        data: DeleteResult = await self.timers.delete_one({"_id": kw["_id"]})
         delete_count = data.deleted_count
         if delete_count == 0:
             log.debug("Deleted data: %s", data)

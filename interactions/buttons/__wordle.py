@@ -175,7 +175,7 @@ class WordInput(discord.ui.Modal, title="Word Input"):
         if content not in game._valid_words:
             return await interaction.response.send_message("That is not a valid word!", ephemeral=True)
         won = game.parse_guess(content)
-        buf = await game.render_image()
+        buf = await asyncio.to_thread(game.render_image)
 
         embed = discord.Embed(title="Wordle!", color=self.view.game.embed_color)
         embed.set_image(url="attachment://wordle.png")

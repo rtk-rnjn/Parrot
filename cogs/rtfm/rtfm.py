@@ -539,7 +539,7 @@ class RTFM(Cog):
         await ctx.send(embed=em)
 
     @commands.group(
-        usage="run <language> [--wrapped] [--stats] <code>",
+        usage="<language> [--wrapped] [--stats] <code>",
         brief="Execute code in a given programming language",
         invoke_without_command=True,
     )
@@ -561,9 +561,6 @@ class RTFM(Cog):
 
         If the output exceeds 40 lines or Discord max message length, it will be put
         in a new hastebin and the link will be returned.
-
-        When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
-        Useful to hide your syntax fails or when you forgot to print the result.
         """
         if not payload:
             emb = discord.Embed(
@@ -680,36 +677,6 @@ class RTFM(Cog):
                     emb.add_field(name=tag.string, value=self.get_content(h2))
 
                 await ctx.reply(embed=emb)
-
-    @run.command(name="list", aliases=["ls"])
-    @commands.bot_has_permissions(embed_links=True)
-    async def run_list(self, ctx: Context, *, group=None):
-        """Lists available choices for other commands."""
-        choices = {
-            "documentations": self.documented,
-            "hashing": sorted([h for h in algorithms if h.islower()]),
-            "references": self.referred,
-            "wrapped argument": wrapping,
-        }
-
-        if group == "languages":
-            emb: discord.Embed = discord.Embed(
-                title=f"Available for {group}:",
-                description="View them on [tio.run](https://tio.run/#), or in [JSON format](https://tio.run/languages.json)",
-            )
-            return await ctx.reply(embed=emb)
-
-        if group not in choices:
-            emb: discord.Embed = discord.Embed(
-                title="Available listed commands",
-                description=f"`languages`, `{'`, `'.join(choices)}`",
-            )
-            return await ctx.reply(embed=emb)
-
-        availables = choices[group]  # type: ignore
-        description = f"`{'`, `'.join([*availables])}`"
-        emb: discord.Embed = discord.Embed(title=f"Available for {group}: {len(availables)}", description=description)
-        await ctx.reply(embed=emb)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

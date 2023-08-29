@@ -10,8 +10,8 @@ from utilities.time import ShortTime
 
 class BanFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     reason: str | None = None
-    _global: Annotated[bool | None, convert_bool] = commands.flag(name="global", default=False)
-    command: Annotated[bool | None, convert_bool] = False
+    _global: Annotated[bool | None, convert_bool] = commands.flag(name="global", default=True)
+    command: Annotated[bool | None, convert_bool] = True
 
 
 class SubscriptionFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):

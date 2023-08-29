@@ -159,8 +159,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
     async def unban_user(
         self,
         ctx: Context,
-        *,
         user: discord.User,
+        *,
+        remark: str = "No reason provided",
     ):
         """To ban the user."""
         await self.bot.extra_collections.update_one(
@@ -174,7 +175,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await self.bot.update_banned_members.start()
         try:
             await user.send(
-                f"{user.mention} you are unbanned. You can now use Parrot bot.",
+                f"{user.mention} you are unbanned. You can now use Parrot bot.\n\nContact `{self.bot.author_name}` for any queries.",
                 view=ctx.send_view(),
             )
             await ctx.send("User unbanned and DM-ed")

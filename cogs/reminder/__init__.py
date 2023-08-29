@@ -201,10 +201,7 @@ class Reminders(Cog):
     async def _get_timestamp(self, user_id: int, when: FriendlyTimeResult) -> float:
         try:
             timezone = await self.bot.get_user_timezone(user_id)
-            if tzinfo := tz.gettz(timezone):
-                now = arrow.get(when.dt, tzinfo)
-            else:
-                now = arrow.get(when.dt)
+            now = arrow.utcnow().to(timezone)
         except Exception:  # noqa
             now = arrow.get(when.dt)
 

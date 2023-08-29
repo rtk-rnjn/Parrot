@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Annotated, Any, BinaryIO
 import arrow
 import qrcode
 import sympy
+from dateutil.zoneinfo import get_zonefile_instance
 from PIL import Image
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import (
@@ -33,6 +34,7 @@ from qrcode.image.styles.moduledrawers import (
     SquareModuleDrawer,
     VerticalBarsDrawer,
 )
+from rapidfuzz import process
 
 import discord
 from core import Cog, Context, Parrot, ParrotView
@@ -215,6 +217,24 @@ class Misc(Cog):
         self.bot = bot
         self.ON_TESTING = False
         self.youtube_search = YoutubeSearch(5)
+        self.valid_timezones: set[str] = set(get_zonefile_instance().zones)
+        # User-friendly timezone names, some manual and most from the CLDR database.
+        self._timezone_aliases: dict[str, str] = {
+            "Eastern Time": "America/New_York",
+            "Central Time": "America/Chicago",
+            "Mountain Time": "America/Denver",
+            "Pacific Time": "America/Los_Angeles",
+            # (Unfortunately) special case American timezone abbreviations
+            "EST": "America/New_York",
+            "CST": "America/Chicago",
+            "MST": "America/Denver",
+            "PST": "America/Los_Angeles",
+            "EDT": "America/New_York",
+            "CDT": "America/Chicago",
+            "MDT": "America/Denver",
+            "PDT": "America/Los_Angeles",
+            "IST": "Asia/Kolkata",
+        }
 
     async def cog_unload(self) -> None:
         await self.youtube_search.close()
@@ -1123,21 +1143,37 @@ class Misc(Cog):
             timestamp_r = discord.utils.format_dt(now, "R")
             timestamp_f = discord.utils.format_dt(now, "f")
 
-            await ctx.send(embed=discord.Embed(description=f"""
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"""
 ## UTC
-- Relative: `{timestamp_r_utc}`
-- Full: `{timestamp_f_utc}`
+- Relative: {timestamp_r_utc}
+- Full: {timestamp_f_utc}
 
 ## Your Timezone `{timezone}`
-- Relative: `{timestamp_r}`
-- Full: `{timestamp_f}`
-"""))
+- Relative: {timestamp_r}
+- Full: {timestamp_f}"""
+                ),
+            )
             return
 
         try:
-            arrow.utcnow().to(tz).datetime  # noqa: B018
-        except arrow.parser.ParserError:
-            return await ctx.error(f"{ctx.author.mention} that is not a valid timezone.")
+            arrow.utcnow().to(tz).datetime.timestamp()  # noqa: B018
+        except (ValueError, arrow.parser.ParserError):
+            tz = self.get_timezone(tz)
 
         await self.bot.set_user_timezone(ctx.author.id, tz)
         await ctx.reply(f"{ctx.author.mention} Set your timezone to `{tz}`")
+
+    def get_timezone(self, tz: str) -> str:
+        if "/" in tz:
+            result, score, position = process.extractOne(tz, self.valid_timezones)
+            if score < 80:
+                msg = f"{tz} is not a valid timezone."
+                raise commands.BadArgument(msg)
+            return result
+        result, score, position = process.extractOne(tz, self._timezone_aliases.keys())
+        if score < 80:
+            msg = f"{tz} is not a valid timezone."
+            raise commands.BadArgument(msg)
+        return self._timezone_aliases[result]

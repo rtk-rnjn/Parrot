@@ -63,8 +63,7 @@ class NSFW(Cog):
 
             @commands.command(name=end_point)
             @commands.is_nsfw()
-            @Context.with_type
-            async def callback(ctx: Context):
+            async def callback(ctx: Context) -> None:
                 embed = await self.get_embed(f"{ctx.command.qualified_name}")
                 if embed is not None:
                     await ctx.reply(
@@ -75,32 +74,8 @@ class NSFW(Cog):
                     )
                 else:
                     await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
-
+            callback.cog = self
             self.bot.add_command(callback)
-
-    @commands.command(aliases=["randnsfw"], hidden=True)
-    async def randomnsfw(self, ctx: Context, *, subreddit: str = None) -> None:
-        """To get Random NSFW from subreddit."""
-        if subreddit is None:
-            subreddit = "NSFW"
-        end = discord.utils.utcnow().timestamp() + 60
-        while discord.utils.utcnow().timestamp() < end:
-            url = f"https://memes.blademaker.tv/api/{subreddit}"
-            r = await self.bot.http_session.get(url)
-            if r.status == 200:
-                res = await r.json()
-            else:
-                return
-            if res["nsfw"]:
-                break
-
-        img = res["image"]
-
-        em = discord.Embed(timestamp=discord.utils.utcnow())
-
-        em.set_image(url=img)
-
-        await ctx.reply(embed=em)
 
     @commands.command(hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
@@ -116,8 +91,8 @@ class NSFW(Cog):
         """Best command I guess. It return random ^^."""
         em_list: list[discord.Embed] = []
 
-        if count is not None and count <= 0:
-            return await ctx.reply(f"{ctx.author.mention} count must be greater than 0")
+        count = max(1, count or 1)
+        count = min(count, 10)
 
         i: int = 1
         while i <= count:
@@ -128,8 +103,7 @@ class NSFW(Cog):
             if r.status == 200:
                 res = await r.json()
                 em_list.append(discord.Embed(timestamp=discord.utils.utcnow()).set_image(url=res["url"]))
-            await ctx.release(0)
             i += 1
 
         ins = PV(em_list)
-        ins.message = await ins.paginate(ctx)
+        await ins.paginate(ctx)

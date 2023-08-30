@@ -211,7 +211,7 @@ class UserFriendlyTime(commands.Converter):
         if match is not None and match.group(0):
             data = {k: int(v) for k, v in match.groupdict(default=0).items()}
             remaining = argument[match.end() :].strip()
-            dt = now + relativedelta(**data)
+            dt = now + relativedelta(**data)  # type: ignore
             result = FriendlyTimeResult(dt.astimezone(tzinfo))
             await result.ensure_constraints(ctx, self, now, remaining)
             return result
@@ -247,7 +247,13 @@ class UserFriendlyTime(commands.Converter):
         # foo date time
 
         # first the first two cases:
-        dt, status, begin, end, dt_string = elements[0]
+        dt, status, begin, end, _ = elements[0]
+
+        if TYPE_CHECKING:
+            dt: datetime.datetime
+            status: pdt.pdtContext
+            begin: int
+            end: int
 
         if not status.hasDateOrTime:
             msg = 'Invalid time provided, try e.g. "tomorrow" or "3 days".'
@@ -255,9 +261,7 @@ class UserFriendlyTime(commands.Converter):
 
         if begin not in (0, 1) and end != len(argument):
             msg = "Time is either in an inappropriate location, which must be either at the end or beginning of your input, or I just flat out did not understand what you meant. Sorry."
-            raise commands.BadArgument(
-                msg,
-            )
+            raise commands.BadArgument(msg)
 
         if not status.hasTime:
             # replace it with the current time

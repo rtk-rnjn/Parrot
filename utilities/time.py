@@ -152,11 +152,12 @@ class FriendlyTimeResult:
     dt: datetime.datetime
     arg: str
 
-    __slots__ = ("dt", "arg")
+    __slots__ = ("dt", "arg", "is_relative")
 
     def __init__(self, dt: datetime.datetime) -> None:
         self.dt = dt
         self.arg = ""
+        self.is_relative = False
 
     async def ensure_constraints(
         self,
@@ -214,6 +215,7 @@ class UserFriendlyTime(commands.Converter):
             dt = now + relativedelta(**data)  # type: ignore
             result = FriendlyTimeResult(dt.astimezone(tzinfo))
             await result.ensure_constraints(ctx, self, now, remaining)
+            result.is_relative = True
             return result
 
         if match is None or not match.group(0):
@@ -224,6 +226,7 @@ class UserFriendlyTime(commands.Converter):
                 )
                 remaining = argument[match.end() :].strip()
                 await result.ensure_constraints(ctx, self, now, remaining)
+                result.is_relative = True
                 return result
 
         # apparently nlp does not like "from now"

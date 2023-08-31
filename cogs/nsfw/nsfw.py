@@ -86,10 +86,9 @@ class NSFW(Cog):
             @commands.max_concurrency(1, commands.BucketType.user)
             @commands.is_nsfw()
             @Context.with_type
-            async def command_callback(self: NSFW, ctx: Context[Parrot]):
+            async def command_callback(ctx: Context[Parrot]):
                 await method(ctx)
 
-            command_callback.cog = self
             self.bot.add_command(command_callback)
 
     @commands.command(hidden=True)

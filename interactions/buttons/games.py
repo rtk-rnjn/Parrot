@@ -512,7 +512,6 @@ class Games(Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
     async def sokoban(
         self,
         ctx: Context,
@@ -548,7 +547,6 @@ class Games(Cog):
         await main_game.start(ctx)
 
     @commands.command(name="2048")
-    @commands.bot_has_permissions(embed_links=True)
     async def _2048(self, ctx: Context, *, boardsize: int = None):
         """Classis 2048 Game"""
         boardsize = boardsize or 4
@@ -650,7 +648,6 @@ class Games(Cog):
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
     async def slidingpuzzle(self, ctx: Context, boardsize: Literal[1, 2, 3, 4, 5] = 4):
         """A Classic Sliding game"""
         await NumberSlider(boardsize).start(ctx)
@@ -725,7 +722,6 @@ class Games(Cog):
             await game.check_message(message)
 
     @commands.command(aliases=["umbrogus", "secret_hitler", "secret-hitler"])
-    @commands.bot_has_permissions(embed_links=True)
     async def secrethitler(self, ctx: Context) -> None:
         if ctx.channel.id in self.games_hitler:
             msg = "There is already a game running in this channel."

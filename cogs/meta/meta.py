@@ -45,7 +45,6 @@ class Meta(Cog):
 
     @commands.command(aliases=["av"])
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def avatar(self, ctx: Context, *, member: discord.Member = None):
         """Get the avatar of the user. Make sure you don't misuse."""
@@ -63,7 +62,6 @@ class Meta(Cog):
 
     @commands.command(name="owner")
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def owner(self, ctx: Context):
         """Core and sole maintainer of this bot."""
@@ -87,7 +85,6 @@ class Meta(Cog):
             return await ctx.reply("Owner not found, for some reason.")
 
     @commands.command(aliases=["guildavatar", "serverlogo", "servericon"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def guildicon(self, ctx: Context):
@@ -101,7 +98,6 @@ class Meta(Cog):
         await ctx.reply(embed=embed)
 
     @commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def server_info(self, ctx: Context):
@@ -270,7 +266,6 @@ class Meta(Cog):
 
     @commands.command(name="stats", aliases=["about"])
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def show_bot_stats(self, ctx: Context):
         """Get the bot stats."""
@@ -325,7 +320,6 @@ class Meta(Cog):
         await ctx.send(embed=embed, view=ctx.link_view(url=self.bot.invite, label="Invite me!"))
 
     @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def user_info(self, ctx: Context, *, member: discord.Member = None):
@@ -379,7 +373,6 @@ class Meta(Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def invite(self, ctx: Context):
         """Get the invite of the bot! Thanks for seeing this command."""
@@ -397,7 +390,6 @@ class Meta(Cog):
         await ctx.reply(embed=em, view=ctx.link_view(url=url, label="Invite me!"))
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def roleinfo(self, ctx: Context, *, role: discord.Role):
@@ -447,7 +439,6 @@ class Meta(Cog):
         await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def emojiinfo(self, ctx: Context, *, emoji: discord.Emoji):
@@ -476,7 +467,6 @@ class Meta(Cog):
         await ctx.reply(embed=em)
 
     @commands.command(name="channelinfo")
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     @Context.with_type
     async def channel_info(
@@ -517,7 +507,6 @@ class Meta(Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def request(self, ctx: Context, *, text: str):
         """To request directly from the owner."""
@@ -560,7 +549,6 @@ class Meta(Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def announcement(self, ctx: Context):
         """To get the latest news from the support server | Change Log."""
@@ -575,7 +563,6 @@ class Meta(Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def vote(self, ctx: Context):
         """Vote the bot for better discovery on top.gg."""
@@ -596,7 +583,6 @@ class Meta(Cog):
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def inviteinfo(self, ctx: Context, code: str):
         """Get the info regarding the Invite Link."""
@@ -637,7 +623,6 @@ class Meta(Cog):
 
     @commands.command(aliases=["sticker-info"])
     @commands.cooldown(1, 60, commands.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def stickerinfo(self, ctx: Context, sticker: discord.GuildSticker | None = None):
         """Get the info regarding the Sticker."""

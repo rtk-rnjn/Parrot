@@ -283,4 +283,3 @@ class Stats(Cog):
         `--limit`: Limit the list to the top `limit` entries.
         """
         await self.__test_stats("typing_test", ctx, flag)
-

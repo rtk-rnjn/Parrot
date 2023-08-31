@@ -304,7 +304,6 @@ class Utils(Cog):
             return await ctx.reply(f"{ctx.author.mention} **{member}** don't have any xp yet.")
 
     @commands.command(aliases=["leaderboard"])
-    @commands.bot_has_permissions(embed_links=True)
     async def lb(self, ctx: Context, *, limit: int | None = None):
         """To display the Leaderboard."""
         limit = limit or 10

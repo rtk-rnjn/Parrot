@@ -17,7 +17,6 @@ class Tags(Cog):
         return discord.PartialEmoji(name="\N{TICKET}")
 
     @commands.group(invoke_without_command=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def tag(self, ctx: Context, *, tag: str = None):
         """Tag management, or to show the tag.
 
@@ -35,7 +34,6 @@ class Tags(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @tag.command(name="create", aliases=["add", "new", "make", "mk"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_create(self, ctx: Context, tag: str, *, text: str):
         """To create tag. All tag have unique name.
 
@@ -49,7 +47,6 @@ class Tags(Cog):
         await mt._create_tag(self.bot, ctx, tag, text)
 
     @tag.command(name="delete", aliases=["del", "rm"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_delete(self, ctx: Context, *, tag: str):
         """To delete tag. You must own the tag to delete.
 
@@ -63,7 +60,6 @@ class Tags(Cog):
         await mt._delete_tag(self.bot, ctx, tag)
 
     @tag.command(name="editname", aliases=["rename", "edit-name", "edit_name"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_edit_name(self, ctx: Context, tag: str, *, name: str):
         """To edit the tag name. You must own the tag to edit.
 
@@ -77,7 +73,6 @@ class Tags(Cog):
         await mt._name_edit(self.bot, ctx, tag, name)
 
     @tag.command(name="edittext", aliases=["edit-text", "edit_text"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_edit_text(self, ctx: Context, tag: str, *, text: str):
         """To edit the tag text. You must own the tag to edit.
 
@@ -91,7 +86,6 @@ class Tags(Cog):
         await mt._text_edit(self.bot, ctx, tag, text)
 
     @tag.command(name="owner", aliases=["info", "details", "whois", "detail"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_owner(self, ctx: Context, *, tag: str):
         """To check the tag details.
 
@@ -101,7 +95,6 @@ class Tags(Cog):
         await mt._view_tag(self.bot, ctx, tag)
 
     @tag.command(name="snipe", aliases=["steal", "claim", "take"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_claim(self, ctx: Context, *, tag: str):
         """To claim the ownership of the tag, if the owner of the tag left the server.
 
@@ -111,7 +104,6 @@ class Tags(Cog):
         await mt._claim_owner(self.bot, ctx, tag)
 
     @tag.command(name="togglensfw", aliases=["nsfw", "tnsfw"])
-    @commands.bot_has_permissions(embed_links=True)
     async def toggle_nsfw(self, ctx: Context, *, tag: str):
         """To enable/disable the NSFW of a Tag.
 
@@ -121,7 +113,6 @@ class Tags(Cog):
         await mt._toggle_nsfw(self.bot, ctx, tag)
 
     @tag.command(name="give", aliases=["transfer", "share"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_tranfer(self, ctx: Context, tag: str, *, member: discord.Member):
         """To transfer the ownership of tag you own to other member.
 
@@ -137,7 +128,6 @@ class Tags(Cog):
         await mt._transfer_owner(self.bot, ctx, tag, member)
 
     @tag.command(name="all", aliases=["list", "show", "ls"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_all(self, ctx: Context):
         """To show all tags.
 
@@ -147,7 +137,6 @@ class Tags(Cog):
         await mt._show_all_tags(self.bot, ctx)
 
     @tag.command(name="mine", aliases=["my", "owned", "own"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_mine(self, ctx: Context):
         """To show those tag which you own.
 
@@ -157,7 +146,6 @@ class Tags(Cog):
         await mt._show_tag_mine(self.bot, ctx)
 
     @tag.command(name="raw", aliases=["source", "code"])
-    @commands.bot_has_permissions(embed_links=True)
     async def tag_raw(self, ctx: Context, *, tag: str):
         """To show the tag in raw format.
 

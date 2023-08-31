@@ -326,10 +326,6 @@ class Misc(Cog):
         return discord.PartialEmoji(name="Plus", id=892440360750555136)
 
     @commands.command(aliases=["bigemote"])
-    @commands.has_permissions(embed_links=True)
-    @commands.bot_has_permissions(
-        embed_links=True,
-    )
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
@@ -337,7 +333,6 @@ class Misc(Cog):
         await ctx.reply(emoji.url)
 
     @commands.command(aliases=["calc", "cal"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def calculator(self, ctx: Context, *, text: str = None):
@@ -363,7 +358,6 @@ class Misc(Cog):
             )
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def firstmessage(
@@ -388,7 +382,6 @@ class Misc(Cog):
             )
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def maths(self, ctx: Context, operation: str, *, expression: str):
@@ -430,7 +423,6 @@ class Misc(Cog):
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def news(self, ctx: Context, *, nat: str):
@@ -469,7 +461,6 @@ class Misc(Cog):
 
     @commands.group(name="search", aliases=["googlesearch", "google"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def search(self, ctx: Context[Parrot], *, search: str):
@@ -505,7 +496,6 @@ class Misc(Cog):
 
     @search.command(name="custom")
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def search_custom(self, ctx: Context, *, search: SearchFlag):
@@ -653,7 +643,6 @@ class Misc(Cog):
         await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 
     @commands.command(aliases=["w"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def weather(self, ctx: Context, *, location: str):
@@ -741,7 +730,6 @@ class Misc(Cog):
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=["wiki"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def wikipedia(self, ctx: Context, *, search: str):
@@ -758,7 +746,6 @@ class Misc(Cog):
             await ctx.error("Sorry, we could not find a wikipedia article using that search term.")
 
     @commands.command(aliases=["yt"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.is_nsfw()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -802,7 +789,6 @@ class Misc(Cog):
 
     @commands.command()
     @commands.has_permissions(embed_links=True)
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def embed(
@@ -829,7 +815,6 @@ class Misc(Cog):
             await ctx.error(f"{ctx.author.mention} you don't have Embed Links permission in {channel.mention}")
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snowflakeid(
@@ -868,7 +853,6 @@ class Misc(Cog):
         await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def snowflaketime(self, ctx: Context, snowflake1: int, snowflake2: int):
@@ -1022,7 +1006,6 @@ class Misc(Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def currencies(self, ctx: Context):
         """To see the currencies notations with names."""
         obj = await self.bot.http_session.get("https://api.coinbase.com/v2/currencies")
@@ -1032,7 +1015,6 @@ class Misc(Cog):
         await p.start()
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def exchangerate(self, ctx: Context, currency: str):
         """To see the currencies notations with names."""
         if len(currency) != 3:
@@ -1045,7 +1027,6 @@ class Misc(Cog):
         await p.start()
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def whatis(self, ctx: Context, *, query: str):
         """To get the meaning of the word."""
         query = query.lower()

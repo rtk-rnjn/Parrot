@@ -254,7 +254,6 @@ class Love(Cog):
 
     @in_month(Month.FEBRUARY)
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def myvalenstate(self, ctx: Context, *, name: str = None) -> None:
         """Find the vacation spot(s) with the most matching characters to the invoking user."""
         eq_chars = collections.defaultdict(int)

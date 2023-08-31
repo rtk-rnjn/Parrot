@@ -363,7 +363,6 @@ class RTFM(Cog):
         )
 
     @commands.command(aliases=["pypi"])
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def pypisearch(self, ctx: Context, arg: str):
         """Get info about a Python package directly from PyPi."""
@@ -413,7 +412,6 @@ class RTFM(Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["npm"])
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def npmsearch(self, ctx: Context, arg: str):
         """Get info about a NPM package directly from the NPM Registry."""
@@ -472,7 +470,6 @@ class RTFM(Cog):
         await ctx.send(embed=em)
 
     @commands.command(aliases=["crates"])
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def crate(self, ctx: Context, arg: str):
         """Get info about a Rust package directly from the Crates.IO Registry."""
@@ -613,7 +610,6 @@ class RTFM(Cog):
             await ctx.reply(output)
 
     @commands.command(aliases=["ref"])
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def reference(self, ctx: Context, language: str, *, query: str):
         """Returns element reference from given language."""
@@ -624,7 +620,6 @@ class RTFM(Cog):
         await self.referred[lang.lower()](ctx, query.strip("`"))
 
     @commands.command(aliases=["doc"])
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def documentation(self, ctx: Context, language: str, *, query: str):
         """Returns element reference from given language."""
@@ -635,7 +630,6 @@ class RTFM(Cog):
         await self.documented[lang.lower()](ctx, query.strip("`"))
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def man(self, ctx: Context, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command."""
@@ -677,7 +671,6 @@ class RTFM(Cog):
                 await ctx.reply(embed=emb)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def ascii(self, ctx: Context, *, text: str):
         """Returns number representation of characters in text."""
         emb = discord.Embed(
@@ -686,7 +679,6 @@ class RTFM(Cog):
         ).set_footer(text=f"Invoked by {str(ctx.message.author)}")
         await ctx.reply(embed=emb)
 
-    @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def unascii(self, ctx: Context, *, text: str):
         """Reforms string from char codes."""
@@ -701,7 +693,6 @@ class RTFM(Cog):
         except ValueError:
             await ctx.reply("Invalid sequence. Example usage : `[p]unascii 104 101 121`")
 
-    @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def byteconvert(self, ctx: Context, value: int, unit=None):
         """Shows byte conversions of given value."""
@@ -723,7 +714,6 @@ class RTFM(Cog):
         await ctx.reply(embed=emb)
 
     @commands.command(name="hash")
-    @commands.bot_has_permissions(embed_links=True)
     async def _hash(self, ctx: Context, algorithm: str, *, text: str):
         """Hashes text with a given algorithm
         UTF-8, returns under hexadecimal form.
@@ -772,7 +762,6 @@ class RTFM(Cog):
 
     @commands.group(name="github", aliases=("gh", "git", "g"))  # Thanks `will.#0021` (211756205721255947)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
     async def github_group(self, ctx: Context) -> None:
         """Commands for finding information related to GitHub."""
         if ctx.invoked_subcommand is None:
@@ -914,7 +903,6 @@ class RTFM(Cog):
 
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
     async def realpython(
         self,
         ctx: Context,
@@ -984,7 +972,6 @@ class RTFM(Cog):
 
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
     async def stackoverflow(self, ctx: Context, *, search_query: str) -> None:
         """Sends the top 5 results of a search query from stackoverflow."""
         params = {**SO_PARAMS, "q": search_query}
@@ -1044,7 +1031,6 @@ class RTFM(Cog):
         name="cheat",
         aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"],
     )
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def cheat_sheet(self, ctx: Context, *search_terms: str) -> None:
         """Search cheat.sh.
@@ -1070,7 +1056,6 @@ class RTFM(Cog):
         await interface.send_to(ctx)
 
     @commands.command(aliases=["wtfp"])
-    @commands.bot_has_permissions(embed_links=True)
     async def wtfpython(self, ctx: Context, *, query: str | None = None) -> None:
         """Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.

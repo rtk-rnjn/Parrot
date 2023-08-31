@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from core import Parrot
 
-from discord import Member, Message
 from discord.abc import GuildChannel
 from discord.utils import maybe_coroutine, utcnow
+
+from discord import Member, Message
 
 
 class Condition:

@@ -94,4 +94,3 @@ class JinjaChannel(JinjaChannelBase):
             return
         msg = await self.__channel.send(*args, **kwargs)  # type: ignore
         return JinjaMessage(message=msg)
-

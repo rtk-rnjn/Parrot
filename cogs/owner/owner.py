@@ -14,6 +14,7 @@ import urllib.parse
 from collections import Counter
 from typing import Annotated, Literal
 
+import arrow
 import jishaku  # noqa: F401
 import jishaku.paginators  # noqa: F401
 from aiofile import async_open
@@ -21,7 +22,6 @@ from aiosqlite.cursor import Cursor
 from jishaku.paginators import PaginatorEmbedInterface
 from tabulate import tabulate
 
-import arrow
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands

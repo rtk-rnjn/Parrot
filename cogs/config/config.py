@@ -386,7 +386,6 @@ class Configuration(Cog):
 
     @config.group(name="leveling", aliases=["lvl"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling(self, ctx: Context, toggle: Annotated[bool, convert_bool] = True):
         """To configure leveling."""
         if not ctx.invoked_subcommand:
@@ -395,7 +394,6 @@ class Configuration(Cog):
 
     @leveling.command(name="show")
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_show(self, ctx: Context):
         """To show leveling system."""
         try:
@@ -426,7 +424,6 @@ class Configuration(Cog):
 
     @leveling.command(name="channel")
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_channel(self, ctx: Context, *, channel: discord.TextChannel = None):
         """To configure leveling channel."""
         await self.bot.guild_configurations.update_one(
@@ -440,7 +437,6 @@ class Configuration(Cog):
 
     @leveling.group(name="ignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_ignore_set(
         self,
         ctx: Context,
@@ -453,7 +449,6 @@ class Configuration(Cog):
         name="role",
     )
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_ignore_role(self, ctx: Context, *, role: discord.Role):
         """To configure leveling ignore role."""
         await self.bot.guild_configurations.update_one(
@@ -466,7 +461,6 @@ class Configuration(Cog):
         name="channel",
     )
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_ignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
         """To configure leveling ignore channel."""
         await self.bot.guild_configurations.update_one(
@@ -477,7 +471,6 @@ class Configuration(Cog):
 
     @leveling.group(name="unignore", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_set(
         self,
         ctx: Context,
@@ -490,7 +483,6 @@ class Configuration(Cog):
         name="role",
     )
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_role(self, ctx: Context, *, role: discord.Role):
         """To configure leveling unignore role."""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"leveling.ignore_role": role.id}})
@@ -500,7 +492,6 @@ class Configuration(Cog):
         name="channel",
     )
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def leveling_unignore_channel(self, ctx: Context, *, channel: discord.TextChannel):
         """To configure leveling ignore channel."""
         await self.bot.guild_configurations.update_one(
@@ -511,7 +502,6 @@ class Configuration(Cog):
 
     @leveling.command(name="addreward")
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def level_reward_add(self, ctx: Context, level: int, role: discord.Role = None):
         """To add the level reward."""
         if _ := await self.bot.guild_configurations.find_one({"_id": ctx.guild.id, "leveling.reward": level}):
@@ -530,7 +520,6 @@ class Configuration(Cog):
 
     @leveling.command(name="removereward")
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def level_reward_remove(self, ctx: Context, level: int):
         """To remove the level reward."""
         await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$pull": {"leveling.reward": {"lvl": level}}})
@@ -630,7 +619,6 @@ class Configuration(Cog):
 
     @commands.group(aliases=["ticketsetup"], invoke_without_command=True)
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def ticketconfig(self, ctx: Context):
         """To config the Ticket Parrot Bot in the server."""
@@ -684,7 +672,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def auto(self, ctx: Context, channel: discord.TextChannel = None, *, message: str = None):
         """Automatic ticket making system. On reaction basis."""
@@ -694,7 +681,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def setcategory(self, ctx: Context, *, channel: discord.CategoryChannel):
         """Where the new ticket will created? In category or on the TOP."""
@@ -702,7 +688,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def setlog(self, ctx: Context, *, channel: discord.TextChannel):
         """Where the tickets action will logged? To config the ticket log."""
@@ -710,7 +695,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addaccess(self, ctx: Context, *, role: discord.Role):
         """This can be used to give a specific role access to all tickets. This command can only be run if you have an admin-level role for this bot.
@@ -721,7 +705,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def delaccess(self, ctx: Context, *, role: discord.Role):
         """This can be used to remove a specific role's access to all tickets. This command can only be run if you have an admin-level role for this bot.
@@ -732,7 +715,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addadminrole(self, ctx: Context, *, role: discord.Role):
         """This command gives all users with a specific role access to the admin-level commands for the bot,
@@ -742,7 +724,6 @@ class Configuration(Cog):
 
     @ticketconfig.command(hidden=False)
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def addpingedrole(self, ctx: Context, *, role: discord.Role):
         """This command adds a role to the list of roles that are pinged when a new ticket is created.
@@ -752,7 +733,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.has_permissions(administrator=True)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def deladminrole(self, ctx: Context, *, role: discord.Role):
         """This command removes access for all users with the specified role to the admin-level commands for the bot,
@@ -762,7 +742,6 @@ class Configuration(Cog):
 
     @ticketconfig.command()
     @commands.check_any(commands.has_permissions(administrator=True), has_verified_role_ticket())
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def delpingedrole(self, ctx: Context, *, role: discord.Role):
         """This command removes a role from the list of roles that are pinged when a new ticket is created. This command can only be run if you have an admin-level role for this bot."""

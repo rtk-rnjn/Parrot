@@ -24,8 +24,8 @@ from pathlib import Path
 from random import choice, randint
 from typing import Annotated, Any, TypeVar, cast
 
-import arrow
 import aiohttp
+import arrow
 import rapidfuzz
 from aiohttp import request
 from colorama import Fore
@@ -954,7 +954,6 @@ class Fun(Cog):
         )
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def hangman(
         self,
         ctx: Context,
@@ -1337,7 +1336,6 @@ class Fun(Cog):
         await self.send_colour_response(ctx, hex_tuple)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def decode(self, ctx: Context, *, string: str):
@@ -1355,7 +1353,6 @@ class Fun(Cog):
         await ctx.reply(f"{ctx.author.mention} {sample_string}")
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def encode(self, ctx: Context, *, string: str):
@@ -1368,7 +1365,6 @@ class Fun(Cog):
         await ctx.reply(f"{ctx.author.mention} {base64_string}")
 
     @commands.command(name="fact")
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def animal_fact(self, ctx: Context, *, animal: str):
@@ -1441,7 +1437,6 @@ class Fun(Cog):
             await ctx.reply(file=discord.File(imageData, "itssostupid.png"))  # replying the file
 
     @commands.command(name="meme")
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def meme(self, ctx: Context, count: int | None = 1, *, subreddit: str = "memes"):
@@ -1478,7 +1473,6 @@ class Fun(Cog):
         await p.start(ctx)
 
     @commands.command(aliases=["fakeprofile"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def fakepeople(self, ctx: Context):
@@ -1519,7 +1513,6 @@ class Fun(Cog):
         await ctx.reply(embed=em)
 
     @commands.command(aliases=["trans"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def translate(self, ctx: Context, model: str, *, message: str):
@@ -1548,7 +1541,6 @@ class Fun(Cog):
         return await ctx.send(f"{ctx.author.mention} no translation found")
 
     @commands.command(aliases=["def", "urban"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def urbandictionary(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
@@ -1615,7 +1607,6 @@ class Fun(Cog):
             await ctx.reply(file=discord.File(imageData, "ytcomment.png"))  # replying the file
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def dare(self, ctx: Context, *, member: discord.Member = None):
@@ -1637,7 +1628,6 @@ class Fun(Cog):
         await ctx.reply(embed=em)
 
     @commands.command(aliases=["wyr"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def wouldyourather(self, ctx: Context, *, member: discord.Member = None):
         """A classic `Would you Rather...?` game."""
@@ -1658,7 +1648,6 @@ class Fun(Cog):
         await ctx.reply(embed=em)
 
     @commands.command(aliases=["nhie"])
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def neverhaveiever(self, ctx: Context, *, member: discord.Member = None):
         """A classic `Never Have I ever...` game."""
@@ -1679,7 +1668,6 @@ class Fun(Cog):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def truth(self, ctx: Context, *, member: discord.Member = None):
@@ -1700,7 +1688,6 @@ class Fun(Cog):
         await ctx.reply(embed=em)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def twister(self, ctx: Context, *, member: discord.Member = None):
@@ -1734,7 +1721,6 @@ class Fun(Cog):
             )
 
     @http.command(name="dog")
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def http_dog(self, ctx: Context, *, status_code: int):
@@ -1769,7 +1755,6 @@ class Fun(Cog):
         await ctx.reply(file=file_obj)
 
     @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def uwuify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):

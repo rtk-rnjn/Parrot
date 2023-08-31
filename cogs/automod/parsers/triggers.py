@@ -173,7 +173,9 @@ class Trigger:
             return bool(bucket.update_rate_limit()) if bucket else False
         return False
 
-    def all_caps(self, *, message: Message | None = None, threshold: float = float("inf"), percentage: float = 100, **kw) -> bool:
+    def all_caps(
+        self, *, message: Message | None = None, threshold: float = float("inf"), percentage: float = 100, **kw
+    ) -> bool:
         if not message:
             return False
         content = message.content

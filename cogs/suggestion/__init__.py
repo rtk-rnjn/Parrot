@@ -279,7 +279,9 @@ class Suggestions(Cog):
         ls = list(zip_longest(upvoter, downvoter, fillvalue=""))
         table.add_rows(ls)
 
-        embed = discord.Embed(title=f"Suggestion Statistics of message ID: {message_id}", description=f"```\n{table.render()}```")
+        embed = discord.Embed(
+            title=f"Suggestion Statistics of message ID: {message_id}", description=f"```\n{table.render()}```"
+        )
 
         if msg.content:
             embed.add_field(name="Flagged", value=msg.content)

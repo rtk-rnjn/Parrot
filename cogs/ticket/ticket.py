@@ -19,7 +19,7 @@ class Ticket(Cog):
 
     @commands.command(hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(manage_channels=True, embed_links=True, manage_roles=True)
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     @Context.with_type
     async def new(self, ctx: Context, *, args: str | None = None):
         """This creates a new ticket.
@@ -28,7 +28,7 @@ class Ticket(Cog):
         await mt._new(ctx, args)
 
     @commands.command(hidden=True)
-    @commands.bot_has_permissions(manage_channels=True, embed_links=True)
+    @commands.bot_has_permissions(manage_channels=True)
     @Context.with_type
     async def close(self, ctx: Context):
         """Use this to close a ticket.
@@ -38,7 +38,6 @@ class Ticket(Cog):
 
     @commands.command(hidden=True)
     @commands.cooldown(1, 5, commands.BucketType.channel)
-    @commands.bot_has_permissions(embed_links=True)
     @Context.with_type
     async def save(self, ctx: Context, limit: int | None = 100):
         """Use this to save the transcript of a ticket.

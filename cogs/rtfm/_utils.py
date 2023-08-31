@@ -10,8 +10,8 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-import arrow
 import aiofiles
+import arrow
 import bandit
 import pkg_resources
 import pylint

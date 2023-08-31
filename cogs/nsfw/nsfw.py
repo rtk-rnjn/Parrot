@@ -17,11 +17,16 @@ class NSFW(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
-        self.command_loader()
 
         self.cached_images: dict[str, set[str]] = {}
-
         self.ON_TESTING = False
+
+    async def cog_load(self):
+        self.command_loader()
+
+    async def cog_unload(self):
+        for end_point in ENDPOINTS:
+            self.bot.remove_command(end_point)
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -58,26 +63,29 @@ class NSFW(Cog):
         self.cached_images[type_str].add(url)
         return embed
 
+    async def _method(self, ctx: Context) -> None:
+        embed = await self.get_embed(f"{ctx.command.qualified_name}")
+        if embed is not None:
+            await ctx.reply(
+                embed=embed.set_footer(
+                    text=f"Requested by {ctx.author}",
+                    icon_url=ctx.author.display_avatar.url,
+                ),
+            )
+            return
+        await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
+
     def command_loader(self) -> None:
+        method = self._method
         for end_point in ENDPOINTS:
 
             @commands.command(name=end_point)
             @commands.cooldown(1, 60, commands.BucketType.user)
             @commands.max_concurrency(1, commands.BucketType.user)
+            @commands.is_nsfw()
             @Context.with_type
-            async def command_callback(ctx: Context[Parrot]) -> None:
-                if not ctx.channel.nsfw:
-                    raise commands.NSFWChannelRequired(ctx.channel)
-                embed = await self.get_embed(f"{ctx.command.qualified_name}")
-                if embed is not None:
-                    await ctx.reply(
-                        embed=embed.set_footer(
-                            text=f"Requested by {ctx.author}",
-                            icon_url=ctx.author.display_avatar.url,
-                        ),
-                    )
-                    return
-                await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
+            async def command_callback(ctx: Context[Parrot]):
+                await method(ctx)
 
             command_callback.cog = self
             self.bot.add_command(command_callback)

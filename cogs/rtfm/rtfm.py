@@ -8,19 +8,19 @@ import sys
 import unicodedata
 import urllib.parse
 from collections.abc import Callable
-from hashlib import algorithms_available as algorithms
 from html import unescape
 from io import BytesIO
 from random import choice
 from typing import Any
 from urllib.parse import quote, quote_plus
 
-import arrow
 import aiohttp
+import arrow
 import rapidfuzz
 from aiofile import async_open
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
+from jishaku.paginators import PaginatorEmbedInterface
 from rapidfuzz.process import extractOne
 
 import discord
@@ -30,10 +30,8 @@ from discord.ext import commands, tasks
 from utilities.converters import WrappedMessageConverter
 from utilities.robopages import SimplePages
 
-from jishaku.paginators import PaginatorEmbedInterface
-
 from . import _doc, _ref
-from ._used import execute_run, get_raw, prepare_payload, wrapping
+from ._used import execute_run, get_raw, prepare_payload
 from ._utils import (
     ANSI_RE,
     API_ROOT,
@@ -62,7 +60,7 @@ from ._utils import (
 )
 
 try:
-    import lxml  # type: ignore  # noqa: F401  # pylint: disable=unused-import
+    import lxml  # noqa: F401  # pylint: disable=unused-import
 
     HTML_PARSER = "lxml"
 except ImportError:
@@ -264,7 +262,7 @@ class RTFM(Cog):
         if len(content) >= 1024:
             content = f"{content[:1021]}..."
 
-        return content
+        return re.sub(r" +", " ", content)
 
     referred: dict[str, Callable] = {
         "csp-directives": _ref.csp_directives,
@@ -674,7 +672,7 @@ class RTFM(Cog):
 
                 for tag in contents:
                     h2 = tuple(soup.find(attrs={"name": tuple(tag.children)[0].get("href")[1:]}).parents)[0]  # type: ignore
-                    emb.add_field(name=tag.string, value=self.get_content(h2))
+                    emb.add_field(name=tag.string, value=self.get_content(h2), inline=False)
 
                 await ctx.reply(embed=emb)
 

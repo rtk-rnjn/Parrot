@@ -6,7 +6,6 @@ from typing import Annotated
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from dateutil import tz
 import arrow
 import discord
 from core import Cog, Context, Parrot

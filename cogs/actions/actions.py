@@ -68,9 +68,7 @@ class Actions(Cog):
             @commands.command(name=end_point)
             @commands.cooldown(1, 8, commands.BucketType.member)
             @Context.with_type
-            async def callback(
-                ctx: Context,
-            ):
+            async def callback(ctx: Context):
                 await method(ctx)
 
             self.bot.add_command(callback)

@@ -62,8 +62,12 @@ class NSFW(Cog):
         for end_point in ENDPOINTS:
 
             @commands.command(name=end_point)
-            @commands.is_nsfw()
-            async def callback(ctx: Context) -> None:
+            @commands.cooldown(1, 60, commands.BucketType.user)
+            @commands.max_concurrency(1, commands.BucketType.user)
+            @Context.with_type
+            async def command_callback(ctx: Context[Parrot]) -> None:
+                if not ctx.channel.nsfw:
+                    raise commands.NSFWChannelRequired(ctx.channel)
                 embed = await self.get_embed(f"{ctx.command.qualified_name}")
                 if embed is not None:
                     await ctx.reply(
@@ -72,10 +76,11 @@ class NSFW(Cog):
                             icon_url=ctx.author.display_avatar.url,
                         ),
                     )
-                else:
-                    await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
-            callback.cog = self
-            self.bot.add_command(callback)
+                    return
+                await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
+
+            command_callback.cog = self
+            self.bot.add_command(command_callback)
 
     @commands.command(hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.user)

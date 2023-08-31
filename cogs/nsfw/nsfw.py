@@ -6,13 +6,14 @@ from typing import Literal
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
+from utilities.exceptions import ParrotCheckFailure
 from utilities.paginator import PaginationView as PV
 
 from ._nsfw import ENDPOINTS
 
 
 class NSFW(Cog):
-    """Want some fun? These are best commands! :') :warning: 18+."""
+    """Mature Content. 18+ only."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -40,7 +41,7 @@ class NSFW(Cog):
     def _try_from_cache(self, type_str: str) -> str | None:
         return choice(self.cached_images.get(type_str, [None]))
 
-    async def get_embed(self, type_str: str) -> discord.Embed | None:
+    async def get_embed(self, type_str: str) -> discord.Embed:
         if random() > 0.5 and len(self.cached_images.get(type_str, [])) >= 10:
             url = choice(self.cached_images[type_str])
         else:
@@ -48,7 +49,8 @@ class NSFW(Cog):
             if response.status > 300:
                 url = self._try_from_cache(type_str)
                 if url is None:
-                    return None
+                    msg = "Something went wrong with the API"
+                    raise ParrotCheckFailure(msg)
             else:
                 url = (await response.json())["message"]
         embed = discord.Embed(
@@ -84,9 +86,10 @@ class NSFW(Cog):
             @commands.max_concurrency(1, commands.BucketType.user)
             @commands.is_nsfw()
             @Context.with_type
-            async def command_callback(ctx: Context[Parrot]):
+            async def command_callback(self: NSFW, ctx: Context[Parrot]):
                 await method(ctx)
 
+            command_callback.cog = self
             self.bot.add_command(command_callback)
 
     @commands.command(hidden=True)
@@ -100,7 +103,7 @@ class NSFW(Cog):
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:
-        """Best command I guess. It return random ^^."""
+        """Mature Content. 18+ only."""
         em_list: list[discord.Embed] = []
 
         count = max(1, count or 1)

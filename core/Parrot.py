@@ -65,8 +65,8 @@ from utilities.paste import Client
 from .__template import post as POST
 from .Context import Context
 from .help import PaginatedHelpCommand
-from .utils import CustomFormatter, handler
 from .tips import TIPS
+from .utils import CustomFormatter, handler
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -541,7 +541,7 @@ class Parrot(commands.AutoShardedBot):
                     content,
                 )
                 return await webhook.send(
-                    content=_CONTENT,
+                    content=_CONTENT,  # type: ignore
                     file=_FILE,
                     avatar_url=kwargs.pop("avatar_url", self.user.display_avatar.url),
                     username=kwargs.pop("username", self.user.name),
@@ -731,7 +731,12 @@ class Parrot(commands.AutoShardedBot):
                 self._auto_spam_count[message.author.id] += 1
                 if self._auto_spam_count[message.author.id] >= 3:
                     log.info("Auto spam detected, ignoring command. Context %s", ctx)
+                    await self.ban_user(user_id=message.author.id, reason="**Spamming commands.**", command=True)
                     return
+
+                await ctx.send(
+                    f"**{message.author.mention}** Stop spamming commands! Warn Count: {self._auto_spam_count[message.author.id]}",
+                )
                 return
             else:
                 self._auto_spam_count.pop(message.author.id, None)
@@ -1477,3 +1482,62 @@ class Parrot(commands.AutoShardedBot):
     async def set_user_timezone(self, user_id: int, timezone: str) -> None:
         await self.user_collections_ind.update_one({"_id": user_id}, {"$set": {"timezone": timezone}}, upsert=True)
         self.__user_timezone_cache[user_id] = timezone
+
+    async def ban_user(self, *, user_id: int, reason: str, command: bool = True, send: bool = False, **kw: bool):
+        collection = self.extra_collections
+
+        query = {
+            "_id": "banned_users",
+        }
+
+        update = {
+            "$addToSet": {
+                "users": {
+                    "user_id": user_id,
+                    "reason": reason,
+                    "command": command,
+                    **kw,
+                },
+            },
+        }
+
+        await collection.update_one(query, update, upsert=True)
+        self.banned_users[user_id] = {
+            "user_id": user_id,
+            "reason": reason,
+            "command": command,
+            **kw,
+        }
+
+        user: discord.User | None = await self.getch(self.get_user, self.fetch_user, user_id)
+        try:
+            if send and user is not None:
+                await user.send(
+                    embed=discord.Embed(
+                        title="You are banned from using this bot!",
+                        description=f"Reason: {reason}",
+                        url=self.support_server,
+                    ).set_footer(
+                        text="If you think this is a mistake, please contact the bot owner. You can join the support server by clicking the title of this embed.",
+                    ),
+                )
+        except discord.HTTPException:
+            pass
+
+    async def unban_user(self, *, user_id: int):
+        collection = self.extra_collections
+
+        query = {
+            "_id": "banned_users",
+        }
+
+        update = {
+            "$pull": {
+                "users": {
+                    "user_id": user_id,
+                },
+            },
+        }
+
+        await collection.update_one(query, update)
+        self.banned_users.pop(user_id, None)

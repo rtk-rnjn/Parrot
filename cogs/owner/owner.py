@@ -140,17 +140,13 @@ class Owner(Cog, command_attrs={"hidden": True}):
         """To ban the user."""
         reason = args.reason or "No reason provided"
         payload = {"reason": reason, "command": args.command, "global": args._global}
-        await self.bot.extra_collections.insert_one(
-            {"_id": "banned_users"},
-            {"$addToSet": {"users": {"user_id": user.id, **payload}}},
-        )
-        await self.bot.update_banned_members.start()
+        await self.bot.ban_user(user_id=user.id, **payload)
         try:
             await user.send(
                 f"{user.mention} you are banned from using Parrot bot. Reason: {reason}\n\nContact `{self.bot.author_name}` for unban.",
                 view=ctx.send_view(),
             )
-            await ctx.send("User banned and DM-ed")
+            await ctx.tick()
         except discord.Forbidden:
             await ctx.send("User banned, unable to DM as their DMs are locked")
 
@@ -158,27 +154,19 @@ class Owner(Cog, command_attrs={"hidden": True}):
     @Context.with_type
     async def unban_user(
         self,
-        ctx: Context,
+        ctx: Context[Parrot],
         user: discord.User,
         *,
         remark: str = "No reason provided",
     ):
         """To ban the user."""
-        await self.bot.extra_collections.update_one(
-            {
-                "_id": "banned_users",
-            },
-            {
-                "$pull": {"users": {"user_id": user.id}},
-            },
-        )
-        await self.bot.update_banned_members.start()
+        await self.bot.unban_user(user_id=user.id)
         try:
             await user.send(
                 f"{user.mention} you are unbanned. You can now use Parrot bot.\n\nContact `{self.bot.author_name}` for any queries.",
                 view=ctx.send_view(),
             )
-            await ctx.send("User unbanned and DM-ed")
+            await ctx.tick()
         except discord.Forbidden:
             await ctx.send("User unbanned, unable to DM as their DMs are locked")
 

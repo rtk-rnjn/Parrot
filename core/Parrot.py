@@ -528,7 +528,7 @@ class Parrot(commands.AutoShardedBot):
 
         if content and len(content) > 1990 or force_file:
             _FILE: discord.File = discord.File(
-                io.BytesIO(content.encode("utf-8") if isinstance(content, str) else content),
+                io.BytesIO(content.encode("utf-8") if isinstance(content, str) else content),  # type: ignore
                 filename=filename or "content.txt",
             )
             _CONTENT = discord.utils.MISSING
@@ -650,7 +650,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         VOICE_CHANNEL_ID = 1116780108074713098
-        channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)
+        channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)  # type: ignore
         if channel is not None:
             await channel.connect(self_deaf=True, reconnect=True)
 
@@ -1349,16 +1349,16 @@ class Parrot(commands.AutoShardedBot):
             The Message or None if not found.
         """
 
-        message = int(message)
+        message = int(message)  # type: ignore
 
         if isinstance(channel, int):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel)
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel)  # type: ignore
             else:
                 channel = self.get_channel(channel)  # type: ignore
         elif isinstance(channel, discord.Object | discord.PartialMessageable):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id)
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id)  # type: ignore
             else:
                 channel = self.get_channel(channel.id)  # type: ignore
 

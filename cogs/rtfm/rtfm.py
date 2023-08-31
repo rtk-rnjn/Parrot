@@ -1417,7 +1417,7 @@ class RTFM(Cog):
             try:
                 return int(arrow.get(st).timestamp())
             except arrow.parser.ParserError:
-                fmt = "%Y-%m-%d %H:%M:%S UTC"
+                fmt = "YYYY-MM-DD HH:mm:ss UTC"
                 return int(arrow.get(st, fmt).timestamp())
 
         ls = []

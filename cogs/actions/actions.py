@@ -19,6 +19,7 @@ class Actions(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.url = "https://api.waifu.pics/sfw"
+
         self.cached_images: dict[str, set[str]] = {}
 
         self.ON_TESTING = False
@@ -76,5 +77,4 @@ class Actions(Cog):
             async def callback(ctx: Context):
                 await method(ctx)
 
-            callback.cog = self
             self.bot.add_command(callback)

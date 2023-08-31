@@ -87,7 +87,6 @@ class NSFW(Cog):
             async def command_callback(ctx: Context[Parrot]):
                 await method(ctx)
 
-            command_callback.cog = self
             self.bot.add_command(command_callback)
 
     @commands.command(hidden=True)

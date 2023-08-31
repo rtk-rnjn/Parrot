@@ -497,7 +497,7 @@ class Parrot(commands.AutoShardedBot):
         content: str | None = None,
         force_file: bool = False,
         filename: str | None = None,
-        suppressor: tuple[type[Exception]] | type[Exception] | None = Exception,
+        suppressor: tuple[type[Exception]] | type[Exception] = Exception,
         **kwargs: Any,
     ) -> discord.WebhookMessage | None:
         if webhook is None and (webhook_id is None and webhook_token is None):

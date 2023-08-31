@@ -103,7 +103,7 @@ class NSFW(Cog):
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:
-        """Mature Content. 18+ only."""
+        """Mature Content. 18+ only Please."""
         em_list: list[discord.Embed] = []
 
         count = max(1, count or 1)

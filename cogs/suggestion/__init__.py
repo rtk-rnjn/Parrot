@@ -465,10 +465,13 @@ class Suggestions(Cog):
         if message.channel.id != ls["suggestion_channel"]:
             return
 
-        if _ := await self.__parse_mod_action(message):
+        if await self.__parse_mod_action(message):
             return
 
         context: Context = await self.bot.get_context(message, cls=Context)
+        if context.valid:
+            return
+
         await self.suggest(context, suggestion=message.content)
 
     @Cog.listener()

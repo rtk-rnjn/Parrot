@@ -1451,7 +1451,7 @@ class Fun(Cog):
 
             list_links.extend(meme["url"] for meme in memes if not meme["nsfw"])
             if __inernal_count > 10:
-                msg = "No memes found"
+                msg = "No memes found. This happens on various occasions, such as when the subreddit is empty or when the subreddit doesn't exist. Or the subreddit is NSFW and you are not 18+."
                 raise commands.BadArgument(msg)
         return list_links
 

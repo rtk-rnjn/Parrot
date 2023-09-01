@@ -1439,7 +1439,7 @@ class Fun(Cog):
     async def get_meme_links(self, count: int = 1, subreddit: str = "memes") -> list[str] | str:
         api = f"https://meme-api.com/gimme/{subreddit}/{count}"
         list_links = []
-
+        __inernal_count = 0
         while len(list_links) != count:
             response = await self.bot.http_session.get(api)
             if response.status > 400:
@@ -1450,6 +1450,9 @@ class Fun(Cog):
             memes = data["memes"]
 
             list_links.extend(meme["url"] for meme in memes if not meme["nsfw"])
+            if __inernal_count > 10:
+                msg = "No memes found"
+                raise commands.BadArgument(msg)
         return list_links
 
     @commands.command(name="meme")

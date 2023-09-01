@@ -243,6 +243,7 @@ class UserFriendlyTime(commands.Converter):
 
         # apparently nlp does not like "from now"
         # it likes "from x" in other cases though so let me handle the 'now' case
+        argument = argument.lower().strip()
         if argument.endswith("from now"):
             argument = argument[:-8].strip()
 

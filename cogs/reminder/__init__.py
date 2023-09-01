@@ -202,12 +202,6 @@ class Reminders(Cog):
             now = arrow.get(when.dt)
             return now.timestamp()
 
-        if when.raw_argument:
-            try:
-                return arrow.get(when.dt).dehumanize(when.raw_argument).timestamp()
-            except Exception:
-                pass
-
         try:
             timezone = await self.bot.get_user_timezone(user_id)
             now = arrow.get(when.dt, timezone)

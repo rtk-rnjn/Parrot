@@ -1436,41 +1436,38 @@ class Fun(Cog):
 
             await ctx.reply(file=discord.File(imageData, "itssostupid.png"))  # replying the file
 
+    async def get_meme_links(self, count: int = 1, subreddit: str = "memes") -> list[str] | str:
+        api = f"https://meme-api.com/gimme/{subreddit}/{count}"
+        list_links = []
+
+        while len(list_links) != count:
+            response = await self.bot.http_session.get(api)
+            if response.status > 400:
+                data = await response.json()
+                return data["message"]
+
+            data = await response.json()
+            memes = data["memes"]
+
+            list_links.extend(meme["url"] for meme in memes if not meme["nsfw"])
+        return list_links
+
     @commands.command(name="meme")
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def meme(self, ctx: Context, count: int | None = 1, *, subreddit: str = "memes"):
         """Random meme generator."""
-        link = f"https://meme-api.herokuapp.com/gimme/{subreddit}/{count}"
+        count = min(max(count or 1, 1), 10)
+        links = await self.get_meme_links(count, subreddit)
+        if isinstance(links, str):
+            return await ctx.error(links)
+        em_list = []
+        for link in links:
+            embed = discord.Embed().set_image(url=link)
+            em_list.append(embed)
 
-        res = {"memes": []}
-        while True:
-            response = await self.bot.http_session.get(link)
-            if response.status <= 300:
-                res = await response.json()
-                if "message" in res:
-                    await ctx.reply(res["message"])
-                    return
-            if not any(x["nsfw"] for x in res["memes"]):
-                break
-
-            await ctx.release(0)
-
-        def make_embed(res) -> discord.Embed:
-            title = res["title"]
-            ups = res["ups"]
-            sub = res["subreddit"]
-
-            embed = discord.Embed(title=f"{title}", description=f"{sub}", timestamp=discord.utils.utcnow())
-            embed.set_image(url=res["url"])
-            embed.set_footer(text=f"Upvotes: {ups}")
-            return embed
-
-        em: list[discord.Embed] = []
-        for _res in res["memes"]:
-            em.append(make_embed(_res))
-        p = PaginationView(em)
-        await p.start(ctx)
+        page = PaginationView(em_list)
+        await page.start(ctx)
 
     @commands.command(aliases=["fakeprofile"])
     @commands.max_concurrency(1, per=commands.BucketType.user)

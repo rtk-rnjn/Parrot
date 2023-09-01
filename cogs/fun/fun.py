@@ -1453,6 +1453,7 @@ class Fun(Cog):
             if __inernal_count > 10:
                 msg = "No memes found. This happens on various occasions, such as when the subreddit is empty or when the subreddit doesn't exist. Or the subreddit is NSFW and you are not 18+."
                 raise commands.BadArgument(msg)
+            __inernal_count += 1
         return list_links
 
     @commands.command(name="meme")

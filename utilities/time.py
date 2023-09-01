@@ -152,12 +152,14 @@ class FriendlyTimeResult:
     dt: datetime.datetime
     arg: str
 
-    __slots__ = ("dt", "arg", "is_relative")
+    __slots__ = ("dt", "arg", "is_relative", "raw_argument")
 
     def __init__(self, dt: datetime.datetime) -> None:
         self.dt = dt
         self.arg = ""
+
         self.is_relative = False
+        self.raw_argument: str | None = None
 
     async def ensure_constraints(
         self,
@@ -172,8 +174,7 @@ class FriendlyTimeResult:
 
         if not remaining:
             if uft.default is None:
-                msg = "Missing argument after the time."
-                raise commands.BadArgument(msg)
+                raise commands.BadArgument("Missing argument after the time.")
             remaining = uft.default
 
         if uft.converter is not None:
@@ -191,6 +192,7 @@ class UserFriendlyTime(commands.Converter):
         *,
         default: Any = None,
     ) -> None:
+        self.is_relative = False
         if isinstance(converter, type) and issubclass(converter, commands.Converter):
             converter = converter()
 
@@ -201,7 +203,11 @@ class UserFriendlyTime(commands.Converter):
         self.converter: commands.Converter = converter  # type: ignore  # It doesn't understand this narrowing
         self.default: Any = default
 
+        self._raw_argument: str | None = None
+
     async def convert(self, ctx: Context, argument: str) -> FriendlyTimeResult:
+        self._raw_argument = argument
+
         calendar = HumanTime.calendar
         regex = ShortTime.compiled
         now = ctx.message.created_at
@@ -211,11 +217,15 @@ class UserFriendlyTime(commands.Converter):
         match = regex.match(argument)
         if match is not None and match.group(0):
             data = {k: int(v) for k, v in match.groupdict(default=0).items()}
-            remaining = argument[match.end() :].strip()
+            remaining = argument[match.end():].strip()
             dt = now + relativedelta(**data)  # type: ignore
             result = FriendlyTimeResult(dt.astimezone(tzinfo))
             await result.ensure_constraints(ctx, self, now, remaining)
+
             result.is_relative = True
+            self.is_relative = True
+            result.raw_argument = self._raw_argument
+
             return result
 
         if match is None or not match.group(0):
@@ -227,6 +237,8 @@ class UserFriendlyTime(commands.Converter):
                 remaining = argument[match.end() :].strip()
                 await result.ensure_constraints(ctx, self, now, remaining)
                 result.is_relative = True
+                self.is_relative = True
+                result.raw_argument = self._raw_argument
                 return result
 
         # apparently nlp does not like "from now"
@@ -280,6 +292,8 @@ class UserFriendlyTime(commands.Converter):
             dt = dt.replace(day=now.day + 1)
 
         result = FriendlyTimeResult(dt.replace(tzinfo=tzinfo))
+        result.is_relative = False
+        result.raw_argument = self._raw_argument
         remaining = ""
 
         if begin in (0, 1):

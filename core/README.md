@@ -81,6 +81,19 @@
 <h3 id="-a-world-of-games-">🎮 <strong>A World of Games</strong>
 </h3>
 <p>Bring fun and interaction to your server with Parrot Bot&#39;s diverse selection of games. From classics like chess to unique experiences like 2048, there&#39;s something for everyone to enjoy.</p>
+<h2 id="-nsfw-">
+  <strong>NSFW</strong>
+</h2>
+<p>Parrot do have NSFW commands, but those are HIDDEN from `help` command on purpose.</p>
+<p>Those commands are only for mature audience (STRICTLY 18 or above). <strong>I as a bot owner, if found anyone who is below 18 using NSFW commands, will be permanently banned from using Parrot and reported to rightful authority.</strong></strong></p>
+<p>Since the commands are hidden, it is still possible to use them. But you need to know the command name.</p>
+<p>
+  <a href="https://github.com/rtk-rnjn/Parrot/blob/main/cogs/nsfw/_nsfw.py" alt="nsfw commands">List of NSFW commands</a>
+</p>
+<blockquote>
+  <p>NSFW commands are only available in NSFW channels.</p>
+  <p>The commands rely on third-party services, if bot not responding or delays in responding, it's surely not us but the API.</p>
+</blockquote>
 <h2 id="-join-parrot-bot-today-">
   <strong>Join Parrot Bot Today!</strong>
 </h2>
@@ -93,8 +106,9 @@
 </h2>
 <p>Parrot has lot to offer, and some of them don&#39;t need command.</p>
 <p>
-  <img src="https://github.com/rtk-rnjn/Parrot/assets/37435729/25b88256-ab39-4ffb-990a-7b2ae79475ee" alt="inline calculator" width="500px">
-</p>
+    <img src="https://github.com/rtk-rnjn/Parrot/assets/37435729/25b88256-ab39-4ffb-990a-7b2ae79475ee" alt="inline calculator" width="500px">
+  </p>
+<hr>
 <h3 id="-invite-parrot-bot-https-discord-com-oauth2-authorize-client_id-800780974274248764-scope-bot-applications-commands-permissions-1099780451414-">
   <strong>
     <a href="https://discord.com/oauth2/authorize?client_id=800780974274248764&amp;scope=bot+applications.commands&amp;permissions=1099780451414">Invite Parrot Bot</a>

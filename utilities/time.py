@@ -217,7 +217,7 @@ class UserFriendlyTime(commands.Converter):
         match = regex.match(argument)
         if match is not None and match.group(0):
             data = {k: int(v) for k, v in match.groupdict(default=0).items()}
-            remaining = argument[match.end():].strip()
+            remaining = argument[match.end() :].strip()
             dt = now + relativedelta(**data)  # type: ignore
             result = FriendlyTimeResult(dt.astimezone(tzinfo))
             await result.ensure_constraints(ctx, self, now, remaining)
@@ -263,13 +263,14 @@ class UserFriendlyTime(commands.Converter):
         # foo date time
 
         # first the first two cases:
-        dt, status, begin, end, _ = elements[0]
+        dt, status, begin, end, date_string = elements[0]
 
         if TYPE_CHECKING:
             dt: datetime.datetime
             status: pdt.pdtContext
             begin: int
             end: int
+            date_string: str
 
         if not status.hasDateOrTime:
             msg = 'Invalid time provided, try e.g. "tomorrow" or "3 days".'
@@ -294,13 +295,22 @@ class UserFriendlyTime(commands.Converter):
 
         result = FriendlyTimeResult(dt.replace(tzinfo=tzinfo))
 
-        if status.accuracy in (pdt.pdtContext.ACU_YEAR, pdt.pdtContext.ACU_MONTH, pdt.pdtContext.ACU_WEEK, pdt.pdtContext.ACU_DAY):
+        if status.accuracy in (
+            pdt.pdtContext.ACU_YEAR,
+            pdt.pdtContext.ACU_MONTH,
+            pdt.pdtContext.ACU_WEEK,
+            pdt.pdtContext.ACU_DAY,
+        ):
             # if it's a year, month, or week, we can assume it's relative
             result.is_relative = True
         else:
             result.is_relative = False
         result.raw_argument = self._raw_argument
         remaining = ""
+
+        if "am" in date_string.lower() or "pm" in date_string.lower():
+            # absolute time
+            result.is_relative = False
 
         if begin in (0, 1):
             if begin == 1:

@@ -293,7 +293,12 @@ class UserFriendlyTime(commands.Converter):
             dt = dt.replace(day=now.day + 1)
 
         result = FriendlyTimeResult(dt.replace(tzinfo=tzinfo))
-        result.is_relative = False
+
+        if status.accuracy in (pdt.pdtContext.ACU_YEAR, pdt.pdtContext.ACU_MONTH, pdt.pdtContext.ACU_WEEK, pdt.pdtContext.ACU_DAY):
+            # if it's a year, month, or week, we can assume it's relative
+            result.is_relative = True
+        else:
+            result.is_relative = False
         result.raw_argument = self._raw_argument
         remaining = ""
 

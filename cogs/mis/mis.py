@@ -17,6 +17,7 @@ import arrow
 import qrcode
 import sympy
 from dateutil.zoneinfo import get_zonefile_instance
+from jishaku.paginators import PaginatorEmbedInterface
 from PIL import Image
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import (
@@ -53,7 +54,7 @@ from .__embed_view import EmbedBuilder, EmbedCancel, EmbedSend
 from .__flags import SearchFlag, TTFlag
 
 if TYPE_CHECKING:
-    from .listeners import SnipeMessageListener
+    from .listeners import PingMessageListner, SnipeMessageListener
 
 google_key: str = os.environ["GOOGLE_KEY"]
 cx: str = os.environ["GOOGLE_CX"]
@@ -1133,7 +1134,7 @@ class Misc(Cog):
 
 ## Your Timezone `{timezone}`
 - Relative: {timestamp_r}
-- Full: {timestamp_f}"""
+- Full: {timestamp_f}""",
                 ),
             )
             return
@@ -1158,3 +1159,35 @@ class Misc(Cog):
             msg = f"{tz} is not a valid timezone."
             raise commands.BadArgument(msg)
         return self._timezone_aliases[result]
+
+    @commands.command(name="pings", aliases=["mypings", "myping"])
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    @Context.with_type
+    async def _pings(self, ctx: Context, ghost_pings: Annotated[bool, convert_bool] = True):
+        """Shows your current mentions in which bot has much servers."""
+        cog: PingMessageListner = self.bot.PingMessageListner
+        if cog is None:
+            return await ctx.error(f"{ctx.author.mention} Ping cog is not loaded!")
+
+        page = commands.Paginator(prefix="", suffix="", max_size=1000)
+        if ghost_pings:
+            __pings = cog.get_ghost_pings(ctx.author.id)
+        else:
+            __pings = cog.get_pings(ctx.author.id)
+
+        for message in __pings:
+            guild_name = message.guild.name if message.guild else "DM"
+            jump_url = message.jump_url if message.guild else ""
+            human_timestamp = discord.utils.format_dt(message.created_at, "R")
+
+            content = message.content or "No content"
+            content = content[:256] + "..." if len(content) > 256 else content
+
+            page.add_line(f"**{human_timestamp} @ {guild_name}** -> [{content}]({jump_url})")
+
+        if not page.pages:
+            return await ctx.error(f"{ctx.author.mention} no pings!")
+
+        interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author)
+        await interface.send_to(ctx)

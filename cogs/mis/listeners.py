@@ -92,3 +92,57 @@ class SnipeMessageListener(Cog):
             self.edit_snipes[channel.id].remove(self.edit_snipes[channel.id][index - 1])
         except Exception:
             pass
+
+
+class PingMessageListner(Cog):
+    def __init__(self, bot: Parrot) -> None:
+        self.bot = bot
+        self.ghost_pings: dict[int, deque[discord.Message]] = {}
+        self.pings: dict[int, deque[discord.Message]] = {}
+        # dict[author_id, list[message]]
+
+    @Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author.bot and not message.guild:
+            return
+
+        if message.author.id not in self.pings:
+            self.pings[message.author.id] = deque(maxlen=2**5)
+
+        if message.author in message.mentions:
+            self.pings[message.author.id].append(message)
+
+    @Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
+        if message.author.bot and not message.guild:
+            return
+
+        if message.author.id not in self.ghost_pings:
+            self.ghost_pings[message.author.id] = deque(maxlen=2**5)
+
+        if message.author in message.mentions:
+            self.ghost_pings[message.author.id].append(message)
+
+    @Cog.listener()
+    async def on_bulk_message_delete(self, messages: list[discord.Message]):
+        for msg in messages:
+            await self.on_message_delete(msg)
+
+    @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.author.bot and not before.guild:
+            return
+
+        await self.on_message_delete(before)
+
+    def get_pings(self, user_id: int) -> deque[discord.Message]:
+        if user_id not in self.pings:
+            return []  # type: ignore
+
+        return self.pings[user_id]
+
+    def get_ghost_pings(self, user_id: int) -> deque[discord.Message]:
+        if user_id not in self.ghost_pings:
+            return []  # type: ignore
+
+        return self.ghost_pings[user_id]

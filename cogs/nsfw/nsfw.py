@@ -138,9 +138,6 @@ class NSFW(Cog):
         await self.bot.update_user_cache.start(user_id)
 
     async def check_user_age(self, ctx: Context) -> bool:
-        if ctx.author.id in self.bot.owner_ids:
-            return True
-
         if ctx.author.id not in self.bot._user_cache:
             confirm = await ctx.prompt("Are you 18+?")
             if not confirm:

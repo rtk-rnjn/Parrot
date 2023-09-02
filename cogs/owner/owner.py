@@ -792,16 +792,23 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
 
         _matches = await asyncio.to_thread(fuzzy.finder, obj, cache, key=lambda t: t[0], lazy=False)
         matches = list(_matches)[:8]
-
-        e = discord.Embed(title="Read the Fucking Documentation", timestamp=discord.utils.utcnow())
         if len(matches) == 0:
             return await ctx.send("Could not find anything. Sorry.")
 
-        e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
-
-        e.set_footer(
-            text=f"Request by {ctx.author}",
-            icon_url=ctx.author.display_avatar.url,
+        e = (
+            discord.Embed(
+                title="RTFD - Read the Fine Documentation",
+                timestamp=discord.utils.utcnow(),
+                description="\n".join(f"[`{key}`]({url})" for key, url in matches),
+            )
+            .set_footer(
+                text=f"Request by {ctx.author}",
+                icon_url=ctx.author.display_avatar.url,
+            )
+            .set_author(
+                name="Search Results",
+                icon_url=self.display_emoji.url,
+            )
         )
         await ctx.send(embed=e)
 

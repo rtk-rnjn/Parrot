@@ -257,7 +257,7 @@ class Trigger:
         if not message:
             return False
 
-        cog: OnMsg = self.bot.get_cog("OnMsg")  # type: ignore
+        cog: OnMsg = self.bot.OnMsg
         if not cog:
             return False
         has_scam_link = await cog._scam_detection(message, to_send=False)

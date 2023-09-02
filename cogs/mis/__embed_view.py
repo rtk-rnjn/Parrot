@@ -103,11 +103,11 @@ class ParrotView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         if hasattr(self, "message"):
-            for b in self.children:
-                if isinstance(b, discord.ui.Button) and b.style != discord.ButtonStyle.link:
-                    b.style, b.disabled = discord.ButtonStyle.grey, True
-                elif isinstance(b, discord.ui.Select):
-                    b.disabled = True
+            for button in self.children:
+                if isinstance(button, discord.ui.Button) and button.style != discord.ButtonStyle.link:
+                    button.style, button.disabled = discord.ButtonStyle.grey, True
+                elif isinstance(button, discord.ui.Select):
+                    button.disabled = True
             with suppress(discord.HTTPException):
                 await self.message.edit(view=self)
                 return
@@ -320,8 +320,9 @@ class EmbedBuilder(ParrotView):
         self.ctx = ctx
         self.add_item(EmbedOptions(self.ctx))
 
-        for _ in kwargs.get("items", []):  # to add extra buttons and handle this view externally
-            self.add_item(_)
+        for item in kwargs.get("items", []):  # to add extra buttons and handle this view externally
+            if isinstance(item, discord.ui.Item):
+                self.add_item(item)
 
     @property
     def formatted(self):
@@ -335,7 +336,7 @@ class EmbedBuilder(ParrotView):
             self.message = await self.message.edit(content=self.content, embed=self.embed, view=self)
 
     async def rendor(self, **kwargs: T.Any):
-        self.message: discord.Message = await self.ctx.send(  # type: ignore
+        self.message: discord.Message = await self.ctx.send(
             kwargs.get("content", "\u200b"),
             embed=kwargs.get("embed", self.help_embed),
             view=self,

@@ -96,7 +96,7 @@ def is_me() -> Check[Context]:
 
 def is_adult() -> Check[Context]:
     async def predicate(ctx: Context) -> bool:
-        cog: NSFW = ctx.bot.get_cog("NSFW")  # type: ignore
+        cog: NSFW = ctx.bot.NSFW
         if cog is None:
             return True
         is_adult = await cog.check_user_age(ctx)

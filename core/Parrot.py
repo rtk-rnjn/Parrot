@@ -71,9 +71,8 @@ from .utils import CustomFormatter, handler
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-
     from discord.ext.commands.cooldowns import CooldownMapping
+    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
     from .Cog import Cog
 
@@ -295,6 +294,17 @@ class Parrot(commands.AutoShardedBot):
 
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
+
+    def __getattribute__(self, __item) -> Any:
+        try:
+            return super().__getattribute__(__item)
+        except AttributeError:
+            cog = self.get_cog(__item)
+            if cog is not None:
+                return cog
+
+        msg = f"'{self.__class__.__name__}' object has no attribute {__item!r}"
+        raise AttributeError(msg)
 
     @property
     def config(self) -> Cache:
@@ -641,7 +651,7 @@ class Parrot(commands.AutoShardedBot):
             await self._execute_webhook(self._error_log_token, content=f"{st}")
 
         # Hmm...
-        cog = self.get_cog("Music")
+        cog = self.Music
         if cog is not None and not self.WAVELINK_NODE_READY:
             await self.unload_extension("cogs.music")
             await self._execute_webhook(

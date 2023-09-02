@@ -627,7 +627,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                     return_document=ReturnDocument.AFTER,
                 )
             ):
-                cog: Utils = self.bot.get_cog("Utils")  # type: ignore
+                cog: Utils = self.bot.Utils
                 level = int((data["xp"] // 42) ** 0.55)
                 xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
                 rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore

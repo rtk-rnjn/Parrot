@@ -575,7 +575,7 @@ class Sector1729(Cog):
 
         await ctx.reply(f"Adjective added, Total count: {len(self.adjectives)}")
 
-        cog: Gist = self.bot.get_cog("Gist")  # type: ignore
+        cog: Gist = self.bot.Gist
         table = tabulate({"Adjectives": adjs}, headers="keys", tablefmt="github")
         author = tabulate(
             {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},

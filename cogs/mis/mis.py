@@ -1181,7 +1181,7 @@ class Misc(Cog):
             jump_url = message.jump_url if message.guild else ""
             human_timestamp = discord.utils.format_dt(message.created_at, "R")
 
-            content = message.content or "No content"
+            content = message.clean_content or "No content"
             content = content[:256] + "..." if len(content) > 256 else content
 
             page.add_line(f"**{human_timestamp} @ {guild_name}** -> [{content}]({jump_url})")

@@ -355,10 +355,10 @@ class AutoResponders(Cog):
     def is_ratelimited(self, message: discord.Message):
         bucket = self.cooldown.get_bucket(message)
         exceeded_bucket = self.exceeded_cooldown.get_bucket(message)
-        if exceeded_bucket.update_rate_limit():  # type: ignore
+        if exceeded_bucket.update_rate_limit(message.created_at.timestamp()):  # type: ignore
             return True
 
-        return bool(bucket.update_rate_limit())  # type: ignore
+        return bool(bucket.update_rate_limit(message.created_at.timestamp()))  # type: ignore
 
     async def execute_jinja(
         self,

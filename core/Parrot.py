@@ -189,7 +189,7 @@ class Parrot(commands.AutoShardedBot):
 
         self.error_channel: discord.TextChannel | None = None
         self.persistent_views_added: bool = False
-        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.user)
+        self.spam_control: CooldownMapping = commands.CooldownMapping.from_cooldown(3, 6, commands.BucketType.user)
 
         self._was_ready: bool = False
         self.lock: asyncio.Lock = asyncio.Lock()
@@ -738,7 +738,7 @@ class Parrot(commands.AutoShardedBot):
                     return
 
                 await ctx.send(
-                    f"**{message.author.mention}** Stop spamming commands! Warn Count: {self._auto_spam_count[message.author.id]}",
+                    f"**{message.author.mention} Stop spamming commands! Warn Count: {self._auto_spam_count[message.author.id]}**",
                 )
                 return
             else:

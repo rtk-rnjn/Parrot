@@ -245,10 +245,16 @@ class Sector17Listeners(Cog):
         if not self._get_command_list(content, {"daily": "daily"}):
             return
         owo_message = await self.wait_for_owo(message, startswith="\N{MONEY BAG}")
-
         if owo_message is not None:
+            lines = owo_message.content.split("\n")
+            time_string = lines[-1].split(":")[1].lower().replace(" ", "")
+            try:
+                timestamp = ShortTime(time_string).dt.timestamp()
+            except ValueError:
+                timestamp = owo_message.created_at.timestamp() + 60 * 60 * 24
+
             await self.bot.create_timer(
-                expires_at=owo_message.created_at.timestamp() + 60 * 60 * 24,
+                expires_at=timestamp,
                 created_at=message.created_at.timestamp(),
                 content=f"{message.author.mention} your Daily is ready!",
                 message=message,

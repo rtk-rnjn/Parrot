@@ -121,3 +121,56 @@ class NSFW(Cog):
 
         ins = PV(em_list)
         await ins.paginate(ctx)
+
+    async def _update_user_age(self, user_id: int, adult: bool) -> None:
+        query = {
+            "_id": user_id,
+        }
+        update = {
+            "$set": {
+                "adult": adult,
+            },
+        }
+        await self.bot.user_collections_ind.update_one(query, update, upsert=True)
+        await self.bot.update_user_cache.start(user_id)
+
+    async def check_user_age(self, ctx: Context) -> bool:
+        if ctx.author.id in self.bot.owner_ids:
+            return True
+
+        if ctx.author.id not in self.bot._user_cache:
+            confirm = await ctx.prompt("Are you 18+?")
+            if not confirm:
+                await self._update_user_age(ctx.author.id, False)
+                return False
+            await self._update_user_age(ctx.author.id, True)
+
+        return self.bot._user_cache[ctx.author.id].get("adult", False)
+
+    @commands.command(name="18+", aliases=["adult"], hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def adult(self, ctx: Context) -> None:
+        """To tell bot that you are 18+. This is required to use NSFW commands. DO NOT FAKE IT.
+
+        If you are caught faking it, you will be blacklisted from using NSFW commands forever."""
+        if await self.check_user_age(ctx):
+            await ctx.reply("You are already 18+", delete_after=5)
+            return
+        await self._update_user_age(ctx.author.id, True)
+        await ctx.reply("You are now 18+", delete_after=5)
+
+    @commands.command(name="18-", aliases=["notadult"], hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @Context.with_type
+    async def not_adult(self, ctx: Context) -> None:
+        """To tell bot that you are not 18+. This is required to use NSFW commands. DO NOT FAKE IT.
+
+        If you are caught faking it, you will be blacklisted from using NSFW commands forever."""
+        if not await self.check_user_age(ctx):
+            await ctx.reply("You are already not 18+", delete_after=5)
+            return
+        await self._update_user_age(ctx.author.id, False)
+        await ctx.reply("You are now not 18+", delete_after=5)

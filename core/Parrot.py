@@ -153,6 +153,10 @@ class Parrot(commands.AutoShardedBot):
     WAVELINK_NODE_READY: bool = False
     ON_DOCKER: bool = False
 
+    if TYPE_CHECKING:
+        topgg: topgg.client.DBLClient
+        topgg_webhook: topgg.webhook.WebhookManager
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             command_prefix=self.get_prefix,  # type: ignore
@@ -197,9 +201,6 @@ class Parrot(commands.AutoShardedBot):
 
         # Top.gg
         self.HAS_TOP_GG = True
-        if TYPE_CHECKING or self.HAS_TOP_GG:
-            self.topgg: topgg.DBLClient  # type: ignore
-            self.topgg_webhook: topgg.WebhookManager  # type: ignore
 
         self._auto_spam_count: Counter[int] = Counter()
         self.resumes: dict[int, list[datetime.datetime]] = defaultdict(list)
@@ -254,6 +255,7 @@ class Parrot(commands.AutoShardedBot):
         # {"database.collection": [pymongo.UpdateOne(), ...]}
 
         self.__user_timezone_cache: dict[int, str] = {}
+        self._user_cache: dict[int, dict[str, Any]] = {}
 
     async def init_db(self) -> None:
         # MongoDB Database variables
@@ -420,6 +422,7 @@ class Parrot(commands.AutoShardedBot):
         self.global_write_data.start()
         self.update_banned_members.start()
         self.update_scam_link_db.start()
+        self.update_user_cache.start()
 
     async def db_latency(self) -> float:
         ini = perf_counter()
@@ -1541,3 +1544,12 @@ class Parrot(commands.AutoShardedBot):
 
         await collection.update_one(query, update)
         self.banned_users.pop(user_id, None)
+
+    @tasks.loop(count=1)
+    async def update_user_cache(self, user_id: int | None = None):
+        if user_id:
+            if data := await self.user_collections_ind.find_one({"_id": user_id}):
+                self.__user_timezone_cache[user_id] = data
+            return
+        async for data in self.user_collections_ind.find():
+            self.__user_timezone_cache[data["_id"]] = data

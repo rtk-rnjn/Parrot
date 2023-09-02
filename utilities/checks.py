@@ -4,17 +4,18 @@ import datetime
 from collections.abc import Callable, Container, Iterable
 from typing import TYPE_CHECKING, TypeAlias
 
-from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
 
 import discord
 from core import Context, Parrot
 from discord.ext import commands
+from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
 
 if TYPE_CHECKING:
     from discord.ext.commands._types import Check
+    from cogs.nsfw import NSFW
 
 
 MongoCollection: TypeAlias = Collection
@@ -40,7 +41,7 @@ __all__ = (
 
 
 def in_server(guild_id: int) -> Check[Context]:
-    def predicate(ctx: Context) -> bool | None:
+    def predicate(ctx: Context) -> bool:
         guild = ctx.bot.get_guild(guild_id)
         if not guild:
             return False
@@ -51,51 +52,62 @@ def in_server(guild_id: int) -> Check[Context]:
         msg = f"You must be in server: `{guild.name}`, to use the command"
         raise ex.CustomError(msg)
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def in_support_server() -> Check[Context]:
-    def predicate(ctx: Context) -> bool | None:
+    def predicate(ctx: Context) -> bool:
         """Returns True if the guild is support server itself (SECTOR 17-29)."""
 
         if ctx.guild.id == ctx.bot.server.id:
             return True
         raise ex.NotInSupportServer()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def voter_only() -> Check[Context]:
-    async def predicate(ctx: Context) -> bool | None:
+    async def predicate(ctx: Context) -> bool:
         """Returns True if the user is a voter."""
         if is_voter := await ctx.is_voter():
             return is_voter
 
         raise ex.NotVoter()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def is_guild_owner() -> Check[Context]:
-    async def predicate(ctx: Context) -> bool | None:
+    async def predicate(ctx: Context) -> bool:
         if ctx.guild is not None and ctx.guild.owner_id == ctx.author.id:
             return True
         raise ex.NotGuildOwner()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def is_me() -> Check[Context]:
-    async def predicate(ctx: Context) -> bool | None:
+    async def predicate(ctx: Context) -> bool:
         if ctx.message.author.id == SUPER_USER:  # `!! Ritik Ranjan [*.*]#9230`
             return True
         raise ex.NotMe()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
+def is_adult() -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
+        cog: NSFW = ctx.bot.get_cog("NSFW")  # type: ignore
+        if cog is None:
+            return True
+        is_adult = await cog.check_user_age(ctx)
+        if not is_adult:
+            raise ex.NotAdult()
+        return is_adult
+
+    return commands.check(predicate)
 
 def has_verified_role_ticket() -> Check[Context]:
-    async def predicate(ctx: Context) -> bool | None:
+    async def predicate(ctx: Context) -> bool:
         data = ctx.bot.guild_configurations_cache[ctx.guild.id]
         data = data["ticket_config"]
         roles = data["verified_roles"]
@@ -107,11 +119,11 @@ def has_verified_role_ticket() -> Check[Context]:
 
         raise ex.NoVerifiedRoleTicket()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def is_mod() -> Check[Context]:
-    async def predicate(ctx: Context) -> bool | None:
+    async def predicate(ctx: Context) -> bool:
         bot: Parrot = ctx.bot
         try:
             role = bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0  # role could be `None`
@@ -127,11 +139,11 @@ def is_mod() -> Check[Context]:
             return True
         raise ex.NoModRole()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def in_temp_channel() -> Check[Context]:
-    async def predicate(ctx: Context) -> bool | None:
+    async def predicate(ctx: Context) -> bool:
         if not ctx.author.voice:
             raise ex.InHubVoice()
 
@@ -146,7 +158,7 @@ def in_temp_channel() -> Check[Context]:
 
         raise ex.InHubVoice()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def can_run(ctx: Context) -> bool | None:
@@ -162,7 +174,7 @@ def can_run(ctx: Context) -> bool | None:
 
     cmd_config = ctx.bot.guild_configurations_cache[ctx.guild.id].get("cmd_config", {})
 
-    for cmd_cog in {cmd, cog}:
+    for cmd_cog in {cmd, cog}:  # noqa: PLC0208
         return _can_run(cmd_cog, cmd_config, cmd, ctx)
 
 

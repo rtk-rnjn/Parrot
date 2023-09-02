@@ -89,6 +89,11 @@ class NotMe(ParrotCheckFailure):
         super().__init__("I don't know how you reach this error. Thing is, you can't use this command")
 
 
+class NotAdult(ParrotCheckFailure):
+    def __init__(self) -> None:
+        super().__init__("You must be 18+ to use this command")
+
+
 # command disabled
 
 

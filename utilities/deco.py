@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import functools
-import random
 from asyncio import Lock
 from collections.abc import Callable, Container, Iterable
 from datetime import datetime
@@ -13,11 +12,10 @@ from discord.ext.commands import Command
 
 import discord
 from core import Context
-from discord import Colour, Embed
 from discord.ext import commands
 
 from .checks import in_whitelist_check
-from .constants import ERROR_REPLIES, Day, Month
+from .constants import Day, Month
 from .exceptions import ParrotCheckFailure
 
 ONE_DAY = 86400  # faster response time if in seconds

@@ -91,7 +91,7 @@ class NotMe(ParrotCheckFailure):
 
 class NotAdult(ParrotCheckFailure):
     def __init__(self) -> None:
-        super().__init__("You must be 18+ to use this command")
+        super().__init__("You must be 18+ to use this command\nUse `18+` command to confirm your age.")
 
 
 # command disabled

@@ -159,7 +159,7 @@ class NSFW(Cog):
             await ctx.reply("You are already 18+", delete_after=5)
             return
         await self._update_user_age(ctx.author.id, True)
-        await ctx.reply("You are now 18+", delete_after=5)
+        await ctx.reply("You opted yourself as 18+ (adult)", delete_after=5)
 
     @commands.command(name="18-", aliases=["notadult"], hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
@@ -173,4 +173,4 @@ class NSFW(Cog):
             await ctx.reply("You are already not 18+", delete_after=5)
             return
         await self._update_user_age(ctx.author.id, False)
-        await ctx.reply("You are now not 18+", delete_after=5)
+        await ctx.reply("You opted yourself as 18- (minor)", delete_after=5)

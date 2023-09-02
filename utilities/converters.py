@@ -144,15 +144,15 @@ class UserID(commands.Converter):
         return u
 
 
-def lru_callback(_, value) -> None:
-    value = str(value)[:20]
+def lru_callback(k, v) -> None:
+    pass
 
 
 class Cache(Generic[KT, VT]):
     def __init__(
         self,
-        bot: Parrot,
-        cache_size: int | None = None,
+        bot: Parrot | None = None,
+        cache_size: int | None = 2 ** 5,
         *,
         callback: Callable[[KT, VT], None] | None = None,
     ) -> None:

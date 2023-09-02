@@ -386,12 +386,12 @@ class AutoResponders(Cog):
                     template = await asyncio.to_thread(self.jinja_env.from_string, response)
                     return_data = await template.render_async(**variables)
                     if len(return_data) > 1990:
-                        return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Response is too long`", False
-                    return return_data, True
+                        return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Response is too long`", True
+                    return return_data, False
                 except Exception as e:
-                    return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`", False
+                    return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`", True
         except asyncio.TimeoutError:
-            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Execution took too long`", False
+            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Execution took too long`", True
 
     @commands.command(name="jinja", aliases=["j2", "jinja2"])
     async def jinja(self, ctx: Context, *, code: str) -> None:

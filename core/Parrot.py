@@ -1559,7 +1559,7 @@ class Parrot(commands.AutoShardedBot):
     async def update_user_cache(self, user_id: int | None = None):
         if user_id:
             if data := await self.user_collections_ind.find_one({"_id": user_id}):
-                self.__user_timezone_cache[user_id] = data
+                self._user_cache[user_id] = data
             return
         async for data in self.user_collections_ind.find():
-            self.__user_timezone_cache[data["_id"]] = data
+            self._user_cache[data["_id"]] = data

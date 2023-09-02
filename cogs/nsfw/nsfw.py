@@ -8,6 +8,7 @@ from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.exceptions import ParrotCheckFailure
 from utilities.paginator import PaginationView as PV
+from utilities.checks import is_adult
 
 from ._nsfw import ENDPOINTS
 
@@ -82,9 +83,10 @@ class NSFW(Cog):
         for end_point in ENDPOINTS:
 
             @commands.command(name=end_point)
-            @commands.cooldown(1, 60, commands.BucketType.user)
+            @commands.cooldown(1, 5, commands.BucketType.user)
             @commands.max_concurrency(1, commands.BucketType.user)
             @commands.is_nsfw()
+            @is_adult()
             @Context.with_type
             async def command_callback(ctx: Context[Parrot]):
                 await method(ctx)
@@ -92,8 +94,9 @@ class NSFW(Cog):
             self.bot.add_command(command_callback)
 
     @commands.command(hidden=True)
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
+    @is_adult()
     @Context.with_type
     async def n(
         self,

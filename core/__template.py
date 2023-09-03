@@ -118,8 +118,6 @@ post: dict[str, Any] = {
         "message_id": None,
         "channel_id": None,
         "log": None,
-        "pinged_roles": [],
-        "verified_roles": [],
         "ticket_channel_ids": [],
         "ticket_counter": 0,
     },

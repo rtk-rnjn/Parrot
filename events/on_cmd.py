@@ -244,6 +244,10 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             ERROR_EMBED.description = "Unexpected quote mark. Did you forget to close the quotation mark?"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Quote Error {QUESTION_MARK}")
 
+        elif isinstance(error, commands.DisabledCommand):
+            ERROR_EMBED.description = "This command is disabled in this server, ask your server admin to enable it."
+            ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Disabled Command {QUESTION_MARK}")
+
         else:
             ERROR_EMBED.description = (
                 f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."

@@ -15,7 +15,7 @@ def ticket_enabled() -> Check[Context]:
     async def predicate(ctx: Context) -> bool:
         ticket_config = ctx.bot.guild_configurations_cache[ctx.guild.id]["ticket_config"]
         if not ticket_config["enable"]:
-            msg = "Ticket is not enabled in this server."
+            msg = "Ticket is not enable in this server."
             raise commands.DisabledCommand(msg)
         return True
 
@@ -52,7 +52,7 @@ class Tickets(Cog):
 
     async def log(self, *, guild: discord.Guild, author: discord.Member | discord.User, args: str) -> None:
         ticket_config = self.bot.guild_configurations_cache[guild.id]["ticket_config"]
-        if not ticket_config["enabled"]:
+        if not ticket_config["enable"]:
             return
 
         log_channel: discord.TextChannel = guild.get_channel(ticket_config["log"] or 0)
@@ -186,7 +186,7 @@ class Tickets(Cog):
                 },
             },
         )
-        await ctx.reply(f"{ctx.author.mention} Ticket has been enabled in this server.")
+        await ctx.reply(f"{ctx.author.mention} Ticket has been enable in this server.")
 
     @ticket.command(name="disable")
     @commands.has_permissions(manage_guild=True)
@@ -264,7 +264,7 @@ class Tickets(Cog):
         if guild is None:
             return
         ticket_config = self.bot.guild_configurations_cache[guild.id]["ticket_config"]
-        if not ticket_config["enabled"]:
+        if not ticket_config["enable"]:
             return
 
         member = await self.bot.get_or_fetch_member(guild, payload.user_id)

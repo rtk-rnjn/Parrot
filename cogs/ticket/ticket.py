@@ -286,3 +286,8 @@ class Tickets(Cog):
 
         await self.new_ticket(guild=guild, author=member)
         await self.log(guild=guild, author=member, args="New ticket created.")
+
+    @Cog.listener()
+    async def on_command_completion(self, ctx: Context):
+        if ctx.cog and ctx.cog.qualified_name == self.qualified_name:
+            await self.bot.update_server_config_cache.start(ctx.guild.id)

@@ -24,6 +24,7 @@ async def init():
         BEGIN;
         CREATE TABLE IF NOT EXISTS scam_links (id INTEGER PRIMARY KEY AUTOINCREMENT, link TEXT NOT NULL, UNIQUE(link));
         CREATE TABLE IF NOT EXISTS discord_tokens (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL, UNIQUE(token));
+        CREATE TABLE IF NOT EXISTS nsfw_links (id INTEGER PRIMARY KEY AUTOINCREMENT, link TEXT NOT NULL, UNIQUE(link));
         COMMIT;
     """
 

@@ -5,10 +5,11 @@ from typing import Literal
 
 import discord
 from core import Cog, Context, Parrot
-from discord.ext import commands
-from utilities.exceptions import ParrotCheckFailure
-from utilities.paginator import PaginationView as PV
+from discord.ext import commands, tasks
 from utilities.checks import is_adult
+from utilities.exceptions import ParrotCheckFailure
+from utilities.nsfw.sexdotcom import SexDotComGif, SexDotComPics
+from utilities.paginator import PaginationView as PV
 
 from ._nsfw import ENDPOINTS
 
@@ -23,12 +24,18 @@ class NSFW(Cog):
         self.cached_images: dict[str, set[str]] = {}
         self.ON_TESTING = False
 
+        self._sexdotcomgif = SexDotComGif(session=self.bot.http_session)
+        self._sexdotcompics = SexDotComPics(session=self.bot.http_session)
+
     async def cog_load(self):
         self.command_loader()
+        self.sexdotcom_loop.start()
 
     async def cog_unload(self):
         for end_point in ENDPOINTS:
             self.bot.remove_command(end_point)
+        if self.sexdotcom_loop.is_running():
+            self.sexdotcom_loop.cancel()
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -93,7 +100,7 @@ class NSFW(Cog):
 
             self.bot.add_command(command_callback)
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @is_adult()
@@ -147,7 +154,7 @@ class NSFW(Cog):
 
         return self.bot._user_cache[ctx.author.id].get("adult", False)
 
-    @commands.command(name="18+", aliases=["adult"], hidden=True)
+    @commands.command(name="18+", aliases=["adult"])
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
@@ -161,7 +168,7 @@ class NSFW(Cog):
         await self._update_user_age(ctx.author.id, True)
         await ctx.reply("You opted yourself as 18+ (adult)", delete_after=5)
 
-    @commands.command(name="18-", aliases=["notadult"], hidden=True)
+    @commands.command(name="18-", aliases=["notadult"])
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
@@ -174,3 +181,25 @@ class NSFW(Cog):
             return
         await self._update_user_age(ctx.author.id, False)
         await ctx.reply("You opted yourself as 18- (minor)", delete_after=5)
+
+    @commands.group(name="sex", aliases=["sexdotcom", "sex.com"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @is_adult()
+    @Context.with_type
+    async def sexdotcom(self, ctx: Context) -> None:
+        """Mature Content. 18+ only Please."""
+        if ctx.invoked_subcommand is None:
+            await ctx.bot.invoke_help_command(ctx)
+
+    async def sexdotcom_write_to_db(self):
+        links = await self._sexdotcomgif.get_all()
+
+        query = """INSERT INTO nsfw_links (link) VALUES (?) ON CONFLICT DO NOTHING"""
+        sql = self.bot.sql
+        await sql.executemany(query, [(link,) for link in links])
+        await sql.commit()
+
+    @tasks.loop(minutes=10)
+    async def sexdotcom_loop(self):
+        await self.sexdotcom_write_to_db()

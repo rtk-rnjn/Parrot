@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 def ticket_enabled() -> Check[Context]:
     async def predicate(ctx: Context) -> bool:
         ticket_config = ctx.bot.guild_configurations_cache[ctx.guild.id]["ticket_config"]
-        if not ticket_config["enabled"]:
+        if not ticket_config["enable"]:
             msg = "Ticket is not enabled in this server."
             raise commands.DisabledCommand(msg)
         return True

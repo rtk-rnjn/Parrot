@@ -9,6 +9,7 @@ from discord.ext import commands, tasks
 from utilities.checks import is_adult
 from utilities.exceptions import ParrotCheckFailure
 from utilities.nsfw.sexdotcom import SexDotComGif, SexDotComPics
+from utilities.nsfw.constants import SEXDOTCOM_TAGS
 from utilities.paginator import PaginationView as PV
 
 from ._nsfw import ENDPOINTS
@@ -192,12 +193,39 @@ class NSFW(Cog):
         if ctx.invoked_subcommand is None:
             await ctx.bot.invoke_help_command(ctx)
 
+    @sexdotcom.command(name="gif")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    @is_adult()
+    @Context.with_type
+    async def _sex_gif(self, ctx: Context) -> None:
+        """Mature Content. 18+ only Please."""
+        random_gif = """SELECT link FROM nsfw_links ORDER BY RANDOM() LIMIT 1"""
+        sql = self.bot.sql
+        link = await sql.execute(random_gif)
+        link = await link.fetchone()
+
+        link = link[0]
+        headers = {"Referer": "https://www.sex.com/gifs"}
+        response = await self.bot.http_session.get(link, headers=headers)
+        if response.status != 200:
+            await ctx.reply("Something went wrong with the API")
+            return
+
+        _bytes = await response.read()
+        file = discord.File(_bytes, "file.gif")
+        await ctx.reply(file=file)
+
     async def sexdotcom_write_to_db(self):
         links = await self._sexdotcomgif.get_all()
 
         query = """INSERT INTO nsfw_links (link) VALUES (?) ON CONFLICT DO NOTHING"""
         sql = self.bot.sql
         await sql.executemany(query, [(link,) for link in links])
+
+        for tag in SEXDOTCOM_TAGS:
+            links = await self._sexdotcompics.tag_search(tag)
+            await sql.executemany(query, [(link,) for link in links])
         await sql.commit()
 
     @tasks.loop(minutes=10)

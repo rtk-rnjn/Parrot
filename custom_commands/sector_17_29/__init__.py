@@ -204,7 +204,7 @@ class Sector1729(Cog):
     @in_support_server()
     async def my_votes(self, ctx: Context):
         if data := await self.bot.user_collections_ind.find_one({"_id": ctx.author.id, "topgg_votes": {"$exists": True}}):
-            await ctx.send(f"You voted for **{self.bot.user}** for **{len(data['topgg_votes'])}** times on Top.gg")
+            await ctx.send(f"You voted for **{self.bot.user}** for **{data['topgg_votes']}** times on Top.gg")
         else:
             await ctx.send("You haven't voted for the bot on Top.gg yet.")
 
@@ -222,7 +222,7 @@ class Sector1729(Cog):
             message=int(discord.utils.utcnow().timestamp() * 10),
             expires_at=(discord.utils.utcnow() + timedelta(hours=12)).timestamp(),
             messageAuthor=member.id,
-            content=f"You can vote for the bot again on Top.gg.\n>>> Click **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
+            content=f"You can vote for the bot again on Top.gg. Click **<https://top.gg/bot/{self.bot.user.id}/vote>** to vote.",
             dm_notify=True,
         )
 

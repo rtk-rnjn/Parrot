@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from random import choice, random
 from typing import Literal
-
+import io
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 from utilities.checks import is_adult
 from utilities.exceptions import ParrotCheckFailure
-from utilities.nsfw.sexdotcom import SexDotComGif, SexDotComPics
 from utilities.nsfw.constants import SEXDOTCOM_TAGS
+from utilities.nsfw.sexdotcom import SexDotComGif, SexDotComPics
 from utilities.paginator import PaginationView as PV
 
 from ._nsfw import ENDPOINTS
@@ -213,7 +213,7 @@ class NSFW(Cog):
             return
 
         _bytes = await response.read()
-        file = discord.File(_bytes, "file.gif")
+        file = discord.File(io.BytesIO(_bytes), "file.gif")
         await ctx.reply(file=file)
 
     async def sexdotcom_write_to_db(self):

@@ -3,16 +3,16 @@ from __future__ import annotations
 import asyncio
 import pathlib
 import random
-from typing import TYPE_CHECKING, TypeVar
 from collections.abc import Sequence
+from typing import TYPE_CHECKING, TypeVar
 
 import arrow
+from rapidfuzz import fuzz, process
+
 import discord
 from core import Cog
 from discord.ext import commands
 from utilities.exceptions import ParrotCheckFailure
-
-from rapidfuzz import fuzz, process
 
 if TYPE_CHECKING:
     from core import Context, Parrot
@@ -59,21 +59,17 @@ class Cmd(Cog, command_attrs={"hidden": True}):
         """This event will be triggered when the command is being completed; triggered by [discord.User]!."""
         if ctx.author.bot:
             return
-        await ctx.database_command_update(
-            success=not ctx.command_failed,
-        )
+        await ctx.database_command_update(success=not ctx.command_failed)
 
-    def _get_object_by_fuzzy(self, *, argument: str, objects: Sequence[T]) -> tuple[T | None, str | None, int | None] | None:
+    def _get_object_by_fuzzy(self, *, argument: str, objects: Sequence[T]) -> tuple[T, str, int] | None:
         """Get an object from a list of objects by fuzzy matching."""
         if not argument:
             return None
         CUT_OFF = 90
         names = [o.name for o in objects]
-        algorithms = [fuzz.ratio, fuzz.partial_ratio, fuzz.token_sort_ratio, fuzz.token_set_ratio, fuzz.WRatio]
-        for algo in algorithms:
-            if data := process.extractOne(argument, names, scorer=algo, score_cutoff=CUT_OFF):
-                result, score, position = data
-                return objects[position], result, int(score)
+        if data := process.extractOne(argument, names, scorer=fuzz.WRatio, score_cutoff=CUT_OFF):
+            result, score, position = data
+            return objects[position], result, int(score)
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: commands.CommandError):  # noqa: PLR0912, PLR0915, C901
@@ -84,7 +80,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
 
         # get the original exception
         error = getattr(error, "original", error)
-        TO_RAISE_ERROR, DELETE_AFTER = False, None
+        TO_RAISE_ERROR, DELETE_AFTER, RESET_COOLDOWN = False, None, False
         ignore = (
             commands.CommandNotFound,
             discord.NotFound,
@@ -105,6 +101,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
                 fmt = " and ".join(missing)
             ERROR_EMBED.description = f"Please provide the following permission(s) to the bot.```\n{fmt}```"
             ERROR_EMBED.set_author(name=(f"{QUESTION_MARK} Bot Missing permissions {QUESTION_MARK}"))
+            RESET_COOLDOWN = True
 
         elif isinstance(error, commands.CommandOnCooldown):
             now = arrow.utcnow().shift(seconds=error.retry_after).datetime
@@ -126,7 +123,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
 
             ERROR_EMBED.description = f"You need the following permission(s) to the run the command.```\n{fmt}```"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}")
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
 
         elif isinstance(error, commands.MissingRole):
             missing = [error.missing_role]
@@ -136,7 +133,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
                 fmt = " and ".join(missing)  # type: ignore
             ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
 
         elif isinstance(error, commands.MissingAnyRole):
             missing = list(error.missing_roles)
@@ -146,16 +143,16 @@ class Cmd(Cog, command_attrs={"hidden": True}):
                 fmt = " and ".join(missing)  # type: ignore
             ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
 
         elif isinstance(error, commands.NSFWChannelRequired):
             ERROR_EMBED.description = "This command will only run in NSFW marked channel. https://i.imgur.com/oe4iK5i.gif"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}")
             ERROR_EMBED.set_image(url="https://i.imgur.com/oe4iK5i.gif")
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
 
         elif isinstance(error, commands.BadArgument):
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
             objects = []
             if isinstance(error, commands.MessageNotFound):
                 ERROR_EMBED.description = "Message ID/Link you provied is either invalid or deleted"
@@ -189,7 +186,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}")
 
             if objects:
-                if (obj := self._get_object_by_fuzzy(argument=error.argument, objects=objects)):  # type: ignore
+                if obj := self._get_object_by_fuzzy(argument=error.argument, objects=objects):  # type: ignore
                     _, result, score = obj
                     ERROR_EMBED.description += f"\n\nDid you mean `{result}`?"
                     ERROR_EMBED.set_footer(text=f"Confidence: {score}%")
@@ -199,7 +196,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             commands.MissingRequiredArgument | commands.BadUnionArgument | commands.TooManyArguments,
         ):
             command = ctx.command
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
             ERROR_EMBED.description = f"Please use proper syntax.```\n{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases or '')} {command.signature}```"
 
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}")
@@ -218,17 +215,17 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             ERROR_EMBED.set_author(name=(f"{QUESTION_MARK} Max Concurrenry Reached {QUESTION_MARK}"))
 
         elif isinstance(error, ParrotCheckFailure):
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
             ERROR_EMBED.description = f"{error.__str__().format(ctx=ctx)}"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
 
         elif isinstance(error, commands.CheckAnyFailure):
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
             ERROR_EMBED.description = " or\n".join([error.__str__().format(ctx=ctx) for error in error.errors])
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
 
         elif isinstance(error, commands.CheckFailure):
-            ctx.command.reset_cooldown(ctx)
+            RESET_COOLDOWN = True
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}")
             ERROR_EMBED.description = "You don't have the required permissions to use this command."
 
@@ -256,6 +253,9 @@ class Cmd(Cog, command_attrs={"hidden": True}):
             TO_RAISE_ERROR = True
 
         ERROR_EMBED.timestamp = discord.utils.utcnow()
+
+        if RESET_COOLDOWN:
+            ctx.command.reset_cooldown(ctx)
 
         msg: discord.Message | None = await ctx.reply(random.choice(quote), embed=ERROR_EMBED)
 

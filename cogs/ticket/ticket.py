@@ -68,7 +68,7 @@ class Tickets(Cog):
     async def new_ticket(self, *, guild: discord.Guild, author: discord.Member | discord.User) -> None:
         ticket_config = self.bot.guild_configurations_cache[guild.id]["ticket_config"]
 
-        mod_role: int = ticket_config["mod_role"]
+        mod_role: int | None = self.bot.guild_configurations_cache[guild.id]["mod_role"]
 
         category: discord.CategoryChannel = guild.get_channel(ticket_config["category"] or 0)  # type: ignore
         overwrites = {

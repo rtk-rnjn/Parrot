@@ -33,8 +33,12 @@ class NSFW(Cog):
         self.sexdotcom_loop.start()
 
     async def cog_unload(self):
+        await self._sexdotcomgif.session.close()
+        await self._sexdotcompics.session.close()
+
         for end_point in ENDPOINTS:
             self.bot.remove_command(end_point)
+
         if self.sexdotcom_loop.is_running():
             self.sexdotcom_loop.cancel()
 
@@ -223,9 +227,7 @@ class NSFW(Cog):
         sql = self.bot.sql
         await sql.executemany(query, [(link,) for link in links])
 
-        for tag in SEXDOTCOM_TAGS:
-            links = await self._sexdotcompics.tag_search(tag)
-            await sql.executemany(query, [(link,) for link in links])
+        await self._sexdotcomgif.add_to_db(self.bot)
         await sql.commit()
 
     @tasks.loop(minutes=10)

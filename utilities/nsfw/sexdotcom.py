@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 import aiohttp
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core import Parrot
+
 from bs4 import BeautifulSoup, Tag
 
 from .constants import SEXDOTCOM_TAGS
@@ -14,6 +19,13 @@ class _SexDotCom:
 
     def _verify_tag(self, tag: str) -> bool:
         return tag.lower() in SEXDOTCOM_TAGS
+
+    async def add_to_db(self, bot: Parrot) -> None:
+        for tag in SEXDOTCOM_TAGS:
+            links = await self.tag_search(tag)
+            for link in links:
+                await bot.db.execute("INSERT INTO nsfw_links (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING", (link, tag))
+        await bot.db.commit()
 
     async def tag_search(self, tag: str) -> list[str]:
         if not self._verify_tag(tag):

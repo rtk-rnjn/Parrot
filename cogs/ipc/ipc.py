@@ -381,15 +381,11 @@ class IPCRoutes(Cog):
     @Server.route()
     async def nsfw_links(self, data: ClientPayload) -> dict[str, list[str]]:
         limit = getattr(data, "limit", None)
-        if limit is None:
+        count = getattr(data, "count", None)
+        if limit is None and count is None:
             return {"links": []}
 
-        if not limit.isdigit():
-            return {"links": []}
-
-        limit = int(limit)
-
-        limit = max(1, min(10, limit))
+        limit = max(1, min(10, limit or count))
 
         query = f"""SELECT * FROM nsfw_links ORDER BY RANDOM() LIMIT {limit}"""
         # id, link

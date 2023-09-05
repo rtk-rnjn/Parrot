@@ -82,7 +82,6 @@ class Reminders(Cog):
             await ctx.reply(msg, embed=embed, delete_after=5)
 
     @commands.group(name="remindme", aliases=["remind", "reminder", "remind-me"], invoke_without_command=True)
-    @Context.with_type
     async def remindme(
         self,
         ctx: Context[Parrot],
@@ -116,7 +115,6 @@ class Reminders(Cog):
             log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, timestamp)
 
     @remindme.command(name="list", aliases=["all", "ls", "show"])
-    @Context.with_type
     async def _list(self, ctx: Context) -> None:
         """To get all your reminders of first 10 active reminders."""
         ls = []
@@ -135,11 +133,10 @@ class Reminders(Cog):
         await p.start()
 
     @remindme.command(name="del", aliases=["delete", "remove", "rm"])
-    @Context.with_type
     async def delremind(self, ctx: Context, id: str) -> None:
         """To delete the reminder."""
         if not id.isdigit():
-            message = str_to_snowflake(id.lower())
+            message = str_to_snowflake(id)
         else:
             message = int(id)
         timer = await self.bot.get_timer(_id=message)
@@ -159,7 +156,6 @@ class Reminders(Cog):
             await ctx.reply(f"{ctx.author.mention} deleted reminder of ID: **{message}**")
 
     @remindme.command(name="dm")
-    @Context.with_type
     async def remindmedm(
         self,
         ctx: Context,
@@ -180,7 +176,6 @@ class Reminders(Cog):
         log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, timestamp)
 
     @remindme.command(name="loop", aliases=["repeat"])
-    @Context.with_type
     async def remindmeloop(
         self,
         ctx: Context,
@@ -223,7 +218,6 @@ class Reminders(Cog):
         await self.notify_reminder_msg(ctx, timestamp=timestamp)
 
     @commands.command(name="reminders")
-    @Context.with_type
     async def reminders(self, ctx: Context) -> None:
         """To get all your reminders of first 10 active reminders. Alias of `remind list`"""
         return await self._list(ctx)

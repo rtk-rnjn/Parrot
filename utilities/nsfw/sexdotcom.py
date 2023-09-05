@@ -24,8 +24,8 @@ class _SexDotCom:
         for tag in SEXDOTCOM_TAGS:
             links = await self.tag_search(tag)
             for link in links:
-                await bot.db.execute("INSERT INTO nsfw_links (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING", (link, tag))
-        await bot.db.commit()
+                await bot.sql.execute("INSERT INTO nsfw_links (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING", (link, tag))
+        await bot.sql.commit()
 
     async def tag_search(self, tag: str) -> list[str]:
         if not self._verify_tag(tag):

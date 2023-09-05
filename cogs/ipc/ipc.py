@@ -6,14 +6,14 @@ from typing import Any
 
 import async_timeout
 import wavelink
-from discord.ext.ipc.objects import ClientPayload
-from discord.ext.ipc.server import Server
 from wavelink.ext import spotify
 
 import discord
 from api import cricket_api
 from core import Cog, Parrot
 from discord.ext import commands
+from discord.ext.ipc.objects import ClientPayload
+from discord.ext.ipc.server import Server
 
 from .methods import channel_to_json, emoji_to_json, member_to_json, role_to_json, thread_to_json, user_to_json
 
@@ -377,3 +377,22 @@ class IPCRoutes(Cog):
 
         d = await self.bot.guild_configurations.find_one({"_id": guild.id})
         return dict(d) if d else {}
+
+    @Server.route()
+    async def nsfw_links(self, data: ClientPayload) -> dict[str, list[str]]:
+        limit = getattr(data, "limit", None)
+        if limit is None:
+            return {"links": []}
+
+        if not limit.isdigit():
+            return {"links": []}
+
+        limit = int(limit)
+
+        limit = max(1, min(10, limit))
+
+        query = f"""SELECT * FROM nsfw_links ORDER BY RANDOM() LIMIT {limit}"""
+        # id, link
+        cur = await self.bot.sql.execute(query)
+        rows = await cur.fetchall()
+        return {"links": [row[1] for row in rows]}

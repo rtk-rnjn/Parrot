@@ -286,6 +286,7 @@ class Tickets(Cog):
 
         await self.new_ticket(guild=guild, author=member)
         await self.log(guild=guild, author=member, args="New ticket created.")
+        await self.bot.update_server_config_cache.start(guild.id)
 
     @Cog.listener()
     async def on_command_completion(self, ctx: Context):

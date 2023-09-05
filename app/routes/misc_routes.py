@@ -39,3 +39,16 @@ for code in ERROR_CODES:
     @app.errorhandler(code)
     async def error_handler(e: Exception) -> Response:
         return jsonify({"status": "error", "message": str(e)})
+
+
+@app.route("/nsfw_links/<count>")
+async def nsfw_links(count: str) -> Response:
+    if count.isdigit():
+        count = int(count)
+    else:
+        return jsonify({"status": "error", "message": "Invalid count"})
+
+    ipc_response = await ipc.request("nsfw_links", count=int(count))
+    if not ipc_response:
+        return jsonify({"status": "error", "message": "No guilds found"})
+    return jsonify({"status": "success", **ipc_response.response})

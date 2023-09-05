@@ -214,6 +214,7 @@ class Sector1729(Cog):
             {"_id": member.id},
             {
                 "$inc": {"topgg_votes": 1},
+                "$set": {"topgg_vote_expires": (discord.utils.utcnow() + timedelta(hours=12)).timestamp()},
             },
             upsert=True,
         )  # type: ignore

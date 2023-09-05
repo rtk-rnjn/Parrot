@@ -95,17 +95,17 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     async def cross(self) -> None:
         return await self.wrong()
 
-    async def is_voter(self) -> bool | None:
+    async def is_voter(self) -> bool:
         if member := self.bot.server.get_member(self.author.id):
             return member._roles.has(VOTER_ROLE_ID)
 
-        # if await self.bot.user_collections_ind.find_one(
-        #     {
-        #         "_id": self.author.id,
-        #         "topgg_vote_expires": {"$gte": discord.utils.utcnow()},
-        #     },
-        # ):
-        #     return True
+        if await self.bot.user_collections_ind.find_one(
+            {
+                "_id": self.author.id,
+                "topgg_vote_expires": {"$lte": discord.utils.utcnow().timestamp()},
+            },
+        ):
+            return True
 
         if self.bot.HAS_TOP_GG:
             return await self.bot.topgg.get_user_vote(self.author.id)

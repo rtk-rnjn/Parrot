@@ -17,6 +17,7 @@ import re
 import string
 import time
 import urllib
+import urllib.parse
 from collections import defaultdict
 from collections.abc import Callable
 from contextlib import suppress
@@ -1516,15 +1517,22 @@ class Fun(Cog):
     @commands.command(aliases=["trans"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def translate(self, ctx: Context, model: str, *, message: str):
-        """Translates a message to English (default). using My Memory."""
-        # from the docs
+    async def translate(self, ctx: Context, *, message: str):
+        """Translates a message to English (default)"""
+        data = await self.get_translation_ibm(message)
+        for i in data.get("translations", []):
+            result = i["translatedText"]
+            return await ctx.reply(f"{ctx.author.mention} Translated: {result}")
+
+        return await ctx.reply(f"{ctx.author.mention} No translation found")
+
+    async def get_translation_ibm(self, message: str, target_language: str = "english"):
         IBM_END_POINT = os.environ["IBM_END_POINT"]
         URL = f"{IBM_END_POINT}/v3/translate?version=2018-05-01"
         HEADER = {"Content-Type": "application/json"}
         AUTH = aiohttp.BasicAuth("apikey", os.environ["IBM_KEY"])
 
-        DATA = {"text": [message], "model_id": model}
+        DATA = {"text": [message], "target": target_language}
         res = await self.bot.http_session.post(
             URL,
             json=DATA,
@@ -1532,16 +1540,13 @@ class Fun(Cog):
             headers=HEADER,
         )
         if res.status != 200:
-            return await ctx.error(f"{ctx.author.mention} somthing not right! Please try again later or check the `model`")
+            msg = "Translation failed. Please try again."
+            raise commands.BadArgument(msg)
 
         data = await res.json()
-        for i in data.get("translations", []):
-            result = i["translation"]
-            return await ctx.send(f"{ctx.author.mention} Translated: {result}")
+        return data
 
-        return await ctx.send(f"{ctx.author.mention} no translation found")
-
-    @commands.command(aliases=["def", "urban"])
+    @commands.command(aliases=["urban"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def urbandictionary(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
@@ -1550,8 +1555,8 @@ class Fun(Cog):
         BRACKETED = re.compile(r"(\[(.+?)\])")
 
         def cleanup_definition(definition, *, regex=BRACKETED) -> str:
-            def repl(m):
-                word = m.group(2)
+            def repl(m: re.Match) -> str:
+                word: str = m.group(2)
                 return f'[{word}](http://{word.replace(" ", "-")}.urbanup.com)'
 
             ret = regex.sub(repl, definition)

@@ -76,10 +76,10 @@ class Reminders(Cog):
         )
         embed = discord.Embed(description=_id, color=discord.Color.blurple())
         try:
-            await ctx.author.send(msg, view=ctx.send_view())
+            await ctx.author.send(msg, embed=embed, view=ctx.send_view())
             await ctx.tick()
         except discord.Forbidden:
-            await ctx.reply(msg, embed=embed, delete_after=5)
+            await ctx.reply(msg, embed=embed)
 
     @commands.group(name="remindme", aliases=["remind", "reminder", "remind-me"], invoke_without_command=True)
     async def remindme(

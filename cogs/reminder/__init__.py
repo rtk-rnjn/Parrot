@@ -18,6 +18,32 @@ log = logging.getLogger("cogs.reminder")
 Collection = type[AsyncIOMotorCollection]
 
 
+def snowflake_to_str(snowflake: int) -> str:
+    alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    base = len(alphabet)
+
+    snowflake_str = ""
+
+    while snowflake > 0:
+        snowflake, idx = divmod(snowflake, base)
+        snowflake_str = alphabet[idx] + snowflake_str
+
+    return snowflake_str
+
+
+def str_to_snowflake(snowflake_str: str) -> int:
+    alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    base = len(alphabet)
+
+    snowflake = 0
+    snowflake_str = snowflake_str[::-1]  # Reverse the input string
+
+    for i, char in enumerate(snowflake_str):
+        snowflake += alphabet.index(char) * (base**i)
+
+    return snowflake
+
+
 class Reminders(Cog):
     """Remind yourself of something after a certain amount of time."""
 
@@ -43,16 +69,17 @@ class Reminders(Cog):
 
     async def notify_reminder_msg(self, ctx: Context, *, timestamp: int | float) -> None:
         discord_timestamp = f"<t:{int(timestamp)}:R>"
+        _id = snowflake_to_str(ctx.message.id)
         msg = (
             f"{ctx.author.mention} you will be mentioned in {ctx.channel.mention} **{discord_timestamp}**\n"
-            f"To delete your reminder consider typing `{ctx.clean_prefix}remind delete {ctx.message.id}`\n"
-            f"> Syntax: `{ctx.clean_prefix}remind delete <message ID>`"
+            f"To delete your reminder consider typing `{ctx.clean_prefix}remind delete {_id}`\n"
         )
+        embed = discord.Embed(description=_id, color=discord.Color.blurple())
         try:
             await ctx.author.send(msg, view=ctx.send_view())
-            await ctx.reply(f"{ctx.author.mention} check your DM", delete_after=5)
+            await ctx.tick()
         except discord.Forbidden:
-            await ctx.reply(msg, delete_after=5)
+            await ctx.reply(msg, embed=embed, delete_after=5)
 
     @commands.group(name="remindme", aliases=["remind", "reminder", "remind-me"], invoke_without_command=True)
     @Context.with_type
@@ -109,11 +136,15 @@ class Reminders(Cog):
 
     @remindme.command(name="del", aliases=["delete", "remove", "rm"])
     @Context.with_type
-    async def delremind(self, ctx: Context, message: int) -> None:
+    async def delremind(self, ctx: Context, id: str) -> None:
         """To delete the reminder."""
+        if not id.isdigit():
+            message = str_to_snowflake(id.lower())
+        else:
+            message = int(id)
         timer = await self.bot.get_timer(_id=message)
         if not timer:
-            await ctx.reply(f"{ctx.author.mention} reminder of ID: **{message}** not found")
+            await ctx.reply(f"{ctx.author.mention} reminder of ID: **{id}** not found. ID is case sensitive")
             return
 
         if timer["messageAuthor"] != ctx.author.id:

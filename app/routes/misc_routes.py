@@ -48,7 +48,9 @@ async def nsfw_links(count: str) -> Response:
     else:
         return jsonify({"status": "error", "message": "Invalid count"})
 
-    ipc_response = await ipc.request("nsfw_links", count=int(count))
+    tp = request.args.get("type", None)
+
+    ipc_response = await ipc.request("nsfw_links", count=int(count), type=tp)
     if not ipc_response:
         return jsonify({"status": "error", "message": "No guilds found"})
     return jsonify({"status": "success", **ipc_response.response})

@@ -6,14 +6,14 @@ from typing import Any
 
 import async_timeout
 import wavelink
+from discord.ext.ipc.objects import ClientPayload
+from discord.ext.ipc.server import Server
 from wavelink.ext import spotify
 
 import discord
 from api import cricket_api
 from core import Cog, Parrot
 from discord.ext import commands
-from discord.ext.ipc.objects import ClientPayload
-from discord.ext.ipc.server import Server
 
 from .methods import channel_to_json, emoji_to_json, member_to_json, role_to_json, thread_to_json, user_to_json
 
@@ -380,15 +380,28 @@ class IPCRoutes(Cog):
 
     @Server.route()
     async def nsfw_links(self, data: ClientPayload) -> dict[str, list[str]]:
-        limit = getattr(data, "limit", None)
-        count = getattr(data, "count", None)
+        limit: int | None = getattr(data, "limit", None)
+        count: int | None = getattr(data, "count", None)
+
+        tp: str | None = getattr(data, "type", None)
         if limit is None and count is None:
             return {"links": []}
 
-        limit = max(1, min(10, limit or count))
+        limit = max(1, min(10, limit or count))  # type: ignore
+        return await self.get_nsfw_links(limit, tp)
 
-        query = f"""SELECT * FROM nsfw_links ORDER BY RANDOM() LIMIT {limit}"""
-        # id, link
+    async def get_nsfw_links(self, limit: int, tp: str | None = None) -> dict[str, list[str]]:
+        table = "nsfw_links"
+        if tp:
+            table = "nsfw_links_grouped"
+
+        query = f"""SELECT link FROM {table} ORDER BY RANDOM() """
+
+        if tp:
+            query += f"""WHERE type = '{tp}' """
+        if limit:
+            query += f"""LIMIT {limit} """
+
         cur = await self.bot.sql.execute(query)
         rows = await cur.fetchall()
-        return {"links": [row[1] for row in rows]}
+        return {"links": [row[0] for row in rows]}

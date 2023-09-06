@@ -45,36 +45,50 @@ class _SexDotCom:
             url = url % {"page": page}
         return await self._get_images(url=url)
 
-    async def popular_this_week(self) -> list[str]:
+    async def popular_this_week(self, page: int | None = 1) -> list[str]:
         url = self.url % {"sort": "popular", "sub": "week"}
+        if page and page > 1:
+            url = url % {"page": page}
 
         return await self._get_images(url=url)
 
-    async def popular_this_month(self) -> list[str]:
-        return await self._get_images(url=self.url)
+    async def popular_this_month(self, page: int | None = 1) -> list[str]:
+        if page and page > 1:
+            url = self.url % {"page": page}
+        else:
+            url = self.url
+        return await self._get_images(url=url)
 
-    async def popular_this_year(self) -> list[str]:
+    async def popular_this_year(self, page: int | None = 1) -> list[str]:
         url = self.url % {"sort": "popular", "sub": "year"}
+        if page and page > 1:
+            url = url % {"page": page}
 
         return await self._get_images(url=url)
 
-    async def popular_all_time(self) -> list[str]:
+    async def popular_all_time(self, page: int | None = 1) -> list[str]:
         url = self.url % {"sort": "popular", "sub": "all"}
+        if page and page > 1:
+            url = url % {"page": page}
 
         return await self._get_images(url=url)
 
-    async def latest_pins(self) -> list[str]:
+    async def latest_pins(self, page: int | None = 1) -> list[str]:
         url = self.url % {"sort": "latest"}
+        if page and page > 1:
+            url = url % {"page": page}
 
         return await self._get_images(url=url)
 
     async def get_all(self) -> list[str]:
         ls = []
-        ls.extend(await self.popular_this_week())
-        ls.extend(await self.popular_this_month())
-        ls.extend(await self.popular_this_year())
-        ls.extend(await self.popular_all_time())
-        ls.extend(await self.latest_pins())
+        for page in range(1, 10 + 1):
+            ls.extend(await self.popular_this_week(page=page))
+            ls.extend(await self.popular_this_month(page=page))
+            ls.extend(await self.popular_this_year(page=page))
+            ls.extend(await self.popular_all_time(page=page))
+            ls.extend(await self.latest_pins(page=page))
+
         return ls
 
     async def _get_images(self, *, url: str | yarl.URL) -> list[str]:

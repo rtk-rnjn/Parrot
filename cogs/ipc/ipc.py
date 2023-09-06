@@ -395,10 +395,15 @@ class IPCRoutes(Cog):
         if tp:
             table = "nsfw_links_grouped"
 
-        query = f"""SELECT link FROM {table} ORDER BY RANDOM() """
+        # SQL > SELECT link FROM <TABLE> WHERE type = <TP> ORDER BY RANDOM() LIMIT <LIMIT>
+
+        query = f"""SELECT link FROM {table} """
 
         if tp:
-            query += f"""WHERE type = '{tp}' """
+            query += f"""WHERE type = '{tp.lower()}' """
+
+        query += """ORDER BY RANDOM() """
+
         if limit:
             query += f"""LIMIT {limit} """
 

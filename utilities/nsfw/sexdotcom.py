@@ -3,6 +3,7 @@ from __future__ import annotations
 import aiohttp
 from typing import TYPE_CHECKING
 
+import yarl
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -13,7 +14,7 @@ from .constants import SEXDOTCOM_TAGS
 __all__ = ("SexDotComGif", "SexDotComPics")
 
 class _SexDotCom:
-    url: str
+    url: yarl.URL
     def __init__(self, *, session: aiohttp.ClientSession):
         self.session = session
 
@@ -22,35 +23,42 @@ class _SexDotCom:
 
     async def add_to_db(self, bot: Parrot) -> None:
         for tag in SEXDOTCOM_TAGS:
-            links = await self.tag_search(tag)
-            for link in links:
-                await bot.sql.execute("INSERT INTO nsfw_links_grouped (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING", (link, tag))
+            for page in range(1, 10 + 1):
+                links = await self.tag_search(tag, page=page)
+                if links:
+                    await bot.sql.executemany("INSERT INTO nsfw_links_grouped (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING", [(link, tag) for link in links])
         await bot.sql.commit()
 
-    async def tag_search(self, tag: str) -> list[str]:
+    async def tag_search(self, tag: str, *, page: int | None = 1) -> list[str]:
         if not self._verify_tag(tag):
             err = "Tag {tag!r} not found"
             raise ValueError(err)
-        url = f"{self.url}/{tag.lower()}"
+        url = self.url / tag.lower()
+        if page and page > 1:
+            url = self.url % {"page": page}
         return await self._get_images(url=url)
 
     async def popular_this_week(self) -> list[str]:
-        url = f"{self.url}/?sort=popular&sub=week"
+        url = self.url % {"sort": "popular", "sub": "week"}
+
         return await self._get_images(url=url)
 
     async def popular_this_month(self) -> list[str]:
         return await self._get_images(url=self.url)
 
     async def popular_this_year(self) -> list[str]:
-        url = f"{self.url}/?sort=popular&sub=year"
+        url = self.url % {"sort": "popular", "sub": "year"}
+
         return await self._get_images(url=url)
 
     async def popular_all_time(self) -> list[str]:
-        url = f"{self.url}/?sort=popular&sub=all"
+        url = self.url % {"sort": "popular", "sub": "all"}
+
         return await self._get_images(url=url)
 
     async def latest_pins(self) -> list[str]:
-        url = f"{self.url}/?sort=latest"
+        url = self.url % {"sort": "latest"}
+
         return await self._get_images(url=url)
 
     async def get_all(self) -> list[str]:
@@ -62,7 +70,7 @@ class _SexDotCom:
         ls.extend(await self.latest_pins())
         return ls
 
-    async def _get_images(self, *, url: str) -> list[str]:
+    async def _get_images(self, *, url: str | yarl.URL) -> list[str]:
         response = await self.session.get(url)
         text = await response.text()
         ls = []
@@ -78,8 +86,8 @@ class _SexDotCom:
 
 
 class SexDotComGif(_SexDotCom):
-    url = "https://www.sex.com/gifs"
+    url = yarl.URL("https://www.sex.com/gifs")
 
 
 class SexDotComPics(_SexDotCom):
-    url = "https://www.sex.com/pics"
+    url = yarl.URL("https://www.sex.com/pics")

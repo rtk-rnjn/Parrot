@@ -78,7 +78,7 @@ class _SexDotCom:
         return ls
 
     async def _get_images(self, *, url: str | yarl.URL) -> list[str]:
-        response = await self.session.get(url, headers={"Referer": self.url})
+        response = await self.session.get(url, headers={"Referer": str(self.url)})
         text = await response.text()
         ls = []
         soup = BeautifulSoup(text, "lxml")
@@ -93,8 +93,8 @@ class _SexDotCom:
 
 
 class SexDotComGif(_SexDotCom):
-    url = yarl.URL("https://www.sex.com/gifs")
+    url = yarl.URL("https://www.sex.com/") / "gifs"
 
 
 class SexDotComPics(_SexDotCom):
-    url = yarl.URL("https://www.sex.com/pics")
+    url = yarl.URL("https://www.sex.com/") / "pics"

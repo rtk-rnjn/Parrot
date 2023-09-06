@@ -256,7 +256,7 @@ class Sector17Listeners(Cog):
             await self.bot.create_timer(
                 expires_at=timestamp,
                 created_at=message.created_at.timestamp(),
-                content=f"{message.author.mention} your Daily is ready!",
+                content="your OwO Bot Daily is ready!",
                 message=message,
                 dm_notify=False,
             )

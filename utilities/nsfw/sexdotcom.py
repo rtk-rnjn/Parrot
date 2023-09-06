@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import aiohttp
 from typing import TYPE_CHECKING
 
+import aiohttp
 import yarl
+import asyncio
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -13,8 +14,10 @@ from .constants import SEXDOTCOM_TAGS
 
 __all__ = ("SexDotComGif", "SexDotComPics")
 
+
 class _SexDotCom:
     url: yarl.URL
+
     def __init__(self, *, session: aiohttp.ClientSession):
         self.session = session
 
@@ -26,7 +29,11 @@ class _SexDotCom:
             for page in range(1, 10 + 1):
                 links = await self.tag_search(tag, page=page)
                 if links:
-                    await bot.sql.executemany("INSERT INTO nsfw_links_grouped (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING", [(link, tag) for link in links])
+                    await bot.sql.executemany(
+                        "INSERT INTO nsfw_links_grouped (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING",
+                        [(link, tag) for link in links],
+                    )
+                await asyncio.sleep(0.8)
         await bot.sql.commit()
 
     async def tag_search(self, tag: str, *, page: int | None = 1) -> list[str]:
@@ -35,7 +42,7 @@ class _SexDotCom:
             raise ValueError(err)
         url = self.url / tag.lower()
         if page and page > 1:
-            url = self.url % {"page": page}
+            url = url % {"page": page}
         return await self._get_images(url=url)
 
     async def popular_this_week(self) -> list[str]:
@@ -71,7 +78,7 @@ class _SexDotCom:
         return ls
 
     async def _get_images(self, *, url: str | yarl.URL) -> list[str]:
-        response = await self.session.get(url)
+        response = await self.session.get(url, headers={"Referer": self.url})
         text = await response.text()
         ls = []
         soup = BeautifulSoup(text, "lxml")

@@ -114,26 +114,54 @@ class Reminders(Cog):
             )
             log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, timestamp)
 
-    @remindme.command(name="list", aliases=["all", "ls", "show"])
+    @remindme.command(name="list", aliases=["all", "ls", "showall"])
     async def _list(self, ctx: Context) -> None:
         """To get all your reminders of first 10 active reminders."""
         ls = []
         log.info("Fetching reminders for %s from database.", ctx.author)
 
         async for data in self.collection.find({"messageAuthor": ctx.author.id}):
-            self.bot.get_guild(data.get("guild", 0))
-            ls.append(f"<t:{int(data['expires_at'])}:R> - {data['messageURL']} (`{data['_id']}`)\n" f"> {data['content']}")
-            if len(ls) == 10:
+            _id = snowflake_to_str(data["_id"])
+            discord_timestamp = f"<t:{int(data['expires_at'])}:R>"
+            content = f"{data['content'][:100]}..." if len(data["content"]) > 100 else data["content"]
+
+            ls.append(f"**`ID: {_id}` | Ends {discord_timestamp}**\n> {content}")
+
+            if len(ls) >= 10:
                 break
 
         if not ls:
             await ctx.send(f"{ctx.author.mention} you don't have any reminders")
             return
-        p = SimplePages(ls, ctx=ctx, per_page=4)
+        p = SimplePages(ls, ctx=ctx, per_page=5)
         await p.start()
 
+    @remindme.command(name="info", aliases=["details", "detail", "i"])
+    async def info(self, ctx: Context, *, id: str) -> None:
+        """Shows the details of the reminder."""
+        if not id.isdigit():
+            message = str_to_snowflake(id)
+        else:
+            message = int(id)
+        data = await self.collection.find_one({"messageAuthor": ctx.author.id, "_id": message})
+        if not data:
+            await ctx.reply(f"{ctx.author.mention} reminder of ID: **{id}** not found. ID is case sensitive")
+            return
+        embed = (
+            discord.Embed(
+                title=f"Reminder of ID: `{id}`",
+                description=data["content"],
+                color=discord.Color.blurple(),
+            )
+            .add_field(name="Expires at", value=f"<t:{int(data['expires_at'])}:R>")
+            .add_field(name="Created at", value=f"<t:{int(data['created_at'])}:R>")
+            .add_field(name="Message URL", value=data["messageURL"] or "Not found")
+        )
+
+        await ctx.reply(embed=embed)
+
     @remindme.command(name="del", aliases=["delete", "remove", "rm"])
-    async def delremind(self, ctx: Context, id: str) -> None:
+    async def delremind(self, ctx: Context, *, id: str) -> None:
         """To delete the reminder."""
         if not id.isdigit():
             message = str_to_snowflake(id)

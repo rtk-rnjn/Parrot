@@ -4,17 +4,20 @@ import logging
 
 import aiohttp
 import aiosqlite
+import yarl
 
 log = logging.getLogger("updater")
 
 # SCAM LINK URL
-_COMMIT_URL = "https://api.github.com/repos/{REPO}/commits"
-_ORIGINAL_RAW_REPO = "https://raw.githubusercontent.com/{REPO}"
-
+API = yarl.URL("https://api.github.com/")
+RAW_API = yarl.URL("https://raw.githubusercontent.com/")
 REPO = "Discord-AntiScam/scam-links"
 
-COMMIT_URL = _COMMIT_URL.format(REPO=REPO)
-ORIGINAL_REPO = _ORIGINAL_RAW_REPO.format(REPO=REPO)
+_COMMIT_URL = API / "repos" / REPO / "commits"
+_ORIGINAL_RAW_REPO = RAW_API / REPO
+
+COMMIT_URL = _COMMIT_URL
+ORIGINAL_REPO = _ORIGINAL_RAW_REPO
 
 
 async def init():
@@ -36,7 +39,7 @@ async def init():
 
 
 async def insert_all_scams(db: aiosqlite.Connection):
-    url = f"{ORIGINAL_REPO}//main/list.json"
+    url = ORIGINAL_REPO / "main" / "list.json"
 
     async with aiohttp.ClientSession() as session:
         log.debug("Downloading Data... %s", url)

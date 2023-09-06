@@ -765,8 +765,8 @@ class Parrot(commands.AutoShardedBot):
             await self.wait_until_ready()
 
         await self.invoke(ctx)
-        if random.randint(1, 20) == random.randint(1, 20):
-            await ctx.send(f"**Do you know?**\n{random.choice(TIPS)}", delete_after=5)
+        if random.randint(0, 20) == random.randint(20, 40):
+            await ctx.send(f"**Do you know?**\n{random.choice(TIPS)}", delete_after=20)
 
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1

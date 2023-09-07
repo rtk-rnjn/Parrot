@@ -4,6 +4,7 @@ from quart import Response, jsonify, request
 
 from ..quart_app import app, ipc
 
+from utilities.converters import convert_bool
 
 @app.route("/")
 async def index() -> Response:
@@ -49,8 +50,13 @@ async def nsfw_links(count: str) -> Response:
         return jsonify({"status": "error", "message": "Invalid count"})
 
     tp = request.args.get("type", None)
+    gif = request.args.get("gif", None)
+    if gif:
+        gif = convert_bool(gif)
+    else:
+        gif = True
 
-    ipc_response = await ipc.request("nsfw_links", count=int(count), type=tp)
+    ipc_response = await ipc.request("nsfw_links", count=int(count), type=tp, gif=gif)
     if not ipc_response:
         return jsonify({"status": "error", "message": "No guilds found"})
     return jsonify({"status": "success", **ipc_response.response})

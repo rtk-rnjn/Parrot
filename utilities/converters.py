@@ -24,7 +24,7 @@ KT = TypeVar("KT", bound=Any)
 VT = TypeVar("VT", bound=Any)
 
 
-def convert_bool(text: str | bool | Any) -> bool:
+def convert_bool(text: Any) -> bool:
     """True/False converter."""
     return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o", "ok", "sure", "yeah", "yup"}
 

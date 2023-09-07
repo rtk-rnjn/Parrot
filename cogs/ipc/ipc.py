@@ -393,21 +393,26 @@ class IPCRoutes(Cog):
         return await self.get_nsfw_links(limit, tp, gif=gif)
 
     async def get_nsfw_links(self, limit: int, tp: str | None = None, *, gif: bool = True) -> dict[str, list[str]]:
+        conditions = []
         if tp:
             table_name = "nsfw_links_grouped"
             porn_type = tp.lower()
             if porn_type not in self.bot.NSFW._sexdotcom._tags:  # SQL injection protection?
                 porn_type = choice(self.bot.NSFW._sexdotcom._tags)
+            conditions.append(f"type = {porn_type}")
         else:
             table_name = "nsfw_links"
-            porn_type = choice(self.bot.NSFW._sexdotcom._tags)
 
-        _not = "" if gif else "NOT"
+        if gif:
+            conditions.append("link LIKE 'gif'")
+        else:
+            conditions.append("link NOT LIKE 'gif'")
 
+        where = " AND ".join(conditions)
         query = f"""
             SELECT link
             FROM   {table_name}
-            WHERE  type = {porn_type} AND link {_not} LIKE '%.gif'
+            WHERE  {where}
             ORDER BY RANDOM()
             LIMIT  {limit}
         """

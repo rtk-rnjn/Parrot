@@ -397,16 +397,16 @@ class IPCRoutes(Cog):
         if tp:
             table_name = "nsfw_links_grouped"
             porn_type = tp.lower()
-            if porn_type not in self.bot.NSFW._sexdotcom._tags:  # SQL injection protection?
-                porn_type = choice(self.bot.NSFW._sexdotcom._tags)
-            conditions.append(f"type = {porn_type}")
+            if porn_type not in self.bot.NSFW._sexdotcomgif._tags:  # SQL injection protection?
+                porn_type = choice(self.bot.NSFW._sexdotcomgif._tags)
+            conditions.append(f"type = '{porn_type}'")
         else:
             table_name = "nsfw_links"
 
         if gif:
-            conditions.append("link LIKE 'gif'")
+            conditions.append("link LIKE '%gif%'")
         else:
-            conditions.append("link NOT LIKE 'gif'")
+            conditions.append("link NOT LIKE '%gif%'")
 
         where = " AND ".join(conditions)
         query = f"""

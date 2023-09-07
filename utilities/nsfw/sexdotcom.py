@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 import aiohttp
 import yarl
-import asyncio
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -17,12 +18,13 @@ __all__ = ("SexDotComGif", "SexDotComPics")
 
 class _SexDotCom:
     url: yarl.URL
+    _tags: list[str] = SEXDOTCOM_TAGS
 
     def __init__(self, *, session: aiohttp.ClientSession):
         self.session = session
 
     def _verify_tag(self, tag: str) -> bool:
-        return tag.lower() in SEXDOTCOM_TAGS
+        return tag.lower() in self._tags
 
     async def add_to_db(self, bot: Parrot) -> None:
         for tag in SEXDOTCOM_TAGS:

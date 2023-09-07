@@ -6,14 +6,15 @@ from typing import Any
 
 import async_timeout
 import wavelink
-from discord.ext.ipc.objects import ClientPayload
-from discord.ext.ipc.server import Server
 from wavelink.ext import spotify
+from random import choice
 
 import discord
 from api import cricket_api
 from core import Cog, Parrot
 from discord.ext import commands
+from discord.ext.ipc.objects import ClientPayload
+from discord.ext.ipc.server import Server
 
 from .methods import channel_to_json, emoji_to_json, member_to_json, role_to_json, thread_to_json, user_to_json
 
@@ -384,28 +385,32 @@ class IPCRoutes(Cog):
         count: int | None = getattr(data, "count", None)
 
         tp: str | None = getattr(data, "type", None)
+        gif: bool = getattr(data, "gif", True)
         if limit is None and count is None:
             return {"links": []}
 
         limit = max(1, min(10, limit or count))  # type: ignore
-        return await self.get_nsfw_links(limit, tp)
+        return await self.get_nsfw_links(limit, tp, gif=gif)
 
-    async def get_nsfw_links(self, limit: int, tp: str | None = None) -> dict[str, list[str]]:
-        table = "nsfw_links"
+    async def get_nsfw_links(self, limit: int, tp: str | None = None, *, gif: bool = True) -> dict[str, list[str]]:
         if tp:
-            table = "nsfw_links_grouped"
+            table_name = "nsfw_links_grouped"
+            porn_type = tp.lower()
+            if porn_type not in self.bot.NSFW._sexdotcom._tags:  # SQL injection protection?
+                porn_type = choice(self.bot.NSFW._sexdotcom._tags)
+        else:
+            table_name = "nsfw_links"
+            porn_type = choice(self.bot.NSFW._sexdotcom._tags)
 
-        # SQL > SELECT link FROM <TABLE> WHERE type = <TP> ORDER BY RANDOM() LIMIT <LIMIT>
+        _not = "" if gif else "NOT"
 
-        query = f"""SELECT link FROM {table} """
-
-        if tp:
-            query += f"""WHERE type = '{tp.lower()}' """
-
-        query += """ORDER BY RANDOM() """
-
-        if limit:
-            query += f"""LIMIT {limit} """
+        query = f"""
+            SELECT link
+            FROM   {table_name}
+            WHERE  type = {porn_type} AND link {_not} LIKE '%.gif'
+            ORDER BY RANDOM()
+            LIMIT  {limit}
+        """
 
         cur = await self.bot.sql.execute(query)
         rows = await cur.fetchall()

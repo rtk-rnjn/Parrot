@@ -207,13 +207,13 @@ class IPCRoutes(Cog):
                     }
                     if guild.owner is not None
                     else {},
-                    "icon_url": guild.icon.url if guild.icon is not None else None,
                     "member_count": guild.member_count,
+                    "icon_url": guild.icon.url if guild.icon is not None else None,
                     "channels": self.__guild_channel(guild, channels=channels, channel_id=channel_id),
-                    "roles": self.__guild_role(guild, roles=roles, role_id=role_id),
                     "members": self.__guild_member(guild, members=members, member_id=member_id),
-                    "emojis": self.__guild_emoji(guild, emojis=emojis, emoji_id=emoji_id),
                     "threads": self.__guild_thread(guild, threads=threads, thread_id=thread_id),
+                    "emojis": self.__guild_emoji(guild, emojis=emojis, emoji_id=emoji_id),
+                    "roles": self.__guild_role(guild, roles=roles, role_id=role_id),
                 }
                 for guild in guilds
                 if guild is not None

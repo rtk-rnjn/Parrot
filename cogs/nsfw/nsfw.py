@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+import asyncio
+import io
 from random import choice, random
 from typing import Literal
-import io
+
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 from utilities.checks import is_adult
 from utilities.exceptions import ParrotCheckFailure
-from utilities.nsfw.constants import SEXDOTCOM_TAGS
 from utilities.nsfw.sexdotcom import SexDotComGif, SexDotComPics
 from utilities.paginator import PaginationView as PV
 
@@ -220,7 +221,7 @@ class NSFW(Cog):
         file = discord.File(io.BytesIO(_bytes), "file.gif")
         await ctx.reply(file=file)
 
-    async def sexdotcom_write_to_db(self):
+    async def _sexdotcom_write_to_db_gifs(self):
         links = await self._sexdotcomgif.get_all()
 
         query = """INSERT INTO nsfw_links (link) VALUES (?) ON CONFLICT DO NOTHING"""
@@ -229,6 +230,23 @@ class NSFW(Cog):
 
         await self._sexdotcomgif.add_to_db(self.bot)
         await sql.commit()
+
+    async def _sexdotcom_write_to_db_pics(self):
+        links = await self._sexdotcompics.get_all()
+
+        query = """INSERT INTO nsfw_links (link) VALUES (?) ON CONFLICT DO NOTHING"""
+        sql = self.bot.sql
+        await sql.executemany(query, [(link,) for link in links])
+
+        await self._sexdotcompics.add_to_db(self.bot)
+        await sql.commit()
+
+    async def sexdotcom_write_to_db(self):
+        await asyncio.gather(
+            self._sexdotcom_write_to_db_gifs(),
+            self._sexdotcom_write_to_db_pics(),
+            return_exceptions=False,
+        )
 
     @tasks.loop(minutes=10)
     async def sexdotcom_loop(self):

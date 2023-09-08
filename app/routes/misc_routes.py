@@ -1,12 +1,20 @@
 from __future__ import annotations
 
-from quart import Response, jsonify, request
+import logging
+from datetime import timedelta
 
-from ..quart_app import app, ipc
+from quart import Response, jsonify, request
+from quart_rate_limiter import rate_limit
 
 from utilities.converters import convert_bool
 
+from ..quart_app import app, ipc
+
+log = logging.getLogger("api")
+
+
 @app.route("/")
+@rate_limit(limit=5, period=timedelta(seconds=1))
 async def index() -> Response:
     return jsonify({"status": "running"})
 
@@ -43,6 +51,7 @@ for code in ERROR_CODES:
 
 
 @app.route("/nsfw_links/<count>")
+@rate_limit(limit=5, period=timedelta(seconds=1))
 async def nsfw_links(count: str) -> Response:
     if count.isdigit():
         count = int(count)
@@ -59,4 +68,6 @@ async def nsfw_links(count: str) -> Response:
     ipc_response = await ipc.request("nsfw_links", count=int(count), type=tp, gif=gif)
     if not ipc_response:
         return jsonify({"status": "error", "message": "No guilds found"})
+
+    log.info("returning %s links to %s", count, request.remote_addr)
     return jsonify({"status": "success", **ipc_response.response})

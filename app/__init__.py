@@ -7,6 +7,10 @@ from .quart_app import app
 
 config = Config()
 config.bind = ["0.0.0.0:5000"]
+config.loglevel = "INFO"
+config.accesslog = "-"
+config.errorlog = "-"
+config.use_reloader = True
 
 
 def runner():

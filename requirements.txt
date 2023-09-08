@@ -179,3 +179,4 @@ yapf
 yarl
 youtube-dl
 uvloop; sys_platform != "win32"
+quart-rate-limiter

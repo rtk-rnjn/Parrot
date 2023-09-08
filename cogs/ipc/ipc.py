@@ -389,7 +389,7 @@ class IPCRoutes(Cog):
         if limit is None and count is None:
             return {"links": []}
 
-        limit = max(1, min(10, limit or count))  # type: ignore
+        limit = max(1, min(100, limit or count))  # type: ignore
         return await self.get_nsfw_links(limit, tp, gif=gif)
 
     async def get_nsfw_links(self, limit: int, tp: str | None = None, *, gif: bool = True) -> dict[str, list[str]]:

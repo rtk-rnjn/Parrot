@@ -41,7 +41,7 @@ async def routes() -> Response:
     return jsonify({"status": "success", "routes": ls})
 
 
-ERROR_CODES = [400, 401, 403, 404, 405, 500, 501, 502, 503, 504]
+ERROR_CODES = [400, 401, 403, 404, 405, 429, 500, 501, 502, 503, 504]
 
 for code in ERROR_CODES:
 

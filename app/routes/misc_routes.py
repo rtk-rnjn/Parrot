@@ -69,5 +69,4 @@ async def nsfw_links(count: str) -> Response:
     if not ipc_response:
         return jsonify({"status": "error", "message": "No guilds found"})
 
-    log.info("returning %s links to %s", count, request.remote_addr)
     return jsonify({"status": "success", **ipc_response.response})

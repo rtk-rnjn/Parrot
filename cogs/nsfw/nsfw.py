@@ -248,6 +248,6 @@ class NSFW(Cog):
             return_exceptions=False,
         )
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=30)
     async def sexdotcom_loop(self):
         await self.sexdotcom_write_to_db()

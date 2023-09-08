@@ -157,7 +157,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
     async def gist(self, ctx: Context):
         """Gist related commands."""
 
-    @gist.command(name="create")
+    @gist.command(name="create", aliases=["make", "mk", "new"])
     @commands.is_owner()
     async def gist_create(self, ctx: Context, *, content: str):
         """Create a gist from the given content."""

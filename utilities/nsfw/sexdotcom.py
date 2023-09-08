@@ -35,7 +35,6 @@ class _SexDotCom:
                         "INSERT INTO nsfw_links_grouped (link, type) VALUES (?, ?) ON CONFLICT DO NOTHING",
                         [(link, tag) for link in links],
                     )
-                await asyncio.sleep(0.8)
         await bot.sql.commit()
 
     async def tag_search(self, tag: str, *, page: int | None = 1) -> list[str]:
@@ -98,11 +97,11 @@ class _SexDotCom:
         text = await response.text()
         ls = []
         soup = BeautifulSoup(text, "lxml")
-        div = soup.find("div", id="masonry_container")
+        div = await asyncio.to_thread(soup.find, "div", id="masonry_container")
         if isinstance(div, Tag):
-            anchors: list[Tag] = div.find_all("a", **{"class": "image_wrapper"})
+            anchors: list[Tag] = await asyncio.to_thread(div.find_all, "a", **{"class": "image_wrapper"})
             for a in anchors:
-                img: Tag = a.find("img", **{"class": "image"})
+                img: Tag = await asyncio.to_thread(a.find, "img", **{"class": "image"})
                 ls.append(img["data-src"])
 
         return ls

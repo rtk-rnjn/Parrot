@@ -778,7 +778,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             self.guild_configurations_cache[message.guild.id]
         except KeyError:
-            await self.wait_and_run_task(self.update_server_config_cache, message.guild.id)
+            await self.update_server_config_cache.start(message.guild.id)
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             await message.channel.send(f"Prefix: `{await self.get_guild_prefixes(message.guild)}`")
@@ -1285,12 +1285,6 @@ class Parrot(commands.AutoShardedBot):
             return discord.utils.get(commands.values(), **kwargs)
 
         return None
-
-    async def wait_and_run_task(self, function: tasks.Loop, *args, **kwargs) -> asyncio.Task[None]:
-        if not function.is_running():
-            return function.start(*args, **kwargs)
-        await asyncio.sleep(0.2)
-        return await self.wait_and_run_task(function, *args, **kwargs)
 
     @overload
     async def get_or_fetch_message(

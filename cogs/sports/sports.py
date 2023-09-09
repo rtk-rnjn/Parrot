@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tabulate import tabulate  # type: ignore
+from tabulate import tabulate
 
 import discord
 from core import Cog, Context, Parrot
@@ -38,6 +38,7 @@ class Sports(Cog):
         data: dict[str, Any],
     ) -> discord.Embed:
         """To create the embed for the ipl score. For more detailed information, see https://github.com/rtk-rnjn/cricbuzz_scraper."""
+        embed = discord.Embed(timestamp=discord.utils.utcnow())
         if data["title"]:
             embed = discord.Embed(title=data["title"], timestamp=discord.utils.utcnow())
         embed.set_footer(text=data["status"])

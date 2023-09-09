@@ -21,6 +21,7 @@ all_extensions:
   - cogs.ticket
   - cogs.utils
   - cogs.wolfram
+  - cogs.rss
   - events.custom_events
   - events.guild.channel
   - events.guild.extra

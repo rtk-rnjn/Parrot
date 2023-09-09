@@ -71,8 +71,9 @@ from .utils import CustomFormatter, handler
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from discord.ext.commands.cooldowns import CooldownMapping
     from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+
+    from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
 
@@ -1137,7 +1138,6 @@ class Parrot(commands.AutoShardedBot):
             "expires_at": expires_at,
             "created_at": (
                 created_at
-                or kw.get("created_at")
                 or (
                     message.created_at.timestamp() if isinstance(message, discord.Message) else discord.utils.utcnow().timestamp()
                 )
@@ -1314,8 +1314,8 @@ class Parrot(commands.AutoShardedBot):
         channel: ...,
         message: ...,
         *,
-        partial: bool = ...,
-    ) -> discord.PartialMessage | None:
+        partial: bool = True,
+    ) -> discord.PartialMessage | discord.Message:
         ...
 
     @overload
@@ -1563,3 +1563,33 @@ class Parrot(commands.AutoShardedBot):
             return
         async for data in self.user_collections_ind.find():
             self._user_cache[data["_id"]] = data
+
+    async def wait_and_delete(
+        self,
+        *,
+        delay: int | None = None,
+        timestamp: int | None = None,
+        channel_id: int | None = None,
+        message_id: int | None = None,
+        message: discord.Message | None = None,
+    ) -> None:
+        if message and delay:
+            await message.delete(delay=delay)
+            return
+
+        channel_id = channel_id or message.channel.id  # type: ignore
+        message_id = message_id or message.id  # type: ignore
+
+        if timestamp:
+            await self.create_timer(
+                expires_at=timestamp,
+                _event_name="message_delete",
+                created_at=discord.utils.utcnow().timestamp(),
+                extra={
+                    "name": "MESSAGE_DELETE",
+                    "main": {
+                        "channel_id": channel_id,
+                        "message_id": message_id,
+                    },
+                },
+            )

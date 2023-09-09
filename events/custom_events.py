@@ -78,7 +78,8 @@ class EventCustom(Cog):
         if (dm_notify or is_todo) and (user := self.bot.get_user(messageAuthor or 0)):
             with contextlib.suppress(discord.Forbidden):
                 await user.send(
-                    content=f"{user.mention} this is reminder for: **{content}**" + (f"\n>>> {messageURL}" if messageURL else ""),
+                    content=f"{user.mention} this is reminder for: **{content}**"
+                    + (f"\n>>> {messageURL}" if messageURL else ""),
                     embed=embed,
                 )
             return
@@ -87,7 +88,8 @@ class EventCustom(Cog):
             assert isinstance(channel, discord.abc.Messageable)
             with contextlib.suppress(discord.Forbidden):
                 await channel.send(
-                    content=f"<@{messageAuthor}> this is reminder for: **{content}**" + (f"\n>>> {messageURL}" if messageURL else ""),
+                    content=f"<@{messageAuthor}> this is reminder for: **{content}**"
+                    + (f"\n>>> {messageURL}" if messageURL else ""),
                     embed=embed,
                 )
             return
@@ -134,6 +136,25 @@ class EventCustom(Cog):
         if name == "GIVEAWAY_END" and (main := extra.get("main")):
             await self._parse_giveaway(**main)
 
+    @Cog.listener("on_message_delete_timer_complete")
+    async def extra_parser_message_delete(self, **kw: Any) -> None:
+        extra = kw.get("extra")
+        if not extra:
+            return
+
+        name = extra.get("name")
+        if name == "MESSAGE_DELETE":
+            main = extra.get("main")
+            channel_id = int(main["channel_id"])
+            message_id = int(main["message_id"])
+
+            channel = self.bot.get_channel(channel_id)
+            if not channel:
+                return
+            message: discord.PartialMessage = await self.bot.get_or_fetch_message(channel, message_id, partial=True)
+            if message:
+                await message.delete(delay=0.0)
+
     async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "SET_TIMER":
             await self.bot.create_timer(**kw)
@@ -155,7 +176,7 @@ class EventCustom(Cog):
             return
         age: ShortTime = ShortTime(age)
         post = kw.copy()
-        post["extra"] = {"name": "SET_TIMER_LOOP", "main": {"age": str(age)}}
+        post["extra"] = {"name": "SET_TIMER_LOOP", "main": {"age": age._argument}}
         post["expires_at"] = age.dt.timestamp()
         await self.bot.create_timer(**post)
 

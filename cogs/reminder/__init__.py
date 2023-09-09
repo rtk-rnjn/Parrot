@@ -226,15 +226,10 @@ class Reminders(Cog):
             "expires_at": timestamp,
             "created_at": ctx.message.created_at.timestamp(),
             "content": content,
-            "embed": None,
             "messageURL": ctx.message.jump_url,
             "messageAuthor": ctx.message.author.id,
             "messageChannel": ctx.message.channel.id,
-            "dm_notify": True,
-            "is_todo": False,
-            "mod_action": None,
-            "cmd_exec_str": None,
-            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": str(when)}},
+            "extra": {"name": "SET_TIMER_LOOP", "main": {"age": when._argument}},
         }
         await self.bot.create_timer(**post)
         log.info(

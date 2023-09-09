@@ -44,6 +44,7 @@ class ShortTime:
         now: datetime.datetime | None = None,
         tzinfo: datetime.tzinfo = datetime.timezone.utc,
     ) -> None:
+        self._argument = argument
         match = self.compiled.fullmatch(argument)
         if match is None or not match.group(0):
             match = self.discord_fmt.fullmatch(argument)
@@ -53,7 +54,7 @@ class ShortTime:
                     self.dt = self.dt.astimezone(tzinfo)
                 return
             else:
-                msg = "invalid time provided"
+                msg = f"invalid time provided {argument!r}"
                 raise commands.BadArgument(msg)
 
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}

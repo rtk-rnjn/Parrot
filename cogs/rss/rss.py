@@ -77,6 +77,7 @@ class RSS(Cog):
                     "rss": {"channel_id": ctx.channel.id, "webhook_url": webhook.url, "link": link},
                 },
             },
+            upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} RSS Feed added.")
 

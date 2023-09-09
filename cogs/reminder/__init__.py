@@ -76,7 +76,8 @@ class Reminders(Cog):
         )
         embed = discord.Embed(description=_id, color=discord.Color.blurple())
         try:
-            await ctx.author.send(msg, embed=embed, view=ctx.send_view())
+            notify_message = await ctx.author.send(msg, embed=embed, view=ctx.send_view())
+            await self.bot.wait_and_delete(message=notify_message, timestamp=timestamp)
             await ctx.tick()
         except discord.Forbidden:
             await ctx.reply(msg, embed=embed)

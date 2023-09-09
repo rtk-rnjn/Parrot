@@ -1568,7 +1568,7 @@ class Parrot(commands.AutoShardedBot):
         self,
         *,
         delay: int | None = None,
-        timestamp: int | None = None,
+        timestamp: float | None = None,
         channel_id: int | None = None,
         message_id: int | None = None,
         message: discord.Message | None = None,

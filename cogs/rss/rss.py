@@ -18,7 +18,17 @@ class RSS(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{SATELLITE}")
 
+    async def prepare_cache(self):
+        async for data in self.bot.guild_collections_ind.find():
+            for feed in data["rss"]:
+                channel = self.bot.get_channel(feed["channel_id"])
+                if not channel:
+                    continue
+                webhook = discord.Webhook.from_url(feed["webhook_url"], session=self.bot.http_session)
+                self._cache[channel.id] = {"webhook": webhook, "link": feed["link"]}
+
     async def cog_load(self) -> None:
+        await self.prepare_cache()
         self.rss_loop.start()
 
     async def cog_unload(self) -> None:

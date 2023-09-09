@@ -128,6 +128,7 @@ class RSS(Cog):
 
             embed = await self.parsed_feed(d)
             webhook = self._cache[channel_id]["webhook"]
+            await self.bot._execute_webhook(webhook, embed=embed, username="RSS Feed")
             await webhook.send(embed=embed)
 
     async def parsed_feed(self, d) -> discord.Embed:

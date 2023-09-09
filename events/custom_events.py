@@ -151,9 +151,8 @@ class EventCustom(Cog):
             channel = self.bot.get_channel(channel_id)
             if not channel:
                 return
-            message: discord.PartialMessage = await self.bot.get_or_fetch_message(channel, message_id, partial=True)
-            if message:
-                await message.delete(delay=0.0)
+            message: discord.PartialMessage = channel.get_partial_message(message_id)  # type: ignore
+            await message.delete(delay=0.0)
 
     async def extra_action_parser(self, name: str, **kw: Any) -> None:
         if name.upper() == "SET_TIMER":

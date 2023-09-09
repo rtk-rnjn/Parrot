@@ -11,7 +11,7 @@ import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.robopages import SimplePages
-from utilities.time import FriendlyTimeResult, UserFriendlyTime
+from utilities.time import FriendlyTimeResult, UserFriendlyTime, ShortTime
 
 log = logging.getLogger("cogs.reminder")
 
@@ -207,8 +207,9 @@ class Reminders(Cog):
     async def remindmeloop(
         self,
         ctx: Context,
+        when: ShortTime,
         *,
-        when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
+        content: Annotated[str, commands.clean_content] = "...",
     ):
         """Same as remind me but you will get reminder on every given time.
 
@@ -220,13 +221,11 @@ class Reminders(Cog):
         if timestamp - now <= 300:
             return await ctx.reply(f"{ctx.author.mention} You can't set reminder for less than 5 minutes")
 
-        timestamp = await self._get_timestamp(ctx.author.id, when)
-
         post = {
             "_id": ctx.message.id,
             "expires_at": timestamp,
             "created_at": ctx.message.created_at.timestamp(),
-            "content": when.arg,
+            "content": content,
             "embed": None,
             "messageURL": ctx.message.jump_url,
             "messageAuthor": ctx.message.author.id,

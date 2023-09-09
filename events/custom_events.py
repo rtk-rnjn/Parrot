@@ -99,7 +99,7 @@ class EventCustom(Cog):
 
         name: str = extra.get("name")  # type: ignore
         if name == "SET_TIMER_LOOP":
-            return await self._parse_timer(**kw)
+            return await self._parse_timer(**kw, extra=extra)
 
         if main := extra.get("main"):
             await self.extra_action_parser(name, **main)

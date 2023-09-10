@@ -1132,7 +1132,7 @@ class Parrot(commands.AutoShardedBot):
 
         # fmt: off
         post = {
-            "_id": (message.id if isinstance(message, discord.Message) else message) or discord.utils.utcnow().timestamp() * 1000,
+            "_id": (message.id if isinstance(message, discord.Message) else message) or int(discord.utils.utcnow().timestamp() * 1000),
             "_event_name": _event_name,
             "expires_at": expires_at,
             "created_at": (

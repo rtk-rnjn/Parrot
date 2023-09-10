@@ -306,6 +306,7 @@ class TodoItem:
 
         if completed_at is not discord.utils.MISSING:
             payload["completed_at"] = completed_at
+            await self.bot.delete_timer(_id=self._id)
 
         for k, v in payload.items():
             setattr(self, k, v)
@@ -313,7 +314,8 @@ class TodoItem:
         collection = self.bot.user_db[f"{self.user_id}"]
         await collection.update_one({"_id": self._id}, {"$set": payload}, upsert=True)
 
-        await self.resync_with_reminders()
+        if due_date is not discord.utils.MISSING:
+            await self.resync_with_reminders()
 
     async def delete(self) -> None:
         collection = self.bot.user_db[f"{self.user_id}"]

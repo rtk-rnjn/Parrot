@@ -161,8 +161,15 @@ class AutomaticModeration(Cog):
         await self.__build_cache_specific(guild_id)
 
     @Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+        if after.guild is None and after.author.id == self.bot.user.id:
+            return
+
+        return await self.on_message(after)
+
+    @Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.guild is None:
+        if message.guild is None or message.author.id == self.bot.user.id:
             return
 
         data = self.auto_mod.get(message.guild.id)
@@ -182,7 +189,7 @@ class AutomaticModeration(Cog):
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
-        if member.guild is None:
+        if member.guild is None or member.id == self.bot.user.id:
             return
 
         data = self.auto_mod.get(member.guild.id)
@@ -207,7 +214,7 @@ class AutomaticModeration(Cog):
                     await member.ban()
             await ctx.send_help(ctx.command)
 
-    @automod_group.command(name="add")
+    @automod_group.command(name="add", aliases=["create", "new"])
     @commands.has_permissions(manage_guild=True)
     async def automod_add(self, ctx: Context, *, rule: str) -> None:
         """Add a new automod rule."""
@@ -229,7 +236,7 @@ class AutomaticModeration(Cog):
         )
         await self.refresh_cache_specific(ctx.guild.id)
 
-    @automod_group.command(name="edit")
+    @automod_group.command(name="edit", aliases=["update"])
     @commands.has_permissions(manage_guild=True)
     async def automod_edit(self, ctx: Context, *, rule: str) -> None:
         """Edit an existing automod rule."""
@@ -252,6 +259,7 @@ class AutomaticModeration(Cog):
             {"$set": {rule: {"trigger": view.triggers, "condition": view.conditions, "action": view.actions}}},
         )
         await self.refresh_cache_specific(ctx.guild.id)
+        await ctx.reply(f"Rule `{rule}` has been updated.")
 
     @automod_group.command(name="remove", aliases=["delete", "rm", "del"])
     @commands.has_permissions(manage_guild=True)
@@ -266,6 +274,7 @@ class AutomaticModeration(Cog):
             {"$unset": {rule: ""}},
         )
         await self.refresh_cache_specific(ctx.guild.id)
+        await ctx.reply(f"Rule `{rule}` has been removed.")
 
     @automod_group.command(name="list", aliases=["ls", "all"])
     @commands.has_permissions(manage_guild=True)
@@ -298,17 +307,17 @@ class AutomaticModeration(Cog):
             discord.Embed(title=f"Automod Rule: {rule}", color=discord.Color.blurple())
             .add_field(
                 name="Trigger",
-                value=f'```json\n{json.dumps(data[rule]["trigger"], indent=4)}```',
+                value=f'```json\n{json.dumps(data[rule]["trigger"], indent=2)}```',
                 inline=False,
             )
             .add_field(
                 name="Condition",
-                value=f'```json\n{json.dumps(data[rule]["condition"], indent=4)}```',
+                value=f'```json\n{json.dumps(data[rule]["condition"], indent=2)}```',
                 inline=False,
             )
             .add_field(
                 name="Action",
-                value=f'```json\n{json.dumps(data[rule]["action"], indent=4)}```',
+                value=f'```json\n{json.dumps(data[rule]["action"], indent=2)}```',
                 inline=False,
             )
         )

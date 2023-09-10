@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from discord.abc import GuildChannel
 from discord.utils import maybe_coroutine, utcnow
 
-from discord import Member, Message, Object, PermissionOverwrite
+from discord import Member, Message, Object, PermissionOverwrite, Forbidden
 
 reason_init = """AutoMod: {reason}
 Sent from {guild.name} ({guild.id})
@@ -81,18 +81,20 @@ class Action:
         )
 
     async def kick_user(self, *, member: Member, msg: str = None, **kw) -> None:
-        await member.guild.kick(member, reason="Automod")
+        if member.guild.me.guild_permissions.kick_members and member.top_role < member.guild.me.top_role:
+            await member.guild.kick(member, reason="Automod")
         try:
             await member.send(reason_init.format(reason=msg or "Kicked", guild=member.guild))
-        except Exception:
+        except Forbidden:
             pass
 
     async def ban_user(self, *, member: Member, msg: str, **kw) -> None:
-        await member.guild.ban(member, reason="Automod")
+        if member.guild.me.guild_permissions.ban_members and member.top_role < member.guild.me.top_role:
+            await member.guild.ban(member, reason="Automod")
 
         try:
             await member.send(reason_init.format(reason=msg or "Banned", guild=member.guild))
-        except Exception:
+        except Forbidden:
             pass
 
     async def mute_user(self, *, member: Member, **kw) -> None:
@@ -110,19 +112,23 @@ class Action:
         )
 
     async def set_nickname(self, *, member: Member, nickname: str, **kw) -> None:
-        await member.edit(nick=nickname)
+        if member.guild.me.guild_permissions.manage_nicknames and member.top_role < member.guild.me.top_role:
+            await member.edit(nick=nickname)
 
-    async def delete_multiple_messages(self, *, message: Message, count: int, max_age: int, **kw) -> None:
+    async def delete_multiple_messages(self, *, message: Message, count: int, **kw) -> None:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)
 
         def check(m: Message) -> bool:
-            return m.author == message.author and (utcnow() - m.created_at).total_seconds() < max_age
+            return m.author == message.author and (utcnow() - m.created_at).total_seconds() < 7 * 24 * 60 * 60
 
-        await message.channel.purge(limit=count, check=check, bulk=True)
+        if message.channel.permissions_for(message.guild.me).manage_messages:
+            await message.channel.purge(limit=count, check=check, bulk=True)
 
     async def enable_slowmode(self, *, message: Message, duration: int, **kw) -> None:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)
-        await message.channel.edit(slowmode_delay=duration)
+
+        if message.channel.permissions_for(message.guild.me).manage_channels:
+            await message.channel.edit(slowmode_delay=duration)
 
     async def lock_channel(self, *, message: Message, msg: str = None, **kw) -> None:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)

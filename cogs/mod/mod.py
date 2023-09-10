@@ -6,6 +6,7 @@ import re
 import shlex
 from typing import Annotated, Literal
 
+import arrow
 import wavelink
 
 import discord
@@ -733,13 +734,15 @@ class Moderator(Cog):
         Note that the bot needs Manage Messages as well. These commands cannot be used in a private message.
         When the command is done doing its work, you will get a message detailing which users got removed and how many messages got removed.
 
+        Messages older than 14 days cannot be deleted.
+
         **Examples:**
         - `[p]clean 10`
         """
         if ctx.invoked_subcommand is None:
 
             def check(message: discord.Message) -> bool:
-                return True
+                return message.created_at > arrow.utcnow().shift(days=-14).datetime
 
             await mod_method.do_removal(ctx, num, check)
 
@@ -836,7 +839,9 @@ class Moderator(Cog):
         """
 
         def predicate(m: discord.Message):
-            return (m.webhook_id is None and m.author.bot) or (prefix and m.content.startswith(prefix))
+            return (
+                (m.webhook_id is None and m.author.bot) or (prefix and m.content.startswith(prefix))
+            ) and m.created_at > arrow.utcnow().shift(days=-14).datetime
 
         await mod_method.do_removal(ctx, search, predicate)
 
@@ -852,8 +857,8 @@ class Moderator(Cog):
         """
         custom_emoji = re.compile(r"<a?:[a-zA-Z0-9\_]+:([0-9]+)>")
 
-        def predicate(m):
-            return custom_emoji.search(m.content)
+        def predicate(m: discord.Message) -> bool:
+            return bool(custom_emoji.search(m.content)) and m.created_at > arrow.utcnow().shift(days=-14).datetime
 
         await mod_method.do_removal(ctx, search, predicate)
 
@@ -1003,9 +1008,10 @@ class Moderator(Cog):
         if args.ends:
             predicates.append(lambda m: any(m.content.endswith(s) for s in args.ends))
 
+        predicates.append(lambda m: m.created_at > arrow.utcnow().shift(days=-14).datetime)
         op = any if args._or else all
 
-        def predicate(m):
+        def predicate(m: discord.Message) -> bool:
             r = op(p(m) for p in predicates)
             return not r if args._not else r
 

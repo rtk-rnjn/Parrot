@@ -57,55 +57,55 @@ class Trigger:
 
     def build_cooldowns(self) -> None:
         for tgr in self.data:
-            if tgr["type"] == "cd_x_user_messages_in_y_seconds":
+            if tgr["type"] == "x_user_messages_in_y_seconds":
                 self.cd_x_user_messages_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_x_user_messages_in_y_seconds"]["messages"],
-                    tgr["cd_x_user_messages_in_y_seconds"]["within"],
+                    tgr["x_user_messages_in_y_seconds"]["messages"],
+                    tgr["x_user_messages_in_y_seconds"]["within"],
                     commands.BucketType.member,
                 )
-            if tgr["type"] == "cd_x_channel_messages_in_y_seconds":
+            if tgr["type"] == "x_channel_messages_in_y_seconds":
                 self.cd_x_channel_messages_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_x_channel_messages_in_y_seconds"]["messages"],
-                    tgr["cd_x_channel_messages_in_y_seconds"]["within"],
+                    tgr["x_channel_messages_in_y_seconds"]["messages"],
+                    tgr["x_channel_messages_in_y_seconds"]["within"],
                     commands.BucketType.channel,
                 )
 
-            if tgr["type"] == "cd_user_x_mentions_in_y_seconds":
+            if tgr["type"] == "user_x_mentions_in_y_seconds":
                 self.cd_user_x_mentions_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_user_x_mentions_in_y_seconds"]["mentions"],
-                    tgr["cd_user_x_mentions_in_y_seconds"]["within"],
+                    tgr["user_x_mentions_in_y_seconds"]["mentions"],
+                    tgr["user_x_mentions_in_y_seconds"]["within"],
                     commands.BucketType.member,
                 )
-            if tgr["type"] == "cd_channel_x_mentions_in_y_seconds":
+            if tgr["type"] == "channel_x_mentions_in_y_seconds":
                 self.cd_channel_x_mentions_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_channel_x_mentions_in_y_seconds"]["mentions"],
-                    tgr["cd_channel_x_mentions_in_y_seconds"]["within"],
+                    tgr["channel_x_mentions_in_y_seconds"]["mentions"],
+                    tgr["channel_x_mentions_in_y_seconds"]["within"],
                     commands.BucketType.channel,
                 )
 
-            if tgr["type"] == "cd_x_user_attachments_in_y_seconds":
+            if tgr["type"] == "x_user_attachments_in_y_seconds":
                 self.cd_x_user_attachments_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_x_user_attachments_in_y_seconds"]["attachments"],
-                    tgr["cd_x_user_attachments_in_y_seconds"]["within"],
+                    tgr["x_user_attachments_in_y_seconds"]["attachments"],
+                    tgr["x_user_attachments_in_y_seconds"]["within"],
                     commands.BucketType.member,
                 )
-            if tgr["type"] == "cd_x_channel_attachments_in_y_seconds":
+            if tgr["type"] == "x_channel_attachments_in_y_seconds":
                 self.cd_x_channel_attachments_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_x_channel_attachments_in_y_seconds"]["attachments"],
-                    tgr["cd_x_channel_attachments_in_y_seconds"]["within"],
+                    tgr["x_channel_attachments_in_y_seconds"]["attachments"],
+                    tgr["x_channel_attachments_in_y_seconds"]["within"],
                     commands.BucketType.channel,
                 )
 
-            if tgr["type"] == "cd_x_user_links_in_y_seconds":
+            if tgr["type"] == "x_user_links_in_y_seconds":
                 self.cd_x_user_links_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_x_user_links_in_y_seconds"]["links"],
-                    tgr["cd_x_user_links_in_y_seconds"]["within"],
+                    tgr["x_user_links_in_y_seconds"]["links"],
+                    tgr["x_user_links_in_y_seconds"]["within"],
                     commands.BucketType.member,
                 )
-            if tgr["type"] == "cd_x_channel_links_in_y_seconds":
+            if tgr["type"] == "x_channel_links_in_y_seconds":
                 self.cd_x_channel_links_in_y_seconds = commands.CooldownMapping.from_cooldown(
-                    tgr["cd_x_channel_links_in_y_seconds"]["links"],
-                    tgr["cd_x_channel_links_in_y_seconds"]["within"],
+                    tgr["x_channel_links_in_y_seconds"]["links"],
+                    tgr["x_channel_links_in_y_seconds"]["within"],
                     commands.BucketType.channel,
                 )
 
@@ -174,7 +174,12 @@ class Trigger:
         return False
 
     def all_caps(
-        self, *, message: Message | None = None, threshold: float = float("inf"), percentage: float = 100, **kw
+        self,
+        *,
+        message: Message | None = None,
+        threshold: float = float("inf"),
+        percentage: float = 100,
+        **kw,
     ) -> bool:
         if not message:
             return False

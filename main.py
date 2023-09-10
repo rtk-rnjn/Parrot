@@ -10,7 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app import runner
 from core import Parrot
 from updater import init
-from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION
+from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION, MINIMAL_BOOT
 
 bot: Parrot = Parrot()
 
@@ -39,8 +39,12 @@ async def main() -> None:
                 DATABASE_URI.format(DATABASE_KEY),
             )
             await bot.init_db()
+            start_what = [bot.start(TOKEN)]
 
-            await asyncio.gather(bot.start(TOKEN), runner())
+            if not MINIMAL_BOOT:
+                start_what.append(runner())
+
+            await asyncio.gather(*start_what)
 
 
 if __name__ == "__main__":

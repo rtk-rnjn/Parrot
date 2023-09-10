@@ -651,6 +651,9 @@ class Parrot(commands.AutoShardedBot):
             st = f"```css\n[{self.user.name.title()}] Failed to load {name} cog due to``````py\n{error}```"
             await self._execute_webhook(self._error_log_token, content=f"{st}")
 
+        if MINIMAL_BOOT:
+            return
+
         # Hmm...
         cog = self.Music
         if cog is not None and not self.WAVELINK_NODE_READY:
@@ -659,9 +662,6 @@ class Parrot(commands.AutoShardedBot):
                 self._startup_log_token,
                 content="```css\n- Unloaded music cog due to wavelink node not running```",
             )
-
-        if MINIMAL_BOOT:
-            return
 
         VOICE_CHANNEL_ID = 1116780108074713098
         channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)  # type: ignore

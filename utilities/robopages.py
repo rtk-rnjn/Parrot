@@ -8,7 +8,7 @@ import discord
 from discord.ext import old_menus as menus  # type: ignore
 
 if TYPE_CHECKING:
-    from core import Context
+    from core import Context, Parrot
 
 
 class NumberedPageModal(discord.ui.Modal, title="Go to page"):
@@ -134,14 +134,18 @@ class RoboPages(discord.ui.View):
         if self.message:
             await self.message.edit(view=None)
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item) -> None:
+    async def on_error(self, interaction: discord.Interaction[Parrot], error: Exception, item: discord.ui.Item) -> None:
+        if await interaction.client.is_owner(interaction.user):
+            raise error
         if interaction.response.is_done():
             await interaction.followup.send("An unknown error occurred, sorry", ephemeral=True)
         else:
             await interaction.response.send_message("An unknown error occurred, sorry", ephemeral=True)
 
+        interaction.client.dispatch("error", error)
+
     async def start(self, *, content: str | None = None, ephemeral: bool = False) -> None:
-        if self.check_embeds and not self.ctx.channel.permissions_for(self.ctx.me).embed_links:  # type: ignore
+        if self.check_embeds and not self.ctx.channel.permissions_for(self.ctx.me).embed_links:
             await self.ctx.send("Bot does not have embed links permission in this channel.", ephemeral=True)
             return
 

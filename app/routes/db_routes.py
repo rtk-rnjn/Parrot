@@ -12,6 +12,7 @@ AUTHORIZATION = os.environ.get("IPC_KEY")
 def verify_key(post_data: dict) -> bool:
     return post_data.get("key") == AUTHORIZATION
 
+
 @app.route("/db/mongo/find_one", methods=["POST", "GET"])
 async def db_find_one() -> Response:
     if request.method == "GET":

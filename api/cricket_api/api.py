@@ -60,4 +60,3 @@ async def _cricket_api(url: str | None = None) -> dict[str, Any] | None:
 
 def runner() -> None:
     uvicorn.run(app, port=1729)
-

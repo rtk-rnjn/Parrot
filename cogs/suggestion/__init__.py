@@ -280,7 +280,8 @@ class Suggestions(Cog):
         table.add_rows(ls)
 
         embed = discord.Embed(
-            title=f"Suggestion Statistics of message ID: {message_id}", description=f"```\n{table.render()}```"
+            title=f"Suggestion Statistics of message ID: {message_id}",
+            description=f"```\n{table.render()}```",
         )
 
         if msg.content:

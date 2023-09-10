@@ -12,7 +12,6 @@ import discord
 from cogs.config import method as config_method
 from core import Cog, Context, Parrot
 from discord.ext import commands
-from utilities.checks import has_verified_role_ticket
 from utilities.converters import convert_bool
 from utilities.time import ShortTime
 

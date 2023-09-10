@@ -16,12 +16,12 @@ from random import choice
 from typing import Any, Literal
 
 from aiofile import async_open
+from discord.utils import MISSING
 
 import discord
 import emojis
 from core import Cog, Context, Parrot
 from discord.ext import boardgames, commands  # type: ignore
-from discord.utils import MISSING
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.uno.game import UNO

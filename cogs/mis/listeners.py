@@ -7,6 +7,7 @@ from core import Cog, Parrot
 from discord.ext import commands
 from utilities.converters import Cache
 
+
 class SnipeMessageListener(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot

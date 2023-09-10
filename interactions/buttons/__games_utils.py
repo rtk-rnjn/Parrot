@@ -5,15 +5,9 @@ import itertools
 import random
 import re
 from collections import defaultdict
-from functools import cached_property, wraps
-from typing import (
-    TYPE_CHECKING,
-    Literal,
-    NamedTuple,
-    TypedDict,
-    overload,
-)
 from collections.abc import Iterable, Iterator, Sequence
+from functools import cached_property, wraps
+from typing import TYPE_CHECKING, Literal, NamedTuple, TypedDict, overload
 
 from discord.utils import MISSING
 

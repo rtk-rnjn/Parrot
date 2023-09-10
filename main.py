@@ -10,7 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app import runner
 from core import Parrot
 from updater import init
-from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION, MINIMAL_BOOT
+from utilities.config import DATABASE_KEY, DATABASE_URI, MINIMAL_BOOT, TOKEN, VERSION
 
 bot: Parrot = Parrot()
 
@@ -30,7 +30,6 @@ async def main() -> None:
         async with bot:
             bot.http_session = http_session
             bot.sql = await init()
-            bot.database = bot.sql  # type: ignore
 
             if not hasattr(bot, "__version__"):
                 bot.__version__ = VERSION

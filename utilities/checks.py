@@ -4,17 +4,18 @@ import datetime
 from collections.abc import Callable, Container, Iterable
 from typing import TYPE_CHECKING, TypeAlias
 
+from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
 
 import discord
 from core import Context, Parrot
 from discord.ext import commands
-from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from utilities import exceptions as ex
 from utilities.config import SUPER_USER
 
 if TYPE_CHECKING:
     from discord.ext.commands._types import Check
+
     from cogs.nsfw import NSFW
 
 
@@ -94,6 +95,7 @@ def is_me() -> Check[Context]:
 
     return commands.check(predicate)
 
+
 def is_adult() -> Check[Context]:
     async def predicate(ctx: Context) -> bool:
         cog: NSFW = ctx.bot.NSFW
@@ -105,6 +107,7 @@ def is_adult() -> Check[Context]:
         return is_adult
 
     return commands.check(predicate)
+
 
 def has_verified_role_ticket() -> Check[Context]:
     async def predicate(ctx: Context) -> bool:

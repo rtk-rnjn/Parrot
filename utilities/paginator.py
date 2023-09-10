@@ -132,6 +132,7 @@ class PaginatorView(discord.ui.View):
     message: discord.Message
 
     children: list[discord.ui.Button | discord.ui.Select]
+
     def __init__(
         self,
         ctx: Context,

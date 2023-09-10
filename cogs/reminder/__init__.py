@@ -11,7 +11,7 @@ import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.robopages import SimplePages
-from utilities.time import FriendlyTimeResult, UserFriendlyTime, ShortTime
+from utilities.time import FriendlyTimeResult, ShortTime, UserFriendlyTime
 
 log = logging.getLogger("cogs.reminder")
 

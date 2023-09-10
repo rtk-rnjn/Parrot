@@ -9,8 +9,7 @@ from discord.interactions import Interaction
 import discord
 
 if TYPE_CHECKING:
-    from . import Context
-    from . import Parrot
+    from . import Context, Parrot
 
 __all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView", "ParrotModal")
 

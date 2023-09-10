@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from discord.abc import GuildChannel
 from discord.utils import maybe_coroutine, utcnow
 
-from discord import Member, Message, Object, PermissionOverwrite, Forbidden
+from discord import Forbidden, Member, Message, Object, PermissionOverwrite
 
 reason_init = """AutoMod: {reason}
 Sent from {guild.name} ({guild.id})

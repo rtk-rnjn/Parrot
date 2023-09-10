@@ -152,7 +152,7 @@ class Cache(Generic[KT, VT]):
     def __init__(
         self,
         bot: Parrot | None = None,
-        cache_size: int | None = 2 ** 5,
+        cache_size: int | None = 2**5,
         *,
         callback: Callable[[KT, VT], None] | None = None,
     ) -> None:

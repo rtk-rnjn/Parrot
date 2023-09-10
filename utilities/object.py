@@ -20,6 +20,7 @@ converted via Object.to/from_dict().
 
 import sys
 from typing import Any, TypeVar
+
 from typing_extensions import Self
 
 __version__ = "2.0.2"

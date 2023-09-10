@@ -289,6 +289,7 @@ class TodoItem:
     ):
         payload = {}
         if message:
+            self.message = message
             payload["message_id"] = message.id
             payload["channel_id"] = message.channel.id
             if message.guild:
@@ -306,6 +307,9 @@ class TodoItem:
         if completed_at is not discord.utils.MISSING:
             payload["completed_at"] = completed_at
 
+        for k, v in payload.items():
+            setattr(self, k, v)
+
         collection = self.bot.user_db[f"{self.user_id}"]
         await collection.update_one({"_id": self._id}, {"$set": payload}, upsert=True)
 
@@ -321,7 +325,7 @@ class TodoItem:
         return msg
 
     async def resync_with_reminders(self) -> None:
-        await self.bot.delete_timer(_id=self._id, is_todo=True)
+        await self.bot.delete_timer(_id=self._id)
         await self.sync_with_reminders()
 
     async def sync_with_reminders(self) -> None:

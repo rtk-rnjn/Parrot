@@ -5,8 +5,8 @@ import random
 import string
 from io import BytesIO
 
-from PIL import Image, ImageDraw, ImageFont
 import arrow
+from PIL import Image, ImageDraw, ImageFont
 
 import discord
 from discord.ext import commands

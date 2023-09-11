@@ -39,7 +39,7 @@ class RSSItem:
     async def prepare(self) -> None:
         self.feed = await self.cog.check_feed(self.link)
 
-    async def send(self) -> None:
+    async def send(self, guild_id: int) -> None:
         if getattr(self, "feed", None) is None:
             await self.prepare()
 
@@ -50,7 +50,7 @@ class RSSItem:
             return
 
         await self.bot._execute_webhook(self.webhook, embed=self.embed, username="RSS Feed")
-        await self.update(self._raw_data["_id"], last_entry=self.feed.entries[0].link)
+        await self.update(guild_id, last_entry=self.feed.entries[0].link)
 
     @property
     def embed(self) -> discord.Embed:
@@ -233,4 +233,4 @@ class RSS(Cog):
                     continue
                 webhook = discord.Webhook.from_url(feed["webhook_url"], session=self.bot.http_session)
                 item = RSSItem.from_raw_data(bot=self.bot, webhook=webhook, link=feed["link"], channel=channel)
-                await item.send()
+                await item.send(data["_id"])

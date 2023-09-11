@@ -744,7 +744,7 @@ class Parrot(commands.AutoShardedBot):
                 self._auto_spam_count[message.author.id] += 1
                 if self._auto_spam_count[message.author.id] >= 3:
                     log.info("Auto spam detected, ignoring command. Context %s", ctx)
-                    await self.ban_user(user_id=message.author.id, reason="**Spamming commands.**", command=True)
+                    await self.ban_user(user_id=message.author.id, reason="**Spamming commands.**", command=True, send=True)
                     return
 
                 await ctx.send(

@@ -1162,7 +1162,6 @@ class Misc(Cog):
 
     @commands.command(name="pings", aliases=["mypings", "myping"])
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def _pings(self, ctx: Context, ghost_pings: Annotated[bool, convert_bool] = True):
         """Shows your current mentions in which bot has much servers."""

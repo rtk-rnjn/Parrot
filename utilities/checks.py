@@ -167,8 +167,8 @@ def in_temp_channel() -> Check[Context]:
 def can_run(ctx: Context) -> bool | None:
     """Return True is the command is whitelisted in specific channel, also with specific role."""
     try:
-        if ctx.bot.banned_users[ctx.author.id]["command"]:
-            return
+        if ctx.bot.banned_users[ctx.author.id]["command"] is True:
+            return False
     except KeyError:
         pass
 

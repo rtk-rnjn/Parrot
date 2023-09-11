@@ -98,8 +98,8 @@ class SnipeMessageListener(Cog):
 class PingMessageListner(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.ghost_pings: Cache[int, deque[discord.Message]] = Cache(self.bot, 2**5)
-        self.pings: Cache[int, deque[discord.Message]] = Cache(self.bot, 2**5)
+        self.ghost_pings: Cache[int, deque[discord.Message]] = Cache(self.bot, 2048)
+        self.pings: Cache[int, deque[discord.Message]] = Cache(self.bot, 2048)
         # dict[author_id, list[message]]
 
     @Cog.listener()

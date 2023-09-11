@@ -48,6 +48,7 @@ MaybeAwaitable = T | Awaitable[T]
 Callback = MaybeAwaitable
 
 VOTER_ROLE_ID = 1139439408723013672
+MODULE_ANNOTATIONS = Literal["SimplePages", "PaginationView", "JishakuPaginatorInterface", "JishakuPaginatorEmbedInterface"]
 log = logging.getLogger("core.context")
 
 
@@ -360,10 +361,10 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     def outer_check(
         self,
-        check: Callable[..., bool | None] | None = None,
+        check: Callable[..., bool] | None = None,
         operator: Callable[[Iterable[object]], bool] = all,
         **kw: Any,
-    ) -> Callable[..., bool | None]:
+    ) -> Callable[..., bool]:
         """Check function for the event."""
         if check is not None:
             return check
@@ -392,7 +393,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         _event_name: str,
         *,
         timeout: float | None = None,
-        check: Callable[..., bool | None] | None = None,
+        check: Callable[..., bool] | None = None,
         suppress_error: bool = False,
         operator: Callable[[Iterable[object]], bool] = all,
         **kwargs: Any,
@@ -414,10 +415,14 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     async def paginate(
         self,
-        entries: list[Any] | str,
+        entries: list[str] | str,
         *,
-        module: str = "SimplePages",
-        **kwargs: Any,
+        module: MODULE_ANNOTATIONS = "SimplePages",
+        prefix: str = "",
+        suffix: str = "",
+        max_size: int = 1000,
+        linspec: str = "\n",
+        per_page: int = 12,
     ) -> None:
         if not entries:
             msg = "Cannot paginate an empty list."
@@ -431,7 +436,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             pages = SimplePages(
                 entries,
                 ctx=self,
-                **kwargs,
+                per_page=per_page,
             )
             await pages.start()
             return
@@ -442,9 +447,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             assert isinstance(entries, list)
 
             pages = PaginationView(entries)
-            await pages.start(
-                ctx=self,
-            )
+            await pages.start(ctx=self)
             return
 
         if module == "JishakuPaginatorInterface":
@@ -452,15 +455,25 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
             assert isinstance(entries, str)
 
-            pages = commands.Paginator(**kwargs)
+            pages = commands.Paginator(suffix=suffix, prefix=prefix, max_size=max_size, linesep=linspec)
             for line in entries.split("\n"):
                 pages.add_line(line)
 
             interface = PaginatorInterface(self.bot, pages, owner=self.author)
             await interface.send_to(self)
+            return
 
-        msg = "Invalid paginator type"
-        raise ValueError(msg)
+        if module == "JishakuPaginatorEmbedInterface":
+            from jishaku.paginators import PaginatorEmbedInterface
+
+            assert isinstance(entries, list)
+            pages = commands.Paginator(suffix=suffix, prefix=prefix, max_size=max_size, linesep=linspec)
+            for line in entries:
+                pages.add_line(line)
+
+            interface = PaginatorEmbedInterface(self.bot, pages, owner=self.author)
+            await interface.send_to(self)
+            return
 
     async def multiple_wait_for(
         self,

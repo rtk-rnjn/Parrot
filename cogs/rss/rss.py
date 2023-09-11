@@ -40,7 +40,7 @@ class RSSItem:
         self.feed = await self.cog.check_feed(self.link)
 
     async def send(self) -> None:
-        if not self.feed:
+        if getattr(self, "feed", None) is None:
             await self.prepare()
 
         if not self.feed.entries:
@@ -226,7 +226,7 @@ class RSS(Cog):
 
     @tasks.loop(hours=1)
     async def rss_loop(self) -> None:
-        async for data in self.bot.guild_collections_ind.find():
+        async for data in self.bot.guild_collections_ind.find({"rss": {"$exists": True}}):
             for feed in data["rss"]:
                 channel = self.bot.get_channel(feed["channel_id"])
                 if not channel:

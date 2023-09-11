@@ -739,11 +739,18 @@ class Parrot(commands.AutoShardedBot):
         if self.UNDER_MAINTENANCE or MINIMAL_BOOT:
             return await self.__bot_under_maintenance_message(ctx)
 
+        if can_run(ctx) is False:
+            log.debug("Command %s cannot be run in this context", ctx.command)
+            return
+
         if bucket := self.spam_control.get_bucket(message):
             if bucket.update_rate_limit(message.created_at.timestamp()):
                 self._auto_spam_count[message.author.id] += 1
                 if self._auto_spam_count[message.author.id] >= 3:
                     log.info("Auto spam detected, ignoring command. Context %s", ctx)
+                    return
+
+                if self._auto_spam_count[message.author.id] >= 5:
                     await self.ban_user(user_id=message.author.id, reason="**Spamming commands.**", command=True, send=True)
                     return
 
@@ -754,9 +761,6 @@ class Parrot(commands.AutoShardedBot):
             else:
                 self._auto_spam_count.pop(message.author.id, None)
 
-        if can_run(ctx) is False:
-            log.debug("Command %s cannot be run in this context", ctx.command)
-            return
 
         if getattr(ctx.cog, "ON_TESTING", False):
             return

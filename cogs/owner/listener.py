@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import logging
+import os
 from asyncio import sleep
+
+import arrow
 
 import discord
 from core import Cog, Parrot
+
+AUTH = os.environ["MEME_PASS"]
 
 # fmt: off
 CAPTURE_CODES = {
@@ -12,6 +17,7 @@ CAPTURE_CODES = {
     1   : "EMERGENCY_UNLOAD_ALL_COGS",
     2   : "EMERGENCY_FORCE_MAINTAINCE_ON",
     3   : "EMERGENCY_ADD_OWNER",
+    4   : "UNBAN_ALL_MEMBERS",
 }
 # fmt: on
 
@@ -40,12 +46,27 @@ class OwnerListener(Cog):
         if message.content.startswith(INVOCATION_PREFIX):
             code, *args = message.content[13:].split(" ")
             func_name = CAPTURE_CODES.get(int(code), "").lower()
+            msg = await message.channel.send(
+                f"Emergency command received. Code: **{code} - {func_name.upper()}**. Requires Authentication",
+            )
+            await msg.add_reaction("\N{BLACK RIGHT-POINTING TRIANGLE}")
+
+            def check(m: discord.Message) -> bool:
+                return m.author.id == message.author.id and m.channel.id == message.channel.id and m.content == AUTH
 
             try:
-                await message.channel.send(f"Initiating {func_name.upper()} in **10 seconds**. This action can not undone")
+                await self.bot.wait_for("message", check=check, timeout=15)
             except Exception:
-                pass
-
+                await message.channel.send("Authentication failed. Command aborted")
+                await msg.delete()
+                return
+            now_plus_10s = arrow.utcnow().shift(seconds=10).datetime
+            discord_timestamp = discord.utils.format_dt(now_plus_10s, "R")
+            await message.channel.send(
+                f"Authentication successful. Command will be executed **{discord_timestamp}**",
+                delete_after=10,
+            )
+            await msg.delete()
             await sleep(10.1)
 
             func = getattr(self, func_name)
@@ -76,3 +97,7 @@ class OwnerListener(Cog):
         log.critical("adding %s to owner_id", owner_id)
         if isinstance(self.bot.owner_ids, set):
             self.bot.owner_ids.add(owner_id)
+
+    async def unban_all_members(self):
+        log.critical("unbanning all members")
+        self.bot.banned_users = {}

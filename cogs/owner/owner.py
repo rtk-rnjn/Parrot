@@ -314,7 +314,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
                     )
         await ctx.tick()
 
-    @commands.command()
+    @commands.command(aliases=["command-lookup", "cl"])
     async def command_lookup(self, ctx: Context, _id: int, tp: str = "user"):
         """Command lookup."""
         data = await self.bot.command_collections.find_one({"type": tp, "_id": _id})
@@ -331,6 +331,35 @@ class Owner(Cog, command_attrs={"hidden": True}):
 
         table = tabulate(table, headers="firstrow", tablefmt="psql")
         await ctx.paginate(table, module="JishakuPaginatorInterface", max_size=1000, prefix="```sql", suffix="```")
+
+    @commands.command(alises=["direct-message"])
+    async def dm(self, ctx: Context, user: discord.User, *, reply: str):
+        """Reply to the DM."""
+        now = discord.utils.utcnow()
+        msg = """## This is automated message from developer of Parrot bot.\n"""
+        msg += f"> **{ctx.author}**: _{reply.strip(' ')}_.\n"
+        msg += "\n"
+        msg += f"### Today at {discord.utils.format_dt(now)} ({discord.utils.format_dt(now, 'R')})"
+
+        try:
+            await user.send(msg)
+            await ctx.tick()
+        except discord.Forbidden:
+            await ctx.wrong()
+
+    @commands.command(alises=["direct-message-reply", "dm-reply", "dmreply"])
+    async def dmreplay(self, ctx: Context, user: discord.User, limit: int | None = 100):
+        """To get the DM reply."""
+        ls = []
+        async for msg in user.history(limit=limit):
+            if msg.author == ctx.author and msg.content:
+                ls.append(f"**{msg.author}**: {msg.content.strip(' ')}")
+
+        if not ls:
+            await ctx.wrong()
+            return
+
+        await ctx.paginate(ls, module="JishakuPaginatorInterface", max_size=1980)
 
     @commands.command()
     async def create_code(self, ctx: Context, *, args: SubscriptionFlag):

@@ -360,7 +360,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
             await ctx.wrong()
             return
 
-        await ctx.paginate(ls, module="JishakuPaginatorInterface", max_size=1980)
+        await ctx.paginate(ls, max_size=1980, module="JishakuPaginatorEmbedInterface")
 
     @commands.command()
     async def create_code(self, ctx: Context, *, args: SubscriptionFlag):

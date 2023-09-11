@@ -315,6 +315,24 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
+    async def command_lookup(self, ctx: Context, _id: int, tp: str = "user"):
+        """Command lookup."""
+        data = await self.bot.command_collections.find_one({"type": tp, "_id": _id})
+        if not data:
+            return await ctx.send("No data")
+
+        table = [["Command", "Count"]]
+        data.pop("_id")
+
+        for command, count in data.items():
+            if command.endswith("_used"):
+                cmd_name = command.replace("_used", "").replace("command_", "").replace("_", " ").title()
+                table.append([cmd_name, count])
+
+        table = tabulate(table, headers="firstrow", tablefmt="psql")
+        await ctx.paginate(table, module="JishakuPaginatorInterface", max_size=1000, prefix="```sql", suffix="```")
+
+    @commands.command()
     async def create_code(self, ctx: Context, *, args: SubscriptionFlag):
         """To create a code for the bot premium."""
         PAYLOAD = {}

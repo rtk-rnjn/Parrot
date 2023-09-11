@@ -128,7 +128,7 @@ class RSS(Cog):
 
     @tasks.loop(hours=1)
     async def rss_loop(self) -> None:
-        for channel_id in self._cache.copy():
+        for channel_id in self._cache:
             channel = self.bot.get_channel(channel_id)
             if not channel:
                 continue
@@ -140,7 +140,6 @@ class RSS(Cog):
             embed = await self.parsed_feed(d)
             webhook = self._cache[channel_id]["webhook"]
             await self.bot._execute_webhook(webhook, embed=embed, username="RSS Feed")
-            await webhook.send(embed=embed)
 
     async def parsed_feed(self, d) -> discord.Embed:
         first_entry = d.entries[0]

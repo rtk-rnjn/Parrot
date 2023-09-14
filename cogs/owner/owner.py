@@ -353,8 +353,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
         ls = []
         dm = user.dm_channel or await user.create_dm()
         async for msg in dm.history(limit=limit):
-            if msg.author == ctx.author and msg.content:
-                ls.append(f"**{msg.author}**: {msg.content.strip(' ')}")
+            if msg.content:
+                discord_timestamp = discord.utils.format_dt(msg.created_at, "R")
+                ls.append(f"**{discord_timestamp} {msg.author}**: {msg.content.strip(' ')}")
 
         if not ls:
             await ctx.wrong()

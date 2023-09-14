@@ -103,7 +103,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         if await self.bot.user_collections_ind.find_one(
             {
                 "_id": self.author.id,
-                "topgg_vote_expires": {"$lte": discord.utils.utcnow().timestamp()},
+                "topgg_vote_expires": {"$gte": discord.utils.utcnow().timestamp()},
             },
         ):
             return True

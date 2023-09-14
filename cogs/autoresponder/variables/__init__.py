@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 import discord
 
 if TYPE_CHECKING:
-    from pymongo.collection import ReturnDocument
 
     from core import Parrot
 
+from pymongo.collection import ReturnDocument
 
 class JinjaBase:
     def __repr__(self) -> str:

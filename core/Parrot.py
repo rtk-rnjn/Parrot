@@ -69,15 +69,11 @@ from .tips import TIPS
 from .utils import CustomFormatter, handler
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
-
     from discord.ext.commands.cooldowns import CooldownMapping
-    from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
     from .Cog import Cog
+    from .types import MongoCollection, MongoDatabase
 
-    MongoCollection: TypeAlias = AsyncIOMotorCollection  # type: ignore
-    MongoDatabase: TypeAlias = AsyncIOMotorDatabase  # type: ignore
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -761,7 +757,6 @@ class Parrot(commands.AutoShardedBot):
             else:
                 self._auto_spam_count.pop(message.author.id, None)
 
-
         if getattr(ctx.cog, "ON_TESTING", False):
             return
 
@@ -1020,12 +1015,12 @@ class Parrot(commands.AutoShardedBot):
             log.info("Chunking guild %s", ctx.guild.id)
             self.loop.create_task(ctx.guild.chunk())
 
-    async def get_active_timer(self, **filters: Any) -> dict:
+    async def get_active_timer(self, **filters: Any) -> dict | None:
         data = await self.timers.find_one({**filters}, sort=[("expires_at", pymongo.ASCENDING)])
         log.debug("Received data: %s", data)
         return data
 
-    async def wait_for_active_timers(self, **filters: Any) -> dict:
+    async def wait_for_active_timers(self, **filters: Any) -> dict | None:
         timers = await self.get_active_timer(**filters)
         if timers:
             self._have_data.set()
@@ -1559,7 +1554,7 @@ class Parrot(commands.AutoShardedBot):
                 self._user_cache[user_id] = data
             return
         async for data in self.user_collections_ind.find():
-            self._user_cache[data["_id"]] = data
+            self._user_cache[data["_id"]] = data  # type: ignore
 
     async def wait_and_delete(
         self,

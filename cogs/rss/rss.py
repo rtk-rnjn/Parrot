@@ -4,11 +4,11 @@ import asyncio
 from typing import TYPE_CHECKING
 
 import feedparser
-from discord.utils import MISSING
 
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
+from discord.utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -55,13 +55,12 @@ class RSSItem:
     @property
     def embed(self) -> discord.Embed:
         first_entry = self.feed.entries[0]
-        embed = discord.Embed(
+        return discord.Embed(
             title=first_entry.title,
             description=first_entry.description,
             url=first_entry.link,
             color=discord.Color.blurple(),
         )
-        return embed
 
     async def update(
         self,
@@ -123,7 +122,14 @@ class RSSItem:
         )
 
     @classmethod
-    def from_raw_data(cls, *, bot: Parrot, webhook: discord.Webhook, link: str, channel: discord.TextChannel) -> Self:
+    def from_raw_data(
+        cls,
+        *,
+        bot: Parrot,
+        webhook: discord.Webhook,
+        link: str,
+        channel: discord.abc.MessageableChannel,
+    ) -> Self:
         raw_data = {
             "webhook_url": webhook.url,
             "link": link,
@@ -195,7 +201,6 @@ class RSS(Cog):
         await ctx.reply(f"{ctx.author.mention} RSS Feed added.")
 
     @rss.command(name="remove")
-    @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_guild=True, manage_channels=True)
     async def rss_remove(self, ctx: Context, *, link: str = None):
         """Remove an existing RSS Feed"""
@@ -207,7 +212,6 @@ class RSS(Cog):
         await ctx.reply(f"{ctx.author.mention} RSS Feed removed.")
 
     @rss.command(name="list")
-    @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(manage_guild=True, manage_channels=True)
     async def rss_list(self, ctx: Context):
         """List all RSS Feeds"""
@@ -215,16 +219,12 @@ class RSS(Cog):
         if not data:
             return await ctx.reply(f"{ctx.author.mention} No RSS Feeds found.")
 
-        ls = []
-        for feed in data["rss"]:
-            ls.append(f"**Channel:** <#{feed['channel_id']}> | **Link:** {feed['link']}")
+        if ls := [f"**Channel:** <#{feed['channel_id']}> | **Link:** {feed['link']}" for feed in data["rss"]]:
+            await ctx.paginate(ls, module="JishakuPaginatorEmbedInterface", max_size=1000, prefix="", suffix="")
+        else:
+            await ctx.reply(f"{ctx.author.mention} No RSS Feeds found.")
 
-        if not ls:
-            return await ctx.reply(f"{ctx.author.mention} No RSS Feeds found.")
-
-        await ctx.paginate(ls, module="JishakuPaginatorEmbedInterface", max_size=1000, prefix="", suffix="")
-
-    @tasks.loop(hours=1)
+    @tasks.loop(hours=12)
     async def rss_loop(self) -> None:
         async for data in self.bot.guild_collections_ind.find({"rss": {"$exists": True}}):
             for feed in data["rss"]:

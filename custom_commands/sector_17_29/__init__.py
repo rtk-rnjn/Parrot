@@ -28,10 +28,7 @@ except ImportError:
 from core import Context, Parrot
 
 if TYPE_CHECKING:
-    from pymongo.collection import Collection
-
-    if HAS_TOP_GG:
-        from topgg.types import BotVoteData
+    from topgg.types import BotVoteData
 
     from cogs.api import Gist
 
@@ -49,8 +46,6 @@ RAINBOW_ROLE = 1121978468389896235
 GENERAL_VOICE = 1022337864379404478
 SERVER_MOD = 1022897995630530792
 CORE_MAINTAINER_ROLE = 1136673074725535844
-
-__all__ = ("Sector1729",)
 
 
 with open("extra/adjectives.txt", encoding="utf-8", errors="ignore") as f:
@@ -111,7 +106,7 @@ class Sector1729(Cog):
         if channel is None:
             return
 
-        msg: discord.Message | None = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
+        msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)  # type: ignore
 
         async def __remove_reaction(msg: discord.Message) -> None:
             for reaction in msg.reactions:
@@ -128,9 +123,8 @@ class Sector1729(Cog):
                     f"<@{payload.user_id}> You can only use the emoji once every minute.",
                     delete_after=7,
                 )
-                if msg:
-                    await __remove_reaction(msg)
-                    return
+                await __remove_reaction(msg)
+                return
 
         self._cache[payload.user_id] = time() + 60
 
@@ -149,8 +143,7 @@ class Sector1729(Cog):
             if i % 10 == 0:
                 await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")
 
-        if msg:
-            await __remove_reaction(msg)
+        await __remove_reaction(msg)
         await _msg.edit(
             content=f"<@{payload.user_id}> deleting messages - 50/50! Done!",
             delete_after=2,
@@ -209,7 +202,7 @@ class Sector1729(Cog):
             await ctx.send("You haven't voted for the bot on Top.gg yet.")
 
     async def __add_to_db(self, member: discord.Member) -> None:
-        col: Collection = self.bot.user_collections_ind
+        col = self.bot.user_collections_ind
         await col.update_one(
             {"_id": member.id},
             {
@@ -217,7 +210,7 @@ class Sector1729(Cog):
                 "$set": {"topgg_vote_expires": (discord.utils.utcnow() + timedelta(hours=12)).timestamp()},
             },
             upsert=True,
-        )  # type: ignore
+        )
 
         await self.bot.create_timer(
             message=int(discord.utils.utcnow().timestamp() * 10),
@@ -251,7 +244,7 @@ class Sector1729(Cog):
             return
 
         try:
-            await self.bot.wait_for("on_bot_idle", timeout=300)
+            await self.bot.wait_for("bot_idle", timeout=300)
         except asyncio.TimeoutError:
             await self.bot.wait_until_ready()
 
@@ -280,7 +273,7 @@ class Sector1729(Cog):
             return
 
         try:
-            await self.bot.wait_for("on_bot_idle", timeout=300)
+            await self.bot.wait_for("bot_idle", timeout=300)
         except asyncio.TimeoutError:
             await self.bot.wait_until_ready()
 
@@ -367,7 +360,6 @@ class Sector1729(Cog):
             await ctx.bot.invoke_help_command(ctx)
 
     @sector_17_29.command(name="info", aliases=["about"])
-    @in_support_server()
     async def sector_17_29_about(self, ctx: Context):
         """Information about the SECTOR 17-29."""
         description = (
@@ -578,23 +570,23 @@ class Sector1729(Cog):
 
         cog: Gist = self.bot.Gist
         table = tabulate({"Adjectives": adjs}, headers="keys", tablefmt="github")
-        author = tabulate(
-            {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},
-            headers="keys",
-            tablefmt="github",
-        )
-        message = tabulate(
-            {
-                "Message": [f"`{ctx.message.clean_content}`"],
-                "ID": [ctx.message.id],
-                "Channel": [f"#{ctx.channel.name}"],  # type: ignore
-                "Channel ID": [ctx.channel.id],
-                "Guild": [f"{ctx.guild}"],
-            },
-            headers="keys",
-            tablefmt="github",
-        )
         if cog is not None:
+            author = tabulate(
+                {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},
+                headers="keys",
+                tablefmt="github",
+            )
+            message = tabulate(
+                {
+                    "Message": [f"`{ctx.message.clean_content}`"],
+                    "ID": [ctx.message.id],
+                    "Channel": [f"#{ctx.channel.name}"],  # type: ignore
+                    "Channel ID": [ctx.channel.id],
+                    "Guild": [f"{ctx.guild}"],
+                },
+                headers="keys",
+                tablefmt="github",
+            )
             body = f"""## Add Adjectives
 
 {table}

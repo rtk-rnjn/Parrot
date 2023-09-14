@@ -51,7 +51,7 @@ for code in ERROR_CODES:
 
 
 @app.route("/nsfw_links/<count>")
-@rate_limit(limit=5, period=timedelta(seconds=1))
+@rate_limit(limit=10, period=timedelta(seconds=1))
 async def nsfw_links(count: str) -> Response:
     if count.isdigit():
         count = int(count)
@@ -60,11 +60,7 @@ async def nsfw_links(count: str) -> Response:
 
     tp = request.args.get("type", None)
     gif = request.args.get("gif", None)
-    if gif:
-        gif = convert_bool(gif)
-    else:
-        gif = True
-
+    gif = convert_bool(gif) if gif else True
     ipc_response = await ipc.request("nsfw_links", count=int(count), type=tp, gif=gif)
     if not ipc_response:
         return jsonify({"status": "error", "message": "No guilds found"})

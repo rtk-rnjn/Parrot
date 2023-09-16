@@ -653,7 +653,7 @@ class Parrot(commands.AutoShardedBot):
             return
 
         # Hmm...
-        cog = self.Music
+        cog = self.get_cog("Music")
         if cog is not None and not self.WAVELINK_NODE_READY:
             await self.unload_extension("cogs.music")
             await self._execute_webhook(

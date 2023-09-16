@@ -296,7 +296,7 @@ class IPCRoutes(Cog):
         try:
             async with async_timeout.timeout(5):
                 if hasattr(self.bot, "wavelink"):
-                    node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="MAIN")
+                    node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="PARROT_BOT_MAIN", session=self.bot.http_session, retries=3)
                     await self.bot.wavelink.connect(
                         client=self.bot,
                         nodes=[node],

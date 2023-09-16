@@ -28,8 +28,9 @@ class ArbitraryEvents(Cog):
     async def on_audit_log_entry_create(self, entry: discord.AuditLogEntry) -> None:
         if entry.user_id and entry.user_id == self.bot.user.id:
             self.bot.dispatch("bot_activity")
-        elif entry.target and (getattr(entry.target, "id", 0) == self.bot.user.id):
-            self.bot.dispatch("bot_activity")
+        elif entry.target:
+            if isinstance(entry.target.id, int) and entry.target.id == self.bot.user.id:
+                self.bot.dispatch("bot_activity")
 
     @tasks.loop(seconds=12)
     async def bot_activity(self) -> None:

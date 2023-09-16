@@ -21,6 +21,8 @@ T = TypeVar("T", bound=discord.Member | discord.Emoji | discord.TextChannel | di
 
 quote_ = pathlib.Path("extra/quote.txt").read_text()
 quote = quote_.split("\n")
+quote = [i for i in quote if i]  # this is to remove empty lines
+
 QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 

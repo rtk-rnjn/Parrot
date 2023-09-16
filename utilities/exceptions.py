@@ -27,7 +27,9 @@ class TimeError(ParrotCheckFailure):
 
 class NoModRole(ParrotCheckFailure):
     def __init__(self) -> None:
-        super().__init__("You are missing Moderator role to use this command")
+        super().__init__(
+            "You are missing Server Moderator Role to use this command. `config modrole <role>` to set moderator role.",
+        )
 
 
 class NoVerifiedRoleTicket(ParrotCheckFailure):
@@ -116,10 +118,7 @@ class BaseImageException(Exception):
     message: str
 
     def __str__(self) -> str:
-        if hasattr(self, "message"):
-            return self.message
-        else:
-            return str(super())
+        return self.message if hasattr(self, "message") else str(super())
 
 
 class TooManyFrames(BaseImageException):

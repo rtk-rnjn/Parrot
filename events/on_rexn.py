@@ -10,14 +10,7 @@ import discord
 from core import Cog
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
-
-    from pymongo.collection import Collection
-    from pymongo.typings import _DocumentType
-
     from core import Parrot
-
-    DocumentType: TypeAlias = _DocumentType
 
 import logging
 
@@ -142,7 +135,10 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             return "\N{GLOWING STAR}"
         return "\N{DIZZY SYMBOL}" if 25 > stars >= 10 else "\N{SPARKLES}"
 
-    async def star_post(self, *, starboard_channel: discord.TextChannel, message: discord.Message):
+    async def star_post(self, *, starboard_channel: discord.TextChannel | None, message: discord.Message):
+        if not starboard_channel:
+            return
+
         count = await self.get_star_count(message)
 
         embed: discord.Embed = discord.Embed(timestamp=message.created_at, color=self.star_gradient_colour(count))
@@ -175,7 +171,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
         await self.bot.starboards.insert_one(post)
 
     async def edit_starbord_post(self, payload: discord.RawReactionActionEvent, **data: Any):
-        ch: discord.TextChannel = await self.bot.getch(
+        ch: discord.TextChannel | None = await self.bot.getch(
             self.bot.get_channel,
             self.bot.fetch_channel,
             data["channel_id"],
@@ -191,14 +187,14 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
         except KeyError:
             return
         else:
-            starchannel: discord.TextChannel = await self.bot.getch(
+            starchannel: discord.TextChannel | None = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
                 starboard_channel,
             )
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, data["message_id"]["bot"])  # type: ignore
-        main_message: discord.Message = await self.bot.get_or_fetch_message(ch, data["message_id"]["author"])  # type: ignore
+        msg: discord.Message = await self.bot.get_or_fetch_message(starchannel, data["message_id"]["bot"])
+        main_message: discord.Message = await self.bot.get_or_fetch_message(ch, data["message_id"]["author"])
         if msg and not msg.embeds:
             log.debug("Message has no embeds")
             return
@@ -238,11 +234,11 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
 
         count = await self.get_star_count(msg, from_db=True)
 
-        collection: Collection = self.bot.starboards
+        collection = self.bot.starboards
         if limit > count:
             await self._delete_starboard_post(payload)
         else:
-            data: DocumentType = await collection.find_one_and_update(
+            data = await collection.find_one_and_update(
                 {
                     "$or": [
                         {"message_id.bot": msg.id},
@@ -264,10 +260,10 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
         return False
 
     async def _delete_starboard_post(self, payload: discord.RawReactionActionEvent) -> bool:
-        collection: Collection = self.bot.starboards
+        collection = self.bot.starboards
         ch = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, payload.channel_id)
         msg: discord.Message | None = await self.bot.get_or_fetch_message(ch, payload.message_id)
-        data: DocumentType = await collection.find_one_and_delete(
+        data = await collection.find_one_and_delete(
             {"$or": [{"message_id.bot": msg.id}, {"message_id.author": msg.id}]},
         )
         if not data:
@@ -277,9 +273,11 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
         except KeyError:
             return False
 
-        starboard_channel: discord.TextChannel = await self.bot.getch(self.bot.get_channel, self.bot.fetch_channel, channel)
+        starboard_channel: discord.TextChannel | None = await self.bot.getch(
+            self.bot.get_channel, self.bot.fetch_channel, channel
+        )
 
-        bot_msg: discord.Message | None = await self.bot.get_or_fetch_message(  # type: ignore
+        bot_msg: discord.Message | None = await self.bot.get_or_fetch_message(
             starboard_channel,
             data["message_id"]["bot"],
         )
@@ -321,7 +319,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
         except KeyError:
             return
         else:
-            starboard_channel: discord.TextChannel = await self.bot.getch(
+            starboard_channel: discord.TextChannel | None = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
                 channel,

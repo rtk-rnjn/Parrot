@@ -191,7 +191,7 @@ class EventCustom(Cog):
         channel: discord.TextChannel | None = await self.bot.getch(
             self.bot.get_channel,
             self.bot.fetch_channel,
-            kw.get("giveaway_channel"),
+            kw.get("giveaway_channel") or 0,
         )
         await self.bot.giveaways.find_one_and_update(
             {"message_id": kw.get("message_id"), "status": "ONGOING"},

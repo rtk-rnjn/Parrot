@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import random
 import re
 import textwrap
@@ -9,7 +10,7 @@ import urllib.parse
 from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from re import Pattern
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, overload
 from urllib.parse import quote_plus
 
 import aiohttp
@@ -24,17 +25,9 @@ from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, LINKS_NO_PROTOCOLS
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
-
-    from discord.ext.commands.cooldowns import CooldownMapping
-    from pymongo.collection import Collection
-    from pymongo.typings import _DocumentType
-
-    from core import Parrot
-
-    DocumentType: TypeAlias = _DocumentType
-
     from cogs.utils import Utils
+    from core import Parrot
+    from discord.ext.commands.cooldowns import CooldownMapping
 
 from .on_msg_caching import OnMsgCaching
 
@@ -78,7 +71,7 @@ QUESTION_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw"}
+GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw", "Authorization": f"token {os.environ['GITHUB_TOKEN']}"}
 
 DISCORD_PY_ID = 336642139381301249
 
@@ -106,8 +99,8 @@ class Delete(discord.ui.View):
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
                 child.style = discord.ButtonStyle.grey
-        if self.message:
-            await self.message.edit(view=self)
+        if hasattr(self, "message"):
+            await self.message.edit(view=self)  # type: ignore  line guarded by hasattr
         self.stop()
 
 
@@ -129,6 +122,18 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         )
 
         self.__scam_link_cache: dict[str, bool] = {}
+
+    @overload
+    async def _fetch_response(self, url: ..., response_format: ...) -> None:
+        ...
+
+    @overload
+    async def _fetch_response(self, url: ..., response_format: Literal["text"], **kwargs: Any) -> str | None:
+        ...
+
+    @overload
+    async def _fetch_response(self, url: ..., response_format: Literal["json"], **kwargs: Any) -> dict[str, Any] | None:
+        ...
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> str | dict[str, Any] | None:
         """Makes http requests using aiohttp."""
@@ -291,7 +296,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
 
     async def _parse_snippets(self, content: str) -> str:
         """Parse message content and return a string with a code block for each URL found."""
-        all_snippets = []
+        all_snippets: list[tuple[int, str]] = []
 
         for pattern, handler in self.pattern_handlers:
             for match in pattern.finditer(content):
@@ -474,7 +479,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if self.is_banned(message.author):
             return
 
-        data: DocumentType | None = await self.bot.guild_configurations.find_one(
+        data = await self.bot.guild_configurations.find_one(
             {
                 "_id": message.guild.id,
                 "global_chat.channel_id": message.channel.id,
@@ -571,8 +576,10 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _on_message_leveling(self, message: discord.Message):
-        if not message.guild or message.author.bot:
+        if message.guild is None or message.author.bot:
             return
+
+        assert isinstance(message.author, discord.Member)
 
         bucket: commands.Cooldown | None = self.message_cooldown.get_bucket(message)
         if bucket is None:
@@ -612,7 +619,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         except KeyError:
             return
         else:
-            collection: Collection = self.bot.guild_level_db[f"{message.guild.id}"]
+            collection = self.bot.guild_level_db[f"{message.guild.id}"]
             ch: discord.TextChannel | None = await self.bot.getch(
                 self.bot.get_channel,
                 self.bot.fetch_channel,
@@ -713,13 +720,11 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
     async def __add_xp(
         self,
         *,
-        member: discord.Member | discord.User,
+        member: discord.Member,
         xp: int,
         msg: discord.Message,
     ):
-        assert isinstance(msg.author, discord.Member) and msg.guild is not None
-
-        collection: Collection = self.bot.guild_level_db[f"{member.guild.id}"]
+        collection = self.bot.guild_level_db[f"{member.guild.id}"]
         data = await collection.find_one_and_update(
             {"_id": member.id},
             {"$inc": {"xp": xp}},

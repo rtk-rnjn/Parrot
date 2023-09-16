@@ -506,9 +506,12 @@ class Parrot(commands.AutoShardedBot):
         content: str | None = None,
         force_file: bool = False,
         filename: str | None = None,
-        suppressor: tuple[type[Exception]] | type[Exception] = Exception,
+        suppressor: tuple = None,
         **kwargs: Any,
     ) -> discord.WebhookMessage | None:
+        if suppressor is None:
+            suppressor = (Exception,)
+
         if webhook is None and (webhook_id is None and webhook_token is None):
             msg = "must provide atleast webhook_url or webhook_id and webhook_token"
             raise ValueError(msg)

@@ -2,8 +2,7 @@
     "triggers": [
         {
             "type": "all_caps",
-            "threshold": "int",
-            "percentage": "float"
+            "threshold": "int"
         },
         {
             "type": "message_mentions",

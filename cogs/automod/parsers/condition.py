@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -76,3 +76,6 @@ class Condition:
 
     def server_member_duration_above(self, *, member: Member, duration_in_min: int, **kw) -> bool:
         return (((utcnow() - member.joined_at).total_seconds() / 60) > duration_in_min) if member.joined_at else False
+
+    def all_true(self, **kw) -> bool:
+        return True

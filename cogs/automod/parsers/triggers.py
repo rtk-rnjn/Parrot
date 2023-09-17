@@ -178,7 +178,6 @@ class Trigger:
         *,
         message: Message | None = None,
         threshold: float = float("inf"),
-        percentage: float = 100,
         **kw,
     ) -> bool:
         if not message:
@@ -186,13 +185,7 @@ class Trigger:
         content = message.content
 
         count = sum(bool(ch.isupper()) for ch in content)
-        if threshold and not percentage:
-            return count >= threshold
-
-        if percentage and not threshold:
-            return count / len(content) >= percentage
-
-        return False if count < threshold else count / len(content) >= percentage
+        return count >= threshold
 
     def message_mentions(self, *, message: Message | None = None, threshold: int = 0, **kw) -> bool:
         return len(message.raw_mentions) >= threshold if message else False

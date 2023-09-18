@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from discord.ext import commands
 from utilities.converters import convert_bool
@@ -9,11 +9,11 @@ from utilities.converters import convert_bool
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     var: str
     con: str
-    ascending: convert_bool = True
+    ascending: Annotated[bool, convert_bool] = True
     table_format: str = "psql"
     align: str = "center"
-    valuation: convert_bool = False
-    latex: convert_bool = False
+    valuation: Annotated[bool, convert_bool] = False
+    latex: Annotated[bool, convert_bool] = False
 
 
 class SearchFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):

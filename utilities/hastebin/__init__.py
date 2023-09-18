@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any
 import aiohttp
 import yarl
 
+from discord.ext import commands
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -39,7 +41,7 @@ class HTTPClient:
     def __init__(self, *, session: aiohttp.ClientSession | None = None) -> None:
         self.session: aiohttp.ClientSession = session  # type: ignore
         self.token = os.environ.get("HASTEBIN")
-        self.__lock = asyncio.Lock()
+        self.__lock = asyncio.Semaphore(2)
 
         self.__cache = {}
 
@@ -62,13 +64,12 @@ class HTTPClient:
                     headers = {}
                 async with self.session.request(method, route.url, headers=headers, **kwargs) as resp:
                     data = await resp.json()
-                    if resp.status >= 500:
+                    if "message" in data:
                         await asyncio.sleep(1)
                         continue
-                    if resp.status >= 400:
-                        raise aiohttp.ClientResponseError(resp.request_info, resp.history, status=resp.status, message=data)
                     return data
-        return {}
+        msg = "Hastebin is currently down, please try again later."
+        raise commands.BadArgument(msg)
 
     async def post(self, route: Route, **kwargs: str) -> dict[str, Any]:
         return await self.request("POST", route, **kwargs)

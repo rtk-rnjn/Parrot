@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Annotated, Any, BinaryIO
 import arrow
 import qrcode
 import sympy
+import yarl
 from dateutil.zoneinfo import get_zonefile_instance
 from jishaku.paginators import PaginatorEmbedInterface
 from PIL import Image
@@ -431,7 +432,10 @@ class Misc(Cog):
         NEWS_KEY = os.environ["NEWSKEY"]
         if not get_country_code(nat):
             return await ctx.reply(f"{ctx.author.mention} **{nat}** is not a valid country code.")
-        link = f"http://newsapi.org/v2/top-headlines?country={nat}&apiKey={NEWS_KEY}"
+        link = yarl.URL("http://newsapi.org/")
+        link = link / "v2" / "top-headlines"
+        link = link.update_query({"country": nat, "apiKey": NEWS_KEY})
+
         r = await self.bot.http_session.get(link)
         res = await r.json()
 
@@ -447,15 +451,20 @@ class Misc(Cog):
             img = res["articles"][data]["urlToImage"]
             content = res["articles"][data]["content"] or "N/A"
 
-            embed = Embed(
-                title=f"{title}",
-                description=f"{description}",
-                timestamp=discord.utils.utcnow(),
+            embed = (
+                Embed(
+                    title=f"{title}",
+                    description=f"{description}",
+                    timestamp=discord.utils.utcnow(),
+                )
+                .add_field(name=f"{source}", value=f"{content}")
+                .set_author(name=f"{author}")
+                .set_footer(text=f"{ctx.author}")
             )
-            embed.add_field(name=f"{source}", value=f"{content}")
-            embed.set_image(url=f"{img}")
-            embed.set_author(name=f"{author}")
-            embed.set_footer(text=f"{ctx.author}")
+            if img:
+                _r = await self.bot.http_session.get(img)
+                if _r.ok:
+                    embed.set_image(url=img)
             em_list.append(embed)
 
         await PaginationView(em_list).start(ctx=ctx)
@@ -469,8 +478,17 @@ class Misc(Cog):
         if ctx.invoked_subcommand:
             return
         search = urllib.parse.quote(search)
-        safe = "off" if ctx.channel.nsfw else "active"  # type: ignore
-        url = f"https://www.googleapis.com/customsearch/v1?key={google_key}&cx={cx}&q={search}&safe={safe}"
+        safe = "off" if ctx.channel.nsfw else "active"
+        url = yarl.URL("https://www.googleapis.com/")
+        url = url / "customsearch" / "v1"
+        url = url.update_query(
+            {
+                "key": google_key,
+                "cx": cx,
+                "q": search,
+                "safe": safe,
+            },
+        )
 
         response = await self.bot.http_session.get(url)
         json_ = await response.json()
@@ -636,8 +654,8 @@ class Misc(Cog):
         - `[p]truthtable --var p, q --con p and q`
         """
         table = Truths(
-            flags.var.replace(" ", "").split(","),
-            flags.con.split(","),
+            [j.strip(" ") for j in flags.var.replace(" ", "").split(",")],
+            [i.strip(" ") for i in flags.con.split(",")],
             ascending=flags.ascending,
         )
         main = table.as_tabulate(index=False, table_format=flags.table_format, align=flags.align)
@@ -659,8 +677,8 @@ class Misc(Cog):
         else:
             return await ctx.reply(f"{ctx.author.mention} no location named, **{location}**")
 
-        embed: discord.Embed = discord.Embed()
 
+        embed: discord.Embed = discord.Embed()
         res["coord"]["lat"]
         res["coord"]["lon"]
 

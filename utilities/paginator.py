@@ -254,7 +254,7 @@ class PaginationView(discord.ui.View):
     message: discord.Message
     current: int = 0
 
-    ctx: Context
+    ctx: Context[Parrot]
 
     def __init__(
         self,
@@ -461,7 +461,7 @@ class PaginationView(discord.ui.View):
         paginator = cls(embed_list)
         await paginator.start(ctx)
 
-    async def on_error(self, interaction: discord.Interaction, exception: Exception) -> None:
+    async def on_error(self, interaction: discord.Interaction[Parrot], exception: Exception, item: discord.ui.Item) -> None:
         bot: Parrot = self.ctx.bot if isinstance(self.ctx, Context) else self.ctx.client
 
         bot.dispatch("error", interaction, exception)

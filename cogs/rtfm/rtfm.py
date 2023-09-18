@@ -27,6 +27,7 @@ import discord
 from core import Cog, Context, Parrot
 from discord import app_commands
 from discord.ext import commands, tasks
+from utilities import hastebin
 from utilities.converters import WrappedMessageConverter
 from utilities.robopages import SimplePages
 
@@ -133,6 +134,7 @@ class RTFM(Cog):
         self.bot.tree.add_command(self.__bookmark_context_menu_callback)
         self._python_cached: dict[str, str] = {}
         self._roadmap_cached: dict[str, str] = {}
+        self.hastebin = hastebin.HTTPClient(session=self.bot.http_session)
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:
@@ -1419,3 +1421,14 @@ class RTFM(Cog):
             )
         p = SimplePages(ls, ctx=ctx, per_page=3)
         await p.start()
+
+    @commands.command(name="bin")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def bin(self, ctx: Context, *, code: str) -> None:
+        """Upload your code/text/document to a pastebin service. Will be there for 30 days."""
+        if len(code) < 10:
+            msg = "Your code is too short to be uploaded to a pastebin service."
+            raise commands.BadArgument(msg)
+
+        data = await self.hastebin.create_document(code)
+        await ctx.reply(f"{ctx.author.mention} Your code is available at {data.url}")

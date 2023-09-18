@@ -65,8 +65,9 @@ class HTTPClient:
                     if resp.status >= 500:
                         await asyncio.sleep(1)
                         continue
-                    raise aiohttp.ClientResponseError(resp.request_info, resp.history, status=resp.status, message=data)
-
+                    if resp.status >= 400:
+                        raise aiohttp.ClientResponseError(resp.request_info, resp.history, status=resp.status, message=data)
+                    return data
         return {}
 
     async def post(self, route: Route, **kwargs: str) -> dict[str, Any]:

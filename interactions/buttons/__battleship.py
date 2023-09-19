@@ -123,9 +123,8 @@ class Board:
     ) -> None:
         x1, y1 = x - 10, y - 10
         x2, y2 = x + 10, y + 10
-        if isinstance(fill, tuple):
-            fill = self.rgb_tuple_to_int(fill)
-        cur.ellipse((x1, y1, x2, y2), fill=fill)
+
+        cur.ellipse((x1, y1, x2, y2), fill=fill)  # type: ignore
 
     def draw_sq(
         self,
@@ -157,12 +156,7 @@ class Board:
         x1, y1 = x - d1, y - d2
         x2, y2 = x + d3, y + d4
 
-        cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=self.rgb_tuple_to_int(ship.color))
-
-    def rgb_tuple_to_int(self, rgb_tuple: tuple[int, int, int], inverted: bool = False) -> int:
-        if inverted:
-            return rgb_tuple[2] + (rgb_tuple[1] << 8) + (rgb_tuple[0] << 16)
-        return rgb_tuple[0] + (rgb_tuple[1] << 8) + (rgb_tuple[2] << 16)
+        cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
 
     def get_ship(self, coord: Coords) -> Ship:  # type: ignore
         if s := [ship for ship in self.ships if coord in ship.span]:
@@ -175,8 +169,8 @@ class Board:
         with Image.open("extra/battleship.png") as img:
             cur = ImageDraw.Draw(img)
 
-            for i, y in zip(range(1, 11), range(75, 530, 50)):
-                for j, x in zip(range(1, 11), range(75, 530, 50)):
+            for i, y in zip(range(1, 11), range(75, 530, 50), strict=False):
+                for j, x in zip(range(1, 11), range(75, 530, 50), strict=False):
                     coord = (i, j)
                     if coord in self.op_misses:
                         self.draw_dot(cur, x, y, fill=GRAY)
@@ -313,10 +307,11 @@ class BattleShip:
 
             await user.send("Do you want it to be vertical?\nSay `yes` or `no`")
 
-            def check(msg: discord.Message) -> bool | None:
+            def check(msg: discord.Message) -> bool:
                 if not msg.guild and msg.author == user:
                     content = msg.content.replace(" ", "").lower()
                     return content in ("yes", "no")
+                return False
 
             try:
                 message: discord.Message = await ctx.wait_for("message", check=check, timeout=self.timeout)
@@ -383,10 +378,11 @@ class BattleShip:
 
         while not ctx.bot.is_closed():
 
-            def check(msg: discord.Message) -> bool | None:
+            def check(msg: discord.Message) -> bool:
                 if not msg.guild and msg.author == self.turn:
                     content = msg.content.replace(" ", "").lower()
                     return bool(self.inputpat.match(content))
+                return False
 
             try:
                 message: discord.Message = await ctx.wait_for("message", check=check, timeout=self.timeout)

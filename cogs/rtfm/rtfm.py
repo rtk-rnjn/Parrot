@@ -1423,12 +1423,13 @@ class RTFM(Cog):
         await p.start()
 
     @commands.command(name="bin")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 15, commands.BucketType.user)
     async def bin(self, ctx: Context, *, code: str) -> None:
-        """Upload your code/text/document to a pastebin service. Will be there for 30 days."""
+        """Upload your code/text/document to a mystbin service. Will be there for 30 days."""
         if len(code) < 10:
-            msg = "Your code is too short to be uploaded to a pastebin service."
+            msg = "Your code is too short to be uploaded to a mystbin service."
             raise commands.BadArgument(msg)
 
-        data = await self.hastebin.create_document(code)
-        await ctx.reply(f"{ctx.author.mention} Your code is available at {data.url}")
+        b = await self.bot.mystbin.create_paste(filename="file.txt", content=code)
+        await ctx.send(f"Your code has been uploaded to {b.url}")
+

@@ -28,7 +28,15 @@ class ArbitraryEvents(Cog):
     async def on_audit_log_entry_create(self, entry: discord.AuditLogEntry) -> None:
         if entry.user_id and entry.user_id == self.bot.user.id:
             self.bot.dispatch("bot_activity")
-        elif entry.target:
+
+        try:
+            entry.target  # noqa: B018
+        except TypeError:
+            # discord bug or discord.py bug? sometimes entry.target raise TypeError, as id is None
+            # actions like, message_pin, message_unpin, members_prune
+            return
+
+        if entry.target:
             if isinstance(entry.target.id, int) and entry.target.id == self.bot.user.id:
                 self.bot.dispatch("bot_activity")
 

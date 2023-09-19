@@ -124,7 +124,7 @@ class Board:
         x1, y1 = x - 10, y - 10
         x2, y2 = x + 10, y + 10
 
-        cur.ellipse((x1, y1, x2, y2), fill=fill)  # type: ignore
+        cur.ellipse((x1, y1, x2, y2), fill=fill)
 
     def draw_sq(
         self,
@@ -155,7 +155,6 @@ class Board:
         d1, d2, d3, d4 = diffs
         x1, y1 = x - d1, y - d2
         x2, y2 = x + d3, y + d4
-
         cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
 
     def get_ship(self, coord: Coords) -> Ship:  # type: ignore
@@ -167,7 +166,8 @@ class Board:
         GRAY = (128, 128, 128)
 
         with Image.open("extra/battleship.png") as img:
-            cur = ImageDraw.Draw(img)
+            _img = img.convert("RGBA")
+            cur = ImageDraw.Draw(_img, "RGBA")
 
             for i, y in zip(range(1, 11), range(75, 530, 50), strict=False):
                 for j, x in zip(range(1, 11), range(75, 530, 50), strict=False):
@@ -184,10 +184,10 @@ class Board:
                         if not hide:
                             self.draw_sq(cur, x, y, coord=coord, ship=ship)
             buffer = BytesIO()
-            img.save(buffer, "PNG")
+            _img.save(buffer, "PNG")
 
         buffer.seek(0)
-        del img
+        del _img
         return buffer
 
 

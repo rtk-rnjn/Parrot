@@ -363,6 +363,10 @@ class Parrot(commands.AutoShardedBot):
         return super().get_cog(name)  # type: ignore
 
     async def setup_hook(self) -> None:
+        if MINIMAL_BOOT:
+            await self.load_extension("jishaku")
+            return
+
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
@@ -606,6 +610,8 @@ class Parrot(commands.AutoShardedBot):
             return
         self._was_ready = True
 
+        if MINIMAL_BOOT:
+            return
         ready_up_message = (
             f"[{self.user.name.title()}] Ready: {self.user} (ID: {self.user.id})\n"
             f"[{self.user.name.title()}] Using discord.py of version: {discord.__version__}"
@@ -649,8 +655,6 @@ class Parrot(commands.AutoShardedBot):
             st = f"```css\n[{self.user.name.title()}] Failed to load {name} cog due to``````py\n{error}```"
             await self._execute_webhook(self._error_log_token, content=f"{st}")
 
-        if MINIMAL_BOOT:
-            return
 
         # Hmm...
         cog = self.get_cog("Music")

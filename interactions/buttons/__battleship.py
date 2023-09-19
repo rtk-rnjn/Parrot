@@ -292,10 +292,11 @@ class BattleShip:
                 file=file,
             )
 
-            def check(msg: discord.Message) -> bool | None:  # type: ignore
+            def check(msg: discord.Message) -> bool:  # type: ignore
                 if not msg.guild and msg.author == user:
                     content = re.sub(r"\s+", "", message.content).lower()
                     return bool(self.inputpat.match(content))
+                return False
 
             try:
                 message: discord.Message = await ctx.wait_for("message", check=check, timeout=self.timeout)

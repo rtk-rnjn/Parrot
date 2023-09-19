@@ -214,12 +214,12 @@ class BattleShip:
         self.player2_board: Board = Board(player2, random=self.random)
 
         self.turn: discord.User | discord.Member = self.player1
-        self.timeout: int | None = None
+        self.timeout: int = None  # type: ignore
 
-        self.message1: discord.Message | None = None
-        self.message2: discord.Message | None = None
+        self.message1: discord.Message = None  # type: ignore
+        self.message2: discord.Message = None  # type: ignore
 
-    def get_board(self, player: discord.User | discord.Member, other: bool = False) -> Board:
+    def get_board(self, player: discord.User | discord.Member | Player, other: bool = False) -> Board:
         if other:
             return self.player2_board if player == self.player1 else self.player1_board
         else:
@@ -243,7 +243,7 @@ class BattleShip:
 
     async def get_file(
         self,
-        player: discord.User | discord.Member,
+        player: discord.User | discord.Member | Player,
         *,
         hide: bool = True,
     ) -> tuple[discord.Embed, discord.File, discord.Embed, discord.File]:
@@ -565,8 +565,8 @@ class BattleshipView(BaseView):
 
         self.initialize_view(start=True)
 
-        self.alpha: str | None = None
-        self.digit: int | None = None
+        self.alpha: str = None
+        self.digit: int = None
 
     def disable(self) -> None:
         self.disable_all()
@@ -639,6 +639,7 @@ class SetupInput(discord.ui.Modal):
         self.add_item(self.is_vertical)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
+        assert self.button.view is not None
         game = self.button.view.game
 
         start = self.start_coord.value.strip().lower()
@@ -728,7 +729,7 @@ class BetaBattleShip(BattleShip):
 
         self.turn: Player = self.player1
 
-    def get_board(self, player: discord.User, other: bool = False) -> Board:
+    def get_board(self, player: discord.User | discord.Member, other: bool = False) -> Board:
         player = getattr(player, "player", player)
         if other:
             return self.player2_board if player == self.player1.player else self.player1_board
@@ -736,7 +737,7 @@ class BetaBattleShip(BattleShip):
             return self.player1_board if player == self.player1.player else self.player2_board
 
     async def get_ship_inputs(self, user: Player) -> Coroutine[Any, Any, bool]:
-        embed, file, _, _ = await self.get_file(user)  # type: ignore
+        embed, file, _, _ = await self.get_file(user)
 
         embed1 = discord.Embed(
             description="**Press the buttons to place your ships!**",

@@ -67,7 +67,7 @@ class BlackJack:
 
     @property
     def player_cards_string(self) -> str:
-        return " ".join(str(card) for card in self.player_cards)
+        return "".join(str(card) for card in self.player_cards)
 
     @property
     def computer_score(self) -> int:
@@ -82,7 +82,7 @@ class BlackJack:
     @property
     def computer_cards_string(self) -> str:
         if self.game_over:
-            return " ".join(str(card) for card in self.computer_cards)
+            return "".join(str(card) for card in self.computer_cards)
         BACK_CARD = discord.PartialEmoji.from_str("<:CARD_BACK:1143090855910051851>")
         return str(self.computer_cards[0]) + (f" {str(BACK_CARD)}" * (len(self.computer_cards) - 1))
 

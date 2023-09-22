@@ -110,7 +110,7 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> list[int]:
             if is_member_none is None:
                 __item__remove(real_winners, member)
 
-        if required_role and not member._roles.has(required_role):
+        if required_role and not member.get_role(required_role):
             __item__remove(real_winners, member)
 
         if required_level:

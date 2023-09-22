@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import random
 import re
 import textwrap
 import urllib.parse
@@ -15,19 +14,15 @@ from urllib.parse import quote_plus
 
 import aiohttp
 from aiohttp import ClientResponseError
-from pymongo import ReturnDocument
 
 import discord
 import emojis
 from core import Cog
 from discord.ext import commands
-from utilities.rankcard import rank_card
 from utilities.regex import EQUATION_REGEX, LINKS_NO_PROTOCOLS
 
 if TYPE_CHECKING:
-    from cogs.utils import Utils
     from core import Parrot
-    from discord.ext.commands.cooldowns import CooldownMapping
 
 from .on_msg_caching import OnMsgCaching
 
@@ -115,12 +110,6 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             (BITBUCKET_RE, self._fetch_bitbucket_snippet),
         ]
         self.message_append: list[discord.Message] = []
-        self.message_cooldown: CooldownMapping = commands.CooldownMapping.from_cooldown(
-            1,
-            60,
-            commands.BucketType.member,
-        )
-
         self.__scam_link_cache: dict[str, bool] = {}
 
     @overload
@@ -459,7 +448,6 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         AWAITABLES: list[Coroutine] = [
             __internal_snippets_parser(),
             self._scam_detection(message),
-            self._on_message_leveling(message),
             self.equation_solver(message),
             self.quick_answer(message),
             self._on_message_passive(message),
@@ -506,7 +494,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         guild = data
         role_id = guild.get("ignore_role") or 0
 
-        if message.author._roles.has(role_id):
+        if message.author.get_role(role_id):
             return
 
         if message.content.startswith(("$", "!", "%", "^", "&", "*", "-", ">", "/", "\\")):
@@ -558,7 +546,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         await message.delete(delay=2)
         __functions: list = []
         async for webhook in self.bot.guild_configurations.find({"global_chat.enable": True}):
-            if hook := webhook["global_chat"]["webhook"]:
+            if hook := webhook["global_chat"]["webhook"]:  # type: ignore
                 __functions.append(__internal_funtion(hook=hook, message=message))
 
         if __functions:
@@ -574,81 +562,6 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 self.equation_solver(after),
             ]
             await asyncio.gather(*AWAITABLES, return_exceptions=False)
-
-    async def _on_message_leveling(self, message: discord.Message):
-        if message.guild is None or message.author.bot:
-            return
-
-        assert isinstance(message.author, discord.Member)
-
-        bucket: commands.Cooldown | None = self.message_cooldown.get_bucket(message)
-        if bucket is None:
-            return
-
-        if bucket.update_rate_limit():
-            return
-
-        try:
-            enable: bool = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["enable"]
-        except KeyError:
-            return
-
-        if not enable:
-            return
-
-        try:
-            role: list[int] = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_role"] or []
-        except KeyError:
-            role = []
-
-        if any(message.author._roles.has(r) for r in role):
-            return
-
-        try:
-            ignore_channel: list = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["ignore_channel"] or []
-        except KeyError:
-            ignore_channel = []
-
-        if message.channel.id in ignore_channel:
-            return
-
-        await self.__add_xp(member=message.author, xp=random.randint(10, 15), msg=message)
-
-        try:
-            announce_channel: int = self.bot.guild_configurations_cache[message.guild.id]["leveling"]["channel"] or 0
-        except KeyError:
-            return
-        else:
-            collection = self.bot.guild_level_db[f"{message.guild.id}"]
-            ch: discord.TextChannel | None = await self.bot.getch(
-                self.bot.get_channel,
-                self.bot.fetch_channel,
-                announce_channel,
-                force_fetch=True,
-            )
-            if ch and (
-                data := await collection.find_one_and_update(
-                    {"_id": message.author.id},
-                    {"$inc": {"xp": 0}},
-                    upsert=True,
-                    return_document=ReturnDocument.AFTER,
-                )
-            ):
-                cog: Utils = self.bot.Utils
-                level = int((data["xp"] // 42) ** 0.55)
-                xp = cog._Utils__get_required_xp(level + 1)  # type: ignore
-                rank = await cog._Utils__get_rank(collection=collection, member=message.author)  # type: ignore
-                file: discord.File = await asyncio.to_thread(
-                    rank_card,
-                    level,
-                    rank,
-                    message.author,
-                    current_xp=data["xp"],
-                    custom_background="#000000",
-                    xp_color="#FFFFFF",
-                    next_level_xp=xp,
-                )
-                await message.reply("GG! Level up!", file=file)
 
     async def _scam_detection(self, message: discord.Message, *, to_send: bool = True) -> bool | None:
         if message.guild is None:
@@ -692,7 +605,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             response = await self.bot.http_session.post(
                 API,
                 json={"message": message.content},
-                headers={"User-Agent": f"{self.bot.user.name} ({self.bot.github})"},
+                headers=self.bot.GLOBAL_HEADERS,
             )
 
             if response.status != 200:
@@ -716,47 +629,6 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                     self.__scam_link_cache[match["domain"]] = True
                     await asyncio.sleep(0)
                 return True
-
-    async def __add_xp(
-        self,
-        *,
-        member: discord.Member,
-        xp: int,
-        msg: discord.Message,
-    ):
-        collection = self.bot.guild_level_db[f"{member.guild.id}"]
-        data = await collection.find_one_and_update(
-            {"_id": member.id},
-            {"$inc": {"xp": xp}},
-            upsert=True,
-            return_document=ReturnDocument.AFTER,
-        )
-        level = int((data["xp"] // 42) ** 0.55)
-        await self.__add_role__xp(msg.guild.id, level, msg)
-
-    async def __add_role__xp(self, guild_id: int, level: int, msg: discord.Message):
-        assert isinstance(msg.author, discord.Member)
-        try:
-            ls = self.bot.guild_configurations_cache[guild_id]["leveling"]["reward"]
-        except KeyError:
-            return
-
-        for reward in ls:
-            if reward["lvl"] <= level:
-                await self.__add_roles(
-                    msg.author,
-                    discord.Object(id=reward["role"]),
-                    reason=f"Level Up role! On reaching: {level}",
-                )
-
-    async def __add_roles(
-        self,
-        member: discord.Member,
-        role: discord.abc.Snowflake,
-        reason: str | None = None,
-    ):
-        with suppress(discord.Forbidden, discord.HTTPException):
-            await member.add_roles(role, reason=reason)
 
     async def _on_message_passive(self, message: discord.Message):
         if message.guild is None:

@@ -98,7 +98,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     async def is_voter(self) -> bool:
         if member := self.bot.server.get_member(self.author.id):
-            return member._roles.has(VOTER_ROLE_ID)
+            return bool(member.get_role(VOTER_ROLE_ID))
 
         if await self.bot.user_collections_ind.find_one(
             {

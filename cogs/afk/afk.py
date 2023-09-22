@@ -5,13 +5,9 @@ import logging
 from collections import deque
 from typing import Annotated, Any
 
-from motor.motor_asyncio import AsyncIOMotorCollection
-from pymongo import ReturnDocument
-
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
-from utilities.rankcard import rank_card
 from utilities.robopages import SimplePages
 from utilities.time import ShortTime
 
@@ -21,15 +17,14 @@ from .methods import get_action_color, get_change_value, resolve_target
 
 log = logging.getLogger("cogs.utils.utils")
 
-Collection = type[AsyncIOMotorCollection]
 
 
-class Utils(Cog):
-    """Utilities comamnds for server."""
+class AFK(Cog):
+    """AFK Management"""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.collection: Collection = bot.timers
+        self.collection = bot.timers
         self.lock = asyncio.Lock()
 
         self.ON_TESTING = False
@@ -43,7 +38,7 @@ class Utils(Cog):
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name="sparkles_", id=892435276264259665)
+        return discord.PartialEmoji(name="\N{SLEEPING SYMBOL}")
 
     @Cog.listener()
     async def on_audit_log_entry_create(self, entry: discord.AuditLogEntry) -> None:
@@ -52,7 +47,7 @@ class Utils(Cog):
 
         self._audit_log_cache[entry.guild.id].appendleft(entry)
 
-    @commands.command(aliases=["auditlogs"])
+    @commands.command(aliases=["auditlogs"], hidden=True)
     @commands.bot_has_permissions(view_audit_log=True)
     @commands.has_permissions(view_audit_log=True)
     @commands.cooldown(1, 30, commands.BucketType.guild)
@@ -264,80 +259,6 @@ class Utils(Cog):
 
     async def cog_unload(self):
         self.server_stats_updater.cancel()
-
-    @commands.command(aliases=["level"])
-    @commands.bot_has_permissions(attach_files=True)
-    async def rank(self, ctx: Context, *, member: discord.Member = None):
-        """To get the level of the user."""
-        member = member or ctx.author
-        try:
-            enable = self.bot.guild_configurations_cache[ctx.guild.id]["leveling"]["enable"]
-            if not enable:
-                return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
-        except KeyError:
-            return await ctx.send(f"{ctx.author.mention} leveling system is disabled in this server")
-        else:
-            collection: Collection = self.bot.guild_level_db[f"{member.guild.id}"]
-            if data := await collection.find_one_and_update(
-                {"_id": member.id},
-                {"$inc": {"xp": 0}},
-                upsert=True,
-                return_document=ReturnDocument.AFTER,
-            ):
-                level = int((data["xp"] // 42) ** 0.55)
-                xp = await self.__get_required_xp(level + 1)
-                rank = await self.__get_rank(collection=collection, member=member) or 0
-                file = await asyncio.to_thread(
-                    rank_card,
-                    level,
-                    rank,
-                    member,
-                    current_xp=data["xp"],
-                    custom_background="#000000",
-                    xp_color="#FFFFFF",
-                    next_level_xp=xp,
-                )
-                await ctx.reply(file=file)
-                return
-            if ctx.author.id == member.id:
-                return await ctx.reply(f"{ctx.author.mention} you don't have any xp yet. Consider sending some messages")
-            return await ctx.reply(f"{ctx.author.mention} **{member}** don't have any xp yet.")
-
-    @commands.command(aliases=["leaderboard"])
-    async def lb(self, ctx: Context, *, limit: int | None = None):
-        """To display the Leaderboard."""
-        limit = limit or 10
-        collection = self.bot.guild_level_db[f"{ctx.guild.id}"]
-        entries = await self.__get_entries(collection=collection, limit=limit, guild=ctx.guild)
-        if not entries:
-            return await ctx.send(f"{ctx.author.mention} there is no one in the leaderboard")
-        pages = SimplePages(entries, ctx=ctx, per_page=10)
-        await pages.start()
-
-    async def __get_required_xp(self, level: int) -> int:
-        xp = 0
-        while True:
-            xp += 12
-            lvl = int((xp // 42) ** 0.55)
-            if lvl == level:
-                return xp
-            await asyncio.sleep(0)
-
-    async def __get_rank(self, *, collection: Collection, member: discord.Member):
-        countr = 0
-
-        # you can't use `enumerate`
-        async for data in collection.find({}, sort=[("xp", -1)]):
-            countr += 1
-            if data["_id"] == member.id:
-                return countr
-
-    async def __get_entries(self, *, collection: Collection, limit: int, guild: discord.Guild):
-        ls = []
-        async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
-            if member := await self.bot.get_or_fetch_member(guild, data["_id"]):
-                ls.append(f"{member} (`{member.id}`)")
-        return ls
 
     @tasks.loop(seconds=1500)
     async def server_stats_updater(self):

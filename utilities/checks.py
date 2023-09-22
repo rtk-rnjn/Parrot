@@ -117,7 +117,7 @@ def has_verified_role_ticket() -> Check[Context]:
         if not roles:
             raise ex.NoVerifiedRoleTicket()
 
-        if any(ctx.author._roles.has(role) for role in roles):
+        if any(ctx.author.get_role(role) for role in roles):
             return True
 
         raise ex.NoVerifiedRoleTicket()
@@ -130,8 +130,8 @@ def is_mod() -> Check[Context]:
         bot: Parrot = ctx.bot
         try:
             role = bot.guild_configurations_cache[ctx.guild.id]["mod_role"] or 0  # role could be `None`
-            if true := ctx.author._roles.has(role):
-                return true
+            if ctx.author.get_role(role):
+                return True
             raise ex.NoModRole()
         except KeyError:
             pass

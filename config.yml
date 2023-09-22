@@ -19,7 +19,7 @@ all_extensions:
   - cogs.sports
   - cogs.telephone
   - cogs.ticket
-  - cogs.utils
+  - cogs.afk
   - cogs.wolfram
   - cogs.rss
   - events.custom_events
@@ -50,6 +50,7 @@ all_extensions:
   - cogs.autoresponder
   - cogs.reminder
   - cogs.stats
+  - cogs.leveling
 
 dev_logo: >-
   https://raw.githubusercontent.com/rtk-rnjn/Parrot/main/extra/kali.png

@@ -176,7 +176,7 @@ class Sector1729(Cog):
     @in_support_server()
     async def claim_vote(self, ctx: Context):
         assert isinstance(ctx.author, discord.Member)
-        if ctx.author._roles.has(VOTER_ROLE_ID):
+        if ctx.author.get_role(VOTER_ROLE_ID):
             return await ctx.error("You already have the vote role.")
 
         if await self.bot.user_collections_ind.find_one(
@@ -300,7 +300,7 @@ class Sector1729(Cog):
             return
 
         seconds = (created - joined).total_seconds()
-        if seconds >= 86400 and isinstance(message.author, discord.Member) and message.author._roles.has(QU_ROLE):
+        if seconds >= 86400 and isinstance(message.author, discord.Member) and message.author.get_role(QU_ROLE):
             with suppress(discord.HTTPException):
                 await message.author.remove_roles(
                     discord.Object(id=QU_ROLE),
@@ -383,7 +383,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
 
-        if ctx.author._roles.has(role.id):
+        if ctx.author.get_role(role.id):
             return await ctx.wrong()
 
         await ctx.author.add_roles(role, reason="Color role added")
@@ -403,7 +403,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} no color named {color}!")
             return
 
-        if ctx.author._roles.has(role.id):
+        if ctx.author.get_role(role.id):
             await ctx.author.remove_roles(role, reason="Color role removed")
             await ctx.tick()
             return
@@ -424,7 +424,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.roles} you don't have permission to assign yourself that role")
             return
 
-        if ctx.author._roles.has(role.id):
+        if ctx.author.get_role(role.id):
             await ctx.error(f"{ctx.author.mention} you already have that role")
             return
 
@@ -445,7 +445,7 @@ class Sector1729(Cog):
             await ctx.error(f"{ctx.author.mention} you don't have permission to unassign yourself that role")
             return
 
-        if not ctx.author._roles.has(role.id):
+        if not ctx.author.get_role(role.id):
             await ctx.error(f"{ctx.author.mention} you do not have that role")
             return
 

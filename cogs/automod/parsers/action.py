@@ -42,6 +42,7 @@ class AutomodWarnings:
         warning_name: str = "global",
         reason: str = None,
         moderator_id: int | None = None,
+        expires_at: datetime | None = None,
     ) -> None:
         query = {"guild_id": self.guild_id}
         update = {
@@ -52,6 +53,7 @@ class AutomodWarnings:
                     "warning_name": warning_name,
                     "reason": reason,
                     "moderator_id": moderator_id,
+                    "expires_at": expires_at.timestamp() if expires_at is not None else None,
                 },
             },
         }
@@ -132,6 +134,23 @@ class AutomodWarnings:
 
         member = guild.get_member(user_id)
         return f"Unknown User {user_id}" if member is None else str(member)
+
+    async def pull_expired_warnings(self) -> None:
+        query = {
+            "guild_id": self.guild_id,
+            "warnings.expires_at": {"$lte": utcnow().timestamp()},
+        }
+        update = {
+            "$pull": {
+                "warnings": {"expires_at": {"$lte": utcnow().timestamp()}},
+            },
+        }
+        await self.bot.automod_voilations.update_one(query, update)
+
+    @classmethod
+    async def pull_every_expired_warnings(cls, bot: Parrot) -> None:
+        async for data in bot.automod_voilations.find({}):
+            await cls(bot=bot, raw_data=data).pull_expired_warnings()
 
 
 class Action:

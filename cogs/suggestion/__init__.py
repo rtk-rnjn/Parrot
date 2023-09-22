@@ -546,7 +546,7 @@ class Suggestions(Cog):
                 perms: discord.Permissions = member.guild_permissions
                 if any([perms.manage_guild, perms.manage_messages]):
                     return True
-            return member._roles.has(role_id)
+            return bool(member.get_role(role_id))
         except KeyError:
             return False
 

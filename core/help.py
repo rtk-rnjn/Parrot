@@ -39,7 +39,8 @@ DISPLAY_COG = (
     "SUGGESTIONS",
     "TAGS",
     "TODOS",
-    "UTILS",
+    "AFK",
+    "LEVELING",
 )
 
 

@@ -5,7 +5,6 @@ from collections import deque
 import discord
 from core import Cog, Parrot
 from discord.ext import commands
-from utilities.converters import Cache
 
 
 class SnipeMessageListener(Cog):
@@ -98,8 +97,8 @@ class SnipeMessageListener(Cog):
 class PingMessageListner(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.ghost_pings: Cache[int, deque[discord.Message]] = Cache(self.bot, 2048)
-        self.pings: Cache[int, deque[discord.Message]] = Cache(self.bot, 2048)
+        self.ghost_pings: dict[int, deque[discord.Message]] = {}
+        self.pings: dict[int, deque[discord.Message]] = {}
         # dict[author_id, list[message]]
 
     @Cog.listener()
@@ -137,13 +136,7 @@ class PingMessageListner(Cog):
         await self.on_message_delete(before)
 
     def get_pings(self, user_id: int) -> list[discord.Message]:
-        if user_id not in self.pings:
-            return []
-
-        return list(self.pings[user_id])
+        return [] if user_id not in self.pings else list(self.pings[user_id])
 
     def get_ghost_pings(self, user_id: int) -> list[discord.Message]:
-        if user_id not in self.ghost_pings:
-            return []
-
-        return list(self.ghost_pings[user_id])
+        return list(self.ghost_pings[user_id]) if user_id in self.ghost_pings else []

@@ -34,7 +34,7 @@ async def main() -> None:
             if not hasattr(bot, "__version__"):
                 bot.__version__ = VERSION
 
-            bot.mongo = AsyncIOMotorClient(
+            bot.mongo = AsyncIOMotorClient(  # type: ignore
                 DATABASE_URI.format(DATABASE_KEY),
             )
             await bot.init_db()

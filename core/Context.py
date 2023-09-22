@@ -737,7 +737,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         elif isinstance(entity, discord.User | discord.Member):
             entity: BytesIO = BytesIO(await entity.display_avatar.read())
             entity.seek(0)
-        else:
+        else:   
             url = LINKS_RE.findall(entity)
             if not url:
                 url = await emoji_to_url(entity)

@@ -1180,7 +1180,6 @@ class Misc(Cog):
 
     @commands.command(name="pings", aliases=["mypings", "myping"])
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @Context.with_type
     async def _pings(self, ctx: Context, ghost_pings: Annotated[bool, convert_bool] = True):
         """Shows your current mentions in which bot has much servers."""
         cog: PingMessageListner = self.bot.PingMessageListner
@@ -1199,7 +1198,7 @@ class Misc(Cog):
             human_timestamp = discord.utils.format_dt(message.created_at, "R")
 
             content = message.clean_content or "No content"
-            content = content[:256] + "..." if len(content) > 256 else content
+            content = f"{content[:256]}..." if len(content) > 256 else content
 
             page.add_line(f"**{human_timestamp} @ {guild_name}** -> [{content}]({jump_url})")
 

@@ -84,7 +84,7 @@ class BlackJack:
         if self.game_over:
             return "".join(str(card) for card in self.computer_cards)
         BACK_CARD = discord.PartialEmoji.from_str("<:CARD_BACK:1143090855910051851>")
-        return str(self.computer_cards[0]) + (f" {str(BACK_CARD)}" * (len(self.computer_cards) - 1))
+        return str(self.computer_cards[0]) + (f"{str(BACK_CARD)}" * (len(self.computer_cards) - 1))
 
     @property
     def game_over(self) -> bool:
@@ -142,7 +142,7 @@ class BlackJackView(ParrotView):
 
         if self.game.game_over:
             embed.set_footer(text=f"Game Over - {self.game.get_game_over_description()}")
-            embed.color = discord.Color.red() if self.game.player_won else discord.Color.yellow()
+            embed.color = discord.Color.yellow() if self.game.player_won else discord.Color.red()
 
         return embed
 

@@ -5,7 +5,7 @@ from typing import Any, Generic, Union
 
 from bson.codec_options import CodecOptions
 from bson.raw_bson import RawBSONDocument
-from pymongo import WriteConcern
+from pymongo import MongoClient, WriteConcern
 from pymongo.client_session import ClientSession
 from pymongo.collection import Collection, ReturnDocument
 from pymongo.command_cursor import CommandCursor
@@ -34,6 +34,14 @@ _WriteOp = Union[  # noqa: UP007
     UpdateOne,
     UpdateMany,
 ]
+
+
+class AsyncMongoClient(MongoClient, Generic[_DocumentType]):
+    def __getattr__(self, name: str) -> MongoDatabase[_DocumentType]:
+        ...
+
+    def __getitem__(self, name: str) -> MongoDatabase[_DocumentType]:
+        ...
 
 
 class MongoCollection(Collection, Generic[_DocumentType]):

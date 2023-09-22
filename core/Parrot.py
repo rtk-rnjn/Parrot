@@ -20,7 +20,6 @@ import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
 import wavelink
 from aiohttp import ClientSession
-from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure, DuplicateKeyError
 from pymongo.results import DeleteResult, InsertOneResult
 
@@ -72,7 +71,7 @@ if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
-    from .types import MongoCollection, MongoDatabase
+    from .types import MongoCollection, MongoDatabase, AsyncMongoClient
 
 
 os.environ["JISHAKU_HIDE"] = "True"
@@ -127,7 +126,7 @@ class Parrot(commands.AutoShardedBot):
     help_command: commands.HelpCommand | None
 
     http_session: ClientSession
-    mongo: AsyncIOMotorClient  # type: ignore
+    mongo: AsyncMongoClient
     sql: aiosqlite.Connection
 
     cogs: Mapping[str, Cog]

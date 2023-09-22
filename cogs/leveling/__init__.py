@@ -130,10 +130,10 @@ class Leveling(Cog):
 
         await ctx.reply(
             f"""Configuration of this server [leveling system]:
-`Enabled :` **{leveling.get("enable", False)}**
-`Channel :` **{getattr(ctx.guild.get_channel(leveling.get("channel", 0)), "name", "None")}**
-`Ignore Roles   :` **{ignored_roles}**
-`Ignore Channels:` **{ignored_channel}** ```
+`Leveling Enabled :` **{leveling.get("enable", False)}**
+`Announce Channel :` **{getattr(ctx.guild.get_channel(leveling.get("channel", 0)), "name", "None")}**
+`Ignored Roles    :` **{ignored_roles or 'NA'}**
+`Ignored Channels :` **{ignored_channel or 'NA'}** ```
 {str(tabulate(rwrd_tble, headers=["Level", "Role"], tablefmt="pretty"))}
 ```""",
         )

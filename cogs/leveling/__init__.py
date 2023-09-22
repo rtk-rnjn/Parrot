@@ -357,7 +357,7 @@ class Leveling(Cog):
 
     @Cog.listener()
     async def on_command(self, ctx: Context):
-        if ctx.command.cog.qualified_name == "Leveling":
+        if ctx.command.cog and ctx.command.cog.qualified_name == "Leveling":
             self.bot.update_server_config_cache.start(ctx.guild.id)
 
 

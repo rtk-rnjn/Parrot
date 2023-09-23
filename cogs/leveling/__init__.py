@@ -18,6 +18,8 @@ from utilities.robopages import SimplePages
 
 
 class Leveling(Cog):
+    """Leveling system for the server."""
+
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.message_cooldown = commands.CooldownMapping.from_cooldown(1, 60, commands.BucketType.member)

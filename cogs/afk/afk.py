@@ -9,6 +9,8 @@ from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
 from utilities.time import ShortTime
 
+from .flags import AfkFlags
+
 log = logging.getLogger("cogs.utils.utils")
 
 

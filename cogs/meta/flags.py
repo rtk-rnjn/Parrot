@@ -14,3 +14,13 @@ class AfkFlags(commands.FlagConverter, prefix="--", delimiter=" "):
     _for: ShortTime | None = commands.flag(name="for", default=None)
     text: str | None = None
     after: ShortTime | None = None
+
+
+class AuditFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
+    guild: discord.Guild | None = None
+    limit: int | None = 100
+    action: str | None = None
+    before: ShortTime | None = None
+    after: ShortTime | None = None
+    oldest_first: Annotated[bool | None, convert_bool] = False
+    user: discord.User | discord.Member | None = None

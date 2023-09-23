@@ -2,21 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections import deque
 from typing import Annotated, Any
 
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
-from utilities.robopages import SimplePages
 from utilities.time import ShortTime
 
-from .constants import ACTION_EMOJIS, ACTION_NAMES
-from .flags import AfkFlags, AuditFlag
-from .methods import get_action_color, get_change_value, resolve_target
-
 log = logging.getLogger("cogs.utils.utils")
-
 
 
 class AFK(Cog):
@@ -33,88 +26,9 @@ class AFK(Cog):
         self.create_timer = self.bot.create_timer
         self.delete_timer = self.bot.delete_timer
 
-        self._audit_log_cache: dict[int, deque[discord.AuditLogEntry]] = {}
-        # guild_id: deque
-
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{SLEEPING SYMBOL}")
-
-    @Cog.listener()
-    async def on_audit_log_entry_create(self, entry: discord.AuditLogEntry) -> None:
-        if entry.guild.id not in self._audit_log_cache:
-            self._audit_log_cache[entry.guild.id] = deque(maxlen=100)
-
-        self._audit_log_cache[entry.guild.id].appendleft(entry)
-
-    @commands.command(aliases=["auditlogs"], hidden=True)
-    @commands.bot_has_permissions(view_audit_log=True)
-    @commands.has_permissions(view_audit_log=True)
-    @commands.cooldown(1, 30, commands.BucketType.guild)
-    async def auditlog(self, ctx: Context, *, args: AuditFlag):
-        """To get the audit log of the server, in nice format."""
-        ls = []
-        if await ctx.bot.is_owner(ctx.author):
-            guild = args.guild or ctx.guild
-        else:
-            guild = ctx.guild
-
-        kwargs = {}
-
-        if args.user:
-            kwargs["user"] = args.user
-
-        kwargs["limit"] = max(args.limit or 0, 100)
-        if args.action:
-            kwargs["action"] = getattr(discord.AuditLogAction, str(args.action).lower().replace(" ", "_"), None)
-
-        if args.before:
-            kwargs["before"] = args.before.dt
-
-        if args.after:
-            kwargs["after"] = args.after.dt
-
-        if args.oldest_first:
-            kwargs["oldest_first"] = args.oldest_first
-
-        def fmt(entry: discord.AuditLogEntry) -> str:
-            return f"""**{entry.action.name.replace('_', ' ').title()}** (`{entry.id}`)
-> Reason: `{entry.reason or 'No reason was specified'}` at {discord.utils.format_dt(entry.created_at)}
-`Responsible Moderator`: {f'<@{str(entry.user.id)}>' if entry.user else 'Can not determine the Moderator'}
-`Action performed on  `: {resolve_target(entry.target)}
-"""
-
-        def finder(entry: discord.AuditLogEntry) -> bool:
-            ls = []
-            if kwargs.get("action"):
-                ls.append(entry.action == kwargs["action"])
-            if kwargs.get("user"):
-                ls.append(entry.user == kwargs["user"])
-            if kwargs.get("before"):
-                ls.append(entry.created_at < kwargs["before"])
-            if kwargs.get("after"):
-                ls.append(entry.created_at > kwargs["after"])
-
-            if kwargs.get("oldest_first"):
-                ls = ls[::-1]
-            if kwargs.get("limit"):
-                ls = ls[: kwargs["limit"]]
-
-            return all(ls) if ls else True
-
-        if self._audit_log_cache.get(guild.id) and len(self._audit_log_cache[guild.id]) == 100:
-            entries = self._audit_log_cache[guild.id]
-            for entry in entries:
-                if finder(entry):
-                    st = fmt(entry)
-                    ls.append(st)
-        else:
-            async for entry in guild.audit_logs(**kwargs):
-                st = fmt(entry)
-                ls.append(st)
-
-        p = SimplePages(ls, ctx=ctx, per_page=5)
-        await p.start()
 
     def build_afk_post(self, ctx: Context, text: str, **kw) -> dict[str, Any]:
         if text.lower() in {"global", "till", "ignore", "after", "custom"}:
@@ -299,49 +213,3 @@ class AFK(Cog):
     @server_stats_updater.before_loop
     async def before_server_stats_updater(self) -> None:
         await self.bot.wait_until_ready()
-
-    @Cog.listener("on_audit_log_entry_create")
-    async def on_audit_log_entry(self, entry: discord.AuditLogEntry) -> None:
-        guild_id = entry.guild.id
-        try:
-            webhook = self.bot.guild_configurations_cache[guild_id]["auditlog"]
-        except KeyError:
-            return
-        else:
-            if not webhook:
-                return
-
-        action_name = ACTION_NAMES.get(entry.action)
-
-        emoji = ACTION_EMOJIS.get(entry.action)
-        color = get_action_color(entry.action)
-
-        target_type = entry.action.target_type.title()
-        action_event_type = entry.action.name.replace("_", " ").title()  # noqa
-
-        message = []
-        for value in vars(entry.changes.before):
-            if changed := get_change_value(entry, value):
-                message.append(changed)
-
-        if not message:
-            message.append("*Nothing Mentionable*")
-
-        target = resolve_target(entry.target)
-        by = getattr(entry, "user", None) or "N/A"
-
-        embed = (
-            discord.Embed(
-                title=f"{emoji} {action_event_type}",
-                description="## Changes\n\n" + "\n".join(message),
-                colour=color,
-            )
-            .add_field(name="Performed by", value=by, inline=True)
-            .add_field(name="Target", value=target, inline=True)
-            .add_field(name="Reason", value=entry.reason, inline=False)
-            .add_field(name="Category", value=f"{action_name} (Type: {target_type})", inline=False)
-            .set_footer(text=f"Log: [{entry.id}]", icon_url=entry.user.display_avatar.url if entry.user else None)
-        )
-        embed.timestamp = entry.created_at
-
-        await self.bot._execute_webhook_from_scratch(webhook, embeds=[embed])

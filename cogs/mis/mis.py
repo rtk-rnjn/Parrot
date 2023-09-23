@@ -184,10 +184,10 @@ def _create_qr(
 
 
 class QRCodeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    board_size: int | None = 10
+    board_size: int | None = commands.flag(name="board_size", default=10, aliases=["size", "board"])
     border: int | None = 4
-    module_drawer: str | None = None
-    color_mask: str | None = None
+    module_drawer: str | None = commands.flag(name="module_drawer", default="square", aliases=["modular", "module"])
+    color_mask: str | None = commands.flag(name="color_mask", default="solid", aliases=["color", "mask"])
 
 
 qr_modular = {
@@ -198,7 +198,7 @@ qr_modular = {
     "vertical": VerticalBarsDrawer(),
     "ver": VerticalBarsDrawer(),
     "horizontal": HorizontalBarsDrawer(),
-    "hori": HorizontalBarsDrawer(),
+    "hor": HorizontalBarsDrawer(),
 }
 
 qr_color_mask = {
@@ -327,13 +327,6 @@ class Misc(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="Plus", id=892440360750555136)
 
-    @commands.command(aliases=["bigemote"])
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    @Context.with_type
-    async def bigemoji(self, ctx: Context, *, emoji: discord.Emoji):
-        """To view the emoji in bigger form."""
-        await ctx.reply(emoji.url)
-
     @commands.command(aliases=["calc", "cal"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
@@ -341,9 +334,10 @@ class Misc(Cog):
         """This is basic calculator with all the expression supported. Syntax is similar to python math module."""
         if text:
             new_text = urllib.parse.quote(text)
-            link = f"http://twitch.center/customapi/math?expr={new_text}"
+            url = yarl.URL("http://twitch.center/customapi/math")
+            url = url.update_query({"expr": new_text})
 
-            r = await self.bot.http_session.get(link)
+            r = await self.bot.http_session.get(url)
             embed = discord.Embed(
                 title="Calculated!!",
                 description=f"```ini\n[Answer is: {await r.text()}]```",
@@ -408,9 +402,10 @@ class Misc(Cog):
         For more detailed use, visit: `https://github.com/aunyks/newton-api/blob/master/README.md`
         """
         new_expression = urllib.parse.quote(expression)
-        link = f"https://newton.now.sh/api/v2/{operation}/{new_expression}"
+        url = yarl.URL("https://newton.now.sh/api/v2/")
+        url = url / operation / new_expression
 
-        r = await self.bot.http_session.get(link)
+        r = await self.bot.http_session.get(url)
         if r.status == 200:
             res = await r.json()
         else:
@@ -964,12 +959,19 @@ class Misc(Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
     async def qrcode(self, ctx: Context, text: str, *, flags: QRCodeFlags):
-        """To generate the QR from the given Text."""
+        """To generate the QR from the given Text.
+
+        **Flags:**
+        - `--module` to change the module drawer.
+        - `--color` to change the color mask.
+        - `--board` to change the board size.
+        - `--border` to change the border size.
+        """
         payload: dict[str, Any] = {}
-        if flags.module_drawer:
-            payload["module_drawer"] = qr_modular.get(flags.module_drawer)
-        if flags.color_mask:
-            payload["color_mask"] = qr_modular.get(flags.color_mask)
+        if flags.module_drawer and (mod := qr_modular.get(flags.module_drawer)):
+            payload["module_drawer"] = mod
+        if flags.color_mask and (col := qr_color_mask.get(flags.color_mask)):
+            payload["color_mask"] = col
 
         if payload:
             payload["image_factory"] = StyledPilImage

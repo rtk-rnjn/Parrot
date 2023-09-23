@@ -480,25 +480,6 @@ class Owner(Cog, command_attrs={"hidden": True}):
         ctx.bot.UNDER_MAINTENANCE_REASON = reason
         await ctx.tick()
 
-    @commands.command()
-    async def member_count(self, ctx: Context, guild: discord.Object | None = None):
-        """Returns member count of the guild.
-
-        This is equivalent to:
-        ```py
-        return ctx.bot.get_guild(GUILD or ctx.guild.id).member_count
-        ```
-        """
-
-        GUILD_ID = getattr(guild, "id", ctx.guild.id)
-        await ctx.send(
-            getattr(
-                ctx.bot.get_guild(GUILD_ID),
-                "member_count",
-                "Member count not available",
-            ),
-        )
-
     @commands.command(aliases=["streaming", "listening", "watching"], hidden=True)
     async def playing(
         self,

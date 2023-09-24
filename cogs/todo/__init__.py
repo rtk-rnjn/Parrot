@@ -44,9 +44,9 @@ class ConfirmationView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user and interaction.user.id == self.author_id:
             return True
-        else:
-            await interaction.response.send_message("This confirmation dialog is not for you.", ephemeral=True)
-            return False
+
+        await interaction.response.send_message("This confirmation dialog is not for you.", ephemeral=True)
+        return False
 
     async def on_timeout(self) -> None:
         if self.delete_after and self.message:

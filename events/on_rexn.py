@@ -113,10 +113,30 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             stars = len(data["starrer"])
 
         count = 0
+        _reactors = []
         for reaction in message.reactions:
             if str(reaction.emoji) == "\N{WHITE MEDIUM STAR}":
                 count = reaction.count
+                _reactors = [i.id async for i in reaction.users()]
                 break
+
+        if count >= stars and _reactors:
+            # missing reactors
+            await self.bot.starboards.update_one(
+                {
+                    "$or": [
+                        {"message_id.bot": message.id},
+                        {"message_id.author": message.id},
+                    ],
+                },
+                {
+                    "$set": {
+                        "starrer": {
+                            "$each": _reactors,
+                        },
+                    },
+                },
+            )
 
         return max(stars, count)
 
@@ -274,7 +294,9 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             return False
 
         starboard_channel: discord.TextChannel | None = await self.bot.getch(
-            self.bot.get_channel, self.bot.fetch_channel, channel
+            self.bot.get_channel,
+            self.bot.fetch_channel,
+            channel,
         )
 
         bot_msg: discord.Message | None = await self.bot.get_or_fetch_message(
@@ -318,12 +340,12 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
             channel: int = self.bot.guild_configurations_cache[payload.guild_id]["starboard_config"]["channel"] or 0
         except KeyError:
             return
-        else:
-            starboard_channel: discord.TextChannel | None = await self.bot.getch(
-                self.bot.get_channel,
-                self.bot.fetch_channel,
-                channel,
-            )
+
+        starboard_channel: discord.TextChannel | None = await self.bot.getch(
+            self.bot.get_channel,
+            self.bot.fetch_channel,
+            channel,
+        )
         if not limit:
             return
 

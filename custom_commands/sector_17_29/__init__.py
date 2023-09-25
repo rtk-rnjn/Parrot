@@ -16,6 +16,7 @@ import discord
 from core import Cog
 from discord.ext import commands, tasks
 from utilities.checks import in_support_server
+from utilities.regex import LINKS_RE
 
 try:
     import topgg  # noqa: F401 # pylint: disable=import-error
@@ -39,7 +40,7 @@ from utilities.config import SUPPORT_SERVER_ID
 EMOJI = "\N{WASTEBASKET}"
 MESSAGE_ID = 1025455601398075535
 VOTER_ROLE_ID = 1139439408723013672
-QU_ROLE = 851837681688248351
+QU_ROLE = 1155933240155193454
 MEMBER_ROLE_ID = 1022216700650868916
 GENERAL_CHAT = 1022211381031866459
 RAINBOW_ROLE = 1121978468389896235
@@ -308,6 +309,21 @@ class Sector1729(Cog):
                 )
 
     @Cog.listener()
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
+        if payload.guild_id != SUPPORT_SERVER_ID:
+            return
+
+        msg = await self.bot.get_or_fetch_message(payload.channel_id, payload.message_id, force_fetch=True)
+        if msg is None:
+            return
+
+        # check if msg has link in it
+
+        if LINKS_RE.search(msg.content) or msg.attachments:
+            await msg.reply("Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**")
+            await msg.delete(delay=2)
+
+    @Cog.listener()
     async def on_message_delete(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
         if message.guild is None or message.guild.id != SUPPORT_SERVER_ID:
@@ -470,7 +486,7 @@ class Sector1729(Cog):
                     await message.delete(delay=0)
 
     async def nickname_parser(self, message: discord.Message) -> None:
-        regex = re.compile(r"^[a-zA-Z0-9_ \[\]\(\)]+$")
+        regex = re.compile(r"^[a-zA-Z0-9_ \.\-\[\]\(\)]+$")
 
         ctx: Context[Parrot] = await self.bot.get_context(message, cls=Context)
 

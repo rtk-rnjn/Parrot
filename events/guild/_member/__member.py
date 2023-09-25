@@ -20,7 +20,7 @@ class _MemberJoin(Cog):
         try:
             premium: bool = self.bot.guild_configurations_cache[member.guild.id]["premium"]
         except KeyError:
-            premium: bool = False  # type: ignore
+            premium: bool = False
 
         if not premium:
             return
@@ -50,7 +50,7 @@ class _MemberJoin(Cog):
         try:
             premium: bool = self.bot.guild_configurations_cache[member.guild.id]["premium"]
         except KeyError:
-            premium: bool = False  # type: ignore
+            premium: bool = False
 
         if not premium:
             return
@@ -71,7 +71,7 @@ class _MemberJoin(Cog):
 
         while RETRY != 0:
             try:
-                new_invites: list[discord.Invite] = await guild.invites()  # type: ignore
+                new_invites: list[discord.Invite] = await guild.invites()
                 break
             except discord.HTTPException:
                 RETRY -= 1
@@ -80,7 +80,7 @@ class _MemberJoin(Cog):
 
         # check if member is joined from VANITY URL
         if "VANITY_URL" in guild.features:
-            VANITY_INVITE: discord.Invite | None = await guild.vanity_invite()  # type: ignore
+            VANITY_INVITE: discord.Invite | None = await guild.vanity_invite()
 
             if VANITY_INVITE is not None:
                 new_invites.append(VANITY_INVITE)
@@ -90,7 +90,7 @@ class _MemberJoin(Cog):
                     INVITE_USE: int = invite.uses or 0
                     if VANITY_INVITE.code == invite.code and VANITY_USE == INVITE_USE + 1:
                         self.bot.dispatch("invite", member, invite, VANITY_INVITE)
-                        DISPATCHED: bool = True  # type: ignore
+                        DISPATCHED: bool = True
                         break
 
             self._cache[guild.id] = new_invites
@@ -99,10 +99,10 @@ class _MemberJoin(Cog):
         # check if member is joined from normal invite
         for invite in self._cache.get(guild.id, []):
             for _invite in new_invites:
-                INVITE_USE: int = invite.uses or 0  # type: ignore
+                INVITE_USE: int = invite.uses or 0
                 if _invite.uses == (INVITE_USE + 1):
                     self.bot.dispatch("invite", member, invite, _invite)
-                    DISPATCHED: bool = True  # type: ignore
+                    DISPATCHED: bool = True
                     break
 
         self._cache[guild.id] = new_invites
@@ -117,7 +117,7 @@ class _MemberJoin(Cog):
         try:
             premium: bool = self.bot.guild_configurations_cache[guild.id]["premium"]
         except KeyError:
-            premium: bool = False  # type: ignore
+            premium: bool = False
 
         if not premium:
             return
@@ -132,7 +132,7 @@ class _MemberJoin(Cog):
         try:
             premium: bool = self.bot.guild_configurations_cache[guild.id]["premium"]
         except KeyError:
-            premium: bool = False  # type: ignore
+            premium: bool = False
 
         if not premium:
             return

@@ -243,6 +243,59 @@ async def _ban(
             await destination.send(f"Can not able to {command_name} **{member}**. Error raised: **{e}**")
 
 
+async def _sticky_ban(
+    *,
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.abc.Messageable,
+    member: discord.User | int,
+    days: int = 0,
+    reason: str | None,
+    silent: bool = False,
+    **kwargs: Any,
+) -> None:
+    await _ban(
+        guild=guild,
+        command_name=command_name,
+        ctx=ctx,
+        destination=destination,
+        member=member,
+        days=days,
+        reason=reason,
+        silent=silent,
+        **kwargs,
+    )
+    await ctx.bot.guild_collections_ind.update_one(
+        {"_id": guild.id},
+        {"$push": {"sticky_bans": member if isinstance(member, int) else member.id}},
+    )
+
+async def _unsticky_ban(
+    *,
+    guild: discord.Guild,
+    command_name: str,
+    ctx: Context,
+    destination: discord.abc.Messageable,
+    member: discord.User,
+    reason: str | None,
+    silent: bool = False,
+    **kwargs: Any,
+) -> None:
+    await _unban(
+        guild=guild,
+        command_name=command_name,
+        ctx=ctx,
+        destination=destination,
+        member=member,
+        reason=reason,
+        **kwargs,
+    )
+    await ctx.bot.guild_collections_ind.update_one(
+        {"_id": guild.id},
+        {"$pull": {"sticky_bans": member if isinstance(member, int) else member.id}},
+    )
+
 async def _mass_ban(
     *,
     guild: discord.Guild,
@@ -355,7 +408,7 @@ async def _unban(
     command_name: str,
     ctx: Context,
     destination: discord.abc.Messageable,
-    member: discord.Member,
+    member: discord.Member | discord.User,
     reason: str | None,
     **kwargs: Any,
 ):

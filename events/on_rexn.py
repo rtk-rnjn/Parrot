@@ -130,7 +130,7 @@ class OnReaction(Cog, command_attrs={"hidden": True}):
                     ],
                 },
                 {
-                    "$set": {
+                    "$addToSet": {
                         "starrer": {
                             "$each": _reactors,
                         },

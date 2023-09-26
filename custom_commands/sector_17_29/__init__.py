@@ -318,6 +318,8 @@ class Sector1729(Cog):
             return
 
         # check if msg has link in it
+        if msg.author.bot or msg.author.id in self.bot.owner_ids:
+            return
 
         if LINKS_RE.search(msg.content) or msg.attachments:
             await msg.reply("Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**")

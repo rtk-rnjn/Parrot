@@ -713,46 +713,34 @@ class Meta(Cog):
 
     @commands.command(aliases=["sticker-info"])
     @commands.cooldown(1, 60, commands.BucketType.user)
-    @Context.with_type
     async def stickerinfo(self, ctx: Context, sticker: discord.GuildSticker | None = None):
         """Get the info regarding the Sticker."""
-        if sticker is None and not ctx.message.stickers:
+        if ctx.message.reference and (msg := ctx.message.reference.resolved):
+            if isinstance(msg, discord.Message) and msg.stickers:
+                sticker = await msg.stickers[0].fetch()
+
+        if sticker is None:
             return await ctx.error(f"{ctx.author.mention} you did not provide any sticker")
-        sticker = sticker or await ctx.message.stickers[0].fetch()
-        if sticker is None or (sticker.guild and sticker.guild.id != ctx.guild.id):
-            return await ctx.error(f"{ctx.author.mention} this sticker is not from this server")
 
         embed: discord.Embed = (
             discord.Embed(title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url)
             .add_field(
                 name="Name",
-                value=sticker.name,
-            )
-            .add_field(
-                name="ID",
-                value=sticker.id,
+                value=f"{sticker.name} {sticker.emoji}",
             )
             .add_field(
                 name="Created At",
                 value=discord.utils.format_dt(sticker.created_at),
             )
             .add_field(
-                name="User",
-                value=sticker.user.mention,
-            )
-            .add_field(
                 name="Available",
                 value=sticker.available,
-            )
-            .add_field(
-                name="Emoji",
-                value=sticker.emoji,
             )
             .set_thumbnail(
                 url=sticker.url,
             )
             .set_footer(
-                text=f"{ctx.author}",
+                text=f"ID: {sticker.id}",
             )
         )
         embed.description = f"""`Description:` **{sticker.description}**"""

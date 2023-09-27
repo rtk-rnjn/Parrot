@@ -726,7 +726,7 @@ class Meta(Cog):
             discord.Embed(title="Sticker Info", timestamp=discord.utils.utcnow(), url=sticker.url)
             .add_field(
                 name="Name",
-                value=f"{sticker.name} {sticker.emoji}",
+                value=f"{sticker.name} (:{sticker.emoji}:)",
             )
             .add_field(
                 name="Created At",

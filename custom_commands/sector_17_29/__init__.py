@@ -391,6 +391,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="general", aliases=["generalchat", "general_chat", "gc"])
     @commands.cooldown(1, 600, commands.BucketType.guild)
+    @commands.has_any_role(SERVER_MOD, CORE_MAINTAINER_ROLE)
     async def sector_17_29_general_chat(self, ctx: Context, name: str):
         """Change the name of general chat."""
         emoji = "\N{SPEECH BALLOON}"
@@ -409,6 +410,7 @@ class Sector1729(Cog):
 
     @sector_17_29.command(name="rainbow", aliases=["rainbowrole", "rainbow_role", "rr"])
     @commands.cooldown(1, 600, commands.BucketType.guild)
+    # @commands.has_any_role(SERVER_MOD, CORE_MAINTAINER_ROLE)
     async def sector_17_29_rainbow_role(self, ctx: Context, *, color: str):
         """Change the name of rainbow role."""
         role: discord.Role | None = self.bot.server.get_role(RAINBOW_ROLE)

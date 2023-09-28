@@ -59,7 +59,7 @@ class Gist(Cog, command_attrs={"hidden": True}):
     async def github_request(self, method, url, *, params=None, data=None, headers=None, repo=None):
         hdrs = {
             "Accept": "application/vnd.github.inertia-preview+json",
-            "User-Agent": f"Discord Bot: {self.bot.user} {self.bot.github}",
+            "User-Agent": f"DiscordBot {self.bot.user} {self.bot.github}",
             "Authorization": f"token {self.token}",
         }
 

@@ -4,6 +4,7 @@ import io
 import itertools
 import os
 from collections import Counter, deque
+from typing import TYPE_CHECKING
 
 import arrow
 import psutil
@@ -19,6 +20,9 @@ from utilities.robopages import SimplePages
 from .constants import ACTION_EMOJIS, ACTION_NAMES
 from .flags import AuditFlag
 from .methods import get_action_color, get_change_value, resolve_target
+
+if TYPE_CHECKING:
+    from cogs.api.api import Gist
 
 
 class Meta(Cog):
@@ -407,7 +411,8 @@ class Meta(Cog):
                 icon_url="http://i.imgur.com/5BFecvA.png",
             )
         )
-        embed.timestamp = discord.utils.utcnow()
+        contributors = await self.get_github_contributor_names()
+        embed.add_field(name="Our Noble Contributors", value=", ".join(contributors))
         await ctx.send(embed=embed, view=ctx.link_view(url=self.bot.invite, label="Invite me!"))
 
     @commands.command(aliases=["bigemote"])
@@ -791,3 +796,48 @@ class Meta(Cog):
         embed.timestamp = entry.created_at
 
         await self.bot._execute_webhook_from_scratch(webhook, embeds=[embed])
+
+    async def get_github_contributors(self) -> list[dict]:
+        gist: Gist | None = self.bot.get_cog("Gist")
+        headers = {
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": f"DiscordBot {self.bot.user.name} ({self.bot.github})",
+        }
+        if gist:
+            headers["Authorization"] = f"token {gist.token}"
+
+        repo = "rtk-rnjn/Parrot"
+        api = f"https://api.github.com/repos/{repo}/contributors"
+
+        response = await self.bot.http_session.get(api, headers=headers)
+        return [] if response.status != 200 else await response.json()
+
+    async def get_github_contributor_names(self) -> list[str]:
+        contributors = await self.get_github_contributors()
+        contributors = sorted(contributors, key=lambda c: c["contributions"], reverse=True)
+        return [contributor["login"] for contributor in contributors if contributor["type"] == "User"]
+
+    @commands.command(aliases=["contributor"])
+    @Context.with_type
+    async def contributors(self, ctx: Context) -> None:
+        """Get the list of contributors."""
+        contributors = await self.get_github_contributors()
+        contributors = sorted(contributors, key=lambda c: c["contributions"], reverse=True)
+
+        embed = discord.Embed(
+            title="Our Noble Contributors",
+            color=ctx.author.color,
+            timestamp=discord.utils.utcnow(),
+            url=self.bot.github,
+        )
+        description, index = "", 1
+
+        for contributor in contributors:
+            if contributor["type"] == "User":
+                description += (
+                    f"`{index:02}.` [`{contributor['login']} {contributor['contributions']}`]({contributor['html_url']})\n"
+                )
+                index += 1
+
+        embed.description = description
+        await ctx.reply(embed=embed)

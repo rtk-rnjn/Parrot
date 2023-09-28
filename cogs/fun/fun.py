@@ -599,7 +599,7 @@ class Fun(Cog):
             params=PAYLOAD,
             headers={
                 "Accept": "application/json",
-                "User-Agent": f"Discord Bot '{self.bot.user}' @ {self.bot.github}",
+                "User-Agent": f"DiscordBot {self.bot.user} ({self.bot.github})",
             },
         )
         if res.status != 200:
@@ -630,11 +630,11 @@ class Fun(Cog):
             _option.append(question_data["correct_answer"])
             options = _option.copy()
             random.shuffle(options)
-            question = html.escape(question_data["question"], quote=False)
+            question = html.escape(question_data["question"])
 
             _value_str = ""
             for i in options:
-                _value_str += f"\N{BULLET}`{html.escape(i, quote=False)}`\n"
+                _value_str += f"\N{BULLET} `{html.escape(i)}`\n"
 
             embed = (
                 discord.Embed(
@@ -654,7 +654,7 @@ class Fun(Cog):
                 return (m.channel.id == ctx.channel.id) and rapidfuzz.fuzz.ratio(
                     question_data["correct_answer"].lower(),
                     m.content.lower(),
-                ) > 75
+                ) > 80
 
             try:
                 msg: discord.Message = await ctx.wait_for(
@@ -699,28 +699,6 @@ class Fun(Cog):
         self.game_player_scores[ctx.channel.id] = {}
         with suppress(KeyError):
             del self.game_owners[ctx.channel.id]
-
-    @triva_quiz.command(name="reset_token", aliases=["reset", "reset-token"])
-    async def trivia_token(self, ctx: Context, *, token: str) -> None:
-        """Reset a token.
-
-        This will reset the token to be used in the quiz.
-        """
-        res = await self.bot.http_session.get(
-            f"https://opentdb.com/api_token.php?command=reset&token={token}",
-        )
-        data = await res.json()
-        if data is None:
-            await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
-        if data["response_code"] == 0:
-            await ctx.send(f"{ctx.author.mention} Token reset successfully. You can now use it in the quiz.")
-        else:
-            await ctx.error(f"{ctx.author.mention} Could not reset token. Please try again later")
-
-    @triva_quiz.command(name="new_token", aliases=["new", "new-token", "token"])
-    async def new_trivia_token(self, ctx: Context) -> None:
-        """Register a new token for trivia."""
-        await self.__issue_trivia_token(ctx)
 
     @triva_quiz.command(name="stop", aliases=["end", "cancel"])
     async def trivia_stop(self, ctx: Context) -> None:
@@ -1868,9 +1846,7 @@ class Fun(Cog):
 
         await ctx.send(embed=embed, file=file)
 
-    @commands.command(
-        name="reverseimg",
-    )
+    @commands.command(name="reverseimg")
     async def reverse(self, ctx: Context, *, text: str | None):
         """Reverses the sent text.
         If no text is provided, the user's profile picture will be reversed.
@@ -1903,9 +1879,7 @@ class Fun(Cog):
 
             await ctx.send(embed=embed, file=file)
 
-    @commands.command(
-        aliases=("easterify",),
-    )
+    @commands.command(aliases=["easterify"])
     async def avatareasterify(self, ctx: Context, *colours: discord.Colour | str):
         """This "Easterifies" the user's avatar.
         Given colours will produce a personalised egg in the corner, similar to the egg_decorate command.
@@ -2024,9 +1998,7 @@ class Fun(Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
-        aliases=["spookify"],
-    )
+    @commands.command(aliases=["spookify"])
     async def spookyavatar(self, ctx: Context):
         """This "spookifies" the user's avatar, with a random *spooky* effect."""
         user = await self._fetch_user(ctx.author.id)

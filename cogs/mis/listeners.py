@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import deque
 
 import discord
-from core import Cog, Parrot
+from core import Cog, Parrot, Context
 from discord.ext import commands
 
 
@@ -18,6 +18,10 @@ class SnipeMessageListener(Cog):
         if message.author.bot:
             return
         if not message.guild:
+            return
+
+        ctx: Context = await self.bot.get_context(message, cls=Context)
+        if ctx.valid:
             return
 
         if message.channel.id not in self.snipes:

@@ -227,17 +227,14 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         except discord.HTTPException:  # message deleted
             return await self.send(content, **kwargs)
 
-    async def error(self, *args: Any, **kwargs: Any) -> discord.Message:
+    async def error(self, *args: Any, delete_after: float | None = None, **kwargs: Any) -> discord.Message:
         """Similar to send, but if the original message is deleted, it will delete the error message as well."""
         embed: discord.Embed | None = kwargs.get("embed")
         if isinstance(embed, discord.Embed) and not embed.color:
             # if no color is set, set it to red
             embed.color = discord.Color.red()
 
-        msg: discord.Message | None = await self.reply(
-            *args,
-            **kwargs,
-        )
+        msg: discord.Message | None = await self.reply(*args, **kwargs)
         if isinstance(msg, discord.Message):
             try:
                 await self.wait_for(
@@ -249,6 +246,11 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 return msg
             else:
                 await msg.delete(delay=0)
+
+        if delete_after:
+            await self.message.delete(delay=delete_after)
+
+        self.command.reset_cooldown(self)
         return msg
 
     async def entry_to_code(self, entries: list[tuple[Any, Any]]) -> discord.Message:

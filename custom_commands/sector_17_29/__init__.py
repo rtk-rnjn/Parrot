@@ -322,7 +322,9 @@ class Sector1729(Cog):
             return
 
         if LINKS_RE.search(msg.content) or msg.attachments:
-            await msg.reply("Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**")
+            await msg.reply(
+                "Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**"
+            )
             await msg.delete(delay=2)
 
     @Cog.listener()
@@ -387,88 +389,45 @@ class Sector1729(Cog):
         )
         await ctx.send(embed=discord.Embed(description=description))
 
-    @sector_17_29.command(name="color")
-    @in_support_server()
-    async def sector_17_29_color(self, ctx: Context, *, color: str | None = None):
-        """Assign yourself color role."""
-        if not color:
-            return
+    @sector_17_29.command(name="general", aliases=["generalchat", "general_chat", "gc"])
+    @commands.cooldown(1, 600, commands.BucketType.guild)
+    async def sector_17_29_general_chat(self, ctx: Context, name: str):
+        """Change the name of general chat."""
+        emoji = "\N{SPEECH BALLOON}"
+        vertical_line = "\N{BOX DRAWINGS LIGHT VERTICAL}"
 
-        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
+        channel_name = f"{vertical_line}{emoji}{vertical_line}{name}-general"
+        if len(channel_name) > 32:
+            return await ctx.error("Channel name is too long", delete_after=5)
 
-        role = discord.utils.get(ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}")
+        general_chat: discord.TextChannel = self.bot.get_channel(GENERAL_CHAT)  # type: ignore
+        if general_chat is None:
+            return await ctx.error("General chat channel not found", delete_after=5)
+
+        await general_chat.edit(name=channel_name, reason=f"{ctx.author} ({ctx.author.id}) changed the name of general chat")
+        await ctx.tick()
+
+    @sector_17_29.command(name="rainbow", aliases=["rainbowrole", "rainbow_role", "rr"])
+    @commands.cooldown(1, 600, commands.BucketType.guild)
+    async def sector_17_29_rainbow_role(self, ctx: Context, *, color: str):
+        """Change the name of rainbow role."""
+        role: discord.Role | None = self.bot.server.get_role(RAINBOW_ROLE)
         if role is None:
-            await ctx.error(f"{ctx.author.mention} no color named {color}!")
-            return
+            return await ctx.error("Rainbow role not found", delete_after=5)
+        color = color.lower().replace(" ", "_")
 
-        if ctx.author.get_role(role.id):
-            return await ctx.wrong()
+        try:
+            clr = getattr(discord.Color, color)()
+        except AttributeError:
+            clr = None
 
-        await ctx.author.add_roles(role, reason="Color role added")
-        await ctx.tick()
+        try:
+            if clr is None:
+                clr = discord.Color.from_str(color)
+        except ValueError:
+            return await ctx.error("Invalid color", delete_after=5)
 
-    @sector_17_29.command(name="uncolor")
-    @in_support_server()
-    async def sector_17_29_uncolor(self, ctx: Context, *, color: str | None = None):
-        """Unassign yourself color role."""
-        if not color:
-            return
-
-        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
-
-        role = discord.utils.get(ctx.bot.server.roles, name=f"[SELF] - COLOR {color.upper()}")
-        if role is None:
-            await ctx.error(f"{ctx.author.mention} no color named {color}!")
-            return
-
-        if ctx.author.get_role(role.id):
-            await ctx.author.remove_roles(role, reason="Color role removed")
-            await ctx.tick()
-            return
-
-        await ctx.wrong()
-
-    @sector_17_29.command(name="role")
-    @in_support_server()
-    async def sector_17_29_role(self, ctx: Context, *, role: discord.Role | None):
-        """Assign yourself role."""
-        if not role:
-            await ctx.error(f"{ctx.author.mention} that role do not exists")
-            return
-
-        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
-
-        if not role.name.startswith("[SELF]"):
-            await ctx.error(f"{ctx.author.roles} you don't have permission to assign yourself that role")
-            return
-
-        if ctx.author.get_role(role.id):
-            await ctx.error(f"{ctx.author.mention} you already have that role")
-            return
-
-        await ctx.author.add_roles(role, reason="Self role - Role")
-        await ctx.tick()
-
-    @sector_17_29.command(name="unrole")
-    @in_support_server()
-    async def sector_17_29_unrole(self, ctx: Context, *, role: discord.Role | None):
-        """Unassign yourself role."""
-        if not role:
-            await ctx.error(f"{ctx.author.mention} that role do not exists")
-            return
-
-        assert isinstance(ctx.author, discord.Member) and ctx.bot.server is not None
-
-        if role.id not in self.__assignable_roles:
-            await ctx.error(f"{ctx.author.mention} you don't have permission to unassign yourself that role")
-            return
-
-        if not ctx.author.get_role(role.id):
-            await ctx.error(f"{ctx.author.mention} you do not have that role")
-            return
-
-        await ctx.author.remove_roles(role, reason="Self role - Unrole")
-        await ctx.tick()
+        await role.edit(color=clr, reason=f"{ctx.author} ({ctx.author.id}) changed the color of rainbow role")
 
     @Cog.listener("on_message")
     async def extra_parser_on_message(self, message: discord.Message) -> None:

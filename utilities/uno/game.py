@@ -116,7 +116,7 @@ class PlayerQueueingView(discord.ui.View):
 
     def __init__(self, game: UNO) -> None:
         self.game: UNO = game
-        self.players: set[discord.Member] = game.players
+        self.players: set[discord.Member | discord.User] = game.players
         game.players.add(self.game.host)  # Just in case
         super().__init__(timeout=180)
 
@@ -139,6 +139,7 @@ class PlayerQueueingView(discord.ui.View):
 
         self.players.add(interaction.user)
         await self._update()
+        await interaction.response.send_message("You have joined this game.", ephemeral=True)
 
     @discord.ui.button(label="Leave", style=discord.ButtonStyle.red)
     async def leave(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -150,6 +151,7 @@ class PlayerQueueingView(discord.ui.View):
 
         self.players.remove(interaction.user)
         await self._update()
+        await interaction.response.send_message("You have left this game.", ephemeral=True)
 
     @discord.ui.button(label="Start!", style=discord.ButtonStyle.primary, disabled=True)
     async def immediate_start(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -178,6 +180,7 @@ class WildCardSubview(discord.ui.View):
         self.game.current = self.cards[-1]
 
     async def handle(self, color: Color, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+        await interaction.response.defer()
         self._update(color)
 
         for card in self.cards:
@@ -578,7 +581,7 @@ class UNO:
         self.host: discord.Member = host or ctx.author
 
         self.rule_set: RuleSet = rule_set  # This could be None on init
-        self.players: set[discord.Member] = set(players)
+        self.players: set[discord.Member | discord.User] = set(players)
 
         self.deck: Deck = Deck(self)
         self.hands: list[Hand] = []  # This will also determine order
@@ -748,7 +751,7 @@ class UNO:
         s = "s" if len(hand) != 1 else ""
         return f"{base} ({len(hand):,} card{s})"
 
-    def build_embed(self) -> None:
+    def build_embed(self) -> discord.Embed:
         if self.current.color is not Color.wild or self._wild_card_color_store is None:
             color = COLORS[self.current.color]
         else:
@@ -849,6 +852,11 @@ class UNO:
                 await interaction.response.send_message(**kwargs)
             except (discord.InteractionResponded, discord.NotFound):
                 await interaction.followup.send(**kwargs)
+
+        try:
+            await interaction.response.defer()
+        except discord.InteractionResponded:
+            pass
 
     # list to take care of stacks
     async def handle_play(self, cards: list[Card]) -> None:

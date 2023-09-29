@@ -15,6 +15,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Ite
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 import aiohttp
+import aioredis
 import aiosqlite
 import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
@@ -128,6 +129,7 @@ class Parrot(commands.AutoShardedBot):
     http_session: ClientSession
     mongo: AsyncMongoClient
     sql: aiosqlite.Connection
+    redis: aioredis.Redis
 
     cogs: Mapping[str, Cog]
     extensions: Mapping[str, types.ModuleType]
@@ -980,7 +982,10 @@ class Parrot(commands.AutoShardedBot):
 
         result = get_function(_id)
         if result is None:
-            result = await fetch_function(_id)
+            try:
+                result = await fetch_function(_id)
+            except discord.NotFound:
+                pass
         return result
 
     @tasks.loop(count=1)
@@ -1380,10 +1385,13 @@ class Parrot(commands.AutoShardedBot):
             msg = "DMChannel is not allowed"
             raise ValueError(msg)
 
-        if force_fetch:
-            msg = await channel.fetch_message(message)  # type: ignore
-            self.message_cache[message] = msg
-            return msg
+        try:
+            if force_fetch:
+                msg = await channel.fetch_message(message)  # type: ignore
+                self.message_cache[message] = msg
+                return msg
+        except discord.NotFound:
+            return None
 
         if msg := self._connection._get_message(message):
             self.message_cache[message] = msg

@@ -63,11 +63,6 @@ class Sector1729(Cog):
         self.ON_TESTING = False
 
         self.lock: asyncio.Lock = asyncio.Lock()
-        self.__assignable_roles: list[int] = [
-            1022896161167777835,  # NSFW ACCESS
-            1022896162107310130,  # BOT ACCESS
-            1022897174624866426,  # MUSIC ACCESS
-        ]
         self.adjectives = ADJECTIVES
         self.mr_robots = MR_ROBOT
 
@@ -79,7 +74,7 @@ class Sector1729(Cog):
         self.change_channel_name.start()
 
         self._is_locked = True
-        self.__locked_channels = set()
+        self.__locked_channels: set[int] = set()
 
     async def cog_check(self, ctx: Context) -> bool:
         return ctx.guild is not None and ctx.guild.id == getattr(ctx.bot.server, "id", SUPPORT_SERVER_ID)
@@ -139,7 +134,7 @@ class Sector1729(Cog):
         i = 1
         async for msg in dm.history(limit=50):
             if msg.author.id == self.bot.user.id:
-                await msg.delete()
+                await msg.delete(delay=0)
             i += 1
             if i % 10 == 0:
                 await _msg.edit(content=f"<@{payload.user_id}> deleting messages - {i}/50")

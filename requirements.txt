@@ -3,6 +3,7 @@ aiofile
 aiofiles
 aiohttp
 aioredis
+aioredis[hiredis]
 aiosignal
 aiosqlite
 anyio

@@ -88,3 +88,5 @@ MINIMAL_BOOT: bool = parse_env_var("MINIMAL_BOOT", False)
 
 if MINIMAL_BOOT:
     EXTENSIONS = ["cogs.ipc", "jishaku"]
+
+REDIS_URI: str = parse_env_var("REDIS_URI")

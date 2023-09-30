@@ -582,7 +582,7 @@ class Highlight(Cog):
 
         for converter in converters:
             try:
-                return await converter().convert(ctx, entity)
+                return await converter().convert(ctx, str(entity))
             except commands.BadArgument:
                 pass
 

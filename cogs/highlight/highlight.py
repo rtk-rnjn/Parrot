@@ -54,11 +54,16 @@ class Highlight(Cog):
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="\N{ELECTRIC TORCH}")
 
+    def _partial_settings(self, user_id: int) -> dict:
+        return {"user_id": user_id, "disabled": False, "blocked_users": [], "blocked_channels": []}
+
     async def get_user_settings(self, user_id: int) -> _CACHED_SETTINGS_HINT:
         try:
-            return self.cached_settings[user_id]
+            maybe_partial = self._partial_settings(user_id)
+            return maybe_partial | self.cached_settings[user_id]
         except KeyError:
             pass
+
         find_one_data = await self.bot.user_collections_ind.find_one(
             {"_id": user_id, "highlight_settings": {"$exists": True}},
         )
@@ -69,7 +74,9 @@ class Highlight(Cog):
                 "blocked_users": [],
                 "blocked_channels": [],
             }
+
         self.cached_settings[user_id] = find_one_data["highlight_settings"]
+
         user_id = find_one_data["highlight_settings"].get("user_id", user_id)
         disabled = find_one_data["highlight_settings"].get("disabled", False)
         blocked_users = find_one_data["highlight_settings"].get("blocked_users", [])

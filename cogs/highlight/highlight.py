@@ -343,10 +343,7 @@ class Highlight(Cog):
                 self.cached_words[ctx.author.id] = []
 
             self.cached_words[ctx.author.id].append({"user_id": ctx.author.id, "guild_id": ctx.guild.id, "word": word})
-            await ctx.send(
-                f":white_check_mark: Added `{word}` to your highlight list.",
-                delete_after=5,
-            )
+            await ctx.tick()
 
     @highlight.command(
         name="remove",
@@ -404,7 +401,13 @@ class Highlight(Cog):
 
             em.description = "`" + "`, `".join([str(i) for i in words]) + "`"
 
-            await ctx.send(embed=em, delete_after=10)
+            try:
+                await ctx.author.send(embed=em)
+            except discord.HTTPException:
+                await ctx.send(
+                    "Bot couldn't send you a DM, please enable DMs to receive highlight notifications.",
+                    delete_after=5,
+                )
 
     @highlight.command(name="clear")
     async def clear(self, ctx: Context, toggle: Literal["--all", "--guild-only"] = "--guild-only"):
@@ -478,13 +481,15 @@ class Highlight(Cog):
         # }
 
         # change guild_id to ctx.guild.id if guild_id == from_guild
+        from_guild_id = getattr(from_guild, "id", from_guild)
+
         operations = [
             UpdateMany(
-                {"_id": ctx.author.id, "highlight_words.guild_id": from_guild},
+                {"_id": ctx.author.id, "highlight_words.guild_id": from_guild_id},
                 {
                     "$set": {"highlight_words.$[elem].guild_id": ctx.guild.id},
                 },
-                array_filters=[{"elem.guild_id": from_guild}],
+                array_filters=[{"elem.guild_id": from_guild_id}],
             ),
             UpdateOne(
                 {"_id": ctx.author.id},
@@ -492,7 +497,7 @@ class Highlight(Cog):
                     "$addToSet": {
                         "highlight_words": {
                             "$each": [
-                                word for word in self.cached_words.get(ctx.author.id, []) if word["guild_id"] == from_guild
+                                word for word in self.cached_words.get(ctx.author.id, []) if word["guild_id"] == from_guild_id
                             ],
                         },
                     },
@@ -512,7 +517,7 @@ class Highlight(Cog):
         ]
         to_transfer = []
         for word in self.cached_words.get(ctx.author.id, []):
-            if word["guild_id"] == from_guild and word["word"] not in words_in_current_guild:
+            if word["guild_id"] == from_guild_id and word["word"] not in words_in_current_guild:
                 word["guild_id"] = ctx.guild.id
                 to_transfer.append(word)
 
@@ -600,7 +605,6 @@ class Highlight(Cog):
         aliases=["ignore", "mute"],
         invoke_without_command=True,
     )
-    @commands.guild_only()
     async def block(self, ctx: Context, *, entity: discord.Member | discord.TextChannel):
         """Block a user or channel.
 
@@ -768,7 +772,7 @@ class Highlight(Cog):
     @enable.before_invoke
     @disable.before_invoke
     async def ensure_privacy(self, ctx: Context):
-        await ctx.message.delete(delay=0)
+        await ctx.message.delete(delay=0.5)
 
     async def bulk_insert(self):
         if self._highlight_batch:

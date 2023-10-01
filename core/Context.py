@@ -173,6 +173,13 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
                 return self.guild.get_role(data["mod_role"] or 0)
         return None
 
+    async def is_mod(self) -> bool:
+        if self.author.guild_permissions.manage_guild:
+            return True
+        if role := await self.modrole():
+            return role in self.author.roles
+        return False
+
     @discord.utils.cached_property
     def replied_reference(self) -> discord.MessageReference | None:
         ref = self.message.reference

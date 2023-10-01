@@ -1204,7 +1204,7 @@ class Fun(Cog):
         await ctx.reply(f"{ctx.author.mention} I choose {choice(ls)}")
 
     async def _create_role_on_clr(self, *, ctx: Context, rgb: tuple[int, int, int], color_name: str):
-        if ctx.author.guild_permissions.manage_roles:
+        if ctx.author.guild_permissions.manage_roles or await ctx.is_mod():
             await ctx.guild.create_role(
                 name=f"COLOR {color_name.upper()}",
                 color=discord.Color.from_rgb(*rgb),

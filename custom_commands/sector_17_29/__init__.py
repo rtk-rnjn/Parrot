@@ -516,6 +516,34 @@ class Sector1729(Cog):
 
         await ctx.send("Unlocked")
 
+    @sector_17_29.command(name="color", aliases=["colour"])
+    @in_support_server()
+    async def sector_17_29_color(self, ctx: Context, *, color: str):
+        """To get color role"""
+        role = discord.utils.get(ctx.guild.roles, name=f"COLOR {color.upper()}")
+        if role is None:
+            return await ctx.error("Color role not found")
+
+        if role in ctx.author.roles:
+            return await ctx.error("Color role already added")
+
+        await ctx.author.add_roles(role, reason="Color role add")
+        await ctx.tick()
+
+    @sector_17_29.command(name="uncolor", aliases=["uncolour"])
+    @in_support_server()
+    async def sector_17_29_uncolor(self, ctx: Context, *, color: str):
+        """To remove color role"""
+        role = discord.utils.get(ctx.guild.roles, name=f"COLOR {color.upper()}")
+        if role is None:
+            return await ctx.error("Color role not found")
+
+        if role not in ctx.author.roles:
+            return await ctx.error("Color role not added")
+
+        await ctx.author.remove_roles(role, reason="Color role remove")
+        await ctx.tick()
+
     # Thanks
     #   - `aastha_ok`    (AASTHA#1206 - 925315596818718752)
     #   - `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)

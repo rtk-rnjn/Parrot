@@ -115,7 +115,7 @@ class Highlight(Cog):
             possible_words.extend({**word, "user_id": _id} for word in words if word["guild_id"] == message.guild.id)
 
         # Go through all possible messages
-        for possible_word in possible_words:
+        for possible_word in set(possible_words):
             # Use regex to check if the highlight word is in the message
             # And avoid any false positives
             escaped = re.escape(possible_word["word"])
@@ -168,7 +168,7 @@ class Highlight(Cog):
             await self.bot.wait_for(
                 "user_activity",
                 check=lambda channel, user: message.channel == channel and user == member,
-                timeout=15,
+                timeout=30,
             )
             return
         except asyncio.TimeoutError:
@@ -389,7 +389,7 @@ class Highlight(Cog):
         """
         ls = self.cached_words.get(ctx.author.id, [])
 
-        words = [word["word"] for word in ls if word["guild_id"] == ctx.guild.id and word["word"]]
+        words = {word["word"] for word in ls if word["guild_id"] == ctx.guild.id and word["word"]}
         if not ls:
             await ctx.send(
                 "You have no highlight words in this server.",

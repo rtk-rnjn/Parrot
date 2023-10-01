@@ -11,7 +11,7 @@ from contextlib import suppress
 from datetime import datetime, timedelta
 from time import time
 from typing import TYPE_CHECKING
-
+import inspect
 import discord
 from core import Cog
 from discord.ext import commands, tasks
@@ -316,7 +316,7 @@ class Sector1729(Cog):
         if msg.author.bot or msg.author.id in self.bot.owner_ids:
             return
 
-        if LINKS_RE.search(msg.content) or msg.attachments:
+        if (LINKS_RE.search(msg.content) or msg.attachments) and msg.edited_at:
             await msg.reply(
                 "Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**"
             )
@@ -589,24 +589,27 @@ class Sector1729(Cog):
                 headers="keys",
                 tablefmt="github",
             )
-            body = f"""## Add Adjectives
+            body = inspect.cleandoc(
+                f"""
+                ## Add Adjectives
 
-{table}
+                {table}
 
-**In file: [`/extra/adjectives.txt`](https://github.com/rtk-rnjn/Parrot/blob/main/extra/adjectives.txt)**
+                **In file: [`/extra/adjectives.txt`](https://github.com/rtk-rnjn/Parrot/blob/main/extra/adjectives.txt)**
 
----
+                ---
 
-### Author
+                ### Author
 
-{author}
+                {author}
 
----
+                ---
 
-### Message
+                ### Message
 
-{message}
-"""
+                {message}
+                """,
+            )
             url = await cog.create_issue(title="[Bot] Add Adjective", body=body)
             await ctx.reply(f"Created issue: {url}")
 

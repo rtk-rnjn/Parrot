@@ -115,7 +115,7 @@ class Highlight(Cog):
             possible_words.extend({**word, "user_id": _id} for word in words if word["guild_id"] == message.guild.id)
 
         # Go through all possible messages
-        for possible_word in set(possible_words):
+        for possible_word in possible_words:
             # Use regex to check if the highlight word is in the message
             # And avoid any false positives
             escaped = re.escape(possible_word["word"])

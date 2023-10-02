@@ -318,7 +318,7 @@ class Sector1729(Cog):
 
         if (LINKS_RE.search(msg.content) or msg.attachments) and msg.edited_at:
             await msg.reply(
-                "Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**"
+                "Owner: **Due to security reasons, you can't edit messages with links in them. Deleting message...**",
             )
             await msg.delete(delay=2)
 
@@ -351,11 +351,11 @@ class Sector1729(Cog):
             )
             .add_field(
                 name="Channel",
-                value=f"{message.channel.mention} ({message.channel.id})",
+                value=f"{message.channel.mention} ({message.channel.id})",  # type: ignore
                 inline=False,
             )
             .set_thumbnail(
-                url=message.guild.icon.url,
+                url=message.guild.icon.url,  # type: ignore
             )
         )
 

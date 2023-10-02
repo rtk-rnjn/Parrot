@@ -154,10 +154,7 @@ class Highlight(Cog):
     async def on_highlight(self, message: discord.Message, word: dict[str, str | int], text: str):
         assert message.guild is not None
 
-        member: discord.Member | None = await self.bot.get_or_fetch_member(
-            message.guild,
-            word["user_id"],
-        )
+        member: discord.Member | None = await self.bot.get_or_fetch_member(message.guild, word["user_id"])
 
         if member is None:
             log.info("Unknown user ID %s (guild ID %s)", word["user_id"], word["guild_id"])
@@ -177,6 +174,7 @@ class Highlight(Cog):
         # Don't highlight if they were already pinged
         # Don't highlight if they can't even see the channel
         # Don't highlight if it's a command
+
         if (
             member in message.mentions
             or member not in getattr(message.channel, "members", [])
@@ -186,7 +184,7 @@ class Highlight(Cog):
 
         settings = await self.get_user_settings(member.id)
 
-        # Don't highlight if the user themsel
+        # Don't highlight if the user themselves disabled it
         # Don't highlight if they blocked the trigger author or channel
         # Don't highlight if they blocked the entire category
 
@@ -297,7 +295,53 @@ class Highlight(Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @highlight.command(name="add")
+    @highlight.command(name="history", aliases=["h", "hist"])
+    async def highlight_history(self, ctx: Context):
+        """Show your highlight history."""
+        col = self.bot.user_collections_ind
+        data = await col.find_one({"_id": ctx.author.id}, {"highlighted_messages": {"$exists": True}})
+        if not data["highlighted_messages"]:
+            return await ctx.send("You have no highlight history.")
+
+        entries = []
+        for entry in data["highlighted_messages"]:
+            guild_id = entry["guild_id"]
+            content = entry.get("content", "")
+
+            message_id = entry["message_id"]
+            channel_id = entry["channel_id"]
+            channel = self.bot.get_channel(channel_id)
+
+            msg_link = f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
+            invoker = await self.bot.get_or_fetch_member(ctx.guild, entry["author_id"])
+            at = entry["invoked_at"]
+            time = datetime.datetime.fromisoformat(at)
+            discord_timestamp = discord.utils.format_dt(time, "R")
+
+            if invoker is None or invoker.bot or not content or not channel:
+                continue
+
+            content = content.replace(f"{entry['word']}", f"**{entry['word']}**")
+            if len(content) > 300:
+                content = f"{content[:300]}..."
+
+            entries.append(
+                f"**[`{entry['word']}`]({msg_link})** in <#{channel_id}> by {invoker.mention}\n{discord_timestamp}: {content}\n",
+            )
+
+        if not entries:
+            return await ctx.send("You have no highlight history.")
+
+        await ctx.paginate(entries=entries, module="JishakuPaginatorEmbedInterface")
+
+    @highlight.command(name="delete-history", aliases=["delete_history", "dh", "clear-history", "clear_history", "ch"])
+    async def delete_history(self, ctx: Context):
+        """Delete your highlight history."""
+        col = self.bot.user_collections_ind
+        await col.update_one({"_id": ctx.author.id}, {"$set": {"highlighted_messages": []}})
+        await ctx.send("Your highlight history has been cleared.")
+
+    @highlight.command(name="add", aliases=["append", "new"])
     async def add(self, ctx: Context, *, word: str):
         """Add a word to your highlight word list.
 
@@ -497,7 +541,9 @@ class Highlight(Cog):
                     "$addToSet": {
                         "highlight_words": {
                             "$each": [
-                                word for word in self.cached_words.get(ctx.author.id, []) if word["guild_id"] == from_guild_id
+                                word
+                                for word in self.cached_words.get(ctx.author.id, [])
+                                if word["guild_id"] == from_guild_id
                             ],
                         },
                     },
@@ -605,7 +651,7 @@ class Highlight(Cog):
         aliases=["ignore", "mute"],
         invoke_without_command=True,
     )
-    async def block(self, ctx: Context, *, entity: discord.Member | discord.TextChannel):
+    async def block(self, ctx: Context, *, entity: discord.Member | discord.TextChannel | str):
         """Block a user or channel.
 
         This will prevent the bot from sending any highlight messages in the specified channel or from the specified user.
@@ -614,7 +660,10 @@ class Highlight(Cog):
         - `[p]highlight block @user`
         - `[p]highlight block #channel`
         """
-        converted_entity = await self.get_entity(ctx, entity)
+        if not isinstance(entity, str):
+            converted_entity = await self.get_entity(ctx, entity)
+        else:
+            converted_entity: discord.Member | discord.TextChannel = entity
 
         if not converted_entity or (
             isinstance(converted_entity, discord.TextChannel) and ctx.author not in converted_entity.members

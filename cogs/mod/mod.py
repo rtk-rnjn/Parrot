@@ -17,7 +17,7 @@ from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID, UserID
 from utilities.time import FutureTime, ShortTime
-
+from utilities.regex import LINKS_RE
 
 class Arguments(argparse.ArgumentParser):
     def error(self, message: str):
@@ -746,7 +746,7 @@ class Moderator(Cog):
 
             await mod_method.do_removal(ctx, num, check)
 
-    @clean.command()
+    @clean.command(aliases=["embed"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def embeds(self, ctx: Context, search: int | None = 100):
@@ -758,7 +758,7 @@ class Moderator(Cog):
         """
         await mod_method.do_removal(ctx, search, lambda e: len(e.embeds))
 
-    @clean.command(name="regex")
+    @clean.command(name="regex", aliases=["re"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _regex(self, ctx: Context, pattern: str | None = None, search: int | None = 100):
@@ -776,7 +776,7 @@ class Moderator(Cog):
 
         await mod_method.do_removal(ctx, search, check)
 
-    @clean.command()
+    @clean.command(aliases=["file"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def files(self, ctx: Context, search: int | None = 100):
@@ -788,7 +788,7 @@ class Moderator(Cog):
         """
         await mod_method.do_removal(ctx, search, lambda e: len(e.attachments))
 
-    @clean.command()
+    @clean.command(aliases=["image", "imgs", "img", "picture", "pictures", "pics", "pic"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def images(self, ctx: Context, search: int | None = 100):
@@ -800,7 +800,7 @@ class Moderator(Cog):
         """
         await mod_method.do_removal(ctx, search, lambda e: len(e.embeds) or len(e.attachments))
 
-    @clean.command()
+    @clean.command(alises=["member"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def user(self, ctx: Context, member: discord.Member, search: int | None = 100):
@@ -812,7 +812,7 @@ class Moderator(Cog):
         """
         await mod_method.do_removal(ctx, search, lambda e: e.author == member)
 
-    @clean.command()
+    @clean.command(aliases=["contain", "substring", "substr"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def contains(self, ctx: Context, *, substr: str):
@@ -845,7 +845,7 @@ class Moderator(Cog):
 
         await mod_method.do_removal(ctx, search, predicate)
 
-    @clean.command(name="emoji", aliases=["emojis"])
+    @clean.command(name="emoji", aliases=["emojis", "emotes", "emote"])
     @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
     @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
     async def _emoji(self, ctx: Context, search: int | None = 100):
@@ -882,6 +882,30 @@ class Moderator(Cog):
                 await message.clear_reactions()
 
         await ctx.send(f"Successfully removed {total_reactions} reactions.")
+
+    @clean.command(name="mine", aliases=["my", "me"])
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    async def _mine(self, ctx: Context, search: int | None = 100):
+        """Removes your messages from the channel.
+
+        **Examples:**
+        - `[p]clean mine`
+        - `[p]clean mine 10`
+        """
+        await mod_method.do_removal(ctx, search, lambda e: e.author == ctx.author)
+
+    @clean.command(name="links", aliases=["link", "url", "urls"])
+    @commands.bot_has_permissions(read_message_history=True, manage_messages=True)
+    @commands.check_any(is_mod(), commands.has_permissions(manage_messages=True))
+    async def _links(self, ctx: Context, search: int | None = 100):
+        """Removes all messages containing a link.
+
+        **Examples:**
+        - `[p]clean links`
+        - `[p]clean links 10`
+        """
+        await mod_method.do_removal(ctx, search, lambda m: LINKS_RE.search(m.content))
 
     @commands.command()
     @commands.check_any(is_mod(), commands.has_permissions(manage_channels=True))

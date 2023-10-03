@@ -2464,3 +2464,45 @@ class Fun(Cog):
             icon_url=ctx.author.display_avatar.url,
         )
         view.msg = await ctx.reply(file=file, embed=embed, view=view)
+
+    @commands.command(name="guess-the-number", aliases=["gtn"])
+    async def guess_the_number(self, ctx: Context, upper: int = 10, lower: int = 1):
+        """Guess the number game"""
+        upper = max(upper, lower)
+        lower = min(upper, lower)
+        number = random.randint(lower, upper)
+
+        number_of_chances = math.log(upper - lower + 1, 2)
+        number_of_chances = round(number_of_chances)
+        await ctx.reply(
+            f"{ctx.author.mention} Guess a number between **{lower}** and **{upper}** in **{number_of_chances}** chances. Goodluck",
+        )
+        count = 0
+
+        def check(m: discord.Message) -> bool:
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.isdigit()
+
+        while count < number_of_chances:
+            count += 1
+
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=30)
+            except asyncio.TimeoutError:
+                return await ctx.reply("You took too long to respond. Game Over")
+
+            guess = int(msg.content)
+
+            if guess == number:
+                await ctx.reply(
+                    f"{ctx.author.mention} Congratulation, you guessed the number in **{count}** attempts :tada:.",
+                )
+                return
+
+            if guess < number:
+                await ctx.reply(f"{ctx.author.mention} Your guess is **too low**. Try again", delete_after=4)
+
+            else:
+                await ctx.reply(f"{ctx.author.mention} Your guess is **too high**. Try again", delete_after=4)
+
+        if count >= number_of_chances:
+            await ctx.reply(f"{ctx.author.mention} The number is **{number}**. Better luck next time")

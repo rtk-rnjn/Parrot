@@ -2468,8 +2468,9 @@ class Fun(Cog):
     @commands.command(name="guess-the-number", aliases=["gtn"])
     async def guess_the_number(self, ctx: Context, upper: int = 10, lower: int = 1):
         """Guess the number game"""
+        _upper = upper
         upper = max(upper, lower)
-        lower = min(upper, lower)
+        lower = min(_upper, lower)
         number = random.randint(lower, upper)
 
         number_of_chances = math.log(upper - lower + 1, 2)

@@ -772,7 +772,7 @@ class Moderator(Cog):
         pattern = pattern or r".*"
 
         def check(m: discord.Message) -> bool:
-            return bool(re.match(rf"{pattern}", m.content))
+            return bool(re.match(rf"{pattern}", m.content)) and m.created_at > arrow.utcnow().shift(days=-14).datetime
 
         await mod_method.do_removal(ctx, search, check)
 

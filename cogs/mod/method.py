@@ -1273,7 +1273,15 @@ async def do_removal(
     limit = max(1, min(limit or 1, 2000))
 
     passed_before = ctx.message if before is None else discord.Object(id=before)
-    passed_after = discord.Object(id=after) if after is not None else None
+    two_weeks_before = ctx.message.created_at - datetime.timedelta(weeks=2)
+    two_weeks_before_snowflake = discord.utils.time_snowflake(two_weeks_before)
+
+    if after:
+        _after = max(two_weeks_before_snowflake, after)
+        passed_after = discord.Object(id=_after)
+    else:
+        passed_after = None
+
     try:
         deleted = await ctx.channel.purge(limit=limit, before=passed_before, after=passed_after, check=predicate)
     except discord.HTTPException as e:

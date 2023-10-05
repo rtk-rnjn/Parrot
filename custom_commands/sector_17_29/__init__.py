@@ -373,6 +373,9 @@ class Sector1729(Cog):
     async def on_bulk_message_delete(self, messages: list[discord.Message]) -> None:
         st = ""
 
+        if messages[0].guild.id != SUPPORT_SERVER_ID:
+            return
+
         for message in messages:
             if not message.author.bot:
                 st += f"""[{message.created_at}] {message.author} ({message.author.id}) - {message.content}\n"""

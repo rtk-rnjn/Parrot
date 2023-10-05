@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import io
 import itertools
 import os
@@ -11,7 +12,7 @@ from contextlib import suppress
 from datetime import datetime, timedelta
 from time import time
 from typing import TYPE_CHECKING
-import inspect
+
 import discord
 from core import Cog
 from discord.ext import commands, tasks
@@ -354,19 +355,40 @@ class Sector1729(Cog):
                 value=f"{message.channel.mention} ({message.channel.id})",  # type: ignore
                 inline=False,
             )
-            .set_thumbnail(
-                url=message.guild.icon.url,  # type: ignore
-            )
         )
 
         if message.attachments:
+            _links = "".join(
+                f"[Attachment {i + 1}]({attachment.proxy_url})\n" for i, attachment in enumerate(message.attachments)
+            )
             embed.add_field(
                 name="Attachments",
-                value="\n".join(attachment.proxy_url for attachment in message.attachments),
+                value=_links,
                 inline=False,
             )
 
         await self.bot._execute_webhook(webhook=self.message_delete_webhook, embed=embed)
+
+    @Cog.listener()
+    async def on_bulk_message_delete(self, messages: list[discord.Message]) -> None:
+        st = ""
+
+        for message in messages:
+            st = f"""
+[{message.created_at}] {message.author} ({message.author.id}) - {message.content}
+"""
+
+        file = discord.File(io.BytesIO(st.encode()), filename="messages.txt")
+        if not hasattr(self, "message_delete_webhook"):
+            message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")  # type: ignore
+            if message_delete is None:
+                return
+
+            webhooks = await message_delete.webhooks()
+            webhook = webhooks[0]
+            self.message_delete_webhook = webhook
+
+        await self.bot._execute_webhook(webhook=self.message_delete_webhook, file=file)
 
     @commands.group(name="sector", aliases=["sector1729", "sector17"], invoke_without_command=True)
     async def sector_17_29(self, ctx: Context):

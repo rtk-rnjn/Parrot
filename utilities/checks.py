@@ -177,24 +177,16 @@ def can_run(ctx: Context) -> bool | None:
 
     cmd_config = ctx.bot.guild_configurations_cache[ctx.guild.id].get("cmd_config", {})
 
-    for cmd_cog in {cmd, cog}:  # noqa: PLC0208
+    for cmd_cog in (cmd, cog):
         return _can_run(cmd_cog, cmd_config, cmd, ctx)
 
 
 def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> bool | None:
     # fmt: off
     global_check          = f"CMD_GLOBAL_ENABLE_{cmd_cog}".upper()  # noqa
-    role_check_enable     = f"CMD_ROLE_ENABLE_{cmd_cog}".upper()  # noqa
     role_check_disable    = f"CMD_ROLE_DISABLE_{cmd_cog}".upper()  # noqa
-    channel_check_enable  = f"CMD_CHANNEL_ENABLE_{cmd_cog}".upper()  # noqa
     channel_check_disable = f"CMD_CHANNEL_DISABLE_{cmd_cog}".upper()  # noqa
     # fmt: on
-
-    if any(r.id in cmd_config.get(role_check_enable, []) for r in ctx.author.roles):
-        return True
-
-    if ctx.channel.id in cmd_config.get(channel_check_enable, []):
-        return True
 
     if any(r.id in cmd_config.get(role_check_disable, []) for r in ctx.author.roles):
         return False
@@ -208,7 +200,7 @@ def _can_run(cmd_cog: str, cmd_config: dict, cmd: str, ctx: Context) -> bool | N
 def guild_premium() -> Check[Context]:
     def predicate(ctx: Context) -> bool | None:
         """Returns True if the guild is premium."""
-        if ctx.guild is not None and ctx.bot.guild_configurations[ctx.guild.id].get("premium", False):
+        if ctx.guild is not None and ctx.bot.guild_configurations_cache[ctx.guild.id].get("premium", False):
             return True
 
         raise ex.NotPremiumServer()

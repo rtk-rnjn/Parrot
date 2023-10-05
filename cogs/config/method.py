@@ -24,12 +24,12 @@ def get_text(
     cmd_cog: str,
     target: discord.Role | discord.abc.GuildChannel | None,
     tp: Literal["enable", "disable"],
-) -> str:
+) -> str:  # type: ignore
     is_are = "commands are" if cmd_cog == "all" else "is"
     initial_str = f"{ctx.author.mention} **{cmd_cog}** {is_are} now {tp}"
     if not target:
         return f"{initial_str} **server** wide"
-    elif isinstance(target, discord.abc.GuildChannel):
+    elif isinstance(target, discord.TextChannel):
         return f"{initial_str} for **{target.mention}**"
     elif isinstance(target, discord.Role):
         return f"{initial_str} for **{target.name} ({target.id})**"
@@ -43,12 +43,10 @@ async def _enable(
     if not target:
         await update_db(ctx=ctx, key="CMD_GLOBAL_ENABLE", cmd=cmd_cog, value=True, op="$set")
 
-    elif isinstance(target, discord.abc.GuildChannel):
-        await update_db(ctx=ctx, key="CMD_CHANNEL_ENABLE", cmd=cmd_cog, value=ctx.channel.id, op="$addToSet")
+    elif isinstance(target, discord.TextChannel):
         await update_db(ctx=ctx, key="CMD_CHANNEL_DISABLE", cmd=cmd_cog, value=ctx.channel.id, op="$pull")
 
     elif isinstance(target, discord.Role):
-        await update_db(ctx=ctx, key="CMD_ROLE_ENABLE", cmd=cmd_cog, value=target.id, op="$addToSet")
         await update_db(ctx=ctx, key="CMD_ROLE_DISABLE", cmd=cmd_cog, value=target.id, op="$pull")
 
     await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, target=target, tp="enable"))
@@ -62,12 +60,10 @@ async def _disable(
     if not target:
         await update_db(ctx=ctx, key="CMD_GLOBAL_ENABLE", cmd=cmd_cog, value=False, op="$set")
 
-    elif isinstance(target, discord.abc.GuildChannel):
+    elif isinstance(target, discord.TextChannel):
         await update_db(ctx=ctx, key="CMD_CHANNEL_DISABLE", cmd=cmd_cog, value=ctx.channel.id, op="$addToSet")
-        await update_db(ctx=ctx, key="CMD_CHANNEL_ENABLE", cmd=cmd_cog, value=ctx.channel.id, op="$pull")
 
     elif isinstance(target, discord.Role):
         await update_db(ctx=ctx, key="CMD_ROLE_DISABLE", cmd=cmd_cog, value=target.id, op="$addToSet")
-        await update_db(ctx=ctx, key="CMD_ROLE_ENABLE", cmd=cmd_cog, value=target.id, op="$pull")
 
     await ctx.send(get_text(ctx=ctx, cmd_cog=cmd_cog, target=target, tp="disable"))

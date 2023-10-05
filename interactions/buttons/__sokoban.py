@@ -169,7 +169,6 @@ class SokobanGameView(discord.ui.View):
         embed = (
             discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow())
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
         embed.description = f"{self.game.display_board()}"
         embed.add_field(
@@ -193,7 +192,6 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -208,7 +206,6 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
@@ -244,7 +241,6 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
@@ -269,7 +265,6 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
@@ -294,7 +289,6 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png")
         )
 
         if self.game.is_game_over():
@@ -310,6 +304,5 @@ class SokobanGameView(discord.ui.View):
                 timestamp=discord.utils.utcnow(),
             )
             .set_footer(text=f"User: {self.user}")
-            .set_thumbnail(url="https://cdn.discordapp.com/attachments/894938379697913916/922772599627472906/icon.png"),
             view=self,
         )

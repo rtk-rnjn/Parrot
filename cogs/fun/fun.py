@@ -137,7 +137,7 @@ class Fun(Cog):
 
         self.ON_TESTING = False
 
-    async def send_colour_response(self, ctx: Context, rgb: tuple[int, int, int]) -> None:
+    async def send_colour_response(self, ctx: Context, rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
         try:
@@ -1249,7 +1249,7 @@ class Fun(Cog):
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, value}`.",
             )
-        hsv_tuple = cast(tuple[int, ...], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
+        hsv_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
@@ -1260,7 +1260,7 @@ class Fun(Cog):
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, lightness}`.",
             )
-        hsl_tuple = cast(tuple[int, ...], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
+        hsl_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
@@ -1329,7 +1329,11 @@ class Fun(Cog):
             await ctx.send(f"{ctx.author.mention} The string you entered is not valid Base64. Please try again.")
             return
 
-        await ctx.reply(f"{ctx.author.mention} {sample_string}")
+        if len(sample_string) >= 1980:
+            await ctx.send(f"{ctx.author.mention} The string you entered is too long to send.")
+            return
+
+        await ctx.reply(f"Decoded: {sample_string}")
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1341,7 +1345,7 @@ class Fun(Cog):
         base64_bytes = base64.b64encode(sample_string_bytes)
         base64_string = base64_bytes.decode("ascii")
 
-        await ctx.reply(f"{ctx.author.mention} {base64_string}")
+        await ctx.reply(f"Encoded: {base64_string}")
 
     @commands.command(name="fact")
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -2466,6 +2470,7 @@ class Fun(Cog):
         view.msg = await ctx.reply(file=file, embed=embed, view=view)
 
     @commands.command(name="guess-the-number", aliases=["gtn"])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
     async def guess_the_number(self, ctx: Context, upper: int = 10, lower: int = 1):
         """Guess the number game"""
         _upper = upper

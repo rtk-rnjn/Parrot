@@ -538,7 +538,7 @@ class Foggle(Cog):
             del self.games[ctx.channel]
 
     @foggle.command(name="rules", aliases=["help"])
-    async def foggle_rules(self, ctx: Context, type: str = "discord"):
+    async def foggle_rules(self, ctx: Context):
         """Displays information about a given foggle game type."""
         embed = discord.Embed(title="About Foggle:", description=FOGGLE_RULES)
         embed.set_image(url="https://cdn.discordapp.com/attachments/336642776609456130/809275615676334100/pic127783.png")

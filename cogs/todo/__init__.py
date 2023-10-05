@@ -247,7 +247,6 @@ class TodoItem:
             title=f"Todo ID: {snowflake_to_str(self._id)}",
             color=discord.Color.blurple(),
         )
-        url = self.jump_url
         if self.message is not None:
             embed.description = self.message.content
             author = self.message.author
@@ -257,8 +256,8 @@ class TodoItem:
         else:
             embed.description = self.content
 
-        if url:
-            embed.add_field(name="Jump to Message", value=f"[Jump!]({url})", inline=False)
+        if url := self.jump_url:
+            embed.url = url
 
         if self.due_date:
             embed.set_footer(text="Due").timestamp = self.due_date

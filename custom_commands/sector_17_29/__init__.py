@@ -374,7 +374,8 @@ class Sector1729(Cog):
         st = ""
 
         for message in messages:
-            st += f"""[{message.created_at}] {message.author} ({message.author.id}) - {message.content}\n"""
+            if not message.author.bot:
+                st += f"""[{message.created_at}] {message.author} ({message.author.id}) - {message.content}\n"""
 
         file = discord.File(io.BytesIO(st.encode()), filename="messages.txt")
         if not hasattr(self, "message_delete_webhook"):

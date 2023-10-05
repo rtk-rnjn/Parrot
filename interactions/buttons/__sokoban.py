@@ -303,6 +303,6 @@ class SokobanGameView(discord.ui.View):
                 description=f"{self.game.display_board()}",
                 timestamp=discord.utils.utcnow(),
             )
-            .set_footer(text=f"User: {self.user}")
+            .set_footer(text=f"User: {self.user}"),
             view=self,
         )

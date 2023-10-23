@@ -24,6 +24,9 @@ class GuildChannel(Cog, command_attrs={"hidden": True}):
             if channel.guild.id not in self.bot.guild_configurations_cache:
                 return
 
+            if not channel.permissions_for(channel.guild.me).manage_roles:
+                return
+
             if role_id := self.bot.guild_configurations_cache[channel.guild.id]["mute_role"]:
                 if role := channel.guild.get_role(role_id):
                     await channel.set_permissions(

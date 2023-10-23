@@ -72,7 +72,7 @@ if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
-    from .types import MongoCollection, MongoDatabase, AsyncMongoClient
+    from .types import AsyncMongoClient, MongoCollection, MongoDatabase
 
 
 os.environ["JISHAKU_HIDE"] = "True"
@@ -656,7 +656,6 @@ class Parrot(commands.AutoShardedBot):
             st = f"```css\n[{self.user.name.title()}] Failed to load {name} cog due to``````py\n{error}```"
             await self._execute_webhook(self._error_log_token, content=f"{st}")
 
-
         # Hmm...
         cog = self.get_cog("Music")
         if cog is not None and not self.WAVELINK_NODE_READY:
@@ -787,7 +786,15 @@ class Parrot(commands.AutoShardedBot):
             await self.update_server_config_cache.start(message.guild.id)
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
-            await message.channel.send(f"Prefix: `{await self.get_guild_prefixes(message.guild)}`")
+            if message.channel.permissions_for(message.guild.me).send_messages:
+                await message.channel.send(f"Prefix: `{await self.get_guild_prefixes(message.guild)}`")
+            else:
+                try:
+                    await message.author.send(
+                        f"**Bot do NOT have permission to send messages permissions in {message.channel.mention}** Prefix: `{await self.get_guild_prefixes(message.guild)}`",
+                    )
+                except discord.Forbidden:
+                    pass
             return
 
         await self.process_commands(message)

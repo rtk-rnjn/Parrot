@@ -335,7 +335,7 @@ class AutoResponders(Cog):
         variables = await var.build_base()
 
         for name, data in self.cache[message.guild.id].items():
-            if not data.get("enabled"):
+            if not data.get("enabled") or len(name) <= 5:
                 continue
 
             if message.channel.id in data.get("ignore_channel", []):
@@ -347,6 +347,10 @@ class AutoResponders(Cog):
             response = data["response"]
 
             content = None
+
+            if self.is_ratelimited(message):
+                continue
+
             try:
                 if re.fullmatch(rf"{name}", message.content, re.IGNORECASE):
                     content, _ = await self.execute_jinja(name, response, **variables)
@@ -354,7 +358,7 @@ class AutoResponders(Cog):
                 if name == message.content:
                     content, _ = await self.execute_jinja(name, response, **variables)
 
-            if content and (not self.is_ratelimited(message)) and (str(content).lower().strip(" ") != "none"):
+            if content and (str(content).lower().strip(" ") != "none"):
                 await message.channel.send(content)
 
     def is_ratelimited(self, message: discord.Message):

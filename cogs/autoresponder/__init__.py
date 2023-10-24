@@ -33,8 +33,8 @@ class AutoResponders(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.cache = {}
-        self.cooldown = commands.CooldownMapping.from_cooldown(5, 10, commands.BucketType.channel)
-        self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
+        self.cooldown = commands.CooldownMapping.from_cooldown(3, 10, commands.BucketType.channel)
+        self.exceeded_cooldown = commands.CooldownMapping.from_cooldown(3, 10, commands.BucketType.channel)
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -381,7 +381,7 @@ class AutoResponders(Cog):
         executing_what = "autoresponder" if from_auto_response else "jinja2"
 
         try:
-            async with async_timeout.timeout(delay=0.8):
+            async with async_timeout.timeout(delay=0.3):
                 try:
                     template = await asyncio.to_thread(self.jinja_env.from_string, response)
                     return_data = await template.render_async(**variables)

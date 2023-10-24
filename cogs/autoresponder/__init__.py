@@ -191,6 +191,11 @@ class AutoResponders(Cog):
 
         The name of the autoresponder must be unique.
         """
+
+        if len(name) <= 5:
+            await ctx.reply("The name of the autoresponder must be longer than 5 characters.")
+            return
+
         if name in self.cache[ctx.guild.id]:
             await ctx.reply("An autoresponder with that name already exists.")
             return
@@ -390,8 +395,8 @@ class AutoResponders(Cog):
                     return return_data, False
                 except Exception as e:
                     return f"Gave up executing {executing_what}.\nReason: `{e.__class__.__name__}: {e}`", True
-        except asyncio.TimeoutError:
-            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `Execution took too long`", True
+        except Exception as e:
+            return f"Gave up executing {executing_what} - `{trigger}`.\nReason: `{e.__class__.__name__}: {e}`", True
 
     @commands.command(name="jinja", aliases=["j2", "jinja2"])
     async def jinja(self, ctx: Context, *, code: str) -> None:

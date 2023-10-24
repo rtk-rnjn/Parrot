@@ -32,7 +32,7 @@ async def python_doc(ctx: Context, text: str) -> discord.Message | None:
     if response.status != 200:
         return await ctx.send(f"An error occurred (status code: {response.status}). Retry later.")
 
-    soup = BeautifulSoup(str(await response.text()), HTML_PARSER)  # icantinstalllxmlinheroku
+    soup = BeautifulSoup(str(await response.text()), HTML_PARSER)
 
     def soup_match(tag):
         return all(string in tag.text for string in text.strip().split()) and tag.name == "li"

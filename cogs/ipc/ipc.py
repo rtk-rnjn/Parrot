@@ -288,15 +288,13 @@ class IPCRoutes(Cog):
 
     @Server.route()
     async def start_wavelink_nodes(self, data: ClientPayload) -> dict[str, str]:
-        if self.bot.ON_HEROKU:
-            return {"status": "error: cannot start wavelink on heroku"}
         host = data.host
         port = data.port
         password = data.password
         try:
             async with async_timeout.timeout(5):
                 if hasattr(self.bot, "wavelink"):
-                    node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="PARROT_BOT_MAIN", session=self.bot.http_session, retries=3)
+                    node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="PARROT_BOT_MAIN", session=self.bot.http_session, retries=1)
                     await self.bot.wavelink.connect(
                         client=self.bot,
                         nodes=[node],

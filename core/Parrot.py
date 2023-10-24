@@ -43,7 +43,6 @@ from utilities.config import (
     CHANGE_LOG_CHANNEL_ID,
     EXTENSIONS,
     GITHUB,
-    HEROKU,
     MASTER_OWNER,
     MINIMAL_BOOT,
     OWNER_IDS,
@@ -193,7 +192,6 @@ class Parrot(commands.AutoShardedBot):
         self._current_timer: dict | None = {}
         self._have_data: asyncio.Event = asyncio.Event()
         self.reminder_event: asyncio.Event = asyncio.Event()
-        self.ON_HEROKU: bool = HEROKU
 
         # Top.gg
         self.HAS_TOP_GG = True

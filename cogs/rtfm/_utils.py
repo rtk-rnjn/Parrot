@@ -528,9 +528,11 @@ class LintCode:
             await interface.send_to(ctx)
 
             # Generated at: Ex format: 2023-06-11T17:51:53Z
-            from_fmt = "%Y-%m-%dT%H:%M:%SZ"
             to_fmt = "%d/%m/%Y %H:%M:%S"
-            generated_at = arrow.get(json_data["generated_at"], from_fmt).to("local").format(to_fmt)
+            try:
+                generated_at = arrow.get(json_data["generated_at"]).to("local").format(to_fmt)
+            except arrow.ParserError:
+                generated_at = "Unknown"
 
             await interface.add_line(f"{Fore.MAGENTA}Generated at: {Fore.MAGENTA}{generated_at}\n")
 

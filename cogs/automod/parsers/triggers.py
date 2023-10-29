@@ -49,7 +49,11 @@ class Trigger:
             return False
         ls = []
         for tgr in self.data:
-            func = getattr(self, tgr["type"])
+            try:
+                func = getattr(self, tgr["type"])
+            except AttributeError:
+                continue
+
             value = await maybe_coroutine(func, **kw, **tgr)
             ls.append(value)
 
@@ -187,8 +191,11 @@ class Trigger:
         count = sum(bool(ch.isupper()) for ch in content)
         return count >= threshold
 
-    def message_mentions(self, *, message: Message | None = None, threshold: int = 0, **kw) -> bool:
-        return len(message.raw_mentions) >= threshold if message else False
+    def message_mentions(self, *, message: Message | None = None, threshold: float = float("inf"), **kw) -> bool:
+        if threshold is not None:
+            return len(message.raw_mentions) >= (threshold) if message else False
+
+        return False
 
     def any_link(self, *, message: Message | None = None, **kw) -> bool:
         return bool(LINKS_RE.search(message.content)) if message else False

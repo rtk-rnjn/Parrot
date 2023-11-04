@@ -6,7 +6,7 @@ from typing import Literal
 from discord.ext import commands
 
 
-class TriviaFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):  # type: ignore
+class TriviaFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     token: str | None = None
     number: int | None = commands.flag(name="number", default=10, aliases=["amount"])
     category: str | None = None

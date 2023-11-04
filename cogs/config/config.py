@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate
@@ -164,7 +164,7 @@ class Configuration(Cog):
         if ctx.invoked_subcommand:
             return
         try:
-            starboard_data: dict[str, str | int | list[int] | bool | None] = self.bot.guild_configurations_cache[
+            starboard_data = self.bot.guild_configurations_cache[
                 ctx.guild.id
             ]["starboard_config"]
         except KeyError:
@@ -333,7 +333,7 @@ class Configuration(Cog):
         role: discord.Role | None = None,
     ):
         """This command will connect your server with other servers which then connected to #global-chat must try this once."""
-        collection: Collection = self.bot.guild_configurations
+        collection = self.bot.guild_configurations
         if not setting:
             overwrites: dict[discord.Role | discord.Member, discord.PermissionOverwrite] = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
@@ -609,7 +609,7 @@ class Configuration(Cog):
         if ctx.invoked_subcommand is not None:
             return
         try:
-            server_stats: dict[str, Any] = self.bot.guild_configurations_cache[ctx.guild.id]["stats_channels"]
+            server_stats = self.bot.guild_configurations_cache[ctx.guild.id]["stats_channels"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
         table = []

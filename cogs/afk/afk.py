@@ -190,12 +190,11 @@ class AFK(Cog):
                 "categories": len(guild.categories),
             }
             try:
-                stats_channels: dict[str, Any] = self.bot.guild_configurations_cache[guild.id]["stats_channels"]
+                stats_channels = self.bot.guild_configurations_cache[guild.id]["stats_channels"]
             except KeyError:
                 continue
             for k, v in stats_channels.items():
                 if k != "role":
-                    v: dict[str, Any]
                     if channel := guild.get_channel(v["channel_id"]):
                         await channel.edit(
                             name=v["template"].format(PAYLOAD[k]),

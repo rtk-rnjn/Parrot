@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterable, Mapping, MutableMapping, Sequence
-from typing import Any, Generic, Union
+from typing import Any, Generic, Union, TypedDict, TYPE_CHECKING
 
 from bson.codec_options import CodecOptions
 from bson.raw_bson import RawBSONDocument
@@ -34,6 +34,9 @@ _WriteOp = Union[  # noqa: UP007
     UpdateOne,
     UpdateMany,
 ]
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
 class AsyncMongoClient(MongoClient, Generic[_DocumentType]):
@@ -384,3 +387,95 @@ class MongoDatabase(Database, Generic[_DocumentType]):
         **kwargs: Any,
     ) -> CommandCursor:
         ...
+
+
+class GlobalChatType(TypedDict):
+    enable: bool
+    channel_id: int | None
+    ignore_role: list[int]
+    webhook: str | None
+
+class StatsChannelType(TypedDict):
+    channel_id: int | None
+    channel_type: str | None
+    template: str | None
+
+class StatsChannelsType(TypedDict):
+    bots: StatsChannelType
+    members: StatsChannelType
+    channels: StatsChannelType
+    voice: StatsChannelType
+    text: StatsChannelType
+    categories: StatsChannelType
+    emojis: StatsChannelType
+    roles: StatsChannelType
+    role: list[dict[str, int | str | None]]
+
+class StarboardConfigType(TypedDict):
+    is_locked: bool
+    limit: int | None
+    ignore_channel: list[int]
+    max_duration: int | None
+    channel: int | None
+    can_self_star: bool
+
+class LevelingType(TypedDict):
+    enable: bool
+    channel: int | None
+    reward: list[dict[str, int | str]]
+    ignore_role: list[int]
+    ignore_channel: list[int]
+
+class TelephoneType(TypedDict):
+    enable: bool
+    channel_id: int | None
+    ping_role: int | None
+    is_line_busy: bool
+    member_ping: int | None
+    blocked: list[int]
+
+class OptsType(TypedDict):
+    gitlink_enabled: bool
+    equation_enabled: bool
+
+class TicketConfigType(TypedDict):
+    enable: bool
+    category: int | None
+    message_id: int | None
+    channel_id: int | None
+    log: int | None
+    ticket_channel_ids: list[int]
+    ticket_counter: int
+
+class DefaultDefconType(TypedDict):
+    enabled: bool
+    level: int
+    trustables: dict
+    locked_channels: list[int]
+    hidden_channels: list[int]
+    broadcast: dict
+
+class PostType(TypedDict):
+    _id: NotRequired[int]
+    prefix: str
+    mute_role: int | None
+    mod_role: int | None
+    premium: bool
+    dj_role: int | None
+    warn_expiry: int | None
+    muted: list[int]
+    warn_count: int
+    suggestion_channel: int | None
+    auditlog: int | None
+    global_chat: GlobalChatType
+    giveaway: list[int | None]
+    hub: int | None
+    stats_channels: StatsChannelsType
+    starboard_config: StarboardConfigType
+    leveling: LevelingType
+    telephone: TelephoneType
+    cmd_config: dict
+    opts: OptsType
+    ticket_config: TicketConfigType
+    autoresponder: dict[str, dict]
+    default_defcon: DefaultDefconType

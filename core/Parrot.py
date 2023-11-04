@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
 
     from .Cog import Cog
-    from .types import AsyncMongoClient, MongoCollection, MongoDatabase
+    from .types import AsyncMongoClient, MongoCollection, MongoDatabase, PostType
 
 
 os.environ["JISHAKU_HIDE"] = "True"
@@ -204,7 +204,7 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin: Client = Client()
 
         # caching variables
-        self.guild_configurations_cache: Cache[int, dict[str, Any]] = Cache(self)
+        self.guild_configurations_cache: dict[int, PostType] = Cache(self)  # type: ignore
         self.message_cache: dict[int, discord.Message] = {}
         self.banned_users: dict[int, dict[str, int | str | bool]] = {}
         self.afk_users: set[int] = set()

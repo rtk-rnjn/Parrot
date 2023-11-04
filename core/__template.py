@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from .types import PostType
 
-post: dict[str, Any] = {
+post: PostType = {
     "prefix": "$",
     "mute_role": None,
     "mod_role": None,

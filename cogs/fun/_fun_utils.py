@@ -5,7 +5,6 @@ import string
 import unicodedata
 
 import discord
-from core import Context, ParrotView
 
 FILENAME_STRING = "{effect}_{author}.png"
 

@@ -580,12 +580,15 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         *,
         win: bool = False,
         loss: bool = False,
-        set: dict = None,
+        _set: dict = None,
         **kw: Any,
     ) -> bool:
-        if set is None:
-            set = {}
-        set_kwargs: dict[str, Any] = {f"game_{game_name}_{k}": v for k, v in set.items()}
+        if _set is None:
+            _set = {}
+        if not _set:
+            _set = kw.get("set", {})
+
+        set_kwargs: dict[str, Any] = {f"game_{game_name}_{k}": v for k, v in _set.items()}
         kwargs = {"$set": set_kwargs}
         if not win and not loss:
             update_result: UpdateResult = await self.bot.game_collections.update_one(
@@ -746,7 +749,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
         elif isinstance(entity, discord.User | discord.Member):
             entity: BytesIO = BytesIO(await entity.display_avatar.read())
             entity.seek(0)
-        else:   
+        else:
             url = LINKS_RE.findall(entity)
             if not url:
                 url = await emoji_to_url(entity)

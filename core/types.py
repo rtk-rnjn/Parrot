@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterable, Mapping, MutableMapping, Sequence
-from typing import Any, Generic, Union, TypedDict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Generic, TypedDict, Union
 
 from bson.codec_options import CodecOptions
 from bson.raw_bson import RawBSONDocument
@@ -395,10 +395,12 @@ class GlobalChatType(TypedDict):
     ignore_role: list[int]
     webhook: str | None
 
+
 class StatsChannelType(TypedDict):
     channel_id: int | None
     channel_type: str | None
     template: str | None
+
 
 class StatsChannelsType(TypedDict):
     bots: StatsChannelType
@@ -411,6 +413,7 @@ class StatsChannelsType(TypedDict):
     roles: StatsChannelType
     role: list[dict[str, int | str | None]]
 
+
 class StarboardConfigType(TypedDict):
     is_locked: bool
     limit: int | None
@@ -419,12 +422,14 @@ class StarboardConfigType(TypedDict):
     channel: int | None
     can_self_star: bool
 
+
 class LevelingType(TypedDict):
     enable: bool
     channel: int | None
     reward: list[dict[str, int | str]]
     ignore_role: list[int]
     ignore_channel: list[int]
+
 
 class TelephoneType(TypedDict):
     enable: bool
@@ -434,9 +439,11 @@ class TelephoneType(TypedDict):
     member_ping: int | None
     blocked: list[int]
 
+
 class OptsType(TypedDict):
     gitlink_enabled: bool
     equation_enabled: bool
+
 
 class TicketConfigType(TypedDict):
     enable: bool
@@ -447,6 +454,7 @@ class TicketConfigType(TypedDict):
     ticket_channel_ids: list[int]
     ticket_counter: int
 
+
 class DefaultDefconType(TypedDict):
     enabled: bool
     level: int
@@ -454,6 +462,7 @@ class DefaultDefconType(TypedDict):
     locked_channels: list[int]
     hidden_channels: list[int]
     broadcast: dict
+
 
 class PostType(TypedDict):
     _id: NotRequired[int]

@@ -599,14 +599,21 @@ class Owner(Cog, command_attrs={"hidden": True}):
             return
 
         for q, cursor, total_rows_affected, fin in results:
-            colums = [i[0] for i in cursor.description]
-            rslt = await cursor.fetchall()
-            table = tabulate(rslt, headers=colums, tablefmt="psql")
+            if cursor.description and total_rows_affected != -1:
+                colums = [i[0] for i in cursor.description]
+                rslt = await cursor.fetchall()
+                table = tabulate(rslt, headers=colums, tablefmt="psql")
+            else:
+                table = ""
+
             to_send += f"""```sql
 SQLite > {q.strip(' ')}
 {table}
 Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
 ```"""
+        if not to_send:
+            await ctx.send(f"Rows affected: **-1** | Time taken: **{super_fin:.3f}s**")
+            return
 
         if len(to_send) < 2000:
             await ctx.send(to_send)

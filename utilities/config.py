@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
-from typing import Any, overload
+from typing import Any, overload, Final
 
 import yaml
 
@@ -68,7 +68,7 @@ SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
-LRU_CACHE = 512
+LRU_CACHE: Final[int] = 512
 TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
 # TO_LOAD_IPC: bool = True
 

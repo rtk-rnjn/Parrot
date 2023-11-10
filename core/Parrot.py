@@ -152,9 +152,11 @@ class Parrot(commands.AutoShardedBot):
         topgg: topgg.client.DBLClient
         topgg_webhook: topgg.webhook.WebhookManager
 
+    recieved_logs: list[list] = []
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            command_prefix=self.get_prefix,  # type: ignore
+            command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
             intents=intents,
             activity=discord.Activity(type=discord.ActivityType.watching, name="you"),
@@ -215,7 +217,7 @@ class Parrot(commands.AutoShardedBot):
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
         self.ipc_server: ipc.server.Server = ipc.server.Server(
-            self,  # type: ignore
+            self,
             host=LOCALHOST,
             standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
@@ -1604,3 +1606,72 @@ class Parrot(commands.AutoShardedBot):
                     },
                 },
             )
+
+    # CREATE TABLE IF NOT EXISTS logs (
+    #       id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    #       level   INT NOT NULL,
+    #       message TEXT NOT NULL,
+    #       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    #       extra   TEXT,
+    #       UNIQUE(message, created_at)
+    # );
+
+    @overload
+    def log(
+        level: int | str,
+        message: str,
+        extra: dict[str, Any] | None = None,
+    ) -> None:
+        ...
+
+    @overload
+    def log(
+        *,
+        level: int | str,
+        message: str,
+        extra: dict[str, Any] | None = None,
+    ) -> None:
+        ...
+
+    @overload
+    def log(
+        level: int | str,
+        *,
+        message: str,
+        extra: dict[str, Any] | None = None,
+    ) -> None:
+        ...
+
+    @staticmethod
+    def log(
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        mapping = {
+            "debug": "DEBUG",
+            "info": "INFO",
+            "warning": "WARNING",
+            "error": "ERROR",
+            "critical": "CRITICAL",
+            "0": "DEBUG",
+            "1": "INFO",
+            "2": "WARNING",
+            "3": "ERROR",
+            "4": "CRITICAL",
+        }
+        level = kwargs.get("level") or args[0]
+        message = kwargs.get("message") or args[1]
+        extra = kwargs.get("extra") or args[2]
+        level = mapping.get(str(level).lower(), "INFO")
+        Parrot.recieved_logs.append([level, message or "None", extra])
+
+    async def _log(self) -> None:
+        if self.recieved_logs:
+            query = """
+                INSERT INTO logs (level, message, extra) VALUES (?, ?, ?) ON CONFLICT(message, created_at) DO NOTHING;
+            """
+            await self.sql.executemany(query, self.recieved_logs)
+
+    @tasks.loop(minutes=1)
+    async def log_loop(self):
+        await self._log()

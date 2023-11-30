@@ -169,7 +169,6 @@ typing_extensions
 tzdata
 urllib3
 uvicorn
-Wavelink @ git+https://github.com/PythonistaGuild/Wavelink
 Wand
 wcwidth
 Werkzeug

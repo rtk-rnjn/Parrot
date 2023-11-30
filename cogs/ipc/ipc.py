@@ -5,11 +5,8 @@ import time
 from random import choice
 from typing import Any
 
-import async_timeout
-import wavelink
 from discord.ext.ipc.objects import ClientPayload
 from discord.ext.ipc.server import Server
-from wavelink.ext import spotify
 
 import discord
 from api import cricket_api
@@ -285,29 +282,6 @@ class IPCRoutes(Cog):
                         },
                     )
         return MESSAGES
-
-    @Server.route()
-    async def start_wavelink_nodes(self, data: ClientPayload) -> dict[str, str]:
-        host = data.host
-        port = data.port
-        password = data.password
-        try:
-            async with async_timeout.timeout(5):
-                if hasattr(self.bot, "wavelink"):
-                    node: wavelink.Node = wavelink.Node(uri=f"{host}:{port}", password=password, id="PARROT_BOT_MAIN", session=self.bot.http_session, retries=1)
-                    await self.bot.wavelink.connect(
-                        client=self.bot,
-                        nodes=[node],
-                        spotify=spotify.SpotifyClient(
-                            client_id=os.environ.get("SPOTIFY_CLIENT_ID"),
-                            client_secret=os.environ.get("SPOTIFY_CLIENT_SECRET"),
-                        ),
-                    )
-            self.bot.WAVELINK_NODE_READY = True
-        except Exception as e:
-            return {"status": f"error: {e}"}
-
-        return {"status": "ok"}
 
     @Server.route()
     async def start_cricket_api(self, data: ClientPayload) -> dict[str, Any] | None:

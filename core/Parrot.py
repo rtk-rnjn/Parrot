@@ -19,7 +19,6 @@ import aioredis
 import aiosqlite
 import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
-import wavelink
 from aiohttp import ClientSession
 from pymongo.errors import ConnectionFailure, DuplicateKeyError
 from pymongo.results import DeleteResult, InsertOneResult
@@ -145,7 +144,6 @@ class Parrot(commands.AutoShardedBot):
     voice_clients: list[discord.VoiceProtocol]
 
     DBL_SERVER_RUNNING: bool = False
-    WAVELINK_NODE_READY: bool = False
     ON_DOCKER: bool = False
 
     if TYPE_CHECKING:
@@ -230,10 +228,7 @@ class Parrot(commands.AutoShardedBot):
 
         # Extensions
         self._successfully_loaded: list[str] = []
-        self._failed_to_load: dict[str, str] = {}
-
-        # Wavelink
-        self.wavelink: wavelink.NodePool = wavelink.NodePool()
+        self._failed_to_load: dict[str, str] = {}()
 
         self.GLOBAL_HEADERS: dict[str, str] = {
             "Accept": "application/json",
@@ -409,14 +404,6 @@ class Parrot(commands.AutoShardedBot):
 
             if not self.ON_DOCKER:
                 try:
-                    success = await self.ipc_client.request(
-                        "start_wavelink_nodes",
-                        host=LOCALHOST,
-                        port=LAVALINK_PORT,
-                        password=LAVALINK_PASSWORD,
-                    )
-                    log.debug("Wavelink nodes started: %s", success)
-
                     # start webserver to receive Top.GG webhooks
                     success = await self.ipc_client.request("start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook")
                     log.info("Top.GG webhook server started: %s", success)
@@ -630,9 +617,7 @@ class Parrot(commands.AutoShardedBot):
         if ls:
             self.afk_users = set(ls)  # type: ignore
 
-        content = "```css\n" + (
-            "- Wavelink Node is ready and running" if self.WAVELINK_NODE_READY else "- Wavelink Node is not running"
-        )
+        content = "```css"
         if self.HAS_TOP_GG:
             if self.DBL_SERVER_RUNNING:
                 content += "\n- Top.gg server is running"
@@ -655,15 +640,6 @@ class Parrot(commands.AutoShardedBot):
         for name, error in self._failed_to_load.items():
             st = f"```css\n[{self.user.name.title()}] Failed to load {name} cog due to``````py\n{error}```"
             await self._execute_webhook(self._error_log_token, content=f"{st}")
-
-        # Hmm...
-        cog = self.get_cog("Music")
-        if cog is not None and not self.WAVELINK_NODE_READY:
-            await self.unload_extension("cogs.music")
-            await self._execute_webhook(
-                self._startup_log_token,
-                content="```css\n- Unloaded music cog due to wavelink node not running```",
-            )
 
         VOICE_CHANNEL_ID = 1116780108074713098
         channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)  # type: ignore
@@ -690,10 +666,6 @@ class Parrot(commands.AutoShardedBot):
     async def update_app_commands_cache(self, guild: discord.Guild | None = None) -> None:
         """To update the application commands cache."""
         await self.__cache_app_commands(guild)
-
-    async def on_wavelink_node_ready(self, node: wavelink.Node):
-        """Event fired when a node has finished connecting."""
-        log.debug("Wavelink node %s is ready", node.id)
 
     async def on_connect(self) -> None:
         log.debug("Connected to discord")

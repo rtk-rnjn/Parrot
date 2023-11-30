@@ -7,7 +7,6 @@ import shlex
 from typing import Annotated, Literal
 
 import arrow
-import wavelink
 
 import discord
 from cogs.mod import method as mod_method
@@ -1462,8 +1461,7 @@ class Moderator(Cog):
         if channel is None:
             if voicestate := ctx.author.voice:
                 if not ctx.guild.me.voice:
-                    await voicestate.channel.connect(cls=wavelink.Player)
-                    # await voicestate.channel.connect()
+                    await voicestate.channel.connect()
                 else:
                     await ctx.guild.me.edit(voice_channel=voicestate.channel)
                 if not member:

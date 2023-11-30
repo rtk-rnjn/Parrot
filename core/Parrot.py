@@ -228,7 +228,7 @@ class Parrot(commands.AutoShardedBot):
 
         # Extensions
         self._successfully_loaded: list[str] = []
-        self._failed_to_load: dict[str, str] = {}()
+        self._failed_to_load: dict[str, str] = {}
 
         self.GLOBAL_HEADERS: dict[str, str] = {
             "Accept": "application/json",

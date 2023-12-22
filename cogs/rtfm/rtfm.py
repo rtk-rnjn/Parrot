@@ -1187,7 +1187,7 @@ class RTFM(Cog):
                 )
 
             soup = BeautifulSoup(await response.text(), features=HTML_PARSER)  # changed the parser
-            first_kata_div = await _doc.get_ele(soup.find_all, "div", class_="item-title px-0")  # type: ignore
+            first_kata_div = await _doc.get_ele(soup, "div", class_="item-title px-0")  # type: ignore
 
             if not first_kata_div:
                 msg = "No katas could be found with the filters provided."

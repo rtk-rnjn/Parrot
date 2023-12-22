@@ -601,7 +601,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if match_list and all(not self.__scam_link_cache.get(i, True) for i in set(match_list)):
             return False
 
-        with suppress(aiohttp.ClientOSError):
+        with suppress(aiohttp.ClientOSError, asyncio.TimeoutError):
             response = await self.bot.http_session.post(
                 API,
                 json={"message": message.content},

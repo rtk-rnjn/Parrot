@@ -23,7 +23,7 @@ class NSFW(Cog):
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
 
-        self.cached_images: dict[str, set[str]] = {}
+        self.cached_images: dict[str, list[str]] = {}
         self.ON_TESTING = False
 
         self._sexdotcomgif = SexDotComGif(session=self.bot.http_session)
@@ -75,8 +75,8 @@ class NSFW(Cog):
         embed.set_image(url=url)
 
         if type_str not in self.cached_images:
-            self.cached_images[type_str] = set()
-        self.cached_images[type_str].add(url)
+            self.cached_images[type_str] = []
+        self.cached_images[type_str].append(url)
         return embed
 
     async def _method(self, ctx: Context) -> None:

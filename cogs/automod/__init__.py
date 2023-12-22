@@ -185,7 +185,7 @@ class AutomaticModeration(Cog):
             ):
                 action: Action = rule_data["action"]
 
-                await action.execute(message=message)
+                await action.execute(message=message, member=message.author)
 
     @Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:

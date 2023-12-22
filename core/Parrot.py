@@ -746,6 +746,17 @@ class Parrot(commands.AutoShardedBot):
         if random.randint(0, 20) == random.randint(20, 40):
             await ctx.send(f"**Do you know?**\n{random.choice(TIPS)}", delete_after=20)
 
+    async def loop_try(self, coro: Awaitable[T], count: int | None = None) -> T | None:
+        """To run a coroutine in a loop."""
+        condition = count or True
+        while condition:
+            try:
+                return await coro
+            except Exception:
+                await asyncio.sleep(0.1)
+            if isinstance(condition, int):
+                condition -= 1
+
     async def on_message(self, message: discord.Message) -> None:
         self._seen_messages += 1
 
@@ -755,7 +766,7 @@ class Parrot(commands.AutoShardedBot):
         try:
             self.guild_configurations_cache[message.guild.id]
         except KeyError:
-            await self.update_server_config_cache.start(message.guild.id)
+            await self.loop_try(self.__update_server_config_cache(message.guild.id), count=3)
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             if message.channel.permissions_for(message.guild.me).send_messages:

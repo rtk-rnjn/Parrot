@@ -41,7 +41,7 @@ class PeggyPlayZ(Cog):
         await self.bot.wait_until_ready()
         await asyncio.sleep(5)
         if (
-            message.guild
+            message.guild is not None
             and message.guild.id == PEGGY_PLAYZ
             and (isinstance(message.channel, discord.TextChannel) and message.channel.is_news())
             and message.channel.id != UPLOAD_CHANNEL_ID

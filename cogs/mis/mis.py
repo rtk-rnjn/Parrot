@@ -131,10 +131,14 @@ _SEACH_FLAG_CONVERTERS = {
 
 
 def get_country_code(country: str) -> str | None:
-    for c, n in COUNTRY_CODES.items():
-        if country.lower() in (c.lower(), n.lower()):
-            return c
-    return None
+    return next(
+        (
+            c
+            for c, n in COUNTRY_CODES.items()
+            if country.lower() in (c.lower(), n.lower())
+        ),
+        None,
+    )
 
 
 def _prepare_input(text: str) -> str:

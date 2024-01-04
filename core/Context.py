@@ -195,6 +195,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             async with context.typing():
                 return await func(*args, **kwargs)
 
+        wrapped._callback = func
         return wrapped
 
     async def send(

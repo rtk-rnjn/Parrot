@@ -12,7 +12,7 @@ import traceback
 import types
 from collections import Counter, defaultdict, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload, cast
 
 import aiohttp
 import aioredis
@@ -154,7 +154,7 @@ class Parrot(commands.AutoShardedBot):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            command_prefix=self.get_prefix,
+            command_prefix=self.get_prefix,  # type: ignore
             case_insensitive=CASE_INSENSITIVE,
             intents=intents,
             activity=discord.Activity(type=discord.ActivityType.watching, name="you"),
@@ -215,7 +215,7 @@ class Parrot(commands.AutoShardedBot):
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
         self.ipc_server: ipc.server.Server = ipc.server.Server(
-            self,
+            self,  # type: ignore
             host=LOCALHOST,
             standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
@@ -299,8 +299,8 @@ class Parrot(commands.AutoShardedBot):
         raise AttributeError(msg)
 
     @property
-    def config(self) -> Cache:
-        return self.guild_configurations_cache
+    def config(self) -> Cache[int, PostType]:
+        return cast(Cache[int, PostType], self.guild_configurations_cache)
 
     @property
     def server(self) -> discord.Guild:
@@ -758,6 +758,7 @@ class Parrot(commands.AutoShardedBot):
                 condition -= 1
 
     async def on_message(self, message: discord.Message) -> None:
+        # sourcery skip: use-contextlib-suppress
         self._seen_messages += 1
 
         if message.guild is None or message.author.bot:
@@ -1031,9 +1032,7 @@ class Parrot(commands.AutoShardedBot):
         self._have_data.clear()
         log.debug("Event cleared")
         self._current_timer = None
-        log.debug(
-            "Current timers set to None",
-        )
+        log.debug("Current timers set to None")
         await self._have_data.wait()
         log.debug("Event waited")
         return await self.get_active_timer()
@@ -1493,6 +1492,7 @@ class Parrot(commands.AutoShardedBot):
         self.__user_timezone_cache[user_id] = timezone
 
     async def ban_user(self, *, user_id: int, reason: str, command: bool = True, send: bool = False, **kw: bool):
+        # sourcery skip: use-contextlib-suppress
         collection = self.extra_collections
 
         query = {
@@ -1651,7 +1651,7 @@ class Parrot(commands.AutoShardedBot):
     async def _log(self) -> None:
         if self.recieved_logs:
             query = """
-                INSERT INTO logs (level, message, extra) VALUES (?, ?, ?) ON CONFLICT(message, created_at) DO NOTHING;
+                INSERT INTO logs (level, message, extra) VALUES (?, ?, ?) ON CONFLICT DO NOTHING;
             """
             await self.sql.executemany(query, self.recieved_logs)
 

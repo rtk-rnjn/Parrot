@@ -5,7 +5,7 @@ from typing import Any
 import discord
 from discord.ext import commands
 
-__all__ = ("Cog",)
+__all__: tuple[str, ...] = ("Cog",)
 
 
 class Cog(commands.Cog):

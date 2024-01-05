@@ -599,12 +599,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
             return
 
         for q, cursor, total_rows_affected, fin in results:
-            if cursor.description and total_rows_affected != -1:
-                colums = [i[0] for i in cursor.description]
-                rslt = await cursor.fetchall()
-                table = tabulate(rslt, headers=colums, tablefmt="psql")
-            else:
-                table = ""
+            colums = [i[0] for i in cursor.description]
+            rslt = await cursor.fetchall()
+            table = tabulate(rslt, headers=colums, tablefmt="psql")
 
             to_send += f"""```sql
 SQLite > {q.strip(' ')}

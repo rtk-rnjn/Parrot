@@ -1,29 +1,28 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import os
 import socket
-import aioredis
 
+import aioredis
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app import runner
 from core import Parrot
 from updater import init
-from utilities.config import DATABASE_KEY, DATABASE_URI, MINIMAL_BOOT, TOKEN, VERSION, REDIS_URI
+from utilities.config import DATABASE_KEY, DATABASE_URI, MINIMAL_BOOT, REDIS_URI, TOKEN, VERSION
 
 bot: Parrot = Parrot()
 
 if os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 else:
-    try:
-        import uvloop  # type: ignore
+    with contextlib.suppress(ImportError):
+        import uvloop
 
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    except ImportError:
-        pass
 
 
 async def main() -> None:

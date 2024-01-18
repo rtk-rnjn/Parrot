@@ -111,6 +111,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         ]
         self.message_append: list[discord.Message] = []
         self.__scam_link_cache: dict[str, bool] = {}
+        self.__global_chat_cache: dict[int, dict] = {}
 
     @overload
     async def _fetch_response(self, url: ..., response_format: ...) -> None:
@@ -467,15 +468,20 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if self.is_banned(message.author):
             return
 
-        data = await self.bot.guild_configurations.find_one(
-            {
-                "_id": message.guild.id,
-                "global_chat.channel_id": message.channel.id,
-                "global_chat.enable": True,
-            },
-        )
-        if data is None:
-            return
+        if message.guild.id not in self.__global_chat_cache:
+            # LRU?
+            data = await self.bot.guild_configurations.find_one(
+                {
+                    "_id": message.guild.id,
+                    "global_chat.channel_id": message.channel.id,
+                    "global_chat.enable": True,
+                },
+            )
+            if data is None:
+                return
+            self.__global_chat_cache[message.guild.id] = data
+        else:
+            data = self.__global_chat_cache[message.guild.id]
 
         data = data["global_chat"]
 

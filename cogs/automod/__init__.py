@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import TypedDict
 
 import discord
 from core import Cog, Context, Parrot
@@ -10,6 +11,18 @@ from .parsers import Action, Condition, Trigger
 from .views import Automod
 
 
+class AutoModRawObject(TypedDict):
+    trigger: list
+    condition: list
+    action: list
+
+
+class AutoModObject(TypedDict):
+    trigger: Trigger
+    condition: Condition
+    action: Action
+
+
 class AutomaticModeration(Cog):
     """Hihghly customizable automod system for your server!"""
 
@@ -17,7 +30,7 @@ class AutomaticModeration(Cog):
         self.bot = bot
         self._was_ready = False
 
-        self._auto_mod: dict[int, dict[str, dict[str, list]]] = {}
+        self._auto_mod: dict[int, dict[str, AutoModRawObject]] = {}
         # {
         #     guild_id: {
         #         "rule_name": {
@@ -29,7 +42,7 @@ class AutomaticModeration(Cog):
         #     ...
         # }
 
-        self.auto_mod: dict[int, dict[str, dict[str, Trigger | Condition | Action]]] = {}
+        self.auto_mod: dict[int, dict[str, AutoModObject]] = {}
         # {
         #     guild_id: {
         #         "rule_name": {

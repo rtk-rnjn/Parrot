@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from core import Parrot
-    from events.on_msg import OnMsg
-
 import re
+from typing import TYPE_CHECKING
 
 from discord.utils import maybe_coroutine
 
 from discord import Member, Message
 from discord.ext import commands
 from utilities.regex import INVITE_RE, LINKS_RE
+
+if TYPE_CHECKING:
+    from core import Parrot
+    from events.on_msg import OnMsg
 
 OPERATRORS = {
     "all": all,
@@ -54,8 +53,11 @@ class Trigger:
             except AttributeError:
                 continue
 
-            value = await maybe_coroutine(func, **kw, **tgr)
-            ls.append(value)
+            try:
+                value = await maybe_coroutine(func, **kw, **tgr)
+                ls.append(value)
+            except TypeError:
+                continue
 
         return self.operator(ls)
 

@@ -103,8 +103,8 @@ class Sudoku:
         def line_ok(e):
             if len(set(e)) != 9:
                 return False
-            for i in range(len(e)):
-                if e[i] not in range(1, 10):
+            for i, item in enumerate(e):
+                if item not in range(1, 10):
                     return False
             return True
 

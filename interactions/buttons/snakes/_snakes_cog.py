@@ -529,8 +529,8 @@ class Snakes(Cog):
                     page_guess_list[antidote_tries] = " ".join(antidote_guess_list)
 
                     # Now check guess
-                    for i in range(len(antidote_answer)):
-                        if antidote_guess_list[i] == antidote_answer[i]:
+                    for i, item in enumerate(antidote_answer):
+                        if antidote_guess_list[i] == item:
                             guess_result.append(TICK_EMOJI)
                         elif antidote_guess_list[i] in antidote_answer:
                             guess_result.append(BLANK_EMOJI)

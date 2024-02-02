@@ -148,11 +148,11 @@ class NASA(Cog):
             return await ctx.reply(f"{ctx.author.mention} could not find EPIC | Http status: {r.status}")
 
         em_list: list[discord.Embed] = []
-        for index in range(len(res)):
-            caption = res[index]["caption"]
-            im = res[index]["image"]
-            lat = res[index]["centroid_coordinates"]["lat"]
-            lon = res[index]["centroid_coordinates"]["lon"]
+        for index, item in enumerate(res):
+            caption = item["caption"]
+            im = item["image"]
+            lat = item["centroid_coordinates"]["lat"]
+            lon = item["centroid_coordinates"]["lon"]
             link = f"https://epic.gsfc.nasa.gov/epic-archive/jpg/{im}.jpg"
             embed = (
                 discord.Embed(
@@ -188,21 +188,21 @@ class NASA(Cog):
         em_list: list[discord.Embed] = []
 
         for date in res["near_earth_objects"]:
-            for index in range(len(res["near_earth_objects"][date])):
-                link_self = res["near_earth_objects"][date][index]["nasa_jpl_url"]
-                name_end = res["near_earth_objects"][date][index]["name"]
-                id_end = res["near_earth_objects"][date][index]["neo_reference_id"]
+            for index, item in enumerate(res["near_earth_objects"][date]):
+                link_self = item["nasa_jpl_url"]
+                name_end = item["name"]
+                id_end = item["neo_reference_id"]
                 dia = round(
-                    float(res["near_earth_objects"][date][index]["estimated_diameter"]["meters"]["estimated_diameter_min"]),
+                    float(item["estimated_diameter"]["meters"]["estimated_diameter_min"]),
                 )
-                danger = res["near_earth_objects"][date][index]["is_potentially_hazardous_asteroid"]
-                approach_date = res["near_earth_objects"][date][index]["close_approach_data"][0]["close_approach_date"]
-                velocity = res["near_earth_objects"][date][index]["close_approach_data"][0]["relative_velocity"][
+                danger = item["is_potentially_hazardous_asteroid"]
+                approach_date = item["close_approach_data"][0]["close_approach_date"]
+                velocity = item["close_approach_data"][0]["relative_velocity"][
                     "kilometers_per_hour"
                 ]
-                miss_dist = res["near_earth_objects"][date][index]["close_approach_data"][0]["miss_distance"]["kilometers"]
-                orbiting = res["near_earth_objects"][date][index]["close_approach_data"][0]["orbiting_body"]
-                is_sentry_object = res["near_earth_objects"][date][index]["is_sentry_object"]
+                miss_dist = item["close_approach_data"][0]["miss_distance"]["kilometers"]
+                orbiting = item["close_approach_data"][0]["orbiting_body"]
+                is_sentry_object = item["is_sentry_object"]
 
                 embed = (
                     discord.Embed(
@@ -288,10 +288,10 @@ class NASA(Cog):
 
         em_list: list[discord.Embed] = []
 
-        for index in range(len(res["photos"])):
-            img = res["photos"][index]["img_src"]
-            date_ = res["photos"][index]["earth_date"]
-            status = res["photos"][index]["rover"]["status"].capitalize()
+        for index, item in enumerate(res["photos"]):
+            img = item["img_src"]
+            date_ = item["earth_date"]
+            status = item["rover"]["status"].capitalize()
 
             embed = (
                 discord.Embed(
@@ -326,8 +326,8 @@ class NASA(Cog):
         if not res["collection"]["items"]:
             await ctx.reply(f"{ctx.author.mention} could not find **{string}** in NASA Image and Video Library.")
         em_list: list[discord.Embed] = []
-        for index in range(len(res["collection"]["items"])):
-            if data := res["collection"]["items"][index]:
+        for index, item in enumerate(res["collection"]["items"]):
+            if data := item:
                 try:
                     title = data["data"][0]["title"]
                     description = data["data"][0]["description"]

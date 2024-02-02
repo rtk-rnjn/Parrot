@@ -10,11 +10,11 @@ def get_action_color(action: discord.AuditLogAction) -> int:
     category = getattr(action, "category", None)
     if category is None:
         return 0x2F3136
-    elif category.value == 1:
+    if category.value == 1:
         return 0x3BA55C
-    elif category.value == 2:
+    if category.value == 2:
         return 0xEC4245
-    elif category.value == 3:
+    if category.value == 3:
         return 0xFAA61A
     return 0x2F3136
 
@@ -23,10 +23,9 @@ def resolve_target(target: Any) -> str:
     attr = getattr(target, "mention", None) or getattr(target, "name", None) or getattr(target, "id", None)
     if attr is None:
         return "Can not determine the target"
-    elif isinstance(attr, int):
+    if isinstance(attr, int):
         return f"<'Can not determine the target': {attr}>"
-    else:
-        return attr
+    return attr
 
 
 def get_permissions_changes(entry: discord.AuditLogEntry, change_type: str):
@@ -46,9 +45,9 @@ def get_permissions_changes(entry: discord.AuditLogEntry, change_type: str):
 def get_change_value(entry: discord.AuditLogEntry, change_type: str) -> str | None:
     if change_type in {"overwrites", "permissions", "allow", "deny"}:
         return get_permissions_changes(entry, change_type)
-    elif change_type == "roles":
+    if change_type == "roles":
         return _get_change_value_roles(entry)
-    elif hasattr(entry.before, change_type) and hasattr(entry.after, change_type):
+    if hasattr(entry.before, change_type) and hasattr(entry.after, change_type):
         return f"**{change_type.replace('_', ' ').title()}:** {getattr(entry.before, change_type)} -> {getattr(entry.after, change_type)}"
     return None
 

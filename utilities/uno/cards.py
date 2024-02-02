@@ -112,17 +112,17 @@ class Card:
     def emoji(self) -> str:
         if self.type is CardType.plus_4:
             return Emojis.plus_4
-        elif self.type is CardType.wild:
+        if self.type is CardType.wild:
             return Emojis.wild
 
         sink = getattr(Emojis, self.color.name)
         if self.type is CardType.number:
             return sink.numbers[self.value]
-        elif self.type is CardType.plus_2:
+        if self.type is CardType.plus_2:
             return sink.plus_2
-        elif self.type is CardType.reverse:
+        if self.type is CardType.reverse:
             return sink.reverse
-        elif self.type is CardType.skip:
+        if self.type is CardType.skip:
             return sink.skip
 
     @property

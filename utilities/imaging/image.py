@@ -229,8 +229,7 @@ def resize_pil_prop(
 
     if getattr(image, "is_animated", False) and process_gif:
         return ImageSequence.all_frames(image, resize_image)
-    else:
-        return resize_image(image)
+    return resize_image(image)
 
 
 def resize_wand_prop(
@@ -326,7 +325,7 @@ def save_pil_image(
     if is_gif := isinstance(image, list):
         return save_wand_image(image, duration=duration)
 
-    elif is_gif := getattr(image, "is_animated", False):
+    if is_gif := getattr(image, "is_animated", False):
         return save_wand_image(ImageSequence.Iterator(image), duration=duration)
 
     output = BytesIO()

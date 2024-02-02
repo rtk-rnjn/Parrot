@@ -222,8 +222,7 @@ class BattleShip:
     def get_board(self, player: discord.User | discord.Member | Player, other: bool = False) -> Board:
         if other:
             return self.player2_board if player == self.player1 else self.player1_board
-        else:
-            return self.player1_board if player == self.player1 else self.player2_board
+        return self.player1_board if player == self.player1 else self.player2_board
 
     def place_move(self, player: discord.User, coords: Coords) -> tuple[bool, bool]:
         board = self.get_board(player)
@@ -276,10 +275,9 @@ class BattleShip:
     def who_won(self) -> discord.User | discord.Member | None:
         if self.player1_board.won():
             return self.player2
-        elif self.player2_board.won():
+        if self.player2_board.won():
             return self.player1
-        else:
-            return None
+        return None
 
     async def get_ship_inputs(self, ctx: Context[Parrot], user: discord.User | discord.Member) -> bool:
         board = self.get_board(user)
@@ -549,10 +547,9 @@ class CoordButton(discord.ui.Button["BattleshipView"]):
 
             self.view.update_views()
             return await game.process_move(raw, coords)
-        else:
-            self.view.alpha = self.label.lower()
-            self.view.initialize_view(clear=True)
-            return await interaction.response.edit_message(view=self.view)
+        self.view.alpha = self.label.lower()
+        self.view.initialize_view(clear=True)
+        return await interaction.response.edit_message(view=self.view)
 
 
 class BattleshipView(BaseView):
@@ -733,8 +730,7 @@ class BetaBattleShip(BattleShip):
         player = getattr(player, "player", player)
         if other:
             return self.player2_board if player == self.player1.player else self.player1_board
-        else:
-            return self.player1_board if player == self.player1.player else self.player2_board
+        return self.player1_board if player == self.player1.player else self.player2_board
 
     async def get_ship_inputs(self, user: Player) -> Coroutine[Any, Any, bool]:
         embed, file, _, _ = await self.get_file(user)

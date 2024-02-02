@@ -70,8 +70,7 @@ async def wait_for_delete(
     def check(reaction: discord.Reaction, _user: discord.User) -> bool:
         if reaction.emoji == emoji and reaction.message == message:
             return _user in user if isinstance(user, tuple) else _user == user
-        else:
-            return False
+        return False
 
     resolved_bot: discord.Client = bot or ctx.bot
     try:

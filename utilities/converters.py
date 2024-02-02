@@ -349,8 +349,7 @@ class UrlConverter(commands.Converter):
                 async with ctx.bot.http_session.get(match.group()) as gif:
                     if gif.ok:
                         return await gif.read()
-                    else:
-                        raise bad_arg
+                    raise bad_arg
             else:
                 raise bad_arg
         except Exception as e:
@@ -365,8 +364,7 @@ class UrlConverter(commands.Converter):
             async with ctx.bot.http_session.get(raw_url) as raw:
                 if raw.ok:
                     return await raw.read()
-                else:
-                    raise bad_arg
+                raise bad_arg
         except Exception as e:
             raise bad_arg from e
 
@@ -383,12 +381,11 @@ class UrlConverter(commands.Converter):
                         if r.content_type.startswith("image/svg"):
                             byt = await asyncio.to_thread(image_mod.svg_to_png, byt)
                         return byt
-                    elif TENOR_PAGE_REGEX.fullmatch(argument):
+                    if TENOR_PAGE_REGEX.fullmatch(argument):
                         return await self.find_tenor_gif(ctx, r)
-                    elif imgur := IMGUR_PAGE_REGEX.fullmatch(argument):
+                    if imgur := IMGUR_PAGE_REGEX.fullmatch(argument):
                         return await self.find_imgur_img(ctx, imgur)
-                    else:
-                        raise bad_arg
+                    raise bad_arg
                 else:
                     raise bad_arg
         except Exception as e:

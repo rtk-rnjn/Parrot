@@ -29,9 +29,9 @@ def get_text(
     initial_str = f"{ctx.author.mention} **{cmd_cog}** {is_are} now {tp}"
     if not target:
         return f"{initial_str} **server** wide"
-    elif isinstance(target, discord.TextChannel):
+    if isinstance(target, discord.TextChannel):
         return f"{initial_str} for **{target.mention}**"
-    elif isinstance(target, discord.Role):
+    if isinstance(target, discord.Role):
         return f"{initial_str} for **{target.name} ({target.id})**"
 
 

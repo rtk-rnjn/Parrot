@@ -33,8 +33,7 @@ def recursive_map(func, data):
     """Recursively applies a map function to a list and all sublists."""
     if isinstance(data, list):
         return [recursive_map(func, elem) for elem in data]
-    else:
-        return func(data)
+    return func(data)
 
 
 def string_to_bool(string):
@@ -61,9 +60,7 @@ def solve_phrase(phrase):
         # single operand operation
         if len(phrase) == 2:
             return OPERATIONS[phrase[0]](solve_phrase(phrase[1]))
-        # double operand operation
-        else:
-            return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
+        return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
 
 
 def group_operations(phrase):
@@ -192,10 +189,9 @@ class Truths:
 
         if sum(df.iloc[:, col_number]) == len(df):
             return "Tautology"
-        elif sum(df.iloc[:, col_number]) == 0:
+        if sum(df.iloc[:, col_number]) == 0:
             return "Contradiction"
-        else:
-            return "Contingency"
+        return "Contingency"
 
     def __str__(self) -> str:
         table = Truths.as_tabulate(self, index=False)

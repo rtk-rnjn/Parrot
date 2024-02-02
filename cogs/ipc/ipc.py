@@ -322,8 +322,7 @@ class IPCRoutes(Cog):
         if event := raw.pop("event", None):
             self.bot.dispatch(event, raw)
             return {"status": "ok"}
-        else:
-            return {"status": "error"}
+        return {"status": "error"}
 
     @Server.route()
     async def guild_exists(self, data: ClientPayload) -> dict[str, bool]:

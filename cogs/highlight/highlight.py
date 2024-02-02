@@ -595,7 +595,7 @@ class Highlight(Cog):
             )
             return f":no_entry_sign: Blocked `{entity}`."
 
-        elif isinstance(entity, discord.TextChannel | discord.CategoryChannel):
+        if isinstance(entity, discord.TextChannel | discord.CategoryChannel):
             if entity.id in settings["blocked_channels"]:
                 return "This channel is already blocked."
 
@@ -620,7 +620,7 @@ class Highlight(Cog):
             )
             return f":white_check_mark: Unblocked `{entity}`."
 
-        elif isinstance(entity, discord.TextChannel | discord.CategoryChannel):
+        if isinstance(entity, discord.TextChannel | discord.CategoryChannel):
             if entity.id not in settings["blocked_channels"]:
                 return "This channel is not blocked."
             await self.bot.user_collections_ind.update_one(

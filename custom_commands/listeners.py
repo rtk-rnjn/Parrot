@@ -78,7 +78,7 @@ class Sector17Listeners(Cog):
                     and invoker_message.author.display_name in message.content
                     and not OWO_COOLDOWN.search(message.content)
                 )
-            elif message_type == "embed":
+            if message_type == "embed":
                 if not message.embeds:
                     return False
 

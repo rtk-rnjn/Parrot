@@ -733,8 +733,7 @@ class Parrot(commands.AutoShardedBot):
                     f"**{message.author.mention} Stop spamming commands! Warn Count: {self._auto_spam_count[message.author.id]}**",
                 )
                 return
-            else:
-                self._auto_spam_count.pop(message.author.id, None)
+            self._auto_spam_count.pop(message.author.id, None)
 
         if getattr(ctx.cog, "ON_TESTING", False):
             return

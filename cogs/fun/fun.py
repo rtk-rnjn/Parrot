@@ -1556,14 +1556,14 @@ class Fun(Cog):
         if not res["list"]:
             return await ctx.reply(f"{ctx.author.mention} **{t}** means nothings. Try something else")
         em_list = []
-        for i in range(len(res["list"])):
-            _def = res["list"][i]["definition"]
-            _link = res["list"][i]["permalink"]
-            thumbs_up = res["list"][i]["thumbs_up"]
-            thumbs_down = res["list"][i]["thumbs_down"]
-            author = res["list"][i]["author"]
-            example = res["list"][i]["example"]
-            word = res["list"][i]["word"].capitalize()
+        for i, item in enumerate(res["list"]):
+            _def = item["definition"]
+            _link = item["permalink"]
+            thumbs_up = item["thumbs_up"]
+            thumbs_down = item["thumbs_down"]
+            author = item["author"]
+            example = item["example"]
+            word = item["word"].capitalize()
             embed = discord.Embed(
                 title=f"{word}",
                 description=f"{cleanup_definition(_def)}",

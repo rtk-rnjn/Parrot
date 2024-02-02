@@ -438,13 +438,13 @@ class Misc(Cog):
             return await ctx.error(f"{ctx.author.mention} something not right!")
 
         em_list = []
-        for data in range(len(res["articles"])):
-            source = res["articles"][data]["source"]["name"]
-            author = res["articles"][data]["author"]
-            title = res["articles"][data]["title"]
-            description = res["articles"][data]["description"]
-            img = res["articles"][data]["urlToImage"]
-            content = res["articles"][data]["content"] or "N/A"
+        for data, item in enumerate(res["articles"]):
+            source = item["source"]["name"]
+            author = item["author"]
+            title = item["title"]
+            description = item["description"]
+            img = item["urlToImage"]
+            content = item["content"] or "N/A"
 
             embed = (
                 Embed(
@@ -770,14 +770,14 @@ class Misc(Cog):
 
         em_list = []
 
-        for i in range(len(main["videos"])):
-            _1_title = main["videos"][i]["title"]
-            _1_descr = main["videos"][i]["long_desc"]
-            _1_chann = main["videos"][i]["channel"]
-            _1_views = main["videos"][i]["views"]
-            _1_urlsu = "https://www.youtube.com" + str(main["videos"][i]["url_suffix"])
-            _1_durat = main["videos"][i]["duration"]
-            _1_thunb = str(main["videos"][i]["thumbnails"][0])
+        for i, item in enumerate(main["videos"]):
+            _1_title = item["title"]
+            _1_descr = item["long_desc"]
+            _1_chann = item["channel"]
+            _1_views = item["views"]
+            _1_urlsu = "https://www.youtube.com" + str(item["url_suffix"])
+            _1_durat = item["duration"]
+            _1_thunb = str(item["thumbnails"][0])
             embed = (
                 discord.Embed(
                     title=f"YouTube search results: {query}",

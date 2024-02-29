@@ -111,8 +111,8 @@ class Owner(Cog, command_attrs={"hidden": True}):
     ):
         """Fun command."""
         await ctx.message.delete(delay=0)
-        target = target or ctx.channel  # type: ignore
-        await target.send(  # type: ignore
+        target = target or ctx.channel
+        await target.send(
             embed=discord.Embed(
                 title="You've been gifted a subscription!",
                 description="You've been gifted Nitro for **1 month!**\nExpires in **24 hours**",
@@ -207,7 +207,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
     async def dr(self, ctx: Context):
         """To delete the message reference."""
         await ctx.message.delete(delay=0)
-        await ctx.message.reference.resolved.delete(delay=0)  # type: ignore
+        await ctx.message.reference.resolved.delete(delay=0)
 
     @commands.command()
     async def spy_server(
@@ -506,7 +506,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
-    async def toggle_testing(self, ctx: Context, cog: str, toggle: Annotated[bool | None, convert_bool] = None) -> None:  # type: ignore
+    async def toggle_testing(self, ctx: Context, cog: str, toggle: Annotated[bool | None, convert_bool] = None) -> None:
         """Update the cog setting to toggle testing mode.
 
         ```py
@@ -556,7 +556,7 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await view.init()
 
     @commands.command(alises=["sql3", "sqlite3", "sqlite"])
-    async def sql(self, ctx: Context, *, queries: str):  # type: ignore
+    async def sql(self, ctx: Context, *, queries: str):
         """SQL query.
 
         This is equivalent to:
@@ -567,9 +567,9 @@ class Owner(Cog, command_attrs={"hidden": True}):
         ...
         ```
         """
-        queries = queries.replace("```sql", "").replace("```", "").strip("`").strip()  # type: ignore
+        queries = queries.replace("```sql", "").replace("```", "").strip("`").strip()
 
-        queries: list[str] = queries.split(";")  # type: ignore
+        queries: list[str] = queries.split(";")
         sql = self.bot.sql  # sqlite3
 
         super_ini = arrow.utcnow().timestamp()
@@ -990,7 +990,7 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message):
             return m.author == ctx.me or m.content.startswith(prefixes)
 
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # type: ignore
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)
 
     async def _regular_user_cleanup_strategy(self, ctx: Context, search: int):
@@ -999,5 +999,5 @@ class DiscordPy(Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message):
             return (m.author == ctx.me or m.content.startswith(prefixes)) and not m.mentions and not m.role_mentions
 
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # type: ignore
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
         return Counter(m.author.display_name for m in deleted)

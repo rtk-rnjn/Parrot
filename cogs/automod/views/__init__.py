@@ -205,7 +205,7 @@ def get_text_input(*, name: str, value: str) -> discord.ui.TextInput:
 
 
 class Modal(ParrotModal):
-    def __init__(self, *, data: str, main_data: list, **kw) -> None:  # type: ignore
+    def __init__(self, *, data: str, main_data: list, **kw) -> None:
         data: dict = json.loads(data)
         self.main_data = main_data
         self.__type = tp = data.pop("type")

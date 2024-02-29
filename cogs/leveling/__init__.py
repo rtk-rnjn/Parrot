@@ -9,8 +9,7 @@ from pymongo import ReturnDocument
 from tabulate import tabulate
 
 import discord
-from core import Cog, Context, Parrot
-from core import MongoCollection as Collection
+from core import Cog, Context, MongoCollection as Collection, Parrot
 from discord.ext import commands
 from utilities.converters import convert_bool
 from utilities.rankcard import rank_card
@@ -86,19 +85,19 @@ class Leveling(Cog):
                 return xp
             await asyncio.sleep(0)
 
-    async def __get_rank(self, *, collection: Collection, member: discord.Member) -> int:  # type: ignore
+    async def __get_rank(self, *, collection: Collection, member: discord.Member) -> int:
         countr = 0
 
         # you can't use `enumerate`
         async for data in collection.find({}, sort=[("xp", -1)]):
             countr += 1
-            if data["_id"] == member.id:  # type: ignore
+            if data["_id"] == member.id:
                 return countr
 
     async def __get_entries(self, *, collection: Collection, limit: int, guild: discord.Guild):
         ls = []
         async for data in collection.find({}, limit=limit, sort=[("xp", -1)]):
-            if member := await self.bot.get_or_fetch_member(guild, data["_id"]):  # type: ignore
+            if member := await self.bot.get_or_fetch_member(guild, data["_id"]):
                 ls.append(f"{member} (`{member.id}`)")
         return ls
 
@@ -284,8 +283,8 @@ class Leveling(Cog):
         else:
             collection = self.bot.guild_level_db[f"{message.guild.id}"]
             ch: discord.TextChannel | None = await self.bot.getch(
-                self.bot.get_channel,  # type: ignore
-                self.bot.fetch_channel,  # type: ignore
+                self.bot.get_channel,
+                self.bot.fetch_channel,
                 announce_channel,
                 force_fetch=True,
             )

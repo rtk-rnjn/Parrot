@@ -14,7 +14,7 @@ from discord.utils import MISSING
 import discord
 import emojis
 from core import Context, Parrot
-from discord.ext import boardgames, commands, old_menus as menus  # type: ignore
+from discord.ext import boardgames, commands, old_menus as menus
 
 from .__constants import (
     BIG,

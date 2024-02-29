@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import deque
 
 import discord
-from core import Cog, Parrot, Context
+from core import Cog, Context, Parrot
 from discord.ext import commands
 
 

@@ -34,7 +34,7 @@ async def main() -> None:
             if not hasattr(bot, "__version__"):
                 bot.__version__ = VERSION
 
-            bot.mongo = AsyncIOMotorClient(DATABASE_URI.format(DATABASE_KEY))  # type: ignore
+            bot.mongo = AsyncIOMotorClient(DATABASE_URI.format(DATABASE_KEY))
             redis = await aioredis.from_url(REDIS_URI, encoding="utf-8", decode_responses=True, max_connections=1000)
             bot.redis = redis
 

@@ -197,7 +197,7 @@ class Love(Cog):
                 final_embed.description = f"Zodiac sign could not be found because.\n```\n{e}\n```"
 
             else:
-                final_embed = self.zodiac_build_embed(zodiac_sign_based_on_date)  # type: ignore
+                final_embed = self.zodiac_build_embed(zodiac_sign_based_on_date)
 
         await ctx.send(embed=final_embed)
 
@@ -320,7 +320,7 @@ class Love(Cog):
         # Hash inputs to guarantee consistent results (hashing algorithm choice arbitrary)
         #
         # hashlib is used over the builtin hash() to guarantee same result over multiple runtimes
-        m = hashlib.sha256(who.encode() + whom.encode())  # type: ignore
+        m = hashlib.sha256(who.encode() + whom.encode())
         # Mod 101 for [0, 100]
         love_percent = sum(m.digest()) % 101
 

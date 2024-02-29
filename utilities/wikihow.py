@@ -90,7 +90,7 @@ class Parser:
                 if para := div.find("p"):
                     main["intro"] = para.text
 
-            head: Tag | None = div.previous_sibling  # type: ignore
+            head: Tag | None = div.previous_sibling
             if head and head.name == "h2":
                 idx = 0
                 __head = self._parse_heading(head)

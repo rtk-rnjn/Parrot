@@ -19,14 +19,14 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 matplotlib.use("agg")
-plt.style.use(("bmh", "ggplot"))  # type: ignore
+plt.style.use(("bmh", "ggplot"))
 __all__: tuple[str, ...] = (
     "boxplot",
     "plotfn",
 )
 
 CODEFONT: FontProperties = FontProperties(
-    fname="extra/Monaco-Linux.ttf",  # type: ignore
+    fname="extra/Monaco-Linux.ttf",
 )
 
 

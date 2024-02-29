@@ -8,11 +8,11 @@ if TYPE_CHECKING:
     from core import Parrot
 
 import arrow
+from discord.abc import GuildChannel
+from discord.utils import MISSING, maybe_coroutine, utcnow
 from tabulate import tabulate
 
 from discord import Forbidden, Member, Message, Object, PermissionOverwrite
-from discord.abc import GuildChannel
-from discord.utils import MISSING, maybe_coroutine, utcnow
 
 reason_init = """AutoMod: {reason}
 Sent from {guild.name} ({guild.id})
@@ -213,11 +213,11 @@ class Action:
         await _mute(
             guild=member.guild,
             command_name="",
-            ctx=None,  # type: ignore
+            ctx=None,
             member=member,
             reason="Automod",
             silent=True,
-            destination=None,  # type: ignore
+            destination=None,
         )
 
     async def set_nickname(self, *, member: Member, nickname: str, **kw) -> None:
@@ -257,4 +257,4 @@ class Action:
     async def send_message(self, *, message: Message, msg: str, delete_after: int, channel: int, **kw) -> None:
         assert message.guild is not None and isinstance(message.channel, GuildChannel)
         ch = message.guild.get_channel(channel) or message.channel
-        await ch.send(msg, delete_after=delete_after)  # type: ignore
+        await ch.send(msg, delete_after=delete_after)

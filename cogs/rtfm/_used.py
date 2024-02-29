@@ -45,7 +45,7 @@ def prepare_payload(payload: str):
 async def execute_run(
     bot: Parrot,
     language: str,
-    code: str,  # type: ignore
+    code: str,
 ) -> str:
     # Powered by tio.run
 
@@ -66,14 +66,14 @@ async def execute_run(
             code.pop(i)
             code.pop(i)  # remove following whitespace character
 
-    code = "".join(code)  # type: ignore
+    code = "".join(code)
 
     compilerFlags = []
     commandLineOptions = []
     args = []
     inputs = []
 
-    lines = code.split("\n")  # type: ignore
+    lines = code.split("\n")
     code = []
     for line in lines:
         if line.startswith("input "):
@@ -89,7 +89,7 @@ async def execute_run(
 
     inputs = "\n".join(inputs)
 
-    code = "\n".join(code)  # type: ignore
+    code = "\n".join(code)
 
     # common identifiers, also used in highlight.js and thus discord codeblocks
     quickmap: dict[str, str] = {
@@ -127,10 +127,10 @@ async def execute_run(
 
         return output
 
-    code = code.strip("`")  # type: ignore
+    code = code.strip("`")
 
     if "\n" in code:
-        firstLine = code.splitlines()[0]  # type: ignore
+        firstLine = code.splitlines()[0]
         if re.fullmatch(r"([0-9A-z]*)\b", firstLine):
             code = code[len(firstLine) + 1 :]
 
@@ -143,15 +143,15 @@ async def execute_run(
 
         for beginning in wrapping:
             if lang.split("-")[0] == beginning:
-                code = wrapping[beginning].replace("code", code)  # type: ignore
+                code = wrapping[beginning].replace("code", code)
                 break
 
     tio = Tio(
         lang,
-        code,  # type: ignore
-        compilerFlags=compilerFlags,
+        code,
+        compiler_flags=compilerFlags,
         inputs=inputs,
-        commandLineOptions=commandLineOptions,
+        command_line_options=commandLineOptions,
         args=args,
     )
 

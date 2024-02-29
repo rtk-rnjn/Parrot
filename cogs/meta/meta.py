@@ -390,7 +390,7 @@ class Meta(Cog):
                     voice += 1
 
         version = discord_version
-        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)  # type: ignore  i am owner
+        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)
         embed = (
             discord.Embed(
                 title="Official Bot Server Invite",
@@ -573,8 +573,8 @@ class Meta(Cog):
         *,
         channel: discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel = None,
     ):
-        channel = channel or ctx.channel  # type: ignore
-        _id = channel.id  # type: ignore
+        channel = channel or ctx.channel
+        _id = channel.id
 
         assert isinstance(
             channel,
@@ -620,7 +620,7 @@ class Meta(Cog):
             else:
                 from utilities.config import SUPER_USER
 
-                await self.bot.get_user(int(SUPER_USER)).send(text[:1800:])  # type: ignore
+                await self.bot.get_user(int(SUPER_USER)).send(text[:1800:])
             await ctx.reply(f"{ctx.author.mention} your message is being delivered!")
         else:
             await ctx.reply(f"{ctx.author.mention} nvm, reverting the process")
@@ -685,7 +685,7 @@ class Meta(Cog):
         if (not invite.guild) or (not invite):
             return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
-        fields: list[tuple[str, str | None, bool]] = [  # type: ignore
+        fields: list[tuple[str, str | None, bool]] = [
             ("Member count?", invite.approximate_member_count, True),
             ("Presence Count?", invite.approximate_presence_count, True),
             ("Channel", f"<#{invite.channel.id}>" if invite.channel else "N/A", True),

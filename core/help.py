@@ -4,7 +4,7 @@ import inspect
 from typing import TYPE_CHECKING, Any
 
 import discord
-from discord.ext import commands, old_menus as menus  # type: ignore
+from discord.ext import commands, old_menus as menus
 from utilities.config import PRIVACY_POLICY
 from utilities.robopages import RoboPages
 
@@ -117,7 +117,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
         if value == "__index":
             await self.view.rebind(FrontPageSource(self.bot), interaction)
         else:
-            cog: Cog = self.bot.get_cog(value)  # type: ignore
+            cog: Cog = self.bot.get_cog(value)
             if cog is None:
                 await interaction.response.send_message("Somehow this category does not exist?", ephemeral=True)
                 return
@@ -287,7 +287,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
             entries = bot.cogs
             all_commands: dict[Cog, list[commands.Command]] = {}
             for real_cog in entries:
-                cog: Cog = bot.get_cog(real_cog)  # type: ignore
+                cog: Cog = bot.get_cog(real_cog)
                 if cog:
                     _cmds = [c for c in cog.get_commands() if not c.hidden]
                     if cog is not None and _cmds:

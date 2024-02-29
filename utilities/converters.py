@@ -91,7 +91,7 @@ class MemberID(commands.Converter):
     async def convert(self, ctx: Context, argument: str) -> discord.Member | None:
         """Convert a user mention or ID to a member object."""
         try:
-            m: discord.Member | None = await commands.MemberConverter().convert(ctx, argument)  # type: ignore
+            m: discord.Member | None = await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
             try:
                 member_id = int(argument, base=10)
@@ -102,7 +102,7 @@ class MemberID(commands.Converter):
                 m: discord.Member | discord.User | None = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
                 if m is None:
                     # hackban case
-                    return type(  # type: ignore
+                    return type(
                         "_Hackban",
                         (),
                         {"id": member_id, "__str__": lambda s: f"Member ID {s.id}"},
@@ -135,7 +135,7 @@ class UserID(commands.Converter):
                     in_guild=False,
                 )
                 if u is None:
-                    return type(  # type: ignore
+                    return type(
                         "_User",
                         (),
                         {"id": user_id, "__str__": lambda s: f"User ID {s.id}"},
@@ -299,7 +299,7 @@ class ToImage(commands.Converter):
                     str,
                 ],
                 argument,
-                ctx.current_parameter,  # type: ignore
+                ctx.current_parameter,
             )
 
         return await ctx.to_image(converted_union)

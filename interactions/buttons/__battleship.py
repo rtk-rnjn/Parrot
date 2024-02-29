@@ -157,7 +157,7 @@ class Board:
         x2, y2 = x + d3, y + d4
         cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
 
-    def get_ship(self, coord: Coords) -> Ship:  # type: ignore
+    def get_ship(self, coord: Coords) -> Ship:
         if s := [ship for ship in self.ships if coord in ship.span]:
             return s[0]
 
@@ -214,10 +214,10 @@ class BattleShip:
         self.player2_board: Board = Board(player2, random=self.random)
 
         self.turn: discord.User | discord.Member = self.player1
-        self.timeout: int = None  # type: ignore
+        self.timeout: int = None
 
-        self.message1: discord.Message = None  # type: ignore
-        self.message2: discord.Message = None  # type: ignore
+        self.message1: discord.Message = None
+        self.message2: discord.Message = None
 
     def get_board(self, player: discord.User | discord.Member | Player, other: bool = False) -> Board:
         if other:
@@ -269,7 +269,7 @@ class BattleShip:
     def get_coords(self, inp: str) -> tuple[str, Coords]:
         inp = re.sub(r"\s+", "", inp).lower()
         match = self.inputpat.match(inp)
-        x, y = match.group(1), match.group(2)  # type: ignore
+        x, y = match.group(1), match.group(2)
         return (inp, (self.to_num(x), int(y)))
 
     def who_won(self) -> discord.User | discord.Member | None:
@@ -290,7 +290,7 @@ class BattleShip:
                 file=file,
             )
 
-            def check(msg: discord.Message) -> bool:  # type: ignore
+            def check(msg: discord.Message) -> bool:
                 if not msg.guild and msg.author == user:
                     content = re.sub(r"\s+", "", message.content).lower()
                     return bool(self.inputpat.match(content))

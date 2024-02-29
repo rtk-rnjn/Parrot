@@ -326,7 +326,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
     async def bulk_add_reactions(
         self,
-        message: discord.Message | None = None,  # type: ignore
+        message: discord.Message | None = None,
         *reactions: discord.Emoji | discord.PartialEmoji | str,
     ) -> None:
         if message is None or not isinstance(message, discord.Message):
@@ -711,26 +711,26 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         return buffer
 
-    async def to_image(self, entity: Any = None) -> BytesIO:  # type: ignore
+    async def to_image(self, entity: Any = None) -> BytesIO:
         if self.message.attachments:
             buf = BytesIO(await self.message.attachments[0].read())
             buf.seek(0)
             return self.check_buffer(buf)
 
-        if self.message.reference and self.message.reference.resolved.attachments:  # type: ignore
-            buf = BytesIO(await self.message.reference.resolved.attachments[0].read())  # type: ignore
+        if self.message.reference and self.message.reference.resolved.attachments:
+            buf = BytesIO(await self.message.reference.resolved.attachments[0].read())
             buf.seek(0)
             return self.check_buffer(buf)
 
         if (
             (ref := self.message.reference)
-            and (embeds := ref.resolved.embeds)  # type: ignore
+            and (embeds := ref.resolved.embeds)
             and (image := embeds[0].image)
             and entity is None
         ):
-            return await ToImage().convert(self, image.url)  # type: ignore
+            return await ToImage().convert(self, image.url)
 
-        if (ref := self.message.reference) and (content := ref.resolved.content) and entity is None:  # type: ignore
+        if (ref := self.message.reference) and (content := ref.resolved.content) and entity is None:
             return await ToImage().convert(self, content)
 
         if (stickers := self.message.stickers) and stickers[0].format != discord.StickerFormatType.lottie:
@@ -776,7 +776,7 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     def __scrape_tenor(self, html: str) -> str:
         soup = BeautifulSoup(html, features=HTML_PARSER)
         find = soup.find("div", {"class": "Gif"})
-        return find.img["src"]  # type: ignore
+        return find.img["src"]
 
 
 class ConfirmationView(discord.ui.View):

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
-from discord.utils import MISSING  # type: ignore
+from discord.utils import MISSING
 
 import discord
 from core import Context

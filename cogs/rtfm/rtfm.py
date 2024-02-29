@@ -667,7 +667,7 @@ class RTFM(Cog):
                 )
 
                 for tag in contents:
-                    h2 = tuple(soup.find(attrs={"name": tuple(tag.children)[0].get("href")[1:]}).parents)[0]  # type: ignore
+                    h2 = tuple(soup.find(attrs={"name": tuple(tag.children)[0].get("href")[1:]}).parents)[0]
                     emb.add_field(name=tag.string, value=self.get_content(h2), inline=False)
 
                 await ctx.reply(embed=emb)
@@ -842,7 +842,7 @@ class RTFM(Cog):
         """Fetches a repositories' GitHub information.
         The repository should look like `user/reponame` or `user reponame`.
         """
-        repo = "/".join(repo)  # type: ignore
+        repo = "/".join(repo)
         if repo.count("/") != 1:
             embed = discord.Embed(
                 title="Invalid",
@@ -877,7 +877,7 @@ class RTFM(Cog):
         # If it's a fork, then it will have a parent key
         try:
             parent = repo_data["parent"]
-            embed.description += f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"  # type: ignore
+            embed.description += f"\n\nForked from [{parent['full_name']}]({parent['html_url']})"
         except KeyError:
             pass
 
@@ -1120,7 +1120,7 @@ class RTFM(Cog):
                 raise commands.BadArgument(
                     msg,
                 )
-            target_message = ctx.message.reference.resolved  # type: ignore
+            target_message = ctx.message.reference.resolved
 
         if not target_message:
             msg = "Couldn't find that message."
@@ -1187,7 +1187,7 @@ class RTFM(Cog):
                 )
 
             soup = BeautifulSoup(await response.text(), features=HTML_PARSER)  # changed the parser
-            first_kata_div = await _doc.get_ele(soup, "div", class_="item-title px-0")  # type: ignore
+            first_kata_div = _doc.get_ele(soup, "div", class_="item-title px-0")
 
             if not first_kata_div:
                 msg = "No katas could be found with the filters provided."
@@ -1432,4 +1432,3 @@ class RTFM(Cog):
 
         b = await self.bot.mystbin.create_paste(filename="file.txt", content=code)
         await ctx.send(f"Your code has been uploaded to {b.url}")
-

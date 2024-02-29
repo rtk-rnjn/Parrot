@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 import discord
 
 if TYPE_CHECKING:
-
     from core import Parrot
 
 from pymongo.collection import ReturnDocument
+
 
 class JinjaBase:
     def __repr__(self) -> str:
@@ -83,7 +83,7 @@ class bot:  # pylint: disable=invalid-name
         self.__bot = bot
         self.__message = message
 
-        self.db = db(bot=self.__bot, guild=self.__message.guild)  # type: ignore
+        self.db = db(bot=self.__bot, guild=self.__message.guild)
 
     async def init_db(self) -> None:
         await self.db.init_cache()
@@ -208,7 +208,7 @@ class db:  # pylint: disable=invalid-name
 
 
 class Variables:
-    __class__ = None  # type: ignore
+    __class__ = None
 
     def __init__(self, *, message: discord.Message, bot: Parrot) -> None:
         self.__message = message
@@ -220,8 +220,8 @@ class Variables:
         from .member import JinjaMember
         from .message import JinjaMessage
 
-        _channel = JinjaChannel(channel=self.__message.channel)  # type: ignore
-        _guild = JinjaGuild(guild=self.__message.guild)  # type: ignore
+        _channel = JinjaChannel(channel=self.__message.channel)
+        _guild = JinjaGuild(guild=self.__message.guild)
         _member = JinjaMember(member=self.__message.author)
         _message = JinjaMessage(message=self.__message)
         _bot = bot(self.__bot, self.__message)

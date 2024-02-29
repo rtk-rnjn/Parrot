@@ -15,8 +15,9 @@ from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod
 from utilities.converters import ActionReason, BannedMember, MemberID, UserID
-from utilities.time import FutureTime, ShortTime
 from utilities.regex import LINKS_RE
+from utilities.time import FutureTime, ShortTime
+
 
 class Arguments(argparse.ArgumentParser):
     def error(self, message: str):
@@ -1421,7 +1422,7 @@ class Moderator(Cog):
         if not ctx.author.voice:
             return await ctx.error(f"{ctx.author.mention} you must be in voice channel to use the command")
         await ctx.author.voice.channel.edit(
-            user_limit=limit,  # type: ignore
+            user_limit=limit,
             reason=f"Action requested by {ctx.author} ({ctx.author.id}) | Reason: {reason}",
         )
         if limit:
@@ -1436,7 +1437,7 @@ class Moderator(Cog):
     async def voice_move(
         self,
         ctx: Context,
-        member: Annotated[list[discord.Member], commands.Greedy[MemberID]] = None,  # type: ignore
+        member: Annotated[list[discord.Member], commands.Greedy[MemberID]] = None,
         channel: discord.VoiceChannel | None = None,
         *,
         reason: Annotated[str | None, ActionReason] = None,

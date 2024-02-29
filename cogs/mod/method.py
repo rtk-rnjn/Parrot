@@ -271,6 +271,7 @@ async def _sticky_ban(
         {"$push": {"sticky_bans": member if isinstance(member, int) else member.id}},
     )
 
+
 async def _unsticky_ban(
     *,
     guild: discord.Guild,
@@ -295,6 +296,7 @@ async def _unsticky_ban(
         {"_id": guild.id},
         {"$pull": {"sticky_bans": member if isinstance(member, int) else member.id}},
     )
+
 
 async def _mass_ban(
     *,

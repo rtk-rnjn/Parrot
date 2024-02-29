@@ -94,8 +94,8 @@ class Delete(discord.ui.View):
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
                 child.style = discord.ButtonStyle.grey
-        if hasattr(self, "message"):
-            await self.message.edit(view=self)  # type: ignore  line guarded by hasattr
+        if hasattr(self, "message") and self.message:
+            await self.message.edit(view=self)
         self.stop()
 
 
@@ -349,7 +349,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             return
 
         try:
-            return self.bot.banned_users[member.id].get("global", False)  # type: ignore
+            return self.bot.banned_users[member.id].get("global", False)
         except (AttributeError, KeyError):
             pass
 
@@ -552,7 +552,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         await message.delete(delay=2)
         __functions: list = []
         async for webhook in self.bot.guild_configurations.find({"global_chat.enable": True}):
-            if hook := webhook["global_chat"]["webhook"]:  # type: ignore
+            if hook := webhook["global_chat"]["webhook"]:
                 __functions.append(__internal_funtion(hook=hook, message=message))
 
         if __functions:
@@ -719,7 +719,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             from cogs.fun.fun import replace_many
         except ImportError:
             return
-        msg: str = getattr(message, "content", message)  # type: ignore
+        msg: str = getattr(message, "content", message)
 
         if match := QUESTION_REGEX.fullmatch(msg):
             word = replace_many(

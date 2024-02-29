@@ -26,12 +26,12 @@ class EventCustom(Cog):
 
         kw = mod_action
 
-        action: str = kw.get("action")  # type: ignore
+        action: str = kw.get("action")
         guild: discord.Guild | None = self.bot.get_guild(kw.get("guild", 0))
         if guild is None:
             return
 
-        target: int = kw.get("member") or kw.get("target") or kw.get("user")  # type: ignore
+        target: int = kw.get("member") or kw.get("target") or kw.get("user")
 
         if action.upper() == "UNBAN":
             with contextlib.suppress(discord.NotFound, discord.HTTPException, discord.Forbidden):
@@ -59,7 +59,7 @@ class EventCustom(Cog):
     async def normal_parser(
         self,
         *,
-        embed: dict[str, Any] | None = None,  # type: ignore
+        embed: dict[str, Any] | None = None,
         content: str | None = None,
         dm_notify: bool = False,
         is_todo: bool = False,
@@ -99,7 +99,7 @@ class EventCustom(Cog):
         if not extra:
             return
 
-        name: str = extra.get("name")  # type: ignore
+        name: str = extra.get("name")
         if name == "SET_TIMER_LOOP":
             return await self._parse_timer(**kw, extra=extra)
 
@@ -151,7 +151,7 @@ class EventCustom(Cog):
             channel = self.bot.get_channel(channel_id)
             if not channel:
                 return
-            message: discord.PartialMessage = channel.get_partial_message(message_id)  # type: ignore
+            message: discord.PartialMessage = channel.get_partial_message(message_id)
             await message.delete(delay=0.0)
 
     async def extra_action_parser(self, name: str, **kw: Any) -> None:
@@ -170,7 +170,7 @@ class EventCustom(Cog):
             await collection.delete_one(kw["filter"])
 
     async def _parse_timer(self, **kw: Any):
-        age: str = kw["extra"]["main"].get("age")  # type: ignore
+        age: str = kw["extra"]["main"].get("age")
         if age is None:
             return
         age: ShortTime = ShortTime(age)

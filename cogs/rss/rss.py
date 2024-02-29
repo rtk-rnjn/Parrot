@@ -4,11 +4,11 @@ import asyncio
 from typing import TYPE_CHECKING
 
 import feedparser
+from discord.utils import MISSING
 
 import discord
 from core import Cog, Context, Parrot
 from discord.ext import commands, tasks
-from discord.utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -20,7 +20,7 @@ class RSSItem:
     def __init__(self, raw_data: dict, *, bot: Parrot) -> None:
         self._raw_data = raw_data
         self.bot = bot
-        self.cog: RSS = self.bot.get_cog("RSS")  # type: ignore
+        self.cog: RSS = self.bot.get_cog("RSS")
 
         self.channel_id: int = raw_data["channel_id"]
         self.webhook_url: str = raw_data["webhook_url"]
@@ -30,7 +30,7 @@ class RSSItem:
 
     @property
     def channel(self) -> discord.TextChannel | None:
-        return self.bot.get_channel(self.channel_id)  # type: ignore
+        return self.bot.get_channel(self.channel_id)
 
     @property
     def webhook(self) -> discord.Webhook:

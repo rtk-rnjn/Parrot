@@ -68,10 +68,10 @@ class Suggestions(Cog):
             if not ch_id:
                 msg = "No suggestion channel is setup. Run: `config suggestchannel <channel>` to setup"
                 raise commands.BadArgument(msg)
-            ch: discord.TextChannel | None = self.bot.get_channel(ch_id)  # type: ignore
+            ch: discord.TextChannel | None = self.bot.get_channel(ch_id)
             if ch is None:
                 await self.bot.wait_until_ready()
-                ch: discord.TextChannel = await self.bot.fetch_channel(ch_id)  # type: ignore
+                ch: discord.TextChannel = await self.bot.fetch_channel(ch_id)
 
             return ch
 
@@ -91,7 +91,7 @@ class Suggestions(Cog):
                 except KeyError as e:
                     msg = "No suggestion channel is setup. Run: `config suggestchannel <channel>` to setup"
                     raise commands.BadArgument(msg) from e
-            msg = await self.__fetch_message_from_channel(message=msg_id, channel=self.bot.get_channel(channel_id))  # type: ignore
+            msg = await self.__fetch_message_from_channel(message=msg_id, channel=self.bot.get_channel(channel_id))
         else:
             msg = self.message[msg_id]["message"]
 
@@ -246,7 +246,7 @@ class Suggestions(Cog):
             await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
             return
 
-        if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:  # type: ignore
+        if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
             return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
         await msg.delete(delay=0)
@@ -300,7 +300,7 @@ class Suggestions(Cog):
         thread_id = message_id
         msg: discord.Message | None = await self.get_or_fetch_message(thread_id, guild=ctx.guild)
 
-        if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:  # type: ignore
+        if int(msg.embeds[0].footer.text.split(":")[1]) != ctx.author.id:
             return await ctx.send(f"{ctx.author.mention} You don't own that 'suggestion'")
 
         thread: discord.Thread | None = await self.bot.getch(ctx.guild.get_channel, ctx.guild.fetch_channel, thread_id)
@@ -340,7 +340,7 @@ class Suggestions(Cog):
         new_msg = await msg.edit(content=msg.content, embed=embed)
         self.message[new_msg.id]["message"] = new_msg
 
-        user_id = int(embed.footer.text.split(":")[1])  # type: ignore
+        user_id = int(embed.footer.text.split(":")[1])
         user = ctx.guild.get_member(user_id)
         await self.__notify_user(ctx, user, message=msg, remark=remark)
 
@@ -426,9 +426,9 @@ class Suggestions(Cog):
             return await ctx.send(f"{ctx.author.mention} Invalid Flag")
 
         embed: discord.Embed = msg.embeds[0]
-        embed.color = payload["color"]  # type: ignore
+        embed.color = payload["color"]
 
-        user_id = int(embed.footer.text.split(":")[1])  # type: ignore
+        user_id = int(embed.footer.text.split(":")[1])
         if remark:
             embed.clear_fields()
             embed.add_field(name="Remark", value=remark[:250])

@@ -130,9 +130,9 @@ class Cmd(Cog, command_attrs={"hidden": True}):
         elif isinstance(error, commands.MissingRole):
             missing = [error.missing_role]
             if len(missing) > 2:
-                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'  # type: ignore
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
-                fmt = " and ".join(missing)  # type: ignore
+                fmt = " and ".join(missing)
             ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
             RESET_COOLDOWN = True
@@ -140,9 +140,9 @@ class Cmd(Cog, command_attrs={"hidden": True}):
         elif isinstance(error, commands.MissingAnyRole):
             missing = list(error.missing_roles)
             if len(missing) > 2:
-                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'  # type: ignore
+                fmt = f'{"**, **".join(missing[:-1])}, and {missing[-1]}'
             else:
-                fmt = " and ".join(missing)  # type: ignore
+                fmt = " and ".join(missing)
             ERROR_EMBED.description = f"You need the the following role(s) to use the command```\n{fmt}```"
             ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Missing Role {QUESTION_MARK}")
             RESET_COOLDOWN = True
@@ -188,7 +188,7 @@ class Cmd(Cog, command_attrs={"hidden": True}):
                 ERROR_EMBED.set_author(name=f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}")
 
             if objects:
-                if obj := self._get_object_by_fuzzy(argument=error.argument, objects=objects):  # type: ignore
+                if obj := self._get_object_by_fuzzy(argument=error.argument, objects=objects):
                     _, result, score = obj
                     ERROR_EMBED.description += f"\n\nDid you mean `{result}`?"
                     ERROR_EMBED.set_footer(text=f"Confidence: {score}%")

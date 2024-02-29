@@ -205,7 +205,7 @@ def guild_premium() -> Check[Context]:
 
         raise ex.NotPremiumServer()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def is_dj() -> Check[Context]:
@@ -217,7 +217,7 @@ def is_dj() -> Check[Context]:
 
         raise ex.NoDJRole()
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def in_voice() -> Check[Context]:
@@ -227,7 +227,7 @@ def in_voice() -> Check[Context]:
             raise ex.NotInVoice()
         return True
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def same_voice() -> Check[Context]:
@@ -241,7 +241,7 @@ def same_voice() -> Check[Context]:
 
         return True
 
-    return commands.check(predicate)  # type: ignore
+    return commands.check(predicate)
 
 
 def cooldown_with_role_bypass(

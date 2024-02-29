@@ -27,7 +27,7 @@ async def _create_giveaway_post(
         "author_id": message.author.id,
         "channel_id": message.channel.id,
         "giveaway_channel": giveaway_channel,
-        "guild_id": message.guild.id,  # type: ignore
+        "guild_id": message.guild.id,
         "created_at": message.created_at.timestamp(),
         "prize": prize,
         "winners": winners,
@@ -46,7 +46,7 @@ async def _create_giveaway_post(
 async def end_giveaway(bot: Parrot, **kw: Any) -> list[int]:
     channel: discord.TextChannel = await bot.getch(bot.get_channel, bot.fetch_channel, kw.get("giveaway_channel"))
 
-    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)  # type: ignore
+    msg: discord.Message = await bot.get_or_fetch_message(channel, kw["message_id"], fetch=True)
     await bot.delete_timer(_id=kw["message_id"])
 
     embed = msg.embeds[0]
@@ -81,7 +81,7 @@ async def end_giveaway(bot: Parrot, **kw: Any) -> list[int]:
 
         _ = [__item__remove(reactors, i) for i in real_winners]  # flake8: noqa
 
-        await __update_giveaway_reactors(bot=bot, reactors=reactors, message_id=kw.get("message_id"))  # type: ignore
+        await __update_giveaway_reactors(bot=bot, reactors=reactors, message_id=kw.get("message_id"))
 
         if not real_winners and not reactors:
             # requirement do not statisfied and we are out of reactors
@@ -97,7 +97,7 @@ async def __check_requirements(bot: Parrot, **kw: Any) -> list[int]:
     # vars
     real_winners: list[int] = kw.get("winners", [])
 
-    current_guild: discord.Guild = bot.get_guild(kw.get("guild_id"))  # type: ignore
+    current_guild: discord.Guild = bot.get_guild(kw.get("guild_id"))
     required_guild: discord.Guild | None = bot.get_guild(kw.get("required_guild", 0))
     required_role: int = kw.get("required_role", 0)
     required_level: int = kw.get("required_level", 0)

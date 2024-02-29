@@ -363,7 +363,7 @@ class Misc(Cog):
         channel: discord.TextChannel | discord.VoiceChannel | None = None,
     ):
         """To get the first message of the specified channel."""
-        channel = channel or ctx.channel  # type: ignore
+        channel = channel or ctx.channel
 
         assert isinstance(channel, discord.TextChannel)
 
@@ -518,7 +518,7 @@ class Misc(Cog):
         for k, v in _SEACH_FLAG_CONVERTERS.items():
             if hasattr(search, k):
                 PAYLOAD[v] = getattr(search, k)
-        if not ctx.channel.nsfw:  # type: ignore
+        if not ctx.channel.nsfw:
             PAYLOAD["safe"] = "active"
 
         url = "https://www.googleapis.com/customsearch/v1"
@@ -555,7 +555,7 @@ class Misc(Cog):
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
 
-        snipe: discord.Message = snipes.get_snipe(channel or ctx.channel, index=index)  # type: ignore
+        snipe: discord.Message = snipes.get_snipe(channel or ctx.channel, index=index)
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
 
@@ -608,7 +608,7 @@ class Misc(Cog):
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
 
-        snipe: tuple[discord.Message, discord.Message] = snipes.get_edit_snipe(channel or ctx.channel, index=index)  # type: ignore
+        snipe: tuple[discord.Message, discord.Message] = snipes.get_edit_snipe(channel or ctx.channel, index=index)
         if snipe is None:
             return await ctx.reply(f"{ctx.author.mention} no snipes in this channel!")
 
@@ -671,7 +671,6 @@ class Misc(Cog):
             res = await r.json()
         else:
             return await ctx.reply(f"{ctx.author.mention} no location named, **{location}**")
-
 
         embed: discord.Embed = discord.Embed()
         res["coord"]["lat"]
@@ -815,14 +814,14 @@ class Misc(Cog):
         """A nice command to make custom embeds, from `JSON`. Provided it is in the format that Discord expects it to be in.
         You can find the documentation on `https://discord.com/developers/docs/resources/channel#embed-object`.
         """
-        channel = channel or ctx.channel  # type: ignore
-        if channel.permissions_for(ctx.author).embed_links:  # type: ignore
+        channel = channel or ctx.channel
+        if channel.permissions_for(ctx.author).embed_links:
             if not data:
-                view = EmbedBuilder(ctx, items=[EmbedSend(channel), EmbedCancel()])  # type: ignore
+                view = EmbedBuilder(ctx, items=[EmbedSend(channel), EmbedCancel()])
                 await view.rendor()
                 return
             try:
-                await channel.send(embed=discord.Embed.from_dict(json.loads(str(data))))  # type: ignore
+                await channel.send(embed=discord.Embed.from_dict(json.loads(str(data))))
             except Exception as e:
                 await ctx.error(f"{ctx.author.mention} you didn't provide the proper json object. Error raised: {e}")
         else:

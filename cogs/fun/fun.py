@@ -310,7 +310,7 @@ class Fun(Cog):
             msg = await commands.MessageConverter().convert(ctx, text)
         except (commands.BadArgument, ValueError, commands.MessageNotFound):
             msg = await self.bot.get_or_fetch_message(ctx.channel, text, partial=False)
-            return msg if msg is not None else text  # type: ignore
+            return msg if msg is not None else text
         return msg
 
     async def _get_text_and_embed(self, ctx: Context, text: str) -> tuple[str, discord.Embed | None]:
@@ -780,7 +780,7 @@ class Fun(Cog):
 
         done_questions: list[int] = []
         hint_no = 0
-        quiz_entry: QuizEntry = None  # type: ignore
+        quiz_entry: QuizEntry = None
 
         while self.game_status[ctx.channel.id]:
             # Exit quiz if number of questions for a round are already sent.
@@ -1106,7 +1106,7 @@ class Fun(Cog):
 
         sorted_dict = sorted(player_data.items(), key=operator.itemgetter(1), reverse=True)
         for item in sorted_dict:
-            embed.description += f"{item[0]}: {item[1]}\n"  # type: ignore
+            embed.description += f"{item[0]}: {item[1]}\n"
 
         await channel.send(embed=embed)
 

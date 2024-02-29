@@ -10,11 +10,11 @@ from PIL.ImageDraw import Draw
 from PIL.ImageFont import truetype
 
 try:
-    from cStringIO import StringIO as BytesIO  # type: ignore
+    from cStringIO import StringIO as BytesIO
 except ImportError:
     from io import BytesIO
 try:
-    from wheezy.captcha import image as wheezy_captcha  # type: ignore
+    from wheezy.captcha import image as wheezy_captcha
 except ImportError:
     wheezy_captcha = None
 

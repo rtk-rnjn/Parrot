@@ -98,12 +98,12 @@ class Sector1729(Cog):
         user_id: int = payload.user_id
         user: discord.User | None = await self.bot.getch(self.bot.get_user, self.bot.fetch_user, user_id)
 
-        channel: discord.TextChannel | None = self.bot.get_channel(payload.channel_id)  # type: ignore
+        channel: discord.TextChannel | None = self.bot.get_channel(payload.channel_id)
 
         if channel is None:
             return
 
-        msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)  # type: ignore
+        msg: discord.Message = await self.bot.get_or_fetch_message(channel, MESSAGE_ID)
 
         async def __remove_reaction(msg: discord.Message) -> None:
             for reaction in msg.reactions:
@@ -245,7 +245,7 @@ class Sector1729(Cog):
         except asyncio.TimeoutError:
             await self.bot.wait_until_ready()
 
-        general_chat: discord.TextChannel = self.bot.get_channel(GENERAL_CHAT)  # type: ignore
+        general_chat: discord.TextChannel = self.bot.get_channel(GENERAL_CHAT)
         if general_chat is not None:
             LINE = "\N{BOX DRAWINGS LIGHT VERTICAL}"
             EMOJI = "\N{SPEECH BALLOON}"
@@ -254,7 +254,7 @@ class Sector1729(Cog):
                 reason="General chat name update",
             )
 
-        general_voice: discord.VoiceChannel = self.bot.get_channel(GENERAL_VOICE)  # type: ignore
+        general_voice: discord.VoiceChannel = self.bot.get_channel(GENERAL_VOICE)
         if general_voice is not None:
             await general_voice.edit(
                 name=f"{next(self.iter_cycle)}",
@@ -274,7 +274,7 @@ class Sector1729(Cog):
         except asyncio.TimeoutError:
             await self.bot.wait_until_ready()
 
-        role: discord.Role = self.bot.server.get_role(RAINBOW_ROLE)  # type: ignore
+        role: discord.Role = self.bot.server.get_role(RAINBOW_ROLE)
         if role is not None:
             try:
                 await role.edit(
@@ -330,7 +330,7 @@ class Sector1729(Cog):
             return
 
         if not hasattr(self, "message_delete_webhook"):
-            message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")  # type: ignore
+            message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")
             if message_delete is None:
                 return
 
@@ -352,7 +352,7 @@ class Sector1729(Cog):
             )
             .add_field(
                 name="Channel",
-                value=f"{message.channel.mention} ({message.channel.id})",  # type: ignore
+                value=f"{message.channel.mention} ({message.channel.id})",
                 inline=False,
             )
         )
@@ -385,7 +385,7 @@ class Sector1729(Cog):
 
         file = discord.File(io.BytesIO(st.encode()), filename="messages.txt")
         if not hasattr(self, "message_delete_webhook"):
-            message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")  # type: ignore
+            message_delete: discord.TextChannel = discord.utils.get(message.guild.text_channels, name="message-delete")
             if message_delete is None:
                 return
 
@@ -423,7 +423,7 @@ class Sector1729(Cog):
         if len(channel_name) > 32:
             return await ctx.error("Channel name is too long", delete_after=5)
 
-        general_chat: discord.TextChannel = self.bot.get_channel(GENERAL_CHAT)  # type: ignore
+        general_chat: discord.TextChannel = self.bot.get_channel(GENERAL_CHAT)
         if general_chat is None:
             return await ctx.error("General chat channel not found", delete_after=5)
 
@@ -609,7 +609,7 @@ class Sector1729(Cog):
                 {
                     "Message": [f"`{ctx.message.clean_content}`"],
                     "ID": [ctx.message.id],
-                    "Channel": [f"#{ctx.channel.name}"],  # type: ignore
+                    "Channel": [f"#{ctx.channel.name}"],
                     "Channel ID": [ctx.channel.id],
                     "Guild": [f"{ctx.guild}"],
                 },

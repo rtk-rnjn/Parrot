@@ -92,5 +92,5 @@ class JinjaChannel(JinjaChannelBase):
 
         if not self._check_perms(send_messages=True):
             return
-        msg = await self.__channel.send(*args, **kwargs)  # type: ignore
+        msg = await self.__channel.send(*args, **kwargs)
         return JinjaMessage(message=msg)

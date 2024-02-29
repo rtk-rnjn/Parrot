@@ -70,7 +70,7 @@ class Tickets(Cog):
 
         mod_role: int | None = self.bot.guild_configurations_cache[guild.id]["mod_role"]
 
-        category: discord.CategoryChannel = guild.get_channel(ticket_config["category"] or 0)  # type: ignore
+        category: discord.CategoryChannel = guild.get_channel(ticket_config["category"] or 0)
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
@@ -234,7 +234,7 @@ class Tickets(Cog):
     @commands.has_permissions(manage_guild=True)
     async def ticket_react(self, ctx: Context, *, channel: discord.TextChannel | None = None):
         """Set ticket auto channel."""
-        channel: discord.TextChannel = channel or ctx.channel  # type: ignore
+        channel: discord.TextChannel = channel or ctx.channel
         message = await channel.send(
             embed=discord.Embed(
                 title=f"{ctx.guild} Ticket Service",

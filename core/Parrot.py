@@ -12,7 +12,7 @@ import traceback
 import types
 from collections import Counter, defaultdict, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 import aiohttp
 import aioredis
@@ -154,7 +154,7 @@ class Parrot(commands.AutoShardedBot):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            command_prefix=self.get_prefix,  # type: ignore
+            command_prefix=self.get_prefix,
             case_insensitive=CASE_INSENSITIVE,
             intents=intents,
             activity=discord.Activity(type=discord.ActivityType.watching, name="you"),
@@ -204,7 +204,7 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin: Client = Client()
 
         # caching variables
-        self.guild_configurations_cache: dict[int, PostType] = Cache(self)  # type: ignore
+        self.guild_configurations_cache: dict[int, PostType] = Cache(self)
         self.message_cache: dict[int, discord.Message] = {}
         self.banned_users: dict[int, dict[str, int | str | bool]] = {}
         self.afk_users: set[int] = set()
@@ -215,7 +215,7 @@ class Parrot(commands.AutoShardedBot):
         # IPC
         self.HAS_IPC = TO_LOAD_IPC
         self.ipc_server: ipc.server.Server = ipc.server.Server(
-            self,  # type: ignore
+            self,
             host=LOCALHOST,
             standard_port=IPC_PORT,
             secret_key=os.environ["IPC_KEY"],
@@ -313,7 +313,7 @@ class Parrot(commands.AutoShardedBot):
                 id = SUPPORT_SERVER_ID  # noqa: A003
                 name = "SECTOR 17-29"
 
-            return A()  # type: ignore
+            return A()
         return guild
 
     @property
@@ -338,7 +338,7 @@ class Parrot(commands.AutoShardedBot):
         log.debug("Getting recent message from channel %s", CHANGE_LOG_ID)
         assert isinstance(CHANGE_LOG_ID, int)
 
-        channel: discord.TextChannel | None = self.get_channel(CHANGE_LOG_ID)  # type: ignore
+        channel: discord.TextChannel | None = self.get_channel(CHANGE_LOG_ID)
 
         if not self._change_log and channel is not None:
             self._change_log = [msg async for msg in channel.history(limit=1)]
@@ -346,7 +346,7 @@ class Parrot(commands.AutoShardedBot):
         return self._change_log[0]
 
     @property
-    def author_obj(self) -> discord.User | None:
+    def author_obj(self) -> discord.User:
         assert isinstance(MASTER_OWNER, int)
 
         return self.get_user(MASTER_OWNER)
@@ -356,7 +356,7 @@ class Parrot(commands.AutoShardedBot):
         return str(self.author_obj)
 
     def get_cog(self, name: str) -> Cog | None:
-        return super().get_cog(name)  # type: ignore
+        return super().get_cog(name)
 
     async def setup_hook(self) -> None:
         if MINIMAL_BOOT:
@@ -378,7 +378,7 @@ class Parrot(commands.AutoShardedBot):
                     log.warning("Unloaded extension %s", ext)
 
         if self.HAS_TOP_GG:
-            self.topgg = topgg.DBLClient(  # type: ignore
+            self.topgg = topgg.DBLClient(
                 self,
                 os.environ["TOPGG"],
                 autopost=True,
@@ -386,7 +386,7 @@ class Parrot(commands.AutoShardedBot):
                 autopost_interval=60 * 60 * 12,  # 12 hours
                 session=self.http_session,
             )
-            self.topgg_webhook = topgg.WebhookManager(self)  # type: ignore
+            self.topgg_webhook = topgg.WebhookManager(self)
 
         if self.HAS_IPC:
             # thing is you cant run localhost inside docker container
@@ -491,7 +491,7 @@ class Parrot(commands.AutoShardedBot):
 
     async def _execute_webhook(
         self,
-        webhook: str | discord.Webhook | None = None,  # type: ignore
+        webhook: str | discord.Webhook | None = None,
         *,
         webhook_id: str | int | None = None,
         webhook_token: str | None = None,
@@ -532,7 +532,7 @@ class Parrot(commands.AutoShardedBot):
 
         if content and len(content) > 1990 or force_file:
             _FILE: discord.File = discord.File(
-                io.BytesIO(content.encode("utf-8") if isinstance(content, str) else content),  # type: ignore
+                io.BytesIO(content.encode("utf-8") if isinstance(content, str) else content),
                 filename=filename or "content.txt",
             )
             _CONTENT = discord.utils.MISSING
@@ -545,7 +545,7 @@ class Parrot(commands.AutoShardedBot):
                     content,
                 )
                 return await webhook.send(
-                    content=_CONTENT,  # type: ignore
+                    content=_CONTENT,
                     file=_FILE,
                     avatar_url=kwargs.pop("avatar_url", self.user.display_avatar.url),
                     username=kwargs.pop("username", self.user.name),
@@ -615,7 +615,7 @@ class Parrot(commands.AutoShardedBot):
         ls: list[int | None] = await self.afk_collection.distinct("afk.messageAuthor")
         log.debug("Got all afk users from database: %s", ls)
         if ls:
-            self.afk_users = set(ls)  # type: ignore
+            self.afk_users = set(ls)
 
         content = "```css"
         if self.HAS_TOP_GG:
@@ -642,7 +642,7 @@ class Parrot(commands.AutoShardedBot):
             await self._execute_webhook(self._error_log_token, content=f"{st}")
 
         VOICE_CHANNEL_ID = 1116780108074713098
-        channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)  # type: ignore
+        channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)
         if channel is not None:
             await channel.connect(self_deaf=True, reconnect=True)
 
@@ -944,7 +944,7 @@ class Parrot(commands.AutoShardedBot):
             prefix = match[1]
         return commands.when_mentioned_or(prefix)(self, message)
 
-    async def get_guild_prefixes(self, guild: discord.Guild | int) -> str:  # type: ignore
+    async def get_guild_prefixes(self, guild: discord.Guild | int) -> str:
         if isinstance(guild, int):
             guild: discord.Object = discord.Object(id=guild)
 
@@ -962,11 +962,11 @@ class Parrot(commands.AutoShardedBot):
         self,
         get_function: Callable[[int], T | None],
         fetch_function: Callable[[int], Awaitable[T | None]],
-        _id: int | discord.Object,  # type: ignore
+        _id: int | discord.Object,
         *,
         force_fetch: bool = False,
     ) -> T | None:
-        _id: int = getattr(_id, "id", _id)  # type: ignore
+        _id: int = getattr(_id, "id", _id)
         if not _id:
             return None
 
@@ -1353,18 +1353,21 @@ class Parrot(commands.AutoShardedBot):
             The Message or None if not found.
         """
 
-        message = int(message)  # type: ignore
+        if message is None:
+            return None
+
+        message = int(message)
 
         if isinstance(channel, int):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel)  # type: ignore
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel)
             else:
-                channel = self.get_channel(channel)  # type: ignore
+                channel = self.get_channel(channel)
         elif isinstance(channel, discord.Object | discord.PartialMessageable):
             if force_fetch:
-                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id)  # type: ignore
+                channel = await self.getch(self.get_channel, self.fetch_channel, channel.id)
             else:
-                channel = self.get_channel(channel.id)  # type: ignore
+                channel = self.get_channel(channel.id)
 
         if channel is None:
             return None
@@ -1375,7 +1378,7 @@ class Parrot(commands.AutoShardedBot):
 
         try:
             if force_fetch:
-                msg = await channel.fetch_message(message)  # type: ignore
+                msg = await channel.fetch_message(message)
                 self.message_cache[message] = msg
                 return msg
         except discord.NotFound:
@@ -1386,14 +1389,14 @@ class Parrot(commands.AutoShardedBot):
             return msg
 
         if partial:
-            return channel.get_partial_message(message)  # type: ignore
+            return channel.get_partial_message(message)
 
         try:
             msg = self.message_cache[message]
             log.debug("Got message from cache %s", msg)
             return msg
         except KeyError:
-            async for msg in channel.history(  # type: ignore
+            async for msg in channel.history(
                 limit=1,
                 before=discord.Object(message + 1),
                 after=discord.Object(message - 1),
@@ -1557,7 +1560,7 @@ class Parrot(commands.AutoShardedBot):
                 self._user_cache[user_id] = data
             return
         async for data in self.user_collections_ind.find():
-            self._user_cache[data["_id"]] = data  # type: ignore
+            self._user_cache[data["_id"]] = data
 
     async def wait_and_delete(
         self,
@@ -1572,8 +1575,8 @@ class Parrot(commands.AutoShardedBot):
             await message.delete(delay=delay)
             return
 
-        channel_id = channel_id or message.channel.id  # type: ignore
-        message_id = message_id or message.id  # type: ignore
+        channel_id = channel_id or message.channel.id
+        message_id = message_id or message.id
 
         if timestamp:
             await self.create_timer(

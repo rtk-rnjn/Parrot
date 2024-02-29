@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi.testclient import TestClient  # type: ignore
+from fastapi.testclient import TestClient
 
 from ..api import app
 

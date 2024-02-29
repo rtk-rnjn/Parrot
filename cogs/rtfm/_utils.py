@@ -8,7 +8,7 @@ import re
 import threading
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar
 
 import aiofiles
 import arrow
@@ -279,13 +279,18 @@ async def lint(cmd: str, filename: str) -> dict[str, str]:
     return payload
 
 
+FlagT = TypeVar(
+    "FlagT", Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, PyrightConverter, RuffConverter, str
+)
+
+
 class LintCode:
     source: str
     language: str | None
 
     def __init__(
         self,
-        flag: Flake8Converter | MypyConverter | PyLintConverter | BanditConverter | PyrightConverter | RuffConverter | str,
+        flag: FlagT,
     ) -> None:
         self.codeblock = flag if isinstance(flag, str) else flag.code
         self.flag = flag
@@ -325,17 +330,17 @@ class LintCode:
 
         cmd_str = ""
         if self.linttype == "flake8":
-            cmd_str = flake8_validate_flag(self.flag)  # type: ignore
+            cmd_str = flake8_validate_flag(self.flag)
         elif self.linttype == "bandit":
-            cmd_str = bandit_validate_flag(self.flag)  # type: ignore
+            cmd_str = bandit_validate_flag(self.flag)
         elif self.linttype == "pylint":
-            cmd_str = pylint_validate_flag(self.flag)  # type: ignore
+            cmd_str = pylint_validate_flag(self.flag)
         elif self.linttype == "mypy":
-            cmd_str = mypy_validate_flag(self.flag)  # type: ignore
+            cmd_str = mypy_validate_flag(self.flag)
         elif self.linttype == "pyright":
-            cmd_str = pyright_validate_flag(self.flag)  # type: ignore
+            cmd_str = pyright_validate_flag(self.flag)
         elif self.linttype == "ruff":
-            cmd_str = ruff_validate_flag(self.flag)  # type: ignore
+            cmd_str = ruff_validate_flag(self.flag)
 
         data = await lint(cmd_str, filename) if cmd_str else {}
 

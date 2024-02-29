@@ -22,9 +22,9 @@ class PeggyPlayZ(Cog):
     async def on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
         if message.channel.id == UPLOAD_CHANNEL_ID and message.author.id == PINGCORD:
-            if message.channel.permissions_for(message.guild.me).manage_messages:  # type: ignore
+            if message.channel.permissions_for(message.guild.me).manage_messages:
                 await message.publish()
-            if message.channel.permissions_for(message.guild.me).add_reactions:  # type: ignore
+            if message.channel.permissions_for(message.guild.me).add_reactions:
                 await message.add_reaction("\N{EYES}")
 
     @Cog.listener()
@@ -32,9 +32,9 @@ class PeggyPlayZ(Cog):
         if member.guild.id == PEGGY_PLAYZ:
             channel = self.bot.get_channel(RULES_CHANNEL_ID)
             if channel is not None:
-                if not channel.permissions_for(member.guild.me).send_messages:  # type: ignore
+                if not channel.permissions_for(member.guild.me).send_messages:
                     return
-                await channel.send(member.mention, delete_after=1)  # type: ignore
+                await channel.send(member.mention, delete_after=1)
 
     @Cog.listener("on_message")
     async def on_announcement_message(self, message: discord.Message) -> None:

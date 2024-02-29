@@ -21,7 +21,7 @@ from discord.utils import MISSING
 import discord
 import emojis
 from core import Cog, Context, Parrot
-from discord.ext import boardgames, commands  # type: ignore
+from discord.ext import boardgames, commands
 from utilities.constants import Colours
 from utilities.converters import convert_bool
 from utilities.uno.game import UNO
@@ -314,7 +314,7 @@ class Games(Cog):
         if not check_author_result:
             return
 
-        announcement: discord.Message = await ctx.send(  # type: ignore
+        announcement: discord.Message = await ctx.send(
             "**Connect Four**: A new game is about to start!\n"
             f"Press {Emojis.hand_raised} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)",
@@ -575,7 +575,7 @@ class Games(Cog):
         """Chess game. In testing"""
         if ctx.invoked_subcommand:
             return
-        announcement: discord.Message = await ctx.send(  # type: ignore
+        announcement: discord.Message = await ctx.send(
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)",
@@ -612,9 +612,9 @@ class Games(Cog):
         await game.start()
 
     @chess.command()
-    async def custom_chess(self, ctx: Context, board: fenPass):  # type: ignore
+    async def custom_chess(self, ctx: Context, board: fenPass):
         """To play chess, from a custom FEN notation"""
-        announcement: discord.Message = await ctx.send(  # type: ignore
+        announcement: discord.Message = await ctx.send(
             "**Chess**: A new game is about to start!\n"
             f"Press {HAND_RAISED_EMOJI} to play against {ctx.author.mention}!\n"
             f"(Cancel the game with {CROSS_EMOJI}.)",
@@ -751,7 +751,7 @@ class Games(Cog):
             description="Loading your Madlibs game...",
             color=Colours.python_blue,
         )
-        original_message: discord.Message = await ctx.send(embed=loading_embed)  # type: ignore
+        original_message: discord.Message = await ctx.send(embed=loading_embed)
 
         submitted_words = {}
 
@@ -785,7 +785,7 @@ class Games(Cog):
         self.checks.remove(author_check)
 
         story = []
-        for value, blank in zip(random_template["value"], blanks):
+        for value, blank in zip(random_template["value"], blanks, strict=False):
             story.append(f"{value}__{blank}__")
 
         # In each story template, there is always one more "value"

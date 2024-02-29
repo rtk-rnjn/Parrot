@@ -166,9 +166,8 @@ class SokobanGameView(discord.ui.View):
         return False
 
     def make_win_embed(self) -> discord.Embed:
-        embed = (
-            discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow())
-            .set_footer(text=f"User: {self.user}")
+        embed = discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(
+            text=f"User: {self.user}"
         )
         embed.description = f"{self.game.display_board()}"
         embed.add_field(
@@ -185,28 +184,22 @@ class SokobanGameView(discord.ui.View):
     )
     async def null_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.game = self._original_game
-        embed = (
-            discord.Embed(
-                title="Sokoban Game",
-                description=f"{self.game.display_board()}",
-                timestamp=discord.utils.utcnow(),
-            )
-            .set_footer(text=f"User: {self.user}")
-        )
+        embed = discord.Embed(
+            title="Sokoban Game",
+            description=f"{self.game.display_board()}",
+            timestamp=discord.utils.utcnow(),
+        ).set_footer(text=f"User: {self.user}")
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(emoji="\N{UPWARDS BLACK ARROW}", style=discord.ButtonStyle.red, disabled=False)
     async def upward(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.moves += 1
         self.game.move_up()
-        embed = (
-            discord.Embed(
-                title="Sokoban Game",
-                description=f"{self.game.display_board()}",
-                timestamp=discord.utils.utcnow(),
-            )
-            .set_footer(text=f"User: {self.user}")
-        )
+        embed = discord.Embed(
+            title="Sokoban Game",
+            description=f"{self.game.display_board()}",
+            timestamp=discord.utils.utcnow(),
+        ).set_footer(text=f"User: {self.user}")
 
         if self.game.is_game_over():
             await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
@@ -234,14 +227,11 @@ class SokobanGameView(discord.ui.View):
     async def left(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.moves += 1
         self.game.move_left()
-        embed = (
-            discord.Embed(
-                title="Sokoban Game",
-                description=f"{self.game.display_board()}",
-                timestamp=discord.utils.utcnow(),
-            )
-            .set_footer(text=f"User: {self.user}")
-        )
+        embed = discord.Embed(
+            title="Sokoban Game",
+            description=f"{self.game.display_board()}",
+            timestamp=discord.utils.utcnow(),
+        ).set_footer(text=f"User: {self.user}")
 
         if self.game.is_game_over():
             await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
@@ -258,14 +248,11 @@ class SokobanGameView(discord.ui.View):
     async def downward(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.moves += 1
         self.game.move_down()
-        embed = (
-            discord.Embed(
-                title="Sokoban Game",
-                description=f"{self.game.display_board()}",
-                timestamp=discord.utils.utcnow(),
-            )
-            .set_footer(text=f"User: {self.user}")
-        )
+        embed = discord.Embed(
+            title="Sokoban Game",
+            description=f"{self.game.display_board()}",
+            timestamp=discord.utils.utcnow(),
+        ).set_footer(text=f"User: {self.user}")
 
         if self.game.is_game_over():
             await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
@@ -282,14 +269,11 @@ class SokobanGameView(discord.ui.View):
     async def right(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.moves += 1
         self.game.move_right()
-        embed = (
-            discord.Embed(
-                title="Sokoban Game",
-                description=f"{self.game.display_board()}",
-                timestamp=discord.utils.utcnow(),
-            )
-            .set_footer(text=f"User: {self.user}")
-        )
+        embed = discord.Embed(
+            title="Sokoban Game",
+            description=f"{self.game.display_board()}",
+            timestamp=discord.utils.utcnow(),
+        ).set_footer(text=f"User: {self.user}")
 
         if self.game.is_game_over():
             await interaction.response.edit_message(embed=self.make_win_embed(), view=None)
@@ -302,7 +286,6 @@ class SokobanGameView(discord.ui.View):
                 title="Sokoban Game",
                 description=f"{self.game.display_board()}",
                 timestamp=discord.utils.utcnow(),
-            )
-            .set_footer(text=f"User: {self.user}"),
+            ).set_footer(text=f"User: {self.user}"),
             view=self,
         )

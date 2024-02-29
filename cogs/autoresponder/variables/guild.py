@@ -185,7 +185,7 @@ class JinjaGuild:
         name: str,
         *,
         overwrites: dict[JinjaMember | JinjaRole, discord.PermissionOverwrite] = discord.utils.MISSING,
-        category: JinjaChannel = discord.utils.MISSING,  # type: ignore
+        category: JinjaChannel = discord.utils.MISSING,
         reason: str = None,
     ) -> JinjaChannel:
         from .channel import JinjaChannel
@@ -204,7 +204,7 @@ class JinjaGuild:
             func = self.__guild.create_voice_channel
 
         if category:
-            category: discord.CategoryChannel = self.__guild.get_channel(category.id) or discord.utils.MISSING  # type: ignore
+            category: discord.CategoryChannel = self.__guild.get_channel(category.id) or discord.utils.MISSING
             if not isinstance(category, discord.CategoryChannel):
                 category = discord.utils.MISSING
 

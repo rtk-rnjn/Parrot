@@ -42,7 +42,7 @@ class TopggEventListener(Cog):
             return
 
         user: discord.User | None = self.bot.get_user(int(data["user"]))
-        user = user.name if user is not None else "Unknown User"  # type: ignore
+        user = user.name if user is not None else "Unknown User"
 
         await self.bot._execute_webhook(
             self.bot._vote_log_token,

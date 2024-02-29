@@ -194,12 +194,9 @@ class Highlight(Cog):
             member.id == message.author.id
             or settings["disabled"]
             or (
-                message.channel.id in settings.get("blocked_channels", [])  # type: ignore
-                or message.author.id in settings.get("blocked_users", [])  # type: ignore
-                or (
-                    message.channel.category
-                    and message.channel.category.id in settings.get("blocked_channels", [])  # type: ignore
-                )
+                message.channel.id in settings.get("blocked_channels", [])
+                or message.author.id in settings.get("blocked_users", [])
+                or (message.channel.category and message.channel.category.id in settings.get("blocked_channels", []))
             )
         ):
             return
@@ -299,7 +296,9 @@ class Highlight(Cog):
     async def highlight_history(self, ctx: Context):
         """Show your highlight history."""
         col = self.bot.user_collections_ind
-        data = await col.find_one({"_id": ctx.author.id, "highlighted_messages": {"$exists": True}}, {"highlighted_messages": 1})
+        data = await col.find_one(
+            {"_id": ctx.author.id, "highlighted_messages": {"$exists": True}}, {"highlighted_messages": 1}
+        )
         if not data["highlighted_messages"]:
             return await ctx.send("You have no highlight history.")
 

@@ -34,7 +34,7 @@ class WhisperModal(ParrotModal):
                 "whisper_messages": {
                     "message": msg,
                     "created_at": self.message.created_at,
-                    "guild_id": self.message.guild.id,  # type: ignore
+                    "guild_id": self.message.guild.id,
                     "channel_id": self.message.channel.id,
                     "message_id": self.message.id,
                     "author_id": self.message.author.id,

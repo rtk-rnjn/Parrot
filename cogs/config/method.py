@@ -24,7 +24,7 @@ def get_text(
     cmd_cog: str,
     target: discord.Role | discord.abc.GuildChannel | None,
     tp: Literal["enable", "disable"],
-) -> str:  # type: ignore
+) -> str:
     is_are = "commands are" if cmd_cog == "all" else "is"
     initial_str = f"{ctx.author.mention} **{cmd_cog}** {is_are} now {tp}"
     if not target:

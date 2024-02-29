@@ -137,7 +137,7 @@ async def future_time_from_interaction(
     argument: str,
     interaction: discord.Interaction[Parrot],
 ) -> tuple[str, datetime.datetime]:
-    reminder: Reminders = interaction.client.get_cog("Reminder")  # type: ignore
+    reminder: Reminders = interaction.client.get_cog("Reminder")
     timezone = "UTC"
     tzinfo = datetime.timezone.utc
     if reminder is not None:
@@ -172,7 +172,7 @@ class TodoItem:
             self.due_date = self.due_date.replace(tzinfo=datetime.timezone.utc)
 
         self.bot = bot
-        self.cog: Todos = bot.get_cog("Todo")  # type: ignore
+        self.cog: Todos = bot.get_cog("Todo")
 
     @property
     def id(self):
@@ -621,7 +621,7 @@ class EditTodoModal(ui.Modal, title="Edit Todo"):
                 message = await self.item.bot.get_or_fetch_message(channel, message_id)
                 if message is None:
                     await interaction.followup.send(
-                        "That message was not found, sorry. Maybe it was deleted or I can\'t see it.",
+                        "That message was not found, sorry. Maybe it was deleted or I can't see it.",
                         ephemeral=True,
                     )
 

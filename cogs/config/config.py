@@ -164,9 +164,7 @@ class Configuration(Cog):
         if ctx.invoked_subcommand:
             return
         try:
-            starboard_data = self.bot.guild_configurations_cache[
-                ctx.guild.id
-            ]["starboard_config"]
+            starboard_data = self.bot.guild_configurations_cache[ctx.guild.id]["starboard_config"]
         except KeyError:
             return await self.bot.invoke_help_command(ctx)
 

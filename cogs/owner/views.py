@@ -27,7 +27,7 @@ class NitroView(discord.ui.View):
 
         button.disabled = True
         button.style = discord.ButtonStyle.grey
-        button.label = ("\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,)  # type: ignore
+        button.label = ("\N{BRAILLE PATTERN BLANK}" * 16 + "Claimed" + "\N{BRAILLE PATTERN BLANK}" * 16,)
 
         ni: discord.Embed = discord.Embed(
             title="You received a gift, but...",
@@ -35,7 +35,7 @@ class NitroView(discord.ui.View):
         )
         ni.set_thumbnail(url="https://i.imgur.com/w9aiD6F.png")
         try:
-            await interaction.message.edit(embed=ni, view=self)  # type: ignore
+            await interaction.message.edit(embed=ni, view=self)
         except AttributeError:
             pass
 

@@ -76,7 +76,7 @@ async def dial(bot: Parrot, ctx: Context, server: discord.Guild, reverse: bool =
     await telephone_update(ctx, guild_id=ctx.guild.id, event="is_line_busy", value=True)
     await telephone_update(ctx, guild_id=number, event="is_line_busy", value=True)
     with contextlib.suppress(AttributeError, KeyError):
-        temp_message: discord.Message = target_channel.send(  # type: ignore
+        temp_message: discord.Message = target_channel.send(
             f'<@&{target_guild["pingrole"]}> <@{target_guild["memberping"]}>',
             delete_after=1,
         )

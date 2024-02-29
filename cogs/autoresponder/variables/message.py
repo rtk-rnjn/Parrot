@@ -39,21 +39,21 @@ class JinjaMessage:
         """Get message channel."""
         from .channel import JinjaChannel
 
-        return JinjaChannel(channel=self.__message.channel)  # type: ignore
+        return JinjaChannel(channel=self.__message.channel)
 
     @property
     def guild(self) -> JinjaGuild:
         """Get message guild."""
         from .guild import JinjaGuild
 
-        return JinjaGuild(guild=self.__message.guild)  # type: ignore
+        return JinjaGuild(guild=self.__message.guild)
 
     def _has_perms(self, **perms: bool) -> bool:
         """Check if bot has permissions to do actions on message."""
         permissions = discord.Permissions(**perms)
         return (
-            self.__message.guild.me.guild_permissions >= permissions  # type: ignore
-            and self.__message.guild.me.top_role > self.__message.author.top_role  # type: ignore
+            self.__message.guild.me.guild_permissions >= permissions
+            and self.__message.guild.me.top_role > self.__message.author.top_role
         )
 
     async def delete(self, *, delay: int = 0):

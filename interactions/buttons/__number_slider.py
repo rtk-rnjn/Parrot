@@ -38,7 +38,7 @@ class SlideButton(discord.ui.Button["SlideView"]):
 
         if interaction.user != game.player:
             return await interaction.response.send_message("This is not your game!", ephemeral=True)
-        num = int(self.label)  # type: ignore
+        num = int(self.label)
 
         if num not in game.beside_blank():
             return await interaction.response.defer()
@@ -124,10 +124,10 @@ class NumberSlider:
         self.embed = discord.Embed(description="Slide the tiles back in ascending order!", color=embed_color)
         self.embed.add_field(name="\u200b", value="Moves: `0`")
 
-        self.message: discord.Message = await ctx.send(embed=self.embed, view=self.view)  # type: ignore
+        self.message: discord.Message = await ctx.send(embed=self.embed, view=self.view)
 
         await double_wait(
-            wait_for_delete(ctx, self.message),  # type: ignore
+            wait_for_delete(ctx, self.message),
             self.view.wait(),
         )
         return self.message

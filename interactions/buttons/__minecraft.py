@@ -291,7 +291,7 @@ class Minecraft(discord.ui.View):
 
     async def update(self, interaction: discord.Interaction):
         self.destroy_btn.disabled = self.box[tuple(self.selector_pos)] == "0"
-        self.finish_btn.disabled = np.all(self.box == "0")  # type: ignore
+        self.finish_btn.disabled = np.all(self.box == "0")
 
         code = "- ".join([" ".join(["".join(row) for row in lay]) for lay in self.box])
         if "2" in code or "v" in code:

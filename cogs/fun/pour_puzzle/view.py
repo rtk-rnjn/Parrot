@@ -117,8 +117,8 @@ class PourView(discord.ui.View):
         self.ctx = ctx
         self.level = level
         self.state = 0
-        self.selected: BottleButton = None  # type: ignore
-        self.msg: discord.Message = None  # type: ignore
+        self.selected: BottleButton = None
+        self.msg: discord.Message = None
         self.next_btn = None
 
         for i, bottle_data in enumerate(levels[self.level], start=1):
@@ -201,7 +201,7 @@ class PourView(discord.ui.View):
     @discord.ui.button(label="Reset", style=discord.ButtonStyle.danger, custom_id="reset_btn", row=0)
     async def reset_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.state = 0
-        self.selected = None  # type: ignore
+        self.selected = None
 
         for btn in self.children:
             if isinstance(btn, discord.ui.Button) and btn.custom_id == "cancel_btn":
@@ -253,13 +253,13 @@ class PourView(discord.ui.View):
                     btn.disabled = True
 
         button.disabled = True
-        self.selected = None  # type: ignore
+        self.selected = None
         self.state = 0
         await interaction.response.edit_message(view=self)
 
     async def next_button_callback(self, interaction: discord.Interaction):
         self.state = 0
-        self.selected = None  # type: ignore
+        self.selected = None
 
         for btn in self.children[:]:
             if isinstance(btn, discord.ui.Button):

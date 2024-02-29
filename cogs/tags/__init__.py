@@ -28,7 +28,7 @@ class Tags(Cog):
                 self.bot,
                 ctx,
                 tag,
-                ctx.message.reference.resolved if ctx.message.reference else None,  # type: ignore
+                ctx.message.reference.resolved if ctx.message.reference else None,
             )
         else:
             await self.bot.invoke_help_command(ctx)

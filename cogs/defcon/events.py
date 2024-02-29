@@ -36,7 +36,7 @@ class DefconListeners(Cog):
         else:
             embed = message
         await self.bot.wait_until_ready()
-        await channel.send(embed=embed)  # type: ignore
+        await channel.send(embed=embed)
 
     async def defcon_on_member_join(self, member: discord.Member, level: int) -> None:
         settings = DEFCON_SETTINGS[level]["SETTINGS"]
@@ -87,7 +87,7 @@ class DefconListeners(Cog):
         else:
             await self.defcon_broadcast(
                 f"Invite created by **{invite.inviter}** (`{getattr(invite.inviter, 'id', 'ID Not Found')}`) was deleted for DEFCON level {level}",
-                guild=invite.guild,  # type: ignore
+                guild=invite.guild,
                 level=level,
             )
 

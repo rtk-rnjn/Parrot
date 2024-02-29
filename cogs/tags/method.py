@@ -24,9 +24,9 @@ async def _show_tag(bot: Parrot, ctx: Context, tag: str, msg_ref: discord.Messag
     collection = ctx.bot.tags_collection
     allowed_mentions = discord.AllowedMentions.none()
     if data := await collection.find_one({"tag_id": tag}):
-        if not data["nsfw"] and msg_ref is not None or data["nsfw"] and ctx.channel.nsfw and msg_ref is not None:  # type: ignore
+        if not data["nsfw"] and msg_ref is not None or data["nsfw"] and ctx.channel.nsfw and msg_ref is not None:
             await msg_ref.reply(data["text"], allowed_mentions=allowed_mentions)
-        elif not data["nsfw"] or ctx.channel.nsfw:  # type: ignore
+        elif not data["nsfw"] or ctx.channel.nsfw:
             await ctx.send(data["text"], allowed_mentions=allowed_mentions)
         else:
             await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")
@@ -40,7 +40,7 @@ async def _show_raw_tag(bot: Parrot, ctx: Context, tag: str):
     if data := await collection.find_one({"tag_id": tag, "guild_id": ctx.guild.id}):
         first = discord.utils.escape_markdown(data["text"])
         main = discord.utils.escape_mentions(first)
-        if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:  # type: ignore
+        if data["nsfw"] and ctx.channel.nsfw or not data["nsfw"]:
             await ctx.safe_send(main, allowed_mentions=discord.AllowedMentions.none())
         else:
             await ctx.reply(f"{ctx.author.mention} this tag can only be called in NSFW marked channel")

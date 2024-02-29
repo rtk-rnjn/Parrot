@@ -3,7 +3,7 @@ from __future__ import annotations
 import zlib
 from functools import partial
 
-import aiohttp  # type: ignore
+import aiohttp
 
 to_bytes = partial(bytes, encoding="utf-8")
 
@@ -24,12 +24,12 @@ class Tio:
         language: str,
         code: str,
         inputs="",
-        compilerFlags=None,
-        commandLineOptions=None,
+        compiler_flags=None,
+        command_line_options=None,
         args=None,
     ) -> None:
-        compilerFlags = compilerFlags or []
-        commandLineOptions = commandLineOptions or []
+        compiler_flags = compiler_flags or []
+        command_line_options = command_line_options or []
         args = args or []
         self.backend = "https://tio.run/cgi-bin/run/api/"
         self.json = "https://tio.run/languages.json"
@@ -38,8 +38,8 @@ class Tio:
             "lang": [language],
             ".code.tio": code,
             ".input.tio": inputs,
-            "TIO_CFLAGS": compilerFlags,
-            "TIO_OPTIONS": commandLineOptions,
+            "TIO_CFLAGS": compiler_flags,
+            "TIO_OPTIONS": command_line_options,
             "args": args,
         }
 
@@ -48,11 +48,12 @@ class Tio:
         # This returns a DEFLATE-compressed bytestring, which is what the API requires
         self.request = zlib.compress(bytes_, 9)[2:-4]
 
-    async def send(self):
+    async def send(self) -> str | None:
         async with aiohttp.ClientSession() as client_session:
             res = await client_session.post(self.backend, data=self.request)
             if res.status != 200:
-                raise aiohttp.HttpProcessingError(res.status)
+                msg = f"Failed to get response from TIO: {res.status}"
+                raise aiohttp.ClientError(msg)
 
             data = await res.read()
             data = data.decode("utf-8")

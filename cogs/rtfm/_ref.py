@@ -6,7 +6,7 @@ from functools import partial
 from typing import Any
 
 from bs4 import BeautifulSoup
-from markdownify import MarkdownConverter  # type: ignore
+from markdownify import MarkdownConverter
 
 import discord
 from core import Context

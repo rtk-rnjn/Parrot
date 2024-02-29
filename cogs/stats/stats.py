@@ -171,7 +171,7 @@ class Stats(Cog):
         `--order_by`: Sort the list in ascending or descending order. `-1` (decending) or `1` (ascending)
         `--limit`: Limit the list to the top `limit` entries.
         """
-        user = user or ctx.author  # type: ignore
+        user = user or ctx.author
         col = self.bot.game_collections
 
         data = await col.find_one(

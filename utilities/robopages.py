@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from discord.ext.commands import Paginator as CommandPaginator
 
 import discord
-from discord.ext import old_menus as menus  # type: ignore
+from discord.ext import old_menus as menus
 
 if TYPE_CHECKING:
     from core import Context, Parrot
@@ -207,7 +207,7 @@ class RoboPages(discord.ui.View):
         value = int(value)
         await self.show_checked_page(modal.interaction, value - 1)
         if not modal.interaction.response.is_done():
-            error = modal.page.placeholder.replace("Enter", "Expected")  # type: ignore # Can't be None
+            error = modal.page.placeholder.replace("Enter", "Expected")  # Can't be None
             await modal.interaction.response.send_message(error, ephemeral=True)
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)

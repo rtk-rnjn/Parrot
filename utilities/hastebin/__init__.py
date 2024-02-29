@@ -39,7 +39,7 @@ class Route:
 
 class HTTPClient:
     def __init__(self, *, session: aiohttp.ClientSession | None = None) -> None:
-        self.session: aiohttp.ClientSession = session  # type: ignore
+        self.session: aiohttp.ClientSession = session
         self.token = os.environ.get("HASTEBIN")
         self.__lock = asyncio.Semaphore(2)
 

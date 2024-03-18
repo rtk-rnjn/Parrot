@@ -22,9 +22,10 @@ class PeggyPlayZ(Cog):
     async def on_message(self, message: discord.Message) -> None:
         await self.bot.wait_until_ready()
         if message.channel.id == UPLOAD_CHANNEL_ID and message.author.id == PINGCORD:
-            if message.channel.permissions_for(message.guild.me).manage_messages:
+            perms = message.channel.permissions_for(message.guild.me)  # type: ignore
+            if perms.manage_messages and perms.send_messages:
                 await message.publish()
-            if message.channel.permissions_for(message.guild.me).add_reactions:
+            if perms.add_reactions:
                 await message.add_reaction("\N{EYES}")
 
     @Cog.listener()
@@ -46,5 +47,6 @@ class PeggyPlayZ(Cog):
             and (isinstance(message.channel, discord.TextChannel) and message.channel.is_news())
             and message.channel.id != UPLOAD_CHANNEL_ID
             and message.channel.permissions_for(message.guild.me).manage_messages
+            and message.channel.permissions_for(message.guild.me).send_messages
         ):
             await message.publish()

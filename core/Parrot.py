@@ -966,7 +966,7 @@ class Parrot(commands.AutoShardedBot):
         *,
         force_fetch: bool = False,
     ) -> T | None:
-        _id: int = getattr(_id, "id", _id)
+        _id = _id.id if isinstance(_id, discord.Object) else int(_id)
         if not _id:
             return None
 
@@ -1008,7 +1008,6 @@ class Parrot(commands.AutoShardedBot):
             return
         for _data in data["users"]:
             self.banned_users[_data["user_id"]] = _data
-            await asyncio.sleep(0)
 
     async def __before_invoke(self, ctx: Context):
         if ctx.guild is not None and not ctx.guild.chunked:

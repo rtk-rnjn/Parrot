@@ -58,7 +58,6 @@ class YoutubeSearch:
                     http_response = await self.session.get(url)
                     if http_response.status == 200:
                         response = await http_response.text()
-                    await asyncio.sleep(0)
         except asyncio.TimeoutError:
             return ""
         return response

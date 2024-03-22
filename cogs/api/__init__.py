@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from core import Parrot
 
-from .api import Gist
+from .github_api import Gist
 
 
 async def setup(bot: Parrot):

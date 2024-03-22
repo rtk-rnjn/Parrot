@@ -161,10 +161,8 @@ class Gist(Cog, command_attrs={"hidden": True}):
     @commands.is_owner()
     async def gist_create(self, ctx: Context, *, content: str):
         """Create a gist from the given content."""
-        content = GistContent(content)
-        url = await self.create_gist(
-            content.source,
-        )
+        cont = GistContent(content)
+        url = await self.create_gist(cont.source)
         await ctx.send(f"Created gist at <{url}>")
 
     @gist.command(name="delete", aliases=["remove", "del", "rm"])

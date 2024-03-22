@@ -22,7 +22,7 @@ from .flags import AuditFlag
 from .methods import get_action_color, get_change_value, resolve_target
 
 if TYPE_CHECKING:
-    from cogs.api.api import Gist
+    from cogs.api.github_api import Gist
 
 
 class Meta(Cog):

@@ -1515,12 +1515,7 @@ class Fun(Cog):
         AUTH = aiohttp.BasicAuth("apikey", os.environ["IBM_KEY"])
 
         DATA = {"text": [message], "target": target_language}
-        res = await self.bot.http_session.post(
-            URL,
-            json=DATA,
-            auth=AUTH,
-            headers=HEADER,
-        )
+        res = await self.bot.http_session.post(URL, json=DATA, auth=AUTH, headers=HEADER)
         if res.status != 200:
             msg = "Translation failed. Please try again."
             raise commands.BadArgument(msg)
@@ -1556,7 +1551,7 @@ class Fun(Cog):
         if not res["list"]:
             return await ctx.reply(f"{ctx.author.mention} **{t}** means nothings. Try something else")
         em_list = []
-        for i, item in enumerate(res["list"]):
+        for _i, item in enumerate(res["list"]):
             _def = item["definition"]
             _link = item["permalink"]
             thumbs_up = item["thumbs_up"]

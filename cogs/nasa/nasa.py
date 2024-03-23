@@ -288,7 +288,7 @@ class NASA(Cog):
 
         em_list: list[discord.Embed] = []
 
-        for index, item in enumerate(res["photos"]):
+        for item in res["photos"]:
             img = item["img_src"]
             date_ = item["earth_date"]
             status = item["rover"]["status"].capitalize()
@@ -336,39 +336,38 @@ class NASA(Cog):
                     render = data["links"][0]["render"]
                 except KeyError:
                     continue
-                else:
-                    r = await self.bot.http_session.get(media_url, headers={"User-Agent": AGENT})
-                    media = await r.json() if r.status == 200 else None
-                    img, vid, srt = [], [], []
-                    if media:
-                        i, j, k = 1, 1, 1
-                        for link in media[:10]:
-                            if link.endswith(".jpg") or link.endswith(".png"):
-                                img.append(f"[Image {i}]({link.replace(' ', '%20')})")
-                                i += 1
-                            if link.endswith(".mp4"):
-                                vid.append(f"[Video {j}]({link.replace(' ', '%20')})")
-                                j += 1
-                            if link.endswith(".str"):
-                                srt.append(f"[Link {k}]({link.replace(' ', '%20')})")
-                                k += 1
+                r = await self.bot.http_session.get(media_url, headers={"User-Agent": AGENT})
+                media = await r.json() if r.status == 200 else None
+                img, vid, srt = [], [], []
+                if media:
+                    i, j, k = 1, 1, 1
+                    for link in media[:10]:
+                        if link.endswith(".jpg") or link.endswith(".png"):
+                            img.append(f"[Image {i}]({link.replace(' ', '%20')})")
+                            i += 1
+                        if link.endswith(".mp4"):
+                            vid.append(f"[Video {j}]({link.replace(' ', '%20')})")
+                            j += 1
+                        if link.endswith(".str"):
+                            srt.append(f"[Link {k}]({link.replace(' ', '%20')})")
+                            k += 1
 
-                    embed = discord.Embed(
-                        title=f"{title}",
-                        description=f"{description[:1000]}...",
-                        timestamp=discord.utils.utcnow(),
-                    )
-                    if render == "image":
-                        embed.set_image(url=f"{preview}")
-                    if img:
-                        embed.add_field(name="Images", value=f"{', '.join(img[:5])}", inline=False)
-                    if vid:
-                        embed.add_field(name="Videos", value=f"{', '.join(vid[:5])}", inline=False)
-                    if srt:
-                        embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
-                    embed.set_footer(text=f"Requested by {ctx.author}")
-                    embed.set_thumbnail(url=ENDPOINTS.NASA_LOGO)
-                    em_list.append(embed)
+                embed = discord.Embed(
+                    title=f"{title}",
+                    description=f"{description[:1000]}...",
+                    timestamp=discord.utils.utcnow(),
+                )
+                if render == "image":
+                    embed.set_image(url=f"{preview}")
+                if img:
+                    embed.add_field(name="Images", value=f"{', '.join(img[:5])}", inline=False)
+                if vid:
+                    embed.add_field(name="Videos", value=f"{', '.join(vid[:5])}", inline=False)
+                if srt:
+                    embed.add_field(name="Srt", value=f"{', '.join(srt)}", inline=False)
+                embed.set_footer(text=f"Requested by {ctx.author}")
+                embed.set_thumbnail(url=ENDPOINTS.NASA_LOGO)
+                em_list.append(embed)
             if index >= limit:
                 break
         if not em_list:
@@ -379,10 +378,7 @@ class NASA(Cog):
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def donki(
-        self,
-        ctx: Context,
-    ):
+    async def donki(self, ctx: Context):
         """Space Weather Database Of Notifications, Knowledge, Information (DONKI)."""
         if not ctx.invoked_subcommand:
             await self.bot.invoke_help_command(ctx)

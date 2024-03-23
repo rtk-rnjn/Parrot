@@ -6,17 +6,16 @@ from typing import Any
 import discord
 
 
+_ACTION_COLOR = {
+    None: 0x2F3136,
+    1: 0x3BA55C,
+    2: 0xEC4245,
+    3: 0xFAA61A,
+}
+
 def get_action_color(action: discord.AuditLogAction) -> int:
     category = getattr(action, "category", None)
-    if category is None:
-        return 0x2F3136
-    if category.value == 1:
-        return 0x3BA55C
-    if category.value == 2:
-        return 0xEC4245
-    if category.value == 3:
-        return 0xFAA61A
-    return 0x2F3136
+    return _ACTION_COLOR.get(category, _ACTION_COLOR[None])
 
 
 def resolve_target(target: Any) -> str:

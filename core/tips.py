@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 TIPS = [
-    "You can actually delete the error message by deleting your own message. (within 10seconds)",
+    "You can actually delete the error message by deleting your own message. (within 10 seconds)",
     "There exists a secret command, `cud`.",
     "You can sent a private message to someone without actually DMing them. (hint: Apps -> Whisper)",
     "You can set your timezone by using `tz` command.",
@@ -26,6 +26,7 @@ TIPS = [
     "Missed a message? Use `editsnipe` command to see the last edited message.",
     'Missed "Do you know" message? Hmm! Keep running some commands, although the chance of getting this message is 1/400',
     "First 500 servers to add this bot will get FREE PREMIUM for LIFETIME!",
+    "The bot is still under development, so you may encounter some bugs.",
 ]
 
 FAQS = {

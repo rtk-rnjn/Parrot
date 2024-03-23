@@ -390,7 +390,7 @@ class Meta(Cog):
                     voice += 1
 
         version = discord_version
-        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)
+        owner: discord.Member = await self.bot.get_or_fetch_member(support_guild, self.bot.author_obj.id)  # type: ignore
         embed = (
             discord.Embed(
                 title="Official Bot Server Invite",
@@ -409,7 +409,7 @@ class Meta(Cog):
             .set_footer(
                 text=f"Made with discord.py v{version}",
                 icon_url="http://i.imgur.com/5BFecvA.png",
-            )
+)
         )
         contributors = await self.get_github_contributor_names()
         embed.add_field(name="Our Noble Contributors", value=", ".join(contributors))
@@ -685,7 +685,7 @@ class Meta(Cog):
         if (not invite.guild) or (not invite):
             return await ctx.send(f"{ctx.author.mention} invalid invite or invite link is not of server")
         embed = discord.Embed(title=invite.url, timestamp=discord.utils.utcnow(), url=invite.url)
-        fields: list[tuple[str, str | None, bool]] = [
+        fields = [
             ("Member count?", invite.approximate_member_count, True),
             ("Presence Count?", invite.approximate_presence_count, True),
             ("Channel", f"<#{invite.channel.id}>" if invite.channel else "N/A", True),

@@ -19,7 +19,6 @@ attrs
 autopep8
 bandit
 beautifulsoup4
-better-ipc
 black
 blinker
 braceexpand
@@ -36,12 +35,10 @@ discord.py @ git+https://github.com/Rapptz/discord.py
 dnspython
 english-words
 eradicate
-fastapi
 flake8
 flake8-2020
 flake8-annotations
 flake8-async
-flake8-bandit
 flake8-blind-except
 flake8-boolean-trap
 flake8-bugbear
@@ -58,7 +55,6 @@ flake8-gettext
 flake8-implicit-str-concat
 flake8-import-conventions
 flake8-json
-flake8-logging-format
 flake8-no-pep420
 flake8-pie
 flake8-print
@@ -70,10 +66,8 @@ flake8-return
 flake8-self
 flake8-simplify
 flake8-tidy-imports
-flake8-todos
 flake8-type-checking
 flake8-unused-arguments
-flake8-use-pathlib
 flynt
 frozenlist
 gitdb
@@ -87,7 +81,6 @@ hypercorn
 hyperframe
 idna
 import-expression
-isort
 isort
 itsdangerous
 Jinja2
@@ -146,7 +139,6 @@ pytz
 pyupgrade
 PyYAML
 qrcode
-quart
 rapidfuzz
 requests
 requests-oauthlib
@@ -168,7 +160,6 @@ tryceratops
 typing_extensions
 tzdata
 urllib3
-uvicorn
 Wand
 wcwidth
 Werkzeug
@@ -179,5 +170,4 @@ yapf
 yarl
 youtube-dl
 uvloop; sys_platform != "win32"
-quart-rate-limiter
 feedparser

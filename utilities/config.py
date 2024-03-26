@@ -70,8 +70,6 @@ MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
 LRU_CACHE: Final[int] = 512
-TO_LOAD_IPC: bool = "cogs.ipc" not in UNLOAD_EXTENSIONS
-# TO_LOAD_IPC: bool = True
 
 WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
 WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")
@@ -85,6 +83,6 @@ STRAW_POLL: str = parse_env_var("STRAW_POLL")
 MINIMAL_BOOT: bool = parse_env_var("MINIMAL_BOOT", False)
 
 if MINIMAL_BOOT:
-    EXTENSIONS = ["cogs.ipc", "jishaku"]
+    EXTENSIONS = ["jishaku"]
 
 REDIS_URI: str = parse_env_var("REDIS_URI")

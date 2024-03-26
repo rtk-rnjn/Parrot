@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import logging
 
+import aiofiles
 import aiohttp
 import aiosqlite
 import yarl
 
 log = logging.getLogger("updater")
 
-# SCAM LINK URL
 API = yarl.URL("https://api.github.com/")
 RAW_API = yarl.URL("https://raw.githubusercontent.com/")
 REPO = "Discord-AntiScam/scam-links"
@@ -19,6 +19,8 @@ _ORIGINAL_RAW_REPO = RAW_API / REPO
 COMMIT_URL = _COMMIT_URL
 ORIGINAL_REPO = _ORIGINAL_RAW_REPO
 
+with open("_meta.txt") as f:
+    is_first_run = f.read().strip().lower() == "true"
 
 async def init():
     db = await aiosqlite.connect("cached.sqlite", iter_chunk_size=2**8, cached_statements=2**10)
@@ -43,6 +45,10 @@ async def init():
 
 
 async def insert_all_scams(db: aiosqlite.Connection):
+
+    async with aiofiles.open("_meta.txt", "w") as f:
+        await f.write("false")
+
     url = ORIGINAL_REPO / "main" / "list.json"
 
     async with aiohttp.ClientSession() as session:
@@ -68,6 +74,11 @@ async def insert_all_scams(db: aiosqlite.Connection):
 
 
 async def insert_new(db: aiosqlite.Connection):
+    if is_first_run:
+        log.info("First Run... Inserting all scams...")
+        await insert_all_scams(db)
+        return
+
     async with aiohttp.ClientSession() as session:
         log.debug("Downloading Data... %s", COMMIT_URL)
         response = await session.get(COMMIT_URL)

@@ -25,7 +25,7 @@ from pymongo.results import DeleteResult, InsertOneResult
 
 import discord
 from discord import app_commands
-from discord.ext import commands, ipc, tasks
+from discord.ext import commands, tasks
 
 try:
     import topgg
@@ -48,7 +48,6 @@ from utilities.config import (
     STRIP_AFTER_PREFIX,
     SUPPORT_SERVER,
     SUPPORT_SERVER_ID,
-    TO_LOAD_IPC,
     TOKEN,
     UNLOAD_EXTENSIONS,
     VERSION,
@@ -103,7 +102,6 @@ log = logging.getLogger("core.parrot")
 
 # LOCALHOST = "0.0.0.0"
 LOCALHOST = "localhost"
-IPC_PORT = 1730
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
 TOPGG_PORT = 1019
@@ -211,20 +209,6 @@ class Parrot(commands.AutoShardedBot):
         self.channel_message_cache: Cache[int, deque[discord.Message]] = Cache(self, cache_size=2**10)
 
         self.before_invoke(self.__before_invoke)
-
-        # IPC
-        self.HAS_IPC = TO_LOAD_IPC
-        self.ipc_server: ipc.server.Server = ipc.server.Server(
-            self,
-            host=LOCALHOST,
-            standard_port=IPC_PORT,
-            secret_key=os.environ["IPC_KEY"],
-        )
-        self.ipc_client: ipc.client.Client = ipc.client.Client(
-            host=LOCALHOST,
-            standard_port=IPC_PORT,
-            secret_key=os.environ["IPC_KEY"],
-        )
 
         # Extensions
         self._successfully_loaded: list[str] = []
@@ -388,32 +372,9 @@ class Parrot(commands.AutoShardedBot):
             )
             self.topgg_webhook = topgg.WebhookManager(self)
 
-        if self.HAS_IPC:
-            # thing is you cant run localhost inside docker container
-            # so we need to check if we are running inside docker container
-            # just by checking if starting the server fails, and raises OSError
-            if discord.utils.is_docker():
-                self.ON_DOCKER = True
-                log.debug("Running on docker container")
-            try:
-                if not self.ON_DOCKER:
-                    await self.ipc_server.start()
-                    log.debug("IPC server started")
-            except OSError as e:
-                log.warning("Failed to start IPC server", exc_info=e)
-
-            if not self.ON_DOCKER:
-                try:
-                    # start webserver to receive Top.GG webhooks
-                    success = await self.ipc_client.request("start_dbl_server", port=TOPGG_PORT, end_point="/dblwebhook")
-                    log.info("Top.GG webhook server started: %s", success)
-                except aiohttp.ClientConnectionError as e:
-                    log.warning("Failed to start IPC server", exc_info=e)
-                    traceback.print_exc()
-                except OSError as e:
-                    log.warning("Failed to start IPC server", exc_info=e)
-                    self.ON_DOCKER = True
-                    traceback.print_exc()
+        if discord.utils.is_docker():
+            self.ON_DOCKER = True
+            log.debug("Running on docker container")
 
         self.timer_task = self.loop.create_task(self.dispatch_timers())
 

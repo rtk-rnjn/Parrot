@@ -6,7 +6,6 @@ all_extensions:
   - cogs.fun
   - cogs.holidays
   - cogs.holidays.easter
-  - cogs.ipc
   - cogs.love
   - cogs.meta
   - cogs.mis

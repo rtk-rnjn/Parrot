@@ -9,10 +9,9 @@ import aioredis
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app import runner
 from core import Parrot
 from updater import init
-from utilities.config import DATABASE_KEY, DATABASE_URI, MINIMAL_BOOT, REDIS_URI, TOKEN, VERSION
+from utilities.config import DATABASE_KEY, DATABASE_URI, REDIS_URI, TOKEN, VERSION
 
 bot: Parrot = Parrot()
 
@@ -41,9 +40,6 @@ async def main() -> None:
             await bot.init_db()
 
             start_what = [bot.start(TOKEN)]
-
-            if not MINIMAL_BOOT:
-                start_what.append(runner())
 
             await asyncio.gather(*start_what)
 

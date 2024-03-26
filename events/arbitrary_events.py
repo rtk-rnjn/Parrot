@@ -13,6 +13,7 @@ class ArbitraryEvents(Cog):
         self.bot_activity.start()
 
         self.FIRST_ON_IDLE_FIRED = False
+        self.__retries = 0
 
     @Cog.listener("on_message")
     async def on_parrot_message(self, message: discord.Message) -> None:
@@ -36,9 +37,8 @@ class ArbitraryEvents(Cog):
             # actions like, message_pin, message_unpin, members_prune
             return
 
-        if entry.target:
-            if isinstance(entry.target.id, int) and entry.target.id == self.bot.user.id:
-                self.bot.dispatch("bot_activity")
+        if entry.target and (isinstance(entry.target.id, int) and entry.target.id == self.bot.user.id):
+            self.bot.dispatch("bot_activity")
 
     @tasks.loop(seconds=12)
     async def bot_activity(self) -> None:
@@ -58,7 +58,14 @@ class ArbitraryEvents(Cog):
             if guild.chunked:
                 continue
             await self.bot.wait_until_ready()
-            await guild.chunk(cache=True)
+
+            while self.__retries < 3:
+                try:
+                    await guild.chunk(cache=True)
+                    break
+                except Exception:
+                    self.__retries += 1
+                    await asyncio.sleep(1)
 
 
 async def setup(bot: Parrot) -> None:

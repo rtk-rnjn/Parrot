@@ -5,7 +5,9 @@
             "script": "main.py",
             "interpreter": "python3",
             "autorestart": true,
-            "instances": 1
+            "instances": 1,
+            "max_memory_restart": "600M",
+            "cron_restart": "0 0 * * *"
         }
     ]
 }

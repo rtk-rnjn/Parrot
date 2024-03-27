@@ -69,7 +69,7 @@ SUPPORT_SERVER_ID = parse_env_var("SUPPORT_SERVER_ID", 741614680652644382)
 MEME_PASS = parse_env_var("MEME_PASS")
 PRIVACY_POLICY: str = parse_env_var("PRIVACY_POLICY")
 
-LRU_CACHE: Final[int] = 512
+LRU_CACHE: Final[int] = 100
 
 WEBHOOK_JOIN_LEAVE_LOGS: str = parse_env_var("WEBHOOK_JOIN_LEAVE_LOGS")
 WEBHOOK_ERROR_LOGS: str = parse_env_var("WEBHOOK_ERROR_LOGS")

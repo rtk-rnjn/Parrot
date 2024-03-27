@@ -100,7 +100,6 @@ logger.addHandler(hndlr)
 
 log = logging.getLogger("core.parrot")
 
-# LOCALHOST = "0.0.0.0"
 LOCALHOST = "localhost"
 LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
@@ -601,11 +600,6 @@ class Parrot(commands.AutoShardedBot):
         for name, error in self._failed_to_load.items():
             st = f"```css\n[{self.user.name.title()}] Failed to load {name} cog due to``````py\n{error}```"
             await self._execute_webhook(self._error_log_token, content=f"{st}")
-
-        VOICE_CHANNEL_ID = 1116780108074713098
-        channel: discord.VoiceChannel | None = await self.getch(self.get_channel, self.fetch_channel, VOICE_CHANNEL_ID)
-        if channel is not None:
-            await channel.connect(self_deaf=True, reconnect=True)
 
         self.loop.create_task(self.__cache_app_commands(None))
 

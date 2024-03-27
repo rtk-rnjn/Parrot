@@ -4,12 +4,14 @@ import os
 import sqlite3
 
 import tabulate
-from colorama import Fore, just_fix_windows_console
+from colorama import Fore
 
 con = sqlite3.connect("cached.sqlite")
 cur = con.cursor()
 
 if os.name == "nt":
+    from colorama import just_fix_windows_console
+
     just_fix_windows_console()
 
 

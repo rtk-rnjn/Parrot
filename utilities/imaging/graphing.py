@@ -20,14 +20,9 @@ if TYPE_CHECKING:
 
 matplotlib.use("agg")
 plt.style.use(("bmh", "ggplot"))
-__all__: tuple[str, ...] = (
-    "boxplot",
-    "plotfn",
-)
+__all__: tuple[str, ...] = ("boxplot", "plotfn")
 
-CODEFONT: FontProperties = FontProperties(
-    fname="extra/Monaco-Linux.ttf",
-)
+CODEFONT: FontProperties = FontProperties(fname="extra/Monaco-Linux.ttf")
 
 
 def boxplot(_: Context, data: list[float], *, fill_boxes: bool = True) -> discord.File:
@@ -58,66 +53,21 @@ def boxplot(_: Context, data: list[float], *, fill_boxes: bool = True) -> discor
     x = ax.get_xticks()[1]
 
     _min, _max = min(data), max(data)
-    ax.text(
-        x,
-        1.4,
-        f"Min: {_min}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        1.34,
-        f"Max: {_max}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        1.28,
-        f"Range: {_max - _min}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        1.22,
-        f"Mean: {mean(data)}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        1.16,
-        f"Mode: {mode(data)}",
-        fontproperties=CODEFONT,
-    )
+    ax.text(x, 1.4, f"Min: {_min}", fontproperties=CODEFONT)
+    ax.text(x, 1.34, f"Max: {_max}", fontproperties=CODEFONT)
+    ax.text(x, 1.28, f"Range: {_max - _min}", fontproperties=CODEFONT)
+    ax.text(x, 1.22, f"Mean: {mean(data)}", fontproperties=CODEFONT)
+    ax.text(x, 1.16, f"Mode: {mode(data)}", fontproperties=CODEFONT)
 
     try:
         q1, q2, q3 = quantiles(data, n=4)
     except StatisticsError:
         q1 = q2 = q3 = data[0]
 
-    ax.text(
-        x,
-        0.8,
-        f"Q1: {q1}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        0.74,
-        f"Q2: {q2}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        0.68,
-        f"Q3: {q3}",
-        fontproperties=CODEFONT,
-    )
-    ax.text(
-        x,
-        0.62,
-        f"IQR: {q3 - q1}",
-        fontproperties=CODEFONT,
-    )
+    ax.text(x, 0.8, f"Q1: {q1}", fontproperties=CODEFONT)
+    ax.text(x, 0.74, f"Q2: {q2}", fontproperties=CODEFONT)
+    ax.text(x, 0.68, f"Q3: {q3}", fontproperties=CODEFONT)
+    ax.text(x, 0.62, f"IQR: {q3 - q1}", fontproperties=CODEFONT)
 
     buffer = BytesIO()
     plt.savefig(buffer)

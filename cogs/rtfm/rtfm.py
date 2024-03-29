@@ -1477,7 +1477,7 @@ class RTFM(Cog):
         contests = self.kontests_cache["codeforces"]
 
         return [
-            f"""ID: *{contest.id}* | **[{contest.name}]({contest.website_url})** | {contest.phase} | {contest.difficulty}
+            f"""ID: *{contest.id}* | **[{contest.name}]({contest.website_url})** | {contest.phase}
 {contest.description}
 `Start:` {discord.utils.format_dt(contest.start_time, "R") if contest.start_time else 'TBA'}
 `Time :` {contest.duration_seconds // 60} Minutes
@@ -1489,6 +1489,7 @@ class RTFM(Cog):
         if "atcoder" not in self.kontests_cache:
             atcoder = AtCoder()
             await atcoder.fetch(self.bot.http_session)
+            await atcoder.get_contests(self.bot.http_session)
             self.kontests_cache["atcoder"] = atcoder.contests
 
         contests = self.kontests_cache["atcoder"]
@@ -1497,6 +1498,23 @@ class RTFM(Cog):
             f"""ID: NA | **[{contest.name}]({contest.url})**
 *Description not available*
 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
+"""
+            for contest in contests
+        ]
+
+    async def kontest_csacademy(self) -> list:
+        if "csacademy" not in self.kontests_cache:
+            csacademy = CSAcademy()
+            await csacademy.fetch(self.bot.http_session)
+            self.kontests_cache["csacademy"] = csacademy.contests
+
+        contests = self.kontests_cache["csacademy"]
+
+        return [
+            f"""ID: NA | **[{contest.name}]({contest.url})**
+{contest.description}
+`Start:` {discord.utils.format_dt(contest.start_time, "R") if contest.start_time else 'TBA'}
+`End  :` {discord.utils.format_dt(contest.end_time, "R") if contest.end_time else 'TBA'}
 """
             for contest in contests
         ]

@@ -20,10 +20,6 @@ class CSAcademyContestData:
         self.__data = data
 
     @property
-    def id(self) -> int:
-        return self.__data["id"]
-
-    @property
     def name(self) -> str:
         return self.__data["longName"]
 
@@ -59,6 +55,10 @@ class CSAcademyContestData:
     @property
     def rated(self) -> bool:
         return self.__data["rated"]
+
+    @property
+    def url(self) -> str:
+        return f"{BASE_URL}/{self.__data['name']}"
 
 
 class CSAcademy:

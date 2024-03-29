@@ -27,11 +27,15 @@ class CodeChefContestData:
 
     @property
     def start_time(self) -> datetime.datetime:
-        return datetime.datetime.strptime(self.__data["start"], TIME_FORMAT)
+        return datetime.datetime.strptime(self.__data["start_in"], TIME_FORMAT)
 
     @property
     def url(self) -> str:
         return f"{API}/{self.code}"
+
+    @property
+    def duration(self) -> str:
+        return self.__data["duration"]
 
 
 class CodeChef:

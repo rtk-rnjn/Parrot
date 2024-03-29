@@ -1408,7 +1408,7 @@ class RTFM(Cog):
         if random() < 0.1:
             await ctx.send("From Owner: This command is still in development. Please be patient.")
 
-        available_platforms = {"hackerearth", "hackerrank"}
+        available_platforms = {"hackerearth", "hackerrank", "codeforces"}
         if platform is None:
             msg = "Please provide a platform to get the upcoming contests for."
             msg += f"\n\nAvailable platforms: {', '.join(available_platforms)}"
@@ -1423,6 +1423,7 @@ class RTFM(Cog):
         mapping = {
             "hackerearth": self.kontest_hackerearth,
             "hackerrank": self.kontest_hackerrank,
+            "codeforces": self.kontest_codeforces,
         }
 
         kontests = await mapping[platform]()
@@ -1461,6 +1462,23 @@ class RTFM(Cog):
 {contest.description}
 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
 `End  :` {discord.utils.format_dt(contest.end_time, "R")}
+"""
+            for contest in contests
+        ]
+
+    async def kontest_codeforces(self) -> list:
+        if "codeforces" not in self.kontests_cache:
+            codeforces = CodeForces()
+            await codeforces.fetch(self.bot.http_session)
+            self.kontests_cache["codeforces"] = codeforces.contests
+
+        contests = self.kontests_cache["codeforces"]
+
+        return [
+            f"""ID: *{contest.id}* | **[{contest.name}]({contest.website_url})** | {contest.phase} | {contest.difficulty}
+{contest.description}
+`Start:` {discord.utils.format_dt(contest.start_time, "R") if contest.start_time else 'TBA'}
+`Time :` {contest.duration_seconds // 60} Minutes
 """
             for contest in contests
         ]

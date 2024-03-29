@@ -3,7 +3,7 @@ from __future__ import annotations
 from markdownify import markdownify as md
 import aiohttp
 import datetime
-
+from bs4 import BeautifulSoup
 API = "https://www.hackerearth.com/chrome-extension/events/"
 
 
@@ -21,7 +21,11 @@ class HackerEarthContest:
 
     @property
     def description(self) -> str:
-        return md(self.__data["description"]).strip()
+        soup = BeautifulSoup(self.__data["description"], "html.parser")
+        for tag in soup.find_all("style"):
+            tag.decompose()
+
+        return md(str(soup)).strip()
 
     @property
     def url(self) -> str:
@@ -58,7 +62,7 @@ class HackerEarth:
             async with session.get(API) as resp:
                 data = await resp.json()
 
-            self.__contests = [HackerEarthContest(contest) for contest in data]
+            self.__contests = [HackerEarthContest(contest) for contest in data["response"]]
 
     @property
     def contests(self) -> list[HackerEarthContest]:

@@ -51,6 +51,8 @@ class CSAcademyContestData:
     @property
     def description(self) -> str:
         soup = BeautifulSoup(self.__data["description"], "html.parser")
+        for tag in soup.find_all("style"):
+            tag.decompose()
         converter = CustomMarkdownConverter()
         return converter.convert(str(soup))
 

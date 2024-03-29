@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import datetime
-
+from random import choice
 import aiohttp
 from markdownify import markdownify as md
+from bs4 import BeautifulSoup
 
 API = "https://www.hackerrank.com/rest/"
 URL = "https://www.hackerrank.com/contests"
 
 UPCOMING = "contests/upcoming"
 PAST = "contests/past"
+
+with open(r"extra/user_agents.txt") as f:
+    USER_AGENTS = f.read().split("\n")
 
 
 class HackerRankContest:
@@ -38,7 +42,10 @@ class HackerRankContest:
 
     @property
     def description(self) -> str:
-        return md(self.__data["description_html"]).strip()
+        soup = BeautifulSoup(self.__data["description_html"], "html.parser")
+        for tag in soup.find_all("style"):
+            tag.decompose()
+        return md(str(soup)).strip()
 
     @property
     def ended(self) -> bool:
@@ -68,7 +75,7 @@ class HackerRank:
             async with aiohttp.ClientSession() as session:
                 await self.fetch(session)
         else:
-            async with session.get(f"{API}{UPCOMING}") as response:
+            async with session.get(f"{API}{UPCOMING}", headers={"User-Agent": choice(USER_AGENTS)}) as response:
                 data = await response.json()
                 self.__contests = [HackerRankContest(c) for c in data["models"]]
 

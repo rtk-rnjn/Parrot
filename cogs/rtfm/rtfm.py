@@ -1504,9 +1504,9 @@ class RTFM(Cog):
         contests = self.kontests_cache["atcoder"]
 
         return [
-            f"""ID: NA | **[{contest.name}]({contest.url})**
+            f"""**[{contest.name}]({contest.url})**
 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
-`Time :` {contest.duration_minutes}
+`Time :` {contest.duration_minutes} Mins
 """
             for contest in contests
         ]

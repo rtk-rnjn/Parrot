@@ -13,6 +13,7 @@ _ACTION_COLOR = {
     3: 0xFAA61A,
 }
 
+
 def get_action_color(action: discord.AuditLogAction) -> int:
     category = getattr(action, "category", None)
     return _ACTION_COLOR.get(category, _ACTION_COLOR[None])

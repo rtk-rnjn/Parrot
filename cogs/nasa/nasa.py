@@ -197,9 +197,7 @@ class NASA(Cog):
                 )
                 danger = item["is_potentially_hazardous_asteroid"]
                 approach_date = item["close_approach_data"][0]["close_approach_date"]
-                velocity = item["close_approach_data"][0]["relative_velocity"][
-                    "kilometers_per_hour"
-                ]
+                velocity = item["close_approach_data"][0]["relative_velocity"]["kilometers_per_hour"]
                 miss_dist = item["close_approach_data"][0]["miss_distance"]["kilometers"]
                 orbiting = item["close_approach_data"][0]["orbiting_body"]
                 is_sentry_object = item["is_sentry_object"]

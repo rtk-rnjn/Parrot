@@ -22,6 +22,7 @@ ORIGINAL_REPO = _ORIGINAL_RAW_REPO
 with open("_meta.txt") as f:
     is_first_run = f.read().strip().lower() == "true"
 
+
 async def init():
     db = await aiosqlite.connect("cached.sqlite", iter_chunk_size=2**8, cached_statements=2**10)
 
@@ -45,7 +46,6 @@ async def init():
 
 
 async def insert_all_scams(db: aiosqlite.Connection):
-
     async with aiofiles.open("_meta.txt", "w") as f:
         await f.write("false")
 

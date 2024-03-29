@@ -63,7 +63,7 @@ from .__template import post as POST
 from .Context import Context
 from .help import PaginatedHelpCommand
 from .tips import TIPS
-from .utils import CustomFormatter, handler
+from .utils import StreamFormatter, handler, FileStreamFormatter
 
 if TYPE_CHECKING:
     from discord.ext.commands.cooldowns import CooldownMapping
@@ -89,14 +89,16 @@ DEFAULT_PREFIX: Literal["$"] = "$"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-formatter = CustomFormatter()
+stream_formatter = StreamFormatter()
+file_formatter = FileStreamFormatter()
 
 stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-hndlr = handler(".log")
-hndlr.setFormatter(formatter)
+stream_handler.setFormatter(stream_formatter)
+file_handler = handler(".log")
+file_handler.setFormatter(file_formatter)
+
 logger.addHandler(stream_handler)
-logger.addHandler(hndlr)
+logger.addHandler(file_handler)
 
 log = logging.getLogger("core.parrot")
 
@@ -105,7 +107,7 @@ LAVALINK_PORT = 1018
 LAVALINK_PASSWORD = "password"
 TOPGG_PORT = 1019
 
-__all__ = ("Parrot", "CustomFormatter")
+__all__ = ("Parrot", "StreamFormatter", "FileStreamFormatter")
 
 if MINIMAL_BOOT:
     log.warning("Minimal boot enabled, some features may not work as expected.")
@@ -201,7 +203,7 @@ class Parrot(commands.AutoShardedBot):
         self.mystbin: Client = Client()
 
         # caching variables
-        self.guild_configurations_cache: dict[int, PostType] = Cache(self)
+        self.guild_configurations_cache: Cache[int, PostType] = Cache[int, PostType](self)
         self.message_cache: dict[int, discord.Message] = {}
         self.banned_users: dict[int, dict[str, int | str | bool]] = {}
         self.afk_users: set[int] = set()
@@ -321,7 +323,7 @@ class Parrot(commands.AutoShardedBot):
         log.debug("Getting recent message from channel %s", CHANGE_LOG_ID)
         assert isinstance(CHANGE_LOG_ID, int)
 
-        channel: discord.TextChannel | None = self.get_channel(CHANGE_LOG_ID)
+        channel: discord.TextChannel | None = self.get_channel(CHANGE_LOG_ID)  # type: ignore
 
         if not self._change_log and channel is not None:
             self._change_log = [msg async for msg in channel.history(limit=1)]
@@ -332,7 +334,7 @@ class Parrot(commands.AutoShardedBot):
     def author_obj(self) -> discord.User:
         assert isinstance(MASTER_OWNER, int)
 
-        return self.get_user(MASTER_OWNER)
+        return self.get_user(MASTER_OWNER)  # type: ignore
 
     @property
     def author_name(self) -> str:

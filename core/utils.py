@@ -18,7 +18,7 @@ def handler(filename: str) -> logging.handlers.RotatingFileHandler:
 DT_FMT = "%Y-%m-%d %H:%M:%S"
 
 
-class CustomFormatter(logging.Formatter):
+class StreamFormatter(logging.Formatter):
     GRAY = f"{Fore.LIGHTBLACK_EX}"
     GREY = GRAY
 
@@ -46,4 +46,14 @@ class CustomFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:  # noqa: A003
         log_fmt = self.formats.get(record.levelno)
         formatter = logging.Formatter(log_fmt, DT_FMT)
+        return formatter.format(record)
+
+
+class FileStreamFormatter(logging.Formatter):
+    """Discord Stream Formatter"""
+
+    fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s - (%(filename)s/%(module)s.%(funcName)s:%(lineno)d)"
+
+    def format(self, record: logging.LogRecord) -> str:  # noqa: A003
+        formatter = logging.Formatter(self.fmt, DT_FMT)
         return formatter.format(record)

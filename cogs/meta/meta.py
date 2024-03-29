@@ -409,7 +409,7 @@ class Meta(Cog):
             .set_footer(
                 text=f"Made with discord.py v{version}",
                 icon_url="http://i.imgur.com/5BFecvA.png",
-)
+            )
         )
         contributors = await self.get_github_contributor_names()
         embed.add_field(name="Our Noble Contributors", value=", ".join(contributors))

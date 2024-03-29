@@ -125,7 +125,7 @@ class Truths:
 
     def calculate(self, *args):
         """Evaluates the logical value for each expression."""
-        bools = dict(zip(self.bases, args))
+        bools = dict(zip(self.bases, args, strict=False))
 
         eval_phrases = []
         for phrase in self.phrases:

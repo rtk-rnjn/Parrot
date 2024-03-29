@@ -110,7 +110,7 @@ class ChimpView(discord.ui.View):
         show: bool = False,
         highlight: bool = True,
     ) -> None:
-        for num, button in zip(self.game.grid, self.children):
+        for num, button in zip(self.game.grid, self.children, strict=False):
             if isinstance(button, ChimpButton):
                 if num and highlight and button.style != discord.ButtonStyle.green:
                     button.style = style

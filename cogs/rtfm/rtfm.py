@@ -10,7 +10,7 @@ import urllib.parse
 from collections.abc import Callable
 from html import unescape
 from io import BytesIO
-from random import choice
+from random import choice, random
 from typing import Any
 from urllib.parse import quote, quote_plus
 
@@ -29,7 +29,6 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from utilities import hastebin
 from utilities.converters import WrappedMessageConverter
-from utilities.robopages import SimplePages
 
 from . import _doc, _ref
 from ._used import execute_run, get_raw, prepare_payload
@@ -59,7 +58,7 @@ from ._utils import (
     Icons,
     InformationDropdown,
 )
-
+from ._kontests import CodeChef, CodeForces, AtCoder, HackerRank, HackerEarth, CSAcademy
 try:
     import lxml  # noqa: F401  # pylint: disable=unused-import
 
@@ -1388,40 +1387,6 @@ class RTFM(Cog):
         if wait_for_kata:
             await original_message.edit(embed=kata_embed, view=None)
 
-    @commands.command(name="kontests")
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def kontests(
-        self,
-        ctx: Context,
-    ):
-        """To get the list for all upcoming and ongoing competitive coding contests."""
-        url = "https://kontests.net/api/v1/all"
-        res = await self.bot.http_session.get(url)
-
-        data = await res.json()
-
-        def get_datetime(st: str) -> int:
-            try:
-                return int(arrow.get(st).timestamp())
-            except arrow.parser.ParserError:
-                fmt = "YYYY-MM-DD HH:mm:ss UTC"
-                return int(arrow.get(st, fmt).timestamp())
-
-        ls = []
-
-        for i in data:
-            ls.append(
-                f"""**Name:** {i['name']}
-**URL:** {i['url']}
-**Starts in:** <t:{get_datetime(i['start_time'])}:R>
-**Ends in:** <t:{get_datetime(i['end_time'])}:R>
-**Website:** {i['site']}
-**Status:** {i['status']}
-""",
-            )
-        p = SimplePages(ls, ctx=ctx, per_page=3)
-        await p.start()
-
     @commands.command(name="bin")
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def bin(self, ctx: Context, *, code: str) -> None:
@@ -1432,3 +1397,70 @@ class RTFM(Cog):
 
         b = await self.bot.mystbin.create_paste(filename="file.txt", content=code)
         await ctx.send(f"Your code has been uploaded to {b.url}")
+
+    kontests_cache = {}
+
+    @commands.command(name="kontests")
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    async def kontests(self, ctx: Context, platform: str | None = None) -> None:
+        """Get the upcoming contests on various competitive programming platforms."""
+
+        if random() < 0.1:
+            await ctx.send("From Owner: This command is still in development. Please be patient.")
+
+        available_platforms = {"hackerearth", "hackerrank"}
+        if platform is None:
+            msg = "Please provide a platform to get the upcoming contests for."
+            msg += f"\n\nAvailable platforms: {', '.join(available_platforms)}"
+            raise commands.BadArgument(msg)
+
+        fuzzy_match = rapidfuzz.process.extractOne(platform.lower(), available_platforms, score_cutoff=85)
+        if not fuzzy_match:
+            msg = "This is not a recognized platform for competitive programming!"
+            raise commands.BadArgument(msg)
+
+        platform = fuzzy_match[0]
+        mapping = {
+            "hackerearth": self.kontest_hackerearth,
+            "hackerrank": self.kontest_hackerrank,
+        }
+
+        kontests = await mapping[platform]()
+        if not kontests:
+            await ctx.send(f"No upcoming contests found for {platform.capitalize()}.")
+
+        await ctx.paginate(kontests)
+
+    async def kontest_hackerearth(self) -> list:
+        if "hackerearth" not in self.kontests_cache:
+            hackerearth = HackerEarth()
+            await hackerearth.fetch(self.bot.http_session)
+            self.kontests_cache["hackerearth"] = hackerearth.contests
+
+        contests = self.kontests_cache["hackerearth"]
+
+        return [
+            f"""ID: *{contest.id}* | **[{contest.title}]({contest.url})** | {contest.status}
+{contest.description}
+`Start:` {discord.utils.format_dt(contest.start_time, "R")}
+`End  :` {discord.utils.format_dt(contest.end_time, "R")}
+"""
+            for contest in contests
+        ]
+
+    async def kontest_hackerrank(self) -> list:
+        if "hackerrank" not in self.kontests_cache:
+            hackerrank = HackerRank()
+            await hackerrank.fetch(self.bot.http_session)
+            self.kontests_cache["hackerrank"] = hackerrank.contests
+
+        contests = self.kontests_cache["hackerrank"]
+
+        return [
+            f"""ID: *{contest.id}* | **[{contest.name}]({contest.url})** | {'ENDED' if contest.ended else 'UPCOMING/ONGOING'}
+{contest.description}
+`Start:` {discord.utils.format_dt(contest.start_time, "R")}
+`End  :` {discord.utils.format_dt(contest.end_time, "R")}
+"""
+            for contest in contests
+        ]

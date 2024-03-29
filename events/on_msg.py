@@ -50,7 +50,8 @@ GITHUB_GIST_RE = re.compile(
 )
 
 GITLAB_RE = re.compile(
-    r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)" r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)",
+    r"https://gitlab\.com/(?P<repo>[\w.-]+/[\w.-]+)/\-/blob/(?P<path>[^#>]+)"
+    r"(\?[^#>]+)?(#L(?P<start_line>\d+)(-(?P<end_line>\d+))?)",
     re.IGNORECASE,
 )
 
@@ -606,7 +607,9 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if match_list and all(not self.__scam_link_cache.get(i, True) for i in set(match_list)):
             return False
 
-        with suppress(aiohttp.ClientOSError, asyncio.TimeoutError, aiohttp.ServerDisconnectedError, aiohttp.ClientResponseError):
+        with suppress(
+            aiohttp.ClientOSError, asyncio.TimeoutError, aiohttp.ServerDisconnectedError, aiohttp.ClientResponseError,
+        ):
             response = await self.bot.http_session.post(
                 API,
                 json={"message": message.content},
@@ -624,7 +627,11 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 if to_send:
                     await message.channel.send(
                         f"\N{WARNING SIGN} potential scam detected in {message.author}'s message. Match: "
-                        + (f"`{'`, `'.join(i['domain'] for i in data['matches'])}`" if len(data["matches"]) < 10 else str(len(data["matches"]))),
+                        + (
+                            f"`{'`, `'.join(i['domain'] for i in data['matches'])}`"
+                            if len(data["matches"]) < 10
+                            else str(len(data["matches"]))
+                        ),
                     )
                 for match in data["matches"]:
                     self.__scam_link_cache[match["domain"]] = True
@@ -670,7 +677,9 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         # Thanks `sourcandy_zz` (Sour Candy#8301 - 966599206880030760)
         await message.channel.send(f"{interacted_user.mention} welcome back!", delete_after=5)
         try:
-            if str(interacted_user.display_name).startswith(("[AFK]", "[AFK] ")) and (isinstance(interacted_user, discord.Member)):
+            if str(interacted_user.display_name).startswith(("[AFK]", "[AFK] ")) and (
+                isinstance(interacted_user, discord.Member)
+            ):
                 name = interacted_user.display_name[5:]
                 if len(name) != 0 or name not in (" ", ""):
                     await interacted_user.edit(nick=name, reason=f"{interacted_user} came after AFK")

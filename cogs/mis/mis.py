@@ -70,9 +70,7 @@ WIKI_PARAMS = {
     "format": "json",
     "origin": "*",
 }
-WIKI_THUMBNAIL = (
-    "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/330px-Wikipedia-logo-v2.svg.png"
-)
+WIKI_THUMBNAIL = "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/330px-Wikipedia-logo-v2.svg.png"
 WIKI_SNIPPET_REGEX = r"(<!--.*?-->|<[^>]*>)"
 WIKI_SEARCH_RESULT = "**[{name}]({url})**\n{description}\n"
 

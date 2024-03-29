@@ -167,7 +167,7 @@ class SokobanGameView(discord.ui.View):
 
     def make_win_embed(self) -> discord.Embed:
         embed = discord.Embed(title="You win! :tada:", timestamp=discord.utils.utcnow()).set_footer(
-            text=f"User: {self.user}"
+            text=f"User: {self.user}",
         )
         embed.description = f"{self.game.display_board()}"
         embed.add_field(

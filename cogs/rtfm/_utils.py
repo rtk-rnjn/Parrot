@@ -280,7 +280,7 @@ async def lint(cmd: str, filename: str) -> dict[str, str]:
 
 
 FlagT = TypeVar(
-    "FlagT", Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, PyrightConverter, RuffConverter, str
+    "FlagT", Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, PyrightConverter, RuffConverter, str,
 )
 
 

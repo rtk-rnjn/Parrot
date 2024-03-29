@@ -68,7 +68,7 @@ class Sudoku:
 
         for r in range(1, self.side + 1):
             line1n = line1.replace("#", str(symbol[r]))
-            lines.append("".join(n + s for n, s in zip(nums[r - 1], line1n.split(" . "))))
+            lines.append("".join(n + s for n, s in zip(nums[r - 1], line1n.split(" . "), strict=False)))
             lines.append([line2, line3, line4][(r % self.side == 0) + (r % self.base == 0)])
         lines.append(coord)
 
@@ -109,7 +109,7 @@ class Sudoku:
             return True
 
         bad_rows = [False for row in self.board if not line_ok(row)]
-        grid = list(zip(*self.board))
+        grid = list(zip(*self.board, strict=False))
         bad_cols = [False for col in grid if not line_ok(col)]
         squares = []
         for i in range(0, 9, 3):

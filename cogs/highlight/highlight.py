@@ -297,7 +297,7 @@ class Highlight(Cog):
         """Show your highlight history."""
         col = self.bot.user_collections_ind
         data = await col.find_one(
-            {"_id": ctx.author.id, "highlighted_messages": {"$exists": True}}, {"highlighted_messages": 1}
+            {"_id": ctx.author.id, "highlighted_messages": {"$exists": True}}, {"highlighted_messages": 1},
         )
         if not data["highlighted_messages"]:
             return await ctx.send("You have no highlight history.")

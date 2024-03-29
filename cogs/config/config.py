@@ -5,7 +5,6 @@ import hashlib
 import json
 from typing import Annotated, Literal
 
-from motor.motor_asyncio import AsyncIOMotorCollection as Collection
 from tabulate import tabulate
 
 import discord

@@ -677,7 +677,7 @@ class Game(Generic[T]):
 
         # Players
         self.players: list[Player[T]] = [
-            Player[T](identifier, role) for identifier, role in zip(identifiers, ROLES[len(identifiers)])
+            Player[T](identifier, role) for identifier, role in zip(identifiers, ROLES[len(identifiers)], strict=False)
         ]  # flake8: noqa
 
         self.player_count: PlayerCount = len(self.players)  # flake8: noqa

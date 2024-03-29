@@ -1408,7 +1408,7 @@ class RTFM(Cog):
         if random() < 0.1:
             await ctx.send("From Owner: This command is still in development. Please be patient.")
 
-        available_platforms = {"hackerearth", "hackerrank", "codeforces"}
+        available_platforms = {"hackerearth", "hackerrank", "codeforces", "atcoder"}
         if platform is None:
             msg = "Please provide a platform to get the upcoming contests for."
             msg += f"\n\nAvailable platforms: {', '.join(available_platforms)}"
@@ -1424,13 +1424,14 @@ class RTFM(Cog):
             "hackerearth": self.kontest_hackerearth,
             "hackerrank": self.kontest_hackerrank,
             "codeforces": self.kontest_codeforces,
+            "atcoder": self.kontest_atcoder,
         }
 
         kontests = await mapping[platform]()
         if not kontests:
             await ctx.send(f"No upcoming contests found for {platform.capitalize()}.")
 
-        await ctx.paginate(kontests)
+        await ctx.paginate(kontests, per_page=6)
 
     async def kontest_hackerearth(self) -> list:
         if "hackerearth" not in self.kontests_cache:
@@ -1479,6 +1480,22 @@ class RTFM(Cog):
 {contest.description}
 `Start:` {discord.utils.format_dt(contest.start_time, "R") if contest.start_time else 'TBA'}
 `Time :` {contest.duration_seconds // 60} Minutes
+"""
+            for contest in contests
+        ]
+
+    async def kontest_atcoder(self) -> list:
+        if "atcoder" not in self.kontests_cache:
+            atcoder = AtCoder()
+            await atcoder.fetch(self.bot.http_session)
+            self.kontests_cache["atcoder"] = atcoder.contests
+
+        contests = self.kontests_cache["atcoder"]
+
+        return [
+            f"""ID: NA | **[{contest.name}]({contest.url})**
+*Description not available*
+`Start:` {discord.utils.format_dt(contest.start_time, "R")}
 """
             for contest in contests
         ]

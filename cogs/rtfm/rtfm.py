@@ -1400,15 +1400,22 @@ class RTFM(Cog):
 
     kontests_cache = {}
 
+    @commands.command(name="kontest-reload", hidden=True)
+    @commands.is_owner()
+    async def kontest_reload(self, ctx: Context) -> None:
+        self.kontests_cache.clear()
+        await ctx.tick()
+
     @commands.command(name="kontests")
     @commands.cooldown(1, 15, commands.BucketType.user)
+    @Context.with_type
     async def kontests(self, ctx: Context, platform: str | None = None) -> None:
         """Get the upcoming contests on various competitive programming platforms."""
 
         if random() < 0.1:
             await ctx.send("From Owner: This command is still in development. Please be patient.")
 
-        available_platforms = {"hackerearth", "hackerrank", "codeforces", "atcoder"}
+        available_platforms = {"hackerearth", "hackerrank", "codeforces", "atcoder", "csacademy"}
         if platform is None:
             msg = "Please provide a platform to get the upcoming contests for."
             msg += f"\n\nAvailable platforms: {', '.join(available_platforms)}"
@@ -1425,11 +1432,12 @@ class RTFM(Cog):
             "hackerrank": self.kontest_hackerrank,
             "codeforces": self.kontest_codeforces,
             "atcoder": self.kontest_atcoder,
+            "csacademy": self.kontest_csacademy,
         }
 
         kontests = await mapping[platform]()
         if not kontests:
-            await ctx.send(f"No upcoming contests found for {platform.capitalize()}.")
+            await ctx.send(f"No upcoming contests found for `{platform.capitalize()}`.")
 
         await ctx.paginate(kontests, per_page=6)
 
@@ -1475,6 +1483,7 @@ class RTFM(Cog):
             self.kontests_cache["codeforces"] = codeforces.contests
 
         contests = self.kontests_cache["codeforces"]
+        contests = [c for c in contests if c.phase != "FINISHED"]
 
         return [
             f"""ID: *{contest.id}* | **[{contest.name}]({contest.website_url})** | {contest.phase}
@@ -1496,8 +1505,8 @@ class RTFM(Cog):
 
         return [
             f"""ID: NA | **[{contest.name}]({contest.url})**
-*Description not available*
 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
+`Time :` {contest.duration_minutes}
 """
             for contest in contests
         ]

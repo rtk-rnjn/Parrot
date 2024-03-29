@@ -5,6 +5,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 API = "https://atcoder.jp/contests"
+BASE_URL = "https://atcoder.jp"
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S%z"
 
 
@@ -31,7 +32,7 @@ class AtCoderContestData:
 
     @property
     def url(self) -> str:
-        return API + self.__data["url"]
+        return BASE_URL + self.__data["url"]
 
 
 class AtCoder:

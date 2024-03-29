@@ -1457,6 +1457,7 @@ class RTFM(Cog):
             self.kontests_cache["hackerrank"] = hackerrank.contests
 
         contests = self.kontests_cache["hackerrank"]
+        contests = [c for c in contests if not c.ended]
 
         return [
             f"""ID: *{contest.id}* | **[{contest.name}]({contest.url})** | {'ENDED' if contest.ended else 'UPCOMING/ONGOING'}

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import aiohttp
 import datetime
+
+import aiohttp
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
-
 
 API = "https://csacademy.com/contests/"
 BASE_URL = "https://csacademy.com"

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from markdownify import markdownify as md
-import aiohttp
 import datetime
+
+import aiohttp
 from bs4 import BeautifulSoup
+from markdownify import markdownify as md
+
 API = "https://www.hackerearth.com/chrome-extension/events/"
 
 

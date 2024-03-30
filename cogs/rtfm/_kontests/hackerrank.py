@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import datetime
 from random import choice
+
 import aiohttp
-from markdownify import markdownify as md
 from bs4 import BeautifulSoup
+from markdownify import markdownify as md
 
 API = "https://www.hackerrank.com/rest/"
 URL = "https://www.hackerrank.com/contests"

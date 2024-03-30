@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Concatenate, Final, ParamSpec, TypeAlias,
 import cv2
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageSequence
-
 from wand.drawing import Drawing
 from wand.image import Image as WandImage
 from wand.sequence import Sequence

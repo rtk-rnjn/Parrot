@@ -608,7 +608,10 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             return False
 
         with suppress(
-            aiohttp.ClientOSError, asyncio.TimeoutError, aiohttp.ServerDisconnectedError, aiohttp.ClientResponseError,
+            aiohttp.ClientOSError,
+            asyncio.TimeoutError,
+            aiohttp.ServerDisconnectedError,
+            aiohttp.ClientResponseError,
         ):
             response = await self.bot.http_session.post(
                 API,

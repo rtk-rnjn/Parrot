@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+
 import aiohttp
 from bs4 import BeautifulSoup
 

@@ -149,7 +149,8 @@ class DuckGame:
                     # The completion of a line will only be a duplicate point if the other two points are the same,
                     # which is prevented by the triangle iteration.
                     completion = tuple(
-                        feat_a if feat_a == feat_b else 3 - feat_a - feat_b for feat_a, feat_b in zip(card_a, card_b, strict=False)
+                        feat_a if feat_a == feat_b else 3 - feat_a - feat_b
+                        for feat_a, feat_b in zip(card_a, card_b, strict=False)
                     )
                     try:
                         idx_c = self.board.index(completion)

@@ -36,6 +36,8 @@ except ImportError:
 
 from time import perf_counter
 
+from discord.ext.commands.cooldowns import CooldownMapping
+
 from utilities.checks import can_run
 from utilities.config import (
     CASE_INSENSITIVE,
@@ -60,16 +62,12 @@ from utilities.converters import Cache
 from utilities.paste import Client
 
 from .__template import post as POST
+from .Cog import Cog
 from .Context import Context
 from .help import PaginatedHelpCommand
 from .tips import TIPS
-from .utils import StreamFormatter, handler, FileStreamFormatter
-
-from discord.ext.commands.cooldowns import CooldownMapping
-
-from .Cog import Cog
 from .types import AsyncMongoClient, MongoCollection, MongoDatabase, PostType
-
+from .utils import FileStreamFormatter, StreamFormatter, handler
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"

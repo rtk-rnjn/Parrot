@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import datetime
-from bs4 import BeautifulSoup
-import aiohttp
-from markdownify import markdownify as md
 import random
+
+import aiohttp
+from bs4 import BeautifulSoup
+from markdownify import markdownify as md
 
 API = "https://www.codechef.com/contests"
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S%z"

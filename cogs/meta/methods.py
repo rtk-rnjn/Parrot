@@ -5,7 +5,6 @@ from typing import Any
 
 import discord
 
-
 _ACTION_COLOR = {
     None: 0x2F3136,
     1: 0x3BA55C,

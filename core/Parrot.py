@@ -65,11 +65,10 @@ from .help import PaginatedHelpCommand
 from .tips import TIPS
 from .utils import StreamFormatter, handler, FileStreamFormatter
 
-if TYPE_CHECKING:
-    from discord.ext.commands.cooldowns import CooldownMapping
+from discord.ext.commands.cooldowns import CooldownMapping
 
-    from .Cog import Cog
-    from .types import AsyncMongoClient, MongoCollection, MongoDatabase, PostType
+from .Cog import Cog
+from .types import AsyncMongoClient, MongoCollection, MongoDatabase, PostType
 
 
 os.environ["JISHAKU_HIDE"] = "True"

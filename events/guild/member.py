@@ -191,8 +191,11 @@ class Member(Cog, command_attrs={"hidden": True}):
             )
             for guild_id, set_member_muted in self.muted.items()
         ]
+        await self._bulk_update(operations)
 
-        await self.bot.guild_configurations.write_bulk(operations)
+    async def _bulk_update(self, operations: list, *, ordered: bool = False, chunk_size: int = 1000):
+        for i in range(0, len(operations), chunk_size):
+            await self.bot.guild_configurations.bulk_write(operations[i : i + chunk_size], ordered=ordered)
 
 
 async def setup(bot: Parrot) -> None:

@@ -21,7 +21,8 @@ class YoutubeSearch:
         self._cache: dict[str, list[dict]] = {}
 
     async def close(self) -> None:
-        await self.session.close()
+        if hasattr(self, "session"):
+            await self.session.close()
 
     async def init(self) -> None:
         self.session = aiohttp.ClientSession()

@@ -484,7 +484,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             data = self.__global_chat_cache[message.guild.id]
 
         data = data["global_chat"]
-        if message.channel.id != data.get("channel_id")
+        if message.channel.id != data.get("channel_id"):
             return
 
         if not data.get("enable"):

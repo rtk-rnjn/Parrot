@@ -457,7 +457,7 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         await asyncio.gather(*AWAITABLES, return_exceptions=False)
 
     async def _global_chat_handler(self, message: discord.Message) -> None:
-        if not message.content:
+        if not message.content or message.author.bot:
             return
 
         if not hasattr(message.author, "guild"):

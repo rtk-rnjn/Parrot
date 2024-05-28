@@ -117,7 +117,7 @@ class HelpSelectMenu(discord.ui.Select["HelpMenu"]):
         if value == "__index":
             await self.view.rebind(FrontPageSource(self.bot), interaction)
         else:
-            cog: Cog = self.bot.get_cog(value)
+            cog: Cog = self.bot.get_cog(value)  # type: ignore
             if cog is None:
                 await interaction.response.send_message("Somehow this category does not exist?", ephemeral=True)
                 return
@@ -286,12 +286,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
         if not self.__all_commands:
             entries = bot.cogs
             all_commands: dict[Cog, list[commands.Command]] = {}
-            for real_cog in entries:
-                cog: Cog = bot.get_cog(real_cog)
-                if cog:
-                    _cmds = [c for c in cog.get_commands() if not c.hidden]
-                    if cog is not None and _cmds:
-                        all_commands[cog] = self.__get_all_commands(cog)
+            for _, cog in entries.items():
+                _cmds = [c for c in cog.get_commands() if not c.hidden]
+                if cog is not None and _cmds:
+                    all_commands[cog] = self.__get_all_commands(cog)
 
             self.__all_commands = all_commands
 

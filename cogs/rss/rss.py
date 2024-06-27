@@ -115,7 +115,11 @@ class RSSItem:
             {"_id": _id},
             {
                 "$addToSet": {
-                    "rss": {"channel_id": self.channel_id, "webhook_url": self.webhook_url, "link": self.link},
+                    "rss": {
+                        "channel_id": self.channel_id,
+                        "webhook_url": self.webhook_url,
+                        "link": self.link,
+                    },
                 },
             },
             upsert=True,
@@ -220,7 +224,13 @@ class RSS(Cog):
             return await ctx.reply(f"{ctx.author.mention} No RSS Feeds found.")
 
         if ls := [f"**Channel:** <#{feed['channel_id']}> | **Link:** {feed['link']}" for feed in data["rss"]]:
-            await ctx.paginate(ls, module="JishakuPaginatorEmbedInterface", max_size=1000, prefix="", suffix="")
+            await ctx.paginate(
+                ls,
+                module="JishakuPaginatorEmbedInterface",
+                max_size=1000,
+                prefix="",
+                suffix="",
+            )
         else:
             await ctx.reply(f"{ctx.author.mention} No RSS Feeds found.")
 

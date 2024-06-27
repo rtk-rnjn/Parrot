@@ -167,7 +167,8 @@ class NSFW(Cog):
     async def adult(self, ctx: Context) -> None:
         """To tell bot that you are 18+. This is required to use NSFW commands. DO NOT FAKE IT.
 
-        If you are caught faking it, you will be blacklisted from using NSFW commands forever."""
+        If you are caught faking it, you will be blacklisted from using NSFW commands forever.
+        """
         if await self.check_user_age(ctx):
             await ctx.reply("You are already 18+", delete_after=5)
             return
@@ -181,7 +182,8 @@ class NSFW(Cog):
     async def not_adult(self, ctx: Context) -> None:
         """To tell bot that you are not 18+. This is required to use NSFW commands. DO NOT FAKE IT.
 
-        If you are caught faking it, you will be blacklisted from using NSFW commands forever."""
+        If you are caught faking it, you will be blacklisted from using NSFW commands forever.
+        """
         if not await self.check_user_age(ctx):
             await ctx.reply("You are already not 18+", delete_after=5)
             return

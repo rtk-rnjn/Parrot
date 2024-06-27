@@ -807,7 +807,7 @@ class Fun(Cog):
                 if "dynamic_id" not in question_dict:
                     quiz_entry = QuizEntry(
                         question_dict["question"],
-                        quiz_answers if isinstance(quiz_answers := question_dict["answer"], list) else [quiz_answers],
+                        (quiz_answers if isinstance(quiz_answers := question_dict["answer"], list) else [quiz_answers]),
                         STANDARD_VARIATION_TOLERANCE,
                     )
                 else:
@@ -1249,7 +1249,10 @@ class Fun(Cog):
                 message="Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, value}`.",
             )
-        hsv_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
+        hsv_tuple = cast(
+            tuple[int, int, int],
+            ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"),
+        )
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
@@ -1260,7 +1263,10 @@ class Fun(Cog):
                 message="Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. "
                 f"User input was: `{hue, saturation, lightness}`.",
             )
-        hsl_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
+        hsl_tuple = cast(
+            tuple[int, int, int],
+            ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"),
+        )
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
@@ -2500,10 +2506,16 @@ class Fun(Cog):
                 return
 
             if guess < number:
-                await ctx.reply(f"{ctx.author.mention} Your guess is **too low**. Try again", delete_after=4)
+                await ctx.reply(
+                    f"{ctx.author.mention} Your guess is **too low**. Try again",
+                    delete_after=4,
+                )
 
             else:
-                await ctx.reply(f"{ctx.author.mention} Your guess is **too high**. Try again", delete_after=4)
+                await ctx.reply(
+                    f"{ctx.author.mention} Your guess is **too high**. Try again",
+                    delete_after=4,
+                )
 
         if count >= number_of_chances:
             await ctx.reply(f"{ctx.author.mention} The number is **{number}**. Better luck next time")

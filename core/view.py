@@ -11,7 +11,13 @@ import discord
 if TYPE_CHECKING:
     from . import Context, Parrot
 
-__all__ = ("ParrotView", "ParrotButton", "ParrotSelect", "ParrotLinkView", "ParrotModal")
+__all__ = (
+    "ParrotView",
+    "ParrotButton",
+    "ParrotSelect",
+    "ParrotLinkView",
+    "ParrotModal",
+)
 
 
 class ParrotItem(discord.ui.Item):
@@ -104,7 +110,15 @@ class ParrotButton(discord.ui.Button["ParrotView"]):
         row: int = None,
         **kwargs,
     ) -> None:
-        super().__init__(style=style, label=label, disabled=disabled, custom_id=custom_id, url=url, emoji=emoji, row=row)
+        super().__init__(
+            style=style,
+            label=label,
+            disabled=disabled,
+            custom_id=custom_id,
+            url=url,
+            emoji=emoji,
+            row=row,
+        )
 
         self.callback_function = kwargs.pop("callback", None)
 

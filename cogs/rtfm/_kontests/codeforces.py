@@ -11,7 +11,12 @@ URL = "https://codeforces.com/contests/"
 
 
 class Tree:
-    def __init__(self, data: CodeForcesContestData, left: Tree | None = None, right: Tree | None = None) -> None:
+    def __init__(
+        self,
+        data: CodeForcesContestData,
+        left: Tree | None = None,
+        right: Tree | None = None,
+    ) -> None:
         self.left = left
         self.right = right
         self.data = data
@@ -34,7 +39,9 @@ class CodeForcesContestData:
         return self.__data["type"]
 
     @property
-    def phase(self) -> Literal["BEFORE", "CODING", "PENDING_SYSTEM_TEST", "SYSTEM_TEST", "FINISHED"]:
+    def phase(
+        self,
+    ) -> Literal["BEFORE", "CODING", "PENDING_SYSTEM_TEST", "SYSTEM_TEST", "FINISHED"]:
         return self.__data["phase"]
 
     @property
@@ -142,7 +149,11 @@ class CodeForces:
         if not contests:
             return None
         mid = len(contests) // 2
-        return Tree(contests[mid], self.__build_tree(contests[:mid]), self.__build_tree(contests[mid + 1 :]))
+        return Tree(
+            contests[mid],
+            self.__build_tree(contests[:mid]),
+            self.__build_tree(contests[mid + 1 :]),
+        )
 
     def search(self, contest_id: int) -> CodeForcesContestData | None:
         return self.__search(self.__node, contest_id)

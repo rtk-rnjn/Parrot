@@ -83,7 +83,13 @@ class AFK(Cog):
         self.bot.afk_users.add(ctx.author.id)
 
     @afk.command(name="for")
-    async def afk_till(self, ctx: Context, till: ShortTime, *, text: Annotated[str, commands.clean_content] = "AFK"):
+    async def afk_till(
+        self,
+        ctx: Context,
+        till: ShortTime,
+        *,
+        text: Annotated[str, commands.clean_content] = "AFK",
+    ):
         """To set the AFK time."""
         if till.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
             return await ctx.send(f"{ctx.author.mention} time must be above 120s")
@@ -106,7 +112,13 @@ class AFK(Cog):
         )
 
     @afk.command(name="after")
-    async def afk_after(self, ctx: Context, after: ShortTime, *, text: Annotated[str, commands.clean_content] = "AFK"):
+    async def afk_after(
+        self,
+        ctx: Context,
+        after: ShortTime,
+        *,
+        text: Annotated[str, commands.clean_content] = "AFK",
+    ):
         """To set the AFK future time."""
         if after.dt.timestamp() - ctx.message.created_at.timestamp() <= 120:
             return await ctx.send(f"{ctx.author.mention} time must be above 120s")

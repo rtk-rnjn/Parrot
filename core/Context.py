@@ -48,7 +48,12 @@ MaybeAwaitable = T | Awaitable[T]
 Callback = MaybeAwaitable
 
 VOTER_ROLE_ID = 1139439408723013672
-MODULE_ANNOTATIONS = Literal["SimplePages", "PaginationView", "JishakuPaginatorInterface", "JishakuPaginatorEmbedInterface"]
+MODULE_ANNOTATIONS = Literal[
+    "SimplePages",
+    "PaginationView",
+    "JishakuPaginatorInterface",
+    "JishakuPaginatorEmbedInterface",
+]
 log = logging.getLogger("core.context")
 
 

@@ -53,7 +53,7 @@ class AutomodWarnings:
                     "warning_name": warning_name,
                     "reason": reason,
                     "moderator_id": moderator_id,
-                    "expires_at": expires_at.timestamp() if expires_at is not None else None,
+                    "expires_at": (expires_at.timestamp() if expires_at is not None else None),
                 },
             },
         }
@@ -100,7 +100,10 @@ class AutomodWarnings:
 
         query = {
             "guild_id": self.guild_id,
-            "warnings.timestamp": {"$gte": after.timestamp(), "$lte": before.timestamp()},
+            "warnings.timestamp": {
+                "$gte": after.timestamp(),
+                "$lte": before.timestamp(),
+            },
         }
         return await self.bot.automod_voilations.count_documents(query)
 

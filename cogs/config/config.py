@@ -452,7 +452,7 @@ class Configuration(Cog):
 
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$addToSet": {"telephone.blocked": server.id if isinstance(server, discord.Guild) else server}},
+            {"$addToSet": {"telephone.blocked": (server.id if isinstance(server, discord.Guild) else server)}},
             upsert=True,
         )
         await ctx.reply(f"{ctx.author.mention} success! blocked: **{server.name}**")
@@ -487,7 +487,7 @@ class Configuration(Cog):
         ctx: Context,
         command: Annotated[str, commands.clean_content],
         *,
-        target: discord.TextChannel | discord.VoiceChannel | discord.Thread | discord.Role | None = None,
+        target: (discord.TextChannel | discord.VoiceChannel | discord.Thread | discord.Role | None) = None,
     ):
         """To enable the command."""
         cmd = self.bot.get_command(command)
@@ -509,7 +509,7 @@ class Configuration(Cog):
         ctx: Context,
         command: Annotated[str, commands.clean_content],
         *,
-        target: discord.TextChannel | discord.VoiceChannel | discord.Thread | discord.Role | None = None,
+        target: (discord.TextChannel | discord.VoiceChannel | discord.Thread | discord.Role | None) = None,
     ):
         """To disable the command."""
         cmd = self.bot.get_command(command)
@@ -545,42 +545,50 @@ class Configuration(Cog):
             )
             .add_field(
                 name="Role Enable",
-                value="<@&" + ">, <@&".join(data.get(CMD_ROLE_ENABLE_, [0])) + ">" if data.get(CMD_ROLE_ENABLE_) else "N/A",
+                value=(
+                    "<@&" + ">, <@&".join(data.get(CMD_ROLE_ENABLE_, [0])) + ">" if data.get(CMD_ROLE_ENABLE_) else "N/A"
+                ),
                 inline=False,
             )
             .add_field(
                 name="Role Disable",
-                value="<@&" + ">, <@&".join(data.get(CMD_ROLE_DISABLE_, [0])) + ">"
-                if data.get(CMD_ROLE_DISABLE_)
-                else "N/A",
+                value=(
+                    "<@&" + ">, <@&".join(data.get(CMD_ROLE_DISABLE_, [0])) + ">" if data.get(CMD_ROLE_DISABLE_) else "N/A"
+                ),
                 inline=False,
             )
             .add_field(
                 name="Channel Enable",
-                value="<#" + ">, <#".join(data.get(CMD_CHANNEL_ENABLE_, [0])) + ">"
-                if data.get(CMD_CHANNEL_ENABLE_)
-                else "N/A",
+                value=(
+                    "<#" + ">, <#".join(data.get(CMD_CHANNEL_ENABLE_, [0])) + ">" if data.get(CMD_CHANNEL_ENABLE_) else "N/A"
+                ),
                 inline=False,
             )
             .add_field(
                 name="Channel Disable",
-                value="<#" + ">, <#".join(data.get(CMD_CHANNEL_DISABLE_, [0])) + ">"
-                if data.get(CMD_CHANNEL_DISABLE_)
-                else "N/A",
+                value=(
+                    "<#" + ">, <#".join(data.get(CMD_CHANNEL_DISABLE_, [0])) + ">"
+                    if data.get(CMD_CHANNEL_DISABLE_)
+                    else "N/A"
+                ),
                 inline=False,
             )
             .add_field(
                 name="Category Enable",
-                value="<#" + ">, <#".join(data.get(CMD_CATEGORY_ENABLE_, [0])) + ">"
-                if data.get(CMD_CATEGORY_ENABLE_)
-                else "N/A",
+                value=(
+                    "<#" + ">, <#".join(data.get(CMD_CATEGORY_ENABLE_, [0])) + ">"
+                    if data.get(CMD_CATEGORY_ENABLE_)
+                    else "N/A"
+                ),
                 inline=False,
             )
             .add_field(
                 name="Category Disable",
-                value="<#" + ">, <#".join(data.get(CMD_CATEGORY_DISABLE_, [0])) + ">"
-                if data.get(CMD_CATEGORY_DISABLE_)
-                else "N/A",
+                value=(
+                    "<#" + ">, <#".join(data.get(CMD_CATEGORY_DISABLE_, [0])) + ">"
+                    if data.get(CMD_CATEGORY_DISABLE_)
+                    else "N/A"
+                ),
                 inline=False,
             )
             .add_field(
@@ -760,9 +768,11 @@ class Configuration(Cog):
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
             {
-                OP: {f"stats_channels.{k}": v for k, v in PAYLOAD.items()}
-                if counter != "role"
-                else {"stats_channels.role": PAYLOAD_R},
+                OP: (
+                    {f"stats_channels.{k}": v for k, v in PAYLOAD.items()}
+                    if counter != "role"
+                    else {"stats_channels.role": PAYLOAD_R}
+                ),
             },
             upsert=True,
         )

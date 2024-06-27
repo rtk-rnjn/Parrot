@@ -55,7 +55,12 @@ class Highlight(Cog):
         return discord.PartialEmoji(name="\N{ELECTRIC TORCH}")
 
     def _partial_settings(self, user_id: int) -> dict:
-        return {"user_id": user_id, "disabled": False, "blocked_users": [], "blocked_channels": []}
+        return {
+            "user_id": user_id,
+            "disabled": False,
+            "blocked_users": [],
+            "blocked_channels": [],
+        }
 
     async def get_user_settings(self, user_id: int) -> _CACHED_SETTINGS_HINT:
         try:
@@ -334,7 +339,10 @@ class Highlight(Cog):
 
         await ctx.paginate(entries=entries, module="JishakuPaginatorEmbedInterface")
 
-    @highlight.command(name="delete-history", aliases=["delete_history", "dh", "clear-history", "clear_history", "ch"])
+    @highlight.command(
+        name="delete-history",
+        aliases=["delete_history", "dh", "clear-history", "clear_history", "ch"],
+    )
     async def delete_history(self, ctx: Context):
         """Delete your highlight history."""
         col = self.bot.user_collections_ind

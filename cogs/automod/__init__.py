@@ -244,7 +244,15 @@ class AutomaticModeration(Cog):
 
         await self.bot.automod_configurations.update_one(
             {"guild_id": ctx.guild.id},
-            {"$set": {rule: {"trigger": view.triggers, "condition": view.conditions, "action": view.actions}}},
+            {
+                "$set": {
+                    rule: {
+                        "trigger": view.triggers,
+                        "condition": view.conditions,
+                        "action": view.actions,
+                    }
+                }
+            },
             upsert=True,
         )
         await self.refresh_cache_specific(ctx.guild.id)
@@ -269,7 +277,15 @@ class AutomaticModeration(Cog):
 
         await self.bot.automod_configurations.update_one(
             {"guild_id": ctx.guild.id},
-            {"$set": {rule: {"trigger": view.triggers, "condition": view.conditions, "action": view.actions}}},
+            {
+                "$set": {
+                    rule: {
+                        "trigger": view.triggers,
+                        "condition": view.conditions,
+                        "action": view.actions,
+                    }
+                }
+            },
         )
         await self.refresh_cache_specific(ctx.guild.id)
         await ctx.reply(f"Rule `{rule}` has been updated.")

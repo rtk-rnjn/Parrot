@@ -32,7 +32,16 @@ from .__battleship import BetaBattleShip
 from .__black_jack import BlackJackView
 from .__chess import Chess
 from .__chimp import ChimpTest
-from .__constants import _2048_GAME, CHOICES, CROSS_EMOJI, EMOJI_CHECK, HAND_RAISED_EMOJI, SHORT_CHOICES, WINNER_DICT, Emojis
+from .__constants import (
+    _2048_GAME,
+    CHOICES,
+    CROSS_EMOJI,
+    EMOJI_CHECK,
+    HAND_RAISED_EMOJI,
+    SHORT_CHOICES,
+    WINNER_DICT,
+    Emojis,
+)
 from .__country_guess import BetaCountryGuesser
 from .__duckgame import (
     ANSWER_REGEX,
@@ -984,7 +993,7 @@ class Games(Cog):
             title=end_message,
             color=discord.Color.dark_purple(),
         )
-        scores: list[discord.Member, int] = sorted(
+        scores: list[discord.Member, int] = sorted(  # type: ignore
             game.scores.items(),
             key=lambda item: item[1],
             reverse=True,

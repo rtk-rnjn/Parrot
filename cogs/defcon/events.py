@@ -18,7 +18,10 @@ class DefconListeners(Cog):
                 {"$set": {"default_defcon.level": level}},
                 upsert=True,
             )
-            self.settings[guild.id]["default_defcon"] = {"level": level, "broadcast": {"enabled": True, "channel": None}}
+            self.settings[guild.id]["default_defcon"] = {
+                "level": level,
+                "broadcast": {"enabled": True, "channel": None},
+            }
 
         if "broadcast" not in self.settings[guild.id]["default_defcon"]:
             return

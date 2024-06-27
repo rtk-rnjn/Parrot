@@ -559,8 +559,8 @@ class GameC4:
                 if not coords:
                     await self.game_over(
                         "draw",
-                        self.bot.user if isinstance(self.player_active, AI_C4) else self.player_active,
-                        self.bot.user if isinstance(self.player_inactive, AI_C4) else self.player_inactive,
+                        (self.bot.user if isinstance(self.player_active, AI_C4) else self.player_active),
+                        (self.bot.user if isinstance(self.player_inactive, AI_C4) else self.player_inactive),
                     )
             else:
                 coords = await self.player_turn()
@@ -571,8 +571,8 @@ class GameC4:
             if self.check_win(coords, 1 if self.player_active == self.player1 else 2):
                 await self.game_over(
                     "win",
-                    self.bot.user if isinstance(self.player_active, AI_C4) else self.player_active,
-                    self.bot.user if isinstance(self.player_inactive, AI_C4) else self.player_inactive,
+                    (self.bot.user if isinstance(self.player_active, AI_C4) else self.player_active),
+                    (self.bot.user if isinstance(self.player_inactive, AI_C4) else self.player_inactive),
                 )
                 return
 

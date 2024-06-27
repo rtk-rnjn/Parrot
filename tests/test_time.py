@@ -16,14 +16,20 @@ class TestShortTime(TestCase):
             ("2d3h", timedelta(days=2, hours=3)),
             ("1w", timedelta(weeks=1)),
             ("2w3d", timedelta(weeks=2, days=3)),
-            ("3w4d5h40m30s", timedelta(weeks=3, days=4, hours=5, minutes=40, seconds=30)),
+            (
+                "3w4d5h40m30s",
+                timedelta(weeks=3, days=4, hours=5, minutes=40, seconds=30),
+            ),
         ]
 
     def test_shorttime(self):
         # sourcery skip: no-loop-in-tests
         for argument, expected in self.arguments:
             with self.subTest(argument=argument, expected=expected):
-                self.assertEqual(ShortTime(argument).dt.timestamp(), (datetime.now(timezone.utc) + expected).timestamp())
+                self.assertEqual(
+                    ShortTime(argument).dt.timestamp(),
+                    (datetime.now(timezone.utc) + expected).timestamp(),
+                )
 
 
 if __name__ == "__main__":

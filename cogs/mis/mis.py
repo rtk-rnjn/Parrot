@@ -832,21 +832,23 @@ class Misc(Cog):
         self,
         ctx: Context,
         *,
-        target: discord.User
-        | discord.Member
-        | discord.Role
-        | discord.Thread
-        | discord.TextChannel
-        | discord.VoiceChannel
-        | discord.StageChannel
-        | discord.Guild
-        | discord.Emoji
-        | discord.Invite
-        | discord.Template
-        | discord.CategoryChannel
-        | discord.DMChannel
-        | discord.GroupChannel
-        | discord.Object,
+        target: (
+            discord.User
+            | discord.Member
+            | discord.Role
+            | discord.Thread
+            | discord.TextChannel
+            | discord.VoiceChannel
+            | discord.StageChannel
+            | discord.Guild
+            | discord.Emoji
+            | discord.Invite
+            | discord.Template
+            | discord.CategoryChannel
+            | discord.DMChannel
+            | discord.GroupChannel
+            | discord.Object
+        ),
     ):
         """To get the ID of discord models."""
         embed = discord.Embed(
@@ -857,7 +859,7 @@ class Misc(Cog):
         embed.add_field(name="Type", value=f"`{target.__class__.__name__}`", inline=True)
         embed.add_field(
             name="Created At",
-            value=f"{discord.utils.format_dt(target.created_at)}" if target.created_at is not None else "None",
+            value=(f"{discord.utils.format_dt(target.created_at)}" if target.created_at is not None else "None"),
             inline=True,
         )
         embed.add_field(name="ID", value=f"`{getattr(target, 'id', 'NA')}`", inline=True)
@@ -983,7 +985,12 @@ class Misc(Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.user)
     @Context.with_type
-    async def mine_server_status(self, ctx: Context, address: str, bedrock: Annotated[bool | None, convert_bool] = False):
+    async def mine_server_status(
+        self,
+        ctx: Context,
+        address: str,
+        bedrock: Annotated[bool | None, convert_bool] = False,
+    ):
         """If you are minecraft fan, then you must be know about servers. Check server status with thi command."""
         if bedrock:
             link = f"https://api.mcsrvstat.us/bedrock/2/{address}"

@@ -187,7 +187,7 @@ class Meta(Cog):
         guild = ctx.guild
         embed: discord.Embed = discord.Embed(
             title=f"Server Info: {ctx.guild.name}",
-            colour=ctx.guild.owner.colour if ctx.guild.owner else discord.Colour.blurple(),
+            colour=(ctx.guild.owner.colour if ctx.guild.owner else discord.Colour.blurple()),
             timestamp=discord.utils.utcnow(),
         )
         if ctx.guild.icon:
@@ -354,7 +354,10 @@ class Meta(Cog):
         humans = len(list(filter(lambda m: not m.bot, ctx.guild.members)))
 
         embed = (
-            discord.Embed(description=f"Total Members: {ctx.guild.member_count}", color=ctx.author.color)
+            discord.Embed(
+                description=f"Total Members: {ctx.guild.member_count}",
+                color=ctx.author.color,
+            )
             .add_field(name="Humans", value=humans)
             .add_field(name="Bots", value=bots)
         )
@@ -401,7 +404,10 @@ class Meta(Cog):
             )
             .set_author(name=str(owner), icon_url=owner.display_avatar.url)
             .add_field(name="Members", value=f"{total_members} total\n{total_unique} unique")
-            .add_field(name="Channels", value=f"{text + voice} total\n{text} text\n{voice} voice")
+            .add_field(
+                name="Channels",
+                value=f"{text + voice} total\n{text} text\n{voice} voice",
+            )
             .add_field(name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
             .add_field(name="Guilds", value=guilds)
             .add_field(name="Bot Version", value=VERSION)
@@ -445,7 +451,11 @@ class Meta(Cog):
                 f"{str(target.activity.type).split('.')[-1].title() if target.activity else 'N/A'} {target.activity.name if target.activity else ''} [Blame Discord]",
                 True,
             ),
-            ("Joined at", f"{discord.utils.format_dt(target.joined_at)}" if target.joined_at else "N/A", True),
+            (
+                "Joined at",
+                (f"{discord.utils.format_dt(target.joined_at)}" if target.joined_at else "N/A"),
+                True,
+            ),
             ("Boosted", bool(target.premium_since), True),
             ("Bot?", target.bot, True),
             ("Nickname", target.display_name, True),
@@ -571,7 +581,7 @@ class Meta(Cog):
         self,
         ctx: Context,
         *,
-        channel: discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel = None,
+        channel: (discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel) = None,
     ):
         channel = channel or ctx.channel
         _id = channel.id
@@ -656,7 +666,10 @@ class Meta(Cog):
             color=ctx.author.color,
             description=f"{change_log.content}",
         ).set_footer(text=f"Message by: {ctx.author}")
-        await ctx.reply(embed=embed, view=ctx.link_view(url=change_log.jump_url, label="Click to Jump"))
+        await ctx.reply(
+            embed=embed,
+            view=ctx.link_view(url=change_log.jump_url, label="Click to Jump"),
+        )
 
     @commands.command()
     @Context.with_type
@@ -691,22 +704,22 @@ class Meta(Cog):
             ("Channel", f"<#{invite.channel.id}>" if invite.channel else "N/A", True),
             (
                 "Created At",
-                discord.utils.format_dt(invite.created_at, "R") if invite.created_at is not None else "Can not determine",
+                (discord.utils.format_dt(invite.created_at, "R") if invite.created_at is not None else "Can not determine"),
                 True,
             ),
             (
                 "Expires At",
-                discord.utils.format_dt(invite.expires_at, "R") if invite.expires_at is not None else "Can not determine",
+                (discord.utils.format_dt(invite.expires_at, "R") if invite.expires_at is not None else "Can not determine"),
                 True,
             ),
             (
                 "Temporary?",
-                invite.temporary if invite.temporary is not None else "Can not determine",
+                (invite.temporary if invite.temporary is not None else "Can not determine"),
                 True,
             ),
             (
                 "Max Age",
-                invite.max_age or "Infinite" if invite.max_age is not None else "Can not determine",
+                (invite.max_age or "Infinite" if invite.max_age is not None else "Can not determine"),
                 True,
             ),
             ("Link", invite.url, True),
@@ -790,8 +803,15 @@ class Meta(Cog):
             .add_field(name="Performed by", value=by, inline=True)
             .add_field(name="Target", value=target, inline=True)
             .add_field(name="Reason", value=entry.reason, inline=False)
-            .add_field(name="Category", value=f"{action_name} (Type: {target_type})", inline=False)
-            .set_footer(text=f"Log: [{entry.id}]", icon_url=entry.user.display_avatar.url if entry.user else None)
+            .add_field(
+                name="Category",
+                value=f"{action_name} (Type: {target_type})",
+                inline=False,
+            )
+            .set_footer(
+                text=f"Log: [{entry.id}]",
+                icon_url=entry.user.display_avatar.url if entry.user else None,
+            )
         )
         embed.timestamp = entry.created_at
 

@@ -121,7 +121,13 @@ class JinjaGuild:
         permissions = discord.Permissions(**perms)
         return self.__guild.me.guild_permissions >= permissions
 
-    async def ban(self, member: JinjaMember, *, reason: str = None, delete_message_days: int = discord.utils.MISSING):
+    async def ban(
+        self,
+        member: JinjaMember,
+        *,
+        reason: str = None,
+        delete_message_days: int = discord.utils.MISSING,
+    ):
         """Ban member from guild."""
         if not await self._check_perms(ban_members=True):
             return

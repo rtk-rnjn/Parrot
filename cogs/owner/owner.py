@@ -330,7 +330,13 @@ class Owner(Cog, command_attrs={"hidden": True}):
                 table.append([cmd_name, count])
 
         table = tabulate(table, headers="firstrow", tablefmt="psql")
-        await ctx.paginate(table, module="JishakuPaginatorInterface", max_size=1000, prefix="```sql", suffix="```")
+        await ctx.paginate(
+            table,
+            module="JishakuPaginatorInterface",
+            max_size=1000,
+            prefix="```sql",
+            suffix="```",
+        )
 
     @commands.command(alises=["direct-message"])
     async def dm(self, ctx: Context, user: discord.User, *, reply: str):
@@ -506,7 +512,12 @@ class Owner(Cog, command_attrs={"hidden": True}):
         await ctx.tick()
 
     @commands.command()
-    async def toggle_testing(self, ctx: Context, cog: str, toggle: Annotated[bool | None, convert_bool] = None) -> None:
+    async def toggle_testing(
+        self,
+        ctx: Context,
+        cog: str,
+        toggle: Annotated[bool | None, convert_bool] = None,
+    ) -> None:
         """Update the cog setting to toggle testing mode.
 
         ```py
@@ -649,7 +660,12 @@ Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
                         val.append(value)
                 return "\n".join(val)
 
-            async def add_page(interface: PaginatorEmbedInterface, *, title: str, data: list[str] | list[list[str]]) -> None:
+            async def add_page(
+                interface: PaginatorEmbedInterface,
+                *,
+                title: str,
+                data: list[str] | list[list[str]],
+            ) -> None:
                 if not data:
                     return
                 await interface.add_line(f"# {title}")
@@ -659,7 +675,11 @@ Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
                     await interface.add_line(f"- {d}")
 
             if real.get("Things You Should Know"):
-                await add_page(interface, title="Things You Should Know", data=real["Things You Should Know"].values())
+                await add_page(
+                    interface,
+                    title="Things You Should Know",
+                    data=real["Things You Should Know"].values(),
+                )
 
             wiki_steps: dict[
                 str,
@@ -690,13 +710,21 @@ Rows affected: `{total_rows_affected}` | Time taken: `{fin:.3f}s`
                 await add_page(interface, title="Warnings", data=real["Warnings"].values())
 
             if real.get("Test Your Knowledge"):
-                await add_page(interface, title="Test Your Knowledge", data=real["Test Your Knowledge"].values())
+                await add_page(
+                    interface,
+                    title="Test Your Knowledge",
+                    data=real["Test Your Knowledge"].values(),
+                )
 
             if real.get("Video"):
                 await add_page(interface, title="Video", data=real["Video"].values())
 
             if real.get("Related wikiHows"):
-                await add_page(interface, title="Related wikiHows", data=real["Related wikiHows"].values())
+                await add_page(
+                    interface,
+                    title="Related wikiHows",
+                    data=real["Related wikiHows"].values(),
+                )
 
             if real.get("References"):
                 await add_page(interface, title="References", data=real["References"].values())

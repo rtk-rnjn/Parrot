@@ -217,7 +217,7 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
             if msg.content.lower() == "draw":
                 value = await self.ctx.prompt(
                     f"**{msg.author}** offered draw! **{self.turn if self.turn.id != msg.author.id else self.alternate_turn}** to accept the draw click `Confirm`",
-                    author_id=self.turn.id if self.turn.id != msg.author.id else self.alternate_turn.id,
+                    author_id=(self.turn.id if self.turn.id != msg.author.id else self.alternate_turn.id),
                 )
                 if value:
                     msg_ = await self.ctx.send(
@@ -252,8 +252,8 @@ Can Claim Draw?: {self.board.can_claim_threefold_repetition()}
                         "$push": {
                             "game_chess_stat": {
                                 "game_chess_winner": kwargs["winner"],
-                                "game_chess_player_1": _id if _id == self.white.id else self.black.id,
-                                "game_chess_player_2": _id if _id == self.black.id else self.white.id,
+                                "game_chess_player_1": (_id if _id == self.white.id else self.black.id),
+                                "game_chess_player_2": (_id if _id == self.black.id else self.white.id),
                             },
                         },
                     },

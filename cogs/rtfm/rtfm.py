@@ -803,7 +803,7 @@ class RTFM(Cog):
             embed = (
                 discord.Embed(
                     title=f"`{user_data['login']}`'s GitHub profile info",
-                    description=f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else "",
+                    description=(f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else ""),
                     colour=discord.Colour.og_blurple(),
                     url=user_data["html_url"],
                     timestamp=arrow.get(user_data["created_at"]).datetime,
@@ -1416,7 +1416,13 @@ class RTFM(Cog):
         if random() < 0.1:
             await ctx.send("From Owner: This command is still in development. Please be patient.")
 
-        available_platforms = {"hackerearth", "hackerrank", "codeforces", "atcoder", "csacademy"}
+        available_platforms = {
+            "hackerearth",
+            "hackerrank",
+            "codeforces",
+            "atcoder",
+            "csacademy",
+        }
         if platform is None:
             msg = "Please provide a platform to get the upcoming contests for."
             msg += f"\n\nAvailable platforms: {', '.join(available_platforms)}"

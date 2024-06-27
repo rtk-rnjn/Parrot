@@ -427,7 +427,10 @@ class Sector1729(Cog):
         if general_chat is None:
             return await ctx.error("General chat channel not found", delete_after=5)
 
-        await general_chat.edit(name=channel_name, reason=f"{ctx.author} ({ctx.author.id}) changed the name of general chat")
+        await general_chat.edit(
+            name=channel_name,
+            reason=f"{ctx.author} ({ctx.author.id}) changed the name of general chat",
+        )
         await ctx.tick()
 
     @sector_17_29.command(name="rainbow", aliases=["rainbowrole", "rainbow_role", "rr"])
@@ -451,7 +454,10 @@ class Sector1729(Cog):
         except ValueError:
             return await ctx.error("Invalid color", delete_after=5)
 
-        await role.edit(color=clr, reason=f"{ctx.author} ({ctx.author.id}) changed the color of rainbow role")
+        await role.edit(
+            color=clr,
+            reason=f"{ctx.author} ({ctx.author.id}) changed the color of rainbow role",
+        )
 
     @Cog.listener("on_message")
     async def extra_parser_on_message(self, message: discord.Message) -> None:
@@ -601,7 +607,11 @@ class Sector1729(Cog):
         table = tabulate({"Adjectives": adjs}, headers="keys", tablefmt="github")
         if cog is not None:
             author = tabulate(
-                {"Author": [f"{ctx.author}"], "ID": [ctx.author.id], "Is Mod?": ["Yes"]},
+                {
+                    "Author": [f"{ctx.author}"],
+                    "ID": [ctx.author.id],
+                    "Is Mod?": ["Yes"],
+                },
                 headers="keys",
                 tablefmt="github",
             )

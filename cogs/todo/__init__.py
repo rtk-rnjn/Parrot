@@ -345,7 +345,11 @@ class TodoItem:
 
 
 class EditDueDateModal(ui.Modal, title="Edit Due Date"):
-    due_date = ui.TextInput(label="Due Date", placeholder="e.g. 5m, 2022-12-31, tomorrow, etc.", max_length=100)
+    due_date = ui.TextInput(
+        label="Due Date",
+        placeholder="e.g. 5m, 2022-12-31, tomorrow, etc.",
+        max_length=100,
+    )
 
     def __init__(self, item: TodoItem, *, required: bool = False) -> None:
         super().__init__()
@@ -413,7 +417,12 @@ class BriefTodoPageSource(FieldPageSource):
 
 
 class AddTodoModal(ui.Modal, title="Add Todo"):
-    content = ui.TextInput(label="Content (optional)", max_length=1024, required=False, style=discord.TextStyle.long)
+    content = ui.TextInput(
+        label="Content (optional)",
+        max_length=1024,
+        required=False,
+        style=discord.TextStyle.long,
+    )
 
     due_date = ui.TextInput(
         label="Due Date (optional)",
@@ -785,7 +794,11 @@ class Todos(Cog):
         collection = self.bot.user_db[f"{user_id}"]
         payload = {}
         if message:
-            payload = {**payload, "message_id": message.id, "channel_id": message.channel.id}
+            payload = {
+                **payload,
+                "message_id": message.id,
+                "channel_id": message.channel.id,
+            }
             if message.guild:
                 payload["guild_id"] = message.guild.id
             else:

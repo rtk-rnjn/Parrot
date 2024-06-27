@@ -110,7 +110,11 @@ class DefensiveCondition(Cog):
                         )
                         channel_hidded.append(channel.id)
                     except discord.Forbidden:
-                        log.warning("failed to hide channel %s in guild %s", channel.id, ctx.guild.id)
+                        log.warning(
+                            "failed to hide channel %s in guild %s",
+                            channel.id,
+                            ctx.guild.id,
+                        )
 
         if channel_hidded:
             await self.bot.guild_configurations.update_one(
@@ -134,7 +138,11 @@ class DefensiveCondition(Cog):
                         )
                         channel_locked.append(channel.id)
                     except discord.Forbidden:
-                        log.warning("failed to lock channel %s in guild %s", channel.id, ctx.guild.id)
+                        log.warning(
+                            "failed to lock channel %s in guild %s",
+                            channel.id,
+                            ctx.guild.id,
+                        )
 
         if settings.get("LOCK_TEXT_CHANNELS"):
             for channel in ctx.guild.text_channels:
@@ -150,7 +158,11 @@ class DefensiveCondition(Cog):
                         )
                         channel_locked.append(channel.id)
                     except discord.Forbidden:
-                        log.warning("failed to lock channel %s in guild %s", channel.id, ctx.guild.id)
+                        log.warning(
+                            "failed to lock channel %s in guild %s",
+                            channel.id,
+                            ctx.guild.id,
+                        )
 
         if channel_locked:
             await self.bot.guild_configurations.update_one(
@@ -171,7 +183,11 @@ class DefensiveCondition(Cog):
                     )
                     count += 1
                 except discord.Forbidden:
-                    log.warning("failed to set slowmode in channel %s in guild %s", channel.id, ctx.guild.id)
+                    log.warning(
+                        "failed to set slowmode in channel %s in guild %s",
+                        channel.id,
+                        ctx.guild.id,
+                    )
 
         cog: DefconListeners = self.bot.DefconListeners
         if cog:
@@ -211,7 +227,11 @@ class DefensiveCondition(Cog):
                         )
 
                     except discord.Forbidden:
-                        log.warning("failed to reset channel %s in guild %s", channel.id, ctx.guild.id)
+                        log.warning(
+                            "failed to reset channel %s in guild %s",
+                            channel.id,
+                            ctx.guild.id,
+                        )
 
         count = 0
         if settings.get("LOCK_VOICE_CHANNELS"):
@@ -228,7 +248,11 @@ class DefensiveCondition(Cog):
                         )
                         count += 1
                     except discord.Forbidden:
-                        log.warning("failed to reset channel %s in guild %s", channel.id, ctx.guild.id)
+                        log.warning(
+                            "failed to reset channel %s in guild %s",
+                            channel.id,
+                            ctx.guild.id,
+                        )
 
         if settings.get("LOCK_TEXT_CHANNELS"):
             for channel_id in guild_config["default_defcon"].get("locked_channels", []):
@@ -244,7 +268,11 @@ class DefensiveCondition(Cog):
                         )
                         count += 1
                     except discord.Forbidden:
-                        log.warning("failed to reset channel %s in guild %s", channel.id, ctx.guild.id)
+                        log.warning(
+                            "failed to reset channel %s in guild %s",
+                            channel.id,
+                            ctx.guild.id,
+                        )
 
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
@@ -269,7 +297,11 @@ class DefensiveCondition(Cog):
                     )
                     slow_mode_count += 1
                 except discord.Forbidden:
-                    log.warning("failed to reset slowmode in channel %s in guild %s", channel.id, ctx.guild.id)
+                    log.warning(
+                        "failed to reset slowmode in channel %s in guild %s",
+                        channel.id,
+                        ctx.guild.id,
+                    )
 
         if cog := self.bot.DefconListeners:
             embed = discord.Embed(title=f"DEFCON {level}", color=self.bot.color).set_footer(
@@ -383,7 +415,12 @@ class DefensiveCondition(Cog):
 
         await self.bot.guild_configurations.update_one(
             {"_id": ctx.guild.id},
-            {"$set": {"default_defcon.broadcast.enabled": True, "default_defcon.broadcast.channel": channel.id}},
+            {
+                "$set": {
+                    "default_defcon.broadcast.enabled": True,
+                    "default_defcon.broadcast.channel": channel.id,
+                }
+            },
             upsert=True,
         )
         await ctx.reply(f"Broadcast enabled in {channel.mention}.")
@@ -447,7 +484,10 @@ class DefensiveCondition(Cog):
             await ctx.reply("No defcon settings found.")
             return
 
-        trustables = guild_config["default_defcon"].get("trustables", {}) or {"roles": [], "members": []}
+        trustables = guild_config["default_defcon"].get("trustables", {}) or {
+            "roles": [],
+            "members": [],
+        }
 
         for role_or_member in roles_or_members:
             if isinstance(role_or_member, discord.Role):

@@ -11,7 +11,15 @@ import re
 import traceback
 import types
 from collections import Counter, defaultdict, deque
-from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
+from collections.abc import (
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Collection,
+    Iterable,
+    Mapping,
+    Sequence,
+)
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 import aiohttp
@@ -645,7 +653,7 @@ class Parrot(commands.AutoShardedBot):
             )
             .add_field(
                 name="ETA?",
-                value=discord.utils.format_dt(self.UNDER_MAINTENANCE_OVER, "R") if self.UNDER_MAINTENANCE_OVER else "N/A",
+                value=(discord.utils.format_dt(self.UNDER_MAINTENANCE_OVER, "R") if self.UNDER_MAINTENANCE_OVER else "N/A"),
             )
             .add_field(name="Message From?", value=self.author_name)
             .add_field(
@@ -676,7 +684,12 @@ class Parrot(commands.AutoShardedBot):
             if bucket.update_rate_limit(message.created_at.timestamp()):
                 self._auto_spam_count[message.author.id] += 1
                 if self._auto_spam_count[message.author.id] >= 5:
-                    await self.ban_user(user_id=message.author.id, reason="**Spamming commands.**", command=True, send=True)
+                    await self.ban_user(
+                        user_id=message.author.id,
+                        reason="**Spamming commands.**",
+                        command=True,
+                        send=True,
+                    )
                     return
 
                 if self._auto_spam_count[message.author.id] >= 3:
@@ -1446,7 +1459,15 @@ class Parrot(commands.AutoShardedBot):
         await self.user_collections_ind.update_one({"_id": user_id}, {"$set": {"timezone": timezone}}, upsert=True)
         self.__user_timezone_cache[user_id] = timezone
 
-    async def ban_user(self, *, user_id: int, reason: str, command: bool = True, send: bool = False, **kw: bool):
+    async def ban_user(
+        self,
+        *,
+        user_id: int,
+        reason: str,
+        command: bool = True,
+        send: bool = False,
+        **kw: bool,
+    ):
         # sourcery skip: use-contextlib-suppress
         collection = self.extra_collections
 

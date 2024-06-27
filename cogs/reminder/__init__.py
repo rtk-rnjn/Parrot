@@ -82,7 +82,11 @@ class Reminders(Cog):
         except discord.Forbidden:
             await ctx.reply(msg, embed=embed)
 
-    @commands.group(name="remindme", aliases=["remind", "reminder", "remind-me"], invoke_without_command=True)
+    @commands.group(
+        name="remindme",
+        aliases=["remind", "reminder", "remind-me"],
+        invoke_without_command=True,
+    )
     async def remindme(
         self,
         ctx: Context[Parrot],
@@ -113,7 +117,11 @@ class Reminders(Cog):
                 content=when.arg,
                 message=ctx.message,
             )
-            log.info("Created a reminder for %s. reminder exipres at %s", ctx.author, timestamp)
+            log.info(
+                "Created a reminder for %s. reminder exipres at %s",
+                ctx.author,
+                timestamp,
+            )
 
     @remindme.command(name="list", aliases=["all", "ls", "showall"])
     async def _list(self, ctx: Context) -> None:

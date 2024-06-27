@@ -66,7 +66,10 @@ QUESTION_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-GITHUB_HEADERS = {"Accept": "application/vnd.github.v3.raw", "Authorization": f"token {os.environ['GITHUB_TOKEN']}"}
+GITHUB_HEADERS = {
+    "Accept": "application/vnd.github.v3.raw",
+    "Authorization": f"token {os.environ['GITHUB_TOKEN']}",
+}
 
 DISCORD_PY_ID = 336642139381301249
 
@@ -672,7 +675,10 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                 "$and": [
                     {
                         "$or": [
-                            {"messageAuthor": interacted_user.id, "guild": message.guild.id},
+                            {
+                                "messageAuthor": interacted_user.id,
+                                "guild": message.guild.id,
+                            },
                             {"messageAuthor": interacted_user.id, "global": True},
                         ],
                     },
@@ -707,7 +713,10 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
                         "$and": [
                             {
                                 "$or": [
-                                    {"messageAuthor": user.id, "guild": message.guild.id},
+                                    {
+                                        "messageAuthor": user.id,
+                                        "guild": message.guild.id,
+                                    },
                                     {"messageAuthor": user.id, "global": True},
                                 ],
                             },

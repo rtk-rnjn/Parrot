@@ -26,7 +26,21 @@ VT = TypeVar("VT", bound=Any)
 
 def convert_bool(text: Any) -> bool:
     """True/False converter."""
-    return str(text).lower() in {"yes", "y", "true", "t", "1", "enable", "on", "o", "ok", "sure", "yeah", "yup", "right"}
+    return str(text).lower() in {
+        "yes",
+        "y",
+        "true",
+        "t",
+        "1",
+        "enable",
+        "on",
+        "o",
+        "ok",
+        "sure",
+        "yeah",
+        "yup",
+        "right",
+    }
 
 
 class ActionReason(commands.Converter):

@@ -128,7 +128,10 @@ async def _claim_owner(bot: Parrot, ctx: Context, tag: str):
             return await ctx.error(
                 f"{ctx.author.mention} you can not claim the tag ownership as the member is still in the server",
             )
-        await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"owner": ctx.author.id}})
+        await collection.update_one(
+            {"tag_id": tag, "guild_id": ctx.guild.id},
+            {"$set": {"owner": ctx.author.id}},
+        )
         await ctx.reply(f"{ctx.author.mention} ownership of tag `{tag}` claimed!")
     else:
         await ctx.error(f"{ctx.author.mention} No tag with named `{tag}`")
@@ -145,7 +148,10 @@ async def _transfer_owner(bot: Parrot, ctx: Context, tag: str, member: discord.M
         if val is None:
             await ctx.error(f"{ctx.author.mention} you did not responds on time")
         elif val:
-            await collection.update_one({"tag_id": tag, "guild_id": ctx.guild.id}, {"$set": {"owner": member.id}})
+            await collection.update_one(
+                {"tag_id": tag, "guild_id": ctx.guild.id},
+                {"$set": {"owner": member.id}},
+            )
             await ctx.reply(f"{ctx.author.mention} tag ownership successfully transfered to **{member}**")
         else:
             await ctx.error(f"{ctx.author.mention} ok! reverting the process!")

@@ -309,7 +309,10 @@ class Suggestions(Cog):
                 f"{ctx.author.mention} Can not find message of ID `{thread_id}`. Probably already deleted, or `{thread_id}` is invalid",
             )
         if thread.locked and thread.archived:
-            await ctx.send(f"{ctx.author.mention} This suggestion is already resolved", delete_after=5)
+            await ctx.send(
+                f"{ctx.author.mention} This suggestion is already resolved",
+                delete_after=5,
+            )
             return
 
         await thread.send("This suggestion has been resolved")

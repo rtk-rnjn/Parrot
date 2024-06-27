@@ -201,7 +201,7 @@ class WordInputButton(discord.ui.Button["WordleView"]):
     def __init__(self, *, cancel_button: bool = False) -> None:
         super().__init__(
             label="Cancel" if cancel_button else "Make a guess!",
-            style=discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple,
+            style=(discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple),
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:

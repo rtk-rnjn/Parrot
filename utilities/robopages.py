@@ -124,7 +124,10 @@ class RoboPages(discord.ui.View):
             pass
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user and interaction.user.id in (self.ctx.bot.owner_id, self.ctx.author.id):
+        if interaction.user and interaction.user.id in (
+            self.ctx.bot.owner_id,
+            self.ctx.author.id,
+        ):
             return True
         await interaction.response.send_message("This pagination menu cannot be controlled by you, sorry!", ephemeral=True)
         return False
@@ -133,7 +136,12 @@ class RoboPages(discord.ui.View):
         if self.message:
             await self.message.edit(view=None)
 
-    async def on_error(self, interaction: discord.Interaction[Parrot], error: Exception, item: discord.ui.Item) -> None:
+    async def on_error(
+        self,
+        interaction: discord.Interaction[Parrot],
+        error: Exception,
+        item: discord.ui.Item,
+    ) -> None:
         if await interaction.client.is_owner(interaction.user):
             raise error
         if interaction.response.is_done():
@@ -145,7 +153,10 @@ class RoboPages(discord.ui.View):
 
     async def start(self, *, content: str | None = None, ephemeral: bool = False) -> None:
         if self.check_embeds and not self.ctx.channel.permissions_for(self.ctx.me).embed_links:
-            await self.ctx.send("Bot does not have embed links permission in this channel.", ephemeral=True)
+            await self.ctx.send(
+                "Bot does not have embed links permission in this channel.",
+                ephemeral=True,
+            )
             return
 
         await self.source._prepare_once()

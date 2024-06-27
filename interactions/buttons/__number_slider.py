@@ -17,7 +17,14 @@ if TYPE_CHECKING:
     Board: TypeAlias = list[list[int | None]]
 
 
-from .utils import DEFAULT_COLOR, BaseView, DiscordColor, chunk, double_wait, wait_for_delete
+from .utils import (
+    DEFAULT_COLOR,
+    BaseView,
+    DiscordColor,
+    chunk,
+    double_wait,
+    wait_for_delete,
+)
 
 
 class SlideButton(discord.ui.Button["SlideView"]):

@@ -23,7 +23,13 @@ from pymongo.operations import (
     _IndexList,
 )
 from pymongo.read_concern import ReadConcern
-from pymongo.results import BulkWriteResult, DeleteResult, InsertManyResult, InsertOneResult, UpdateResult
+from pymongo.results import (
+    BulkWriteResult,
+    DeleteResult,
+    InsertManyResult,
+    InsertOneResult,
+    UpdateResult,
+)
 from pymongo.typings import _CollationIn, _DocumentType, _Pipeline
 
 _WriteOp = Union[  # noqa: UP007
@@ -205,7 +211,12 @@ class MongoCollection(Collection, Generic[_DocumentType]):
     ) -> Sequence[str]:
         ...
 
-    async def drop_index(self, index_or_name: _IndexKeyHint, session: ClientSession | None = None, **kwargs: Any) -> None:
+    async def drop_index(
+        self,
+        index_or_name: _IndexKeyHint,
+        session: ClientSession | None = None,
+        **kwargs: Any,
+    ) -> None:
         ...
 
     async def drop_indexes(self, session: ClientSession | None = None, **kwargs: Any) -> None:
@@ -472,6 +483,7 @@ class PostType(TypedDict):
     premium: bool
     dj_role: int | None
     warn_expiry: int | None
+    apod_channel: int | None
     muted: list[int]
     warn_count: int
     suggestion_channel: int | None

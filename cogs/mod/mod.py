@@ -10,7 +10,12 @@ import arrow
 
 import discord
 from cogs.mod import method as mod_method
-from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_CHANNEL_EMBED
+from cogs.mod.embeds import (
+    MEMBER_EMBED,
+    ROLE_EMBED,
+    TEXT_CHANNEL_EMBED,
+    VOICE_CHANNEL_EMBED,
+)
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod
@@ -1711,7 +1716,8 @@ class Moderator(Cog):
                 timeout=60,
             )
         except asyncio.TimeoutError as e:
-            raise commands.BadArgument("You took too long to respond.") from e
+            error_message = "You took too long to respond."
+            raise commands.BadArgument(error_message) from e
         else:
             if convert:
                 return await discord.utils.maybe_coroutine(convert, msg.content)
@@ -1781,7 +1787,7 @@ class Moderator(Cog):
     async def mod(
         self,
         ctx: Context,
-        target: discord.Member | discord.TextChannel | discord.VoiceChannel | discord.Role,
+        target: (discord.Member | discord.TextChannel | discord.VoiceChannel | discord.Role),
         *,
         reason: Annotated[str, ActionReason | None] = None,
     ):
@@ -1867,9 +1873,11 @@ class Moderator(Cog):
 
         if str(reaction.emoji) in {"\N{MEMO}", "\N{LOWER LEFT FOUNTAIN PEN}"}:
             await ctx.send(
-                f"{ctx.author.mention} Enter the Channel Topic"
-                if str(reaction.emoji) == "\N{MEMO}"
-                else f"{ctx.author.mention} Enter the Channel Name",
+                (
+                    f"{ctx.author.mention} Enter the Channel Topic"
+                    if str(reaction.emoji) == "\N{MEMO}"
+                    else f"{ctx.author.mention} Enter the Channel Name"
+                ),
             )
             return await func(
                 guild=ctx.guild,

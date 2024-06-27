@@ -17,7 +17,10 @@ from utilities.exceptions import ParrotCheckFailure
 if TYPE_CHECKING:
     from core import Context, Parrot
 
-T = TypeVar("T", bound=discord.Member | discord.Emoji | discord.TextChannel | discord.Role | discord.VoiceChannel)
+T = TypeVar(
+    "T",
+    bound=discord.Member | discord.Emoji | discord.TextChannel | discord.Role | discord.VoiceChannel,
+)
 
 quote_ = pathlib.Path("extra/quote.txt").read_text()
 quote = quote_.split("\n")

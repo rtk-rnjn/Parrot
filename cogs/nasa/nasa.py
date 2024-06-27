@@ -10,7 +10,7 @@ import arrow
 
 import discord
 from core import Cog, Context, Parrot
-from discord.ext import commands
+from discord.ext import commands, tasks
 from utilities.paginator import PaginationView
 
 NASA_KEY = os.environ["NASA_KEY"]
@@ -70,7 +70,13 @@ class NASA(Cog):
     @commands.command(aliases=["sat", "satelite"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def earth(self, ctx: Context, longitute: float, latitude: float, date: Annotated[str, date_parser]):
+    async def earth(
+        self,
+        ctx: Context,
+        longitute: float,
+        latitude: float,
+        date: Annotated[str, date_parser],
+    ):
         """Satelite Imagery - NASA. Date must be in "YYYY-MM-DD" format."""
         if not -90 <= latitude <= 90:
             return await ctx.reply(f"{ctx.author.mention} Invalid latitude range, must be between -90 to 90")
@@ -103,10 +109,13 @@ class NASA(Cog):
 
         await ctx.reply(embed=embed, file=file)
 
-    @commands.command()
+    @commands.group()
     @Context.with_type
     async def apod(self, ctx: Context):
         """Asteroid Picture of the Day."""
+        if ctx.invoked_subcommand is not None:
+            return
+
         link = ENDPOINTS.APOD
 
         r = await self.bot.http_session.get(link, params=self._api_params, headers=self.bot.GLOBAL_HEADERS)
@@ -133,6 +142,64 @@ class NASA(Cog):
         embed.set_thumbnail(url=ENDPOINTS.NASA_LOGO)
 
         await ctx.reply(embed=embed)
+
+    @apod.command(name="set")
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def apod_set(self, ctx: Context, *, channel: discord.TextChannel) -> None:
+        """Set an automatic APOD in a channel."""
+        await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"apod_channel": channel.id}})
+        self.bot.guild_configurations_cache[ctx.guild.id]["apod_channel"] = channel.id
+        await ctx.tick()
+
+    @apod.command(name="remove")
+    @commands.has_permissions(administrator=True)
+    @Context.with_type
+    async def apod_remove(self, ctx: Context) -> None:
+        """Remove the automatic APOD in a channel."""
+        await self.bot.guild_configurations.update_one({"_id": ctx.guild.id}, {"$set": {"apod_channel": None}})
+        self.bot.guild_configurations_cache[ctx.guild.id]["apod_channel"] = None
+        await ctx.tick()
+
+    @tasks.loop(hours=24)
+    async def apod_loop(self) -> None:
+        async for data in self.bot.guild_configurations.find({"apod_channel": {"$exists": True}}):
+            if not data["apod_channel"]:
+                continue
+
+            if data.get("apod_last") and arrow.get(data["apod_last"]).shift(days=1) > arrow.utcnow():
+                continue
+
+            channel = self.bot.get_channel(data["apod_channel"])
+            if not channel:
+                continue
+            link = ENDPOINTS.APOD
+
+            r = await self.bot.http_session.get(link, params=self._api_params, headers=self.bot.GLOBAL_HEADERS)
+            if r.status == 200:
+                res = await r.json()
+            else:
+                continue
+
+            title = res["title"]
+            expln = res["explanation"]
+            date_ = res["date"]
+            if res["media_type"] == "image":
+                image = res["url"]
+
+            embed = discord.Embed(
+                title=f"Astronomy Picture of the Day: {title} | At: {date_}",
+                description=f"{expln}",
+                timestamp=discord.utils.utcnow(),
+            )
+            if res["media_type"] == "image":
+                embed.set_image(url=f"{image}")
+            embed.set_thumbnail(url=ENDPOINTS.NASA_LOGO)
+
+            await channel.send(embed=embed)
+            await self.bot.guild_configurations.update_one(
+                {"_id": data["_id"]}, {"$set": {"apod_last": discord.utils.utcnow()}}
+            )
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.user)
@@ -173,7 +240,12 @@ class NASA(Cog):
     @commands.command(aliases=["finda", "asteroid", "neo"])
     @commands.max_concurrency(1, commands.BucketType.user)
     @Context.with_type
-    async def findasteroid(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def findasteroid(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """You can literally find any asteroid in the space by date. Date must be in "YYYY-MM-DD" format."""
 
         r = await self.bot.http_session.get(
@@ -214,7 +286,11 @@ class NASA(Cog):
                     .add_field(name="Estimated Diameter:", value=f"{dia} M", inline=True)
                     .add_field(name="Is Danger?", value=f"{danger}", inline=True)
                     .add_field(name="Approach Date:", value=f"{approach_date}", inline=True)
-                    .add_field(name="Relative velocity:", value=f"{velocity} KM/hr", inline=True)
+                    .add_field(
+                        name="Relative velocity:",
+                        value=f"{velocity} KM/hr",
+                        inline=True,
+                    )
                     .add_field(name="Miss Distance:", value=f"{miss_dist} KM", inline=True)
                     .add_field(name="Orbiting:", value=f"{orbiting}", inline=True)
                     .add_field(name="Is sentry?", value=f"{is_sentry_object}", inline=True)
@@ -382,7 +458,12 @@ class NASA(Cog):
             await self.bot.invoke_help_command(ctx)
 
     @donki.command(name="cme")
-    async def donki_cme(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_cme(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Coronal Mass Ejection."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -428,7 +509,12 @@ class NASA(Cog):
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="gst")
-    async def donki_gst(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_gst(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Geomagnetic Storm."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -461,7 +547,12 @@ class NASA(Cog):
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="ips")
-    async def donki_ips(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_ips(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Interplanetary Shock."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -502,7 +593,12 @@ class NASA(Cog):
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="flr")
-    async def donki_flr(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_flr(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Solar Flare."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -551,7 +647,12 @@ class NASA(Cog):
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="sep")
-    async def donki_sep(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_sep(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Solar Energetic Particle."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -589,7 +690,12 @@ Link: {link}
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="mpc")
-    async def donki_mpc(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_mpc(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Magnetopause Crossing."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -626,7 +732,12 @@ Link: {link}
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="rbe")
-    async def donki_rbe(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_rbe(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Radiation Belt Enhancement."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(
@@ -663,7 +774,12 @@ Link: {link}
         await PaginationView(em_list).start(ctx=ctx)
 
     @donki.command(name="hhs")
-    async def donki_hhs(self, ctx: Context, start: Annotated[str, date_parser], end: Annotated[str, date_parser]):
+    async def donki_hhs(
+        self,
+        ctx: Context,
+        start: Annotated[str, date_parser],
+        end: Annotated[str, date_parser],
+    ):
         """Hight Speed Stream."""
         AGENT = self.random_agent(USER_AGENTS)
         r = await self.bot.http_session.get(

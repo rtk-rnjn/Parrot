@@ -13,6 +13,7 @@ post: PostType = {
     "warn_count": 0,
     "suggestion_channel": None,
     "auditlog": None,
+    "apod_channel": None,
     "global_chat": {
         "enable": False,
         "channel_id": None,

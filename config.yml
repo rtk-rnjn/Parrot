@@ -14,7 +14,6 @@ all_extensions:
   - cogs.nsfw
   - cogs.owner
   - cogs.rtfm
-  - cogs.sports
   - cogs.telephone
   - cogs.ticket
   - cogs.afk

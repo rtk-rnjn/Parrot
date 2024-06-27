@@ -662,8 +662,8 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if message.guild is None:
             return
 
-        if message.author.bot and message.interaction is not None:
-            interacted_user = message.interaction.user
+        if message.author.bot and message.interaction_metadata is not None:
+            interacted_user = message.interaction_metadata.user
         else:
             interacted_user = message.author
 

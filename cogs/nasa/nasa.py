@@ -63,6 +63,8 @@ class NASA(Cog):
         self._cache: dict = {}
         self._api_params = {"api_key": NASA_KEY}
 
+        self.apod_loop.start()
+
     @property
     def display_emoji(self) -> discord.PartialEmoji:
         return discord.PartialEmoji(name="nasa", id=892425662864982056)

@@ -92,14 +92,8 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
     async def tick(self, emoji: discord.PartialEmoji | discord.Emoji | str | None = None) -> None:
         await self.message.add_reaction(emoji or "\N{WHITE HEAVY CHECK MARK}")
 
-    async def ok(self) -> None:
-        return await self.tick()
-
     async def wrong(self, emoji: discord.PartialEmoji | discord.Emoji | str | None = None) -> None:
         await self.message.add_reaction(emoji or "\N{CROSS MARK}")
-
-    async def cross(self) -> None:
-        return await self.wrong()
 
     async def is_voter(self) -> bool:
         if member := self.bot.server.get_member(self.author.id):
@@ -265,23 +259,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
 
         self.command.reset_cooldown(self)
         return msg
-
-    async def entry_to_code(self, entries: list[tuple[Any, Any]]) -> discord.Message:
-        width = max(len(str(a)) for a, b in entries)
-        output = ["```"]
-        output.extend(f"{name:<{width}}: {entry}" for name, entry in entries)
-        output.append("```")
-        return await self.send("\n".join(output))
-
-    async def indented_entry_to_code(self, entries: list[tuple[Any, Any]]) -> discord.Message:
-        width = max(len(str(a)) for a, b in entries)
-        output = ["```"]
-        output.extend(f"\u200b{name:>{width}}: {entry}" for name, entry in entries)
-        output.append("```")
-        return await self.send("\n".join(output))
-
-    async def emoji(self, emoji: str) -> discord.PartialEmoji:
-        return emojis[emoji]
 
     async def prompt(
         self,
@@ -489,72 +466,6 @@ class Context(commands.Context[commands.Bot], Generic[BotT]):
             interface = PaginatorEmbedInterface(self.bot, pages, owner=self.author)
             await interface.send_to(self)
             return
-
-    async def multiple_wait_for(
-        self,
-        events: list[tuple[str, Callable[..., bool]]] | dict[str, Callable[..., bool]],
-        *,
-        return_when: Literal["FIRST_COMPLETED", "ALL_COMPLETED", "FIRST_EXCEPTION"] = "FIRST_COMPLETED",
-        timeout: float | None = None,
-    ) -> list[Any]:
-        if isinstance(events, dict):
-            events = list(events.items())
-
-        _events: set[asyncio.Task[Any]] = {
-            self.bot.loop.create_task(self.wait_for(event, check=check)) for event, check in events
-        }
-
-        completed, pendings = await asyncio.wait(
-            _events,
-            timeout=timeout,
-            return_when=getattr(asyncio, return_when.upper(), "FIRST_COMPLETED"),
-        )
-
-        for pending in pendings:
-            pending.cancel()
-            log.info("Cancelled pending task %s", pending.get_name() or "unnamed")
-
-        return [r.result() for r in completed]
-
-    async def wait_for_message(self, *, timeout: float | None = None) -> discord.Message:
-        try:
-            return await self.bot.wait_for(
-                "message",
-                timeout=timeout,
-                check=lambda m: m.author == self.author and m.channel == self.channel,
-            )
-        except asyncio.TimeoutError as e:
-            msg = "You took too long to respond."
-            raise commands.BadArgument(msg) from e
-
-    async def wait_for_till(
-        self,
-        events: list[tuple[str, Callable[..., bool]]] | dict[str, Callable[..., bool]],
-        *,
-        _for: float | int | None = None,
-        after: float | int | None = None,
-        **kwargs: Any,
-    ) -> list[Any]:
-        if after:
-            await self.release(after)
-        done_result: list[Any] = []
-
-        _for = _for or 0
-        now = discord.utils.utcnow().timestamp() + _for
-
-        def __internal_appender(completed_result: Iterable[asyncio.Task]) -> None:
-            for task in completed_result:
-                done_result.append(task.result())
-
-        while discord.utils.utcnow().timestamp() <= now:
-            done = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
-            __internal_appender(done)
-
-        if not _for:
-            done = await self.multiple_wait_for(events, return_when="FIRST_COMPLETED", **kwargs)
-            __internal_appender(done)
-
-        return done_result
 
     async def wait_for_delete(self, message: discord.Message | None = None, *, timeout: float | None = None) -> Any:
         message = message or self.message

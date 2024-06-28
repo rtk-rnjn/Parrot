@@ -6,13 +6,7 @@ import asyncio
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, Final
 
-from akinator import (
-    Answer,
-    AsyncAkinator as AkinatorGame,
-    CantGoBackAnyFurther,
-    Language,
-    Theme,
-)
+from akinator import Answer, AsyncAkinator as AkinatorGame, CantGoBackAnyFurther, Language, Theme
 
 import discord
 from core import Context, Parrot

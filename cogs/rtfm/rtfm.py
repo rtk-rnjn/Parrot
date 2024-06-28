@@ -31,7 +31,7 @@ from utilities import hastebin
 from utilities.converters import WrappedMessageConverter
 
 from . import _doc, _ref
-from ._kontests import AtCoder, CodeChef, CodeForces, CSAcademy, HackerEarth, HackerRank
+from ._kontests import AtCoder, CodeForces, CSAcademy, HackerEarth, HackerRank
 from ._used import execute_run, get_raw, prepare_payload
 from ._utils import (
     ANSI_RE,

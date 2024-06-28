@@ -386,19 +386,19 @@ class Configuration(Cog):
         """To set the telephone phone line, in the server to call and receive the call from other server."""
         if not ctx.invoked_subcommand:
             data = await self.bot.guild_configurations.find_one({"_id": ctx.guild.id})
-            if data:
-                role = str(ctx.guild.get_role(data["pingrole"])) if data.get("pingrole") else None
-                channel = str(ctx.guild.get_channel(data["channel"])) if data.get("channel") else None
-                member = (
-                    await self.bot.get_or_fetch_member(ctx.guild, data["memberping"]) if data.get("memberping") else None
-                )
-                await ctx.reply(
-                    f"Configuration of this server [telsetup]\n\n"
-                    f"`Channel   :` **{channel}**\n"
-                    f"`Pingrole  :` **{role} ({data['pingrole'] or None})**\n"
-                    f"`MemberPing:` **{member} ({data['memberping'] or None})**\n"
-                    f"`Blocked   :` **{', '.join(data['blocked']) or None}**",
-                )
+            if data is None:
+                return
+
+            role = str(ctx.guild.get_role(data["pingrole"])) if data.get("pingrole") else None
+            channel = str(ctx.guild.get_channel(data["channel"])) if data.get("channel") else None
+            member = await self.bot.get_or_fetch_member(ctx.guild, data["memberping"]) if data.get("memberping") else None
+            await ctx.reply(
+                f"Configuration of this server [telsetup]\n\n"
+                f"`Channel   :` **{channel}**\n"
+                f"`Pingrole  :` **{role} ({data['pingrole'] or None})**\n"
+                f"`MemberPing:` **{member} ({data['memberping'] or None})**\n"
+                f"`Blocked   :` **{', '.join(data['blocked']) or None}**",
+            )
 
     @telephone.command(name="channel")
     @commands.has_permissions(administrator=True)

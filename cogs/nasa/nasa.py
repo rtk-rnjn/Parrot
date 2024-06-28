@@ -200,7 +200,8 @@ class NASA(Cog):
 
             await channel.send(embed=embed)
             await self.bot.guild_configurations.update_one(
-                {"_id": data["_id"]}, {"$set": {"apod_last": discord.utils.utcnow()}}
+                {"_id": data["_id"]},
+                {"$set": {"apod_last": discord.utils.utcnow()}},
             )
 
     @commands.command()

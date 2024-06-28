@@ -32,16 +32,7 @@ from .__battleship import BetaBattleShip
 from .__black_jack import BlackJackView
 from .__chess import Chess
 from .__chimp import ChimpTest
-from .__constants import (
-    _2048_GAME,
-    CHOICES,
-    CROSS_EMOJI,
-    EMOJI_CHECK,
-    HAND_RAISED_EMOJI,
-    SHORT_CHOICES,
-    WINNER_DICT,
-    Emojis,
-)
+from .__constants import _2048_GAME, CHOICES, CROSS_EMOJI, EMOJI_CHECK, HAND_RAISED_EMOJI, SHORT_CHOICES, WINNER_DICT, Emojis
 from .__country_guess import BetaCountryGuesser
 from .__duckgame import (
     ANSWER_REGEX,

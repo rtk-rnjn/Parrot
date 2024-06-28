@@ -11,15 +11,7 @@ import re
 import traceback
 import types
 from collections import Counter, defaultdict, deque
-from collections.abc import (
-    AsyncGenerator,
-    Awaitable,
-    Callable,
-    Collection,
-    Iterable,
-    Mapping,
-    Sequence,
-)
+from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 import aiohttp
@@ -129,7 +121,7 @@ class Parrot(commands.AutoShardedBot):
     help_command: commands.HelpCommand | None
 
     http_session: ClientSession
-    mongo: AsyncMongoClient
+    mongo: AsyncMongoClient[dict]
     sql: aiosqlite.Connection
     redis: aioredis.Redis
 
@@ -242,7 +234,7 @@ class Parrot(commands.AutoShardedBot):
         # MongoDB Database variables
         # Main DB
         self.main_db: MongoDatabase = self.mongo["mainDB"]
-        self.guild_configurations: MongoCollection = self.main_db["guildConfigurations"]
+        self.guild_configurations: MongoCollection[PostType] = self.main_db["guildConfigurations"]
         self.game_collections: MongoCollection = self.main_db["gameCollections"]
         self.command_collections: MongoCollection = self.main_db["commandCollections"]
         self.timers: MongoCollection = self.main_db["timers"]
@@ -276,17 +268,6 @@ class Parrot(commands.AutoShardedBot):
 
     def __repr__(self) -> str:
         return f"<core.{self.user.name}>"
-
-    def __getattribute__(self, __item) -> Any:
-        try:
-            return super().__getattribute__(__item)
-        except AttributeError:
-            cog = self.get_cog(__item)
-            if cog is not None:
-                return cog
-
-        msg = f"'{self.__class__.__name__}' object has no attribute {__item!r}"
-        raise AttributeError(msg)
 
     @property
     def config(self) -> Cache[int, PostType]:
@@ -497,7 +478,7 @@ class Parrot(commands.AutoShardedBot):
         _CONTENT = content
         _FILE = kwargs.pop("file", discord.utils.MISSING)
 
-        if content and len(content) > 1990 or force_file:
+        if content is not None and len(content) > 1990 or force_file:
             _FILE: discord.File = discord.File(
                 io.BytesIO(content.encode("utf-8") if isinstance(content, str) else content),
                 filename=filename or "content.txt",
@@ -512,7 +493,7 @@ class Parrot(commands.AutoShardedBot):
                     content,
                 )
                 return await webhook.send(
-                    content=_CONTENT,
+                    _CONTENT,
                     file=_FILE,
                     avatar_url=kwargs.pop("avatar_url", self.user.display_avatar.url),
                     username=kwargs.pop("username", self.user.name),
@@ -911,10 +892,7 @@ class Parrot(commands.AutoShardedBot):
             prefix = match[1]
         return commands.when_mentioned_or(prefix)(self, message)
 
-    async def get_guild_prefixes(self, guild: discord.Guild | int) -> str:
-        if isinstance(guild, int):
-            guild: discord.Object = discord.Object(id=guild)
-
+    async def get_guild_prefixes(self, guild: discord.Guild) -> str:
         try:
             return self.guild_configurations_cache[guild.id]["prefix"]
         except KeyError:
@@ -1543,9 +1521,9 @@ class Parrot(commands.AutoShardedBot):
         timestamp: float | None = None,
         channel_id: int | None = None,
         message_id: int | None = None,
-        message: discord.Message = None,
+        message: discord.Message | None = None,
     ) -> None:
-        if message and delay:
+        if message is not None and delay:
             await message.delete(delay=delay)
             return
 
@@ -1565,72 +1543,3 @@ class Parrot(commands.AutoShardedBot):
                     },
                 },
             )
-
-    # CREATE TABLE IF NOT EXISTS logs (
-    #       id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    #       level   INT NOT NULL,
-    #       message TEXT NOT NULL,
-    #       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    #       extra   TEXT,
-    #       UNIQUE(message, created_at)
-    # );
-
-    @overload
-    def log(
-        level: int | str,
-        message: str,
-        extra: dict[str, Any] | None = None,
-    ) -> None:
-        ...
-
-    @overload
-    def log(
-        *,
-        level: int | str,
-        message: str,
-        extra: dict[str, Any] | None = None,
-    ) -> None:
-        ...
-
-    @overload
-    def log(
-        level: int | str,
-        *,
-        message: str,
-        extra: dict[str, Any] | None = None,
-    ) -> None:
-        ...
-
-    @staticmethod
-    def log(
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        mapping = {
-            "debug": "DEBUG",
-            "info": "INFO",
-            "warning": "WARNING",
-            "error": "ERROR",
-            "critical": "CRITICAL",
-            "0": "DEBUG",
-            "1": "INFO",
-            "2": "WARNING",
-            "3": "ERROR",
-            "4": "CRITICAL",
-        }
-        level = kwargs.get("level") or args[0]
-        message = kwargs.get("message") or args[1]
-        extra = kwargs.get("extra") or args[2]
-        level = mapping.get(str(level).lower(), "INFO")
-        Parrot.recieved_logs.append([level, message or "None", extra])
-
-    async def _log(self) -> None:
-        if self.recieved_logs:
-            query = """
-                INSERT INTO logs (level, message, extra) VALUES (?, ?, ?) ON CONFLICT DO NOTHING;
-            """
-            await self.sql.executemany(query, self.recieved_logs)
-
-    @tasks.loop(minutes=1)
-    async def log_loop(self):
-        await self._log()

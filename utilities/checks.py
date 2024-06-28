@@ -4,14 +4,7 @@ import datetime
 from collections.abc import Callable, Container, Iterable
 from typing import TYPE_CHECKING, TypeAlias
 
-from discord.ext.commands import (
-    BucketType,
-    Cog,
-    Command,
-    CommandOnCooldown,
-    Cooldown,
-    CooldownMapping,
-)
+from discord.ext.commands import BucketType, Cog, Command, CommandOnCooldown, Cooldown, CooldownMapping
 from pymongo.collection import Collection
 
 import discord

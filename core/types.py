@@ -23,13 +23,7 @@ from pymongo.operations import (
     _IndexList,
 )
 from pymongo.read_concern import ReadConcern
-from pymongo.results import (
-    BulkWriteResult,
-    DeleteResult,
-    InsertManyResult,
-    InsertOneResult,
-    UpdateResult,
-)
+from pymongo.results import BulkWriteResult, DeleteResult, InsertManyResult, InsertOneResult, UpdateResult
 from pymongo.typings import _CollationIn, _DocumentType, _Pipeline
 
 _WriteOp = Union[  # noqa: UP007
@@ -179,7 +173,7 @@ class MongoCollection(Collection, Generic[_DocumentType]):
     ) -> DeleteResult:
         ...
 
-    async def find_one(self, filter: Any | None = None, *args: Any, **kwargs: Any) -> Any:  # noqa: A002
+    async def find_one(self, filter: Any | None = None, *args: Any, **kwargs: Any) -> _DocumentType:  # noqa: A002
         ...
 
     def find(self, *args: Any, **kwargs: Any) -> AsyncIterator[Cursor[_DocumentType] | dict]:

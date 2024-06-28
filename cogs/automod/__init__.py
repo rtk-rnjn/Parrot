@@ -250,8 +250,8 @@ class AutomaticModeration(Cog):
                         "trigger": view.triggers,
                         "condition": view.conditions,
                         "action": view.actions,
-                    }
-                }
+                    },
+                },
             },
             upsert=True,
         )
@@ -283,8 +283,8 @@ class AutomaticModeration(Cog):
                         "trigger": view.triggers,
                         "condition": view.conditions,
                         "action": view.actions,
-                    }
-                }
+                    },
+                },
             },
         )
         await self.refresh_cache_specific(ctx.guild.id)

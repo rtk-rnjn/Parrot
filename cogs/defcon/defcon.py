@@ -419,7 +419,7 @@ class DefensiveCondition(Cog):
                 "$set": {
                     "default_defcon.broadcast.enabled": True,
                     "default_defcon.broadcast.channel": channel.id,
-                }
+                },
             },
             upsert=True,
         )

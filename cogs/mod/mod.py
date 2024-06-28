@@ -10,12 +10,7 @@ import arrow
 
 import discord
 from cogs.mod import method as mod_method
-from cogs.mod.embeds import (
-    MEMBER_EMBED,
-    ROLE_EMBED,
-    TEXT_CHANNEL_EMBED,
-    VOICE_CHANNEL_EMBED,
-)
+from cogs.mod.embeds import MEMBER_EMBED, ROLE_EMBED, TEXT_CHANNEL_EMBED, VOICE_CHANNEL_EMBED
 from core import Cog, Context, Parrot
 from discord.ext import commands
 from utilities.checks import in_temp_channel, is_mod

@@ -158,7 +158,7 @@ class Suggestions(Cog):
         _id: int = message.id
         content = (
             f"{ctx.author.mention} your suggestion being posted.\n"
-            f"To delete the suggestion type: `{ctx.clean_prefix or await ctx.bot.get_guild_prefixes(ctx.guild.id)}suggest delete {_id}`\n"
+            f"To delete the suggestion type: `{ctx.clean_prefix or await ctx.bot.get_guild_prefixes(ctx.guild)}suggest delete {_id}`\n"
             f"> {jump_url}"
         )
         try:

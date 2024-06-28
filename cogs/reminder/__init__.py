@@ -148,10 +148,7 @@ class Reminders(Cog):
     @remindme.command(name="info", aliases=["details", "detail", "i"])
     async def info(self, ctx: Context, *, id: str) -> None:
         """Shows the details of the reminder."""
-        if not id.isdigit():
-            message = str_to_snowflake(id)
-        else:
-            message = int(id)
+        message = int(id) if id.isdigit() else str_to_snowflake(id)
         data = await self.collection.find_one({"messageAuthor": ctx.author.id, "_id": message})
         if not data:
             await ctx.reply(f"{ctx.author.mention} reminder of ID: **{id}** not found. ID is case sensitive")
@@ -172,10 +169,7 @@ class Reminders(Cog):
     @remindme.command(name="del", aliases=["delete", "remove", "rm"])
     async def delremind(self, ctx: Context, *, id: str) -> None:
         """To delete the reminder."""
-        if not id.isdigit():
-            message = str_to_snowflake(id)
-        else:
-            message = int(id)
+        message = int(id) if id.isdigit() else str_to_snowflake(id)
         timer = await self.bot.get_timer(_id=message)
         if not timer:
             await ctx.reply(f"{ctx.author.mention} reminder of ID: **{id}** not found. ID is case sensitive")

@@ -5,17 +5,15 @@ import logging
 from typing import Annotated
 
 import arrow
-from motor.motor_asyncio import AsyncIOMotorCollection
 
 import discord
 from core import Cog, Context, Parrot
+from core.types import MongoCollection as Collection
 from discord.ext import commands
 from utilities.robopages import SimplePages
 from utilities.time import FriendlyTimeResult, ShortTime, UserFriendlyTime
 
 log = logging.getLogger("cogs.reminder")
-
-Collection = type[AsyncIOMotorCollection]
 
 
 def snowflake_to_str(snowflake: int) -> str:

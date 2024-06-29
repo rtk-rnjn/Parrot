@@ -149,7 +149,7 @@ class UserID(commands.Converter):
                     in_guild=False,
                 )
                 if u is None:
-                    return type(
+                    return type(  # type: ignore
                         "_User",
                         (),
                         {"id": user_id, "__str__": lambda s: f"User ID {s.id}"},
@@ -389,19 +389,18 @@ class UrlConverter(commands.Converter):
         argument = argument.strip("<>")
         try:
             async with ctx.bot.http_session.get(argument) as r:
-                if r.ok:
-                    if r.content_type.startswith("image/"):
-                        byt = await r.read()
-                        if r.content_type.startswith("image/svg"):
-                            byt = await asyncio.to_thread(image_mod.svg_to_png, byt)
-                        return byt
-                    if TENOR_PAGE_REGEX.fullmatch(argument):
-                        return await self.find_tenor_gif(ctx, r)
-                    if imgur := IMGUR_PAGE_REGEX.fullmatch(argument):
-                        return await self.find_imgur_img(ctx, imgur)
+                if not r.ok:
                     raise bad_arg
-                else:
-                    raise bad_arg
+                if r.content_type.startswith("image/"):
+                    byt = await r.read()
+                    if r.content_type.startswith("image/svg"):
+                        byt = await asyncio.to_thread(image_mod.svg_to_png, byt)
+                    return byt
+                if TENOR_PAGE_REGEX.fullmatch(argument):
+                    return await self.find_tenor_gif(ctx, r)
+                if imgur := IMGUR_PAGE_REGEX.fullmatch(argument):
+                    return await self.find_imgur_img(ctx, imgur)
+                raise bad_arg from None
         except Exception as e:
             raise bad_arg from e
 

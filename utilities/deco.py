@@ -4,7 +4,7 @@ import asyncio
 import functools
 from asyncio import Lock
 from collections.abc import Callable, Container, Iterable
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from weakref import WeakValueDictionary
 
@@ -267,6 +267,29 @@ def in_time(*, past: datetime, future: datetime) -> Callable:
             raise TypeError(msg)
 
         return actual_deco(callable_)
+
+    return decorator
+
+
+def everyday_at(*, hour: int = 0, minute: int = 0, second: int = 0) -> Callable:
+    """Decorator to run a task every day at a specific time.
+    The decorated task will be called at the specified time every day.
+    """
+
+    def decorator(task: Callable) -> Callable:
+        async def wrapped_task(*args, **kwargs) -> None:
+            """Call `task` every day at the specified time."""
+            while True:
+                now = resolve_current_time()
+                target = now.replace(hour=hour, minute=minute, second=second)
+
+                if now >= target:
+                    target += timedelta(days=1)
+
+                await asyncio.sleep((target - now).total_seconds())
+                await task(*args, **kwargs)
+
+        return wrapped_task
 
     return decorator
 

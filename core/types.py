@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterable, Mapping, MutableMapping, Sequence
-from typing import TYPE_CHECKING, Any, Generic, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Generic, TypedDict, Union, overload
 
 from bson.codec_options import CodecOptions
 from bson.raw_bson import RawBSONDocument
@@ -176,7 +176,7 @@ class MongoCollection(Collection, Generic[_DocumentType]):
     async def find_one(self, filter: Any | None = None, *args: Any, **kwargs: Any) -> _DocumentType:  # noqa: A002
         ...
 
-    def find(self, *args: Any, **kwargs: Any) -> AsyncIterator[Cursor[_DocumentType] | dict]:
+    def find(self, *args: Any, **kwargs: Any) -> AsyncIterator[_DocumentType]:
         ...
 
     async def find_raw_batches(self, *args: Any, **kwargs: Any) -> RawBatchCursor:

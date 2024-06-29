@@ -54,10 +54,7 @@ class _SexDotCom:
         return await self._get_images(url=url)
 
     async def popular_this_month(self, page: int | None = 1) -> list[str]:
-        if page and page > 1:
-            url = self.url % {"page": page}
-        else:
-            url = self.url
+        url = self.url % {"page": page} if page and page > 1 else self.url
         return await self._get_images(url=url)
 
     async def popular_this_year(self, page: int | None = 1) -> list[str]:

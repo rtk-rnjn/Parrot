@@ -63,7 +63,16 @@ class NASA(Cog):
         self._cache: dict = {}
         self._api_params = {"api_key": NASA_KEY}
 
-        self.apod_loop.start()
+        self.__apod_cache: dict[arrow.Arrow, discord.Embed] = {}
+
+    async def cog_load(self):
+        if self.apod_loop.is_running():
+            self.apod_loop.restart()
+        else:
+            self.apod_loop.start()
+
+    async def cog_unload(self):
+        self.apod_loop.stop()
 
     @property
     def display_emoji(self) -> discord.PartialEmoji:
@@ -118,17 +127,25 @@ class NASA(Cog):
         if ctx.invoked_subcommand is not None:
             return
 
+        now = arrow.utcnow()
+        for date, embed in self.__apod_cache.items():
+            if date.shift(days=1) > now:
+                return await ctx.reply(embed=embed)
+
+        embed = await self.apod_cache()
+        await ctx.reply(embed=embed)
+
+    async def apod_cache(self) -> discord.Embed:
         link = ENDPOINTS.APOD
 
         r = await self.bot.http_session.get(link, params=self._api_params, headers=self.bot.GLOBAL_HEADERS)
         if r.status == 200:
             res = await r.json()
         else:
-            return await ctx.reply(f"{ctx.author.mention} could not find APOD | Http status: {r.status}")
+            return discord.Embed(description="Could not find APOD", colour=discord.Colour.red()).set_footer(text=f"HTTP status: {r.status}")
 
         title = res["title"]
         expln = res["explanation"]
-        # authr = res['copyright']
         date_ = res["date"]
         if res["media_type"] == "image":
             image = res["media_type"]
@@ -143,7 +160,9 @@ class NASA(Cog):
             embed.set_image(url=f"{image}")
         embed.set_thumbnail(url=ENDPOINTS.NASA_LOGO)
 
-        await ctx.reply(embed=embed)
+        self.__apod_cache[arrow.utcnow()] = embed
+
+        return embed
 
     @apod.command(name="set")
     @commands.has_permissions(administrator=True)
@@ -163,46 +182,25 @@ class NASA(Cog):
         self.bot.guild_configurations_cache[ctx.guild.id]["apod_channel"] = None
         await ctx.tick()
 
-    @tasks.loop(hours=24)
+    @tasks.loop(minutes=24 * 60)
     async def apod_loop(self) -> None:
         async for data in self.bot.guild_configurations.find({"apod_channel": {"$exists": True}}):
             if not data["apod_channel"]:
                 continue
+            if apod_last := data.get("apod_last"):
+                apod_last = arrow.get(apod_last)
 
-            if data.get("apod_last") and arrow.get(data["apod_last"]).shift(days=1) > arrow.utcnow():
-                continue
-
+                if apod_last.shift(days=1) > arrow.utcnow():
+                    continue
             channel = self.bot.get_channel(data["apod_channel"])
-            if not channel:
-                continue
-            link = ENDPOINTS.APOD
-
-            r = await self.bot.http_session.get(link, params=self._api_params, headers=self.bot.GLOBAL_HEADERS)
-            if r.status == 200:
-                res = await r.json()
-            else:
+            if channel is None:
                 continue
 
-            title = res["title"]
-            expln = res["explanation"]
-            date_ = res["date"]
-            if res["media_type"] == "image":
-                image = res["url"]
-
-            embed = discord.Embed(
-                title=f"Astronomy Picture of the Day: {title} | At: {date_}",
-                description=f"{expln}",
-                timestamp=discord.utils.utcnow(),
-            )
-            if res["media_type"] == "image":
-                embed.set_image(url=f"{image}")
-            embed.set_thumbnail(url=ENDPOINTS.NASA_LOGO)
-
+            embed = await self.apod_cache()
             await channel.send(embed=embed)
-            await self.bot.guild_configurations.update_one(
-                {"_id": data["_id"]},
-                {"$set": {"apod_last": discord.utils.utcnow()}},
-            )
+
+            apod_last = arrow.utcnow()
+            await self.bot.guild_configurations.update_one({"_id": data["_id"]}, {"$set": {"apod_last": apod_last.datetime}})
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.user)

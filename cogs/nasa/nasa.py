@@ -182,7 +182,7 @@ class NASA(Cog):
         self.bot.guild_configurations_cache[ctx.guild.id]["apod_channel"] = None
         await ctx.tick()
 
-    @tasks.loop(minutes=24 * 60)
+    @tasks.loop(minutes=60)
     async def apod_loop(self) -> None:
         async for data in self.bot.guild_configurations.find({"apod_channel": {"$exists": True}}):
             if not data["apod_channel"]:

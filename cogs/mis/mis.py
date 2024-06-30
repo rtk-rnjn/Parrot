@@ -549,7 +549,7 @@ class Misc(Cog):
     @Context.with_type
     async def snipe_message(self, ctx: Context, channel: discord.TextChannel | None = None, index: int = 1):
         """Snipes someone's message that's deleted."""
-        snipes: SnipeMessageListener = self.bot.SnipeMessageListener
+        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
 
@@ -602,7 +602,7 @@ class Misc(Cog):
         if not ctx.author.guild_permissions.manage_messages:
             index = 1
 
-        snipes: SnipeMessageListener = self.bot.SnipeMessageListener
+        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")
         if snipes is None:
             return await ctx.error(f"{ctx.author.mention} Snipe cog is not loaded!")
 

@@ -94,11 +94,5 @@ IBM_END_POINT = ""
 SPOTIFY_CLIENT_ID = ""
 SPOTIFY_CLIENT_SECRET = ""
 
-# Redis
-# https://redislabs.com/
-REDIS_DATABASE = ""
-REDIS_ENDPOINT = ""
-REDIS_PASSWORD = ""
-
 # https://api.jeyy.xyz/
 JEYY_API = ""

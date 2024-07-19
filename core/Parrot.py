@@ -15,7 +15,6 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Collection, Ite
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 import aiohttp
-import aioredis
 import aiosqlite
 import jishaku  # noqa: F401  # pylint: disable=unused-import
 import pymongo
@@ -123,7 +122,6 @@ class Parrot(commands.AutoShardedBot):
     http_session: ClientSession
     mongo: AsyncMongoClient[dict]
     sql: aiosqlite.Connection
-    redis: aioredis.Redis
 
     cogs: Mapping[str, Cog]
     extensions: Mapping[str, types.ModuleType]

@@ -5,13 +5,12 @@ import contextlib
 import os
 import socket
 
-import aioredis
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from core import Parrot
 from updater import init
-from utilities.config import DATABASE_KEY, DATABASE_URI, REDIS_URI, TOKEN, VERSION
+from utilities.config import DATABASE_KEY, DATABASE_URI, TOKEN, VERSION
 
 bot: Parrot = Parrot()
 
@@ -34,8 +33,6 @@ async def main() -> None:
                 bot.__version__ = VERSION
 
             bot.mongo = AsyncIOMotorClient(DATABASE_URI.format(DATABASE_KEY))
-            redis = await aioredis.from_url(REDIS_URI, encoding="utf-8", decode_responses=True, max_connections=1000)
-            bot.redis = redis
 
             await bot.init_db()
 

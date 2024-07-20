@@ -311,7 +311,7 @@ class Meta(Cog):
 
     def format_commit(self, commit: pygit2.Commit):
         short, _, _ = commit.message.partition("\n")
-        short_sha2 = commit.hex[:6]
+        short_sha2 = str(commit)[:6]
         commit_tz = arrow.now().to("local").tzinfo
         commit_time = arrow.Arrow.fromtimestamp(commit.commit_time).to("local").astimezone(commit_tz)
         offset = discord.utils.format_dt(commit_time, "R")

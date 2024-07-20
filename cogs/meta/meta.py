@@ -315,7 +315,7 @@ class Meta(Cog):
         commit_tz = arrow.now().to("local").tzinfo
         commit_time = arrow.Arrow.fromtimestamp(commit.commit_time).to("local").astimezone(commit_tz)
         offset = discord.utils.format_dt(commit_time, "R")
-        return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.hex}) {short} ({offset})"
+        return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{str(commit)}) {short} ({offset})"
 
     def format_commit_from_json(self, commit: dict):
         commit_hex = commit["sha"]

@@ -6,8 +6,7 @@
             "interpreter": "python3",
             "autorestart": true,
             "instances": 1,
-            "max_memory_restart": "600M",
-            "cron_restart": "0 0 * * *"
+            "cron_restart": "0 0 * * 0"
         }
     ]
 }

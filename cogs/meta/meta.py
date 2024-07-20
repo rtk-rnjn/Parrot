@@ -311,11 +311,11 @@ class Meta(Cog):
 
     def format_commit(self, commit: pygit2.Commit):
         short, _, _ = commit.message.partition("\n")
-        short_sha2 = str(commit)[:6]
+        short_sha2 = str(commit.id)[:6]
         commit_tz = arrow.now().to("local").tzinfo
         commit_time = arrow.Arrow.fromtimestamp(commit.commit_time).to("local").astimezone(commit_tz)
         offset = discord.utils.format_dt(commit_time, "R")
-        return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{str(commit)}) {short} ({offset})"
+        return f"[`{short_sha2}`](https://github.com/rtk-rnjn/Parrot/commit/{str(commit.id)}) {short} ({offset})"
 
     def format_commit_from_json(self, commit: dict):
         commit_hex = commit["sha"]

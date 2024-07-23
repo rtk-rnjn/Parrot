@@ -471,6 +471,9 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if self.is_banned(message.author):
             return
 
+        if TYPE_CHECKING:
+            assert message.guild is not None
+
         if message.guild.id not in self.__global_chat_cache:
             # LRU?
             data = await self.bot.guild_configurations.find_one(
@@ -584,6 +587,10 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
         if message.author.id == self.bot.user.id:
             return False
 
+        flags = message.author.public_flags
+        if any((flags.staff, flags.system, flags.verified_bot)):
+            return False
+
         if not message.channel.permissions_for(message.guild.me).send_messages:
             return
 
@@ -621,6 +628,9 @@ class OnMsg(Cog, command_attrs={"hidden": True}):
             aiohttp.ServerDisconnectedError,
             aiohttp.ClientResponseError,
         ):
+            if self.bot.http_session.closed:  # RuntimeError: Session is closed
+                return
+
             response = await self.bot.http_session.post(
                 API,
                 json={"message": message.content},

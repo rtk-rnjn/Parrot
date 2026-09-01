@@ -114,7 +114,6 @@ def _parse_time_window(data: Mapping[str, Any]) -> TriggerConfig:
     )
 
 
-
 def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:
     violation_name = data.get("violation_name")
     if not isinstance(violation_name, str):
@@ -129,7 +128,6 @@ def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:
 
 def _parse_length(data: Mapping[str, Any]) -> TriggerConfig:
     return LengthConfig(length=_require_int(data, "length", minimum=0))
-
 
 
 Parser = Callable[[Mapping[str, Any]], TriggerConfig]

@@ -10,16 +10,7 @@ from .configs import (
 )
 from .enum import TriggerType
 
-type TriggerConfig = (
-    NoConfig
-    | CountConfig
-    | TimeWindowConfig
-    | ListConfig
-    | RegexConfig
-    | LengthConfig
-    | ViolationConfig
-    | AllCapsConfig
-)
+type TriggerConfig = NoConfig | CountConfig | TimeWindowConfig | ListConfig | RegexConfig | LengthConfig | ViolationConfig | AllCapsConfig
 
 _CONFIG_TYPES: dict[TriggerType, type[TriggerConfig]] = {
     TriggerType.ALL_CAPS: AllCapsConfig,

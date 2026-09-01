@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import discord
 from typing import TYPE_CHECKING
+
+import discord
 from discord.ext import commands
 
 if TYPE_CHECKING:
@@ -137,7 +138,5 @@ class PaginationView[PageT: discord.Embed | str](discord.ui.View):
         else:
             await ctx.reply(f"{self._str_prefix}{self._pages[0]}{self._str_suffix}", view=self)
 
-
     async def paginate(self, ctx: commands.Context):
         await self.start(ctx)
-

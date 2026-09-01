@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Any, TypeVar
+from typing import Any
 
 from .configs import (
     AllCapsConfig,
@@ -199,9 +199,14 @@ _REGEX_TYPES = {
 _TIME_WINDOW_TYPES = {
     TriggerType.USER_MESSAGES,
     TriggerType.CHANNEL_MESSAGES,
-    TriggerType.CONSECUTIVE_IDENTICAL_MESSAGES,
-    TriggerType.USER_LINKS,
-    TriggerType.CHANNEL_LINKS,
+    TriggerType.X_CONSECUTIVE_IDENTICAL_MESSAGES,
+    TriggerType.X_USER_LINKS_IN_Y_MINUTES,
+    TriggerType.X_CHANNEL_LINKS_IN_Y_MINUTES,
+    TriggerType.X_VOILATION_IN_Y_MINUTES,
+    TriggerType.X_USER_MESSAGE_IN_Y_MINUTES,
+    TriggerType.X_CHANNEL_MESSAGE_IN_Y_MINUTES,
+    TriggerType.X_USER_MESSAGE_MENTIONS_IN_Y_MINUTES,
+    TriggerType.X_CHANNEL_MESSAGE_MENTIONS_IN_Y_MINUTES,
 }
 
 _PARSERS: dict[TriggerType, Parser] = {
@@ -235,9 +240,6 @@ def _parse_config(
     if parser is None:
         raise TriggerParseError("No parser registered for trigger type " + repr(trigger_type.value))
     return parser(data)
-
-
-TConfig = TypeVar("TConfig", bound=TriggerConfig)
 
 
 @dataclass(frozen=True, slots=True)

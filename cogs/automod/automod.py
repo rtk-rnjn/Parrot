@@ -1,16 +1,17 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
+from enum import StrEnum
 
 from .condition import Condition
-from .trigger import Trigger
 from .effect import Effect
-
-from enum import StrEnum
+from .trigger import Trigger
 
 
 class MatchMode(StrEnum):
     ANY = "any"
     ALL = "all"
+
 
 @dataclass
 class Rule:
@@ -19,7 +20,7 @@ class Rule:
     name: str
     """The name of the rule."""
 
-    triggers: Trigger
+    trigger: Trigger
     """The triggers that activate this rule."""
 
     conditions: list[Condition]

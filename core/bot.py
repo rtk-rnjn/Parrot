@@ -40,6 +40,8 @@ LOADABLE_COGS = [
     "cogs.fun.love",
     "cogs.fun.fun",
     "cogs.misc",
+    "cogs.cc",
+    "cogs.automod",
 ]
 
 _log = logging.getLogger("bot.core")
@@ -47,6 +49,9 @@ _log = logging.getLogger("bot.core")
 
 class Parrot(commands.Bot):
     DEFAULT_PREFIX = os.environ.get("DEFAULT_PREFIX", "$")
+
+    if TYPE_CHECKING:
+        user: discord.ClientUser
 
     def __init__(self, **kwargs) -> None:
         intents = discord.Intents.default()
@@ -207,12 +212,13 @@ class Parrot(commands.Bot):
     async def paginate(
         ctx: commands.Context[Parrot],
         *,
-        embed: bool = True,
+        embed: discord.Embed,
         pages: list[str],
         suffix: str = "",
         prefix: str = "",
         max_size: int = 1900,
         linspec: str = "\n",
+        **kw,
     ) -> PaginatorEmbedInterface: ...
 
     @overload
@@ -220,33 +226,35 @@ class Parrot(commands.Bot):
     async def paginate(
         ctx: commands.Context[Parrot],
         *,
-        embed: bool = False,
+        embed: None,
         pages: list[str],
         suffix: str = "",
         prefix: str = "",
         max_size: int = 1900,
         linspec: str = "\n",
+        **kw,
     ) -> PaginatorInterface: ...
 
     @staticmethod
     async def paginate(  # noqa: PLR0913
         ctx: commands.Context[Parrot],
         *,
-        embed: bool = True,
+        embed: discord.Embed | None = None,
         pages: list[str],
         suffix: str = "",
         prefix: str = "",
         max_size: int = 1900,
         linspec: str = "\n",
+        **kw,
     ) -> PaginatorEmbedInterface | PaginatorInterface:
         paginator = commands.Paginator(suffix=suffix, prefix=prefix, max_size=max_size, linesep=linspec)
         for line in pages:
             paginator.add_line(line)
 
         if embed:
-            interface = PaginatorEmbedInterface(ctx.bot, paginator, owner=ctx.author)
+            interface = PaginatorEmbedInterface(ctx.bot, paginator, owner=ctx.author, **kw)
         else:
-            interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
+            interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author, **kw)
         await interface.send_to(ctx)
         return interface
 

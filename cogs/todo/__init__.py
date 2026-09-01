@@ -19,7 +19,6 @@ class TodoStatus(StrEnum):
 
 class TodoItem(TypedDict):
     _id: NotRequired[ObjectId]
-    user_id: int
     title: str
     notes: str | None
     due: datetime | None

@@ -9,7 +9,6 @@ from jinja2.visitor import NodeVisitor
 
 __all__ = [
     "SandboxConfig",
-    "SandboxErrorInfo",
     "SandboxRenderError",
     "SandboxTemplateSyntaxError",
     "SandboxSecurityViolation",
@@ -20,14 +19,11 @@ __all__ = [
     "SandboxInternalError",
     "SandboxForbiddenSyntax",
     "render_sandboxed",
-    "format_sandbox_error",
 ]
 
 
 class SandboxRenderError(Exception):
-    def __init__(self, message: str, *, info: SandboxErrorInfo | None = None):
-        super().__init__(message)
-        self.info = info
+    pass
 
 
 class SandboxTemplateSyntaxError(SandboxRenderError):
@@ -62,19 +58,6 @@ class SandboxForbiddenSyntax(SandboxRenderError):
     def __init__(self, message: str, *, line: int | None = None):
         super().__init__(message)
         self.line = line
-
-
-@dataclasses.dataclass(frozen=True)
-class SandboxErrorInfo:
-    error_type: str
-    message: str
-    template_name: str | None = None
-    line: int | None = None
-    column: int | None = None
-    source_line: str | None = None
-    traceback: str | None = None
-    kind: str = "internal"  # syntax|security|operator_limit|output_limit|timeout|memory|internal|forbidden_syntax
-    node_type: str | None = None  # best-effort AST node at error line
 
 
 @dataclasses.dataclass(frozen=True)
@@ -197,54 +180,6 @@ class HardenedSandboxedEnvironment(ImmutableSandboxedEnvironment):
 config = SandboxConfig()
 config.validate()
 env = HardenedSandboxedEnvironment(config, loader=None, autoescape=False, extensions=[], enable_async=True, auto_reload=True)
-
-
-def format_sandbox_error(exc: SandboxRenderError) -> str:
-    """
-    Compiler-style error output.
-    If exact column is unavailable, underline the entire non-whitespace span.
-    """
-    info = getattr(exc, "info", None)
-    if info is None:
-        return f"SandboxError: {exc}"
-
-    header = f"{info.error_type}: {info.message}"
-
-    loc = []
-    if info.template_name:
-        loc.append(f"template={info.template_name}")
-    if info.line is not None:
-        loc.append(f"line={info.line}")
-    if info.column is not None:
-        loc.append(f"col={info.column}")
-    if info.node_type:
-        loc.append(f"node={info.node_type}")
-    if loc:
-        header = f"{header} ({', '.join(loc)})"
-
-    if info.source_line is None:
-        return header
-
-    line_no = info.line if info.line is not None else 0
-    snippet = info.source_line.rstrip("\n")
-    gutter = f"{line_no:>4} | "
-
-    # If we have a real column, point there with single caret.
-    if info.column is not None and info.column > 0:
-        caret_pos = info.column - 1
-        marker = " " * caret_pos + "^"
-    else:
-        # No reliable column: underline full meaningful part of the line.
-        # Keep indentation spaces, then mark non-space content with ^^^^^
-        leading_ws = len(snippet) - len(snippet.lstrip(" \t"))
-        content_len = len(snippet.rstrip()) - leading_ws
-        if content_len <= 0:
-            content_len = max(len(snippet), 1)
-            leading_ws = 0
-        marker = " " * leading_ws + "^" * content_len
-
-    marker_line = " " * len(gutter) + marker
-    return f"{header}\n{gutter}{snippet}\n{marker_line}"
 
 
 async def render_sandboxed(code: str, **context: Any) -> str:

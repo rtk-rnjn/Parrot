@@ -34,21 +34,6 @@ class TriggerType(StrEnum):
     SERVER_INVITES = "server_invites"
     """Fires when a message contains a server invite link."""
 
-    GOOGLE_FLAGGED_BAD_LINKS = "google_flagged_bad_links"
-    """Fires when a message contains a link that Google has flagged as malicious."""
-
-    USER_MESSAGES = "user_messages"
-    """Fires when the offending user has sent x messages in y seconds."""
-
-    CHANNEL_MESSAGES = "channel_messages"
-    """Fires when the channel has received x messages in y seconds."""
-
-    USER_MENTIONS = "user_mentions"
-    """Fires when the offending user has mentioned x users in y seconds."""
-
-    CHANNEL_MENTIONS = "channel_mentions"
-    """Fires when the channel has received x mentions in y seconds."""
-
     MESSAGE_REGEX = "message_regex"
     """Fires when a message matches the specified regular expression."""
 
@@ -70,10 +55,10 @@ class TriggerType(StrEnum):
     NICKNAME_WORD_DENYLIST = "nickname_word_denylist"
     """Fires when the nickname contains any word from the specified denylist."""
 
-    USER_ATTACHMENTS = "user_attachments"
+    X_USER_ATTACHMENTS_IN_Y_MINUTES = "user_attachments"
     """Fires when the offending user has sent x attachments in y seconds."""
 
-    CHANNEL_ATTACHMENTS = "channel_attachments"
+    X_CHANNEL_ATTACHMENTS_IN_Y_MINUTES = "channel_attachments"
     """Fires when the channel has received x attachments in y seconds."""
 
     JOIN_USERNAME_WORD_ALLOWLIST = "join_username_word_allowlist"

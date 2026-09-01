@@ -20,7 +20,7 @@ class _GuildPrefixMixin:
         if cached is not None and isinstance(cached, str):
             return cached
 
-        guild_config = await self.guilds_collection.find_one({"_id": guild_id})
+        guild_config = await self.guilds_collection.find_one({"_id": guild_id, "command_prefix": {"$exists": True}}, {"command_prefix": 1})
         if guild_config is None:
             return None
 

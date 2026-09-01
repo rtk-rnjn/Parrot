@@ -25,3 +25,6 @@ class RedisKeys(StrEnum):
     GUILD_CUSTOM_COMMAND_ENABLED = "guild:{guild_id}:custom_command:{command_name}:enabled"
 
     USER_TIMEZONE = "user:{user_id}:timezone"
+
+    SCAM_LINKS_CACHE = "scam_links_cache"
+    SCAM_LINK_WARNED = "scam_link_warned:{channel_id}"

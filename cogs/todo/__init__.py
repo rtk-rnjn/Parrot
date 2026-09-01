@@ -1,29 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
-from enum import StrEnum
-from typing import TYPE_CHECKING, NotRequired, TypedDict
+from typing import TYPE_CHECKING
 
-from bson import ObjectId
 from discord.ext import commands
 
 if TYPE_CHECKING:
     from core.bot import Parrot
-
-
-class TodoStatus(StrEnum):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-
-
-class TodoItem(TypedDict):
-    _id: NotRequired[ObjectId]
-    title: str
-    notes: str | None
-    due: datetime | None
-    status: TodoStatus
-    parent_id: ObjectId | None
 
 
 class Todo(commands.Cog):

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
 import arrow
@@ -22,6 +23,15 @@ _log = logging.getLogger("bot.cogs.events.error")
 
 class _Named(Protocol):
     name: str
+
+
+@dataclass(slots=True)
+class ErrorResponse:
+    title: str
+    description: str
+    reset_cooldown: bool = False
+    delete_after: float | None = None
+    should_raise: bool = False
 
 
 class _Command(commands.Cog, command_attrs={"hidden": True}):
@@ -47,26 +57,32 @@ class _Command(commands.Cog, command_attrs={"hidden": True}):
         }
         _log.debug("Command invoked: %s", payload)
 
+    def _title(self, text: str) -> str:
+        return f"{QUESTION_MARK} {text} {QUESTION_MARK}"
+
+    def _format_permissions(self, permissions: list[str]) -> str:
+        missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in permissions]
+        return human_join(missing, delim="`, `", final="and")
+
     def _get_object_by_fuzzy[T: _Named](self, *, argument: str, objects: Sequence[T]) -> tuple[T, str, int] | None:
         """Get an object from a list of objects by fuzzy matching."""
         if not argument:
             return None
-        CUT_OFF = 90
+
+        cut_off = 90
         names = [o.name for o in objects]
-        if data := process.extractOne(argument, names, scorer=fuzz.WRatio, score_cutoff=CUT_OFF):
+        if data := process.extractOne(argument, names, scorer=fuzz.WRatio, score_cutoff=cut_off):
             result, score, position = data
             return objects[position], result, int(score)
+        return None
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context[Parrot], error: commands.CommandError):  # noqa: PLR0912, PLR0915, C901
-        await self.bot.wait_until_ready()
-        # elif command has local error handler, return
+    def _should_ignore(self, ctx: commands.Context[Parrot], error: commands.CommandError) -> bool:
+        if ctx.guild is None or ctx.author.bot or ctx.command is None:
+            return True
+
         if hasattr(ctx.command, "on_error"):
-            return
+            return True
 
-        # get the original exception
-        error = getattr(error, "original", error)
-        TO_RAISE_ERROR, DELETE_AFTER, RESET_COOLDOWN = False, None, False
         ignore = (
             commands.CommandNotFound,
             discord.NotFound,
@@ -74,174 +90,234 @@ class _Command(commands.Cog, command_attrs={"hidden": True}):
             commands.PrivateMessageOnly,
             commands.NotOwner,
         )
+        return isinstance(error, ignore)
 
-        if isinstance(error, ignore) or ctx.guild is None or ctx.author.bot or ctx.command is None:
-            return
-
-        error_title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
-        error_description = ""
+    async def _build_error_response(  # noqa: C901, PLR0911, PLR0912
+        self,
+        ctx: commands.Context[Parrot],
+        error: commands.CommandError,
+    ) -> ErrorResponse:
         if isinstance(error, commands.BotMissingPermissions):
-            missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in error.missing_permissions]
-            fmt = human_join(missing, delim="`, `", final="and")
-            error_description = f"Please provide the following permission(s) to the bot.\nPermission(s) missing: {fmt}"
-            error_title = f"{QUESTION_MARK} Bot Missing Permissions {QUESTION_MARK}"
-            RESET_COOLDOWN = True
+            fmt = self._format_permissions(error.missing_permissions)
+            return ErrorResponse(
+                title=self._title("Bot Missing Permissions"),
+                description=f"Please provide the following permission(s) to the bot.\nPermission(s) missing: {fmt}",
+                reset_cooldown=True,
+            )
 
-        elif isinstance(error, commands.CommandOnCooldown):
+        if isinstance(error, commands.CommandOnCooldown):
             now = arrow.utcnow().shift(seconds=error.retry_after).datetime
-            DELETE_AFTER = error.retry_after
             discord_time = discord.utils.format_dt(now, "R")
-            error_description = f"You are on command cooldown, please retry **{discord_time}**"
-            error_title = f"{QUESTION_MARK} Command On Cooldown {QUESTION_MARK}"
+            return ErrorResponse(
+                title=self._title("Command On Cooldown"),
+                description=f"You are on command cooldown, please retry **{discord_time}**",
+                delete_after=error.retry_after,
+            )
 
-        elif isinstance(error, commands.MissingPermissions):
+        if isinstance(error, commands.MissingPermissions):
             if await self.bot.is_owner(ctx.author):
                 await ctx.reinvoke()
-                return
+                return ErrorResponse(title="", description="")  # sentinel: no message needed
+            fmt = self._format_permissions(error.missing_permissions)
+            return ErrorResponse(
+                title=self._title("Missing permissions"),
+                description=f"You need the following permission(s) to run the command.\nPermission(s) missing: {fmt}",
+                reset_cooldown=True,
+            )
 
-            missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in error.missing_permissions]
-            fmt = human_join(missing, delim="`, `", final="and")
+        if isinstance(error, commands.MissingRole):
+            return ErrorResponse(
+                title=self._title("Missing Role"),
+                description=f"You need the role `{error.missing_role}` to run this command.",
+                reset_cooldown=True,
+            )
 
-            error_description = f"You need the following permission(s) to run the command.\nPermission(s) missing: {fmt}"
-            error_title = f"{QUESTION_MARK} Missing permissions {QUESTION_MARK}"
-            RESET_COOLDOWN = True
+        if isinstance(error, commands.MissingAnyRole):
+            fmt = human_join(list(error.missing_roles), delim="`, `", final="or")
+            return ErrorResponse(
+                title=self._title("Missing Role"),
+                description=f"You need any of the following role(s) to use the command.\nRole(s) missing: {fmt}",
+                reset_cooldown=True,
+            )
 
-        elif isinstance(error, commands.MissingRole):
-            error_description = f"You need the role `{error.missing_role}` to run this command."
-            error_title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
-            RESET_COOLDOWN = True
+        if isinstance(error, commands.NSFWChannelRequired):
+            return ErrorResponse(
+                title=self._title("NSFW Channel Required"),
+                description="This command will only run in an NSFW-marked channel. [View example](https://i.imgur.com/oe4iK5i.gif)",
+                reset_cooldown=True,
+            )
 
-        elif isinstance(error, commands.MissingAnyRole):
-            missing = list(error.missing_roles)
-            fmt = human_join(missing, delim="`, `", final="or")
-            error_description = f"You need any of the following role(s) to use the command.\nRole(s) missing: {fmt}"
-            error_title = f"{QUESTION_MARK} Missing Role {QUESTION_MARK}"
-            RESET_COOLDOWN = True
+        if isinstance(error, commands.BadArgument):
+            return self._handle_bad_argument(ctx, error)
 
-        elif isinstance(error, commands.NSFWChannelRequired):
-            error_description = "This command will only run in an NSFW-marked channel. [View example](https://i.imgur.com/oe4iK5i.gif)"
-            error_title = f"{QUESTION_MARK} NSFW Channel Required {QUESTION_MARK}"
-
-            RESET_COOLDOWN = True
-
-        elif isinstance(error, commands.BadArgument):
-            RESET_COOLDOWN = True
-            objects = []
-            if isinstance(error, commands.MessageNotFound):
-                error_description = "Message ID/Link you provided is either invalid or deleted"
-                error_title = f"{QUESTION_MARK} Message Not Found {QUESTION_MARK}"
-
-            elif isinstance(error, commands.MemberNotFound):
-                error_description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
-                error_title = f"{QUESTION_MARK} Member Not Found {QUESTION_MARK}"
-                objects = ctx.guild.members
-
-            elif isinstance(error, commands.UserNotFound):
-                error_description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
-                error_title = f"{QUESTION_MARK} User Not Found {QUESTION_MARK}"
-
-            elif isinstance(error, commands.ChannelNotFound):
-                error_description = "Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
-                error_title = f"{QUESTION_MARK} Channel Not Found {QUESTION_MARK}"
-                objects = ctx.guild.text_channels + ctx.guild.voice_channels
-
-            elif isinstance(error, commands.RoleNotFound):
-                error_description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
-                error_title = f"{QUESTION_MARK} Role Not Found {QUESTION_MARK}"
-                objects = ctx.guild.roles
-
-            elif isinstance(error, commands.EmojiNotFound):
-                error_description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
-                error_title = f"{QUESTION_MARK} Emoji Not Found {QUESTION_MARK}"
-                objects = ctx.guild.emojis
-            elif isinstance(error, commands.RangeError):
-                error_description = f"Value you provided is out of range. Expected a value between {error.minimum} and {error.maximum}"
-                error_title = f"{QUESTION_MARK} Value Out Of Range {QUESTION_MARK}"
-            else:
-                error_description = f"{error}"
-                error_title = f"{QUESTION_MARK} Bad Argument {QUESTION_MARK}"
-
-            if objects:
-                obj = self._get_object_by_fuzzy(argument=error.argument, objects=objects)
-                if obj:
-                    _, result, score = obj
-                    error_description += f"\nDid you mean: `{result}`?"
-                    error_description += f"\n-# Confidence: {score}%"
-
-        elif isinstance(
-            error,
-            commands.MissingRequiredArgument | commands.BadUnionArgument | commands.TooManyArguments,
-        ):
+        if isinstance(error, (commands.MissingRequiredArgument, commands.BadUnionArgument, commands.TooManyArguments)):
             command = ctx.command
-            RESET_COOLDOWN = True
-            error_description = f"Please use proper syntax.\n`{ctx.clean_prefix}{command.qualified_name}{'|' if command.aliases else ''}{'|'.join(command.aliases or '')} {command.signature}`"
-
-            error_title = f"{QUESTION_MARK} Invalid Syntax {QUESTION_MARK}"
-
-        elif isinstance(error, commands.BadLiteralArgument):
-            error_description = (
-                f"Please use proper Literals. Literal should be any one of the following: `{'`, `'.join(str(i) for i in error.literals)}`"
+            aliases = f"|{'|'.join(command.aliases)}" if command.aliases else ""  # pyright: ignore[reportOptionalMemberAccess]
+            usage = f"{ctx.clean_prefix}{command.qualified_name}{aliases} {command.signature}"  # pyright: ignore[reportOptionalMemberAccess]
+            return ErrorResponse(
+                title=self._title("Invalid Syntax"),
+                description=f"Please use proper syntax.\n`{usage}`",
+                reset_cooldown=True,
             )
-            error_title = f"{QUESTION_MARK} Invalid Literal(s) {QUESTION_MARK}"
 
-        elif isinstance(error, commands.MaxConcurrencyReached):
-            error_description = "This command is already running in this server/channel by you. You have to wait for it to finish"
-            error_title = f"{QUESTION_MARK} Max Concurrency Reached {QUESTION_MARK}"
-
-        elif isinstance(error, commands.CheckAnyFailure):
-            RESET_COOLDOWN = True
-            error_description = " or\n".join([error.__str__().format(ctx=ctx) for error in error.errors])
-            error_title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
-
-        elif isinstance(error, commands.CheckFailure):
-            RESET_COOLDOWN = True
-            error_title = f"{QUESTION_MARK} Unexpected Error {QUESTION_MARK}"
-            error_description = "You don't have the required permissions to use this command."
-
-        elif isinstance(error, asyncio.TimeoutError):
-            error_description = "Command took too long to respond"
-            error_title = f"{QUESTION_MARK} Timeout Error {QUESTION_MARK}"
-
-        elif isinstance(error, commands.InvalidEndOfQuotedStringError):
-            error_description = (
-                "Invalid end of quoted string. Expected space after closing quotation mark. Did you forget to close the quotation mark?"
+        if isinstance(error, commands.BadLiteralArgument):
+            literals = "`, `".join(str(i) for i in error.literals)
+            return ErrorResponse(
+                title=self._title("Invalid Literal(s)"),
+                description=f"Please use proper Literals. Literal should be any one of the following: `{literals}`",
             )
-            error_title = f"{QUESTION_MARK} Invalid End Of Quoted String Error {QUESTION_MARK}"
 
-        elif isinstance(error, commands.UnexpectedQuoteError):
-            error_description = "Unexpected quote mark. Did you forget to close the quotation mark?"
-            error_title = f"{QUESTION_MARK} Unexpected Quote Error {QUESTION_MARK}"
+        if isinstance(error, commands.MaxConcurrencyReached):
+            return ErrorResponse(
+                title=self._title("Max Concurrency Reached"),
+                description="This command is already running in this server/channel by you. You have to wait for it to finish",
+            )
 
-        elif isinstance(error, commands.DisabledCommand):
-            error_description = "This command is disabled in this server, ask your server admin to enable it."
-            error_title = f"{QUESTION_MARK} Disabled Command {QUESTION_MARK}"
+        if isinstance(error, commands.CheckAnyFailure):
+            desc = " or\n".join([e.__str__().format(ctx=ctx) for e in error.errors])
+            return ErrorResponse(
+                title=self._title("Unexpected Error"),
+                description=desc,
+                reset_cooldown=True,
+            )
 
-        else:
-            error_description = f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error."
-            error_title = f"{QUESTION_MARK} Well this is embarrassing! {QUESTION_MARK}"
-            TO_RAISE_ERROR = True
+        if isinstance(error, commands.CheckFailure):
+            return ErrorResponse(
+                title=self._title("Unexpected Error"),
+                description="You don't have the required permissions to use this command.",
+                reset_cooldown=True,
+            )
 
-        if RESET_COOLDOWN:
-            ctx.command.reset_cooldown(ctx)
+        if isinstance(error, asyncio.TimeoutError):
+            return ErrorResponse(
+                title=self._title("Timeout Error"),
+                description="Command took too long to respond",
+            )
 
-        msg: discord.Message = await ctx.reply(content=f"**{error_title}**\n{error_description}")
+        if isinstance(error, commands.InvalidEndOfQuotedStringError):
+            return ErrorResponse(
+                title=self._title("Invalid End Of Quoted String Error"),
+                description="Invalid end of quoted string. Expected space after closing quotation mark. Did you forget to close the quotation mark?",
+            )
+
+        if isinstance(error, commands.UnexpectedQuoteError):
+            return ErrorResponse(
+                title=self._title("Unexpected Quote Error"),
+                description="Unexpected quote mark. Did you forget to close the quotation mark?",
+            )
+
+        if isinstance(error, commands.DisabledCommand):
+            return ErrorResponse(
+                title=self._title("Disabled Command"),
+                description="This command is disabled in this server, ask your server admin to enable it.",
+            )
+
+        return ErrorResponse(
+            title=self._title("Well this is embarrassing!"),
+            description=f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error.",  # pyright: ignore[reportOptionalMemberAccess]
+            should_raise=True,
+        )
+
+    def _handle_bad_argument(self, ctx: commands.Context[Parrot], error: commands.BadArgument) -> ErrorResponse:  # noqa: C901, PLR0911, PLR0912
+        description = str(error)
+        title = self._title("Bad Argument")
+        objects: Sequence[_Named] = []
+
+        if isinstance(error, commands.MessageNotFound):
+            description = "Message ID/Link you provided is either invalid or deleted"
+            title = self._title("Message Not Found")
+        elif isinstance(error, commands.MemberNotFound):
+            description = "Member ID/Mention/Name you provided is invalid or bot can not see that Member"
+            title = self._title("Member Not Found")
+            objects = ctx.guild.members if ctx.guild else []
+        elif isinstance(error, commands.UserNotFound):
+            description = "User ID/Mention/Name you provided is invalid or bot can not see that User"
+            title = self._title("User Not Found")
+        elif isinstance(error, commands.ChannelNotFound):
+            description = "Channel ID/Mention/Name you provided is invalid or bot can not see that Channel"
+            title = self._title("Channel Not Found")
+            if ctx.guild:
+                objects = [*ctx.guild.text_channels, *ctx.guild.voice_channels]
+        elif isinstance(error, commands.RoleNotFound):
+            description = "Role ID/Mention/Name you provided is invalid or bot can not see that Role"
+            title = self._title("Role Not Found")
+            objects = ctx.guild.roles if ctx.guild else []
+        elif isinstance(error, commands.EmojiNotFound):
+            description = "Emoji ID/Name you provided is invalid or bot can not see that Emoji"
+            title = self._title("Emoji Not Found")
+            objects = ctx.guild.emojis if ctx.guild else []
+        elif isinstance(error, commands.RangeError):
+            description = f"Value you provided is out of range. Expected a value between {error.minimum} and {error.maximum}"
+            title = self._title("Value Out Of Range")
+
+        # optional fuzzy hint
+        arg = getattr(error, "argument", None)
+        if objects and isinstance(arg, str):
+            obj = self._get_object_by_fuzzy(argument=arg, objects=objects)
+            if obj:
+                _, result, score = obj
+                description += f"\nDid you mean: `{result}`?"
+                description += f"\n-# Confidence: {score}%"
+
+        return ErrorResponse(
+            title=title,
+            description=description,
+            reset_cooldown=True,
+        )
+
+    async def _send_error_reply(self, ctx: commands.Context[Parrot], response: ErrorResponse) -> discord.Message | None:
+        # sentinel path when owner reinvoke happens
+        if not response.title and not response.description:
+            return None
+        return await ctx.reply(content=f"**{response.title}**\n{response.description}")
+
+    async def _handle_message_cleanup(
+        self,
+        ctx: commands.Context[Parrot],
+        msg: discord.Message | None,
+        delete_after: float | None,
+    ) -> None:
+        if msg is None:
+            return
 
         try:
-            if msg:
-                await self.bot.wait_for("message_delete", timeout=10, check=lambda m: m.id == ctx.message.id)
-                await msg.delete(delay=0)
+            await self.bot.wait_for("message_delete", timeout=10, check=lambda m: m.id == ctx.message.id)
+            await msg.delete(delay=0)
         except TimeoutError:
-            if DELETE_AFTER:
-                await msg.delete(delay=max(DELETE_AFTER - 10, 0))
+            if delete_after:
+                await msg.delete(delay=max(delete_after - 10, 0))
 
-        if TO_RAISE_ERROR:
-            _log.exception(
-                "Error in command `%s` invoked by `%s (ID: %s)` in guild `%s (ID: %s)`",
-                ctx.command.qualified_name,
-                ctx.author,
-                ctx.author.id,
-                ctx.guild,
-                ctx.guild.id,
-                exc_info=error,
-            )
-            raise error
+    def _log_and_raise(self, ctx: commands.Context[Parrot], error: Exception) -> None:
+        _log.exception(
+            "Error in command `%s` invoked by `%s (ID: %s)` in guild `%s (ID: %s)`",
+            ctx.command.qualified_name,  # pyright: ignore[reportOptionalMemberAccess]
+            ctx.author,
+            ctx.author.id,
+            ctx.guild,
+            ctx.guild.id,  # pyright: ignore[reportOptionalMemberAccess]
+            exc_info=error,
+        )
+        raise error
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context[Parrot], error: commands.CommandError):
+        await self.bot.wait_until_ready()
+
+        original = getattr(error, "original", error)
+        if self._should_ignore(ctx, original):
+            return
+
+        response = await self._build_error_response(ctx, original)
+
+        # reinvoke sentinel: no outbound message
+        if not response.title and not response.description:
+            return
+
+        if response.reset_cooldown and ctx.command:
+            ctx.command.reset_cooldown(ctx)
+
+        msg = await self._send_error_reply(ctx, response)
+        await self._handle_message_cleanup(ctx, msg, response.delete_after)
+
+        if response.should_raise:
+            self._log_and_raise(ctx, original)

@@ -6,12 +6,9 @@ from typing import Any
 
 from .configs import (
     AllCapsConfig,
-    AttachmentConfig,
     CountConfig,
-    DiscordAutomodConfig,
     LengthConfig,
     ListConfig,
-    MentionConfig,
     NoConfig,
     RegexConfig,
     TimeWindowConfig,
@@ -87,7 +84,6 @@ def _parse_all_caps(data: Mapping[str, Any]) -> TriggerConfig:
     return AllCapsConfig(
         min_count=_require_int(data, "min_count"),
         percentage=percentage,
-        match_similar=_optional_bool(data, "match_similar"),
     )
 
 
@@ -98,7 +94,6 @@ def _parse_message_mentions(data: Mapping[str, Any]) -> TriggerConfig:
 def _parse_list(data: Mapping[str, Any]) -> TriggerConfig:
     return ListConfig(
         list_name=_optional_string(data, "list"),
-        match_similar=_optional_bool(data, "match_similar"),
     )
 
 
@@ -109,31 +104,15 @@ def _parse_regex(data: Mapping[str, Any]) -> TriggerConfig:
 
     return RegexConfig(
         regex=regex,
-        match_similar=_optional_bool(data, "match_similar"),
     )
 
 
 def _parse_time_window(data: Mapping[str, Any]) -> TriggerConfig:
     return TimeWindowConfig(
         count=_require_int(data, "count", minimum=1),
-        within_seconds=_require_int(data, "within_seconds", minimum=1),
+        within_minutes=_require_int(data, "within_minutes", minimum=1),
     )
 
-
-def _parse_mentions(data: Mapping[str, Any]) -> TriggerConfig:
-    return MentionConfig(
-        mentions=_require_int(data, "mentions", minimum=1),
-        within_seconds=_require_int(data, "within_seconds", minimum=1),
-        count_duplicates=_optional_bool(data, "count_duplicates"),
-    )
-
-
-def _parse_attachments(data: Mapping[str, Any]) -> TriggerConfig:
-    return AttachmentConfig(
-        attachments=_require_int(data, "attachments", minimum=1),
-        within_seconds=_require_int(data, "within_seconds", minimum=1),
-        count_multiple_per_message=_optional_bool(data, "count_multiple_per_message"),
-    )
 
 
 def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:
@@ -145,11 +124,6 @@ def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:
         violation_name=violation_name,
         number_of_violations=_require_int(data, "number_of_violations", minimum=1),
         within_minutes=_require_int(data, "within_minutes", minimum=1),
-        ignore_higher_trigger=_optional_bool(
-            data,
-            "ignore_higher_trigger",
-            default=True,
-        ),
     )
 
 
@@ -157,21 +131,12 @@ def _parse_length(data: Mapping[str, Any]) -> TriggerConfig:
     return LengthConfig(length=_require_int(data, "length", minimum=0))
 
 
-def _parse_discord_automod(data: Mapping[str, Any]) -> TriggerConfig:
-    rule_id = data.get("rule_id")
-    if rule_id is not None:
-        if not isinstance(rule_id, int) or isinstance(rule_id, bool) or rule_id < 0:
-            raise TriggerParseError("'rule_id' must be a positive integer or null")
-
-    return DiscordAutomodConfig(rule_id=rule_id)
-
 
 Parser = Callable[[Mapping[str, Any]], TriggerConfig]
 
 _NO_CONFIG_TYPES = {
     TriggerType.ANY_LINK,
     TriggerType.SERVER_INVITES,
-    TriggerType.GOOGLE_FLAGGED_BAD_LINKS,
     TriggerType.JOIN_USERNAME_INVITE,
     TriggerType.NEW_MEMBER,
     TriggerType.MESSAGE_WITHOUT_ATTACHMENTS,
@@ -197,8 +162,6 @@ _REGEX_TYPES = {
     TriggerType.JOIN_USERNAME_NOT_REGEX,
 }
 _TIME_WINDOW_TYPES = {
-    TriggerType.USER_MESSAGES,
-    TriggerType.CHANNEL_MESSAGES,
     TriggerType.X_CONSECUTIVE_IDENTICAL_MESSAGES,
     TriggerType.X_USER_LINKS_IN_Y_MINUTES,
     TriggerType.X_CHANNEL_LINKS_IN_Y_MINUTES,
@@ -212,14 +175,11 @@ _TIME_WINDOW_TYPES = {
 _PARSERS: dict[TriggerType, Parser] = {
     TriggerType.ALL_CAPS: _parse_all_caps,
     TriggerType.MESSAGE_MENTIONS: _parse_message_mentions,
-    TriggerType.USER_MENTIONS: _parse_mentions,
-    TriggerType.CHANNEL_MENTIONS: _parse_mentions,
-    TriggerType.USER_ATTACHMENTS: _parse_attachments,
-    TriggerType.CHANNEL_ATTACHMENTS: _parse_attachments,
+    TriggerType.X_USER_ATTACHMENTS_IN_Y_MINUTES: _parse_time_window,
+    TriggerType.X_CHANNEL_ATTACHMENTS_IN_Y_MINUTES: _parse_time_window,
     TriggerType.VIOLATIONS: _parse_violations,
     TriggerType.MESSAGE_LENGTH_GT: _parse_length,
     TriggerType.MESSAGE_LENGTH_LT: _parse_length,
-    TriggerType.DISCORD_AUTOMOD: _parse_discord_automod,
 }
 
 for t in _NO_CONFIG_TYPES:

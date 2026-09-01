@@ -48,11 +48,13 @@ class _GuildCustomCommandsMixin:
 
         await self.redis_client.set(self._custom_command_response_key(guild_id, name), response, ex=_CACHE_TTL)
 
-        await self.redis_client.sadd(self._custom_command_ignored_roles_key(guild_id, name), *ignored_roles or [])
-        await self.redis_client.expire(self._custom_command_ignored_roles_key(guild_id, name), _CACHE_TTL)
+        if ignored_roles:
+            await self.redis_client.sadd(self._custom_command_ignored_roles_key(guild_id, name), *ignored_roles)
+            await self.redis_client.expire(self._custom_command_ignored_roles_key(guild_id, name), _CACHE_TTL)
 
-        await self.redis_client.sadd(self._custom_command_ignored_channels_key(guild_id, name), *ignored_channels or [])
-        await self.redis_client.expire(self._custom_command_ignored_channels_key(guild_id, name), _CACHE_TTL)
+        if ignored_channels:
+            await self.redis_client.sadd(self._custom_command_ignored_channels_key(guild_id, name), *ignored_channels or [])
+            await self.redis_client.expire(self._custom_command_ignored_channels_key(guild_id, name), _CACHE_TTL)
 
         await self.redis_client.set(self._custom_command_enabled_key(guild_id, name), int(enabled), ex=_CACHE_TTL)
 
@@ -262,3 +264,29 @@ class _GuildCustomCommandsMixin:
         await self._cache_custom_command(guild_id=guild_id, **command_data)
 
         return command_data
+
+    async def push_custom_command_log(self, *, guild_id: int, log_entry: str) -> None:
+        """Push a log entry for a custom command."""
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {
+                "$push": {
+                    "custom_commands_logs": {
+                        "$each": [log_entry],
+                        "$slice": -100,
+                    },
+                },
+            },
+            upsert=True,
+        )
+
+    async def get_custom_command_logs(self, *, guild_id: int) -> list[str]:
+        """Return all custom command logs for a guild."""
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id},
+            {"custom_commands_logs": 1},
+        )
+        if guild is None:
+            return []
+
+        return guild.get("custom_commands_logs", [])

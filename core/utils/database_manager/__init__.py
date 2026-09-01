@@ -10,6 +10,7 @@ from redis.asyncio import Redis
 
 from .guild import _GuildMixin
 from .models import GuildConfiguration, UserConfiguration
+from .scam_links import _ScamLinksMixin
 from .user import _UserMixin
 
 if TYPE_CHECKING:
@@ -56,6 +57,7 @@ class DatabaseManager(
     _DatabaseInfraMixin,
     _GuildMixin,
     _UserMixin,
+    _ScamLinksMixin,
 ):
     """Main database manager composed via mixin inheritance."""
 

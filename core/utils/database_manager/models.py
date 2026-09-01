@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from datetime import datetime
+from enum import StrEnum
 from typing import TypedDict
+
+from bson import ObjectId
 
 
 class Rule(TypedDict):
@@ -13,9 +17,10 @@ class Rule(TypedDict):
 
 
 class Automod(TypedDict):
-    allow_list: list[str]
-    deny_list: list[str]
-
+    word_denylist: list[str]
+    word_allowlist: list[str]
+    website_denylist: list[str]
+    website_allowlist: list[str]
     rules: list[Rule]
     logs: list[str]
 
@@ -36,8 +41,26 @@ class GuildConfiguration(TypedDict):
     violations: dict[str, dict[str, int]]
     automod: Automod
     custom_commands: list[CustomCommand]
+    custom_commands_db: dict[str, object]
+    custom_commands_logs: list[str]
+
+
+class TodoStatus(StrEnum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class TodoItem(TypedDict):
+    id: ObjectId
+    title: str
+    notes: str | None
+    due: datetime | None
+    status: TodoStatus
+    parent_id: ObjectId | None
 
 
 class UserConfiguration(TypedDict):
     _id: int
     timezone: str
+    todo_items: list[TodoItem]

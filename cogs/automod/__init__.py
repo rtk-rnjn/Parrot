@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 VALID_RULE_NAME = re.compile(r"^[a-z0-9_-]{1,32}$", re.IGNORECASE)
 
-"""
+AUTOMOD_HELP = """
 # Overview
 A more advanced automoderator system that supports more complex configurations than the basic automoderator.
 

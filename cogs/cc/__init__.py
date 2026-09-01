@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import traceback
 from enum import Enum
@@ -9,6 +10,7 @@ import discord
 from colorama import Fore
 from discord.ext import commands
 
+from core.utils import PaginationView
 from core.utils.database_manager.models import CustomCommand as CustomCommandModel
 
 from .jinja import render_sandboxed
@@ -19,11 +21,128 @@ if TYPE_CHECKING:
 
 VALID_COMMAND_NAME = re.compile(r"^[a-z0-9_-]{1,32}$", re.IGNORECASE)
 
+_log = logging.getLogger("bot.cogs.cc")
+
+
+CUSTOM_COMMAND_HELP = """
+# Overview
+The custom command system allows you to create commands that can be invoked by users in your server.
+## Intro
+Custom commands are user-defined commands that can be triggered with configured bot command prefix(s). When a user invokes a custom command, the bot will respond with a predefined message or perform a specific action.
+"""
+
 
 def format_sandbox_error(error: Exception) -> str:
     """Format a sandbox error for display."""
     tb = traceback.format_exception(type(error), error, error.__traceback__)
     return "".join(tb)
+
+
+def _split_discord_text(text: str, *, max_chars: int = 1800) -> list[str]:
+    """Split a response into Discord-safe chunks while preserving paragraphs."""
+    chunks: list[str] = []
+    current = ""
+
+    for paragraph in text.split("\n\n"):
+        candidate = f"{current}\n\n{paragraph}" if current else paragraph
+        if len(candidate) <= max_chars:
+            current = candidate
+            continue
+
+        if current:
+            chunks.append(current.strip())
+            current = ""
+
+        if len(paragraph) <= max_chars:
+            current = paragraph
+        else:
+            for line in paragraph.splitlines():
+                if len(current) + len(line) + 1 <= max_chars:
+                    current = f"{current}\n{line}" if current else line
+                else:
+                    if current:
+                        chunks.append(current.strip())
+                    current = line
+
+    if current:
+        chunks.append(current.strip())
+
+    return [chunk for chunk in chunks if chunk]
+
+
+def _make_help_embed(title: str, body: str) -> discord.Embed:
+    """Build a compact, Discord-friendly embed for custom command help."""
+    return discord.Embed(title=title, description=body, color=discord.Color.blurple())
+
+
+CUSTOM_COMMAND_VARIABLES_PAGES = [
+    _make_help_embed(
+        "Variables",
+        "Safe objects exposed to templates:\n"
+        "- `author`: `name`, `display_name`, `mention`, `nick`\n"
+        "- `guild`: `name`, `member_count`, `icon_url`\n"
+        "- `channel`: `name`, `mention`, `position`\n"
+        "- `message`: `content`, `id`\n\n"
+        "Examples: `{{ author.display_name }}`, `{{ guild.name }}`, `{{ channel.mention }}`",
+    ),
+    _make_help_embed(
+        "Variables: examples",
+        "```jinja\n{{ author.display_name }}\n{{ guild.name }}\n{{ channel.mention }}\n{{ message.content }}\n```",
+    ),
+    _make_help_embed(
+        "Conditionals",
+        "Use Jinja conditionals for branching:\n\n```jinja\n"
+        '{% if author.display_name == "Alice" %}\n'
+        "  Welcome back!\n"
+        "{% elif guild.member_count > 100 %}\n"
+        "  Busy server!\n"
+        "{% else %}\n"
+        "  Welcome to {{ guild.name }}!\n"
+        "{% endif %}\n```",
+    ),
+    _make_help_embed(
+        "Loops",
+        "Use loops to repeat output:\n\n```jinja\n"
+        "{% for word in message.content.split() %}\n"
+        "  {{ word }}\n"
+        "{% endfor %}\n```\n\n"
+        "Literal list example: `[{% for n in [1, 2, 3] %}{{ n }}{% endfor %}]`",
+    ),
+]
+
+
+CUSTOM_COMMAND_EXAMPLES_PAGES = [
+    _make_help_embed(
+        "Quick examples",
+        "- `welcome`: `Welcome {{ author.display_name }}!`\n"
+        "- `rules`: `Read the rules in {{ guild.name }}.`\n"
+        "- `count`: `We have {{ guild.member_count }} members.`\n"
+        "- `reply`: `You said: {{ message.content }}`",
+    ),
+    _make_help_embed(
+        "Conditions",
+        '```jinja\n{% if message.content.lower() == "hello" %}\n  Hello there!\n{% else %}\n  Hello {{ author.display_name }}!\n{% endif %}\n```',
+    ),
+    _make_help_embed(
+        "More conditions",
+        "```jinja\n"
+        "{% if guild.member_count >= 50 %}\n"
+        "  Big server\n"
+        "{% elif guild.member_count >= 10 %}\n"
+        "  Medium server\n"
+        "{% else %}\n"
+        "  Small server\n"
+        "{% endif %}\n```",
+    ),
+    _make_help_embed(
+        "Loops",
+        "```jinja\n"
+        "{% for role in guild.roles %}\n"
+        "  {{ role.name }}\n"
+        "{% endfor %}\n```\n\n"
+        "Keep loops short; long generated output can exceed Discord limits.",
+    ),
+]
 
 
 class CustomCommandModal(discord.ui.Modal):
@@ -57,9 +176,6 @@ class CustomCommandModal(discord.ui.Modal):
                 required=True,
             )
             self.add_item(self.name_input)
-
-        # self.ignored_roles_select = discord.ui.RoleSelect(placeholder="Select roles to ignore")
-        # self.ignored_channels_select = discord.ui.ChannelSelect(placeholder="Select channels to ignore")
 
         self.ignored_roles_select = discord.ui.Label(
             text="Ignored Roles",
@@ -137,6 +253,14 @@ class CreateEditCustomCommandModal(CustomCommandModal):
             else interaction.client.database_manager.add_custom_command
         )
 
+        existing_bot_command = interaction.client.get_command(name.lower().strip())
+        if existing_bot_command is not None:
+            await self.send_result(
+                interaction,
+                f"A command with the name `{name}` already exists as a bot command. Please choose a different name.\n"
+                + (f"-# Help: {existing_bot_command.help}" if existing_bot_command.help else ""),
+            )
+            return False
         success = await func(
             guild_id=interaction.guild_id,
             name=name,
@@ -221,6 +345,24 @@ class EditCustomCommandButton(discord.ui.Button):
         await interaction.response.send_modal(modal)
 
 
+class CustomCommandVariablesButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(label="Variables", style=discord.ButtonStyle.gray)
+
+    async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        view = PaginationView(CUSTOM_COMMAND_VARIABLES_PAGES, author=interaction.user)
+        await interaction.response.send_message(embed=CUSTOM_COMMAND_VARIABLES_PAGES[0], view=view, ephemeral=True)
+
+
+class CustomCommandExamplesButton(discord.ui.Button):
+    def __init__(self) -> None:
+        super().__init__(label="Examples", style=discord.ButtonStyle.gray)
+
+    async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        view = PaginationView(CUSTOM_COMMAND_EXAMPLES_PAGES, author=interaction.user)
+        await interaction.response.send_message(embed=CUSTOM_COMMAND_EXAMPLES_PAGES[0], view=view, ephemeral=True)
+
+
 class CustomCommandSelect(discord.ui.Select):
     def __init__(self, custom_commands: list[CustomCommandModel]) -> None:
         self.custom_commands = custom_commands
@@ -252,9 +394,34 @@ class CustomCommandSelect(discord.ui.Select):
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
+class CustomCommandLayout(discord.ui.LayoutView):
+    def __init__(self, *, custom_commands: list[CustomCommandModel] | None = None, logs: list[str] | None = None):
+        super().__init__()
+        items = []
+
+        if logs:
+            items.append(discord.ui.TextDisplay("## Logs"))
+            items.append(discord.ui.TextDisplay("\n".join([f"- {log}" for log in logs[:10]])))
+        else:
+            items.append(discord.ui.TextDisplay(CUSTOM_COMMAND_HELP.strip()))
+
+        items.append(discord.ui.Separator(visible=False))
+
+        if custom_commands:
+            items.append(discord.ui.ActionRow(CustomCommandSelect(custom_commands=custom_commands)))
+            items.append(discord.ui.Separator())
+
+        items.append(discord.ui.ActionRow(CreateCustomCommandButton(), CustomCommandVariablesButton(), CustomCommandExamplesButton()))
+
+        container = discord.ui.Container(*items)
+
+        self.add_item(container)
+
+
 class CustomCommand(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
@@ -262,22 +429,21 @@ class CustomCommand(commands.Cog):
         """Manage custom commands."""
         await self.send_panel(ctx)
 
-    async def _build_and_send_panel(self, ctx: commands.Context[Parrot], pages: list[str], select_menu: CustomCommandSelect | None) -> None:
+    async def _build_and_send_panel(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        pages: list[str],
+        select_menu: CustomCommandSelect | None,
+        logs: list[str],
+    ) -> None:
         """Build and send the management panel with appropriate pagination."""
-        embed = discord.Embed(title="Custom Command Management Panel", description="\n".join(pages) if pages else None)
 
-        buttons: list[discord.ui.Item] = [CreateCustomCommandButton()]
-        if select_menu:
-            buttons.append(select_menu)
+        custom_commands = await ctx.bot.database_manager.get_custom_commands(ctx.guild.id) if ctx.guild else []
+        logs = await ctx.bot.database_manager.get_custom_command_logs(guild_id=ctx.guild.id) if ctx.guild else []
+        layout = CustomCommandLayout(custom_commands=custom_commands, logs=logs)
 
-        total_content_length = len("".join(pages))
-        if total_content_length < 1900:
-            view = discord.ui.View()
-            for button in buttons:
-                view.add_item(button)
-            await ctx.send(embed=embed, view=view)
-        else:
-            await ctx.bot.paginate(ctx, embed=embed, pages=pages, additional_buttons=buttons)
+        await ctx.reply(view=layout)
 
     async def send_panel(self, ctx: commands.Context[Parrot]) -> None:
         if ctx.guild is None:
@@ -286,8 +452,9 @@ class CustomCommand(commands.Cog):
         custom_commands = await self.bot.database_manager.get_custom_commands(ctx.guild.id)
         pages = [f"- {command['name']}: {command['response'][:80]}{'...' if len(command['response']) > 80 else ''}" for command in custom_commands]
         select_menu = CustomCommandSelect(custom_commands=custom_commands) if custom_commands else None
+        logs = await self.bot.database_manager.get_custom_command_logs(guild_id=ctx.guild.id)
 
-        await self._build_and_send_panel(ctx, pages, select_menu)
+        await self._build_and_send_panel(ctx, pages=pages, select_menu=select_menu, logs=logs)
 
     @cc.command(name="manage")
     async def manage(self, ctx: commands.Context[Parrot]) -> None:
@@ -344,24 +511,15 @@ class CustomCommand(commands.Cog):
             return
 
         rendered = await self._render_custom_command(context, response, command_id=context.invoked_with)
+        relative_dt = discord.utils.format_dt(message.created_at, style="R")
         if rendered:
+            await self.bot.database_manager.push_custom_command_log(
+                guild_id=message.guild.id,
+                log_entry=f"{relative_dt} User {message.author} (`{message.author.id}`) invoked custom command `{context.invoked_with}` in channel {message.channel} (`{message.channel.id}`).",
+            )
             if len(rendered) > 2000:
                 rendered = f"{rendered[:1997]}..."
             await message.channel.send(rendered)
-
-    @cc.command(name="create")
-    @commands.has_permissions(administrator=True)
-    async def create_custom_command(
-        self,
-        ctx: commands.Context[Parrot],
-        name: Annotated[str, commands.clean_content] = commands.parameter(description="The name of the custom command to create."),
-    ) -> None:
-        """Create a new custom command."""
-        button = CreateCustomCommandButton(custom_command_name=name)
-        embed = discord.Embed(title="Create Custom Command", description="Fill out the form to create a new custom command.")
-        view = discord.ui.View()
-        view.add_item(button)
-        await ctx.reply(embed=embed, view=view)
 
     @cc.command(name="edit")
     @commands.has_permissions(administrator=True)

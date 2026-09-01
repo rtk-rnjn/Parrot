@@ -1,11 +1,8 @@
 from .configs import (
     AllCapsConfig,
-    AttachmentConfig,
     CountConfig,
-    DiscordAutomodConfig,
     LengthConfig,
     ListConfig,
-    MentionConfig,
     NoConfig,
     RegexConfig,
     TimeWindowConfig,
@@ -20,11 +17,8 @@ type TriggerConfig = (
     | ListConfig
     | RegexConfig
     | LengthConfig
-    | MentionConfig
-    | AttachmentConfig
     | ViolationConfig
     | AllCapsConfig
-    | DiscordAutomodConfig
 )
 
 _CONFIG_TYPES: dict[TriggerType, type[TriggerConfig]] = {
@@ -37,11 +31,6 @@ _CONFIG_TYPES: dict[TriggerType, type[TriggerConfig]] = {
     TriggerType.WEBSITE_DENYLIST: ListConfig,
     TriggerType.WEBSITE_ALLOWLIST: ListConfig,
     TriggerType.SERVER_INVITES: NoConfig,
-    TriggerType.GOOGLE_FLAGGED_BAD_LINKS: NoConfig,
-    TriggerType.USER_MESSAGES: TimeWindowConfig,
-    TriggerType.CHANNEL_MESSAGES: TimeWindowConfig,
-    TriggerType.USER_MENTIONS: MentionConfig,
-    TriggerType.CHANNEL_MENTIONS: MentionConfig,
     TriggerType.MESSAGE_REGEX: RegexConfig,
     TriggerType.MESSAGE_NOT_REGEX: RegexConfig,
     TriggerType.X_CONSECUTIVE_IDENTICAL_MESSAGES: TimeWindowConfig,
@@ -49,8 +38,8 @@ _CONFIG_TYPES: dict[TriggerType, type[TriggerConfig]] = {
     TriggerType.NICKNAME_NOT_REGEX: RegexConfig,
     TriggerType.NICKNAME_WORD_ALLOWLIST: ListConfig,
     TriggerType.NICKNAME_WORD_DENYLIST: ListConfig,
-    TriggerType.USER_ATTACHMENTS: AttachmentConfig,
-    TriggerType.CHANNEL_ATTACHMENTS: AttachmentConfig,
+    TriggerType.X_USER_ATTACHMENTS_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_CHANNEL_ATTACHMENTS_IN_Y_MINUTES: TimeWindowConfig,
     TriggerType.JOIN_USERNAME_WORD_ALLOWLIST: ListConfig,
     TriggerType.JOIN_USERNAME_WORD_DENYLIST: ListConfig,
     TriggerType.JOIN_USERNAME_REGEX: RegexConfig,
@@ -64,7 +53,6 @@ _CONFIG_TYPES: dict[TriggerType, type[TriggerConfig]] = {
     TriggerType.MESSAGE_LENGTH_LT: LengthConfig,
     TriggerType.X_USER_LINKS_IN_Y_MINUTES: TimeWindowConfig,
     TriggerType.X_CHANNEL_LINKS_IN_Y_MINUTES: TimeWindowConfig,
-    TriggerType.DISCORD_AUTOMOD: DiscordAutomodConfig,
     TriggerType.X_VOILATION_IN_Y_MINUTES: TimeWindowConfig,
     TriggerType.X_USER_MESSAGE_IN_Y_MINUTES: TimeWindowConfig,
     TriggerType.X_CHANNEL_MESSAGE_IN_Y_MINUTES: TimeWindowConfig,

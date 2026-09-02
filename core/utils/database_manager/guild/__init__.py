@@ -2,6 +2,7 @@ from .automod import _GuildAutomodMixin  # noqa
 from .custom_commands import _GuildCustomCommandsMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
 from .prefix import _GuildPrefixMixin  # noqa
+from .tags import _GuildTagsMixin  # noqa
 from .voilation import _GuildVoilationMixin  # noqa
 
 __all__ = ("_GuildMixin",)
@@ -12,5 +13,6 @@ class _GuildMixin(
     _GuildCustomCommandsMixin,
     _GuildMuteRoleMixin,
     _GuildVoilationMixin,
+    _GuildTagsMixin,
     _GuildAutomodMixin,
 ): ...

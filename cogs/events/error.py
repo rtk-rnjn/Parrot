@@ -34,7 +34,7 @@ class ErrorResponse:
     should_raise: bool = False
 
 
-class _Command(commands.Cog, command_attrs={"hidden": True}):
+class CommandError(commands.Cog, command_attrs={"hidden": True}):
     """This category is of no use for you, ignore it."""
 
     def __init__(self, bot: Parrot) -> None:

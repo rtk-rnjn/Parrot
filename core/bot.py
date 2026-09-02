@@ -12,6 +12,7 @@ import discord
 import jishaku
 from discord.ext import commands
 from dotenv import load_dotenv
+import pomice
 from jishaku.paginators import PaginatorEmbedInterface, PaginatorInterface
 
 from .utils import DatabaseManager, TimersManager
@@ -82,12 +83,22 @@ class Parrot(commands.Bot):
         self.before_invoke(self.__before_invoke)
         self._http_session: aiohttp.ClientSession | None = None
 
+        self.lavalink_node_pool = pomice.NodePool()
+        self.default_lavalink_node: pomice.Node | None = None
+
     @override
     async def setup_hook(self) -> None:
         await self.load_extension(jishaku.__name__)
 
         for extention in LOADABLE_COGS:
             await self.load_extension(extention)
+
+        try:
+            node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
+
+            self.default_lavalink_node = node
+        except pomice.exceptions.NodeConnectionFailure:
+            pass
 
         self.timer_manager.timer_task = self.loop.create_task(self.timer_manager.dispatch_timers())
 

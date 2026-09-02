@@ -33,6 +33,15 @@ class CustomCommand(TypedDict):
     enabled: bool
 
 
+class Tag(TypedDict):
+    name: str
+    content: str
+    creator_id: int
+    created_at: datetime
+    aliases: list[str]
+    used_count: dict[str, int]
+
+
 class GuildConfiguration(TypedDict):
     _id: int
     command_prefix: str
@@ -41,7 +50,10 @@ class GuildConfiguration(TypedDict):
     violations: dict[str, dict[str, int]]
     automod: Automod
     custom_commands: list[CustomCommand]
-    custom_commands_db: dict[str, object]
+    tags: list[Tag]
+
+    # Meta
+    custom_commands_db: dict[str, str]
     custom_commands_logs: list[str]
 
 
@@ -60,7 +72,14 @@ class TodoItem(TypedDict):
     parent_id: ObjectId | None
 
 
+class Highlight(TypedDict):
+    guild_id: int
+    words: list[str]
+
+
 class UserConfiguration(TypedDict):
     _id: int
     timezone: str
     todo_items: list[TodoItem]
+    highlights: list[Highlight]
+    highlight_ignored_users: list[int]

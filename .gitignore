@@ -38,3 +38,4 @@ Thumbs.db
 *.log
 logs/
 .ruff_cache/
+Lavalink.jar

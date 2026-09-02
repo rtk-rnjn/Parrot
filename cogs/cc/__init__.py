@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import logging
 import re
 import traceback
@@ -24,11 +25,18 @@ VALID_COMMAND_NAME = re.compile(r"^[a-z0-9_-]{1,32}$", re.IGNORECASE)
 _log = logging.getLogger("bot.cogs.cc")
 
 
-CUSTOM_COMMAND_HELP = """
-# Overview
-The custom command system allows you to create commands that can be invoked by users in your server.
-## Intro
-Custom commands are user-defined commands that can be triggered with configured bot command prefix(s). When a user invokes a custom command, the bot will respond with a predefined message or perform a specific action.
+CUSTOM_COMMAND_HELP = r"""
+# Custom Commands Overview
+The custom command system allows you to create dynamic, personalized commands for your server using the **Jinja2** templating language.
+
+## How it works
+When a user triggers a custom command, the bot processes your template and sends the resulting text. You can insert variables (like the user's name), create conditions (`if`/`else`), and manipulate text.
+
+**Basic Syntax:**
+- `{{ ... }}` : Prints the result of a variable (e.g., `{{ author.name }}`).
+- `{% ... %}` : Executes logic like loops or conditions.
+
+*Note: Templates are strictly sandboxed. Infinite loops, heavy math, and external imports are disabled to keep the bot safe and responsive.*
 """
 
 
@@ -77,70 +85,218 @@ def _make_help_embed(title: str, body: str) -> discord.Embed:
 
 CUSTOM_COMMAND_VARIABLES_PAGES = [
     _make_help_embed(
-        "Variables",
-        "Safe objects exposed to templates:\n"
-        "- `author`: `name`, `display_name`, `mention`, `nick`\n"
-        "- `guild`: `name`, `member_count`, `icon_url`\n"
-        "- `channel`: `name`, `mention`, `position`\n"
-        "- `message`: `content`, `id`\n\n"
-        "Examples: `{{ author.display_name }}`, `{{ guild.name }}`, `{{ channel.mention }}`",
+        "Variables: Author & Message",
+        inspect.cleandoc("""
+        These objects represent the user who triggered the command and the message they sent.
+
+        **`author` (The User)**
+        - `author.name`: Their username (e.g., `user123`)
+        - `author.display_name`: Their global display name
+        - `author.mention`: Mentions the user (`@user123`)
+
+        **`message` (The Trigger)**
+        - `message.content`: The full text of the command message
+        - `message.id`: The unique Discord message ID
+        """),
     ),
     _make_help_embed(
-        "Variables: examples",
-        "```jinja\n{{ author.display_name }}\n{{ guild.name }}\n{{ channel.mention }}\n{{ message.content }}\n```",
+        "Variables: Guild & Channel",
+        inspect.cleandoc("""
+        These objects represent the server and the channel where the command was used.
+
+        **`guild` (The Server)**
+        - `guild.name`: Server name
+        - `guild.member_count`: Total number of members
+        - `guild.icon_url`: Link to the server icon
+
+        **`channel` (The Channel)**
+        - `channel.name`: Channel name (e.g., `general`)
+        - `channel.mention`: Clickable channel link (`#general`)
+        - `channel.position`: Channel's position in the list
+        """),
     ),
     _make_help_embed(
-        "Conditionals",
-        "Use Jinja conditionals for branching:\n\n```jinja\n"
-        '{% if author.display_name == "Alice" %}\n'
-        "  Welcome back!\n"
-        "{% elif guild.member_count > 100 %}\n"
-        "  Busy server!\n"
-        "{% else %}\n"
-        "  Welcome to {{ guild.name }}!\n"
-        "{% endif %}\n```",
+        "Logic: Conditionals (If/Else)",
+        inspect.cleandoc("""
+        Make your commands respond differently based on specific conditions.
+
+        **Syntax:**
+        ```jinja
+        {% if author.name == 'admin' %}
+          Hello, boss!
+        {% elif guild.member_count > 1000 %}
+          We are a huge server!
+        {% else %}
+          Hello, {{ author.display_name }}!
+        {% endif %}
+        ```
+        *Tip: Always remember to close your blocks with `{% endif %}`!*
+        """),
     ),
     _make_help_embed(
-        "Loops",
-        "Use loops to repeat output:\n\n```jinja\n"
-        "{% for word in message.content.split() %}\n"
-        "  {{ word }}\n"
-        "{% endfor %}\n```\n\n"
-        "Literal list example: `[{% for n in [1, 2, 3] %}{{ n }}{% endfor %}]`",
+        "Logic: Loops (For)",
+        inspect.cleandoc("""
+        Loops allow you to repeat actions or iterate through lists (like words in a message).
+
+        **Syntax:**
+        ```jinja
+        Here are the words you typed:
+        {% for word in message.content.split() %}
+        - {{ word }}
+        {% endfor %}
+        ```
+        *Note: Loops are limited by the sandbox to prevent spam. Keep them short!*
+        """),
     ),
 ]
 
-
 CUSTOM_COMMAND_EXAMPLES_PAGES = [
     _make_help_embed(
-        "Quick examples",
-        "- `welcome`: `Welcome {{ author.display_name }}!`\n"
-        "- `rules`: `Read the rules in {{ guild.name }}.`\n"
-        "- `count`: `We have {{ guild.member_count }} members.`\n"
-        "- `reply`: `You said: {{ message.content }}`",
+        "Examples: Simple Replies",
+        inspect.cleandoc("""
+        **Welcome Message**
+        ```jinja
+        Welcome to {{ guild.name }}, {{ author.mention }}! We now have {{ guild.member_count }} members.
+        ```
+        **Echo Command**
+        ```jinja
+        You said: {{ message.content }}
+        ```
+        **Server Info**
+        ```jinja
+        Server: {{ guild.name }}
+        Icon: {{ guild.icon_url }}
+        ```
+        """),
     ),
     _make_help_embed(
-        "Conditions",
-        '```jinja\n{% if message.content.lower() == "hello" %}\n  Hello there!\n{% else %}\n  Hello {{ author.display_name }}!\n{% endif %}\n```',
+        "Examples: Smart Conditions",
+        inspect.cleandoc("""
+        **Keyword Matching**
+        ```jinja
+        {% if 'help' in message.content.lower() %}
+          It looks like you need help! Check out the rules channel.
+        {% else %}
+          Command received, {{ author.display_name }}.
+        {% endif %}
+        ```
+        **Name-based Responses**
+        ```jinja
+        {% if author.nick and 'VIP' in author.nick %}
+          Access granted for VIP!
+        {% else %}
+          Standard user access.
+        {% endif %}
+        ```
+        """),
     ),
     _make_help_embed(
-        "More conditions",
-        "```jinja\n"
-        "{% if guild.member_count >= 50 %}\n"
-        "  Big server\n"
-        "{% elif guild.member_count >= 10 %}\n"
-        "  Medium server\n"
-        "{% else %}\n"
-        "  Small server\n"
-        "{% endif %}\n```",
+        "Examples: Text Manipulation",
+        inspect.cleandoc("""
+        You can use standard string manipulation methods directly in the template.
+
+        **Uppercase Shout**
+        ```jinja
+        {{ message.content.upper() }}!!!
+        ```
+        **Word Counter**
+        ```jinja
+        Your message has {{ message.content.split()|length }} words!
+        ```
+        **Character Replacer**
+        ```jinja
+        {{ message.content.replace('a', '@') }}
+        ```
+        """),
     ),
     _make_help_embed(
-        "Loops",
-        "```jinja\n"
-        "{% for role in guild.roles %}\n"
-        "  {{ role.name }}\n"
-        "{% endfor %}\n```\n\n"
-        "Keep loops short; long generated output can exceed Discord limits.",
+        "Examples: Math & Sandbox Limits",
+        inspect.cleandoc("""
+        Basic math is supported, but strictly capped to prevent lag.
+
+        **Calculations**
+        ```jinja
+        Members needed for 1000: {{ 1000 - guild.member_count }}
+        ```
+
+        **Sandbox Restrictions applied:**
+        - Output length is restricted.
+        - String repetition (`'a' * 10000`) is capped.
+        - Heavy exponents (`10 ** 100`) will fail.
+        - `import` and `include` tags are disabled.
+        """),
+    ),
+    _make_help_embed(
+        "Examples: Basic Arithmetic",
+        inspect.cleandoc("""
+        You can perform basic arithmetic operations in your templates.
+
+        **Addition**
+        ```jinja
+        The sum is: {{ 5 + 3 }}
+        ```
+        **Subtraction**
+        ```jinja
+        The difference is: {{ 10 - 4 }}
+        ```
+        **Multiplication**
+        ```jinja
+        The product is: {{ 6 * 7 }}
+        ```
+        **Division**
+        ```jinja
+        The quotient is: {{ 20 / 4 }}
+        ```
+        Note: Don't try to `[None] * 100_000_000` or similar, as the sandbox will prevent it to avoid performance issues.
+        """),
+    ),
+    _make_help_embed(
+        "Examples: Advanced Logic",
+        inspect.cleandoc("""
+        **Nested Conditions**
+        ```jinja
+        {% if author.name == 'admin' %}
+            Welcome, admin!
+        {% else %}
+            {% if guild.member_count > 1000 %}
+                We are a large server!
+            {% else %}
+                Hello, {{ author.display_name }}!
+            {% endif %}
+        {% endif %}
+        ```
+        """),
+    ),
+    _make_help_embed(
+        "Examples: Looping Through Words",
+        inspect.cleandoc("""
+        **Iterating Over Words**
+        ```jinja
+        {% for word in message.content.split() %}
+            {{ word }}
+        {% endfor %}
+        ```
+        """),
+    ),
+    _make_help_embed(
+        "Examples: Variable assignment and filters",
+        inspect.cleandoc("""
+        **Variable Assignment**
+        ```jinja
+        {% set user_name = author.display_name %}
+        Hello, {{ user_name }}!
+        ```
+        **Using Filters**
+        ```jinja
+        {{ message.content | upper }}
+        ```
+        **Using Logic Filters**
+        ```jinja
+        {% if guild.member_count | int > 1000 %}
+            We have a large community!
+        {% endif %}
+        ```
+        """),
     ),
 ]
 

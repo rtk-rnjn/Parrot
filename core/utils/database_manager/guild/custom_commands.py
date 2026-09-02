@@ -290,3 +290,41 @@ class _GuildCustomCommandsMixin:
             return []
 
         return guild.get("custom_commands_logs", [])
+
+    async def clear_custom_command_logs(self, *, guild_id: int) -> None:
+        """Clear all custom command logs for a guild."""
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {"custom_commands_logs": []}},
+        )
+
+    async def set_custom_command_db(self, *, guild_id: int, key: str, value: str) -> None:
+        """Set a key-value pair in the custom command database for a guild."""
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {f"custom_commands_db.{key}": value}},
+            upsert=True,
+        )
+
+        key = RedisKeys.GUILD_CUSTOM_COMMAND_DB.format(guild_id=guild_id)
+        await self.redis_client.hset(key, key, value)
+
+    async def get_custom_command_db(self, *, guild_id: int, key: str) -> str | None:
+        """Get a value from the custom command database for a guild."""
+        key = RedisKeys.GUILD_CUSTOM_COMMAND_DB.format(guild_id=guild_id)
+        cached_value = await self.redis_client.hget(key, key)
+        if cached_value is not None and isinstance(cached_value, str):
+            return cached_value
+
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id},
+            {f"custom_commands_db.{key}": 1},
+        )
+        if guild is None:
+            return None
+
+        data = guild.get("custom_commands_db", {}).get(key)
+        if data is not None:
+            await self.redis_client.hset(key, key, data)
+
+        return data

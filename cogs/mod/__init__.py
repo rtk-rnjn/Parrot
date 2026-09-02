@@ -53,11 +53,7 @@ class PurgeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", del
     )
 
 
-def can_execute_action(
-    ctx: commands.Context[Parrot],
-    user: discord.Member,
-    target: discord.Member,
-) -> bool:
+def can_execute_action(ctx: commands.Context[Parrot], user: discord.Member, target: discord.Member) -> bool:
     """Return whether ``user`` has sufficient authority to act on ``target``.
 
     A user may act on another member when they are either:
@@ -113,11 +109,7 @@ class MemberID(commands.Converter):
     full :class:`discord.Member` object is not required.
     """
 
-    async def convert(
-        self,
-        ctx: commands.Context[Parrot],
-        argument: str,
-    ) -> discord.Member:
+    async def convert(self, ctx: commands.Context[Parrot], argument: str) -> discord.Member:
         """Convert a command argument into a target member."""
         if TYPE_CHECKING:
             assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
@@ -354,10 +346,7 @@ class Mod(commands.Cog):
         )
 
     @staticmethod
-    def _partition_bannable_members(
-        members: list[discord.Member],
-        me: discord.Member,
-    ) -> tuple[list[discord.Member], list[discord.Member]]:
+    def _partition_bannable_members(members: list[discord.Member], me: discord.Member) -> tuple[list[discord.Member], list[discord.Member]]:
         bannable: list[discord.Member] = []
         skipped: list[discord.Member] = []
 
@@ -672,10 +661,7 @@ class Mod(commands.Cog):
     @mute.command(name="sync", aliases=["synchronize", "synchronise"])
     @commands.has_permissions(moderate_members=True, manage_roles=True, manage_channels=True)
     @commands.bot_has_guild_permissions(manage_roles=True, manage_channels=True)
-    async def mute_sync(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    async def mute_sync(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Synchronize the permissions of the mute role with the server's channels.
 
         This command ensures that the mute role has the correct permissions set
@@ -767,10 +753,7 @@ class Mod(commands.Cog):
     @mute.command(name="remove", aliases=["delete", "del", "rm", "unbind"])
     @commands.has_permissions(moderate_members=True, manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
-    async def mute_remove(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    async def mute_remove(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Remove the mute role from the server.
 
         This command removes the mute role from the server and deletes it. Any
@@ -796,10 +779,7 @@ class Mod(commands.Cog):
 
     @mute.command(name="list", aliases=["show", "view", "ls"])
     @commands.has_permissions(moderate_members=True)
-    async def mute_list(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    async def mute_list(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """List all currently muted members in the server."""
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -970,21 +950,21 @@ class Mod(commands.Cog):
     async def _complex_cleanup_strategy(self, ctx: commands.Context[Parrot], search: int):
         assert ctx.guild is not None
 
-        prefix = self.bot.get_prefix(ctx.message)
+        prefixes = await self.bot.get_prefix(ctx.message)
 
-        def check(m):
-            return m.author == ctx.me or m.content.startswith(prefix)
+        def check(m: discord.Message):
+            return m.author == ctx.me or m.content.startswith(tuple(prefixes))
 
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # pyright: ignore[reportAttributeAccessIssue]
         return Counter(m.author.display_name for m in deleted)
 
     async def _regular_user_cleanup_strategy(self, ctx: commands.Context[Parrot], search: int):
-        prefix = self.bot.get_prefix(ctx.message)
+        prefixes = await self.bot.get_prefix(ctx.message)
 
-        def check(m):
-            return (m.author == ctx.me or m.content.startswith(prefix)) and not (m.mentions or m.role_mentions)
+        def check(m: discord.Message):
+            return (m.author == ctx.me or m.content.startswith(tuple(prefixes))) and not (m.mentions or m.role_mentions)
 
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
+        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)  # pyright: ignore[reportAttributeAccessIssue]
         return Counter(m.author.display_name for m in deleted)
 
     @commands.command(hidden=True)
@@ -1151,7 +1131,7 @@ class Mod(commands.Cog):
 
         for chunk in discord.utils.as_chunks(deleted, 100):
             try:
-                await ctx.channel.delete_messages(chunk, reason=f"Action done by {ctx.author} (ID: {ctx.author.id}): Purge")
+                await ctx.channel.delete_messages(chunk, reason=f"Action done by {ctx.author} (ID: {ctx.author.id}): Purge")  # pyright: ignore[reportAttributeAccessIssue]
             except discord.Forbidden:
                 return await ctx.reply("I do not have permissions to delete messages.")
             except discord.HTTPException as e:

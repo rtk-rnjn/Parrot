@@ -22,7 +22,7 @@ class Music(commands.Cog):
         self.bot = bot
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
-    async def cog_check(self) -> bool:
+    async def cog_check(self, ctx: commands.Context[Parrot]) -> bool:
         if self.bot.lavalink_node_pool.node_count == 0:
             raise commands.CommandError("No Lavalink nodes are connected. This feature is not available at the moment.")
 
@@ -128,14 +128,14 @@ class Music(commands.Cog):
         node = self.bot.lavalink_node_pool.get_best_node(algorithm=pomice.NodeAlgorithm.by_players)
         result = None
 
-        for search_type in [pomice.SearchType.scsearch]:
+        for search_type in [pomice.SearchType.other, pomice.SearchType.scsearch, pomice.SearchType.ytsearch]:
             result = await node.get_tracks(query, search_type=search_type, ctx=ctx)
             if result is not None:
                 break
 
         if result is None or not result or (isinstance(result, pomice.Playlist) and not result.tracks):
             await ctx.message.add_reaction("\N{OPEN MAILBOX WITH LOWERED FLAG}")
-            await ctx.reply("I could not find anything to play for that query.")
+            await ctx.reply("Bot could not find anything to play for that query.")
             return
 
         assert isinstance(ctx.voice_client, Player)

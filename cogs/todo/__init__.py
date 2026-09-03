@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 import discord
 from bson import ObjectId
@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from core.bot import Parrot
 
 _log = logging.getLogger("bot.cogs.todo")
+
+class TodoItemMetadata(TypedDict):
+    item: TodoItem
+    user_id: int
 
 
 class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
@@ -35,8 +39,15 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
             todo_item_id=self.todo_item["id"],
             due=datetime,
         )
+        self.todo_item["due"] = datetime
+
         relative_time = discord.utils.format_dt(datetime, style="R")
         await interaction.response.send_message(f"For to-do item (ID: `{self.todo_item['id']}`), due {relative_time}", ephemeral=True)
+        await interaction.client.timer_manager.create_timer(
+            event_name="todo_due",
+            expires_at=datetime,
+            metadata=TodoItemMetadata(item=self.todo_item, user_id=interaction.user.id),
+        )
 
 
 class TodoEditModal(discord.ui.Modal, title="Edit To-Do Item"):
@@ -135,7 +146,7 @@ class Todo(commands.Cog):
         view = TodoCreateView(author=ctx.author, todo_item=todo_item)
         await ctx.reply(embed=embed, view=view)
 
-    @todo.command(name="list")
+    @todo.command(name="list", aliases=["ls"])
     async def list_todo(self, ctx: commands.Context[Parrot]) -> None:
         """List your to-do items."""
         todo_items = await self.bot.database_manager.get_user_todo_items(user_id=ctx.author.id)
@@ -145,7 +156,12 @@ class Todo(commands.Cog):
 
         pages = []
         for index, todo_item in enumerate(todo_items, start=1):
-            page = f"{index}. **ID:** `{todo_item['id']}` {todo_item['title']}"
+            due = todo_item.get("due")
+            page = (
+                f"{index}. **ID:** `{todo_item['id']}` - {todo_item['title']}\n"
+                f"    [{todo_item['status'].replace('_', ' ').title()}] "
+                f"{f'**Due:** {discord.utils.format_dt(due, style="R")}' if due else ''}\n"
+            )
             pages.append(page)
 
         await self.bot.paginate(ctx, embed=discord.Embed(), pages=pages)
@@ -191,7 +207,33 @@ class Todo(commands.Cog):
         for button in status_buttons:
             view.add_item(button)
 
-        await ctx.reply(embed=embed, view=view)
+        content = f"**Status:** {todo_item['status'].replace('_', ' ').title()}\n"
+        due = todo_item.get("due")
+        if due:
+            content += f"**Due:** {discord.utils.format_dt(due, style='R')}\n"
+
+        await ctx.reply(content=content, embed=embed, view=view)
+
+    @commands.Cog.listener()
+    async def on_todo_due_timer_complete(self, metadata: TodoItemMetadata) -> None:
+        """Handle the completion of a to-do due timer."""
+        user = self.bot.get_user(metadata["user_id"])
+        if user is None:
+            try:
+                user = await self.bot.fetch_user(metadata["user_id"])
+            except discord.NotFound:
+                _log.warning("User with ID %s not found for to-do item ID %s", metadata["user_id"], metadata["item"]["id"])
+                return
+
+        todo_item = metadata["item"]
+        if not user:
+            _log.warning("User with ID %s not found for to-do item ID %s", user.id, todo_item["id"])
+            return
+
+        try:
+            await user.send(f"Your to-do item (ID: `{todo_item['id']}`) is due now: {todo_item['title']}")
+        except discord.Forbidden:
+            _log.warning("Cannot send DM to user with ID %s for to-do item ID %s", user.id, todo_item["id"])
 
 
 async def setup(bot: Parrot) -> None:

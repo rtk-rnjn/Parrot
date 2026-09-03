@@ -21,6 +21,7 @@ __all__ = ("TimersManager", "TimerData")
 VALID_EVENT_NAMES = Literal[
     "reminder",
     "mute",
+    "todo_due",
 ]
 
 

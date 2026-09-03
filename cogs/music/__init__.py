@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -13,9 +14,13 @@ if TYPE_CHECKING:
     from core.bot import Parrot
 
 
+_log = logging.getLogger("bot.cogs.music")
+
+
 class Music(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def cog_check(self) -> bool:
         if self.bot.lavalink_node_pool.node_count == 0:

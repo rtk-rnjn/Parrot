@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 from typing import TYPE_CHECKING
@@ -16,6 +17,7 @@ except ImportError:
 if TYPE_CHECKING:
     from core.bot import Parrot
 
+_log = logging.getLogger("bot.cogs.scam_link_detection")
 
 LINK_RE = re.compile(r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)", re.IGNORECASE)
 
@@ -125,6 +127,8 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
         self.scam_links_manager = ScamLinkManager(bot)
         self.global_stop: bool = False
         self.warned_count = 0
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def cog_load(self) -> None:
         self.update_scam_links_cache.start()

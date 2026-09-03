@@ -384,7 +384,7 @@ class Reminder(commands.Cog):
             if message is not None:
                 view.message = message
 
-    @commands.command(name="remind", aliases=["reminder", "remindme", "remindin"])
+    @commands.group(name="remind", aliases=["reminder", "remindme", "remindin"], invoke_without_command=True)
     async def remind(
         self,
         ctx: commands.Context[Parrot],

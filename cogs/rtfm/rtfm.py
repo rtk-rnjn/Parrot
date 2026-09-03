@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import inspect
+import logging
 import pathlib
 import re
 import unicodedata
@@ -54,6 +55,9 @@ if TYPE_CHECKING:
     from core.bot import Parrot
 
 
+_log = logging.getLogger("bot.cogs.rtfm")
+
+
 class RTFM(commands.Cog):
     """To test code and check docs. Thanks to https://github.com/FrenchMasterSword/RTFMbot."""
 
@@ -63,6 +67,8 @@ class RTFM(commands.Cog):
         self.wtf_section_links: dict[str, str] = {}
         self.fetch_readme.start()
         self._python_tags: dict[str, frontmatter.Post] = {}
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @property
     def python_tags(self) -> dict[str, frontmatter.Post]:

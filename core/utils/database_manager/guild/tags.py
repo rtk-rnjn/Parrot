@@ -8,7 +8,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
-from ..models import GuildConfiguration
+from ..models import GuildConfiguration, Tag
 
 
 class _GuildTagsMixin:
@@ -61,6 +61,7 @@ class _GuildTagsMixin:
     ):
         """Create a new tag in the database and cache."""
         # Create the tag in the database
+
         await self.guilds_collection.update_one(
             {"_id": guild_id},
             {
@@ -87,19 +88,24 @@ class _GuildTagsMixin:
             used_count=None,
         )
 
-    async def delete_tag(self, *, guild_id: int, name: str):
+    async def delete_tag(self, *, guild_id: int, name: str, creator_id: int) -> bool:
         """Delete a tag from the database and invalidate its cache."""
         # Delete the tag from the database
-        await self.guilds_collection.update_one(
+        updated = await self.guilds_collection.update_one(
             {"_id": guild_id},
-            {"$pull": {"tags": {"name": name}}},
+            {
+                "$pull": {"tags": {"name": name, "creator_id": creator_id}},
+            },
         )
-        await self._invalidate_tag_cache(guild_id=guild_id, name=name)
+        if updated.modified_count > 0:
+            await self._invalidate_tag_cache(guild_id=guild_id, name=name)
+        return updated.modified_count > 0
 
     async def edit_tag_content(
         self,
         *,
         guild_id: int,
+        creator_id: int,
         name: str,
         content: str,
     ):
@@ -110,7 +116,7 @@ class _GuildTagsMixin:
 
         if update_fields:
             await self.guilds_collection.update_one(
-                {"_id": guild_id, "tags.name": name},
+                {"_id": guild_id, "tags.name": name, "tags.creator_id": creator_id},
                 {"$set": update_fields},
             )
 
@@ -123,8 +129,15 @@ class _GuildTagsMixin:
         """Increment a tag's used count in the database and update its cache."""
         # Increment the used count in the database
         await self.guilds_collection.update_one(
-            {"_id": guild_id, "tags": {"$elemMatch": {"$or": [{"name": name_or_alias}, {"aliases": name_or_alias}]}}},
-            {"$inc": {"tags.$.used_count." + str(author_id): 1}},
+            {
+                "_id": guild_id,
+                "tags": {
+                    "$elemMatch": {
+                        "$or": [{"name": name_or_alias}, {"aliases": name_or_alias}],
+                    },
+                },
+            },
+            {"$inc": {f"tags.$.used_count.{str(author_id)}": 1}},
         )
 
         tag_name = await self.redis_client.hget(RedisKeys.GUILD_TAG_ALIAS_MAP.format(guild_id=guild_id), name_or_alias)
@@ -234,3 +247,52 @@ class _GuildTagsMixin:
         )
 
         return True
+
+    async def get_all_tags(self, *, guild_id: int) -> list[Tag]:
+        """Get all tags in a guild."""
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id, "tags": {"$exists": True}},
+            {"tags": 1},
+        )
+        if not guild or "tags" not in guild:
+            return []
+
+        tags = guild["tags"]
+        for tag in tags:
+            await self._cache_tag(
+                guild_id=guild_id,
+                name=tag["name"],
+                content=tag["content"],
+                creator_id=tag["creator_id"],
+                aliases=tag.get("aliases", []),
+                created_at=tag["created_at"],
+                used_count=tag.get("used_count"),
+            )
+
+        return tags
+
+    async def add_tag_alias(self, *, guild_id: int, name: str, alias: str):
+        """Add an alias to a tag in the database and update its cache."""
+        # Update the tag in the database
+        updated = await self.guilds_collection.update_one(
+            {"_id": guild_id, "tags.name": name},
+            {"$addToSet": {"tags.$.aliases": alias}},
+        )
+
+        if updated.modified_count > 0:
+            # Update the cache
+            await self.redis_client.sadd(RedisKeys.GUILD_TAG_ALIASES.format(guild_id=guild_id, tag_name=name), alias)
+            await self.redis_client.hset(RedisKeys.GUILD_TAG_ALIAS_MAP.format(guild_id=guild_id), mapping={alias: name})
+
+    async def remove_tag_alias(self, *, guild_id: int, name: str, alias: str, creator_id: int):
+        """Remove an alias from a tag in the database and update its cache."""
+        # Update the tag in the database
+        updated = await self.guilds_collection.update_one(
+            {"_id": guild_id, "tags.name": name, "tags.creator_id": creator_id},
+            {"$pull": {"tags.$.aliases": alias}},
+        )
+
+        if updated.modified_count > 0:
+            # Update the cache
+            await self.redis_client.srem(RedisKeys.GUILD_TAG_ALIASES.format(guild_id=guild_id, tag_name=name), alias)
+            await self.redis_client.hdel(RedisKeys.GUILD_TAG_ALIAS_MAP.format(guild_id=guild_id), alias)

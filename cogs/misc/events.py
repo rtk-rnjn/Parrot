@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections import deque
 from typing import TYPE_CHECKING
 
@@ -10,12 +11,16 @@ from discord.ext.commands import Cog, Context
 if TYPE_CHECKING:
     from core.bot import Parrot
 
+_log = logging.getLogger("bot.cogs.misc.events")
+
 
 class SnipeMessageListener(Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         self.snipes: dict[int, deque[discord.Message]] = {}
         self.edit_snipes: dict[int, deque[tuple[discord.Message, discord.Message]]] = {}
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @Cog.listener()
     async def on_message_delete(self, message: discord.Message):

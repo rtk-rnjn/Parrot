@@ -5,6 +5,7 @@ import colorsys
 import io
 import itertools
 import json
+import logging
 import math
 import random
 import string
@@ -21,6 +22,8 @@ from core.utils import PaginationView
 
 if TYPE_CHECKING:
     from core.bot import Parrot
+
+_log = logging.getLogger("bot.cogs.fun")
 
 THUMBNAIL_SIZE = (80, 80)
 SECTION_SEPERATOR = "\N{WHITE RIGHT POINTING BACKHAND INDEX}\N{WHITE LEFT POINTING BACKHAND INDEX}"
@@ -202,6 +205,7 @@ class Fun(commands.Cog, ColorHandler):
 
     def __init__(self, bot: Parrot):
         self.bot = bot
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @commands.command(name="guess-the-number", aliases=["gtn"])
     @commands.max_concurrency(1, per=commands.BucketType.user)

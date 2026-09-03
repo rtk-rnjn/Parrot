@@ -36,18 +36,20 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 LOADABLE_COGS = [
-    "cogs.meta",
-    "cogs.reminder",
-    "cogs.mod",
+    "cogs.automod",
+    "cogs.cc",
     "cogs.config",
     "cogs.events",
-    "cogs.games",
-    "cogs.rtfm",
     "cogs.fun.love",
     "cogs.fun.fun",
+    "cogs.games",
+    "cogs.meta",
     "cogs.misc",
-    "cogs.cc",
-    "cogs.automod",
+    "cogs.mod",
+    "cogs.reminder",
+    "cogs.rtfm",
+    "cogs.tags",
+    "cogs.todo",
 ]
 
 _log = logging.getLogger("bot.core")
@@ -121,28 +123,25 @@ class Parrot(commands.Bot):
         for extention in LOADABLE_COGS:
             await self.load_extension(extention)
 
-        try:
-            node = await self.lavalink_node_pool.create_node(
-                bot=self,
-                host="localhost",
-                port=2333,
-                password="youshallnotpass",
-                identifier="MAIN",
-                spotify_client_id=SPOTIFY_CLIENT_ID,
-                spotify_client_secret=SPOTIFY_CLIENT_SECRET,
-            )
-
-            self.default_lavalink_node = node
-        except pomice.exceptions.NodeConnectionFailure:
-            pass
-
         self.timer_manager.timer_task = self.loop.create_task(self.timer_manager.dispatch_timers())
 
     async def on_ready(self) -> None:
         if self.started_at is None:
             self.started_at = discord.utils.utcnow()
+            try:
+                node = await self.lavalink_node_pool.create_node(
+                    bot=self,
+                    host="localhost",
+                    port=2333,
+                    password="youshallnotpass",
+                    identifier="MAIN",
+                    spotify_client_id=SPOTIFY_CLIENT_ID,
+                    spotify_client_secret=SPOTIFY_CLIENT_SECRET,
+                )
 
-        assert self.user is not None
+                self.default_lavalink_node = node
+            except pomice.exceptions.NodeConnectionFailure:
+                pass
 
         _log.info("Logged in as %s (ID: %s)", self.user, self.user.id)
 

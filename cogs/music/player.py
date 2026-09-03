@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import random
+from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, cast
-from collections.abc import Callable, Awaitable
-from discord.ext.commands import Context
+
 import discord
 import pomice
+from discord.ext.commands import Context
 
 if TYPE_CHECKING:
     from core.bot import Parrot

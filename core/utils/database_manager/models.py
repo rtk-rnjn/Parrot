@@ -69,7 +69,7 @@ class TodoItem(TypedDict):
     notes: str | None
     due: datetime | None
     status: TodoStatus
-    parent_id: ObjectId | None
+    created_at: datetime
 
 
 class Highlight(TypedDict):

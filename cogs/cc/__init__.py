@@ -46,38 +46,6 @@ def format_sandbox_error(error: Exception) -> str:
     return "".join(tb)
 
 
-def _split_discord_text(text: str, *, max_chars: int = 1800) -> list[str]:
-    """Split a response into Discord-safe chunks while preserving paragraphs."""
-    chunks: list[str] = []
-    current = ""
-
-    for paragraph in text.split("\n\n"):
-        candidate = f"{current}\n\n{paragraph}" if current else paragraph
-        if len(candidate) <= max_chars:
-            current = candidate
-            continue
-
-        if current:
-            chunks.append(current.strip())
-            current = ""
-
-        if len(paragraph) <= max_chars:
-            current = paragraph
-        else:
-            for line in paragraph.splitlines():
-                if len(current) + len(line) + 1 <= max_chars:
-                    current = f"{current}\n{line}" if current else line
-                else:
-                    if current:
-                        chunks.append(current.strip())
-                    current = line
-
-    if current:
-        chunks.append(current.strip())
-
-    return [chunk for chunk in chunks if chunk]
-
-
 def _make_help_embed(title: str, body: str) -> discord.Embed:
     """Build a compact, Discord-friendly embed for custom command help."""
     return discord.Embed(title=title, description=body, color=discord.Color.blurple())
@@ -551,8 +519,17 @@ class CustomCommandSelect(discord.ui.Select):
 
 
 class CustomCommandLayout(discord.ui.LayoutView):
-    def __init__(self, *, custom_commands: list[CustomCommandModel] | None = None, logs: list[str] | None = None):
+    def __init__(
+        self,
+        *,
+        author: discord.User | discord.Member,
+        custom_commands: list[CustomCommandModel] | None = None,
+        logs: list[str] | None = None,
+    ):
         super().__init__()
+
+        self.author = author
+
         items = []
 
         if logs:
@@ -573,6 +550,12 @@ class CustomCommandLayout(discord.ui.LayoutView):
 
         self.add_item(container)
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author.id:
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
+            return False
+        return True
+
 
 class CustomCommand(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
@@ -583,21 +566,20 @@ class CustomCommand(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def cc(self, ctx: commands.Context[Parrot]) -> None:
         """Manage custom commands."""
-        await self.send_panel(ctx)
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
 
     async def _build_and_send_panel(
         self,
         ctx: commands.Context[Parrot],
         *,
-        pages: list[str],
-        select_menu: CustomCommandSelect | None,
         logs: list[str],
     ) -> None:
         """Build and send the management panel with appropriate pagination."""
 
         custom_commands = await ctx.bot.database_manager.get_custom_commands(ctx.guild.id) if ctx.guild else []
         logs = await ctx.bot.database_manager.get_custom_command_logs(guild_id=ctx.guild.id) if ctx.guild else []
-        layout = CustomCommandLayout(custom_commands=custom_commands, logs=logs)
+        layout = CustomCommandLayout(author=ctx.author, custom_commands=custom_commands, logs=logs)
 
         await ctx.reply(view=layout)
 
@@ -605,14 +587,12 @@ class CustomCommand(commands.Cog):
         if ctx.guild is None:
             return
 
-        custom_commands = await self.bot.database_manager.get_custom_commands(ctx.guild.id)
-        pages = [f"- {command['name']}: {command['response'][:80]}{'...' if len(command['response']) > 80 else ''}" for command in custom_commands]
-        select_menu = CustomCommandSelect(custom_commands=custom_commands) if custom_commands else None
         logs = await self.bot.database_manager.get_custom_command_logs(guild_id=ctx.guild.id)
 
-        await self._build_and_send_panel(ctx, pages=pages, select_menu=select_menu, logs=logs)
+        await self._build_and_send_panel(ctx, logs=logs)
 
     @cc.command(name="manage")
+    @commands.has_permissions(administrator=True)
     async def manage(self, ctx: commands.Context[Parrot]) -> None:
         """Open the custom-command management panel."""
         await self.send_panel(ctx)

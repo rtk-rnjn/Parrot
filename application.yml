@@ -20,8 +20,12 @@ plugins:
       - "ytsearch:\"%ISRC%\""
       - "ytsearch:%QUERY%"
     sources:
+      spotify: true
       youtube: true
       ytdlp: true
+    spotify:
+      clientId: ""
+      clientSecret: ""
 
 lavalink:
   plugins:
@@ -57,7 +61,7 @@ lavalink:
       lowPass: true
 
     nonAllocatingFrameBuffer: false
-    bufferDurationMs: 0
+    bufferDurationMs: 400
     frameBufferDurationMs: 5000
     opusEncodingQuality: 10
     resamplingQuality: LOW

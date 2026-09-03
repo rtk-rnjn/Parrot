@@ -1,5 +1,5 @@
-from .timezone import _UserTimezoneMixin  # noqa
 from .highlights import _UserHighlightsMixin  # noqa
+from .timezone import _UserTimezoneMixin  # noqa
 from .todo import _UserTodoMixin  # noqa
 
 __all__ = ("_UserMixin",)

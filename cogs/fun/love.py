@@ -5,6 +5,7 @@ import calendar
 import collections
 import hashlib
 import json
+import logging
 import random
 from datetime import datetime
 from random import choice
@@ -17,6 +18,8 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from core.bot import Parrot
+
+_log = logging.getLogger("bot.cogs.love")
 
 
 class LoveMatch(TypedDict):
@@ -97,6 +100,8 @@ class Love(commands.Cog):
 
         self.love_data = sorted((int(key), value) for key, value in self.love_matches.items())
         self.zodiacs, self.zodiac_fact = self.load_comp_json()
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @property
     def pickup_lines(self) -> PickupLines:

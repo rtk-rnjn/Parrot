@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -30,6 +31,8 @@ from .games import (
 
 if TYPE_CHECKING:
     from core.bot import Parrot
+
+_log = logging.getLogger("bot.cogs.games")
 
 
 class JoinGameView(discord.ui.View):
@@ -67,6 +70,7 @@ class Games(commands.Cog):
         self.bot = bot
 
         self.uno_games: dict[int, UNO] = {}
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def wait_for_player(self, ctx: commands.Context[Parrot]) -> discord.Member | discord.User:
         """Wait for a player to join the game."""

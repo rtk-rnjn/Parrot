@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 import textwrap
@@ -13,6 +14,8 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from core.bot import Parrot
+
+_log = logging.getLogger("bot.cogs.link_to_codeblock")
 
 GITHUB_RE = re.compile(
     r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
@@ -54,6 +57,8 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             (GITLAB_RE, self._fetch_gitlab_snippet),
             (BITBUCKET_RE, self._fetch_bitbucket_snippet),
         ]
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Any:
         """Makes http requests using aiohttp."""

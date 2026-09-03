@@ -40,3 +40,6 @@ class RedisKeys(StrEnum):
 
     USER_HIGHLIGHT_IGNORED_USERS = "user:{user_id}:highlight_ignored_users"
     USER_HIGHLIGHT_WORDS = "user:{user_id}:{guild_id}:highlight_words"
+
+    USER_TODO_ITEM_IDS = "user:{user_id}:todo_item_ids"
+    USER_TODO_ITEM = "user:{user_id}:todo_item:{todo_id}"

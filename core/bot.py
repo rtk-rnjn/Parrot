@@ -3,16 +3,19 @@ from __future__ import annotations
 import logging
 import os
 import re
+import shutil
+import subprocess
 from collections.abc import Callable
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, overload, override
 
 import aiohttp
 import discord
 import jishaku
+import pomice
 from discord.ext import commands
 from dotenv import load_dotenv
-import pomice
 from jishaku.paginators import PaginatorEmbedInterface, PaginatorInterface
 
 from .utils import DatabaseManager, TimersManager
@@ -24,6 +27,8 @@ _ = load_dotenv()
 
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -46,6 +51,8 @@ LOADABLE_COGS = [
 ]
 
 _log = logging.getLogger("bot.core")
+
+lavalink_jar = Path("Lavalink.jar")
 
 
 class Parrot(commands.Bot):
@@ -86,6 +93,27 @@ class Parrot(commands.Bot):
         self.lavalink_node_pool = pomice.NodePool()
         self.default_lavalink_node: pomice.Node | None = None
 
+    @staticmethod
+    def start_lavalink() -> subprocess.Popen | None:
+        java = shutil.which("java")
+        if java is None:
+            raise RuntimeError("Java is not installed or not found in PATH.")
+
+        if not lavalink_jar.exists():
+            error = f"Lavalink.jar not found at {lavalink_jar.resolve()}."
+            raise RuntimeError(error)
+
+        try:
+            process = subprocess.Popen(
+                [java, "-jar", str(lavalink_jar)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            return process
+        except Exception as e:
+            error = f"Failed to start Lavalink: {e}"
+            raise RuntimeError(error) from e
+
     @override
     async def setup_hook(self) -> None:
         await self.load_extension(jishaku.__name__)
@@ -94,7 +122,15 @@ class Parrot(commands.Bot):
             await self.load_extension(extention)
 
         try:
-            node = await self.lavalink_node_pool.create_node(bot=self, host="localhost", port=2333, password="youshallnotpass", identifier="MAIN")
+            node = await self.lavalink_node_pool.create_node(
+                bot=self,
+                host="localhost",
+                port=2333,
+                password="youshallnotpass",
+                identifier="MAIN",
+                spotify_client_id=SPOTIFY_CLIENT_ID,
+                spotify_client_secret=SPOTIFY_CLIENT_SECRET,
+            )
 
             self.default_lavalink_node = node
         except pomice.exceptions.NodeConnectionFailure:

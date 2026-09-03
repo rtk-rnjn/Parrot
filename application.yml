@@ -57,7 +57,7 @@ lavalink:
       lowPass: true
 
     nonAllocatingFrameBuffer: false
-    bufferDurationMs: 400
+    bufferDurationMs: 0
     frameBufferDurationMs: 5000
     opusEncodingQuality: 10
     resamplingQuality: LOW

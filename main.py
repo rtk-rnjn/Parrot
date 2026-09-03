@@ -102,6 +102,12 @@ def setup_logging() -> None:
 async def start_bot() -> None:
     _log = logging.getLogger("bot")
 
+    lavalink_process = Parrot.start_lavalink()
+    if lavalink_process is not None:
+        _log.info("Lavalink process started.")
+    else:
+        raise SystemExit("Failed to start Lavalink process. Ensure Java is installed and Lavalink.jar is present.")
+
     bot = Parrot()
 
     try:
@@ -115,6 +121,9 @@ async def start_bot() -> None:
         _log.info("KeyboardInterrupt received. Shutting down.")
     finally:
         await bot.close()
+        if lavalink_process is not None:
+            lavalink_process.terminate()
+            lavalink_process.wait()
         _log.info("Bot has been shut down.")
 
 

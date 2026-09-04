@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from random import choice, random
 from typing import TYPE_CHECKING, Literal
 
 import discord
@@ -45,8 +44,6 @@ class NSFW(commands.Cog):
         self.bot = bot
         self.url = "https://nekobot.xyz/api/image"
 
-        self.cached_images: dict[str, list[str]] = {}
-
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def cog_load(self):
@@ -64,35 +61,21 @@ class NSFW(commands.Cog):
             raise commands.NSFWChannelRequired(ctx.channel)
         return True
 
-    def _try_from_cache(self, type_str: str) -> str | None:
-        return choice(self.cached_images.get(type_str, [None]))
-
     async def get_embed(self, type_str: str) -> discord.Embed:
-        if random() > 0.5 and len(self.cached_images.get(type_str, [])) >= 10:
-            url = choice(self.cached_images[type_str])
-
+        response = await self.bot.http_session.get(self.url, params={"type": type_str})
+        if response.status != 200:
+            msg = "Something went wrong with the API"
+            raise commands.CommandError(msg)
         else:
-            response = await self.bot.http_session.get(self.url, params={"type": type_str})
-            if response.status > 300:
-                url = self._try_from_cache(type_str)
-                if url is None:
-                    msg = "Something went wrong with the API"
-                    raise commands.CommandError(msg)
-            else:
-                url = (await response.json())["message"]
+            url = (await response.json())["message"]
 
         embed = discord.Embed().set_image(url=url)
-
-        if type_str not in self.cached_images:
-            self.cached_images[type_str] = []
-
-        self.cached_images[type_str].append(url)
         return embed
 
     async def command_endpoint_method(self, ctx: commands.Context[Parrot]) -> None:
         assert ctx.command is not None
         await ctx.typing()
-        embed = await self.get_embed(f"{ctx.command.qualified_name}")
+        embed = await self.get_embed(ctx.command.qualified_name)
         await ctx.reply(embed=embed)
 
     def command_loader(self) -> None:

@@ -8,8 +8,8 @@ import socket
 from pathlib import Path
 
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
-from rich.logging import RichHandler
 from dotenv import load_dotenv
+from rich.logging import RichHandler
 
 from core.bot import Parrot
 

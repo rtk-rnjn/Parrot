@@ -5,12 +5,14 @@ import time
 from typing import TYPE_CHECKING, Annotated
 
 import discord
+import sympy
 from discord.ext import commands
 from rapidfuzz import fuzz, process
 
 from core.constants import INVITE_RE, LINKS_RE
 
 from .events import PingMessageListner, SnipeMessageListener
+from .graphing import boxplot, plotfn
 
 if TYPE_CHECKING:
     from core.bot import Parrot
@@ -346,6 +348,31 @@ class Misc(commands.Cog):
 
         interface = await self.bot.paginate(ctx, embed=discord.Embed(title="Ghost Pings"), pages=pages)
         return interface.message
+
+    @commands.command(name="boxplot", aliases=("box", "boxwhisker", "numsetdata"))
+    async def _boxplot(self, ctx: commands.Context[Parrot], *numbers: float) -> None:
+        """Plots the providednumber data set in a box & whisker plot
+
+        showing Min, Max, Mean, Q1, Median and Q3.
+        Numbers should be seperated by spaces per data point.
+        """
+        file = await boxplot(numbers)
+        await ctx.reply(file=file)
+
+    @commands.command(name="plot", aliases=("line-graph", "graph"))
+    async def _plot(self, ctx: commands.Context[Parrot], *, equation: str) -> None:
+        """Plots the provided equation out.
+        Ex: `$plot 2x+1`.
+        """
+        try:
+            file = await plotfn(equation)
+            await ctx.reply(file=file)
+        except TypeError:
+            await ctx.reply("Provided equation was invalid; the only variable present must be `x`")
+        except (NameError, ValueError) as e:
+            await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; {e}")
+        except (SyntaxError, sympy.SympifyError, ZeroDivisionError) as e:
+            await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")
 
 
 async def setup(bot: Parrot) -> None:

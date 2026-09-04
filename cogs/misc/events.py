@@ -112,28 +112,43 @@ class PingMessageListner(Cog):
         self.bot = bot
         self.ghost_pings: dict[int, deque[discord.Message]] = {}
         self.pings: dict[int, deque[discord.Message]] = {}
-        # dict[author_id, list[message]]
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author.bot and not message.guild:
+        if message.author.bot or message.guild is None:
             return
+
+        assert isinstance(message.author, discord.Member)
 
         if message.author.id not in self.pings:
             self.pings[message.author.id] = deque(maxlen=2**5)
 
-        if message.author in message.mentions:
+        if (
+            message.author in message.mentions
+            or any(role in message.role_mentions for role in message.author.roles)
+            or "@everyone" in message.content
+            or "@here" in message.content
+        ):
             self.pings[message.author.id].append(message)
 
     @Cog.listener()
     async def on_message_delete(self, message: discord.Message):
-        if message.author.bot and not message.guild:
+        if message.author.bot or message.guild is None:
             return
+
+        assert isinstance(message.author, discord.Member)
 
         if message.author.id not in self.ghost_pings:
             self.ghost_pings[message.author.id] = deque(maxlen=2**5)
 
-        if message.author in message.mentions:
+        if (
+            message.author in message.mentions
+            or any(role in message.role_mentions for role in message.author.roles)
+            or "@everyone" in message.content
+            or "@here" in message.content
+        ):
             self.ghost_pings[message.author.id].append(message)
 
     @Cog.listener()
@@ -143,7 +158,7 @@ class PingMessageListner(Cog):
 
     @Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        if before.author.bot and not before.guild:
+        if before.author.bot or before.guild is None:
             return
 
         await self.on_message_delete(before)

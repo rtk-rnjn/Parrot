@@ -33,6 +33,9 @@ class RedisKeys(StrEnum):
     GUILD_TAG_USED_COUNT = "guild:{guild_id}:tag:{tag_name}:used_count"
     GUILD_TAG_ALIAS_MAP = "guild:{guild_id}:tag_alias_map"
 
+    GUILD_AFK_USERS = "guild:{guild_id}:afk_users"
+    GUILD_AFK_USER_REASON = "guild:{guild_id}:afk_user:{user_id}:reason"
+
     USER_TIMEZONE = "user:{user_id}:timezone"
 
     SCAM_LINKS_CACHE = "scam_links_cache"

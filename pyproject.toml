@@ -36,4 +36,3 @@ pythonVersion = "3.14"
 typeCheckingMode = "basic"
 strictParameterNoneValue = false
 include = ["cogs"]
-exclude = ["**/__pycache__", "build", "dist"]

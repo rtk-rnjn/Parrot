@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import time
 from typing import TYPE_CHECKING, Annotated
 
 import discord
 from discord.ext import commands
+from rapidfuzz import fuzz, process
 
 from core.constants import INVITE_RE, LINKS_RE
 
@@ -14,6 +16,11 @@ if TYPE_CHECKING:
     from core.bot import Parrot
 
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
+
+_log = logging.getLogger("bot.cogs.misc")
+
+with open("assets/dictionary.json", encoding="utf-8") as f:
+    DICTIONARY: dict[str, str] = discord.utils._from_json(f.read())
 
 
 class WrappedMessageConverter(commands.MessageConverter):  # pylint: disable=too-few-public-methods
@@ -65,6 +72,8 @@ class Misc(commands.Cog):
 
         self.bot.tree.add_command(self.__bookmark_context_menu)
         self.bot.tree.add_command(self.__interpret_as_command)
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def _interpret_as_command(self, interaction: discord.Interaction, message: discord.Message) -> None:
         # await interaction.response.defer(thinking=False)
@@ -309,6 +318,34 @@ class Misc(commands.Cog):
         message = await ctx.reply(embed=emb)
         snipes.delete_edit_snipe(channel, index=index)
         return message
+
+    @commands.command(name="define", aliases=["dictionary", "dict"])
+    async def define(self, ctx: commands.Context[Parrot], *, term: str = commands.parameter(description="The term to define.")) -> discord.Message:
+        """Fetch a definition from Urban Dictionary API."""
+        closest_match = process.extractOne(term.capitalize(), DICTIONARY.keys(), scorer=fuzz.ratio)
+        if closest_match is None:
+            return await ctx.reply(f"No definition found for '{term}'.")
+        return await ctx.reply(f"**{closest_match[0]}**: {DICTIONARY[closest_match[0]]}")
+
+    @commands.command(name="ghostping", aliases=["gp", "ghost-ping"])
+    async def ghost_ping(
+        self,
+        ctx: commands.Context[Parrot],
+    ) -> discord.Message | None:
+        """Check if someone ghost pinged you."""
+        cog: PingMessageListner = self.bot.get_cog("PingMessageListner")  # type: ignore
+        pages = []
+        for message in cog.get_ghost_pings(ctx.author.id):
+            relative_dt = discord.utils.format_dt(message.created_at, style="R")
+            pages.append(
+                f"[{relative_dt}] {message.author} {self.sanitise(message.content)}",
+            )
+
+        if not pages:
+            return await ctx.reply("You haven't been ghost pinged.")
+
+        interface = await self.bot.paginate(ctx, embed=discord.Embed(title="Ghost Pings"), pages=pages)
+        return interface.message
 
 
 async def setup(bot: Parrot) -> None:

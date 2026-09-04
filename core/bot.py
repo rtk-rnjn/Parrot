@@ -36,6 +36,7 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 LOADABLE_COGS = [
+    "cogs.afk",
     "cogs.automod",
     "cogs.cc",
     "cogs.config",
@@ -43,6 +44,7 @@ LOADABLE_COGS = [
     "cogs.fun.love",
     "cogs.fun.fun",
     "cogs.games",
+    "cogs.highlight",
     "cogs.meta",
     "cogs.misc",
     "cogs.mod",
@@ -77,11 +79,11 @@ class Parrot(commands.Bot):
             case_insensitive=True,
             activity=discord.Activity(type=discord.ActivityType.listening),
             status=discord.Status.idle,
-            allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False),
+            allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False, roles=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             strip_after_prefix=True,
             shard_id=1,
-            max_messages=2**10,
+            max_messages=2**12,
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
@@ -92,6 +94,8 @@ class Parrot(commands.Bot):
         self.started_at: datetime | None = None
 
         self.before_invoke(self.__before_invoke)
+        self.check_once(self.__check_once)
+
         self._http_session: aiohttp.ClientSession | None = None
 
         self.lavalink_node_pool = pomice.NodePool()
@@ -306,6 +310,8 @@ class Parrot(commands.Bot):
         await interface.send_to(ctx)
         return interface
 
+    async def __check_once(self, ctx: commands.Context[Parrot]) -> bool:
+        return await self.is_owner(ctx.author)
 
 class DisambiguatorView[T](discord.ui.View):
     message: discord.Message

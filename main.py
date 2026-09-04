@@ -9,6 +9,7 @@ from pathlib import Path
 
 from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from rich.logging import RichHandler
+from dotenv import load_dotenv
 
 from core.bot import Parrot
 
@@ -19,8 +20,16 @@ LOG_FORMAT = "[%(asctime)s] [%(levelname)-8s] [%(name)s] [%(module)s:%(lineno)d:
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+load_dotenv()
+
 
 def setup_logging() -> None:
+    for file in LOG_DIR.glob("*.*"):
+        try:
+            file.unlink()
+        except Exception as e:
+            print(f"Failed to delete {file}: {e}")
+
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 

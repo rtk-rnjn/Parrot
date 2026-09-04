@@ -173,14 +173,14 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
         await self.scam_links_manager.update_cache()
 
     async def warned_already(self, *, channel: discord.abc.MessageableChannel, link: str) -> bool:
-        exists = await self.bot.database_manager.is_warned_link(link=link, channel_id=channel.id)
+        exists = await self.bot.database_manager.check_if_link_warned(link=link, channel_id=channel.id)
         if isinstance(exists, int) and bool(exists):
             return True
 
         return False
 
     async def mark_warned(self, *, channel: discord.abc.MessageableChannel, link: str) -> None:
-        await self.bot.database_manager.mark_warned_link(link=link, channel_id=channel.id)
+        await self.bot.database_manager.flag_link_as_warned(link=link, channel_id=channel.id)
 
     @commands.group(name="sl", hidden=True, aliases=["scamlink", "scamlinks", "scam_link", "scam_links"])
     @commands.is_owner()

@@ -51,6 +51,7 @@ class GuildConfiguration(TypedDict):
     automod: Automod
     custom_commands: list[CustomCommand]
     tags: list[Tag]
+    afk_users: dict[str, str]
 
     # Meta
     custom_commands_db: dict[str, str]

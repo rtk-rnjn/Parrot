@@ -132,11 +132,11 @@ class PaginationView[PageT: discord.Embed | str](discord.ui.View):
             await func(content=f"{self._str_prefix}{current_entity}{self._str_suffix}", view=self)
         return current_entity
 
-    async def start(self, ctx: commands.Context[Parrot]):
+    async def start(self, ctx: commands.Context[Parrot]) -> discord.Message:
         if isinstance(self._pages[0], discord.Embed):
-            await ctx.reply(embed=self._pages[0], view=self)
+            return await ctx.reply(embed=self._pages[0], view=self)
         else:
-            await ctx.reply(f"{self._str_prefix}{self._pages[0]}{self._str_suffix}", view=self)
+            return await ctx.reply(f"{self._str_prefix}{self._pages[0]}{self._str_suffix}", view=self)
 
     async def paginate(self, ctx: commands.Context):
         await self.start(ctx)

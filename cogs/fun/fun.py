@@ -584,7 +584,7 @@ class Fun(commands.Cog, ColorHandler):
     async def get_urban_definition(self, ctx: Context[Parrot], term: str) -> discord.Message:
         """Fetch a definition from Urban Dictionary API."""
         url = f"https://api.urbandictionary.com/v0/define?term={term}"
-        pages: list[str] = []
+        pages: list[discord.Embed] = []
 
         async with self.bot.http_session.get(url) as response:
             if response.status != 200:
@@ -599,12 +599,16 @@ class Fun(commands.Cog, ColorHandler):
                 definition = result["definition"]
                 example = result["example"]
 
-                pages.append(f"**Definition of {term}:**\n{definition}\n\n**Example:**\n{example}")
+                embed = discord.Embed(
+                    title=f"Definition of {term}",
+                    description=f"{definition}\n\n**Example:**\n{example}",
+                )
+                pages.append(embed)
 
-        view = PaginationView(pages)
-        await view.start(ctx)
+        view = PaginationView(pages, author=ctx.author)
+        message = await view.start(ctx)
 
-        return view.message
+        return message
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):

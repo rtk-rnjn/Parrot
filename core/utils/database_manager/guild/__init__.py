@@ -1,3 +1,4 @@
+from .afk import _GuildAfkMixin  # noqa
 from .automod import _GuildAutomodMixin  # noqa
 from .custom_commands import _GuildCustomCommandsMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
@@ -15,4 +16,5 @@ class _GuildMixin(
     _GuildVoilationMixin,
     _GuildTagsMixin,
     _GuildAutomodMixin,
+    _GuildAfkMixin,
 ): ...

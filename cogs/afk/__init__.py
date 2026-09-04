@@ -11,66 +11,71 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger("bot.cogs.afk")
 
+DEFAULT_REASON = "AFK"
+
 
 class AFK(commands.Cog):
-    """Cog for handling AFK users."""
+    """Handle AFK users."""
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-
-        _log.info("Cog loaded: %s", self.__class__.__name__)
+        _log.info("Cog loaded: %s", type(self).__name__)
 
     @commands.command(name="afk")
     async def afk(
         self,
         ctx: commands.Context[Parrot],
         *,
-        reason: Annotated[str, commands.clean_content] = commands.parameter(description="Reason for going AFK", default="AFK"),
+        reason: Annotated[str, commands.clean_content] = commands.parameter(description="Reason for going AFK", default=DEFAULT_REASON),
     ) -> None:
         """Set your AFK status."""
-        assert isinstance(ctx.author, discord.Member) and isinstance(ctx.guild, discord.Guild)
+
+        if ctx.guild is None or not isinstance(ctx.author, discord.Member):
+            return
+
+        reason = reason.strip() or DEFAULT_REASON
 
         await self.bot.database_manager.set_user_as_afk(guild_id=ctx.guild.id, user_id=ctx.author.id, reason=reason)
+
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
-        if ctx.guild.me.guild_permissions.manage_nicknames and ctx.guild.me.top_role > ctx.author.top_role:
-            await ctx.author.edit(nick=f"[AFK] {ctx.author.display_name}")
+        me = ctx.guild.me
 
-    @commands.Cog.listener("on_message")
-    async def on_mention(self, message: discord.Message) -> None:
-        """Remove AFK status when a user sends a message."""
-        if message.author.bot or message.guild is None:
-            return
+        if me is not None and me.guild_permissions.manage_nicknames and me.top_role > ctx.author.top_role:
+            nickname = f"[AFK] {ctx.author.display_name}"[:32]
 
-        if not message.mentions:
-            return
+            try:
+                await ctx.author.edit(nick=nickname, reason="User marked themselves as AFK")
+            except discord.HTTPException:
+                _log.warning("Failed to update AFK nickname for %s (%s)", ctx.author, ctx.author.id, exc_info=True)
 
-        for user in message.mentions:
-            afk = await self.bot.database_manager.is_user_afk(guild_id=message.guild.id, user_id=user.id)
-            if afk:
-                continue
-
-            reason = await self.bot.database_manager.get_afk_reason(guild_id=message.guild.id, user_id=user.id)
-            await message.reply(f"{user.mention} is currently AFK: {reason}", allowed_mentions=discord.AllowedMentions.none())
-
-    @commands.Cog.listener("on_message")
+    @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.author.bot or message.guild is None:
+        """Handle AFK notifications and automatically remove AFK status."""
+
+        if message.guild is None or message.author.bot:
             return
 
-        afk = await self.bot.database_manager.is_user_afk(guild_id=message.guild.id, user_id=message.author.id)
-        if not afk:
+        afk_reason = await self.bot.database_manager.get_afk_reason(guild_id=message.guild.id, user_id=message.author.id)
+
+        mentioned_ids = {member.id for member in message.mentions if not member.bot}
+
+        if mentioned_ids:
+            afk_users = await self.bot.database_manager.get_afk_users(guild_id=message.guild.id)
+
+            for user_id, afk_reason in afk_users.items():
+                member = message.guild.get_member(user_id)
+
+                if member is None:
+                    continue
+
+                await message.reply(f"{member.mention} is currently AFK: {afk_reason}", allowed_mentions=discord.AllowedMentions.none())
+
+        if afk_reason is None:
             return
 
         await self.bot.database_manager.remove_user_from_afk(guild_id=message.guild.id, user_id=message.author.id)
-        await message.reply(f"Welcome back {message.author.mention}")
-
-        assert isinstance(message.author, discord.Member)
-
-        if message.guild.me.guild_permissions.manage_nicknames and message.guild.me.top_role > message.author.top_role:
-            if message.author.display_name.startswith("[AFK] "):
-                new_nick = message.author.display_name[6:]
-                await message.author.edit(nick=new_nick)
+        await message.reply(f"Welcome back, {message.author.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
 
 async def setup(bot: Parrot) -> None:

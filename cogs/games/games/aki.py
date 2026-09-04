@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 import discord
-from akinator import AsyncAkinator as AkinatorGame, CantGoBackAnyFurther
+from akinator import AsyncAkinator as AkinatorGame
+from akinator import CantGoBackAnyFurther
 from discord.ext import commands
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, double_wait
@@ -46,7 +47,6 @@ class Akinator:
 
         self.player: Player | None = None
         self.win_at: int | None = None
-        self.guess: Any = None
         self.message: discord.Message | None = None
 
         self.embed_color: DiscordColor | None = None
@@ -57,19 +57,14 @@ class Akinator:
         self.bar: str = ""
 
     def build_bar(self) -> str:
-        prog = round(self.aki.progression / 8)  # type: ignore[operator]
+        prog = round(self.aki.progression or 0 / 8)
         self.bar = f"[`{self.BAR * prog}{'  ' * (10 - prog)}`]"
         return self.bar
 
     def build_embed(self, *, instructions: bool = True) -> discord.Embed:
         embed = discord.Embed(
             title="Guess your character!",
-            description=(
-                "```swift\n"
-                f"Question-Number  : {self.aki.step + 1}\n"  # type: ignore[operator]
-                f"Progression-Level: {self.aki.progression:.2f}\n```\n"
-                f"{self.build_bar()}"
-            ),
+            description=(f"```swift\nQuestion-Number  : {self.aki.step or 0 + 1}\nProgression-Level: {self.aki.progression:.2f}\n```\n{self.build_bar()}"),
             color=self.embed_color,
         )
         embed.add_field(name="- Question -", value=self.aki.question)
@@ -80,20 +75,16 @@ class Akinator:
         embed.set_footer(text="Figuring out the next question | This may take a second")
         return embed
 
-    async def win(self) -> discord.Embed:
-        await self.aki.win()  # type: ignore[func-call]
-        self.guess = self.aki.first_guess  # type: ignore[attr-defined]
-
+    def win(self) -> discord.Embed:
         embed = discord.Embed(color=self.embed_color)
         embed.title = "Character Guesser Engine Results"
-        embed.description = f"Total Questions: `{self.aki.step + 1}`"  # type: ignore[operator]
+        embed.description = f"Total Questions: `{self.aki.step or 0 + 1}`"
 
         embed.add_field(
             name="Character Guessed",
-            value=f"\n**Name:** {self.guess.name}\n{self.guess.description}",
+            value=f"\n**Name:** {self.aki.name_proposition} - {self.aki.description_proposition}",
         )
-
-        embed.set_image(url=self.guess.absolute_picture_path)
+        embed.set_image(url=self.aki.photo)
         embed.set_footer(text="Was I correct?")
 
         return embed
@@ -143,7 +134,7 @@ class Akinator:
         if self.delete_button:
             await self.message.add_reaction(STOP)
 
-        while self.aki.progression <= self.win_at:  # type: ignore[operator]
+        while (self.aki.progression or 0) <= self.win_at:
 
             def check(reaction: discord.Reaction, user: discord.User) -> bool:
                 emoji = str(reaction.emoji)
@@ -186,7 +177,7 @@ class Akinator:
             embed = self.build_embed()
             await self.message.edit(embed=embed)
 
-        embed = await self.win()
+        embed = self.win()
         return await self.message.edit(embed=embed)
 
 
@@ -238,7 +229,7 @@ class AkiView(BaseView):
             return
 
         # defer to avoid 3s interaction timeout while waiting for the akinator API
-        await interaction.response.defer()
+        await interaction.response.defer(thinking=True)
 
         if answer == "back":
             try:
@@ -250,9 +241,9 @@ class AkiView(BaseView):
         else:
             await game.aki.answer(answer)
 
-            if game.win_at is not None and game.aki.progression >= game.win_at:  # type: ignore[operator]
+            if game.win_at is not None and (game.aki.progression or 0) >= game.win_at:
                 self.disable_all()
-                embed = await game.win()
+                embed = game.win()
                 self.stop()
             else:
                 embed = game.build_embed(instructions=False)

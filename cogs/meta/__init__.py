@@ -40,34 +40,42 @@ class Meta(commands.Cog):
         """
         Display the bot's current latency.
 
-        Two different latency values are reported:
+        The following latency values are reported:
 
-        1. Gateway latency
-           The latency between the bot and Discord's WebSocket gateway.
+        - Gateway latency:
+            The bot's current WebSocket latency to Discord.
 
-        2. API/message latency
-           The approximate time it takes for a message to travel from the
-           bot to Discord and for Discord's response to become visible to
-           the bot.
+        - API latency:
+            The time taken for Discord to respond to the initial ping message.
+
+        - Database latency:
+            The time taken to ping the configured database services. MongoDB
+            and Redis latencies are reported individually, along with their
+            combined latency.
 
         This command has a 5-second cooldown per user.
         """
-        start = time.perf_counter()
+        start_time = time.perf_counter()
 
         message = await ctx.reply("Pinging...")
 
-        api_latency = (time.perf_counter() - start) * 1000
+        mongo_start_time = time.perf_counter()
+        await self.bot.database_manager.ping_mongo_server()
+        mongo_latency = (time.perf_counter() - mongo_start_time) * 1000
+
+        redis_start_time = time.perf_counter()
+        await self.bot.database_manager.ping_redis_server()
+        redis_latency = (time.perf_counter() - redis_start_time) * 1000
+
+        api_latency = (time.perf_counter() - start_time) * 1000
+        database_latency = mongo_latency + redis_latency
         gateway_latency = self.bot.latency * 1000
 
-        gateway_latency = round(gateway_latency)
-        api_latency = round(api_latency)
+        ping_pong_emoji = "\N{TABLE TENNIS PADDLE AND BALL}"
 
-        PING_PONG_EMOJI = "\N{TABLE TENNIS PADDLE AND BALL}"
-        await message.edit(
-            content=(f"{PING_PONG_EMOJI} **Pong!**\nGateway: `{gateway_latency}ms`\nAPI: `{api_latency}ms`"),
-        )
+        content = f"{ping_pong_emoji} **Pong!** Gateway: `{gateway_latency:.2f}ms` | API: `{api_latency:.2f}ms` | Database: `{database_latency:.2f}ms` (MongoDB: `{mongo_latency:.2f}ms`, Redis: `{redis_latency:.2f}ms`)"
 
-        return message
+        return await message.edit(content=content)
 
     @commands.command(
         name="uptime",

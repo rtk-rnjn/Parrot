@@ -146,10 +146,52 @@ class Music(commands.Cog):
             feedback = f"Queued **{len(result.tracks)}** tracks from the playlist."
         else:
             await ctx.voice_client.queue_track(result[0], ctx=ctx)
-            feedback = f"Queued **{result[0].title}**."
+            feedback = f"Queued **[{result[0].title} - {result[0].author}](<{result[0].uri}>)**."
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await ctx.reply(feedback)
+
+    @commands.command(name="skip", aliases=["s"])
+    async def skip(self, ctx: Context[Parrot]) -> None:
+        """Skips the current track."""
+
+        if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
+            await ctx.message.add_reaction("\N{WARNING SIGN}")
+            await ctx.reply("I am not connected to a voice channel.")
+            return
+
+        assert isinstance(ctx.voice_client, Player)
+
+        if not ctx.voice_client.current:
+            await ctx.message.add_reaction("\N{CROSS MARK}")
+            await ctx.reply("There is no track currently playing.")
+            return
+
+        await ctx.voice_client.play_next()
+        await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await ctx.reply("Skipped the current track.")
+
+    @commands.command(name="queue", aliases=["q"])
+    async def queue(self, ctx: Context[Parrot]) -> None:
+        """Displays the current queue."""
+
+        if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
+            await ctx.message.add_reaction("\N{WARNING SIGN}")
+            await ctx.reply("I am not connected to a voice channel.")
+            return
+
+        assert isinstance(ctx.voice_client, Player)
+
+        if not ctx.voice_client.queue:
+            await ctx.message.add_reaction("\N{OPEN MAILBOX WITH LOWERED FLAG}")
+            await ctx.reply("The queue is currently empty.")
+            return
+
+        pages = []
+        for index, track in enumerate(ctx.voice_client.queue, start=1):
+            pages.append(f"{index}. [{track.title}](<{track.uri}>) by {track.author}")
+
+        await self.bot.paginate(ctx, embed=discord.Embed(title="Current Queue"), pages=pages)
 
     @commands.command(name="nowplaying", aliases=["np"])
     async def now_playing(self, ctx: Context[Parrot]) -> None:
@@ -214,6 +256,17 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_pomice_track_end(self, player: Player, track: pomice.Track, reason: str) -> None:
+        _log.info("Track ended: %s (Reason: %s)", track.title, reason)
+        await player.play_next()
+
+    @commands.Cog.listener()
+    async def on_pomice_track_exception(self, player: Player, track: pomice.Track, exception: Exception) -> None:
+        _log.error("Track exception: %s (Track: %s)", exception, track.title)
+        await player.play_next()
+
+    @commands.Cog.listener()
+    async def on_pomice_track_stuck(self, player: Player, track: pomice.Track, threshold_ms: int) -> None:
+        _log.warning("Track stuck: %s (Threshold: %d ms)", track.title, threshold_ms)
         await player.play_next()
 
     async def _make_request(self) -> list[dict]:

@@ -77,3 +77,23 @@ class _UserHighlightsMixin:
                 "$addToSet": {"highlights.$.words": {"$each": words}},
             },
         )
+
+    async def remove_user_highlight(self, *, guild_id: int, user_id: int, words: list[str]) -> None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_WORDS.format(guild_id=guild_id, user_id=user_id)
+        await self.redis_client.srem(redis_key, *words)
+        await self.users_collection.update_one(
+            {"_id": user_id, "highlights.guild_id": guild_id},
+            {
+                "$pull": {"highlights.$.words": {"$in": words}},
+            },
+        )
+
+    async def get_all_user_highlights(self, *, guild_id: int) -> dict[int, set[str]]:
+        result: dict[int, set[str]] = {}
+
+        async for user_config in self.users_collection.find({"highlights.guild_id": guild_id}, {"_id": 1, "highlights.$": 1}):
+            user_id = user_config["_id"]
+            highlight = user_config["highlights"][0]
+            result[user_id] = set(highlight["words"])
+
+        return result

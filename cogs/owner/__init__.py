@@ -8,7 +8,6 @@ import discord
 from colorama import Fore
 from discord.ext import commands
 from jishaku.codeblocks import codeblock_converter
-from redis import asyncio
 
 if TYPE_CHECKING:
     from core.bot import Parrot
@@ -40,18 +39,21 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         while True:
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=300)
-            except asyncio.TimeoutError:
-                await ctx.send("Redis REPL session timed out.")
+            except TimeoutError:
+                await ctx.reply("Redis REPL session timed out.")
                 break
 
             if msg.content.lower() == "exit":
-                await ctx.send("Exiting Redis REPL session.")
+                await msg.reply("Exiting Redis REPL session.")
                 break
 
             codeblock = codeblock_converter(msg.content)
             try:
                 result = await self.bot.database_manager.redis_client.execute_command(codeblock.content)
-                await msg.reply(result)
+                if len(str(result)) > 1980:
+                    await msg.reply("Result is too long to display.")
+                else:
+                    await msg.reply(f"```py\n{result}```")
             except Exception as e:
                 tb_fmt = self._format_traceback(e)
                 await msg.reply(tb_fmt)

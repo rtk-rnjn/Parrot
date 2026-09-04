@@ -85,3 +85,12 @@ class DatabaseManager(
     @property
     def mongo_client(self) -> AsyncMongoClient:
         return self.__mongo_client
+
+    async def ping_mongo_server(self) -> bool:
+        """Ping the MongoDB server to check if it's reachable."""
+        response = await self.mongo_client.admin.command("ping")
+        return response.get("ok", 0) == 1
+
+    async def ping_redis_server(self) -> bool:
+        """Ping the Redis server to check if it's reachable."""
+        return await self.redis_client.ping()

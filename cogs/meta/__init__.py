@@ -563,7 +563,7 @@ class Meta(commands.Cog):
             assert ctx.guild is not None, "This command can only be used in a server."
 
         channel = channel or ctx.channel
-        _id = channel.id
+        channel_id = channel.id
 
         assert isinstance(
             channel,
@@ -573,7 +573,7 @@ class Meta(commands.Cog):
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
-        _type = str(channel.type).capitalize()
+        channel_type = str(channel.type).capitalize()
         embed = (
             discord.Embed(
                 title="Channel Info",
@@ -581,11 +581,11 @@ class Meta(commands.Cog):
                 timestamp=discord.utils.utcnow(),
             )
             .add_field(name="Name", value=channel.name)
-            .add_field(name="ID", value=f"{_id}")
+            .add_field(name="ID", value=f"{channel_id}")
             .add_field(name="Created At", value=created_at)
             .add_field(name="Mention", value=mention)
             .add_field(name="Position", value=position)
-            .add_field(name="Type", value=_type)
+            .add_field(name="Type", value=channel_type)
             .set_footer(text=f"{ctx.author}")
         )
         if ctx.guild.icon:

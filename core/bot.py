@@ -49,6 +49,7 @@ LOADABLE_COGS = [
     "cogs.misc",
     "cogs.mod",
     "cogs.music",
+    "cogs.nsfw",
     "cogs.owner",
     "cogs.reminder",
     "cogs.rtfm",

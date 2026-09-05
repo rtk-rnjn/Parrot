@@ -36,6 +36,23 @@ class RedisKeys(StrEnum):
     GUILD_AFK_USERS = "guild:{guild_id}:afk_users"
     GUILD_AFK_USER_REASON = "guild:{guild_id}:afk_user:{user_id}:reason"
 
+    GUILD_LEVELING_CONFIG_ENABLED = "guild:{guild_id}:leveling_config:enabled"
+    GUILD_LEVELING_CONFIG_XP_PER_MESSAGE = "guild:{guild_id}:leveling_config:xp_per_message"
+    GUILD_LEVELING_CONFIG_XP_PER_REACTION = "guild:{guild_id}:leveling_config:xp_per_reaction"
+    GUILD_LEVELING_CONFIG_LEVEL_ROLES = "guild:{guild_id}:leveling_config:level_roles"
+
+    GUILD_LEVELING_DATA = "guild:{guild_id}:leveling_data"
+
+    GUILD_GIVEAWAY_CONFIG_ENABLED = "guild:{guild_id}:giveaway_config:enabled"
+    GUILD_GIVEAWAY_CONFIG_CHANNEL_ID = "guild:{guild_id}:giveaway_config:giveaway_channel_id"
+    GUILD_GIVEAWAY_CONFIG_ROLE_ID = "guild:{guild_id}:giveaway_config:giveaway_role_id"
+
+    GUILD_WELCOME_CONFIG_ENABLED = "guild:{guild_id}:welcome_config:enabled"
+    GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_MESSAGE = "guild:{guild_id}:welcome_config:on_member_join_message"
+    GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_CHANNEL_ID = "guild:{guild_id}:welcome_config:on_member_join_channel_id"
+    GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_MESSAGE = "guild:{guild_id}:welcome_config:on_member_leave_message"
+    GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_CHANNEL_ID = "guild:{guild_id}:welcome_config:on_member_leave_channel_id"
+
     USER_TIMEZONE = "user:{user_id}:timezone"
 
     SCAM_LINKS_CACHE = "scam_links_cache"

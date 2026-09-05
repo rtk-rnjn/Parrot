@@ -16,7 +16,7 @@ class Rule(TypedDict):
     effects: list[dict]
 
 
-class Automod(TypedDict):
+class AutomodConfig(TypedDict):
     word_denylist: list[str]
     word_allowlist: list[str]
     website_denylist: list[str]
@@ -42,21 +42,51 @@ class Tag(TypedDict):
     used_count: dict[str, int]
 
 
+class LevelingConfig(TypedDict):
+    enabled: bool
+    xp_per_message: int
+    xp_per_reaction: int
+    level_roles: dict[int, int]  # level -> role_id
+
+
+class GiveawayConfig(TypedDict):
+    enabled: bool
+    giveaway_channel_id: int | None
+    giveaway_role_id: int | None
+
+
+class WelcomeConfig(TypedDict):
+    enabled: bool
+    on_member_join_message: str | None
+    on_member_join_channel_id: int | None
+    on_member_leave_message: str | None
+    on_member_leave_channel_id: int | None
+
+
 class GuildConfiguration(TypedDict):
     _id: int
     command_prefix: str
     mute_role_id: int | None
     muted_members: list[int]
     violations: dict[str, dict[str, int]]
-    automod: Automod
+    automod: AutomodConfig
+
+    leveling_config: LevelingConfig
+    giveaway_config: GiveawayConfig
+    welcome_config: WelcomeConfig
+
     custom_commands: list[CustomCommand]
     tags: list[Tag]
+
     afk_users: dict[str, str]
+
+    events: dict[str, bool]  # event_name -> enabled
 
     # Meta
     custom_commands_db: dict[str, str]
     custom_commands_logs: list[str]
 
+    leveling_data: dict[str, int]  # user_id -> xp
 
 class TodoStatus(StrEnum):
     PENDING = "pending"

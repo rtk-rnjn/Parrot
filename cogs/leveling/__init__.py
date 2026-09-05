@@ -63,6 +63,9 @@ class Leveling(commands.Cog):
         next_level_xp = self._calculate_xp_for_level(current_level + 1)
         return next_level_xp - xp
 
+    def set_enabled_cache(self, guild_id: int, enabled: bool) -> None:
+        self._enabled_guilds[guild_id] = enabled
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         if message.guild is None or message.author.bot:

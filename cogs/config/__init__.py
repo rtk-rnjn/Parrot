@@ -8,7 +8,9 @@ from discord import app_commands
 from discord.ext import commands
 
 if TYPE_CHECKING:
+    from cogs.leveling import Leveling
     from core.bot import Parrot
+
 
 _log = logging.getLogger("bot.cogs.config")
 
@@ -52,12 +54,15 @@ class UpdateBotPrefixModal(discord.ui.Modal, title="Update Bot Prefix"):
 
 
 class ConfigurationLayout(discord.ui.LayoutView):
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         bot_prefix: str,
         mute_role: discord.Role | None,
-        roles: list[discord.Role] | None = None,
+        welcome_enabled: bool,
+        welcome_join_channel: discord.TextChannel | None,
+        welcome_leave_channel: discord.TextChannel | None,
+        leveling_enabled: bool,
     ) -> None:
         super().__init__()
 
@@ -91,6 +96,56 @@ class ConfigurationLayout(discord.ui.LayoutView):
             accessory=mute_role_delete_button,
         )
 
+        self.welcome_enable_button = discord.ui.Button(
+            label="Enable",
+            style=discord.ButtonStyle.success,
+            disabled=welcome_enabled,
+        )
+        self.welcome_enable_button.callback = self.enable_welcome_callback
+        self.welcome_disable_button = discord.ui.Button(
+            label="Disable",
+            style=discord.ButtonStyle.danger,
+            disabled=not welcome_enabled,
+        )
+        self.welcome_disable_button.callback = self.disable_welcome_callback
+        welcome_toggle_row = discord.ui.ActionRow(self.welcome_enable_button, self.welcome_disable_button)
+
+        self.welcome_join_channel_select = discord.ui.ChannelSelect(
+            placeholder="Select the member join channel...",
+            channel_types=[discord.ChannelType.text],
+            default_values=[welcome_join_channel] if welcome_join_channel else [],
+        )
+        self.welcome_join_channel_select.callback = self.set_welcome_join_channel_callback
+        self.welcome_leave_channel_select = discord.ui.ChannelSelect(
+            placeholder="Select the member leave channel...",
+            channel_types=[discord.ChannelType.text],
+            default_values=[welcome_leave_channel] if welcome_leave_channel else [],
+        )
+        self.welcome_leave_channel_select.callback = self.set_welcome_leave_channel_callback
+
+        welcome_section = discord.ui.Section(
+            discord.ui.TextDisplay("### Welcome Messages\n-# Configure whether join and leave messages are enabled and where they are sent."),
+            accessory=discord.ui.Button(label="Welcome", style=discord.ButtonStyle.secondary, disabled=True),
+        )
+
+        self.leveling_enable_button = discord.ui.Button(
+            label="Enable",
+            style=discord.ButtonStyle.success,
+            disabled=leveling_enabled,
+        )
+        self.leveling_enable_button.callback = self.enable_leveling_callback
+        self.leveling_disable_button = discord.ui.Button(
+            label="Disable",
+            style=discord.ButtonStyle.danger,
+            disabled=not leveling_enabled,
+        )
+        self.leveling_disable_button.callback = self.disable_leveling_callback
+        leveling_toggle_row = discord.ui.ActionRow(self.leveling_enable_button, self.leveling_disable_button)
+        leveling_section = discord.ui.Section(
+            discord.ui.TextDisplay("### Leveling\n-# Enable or disable XP tracking for this server."),
+            accessory=discord.ui.Button(label="Leveling", style=discord.ButtonStyle.secondary, disabled=True),
+        )
+
         container = discord.ui.Container(
             discord.ui.TextDisplay(
                 "## Configuration\n-# This is the configuration panel for the bot. You can change various settings here.\n",
@@ -100,6 +155,14 @@ class ConfigurationLayout(discord.ui.LayoutView):
             discord.ui.Separator(),
             mute_role_section,
             mute_role_selector,
+            discord.ui.Separator(),
+            welcome_section,
+            welcome_toggle_row,
+            discord.ui.ActionRow(self.welcome_join_channel_select),
+            discord.ui.ActionRow(self.welcome_leave_channel_select),
+            discord.ui.Separator(),
+            leveling_section,
+            leveling_toggle_row,
         )
 
         self.add_item(container)
@@ -125,6 +188,92 @@ class ConfigurationLayout(discord.ui.LayoutView):
             ephemeral=True,
         )
 
+    async def _require_administrator(self, interaction: discord.Interaction[Parrot]) -> bool:
+        if interaction.guild is None or not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message("Only server administrators can change these settings.", ephemeral=True)
+            return False
+        return True
+
+    async def enable_welcome_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        updated = await interaction.client.database_manager.edit_welcome_config(guild_id=interaction.guild.id, enabled=True)
+        if not updated:
+            await interaction.response.send_message("Welcome messages are not configured for this server.", ephemeral=True)
+            return
+        self.welcome_enable_button.disabled = True
+        self.welcome_disable_button.disabled = False
+        await interaction.response.edit_message(view=self)
+
+    async def disable_welcome_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        updated = await interaction.client.database_manager.edit_welcome_config(guild_id=interaction.guild.id, enabled=False)
+        if not updated:
+            await interaction.response.send_message("Welcome messages are not configured for this server.", ephemeral=True)
+            return
+        self.welcome_enable_button.disabled = False
+        self.welcome_disable_button.disabled = True
+        await interaction.response.edit_message(view=self)
+
+    async def set_welcome_join_channel_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        channel = self.welcome_join_channel_select.values[0]
+        updated = await interaction.client.database_manager.edit_welcome_config(
+            guild_id=interaction.guild.id,
+            on_member_join_channel_id=channel.id,
+        )
+        await interaction.response.send_message(
+            "Welcome join channel updated." if updated else "Welcome messages are not configured for this server.",
+            ephemeral=True,
+        )
+
+    async def set_welcome_leave_channel_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        channel = self.welcome_leave_channel_select.values[0]
+        updated = await interaction.client.database_manager.edit_welcome_config(
+            guild_id=interaction.guild.id,
+            on_member_leave_channel_id=channel.id,
+        )
+        await interaction.response.send_message(
+            "Welcome leave channel updated." if updated else "Welcome messages are not configured for this server.",
+            ephemeral=True,
+        )
+
+    async def enable_leveling_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        updated = await interaction.client.database_manager.edit_leveling_config(guild_id=interaction.guild.id, enabled=True)
+        if not updated:
+            await interaction.response.send_message("Leveling is not configured for this server.", ephemeral=True)
+            return
+        leveling_cog: Leveling = interaction.client.get_cog("Leveling")  # type: ignore
+        leveling_cog.set_enabled_cache(interaction.guild.id, True)
+        self.leveling_enable_button.disabled = True
+        self.leveling_disable_button.disabled = False
+        await interaction.response.edit_message(view=self)
+
+    async def disable_leveling_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        updated = await interaction.client.database_manager.edit_leveling_config(guild_id=interaction.guild.id, enabled=False)
+        if not updated:
+            await interaction.response.send_message("Leveling is not configured for this server.", ephemeral=True)
+            return
+        leveling_cog: Leveling = interaction.client.get_cog("Leveling")  # type: ignore
+        leveling_cog.set_enabled_cache(interaction.guild.id, False)
+        self.leveling_enable_button.disabled = False
+        self.leveling_disable_button.disabled = True
+        await interaction.response.edit_message(view=self)
+
 
 class Config(commands.Cog):
     """Cog for managing bot configuration."""
@@ -133,7 +282,7 @@ class Config(commands.Cog):
         self.bot = bot
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
-    @commands.command(name="config")
+    @commands.group(name="config", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @app_commands.checks.has_permissions(administrator=True)
     async def config(
@@ -150,10 +299,24 @@ class Config(commands.Cog):
 
         prefix = await self.bot.database_manager.get_command_prefix(guild_id=ctx.guild.id)
         mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
+        welcome_enabled = await self.bot.database_manager.is_welcome_enabled(ctx.guild.id)
+        welcome_join_channel_id = await self.bot.database_manager.get_welcome_join_channel_id(ctx.guild.id)
+        welcome_leave_channel_id = await self.bot.database_manager.get_welcome_leave_channel_id(ctx.guild.id)
+        leveling_enabled = await self.bot.database_manager.is_leveling_enabled(ctx.guild.id)
+        welcome_join_channel = ctx.guild.get_channel(welcome_join_channel_id) if welcome_join_channel_id else None
+        welcome_leave_channel = ctx.guild.get_channel(welcome_leave_channel_id) if welcome_leave_channel_id else None
+        if not isinstance(welcome_join_channel, discord.TextChannel):
+            welcome_join_channel = None
+        if not isinstance(welcome_leave_channel, discord.TextChannel):
+            welcome_leave_channel = None
 
         view = ConfigurationLayout(
             bot_prefix=prefix or ctx.bot.DEFAULT_PREFIX,
             mute_role=ctx.guild.get_role(mute_role_id) if mute_role_id else None,
+            welcome_enabled=welcome_enabled,
+            welcome_join_channel=welcome_join_channel,
+            welcome_leave_channel=welcome_leave_channel,
+            leveling_enabled=leveling_enabled,
         )
         return await ctx.reply(view=view, ephemeral=True)
 

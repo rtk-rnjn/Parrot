@@ -61,7 +61,7 @@ class _GuildWelcomerMixin:
             return False
 
         result = await self.guilds_collection.update_one(
-            {"_id": guild_id, "welcome_config": {"$exists": True}},
+            {"_id": guild_id},
             {"$set": updates},
         )
         if result.matched_count == 0:

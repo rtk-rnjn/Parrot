@@ -93,7 +93,6 @@ def _draw_progress_bar(
     )
 
 
-@executor_function
 def _draw_rounded_bar(  # noqa: PLR0913
     draw: ImageDraw.ImageDraw,
     *,

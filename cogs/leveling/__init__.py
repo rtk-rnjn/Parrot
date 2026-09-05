@@ -172,8 +172,8 @@ class Leveling(commands.Cog):
             rank=rank or 1,
             member=user,
             session=self.bot.http_session,
-            next_level_xp=self._calculate_xp_to_next_level(xp),
-            current_xp=xp,
+            xp_required_for_next_level=self._calculate_xp_to_next_level(xp),
+            current_level_xp=xp,
         )
         await ctx.reply(file=file, mention_author=False)
 

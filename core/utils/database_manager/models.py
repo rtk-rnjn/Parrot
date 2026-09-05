@@ -44,9 +44,7 @@ class Tag(TypedDict):
 
 class LevelingConfig(TypedDict):
     enabled: bool
-    xp_per_message: int
-    xp_per_reaction: int
-    level_roles: dict[int, int]  # level -> role_id
+    level_roles: dict[str, int]  # level -> role_id
 
 
 class GiveawayConfig(TypedDict):
@@ -87,6 +85,7 @@ class GuildConfiguration(TypedDict):
     custom_commands_logs: list[str]
 
     leveling_data: dict[str, int]  # user_id -> xp
+
 
 class TodoStatus(StrEnum):
     PENDING = "pending"

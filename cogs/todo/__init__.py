@@ -308,6 +308,11 @@ class Todo(commands.Cog):
         view = TodoListLayout(author=ctx.author, todo_items=todo_items)
         await ctx.reply(view=view)
 
+    @commands.command(name="todos")
+    async def todos(self, ctx: commands.Context[Parrot]) -> None:
+        """Alias for the todo list command."""
+        await ctx.invoke(self.list_todo)
+
     @todo.command(name="remove", aliases=["delete", "rm", "del"])
     async def remove_todo(self, ctx: commands.Context[Parrot], *, id: str) -> None:  # noqa: A002
         """Remove a to-do item."""

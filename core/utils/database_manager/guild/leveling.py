@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from discord.utils import MISSING
+from pymongo import UpdateOne
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
@@ -106,28 +107,61 @@ class _GuildLevelingMixin:
         return role_id
 
     async def incr_user_xp(self, *, guild_id: int, user_id: int, xp: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$inc": {f"leveling_data.{user_id}": xp}},
-            upsert=True,
-        )
         key = RedisKeys.GUILD_LEVELING_DATA.format(guild_id=guild_id)
         await self.redis_client.hincrby(key, str(user_id), xp)
 
+    async def flush_leveling_data(self, guild_id: int, /) -> int:
+        """Persist accumulated Redis XP in one MongoDB bulk operation."""
+        active_key = RedisKeys.GUILD_LEVELING_DATA.format(guild_id=guild_id)
+        pending_key = f"{active_key}:pending"
+
+        if not await self.redis_client.exists(pending_key):
+            if not await self.redis_client.exists(active_key):
+                return 0
+            await self.redis_client.rename(active_key, pending_key)
+
+        data = await self.redis_client.hgetall(pending_key)
+        if not data:
+            await self.redis_client.delete(pending_key)
+            return 0
+
+        operations = [
+            UpdateOne(
+                {"_id": guild_id},
+                {"$inc": {f"leveling_data.{user_id}": int(xp)}},
+                upsert=True,
+            )
+            for user_id, xp in data.items()
+        ]
+        await self.guilds_collection.bulk_write(operations, ordered=False)
+        await self.redis_client.delete(pending_key)
+        return len(operations)
+
+    async def flush_all_leveling_data(self) -> int:
+        """Persist accumulated XP for every guild with a Redis leveling hash."""
+        guild_ids: set[int] = set()
+        async for key in self.redis_client.scan_iter(match="guild:*:leveling_data*"):
+            parts = key.split(":")
+            if len(parts) >= 3 and parts[0] == "guild" and parts[2] == "leveling_data":
+                guild_ids.add(int(parts[1]))
+
+        flushed_users = 0
+        for guild_id in guild_ids:
+            flushed_users += await self.flush_leveling_data(guild_id)
+        return flushed_users
+
     async def get_user_xp(self, *, guild_id: int, user_id: int) -> int | None:
         key = RedisKeys.GUILD_LEVELING_DATA.format(guild_id=guild_id)
-        xp = await self.redis_client.hget(key, str(user_id))
-        if xp is not None:
-            return int(xp)
+        pending_key = f"{key}:pending"
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, f"leveling_data.{user_id}": {"$exists": True}},
+            {"_id": guild_id},
             {f"leveling_data.{user_id}": 1},
         )
-        if guild_config is None or "leveling_data" not in guild_config:
+        user_xp = (guild_config or {}).get("leveling_data", {}).get(str(user_id), 0)
+        active_delta = await self.redis_client.hget(key, str(user_id))
+        pending_delta = await self.redis_client.hget(pending_key, str(user_id))
+        total_xp = user_xp + int(active_delta or 0) + int(pending_delta or 0)
+        if guild_config is None and not active_delta and not pending_delta:
             return None
-
-        user_xp = guild_config["leveling_data"].get(str(user_id), 0)
-        if user_xp:
-            await self.redis_client.hset(key, str(user_id), str(user_xp))
-        return user_xp
+        return total_xp

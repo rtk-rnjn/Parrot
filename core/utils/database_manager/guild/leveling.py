@@ -165,3 +165,39 @@ class _GuildLevelingMixin:
         if guild_config is None and not active_delta and not pending_delta:
             return None
         return total_xp
+
+    async def predict_user_rank(self, *, guild_id: int, user_id: int) -> int | None:
+        """Predict the rank of a user based on their current XP and the XP of other users in the guild."""
+        user_xp = await self.get_user_xp(guild_id=guild_id, user_id=user_id)
+        if user_xp is None:
+            return None
+
+        key = RedisKeys.GUILD_LEVELING_DATA.format(guild_id=guild_id)
+        pending_key = f"{key}:pending"
+
+        # Get all users' XP from MongoDB
+        guild_config = await self.guilds_collection.find_one(
+            {"_id": guild_id, "leveling_data": {"$exists": True}},
+            {"leveling_data": 1},
+        )
+        leveling_data = guild_config.get("leveling_data", {}) if guild_config else {}
+
+        # Include Redis data
+        redis_data = await self.redis_client.hgetall(key)
+        pending_data = await self.redis_client.hgetall(pending_key)
+
+        # Combine all XP data
+        combined_xp = {}
+        for uid, xp in leveling_data.items():
+            combined_xp[int(uid)] = int(xp)
+        for uid, xp in redis_data.items():
+            combined_xp[int(uid)] = combined_xp.get(int(uid), 0) + int(xp)
+        for uid, xp in pending_data.items():
+            combined_xp[int(uid)] = combined_xp.get(int(uid), 0) + int(xp)
+
+        # Sort users by XP in descending order and determine rank
+        sorted_users = sorted(combined_xp.items(), key=lambda item: item[1], reverse=True)
+        for rank, (uid, _) in enumerate(sorted_users, start=1):
+            if uid == user_id:
+                return rank
+        return None

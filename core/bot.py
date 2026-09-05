@@ -45,6 +45,7 @@ LOADABLE_COGS = [
     "cogs.fun.fun",
     "cogs.games",
     "cogs.highlight",
+    "cogs.leveling",
     "cogs.meta",
     "cogs.misc",
     "cogs.mod",
@@ -55,6 +56,7 @@ LOADABLE_COGS = [
     "cogs.rtfm",
     "cogs.tags",
     "cogs.todo",
+    "cogs.welcomer",
 ]
 
 _log = logging.getLogger("bot.core")

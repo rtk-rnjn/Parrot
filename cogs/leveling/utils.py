@@ -1,0 +1,99 @@
+from __future__ import annotations
+
+from io import BytesIO
+
+import aiohttp
+import discord
+from PIL import Image, ImageDraw, ImageFont
+
+
+async def rank_card(  # noqa: PLR0913
+    level: int,
+    rank: int,
+    member: discord.Member | discord.User,
+    *,
+    session: aiohttp.ClientSession,
+    current_xp: int,
+    custom_background: str = "#2C2F33",
+    xp_color: str = "#00FF00",
+    next_level_xp: int,
+) -> discord.File:
+    # create backdrop
+    img = Image.new("RGB", (934, 282), color=custom_background)
+
+    # get avatar picture
+    async with session.get(member.display_avatar.url) as response:
+        response.raise_for_status()
+        avatar_data = await response.read()
+
+    img_avatar = Image.open(BytesIO(avatar_data)).convert("RGBA")
+
+    # create circle mask
+    bigsize = (img_avatar.size[0] * 3, img_avatar.size[1] * 3)
+    mask = Image.new("L", bigsize, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + bigsize, fill=255)
+    mask = mask.resize(img_avatar.size)
+    img_avatar.putalpha(mask)
+    img_avatar = img_avatar.resize((170, 170))
+
+    img.paste(img_avatar, (50, 50))
+    d = ImageDraw.Draw(img)
+
+    x, y, w, h, progress = (
+        260,
+        180,
+        575,
+        40,
+        current_xp / next_level_xp,
+    )
+
+    bg = "#484B4E"
+    fg = xp_color
+
+    # draw background
+    d.ellipse((x + w, y, x + h + w, y + h), fill=bg)
+    d.ellipse((x, y, x + h, y + h), fill=bg)
+    d.rectangle(
+        (x + (h / 2), y, x + w + (h / 2), y + h),
+        fill=bg,
+    )
+
+    # draw progress bar
+    w *= progress
+    d.ellipse((x + w, y, x + h + w, y + h), fill=fg)
+    d.ellipse((x, y, x + h, y + h), fill=fg)
+    d.rectangle(
+        (x + (h / 2), y, x + w + (h / 2), y + h),
+        fill=fg,
+    )
+
+    font = ImageFont.truetype(
+        font=r"extra/fonts/Montserrat-Regular.ttf",
+        size=40,
+    )
+    font2 = ImageFont.truetype(
+        font=r"extra/fonts/Montserrat-Regular.ttf",
+        size=25,
+    )
+
+    d.text((260, 100), member.name, (255, 255, 255), font=font)
+    d.text(
+        (740, 130),
+        f"{current_xp}/{next_level_xp} XP",
+        (255, 255, 255),
+        font=font2,
+    )
+    d.text((650, 50), f"LEVEL {level}", fg, font=font)
+    d.text(
+        (260, 50),
+        f"RANK #{rank}",
+        (255, 255, 255),
+        font=font2,
+    )
+
+    buffer_io = BytesIO()
+    img.save(buffer_io, format="PNG")
+    buffer_io.seek(0)
+
+    return discord.File(buffer_io, filename="image.png")

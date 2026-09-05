@@ -1,29 +1,32 @@
 from __future__ import annotations
 
 import json
+import logging
 import random
 from datetime import datetime
-from typing import TYPE_CHECKING
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import dateutil.parser
-from rapidfuzz import fuzz
-
 import discord
 from discord.ext import commands
-from core.utils import in_month
+from rapidfuzz import fuzz
+
 from core.constants import Month
+from core.utils import in_month
 
 if TYPE_CHECKING:
     from core.bot import Parrot
 
 
-NAMES: dict = json.loads(Path(r"extra/pride/drag_queen_names.json").read_text("utf8"))
-VIDEOS: dict = json.loads(Path(r"extra/pride/anthems.json").read_text("utf8"))
-FACTS: dict = json.loads(Path(r"extra/pride/facts.json").read_text("utf8"))
+NAMES: dict = json.loads(Path(r"assets/pride/drag_queen_names.json").read_text("utf8"))
+VIDEOS: dict = json.loads(Path(r"assets/pride/anthems.json").read_text("utf8"))
+FACTS: dict = json.loads(Path(r"assets/pride/facts.json").read_text("utf8"))
 
-PRIDE_RESOURCE: dict = json.loads(Path(r"extra/pride/prideleader.json").read_text("utf8"))
+PRIDE_RESOURCE: dict = json.loads(Path(r"assets/pride/prideleader.json").read_text("utf8"))
 MINIMUM_FUZZ_RATIO = 40
+
+_log = logging.getLogger("bot.cogs.fun.pride")
 
 
 class Pride(commands.Cog, command_attrs={"hidden": True}):
@@ -31,6 +34,8 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     async def send_random_fact(self, ctx: commands.Context[Parrot]) -> None:
         """Provides a fact from any previous day, or today."""

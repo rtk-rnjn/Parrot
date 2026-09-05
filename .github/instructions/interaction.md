@@ -100,7 +100,7 @@ Use this pattern to associate a UI view with a message sent in response to an in
 async def more_timeout_example(interaction):
     """Another example to showcase disabling buttons on timing out"""
     view = MyView()
-    callback = await interaction.response.send_message('Press me!', view=view)
+    callback = await interaction.response.send_message("Press me!", view=view)
 
     # Step 1
     resource = callback.resource
@@ -290,11 +290,12 @@ Use the @context_menu decorator to create context menu interactions. The callbac
 ```python
 @app_commands.context_menu()
 async def react(interaction: discord.Interaction, message: discord.Message):
-    await interaction.response.send_message('Very cool message!', ephemeral=True)
+    await interaction.response.send_message("Very cool message!", ephemeral=True)
+
 
 @app_commands.context_menu()
 async def ban(interaction: discord.Interaction, user: discord.Member):
-    await interaction.response.send_message(f'Should I actually ban {user}...', ephemeral=True)
+    await interaction.response.send_message(f"Should I actually ban {user}...", ephemeral=True)
 ```
 
 --------------------------------
@@ -733,11 +734,13 @@ async def on_member_update(self, before, after):
     if before.status != after.status:
         await status_changed(before, after)
 
+
 # after
 @client.event
 async def on_member_update(self, before, after):
     if before.nick != after.nick:
         await nick_changed(before, after)
+
 
 @client.event
 async def on_presence_update(self, before, after):
@@ -807,13 +810,13 @@ async with channel.typing():
     # simulate something heavy
     await asyncio.sleep(20)
 
-await channel.send('Done!')
+await channel.send("Done!")
 ```
 
 ```python
 await channel.typing()
 # Do some computational magic for about 10 seconds
-await channel.send('Done!')
+await channel.send("Done!")
 ```
 
 --------------------------------
@@ -857,7 +860,7 @@ Asynchronously iterate over users who reacted to a message. Note that this can b
 
 ```python
 async for user in reaction.users():
-    await channel.send(f'{user} has reacted with {reaction.emoji}!')
+    await channel.send(f"{user} has reacted with {reaction.emoji}!")
 ```
 
 --------------------------------
@@ -1090,13 +1093,14 @@ Demonstrates how to handle events by subclassing discord.Client and defining cor
 ```python
 import discord
 
+
 class MyClient(discord.Client):
     async def on_message(self, message):
         if message.author == self.user:
             return
 
-        if message.content.startswith('$hello'):
-            await message.channel.send('Hello World!')
+        if message.content.startswith("$hello"):
+            await message.channel.send("Hello World!")
 ```
 
 --------------------------------
@@ -1318,7 +1322,7 @@ Collect all users who reacted into a list to perform operations like random sele
 users = [user async for user in reaction.users()]
 # users is now a list of User...
 winner = random.choice(users)
-await channel.send(f'{winner} has won the raffle.')
+await channel.send(f"{winner} has won the raffle.")
 ```
 
 --------------------------------
@@ -1454,7 +1458,8 @@ Use a predicate function to filter messages when waiting for a specific event.
 def pred(m):
     return m.author == message.author and m.channel == message.channel
 
-msg = await client.wait_for('message', check=pred)
+
+msg = await client.wait_for("message", check=pred)
 ```
 
 --------------------------------
@@ -1499,12 +1504,12 @@ emoji = client.get_emoji(310177266011340803)
 await message.add_reaction(emoji)
 
 # no ID, do a lookup
-emoji = discord.utils.get(guild.emojis, name='LUL')
+emoji = discord.utils.get(guild.emojis, name="LUL")
 if emoji:
     await message.add_reaction(emoji)
 
 # if you have the name and ID of a custom emoji:
-emoji = '<:python3:232720527448342530>'
+emoji = "<:python3:232720527448342530>"
 await message.add_reaction(emoji)
 ```
 
@@ -1606,14 +1611,15 @@ Demonstrates basic optional attachment handling and the use of Greedy to consume
 @bot.command()
 async def upload(ctx, attachment: typing.Optional[discord.Attachment]):
     if attachment is None:
-        await ctx.send('You did not upload anything!')
+        await ctx.send("You did not upload anything!")
     else:
-        await ctx.send(f'You have uploaded <{attachment.url}>')
+        await ctx.send(f"You have uploaded <{attachment.url}>")
 ```
 
 ```python
 import typing
 import discord
+
 
 @bot.command()
 async def upload_many(
@@ -1626,12 +1632,13 @@ async def upload_many(
     else:
         files = [first.url, second.url]
 
-    await ctx.send(f'You uploaded: {" ".join(files)}')
+    await ctx.send(f"You uploaded: {' '.join(files)}")
 ```
 
 ```python
 import discord
 from discord.ext import commands
+
 
 @bot.command()
 async def upload_many(
@@ -1641,7 +1648,7 @@ async def upload_many(
 ):
     files = [first.url]
     files.extend(a.url for a in remaining)
-    await ctx.send(f'You uploaded: {" ".join(files)}')
+    await ctx.send(f"You uploaded: {' '.join(files)}")
 ```
 
 --------------------------------
@@ -1658,10 +1665,12 @@ import asyncio
 
 client = discord.Client()
 
+
 @asyncio.coroutine
 def main_task():
-    yield from client.login('token')
+    yield from client.login("token")
     yield from client.connect()
+
 
 loop = asyncio.get_event_loop()
 try:
@@ -1683,10 +1692,10 @@ Use Literal to restrict command arguments to specific values. If the input does 
 ```python
 from typing import Literal
 
-@bot.command()
-async def shop(ctx, buy_sell: Literal['buy', 'sell'], amount: Literal[1, 2], *, item: str):
-    await ctx.send(f'{buy_sell.capitalize()}ing {amount} {item}(s)!')
 
+@bot.command()
+async def shop(ctx, buy_sell: Literal["buy", "sell"], amount: Literal[1, 2], *, item: str):
+    await ctx.send(f"{buy_sell.capitalize()}ing {amount} {item}(s)!")
 ```
 
 --------------------------------
@@ -1792,7 +1801,7 @@ Source: https://discordpy.readthedocs.io/en/latest/faq.html
 Add a reaction to a message using unicode or custom emoji.
 
 ```python
-emoji = '\N{THUMBS UP SIGN}'
+emoji = "\N{THUMBS UP SIGN}"
 # or '\U0001f44d' or '👍'
 await message.add_reaction(emoji)
 ```
@@ -1825,9 +1834,10 @@ Demonstrates how to create a custom ActionRow subclass with decorated components
 ```python
 # you can subclass it and add components with the decorators
 class MyActionRow(ui.ActionRow):
-    @ui.button(label='Click Me!')
+    @ui.button(label="Click Me!")
     async def click_me(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('You clicked me!')
+        await interaction.response.send_message("You clicked me!")
+
 
 # or use it directly on LayoutView
 class MyView(ui.LayoutView):
@@ -1836,9 +1846,9 @@ class MyView(ui.LayoutView):
     # row = MyActionRow()
 
     # you can add items with row.button and row.select
-    @row.button(label='A button!')
+    @row.button(label="A button!")
     async def row_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('You clicked a button!')
+        await interaction.response.send_message("You clicked a button!")
 ```
 
 --------------------------------
@@ -1905,7 +1915,7 @@ Demonstrates using discord.Member as a type hint to automatically convert a stri
 ```python
 @bot.command()
 async def joined(ctx, *, member: discord.Member):
-    await ctx.send(f'{member} joined on {member.joined_at}')
+    await ctx.send(f"{member} joined on {member.joined_at}")
 ```
 
 --------------------------------
@@ -1936,12 +1946,12 @@ Model edit methods now return a new instance instead of modifying the object in-
 
 ```python
 # before
-await member.edit(nick='new nick')
-await member.send(f'Your new nick is {member.nick}')
+await member.edit(nick="new nick")
+await member.send(f"Your new nick is {member.nick}")
 
 # after
-updated_member = await member.edit(nick='new nick')
-await member.send(f'Your new nick is {updated_member.nick}')
+updated_member = await member.edit(nick="new nick")
+await member.send(f"Your new nick is {updated_member.nick}")
 ```
 
 --------------------------------
@@ -1982,7 +1992,7 @@ Use the @client.event decorator to register a coroutine that triggers when a spe
 ```python
 @client.event
 async def on_ready():
-    print('Ready!')
+    print("Ready!")
 ```
 
 --------------------------------
@@ -1996,10 +2006,12 @@ Demonstrates how to wrap an existing check to add custom logic, such as allowing
 ```python
 def owner_or_permissions(**perms):
     original = commands.has_permissions(**perms).predicate
+
     async def extended_check(ctx):
         if ctx.guild is None:
             return False
         return ctx.guild.owner_id == ctx.author.id or await original(ctx)
+
     return commands.check(extended_check)
 ```
 
@@ -2038,7 +2050,7 @@ async with channel.typing():
     # simulate something heavy
     await asyncio.sleep(20)
 
-await channel.send('Done!')
+await channel.send("Done!")
 ```
 
 --------------------------------
@@ -2052,7 +2064,7 @@ Await the typing method to display a typing indicator for a fixed 10-second dura
 ```python
 await channel.typing()
 # Do some computational magic for about 10 seconds
-await channel.send('Done!')
+await channel.send("Done!")
 ```
 
 --------------------------------
@@ -2082,7 +2094,7 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Returns the first element in an iterable that satisfies the provided predicate function.
 
 ```python
-member = discord.utils.find(lambda m: m.name == 'Mighty', channel.guild.members)
+member = discord.utils.find(lambda m: m.name == "Mighty", channel.guild.members)
 ```
 
 --------------------------------
@@ -2132,20 +2144,49 @@ Source: https://discordpy.readthedocs.io/en/latest/migrating_to_async.html
 Shows the change in event parameters from single objects to before/after state pairs.
 
 ```python
-def on_channel_update(channel): pass
-def on_member_update(member): pass
-def on_status(member): pass
-def on_server_role_update(role): pass
-def on_voice_state_update(member): pass
-def on_socket_raw_send(payload, is_binary): pass
+def on_channel_update(channel):
+    pass
+
+
+def on_member_update(member):
+    pass
+
+
+def on_status(member):
+    pass
+
+
+def on_server_role_update(role):
+    pass
+
+
+def on_voice_state_update(member):
+    pass
+
+
+def on_socket_raw_send(payload, is_binary):
+    pass
 ```
 
 ```python
-def on_channel_update(before, after): pass
-def on_member_update(before, after): pass
-def on_server_role_update(before, after): pass
-def on_voice_state_update(before, after): pass
-def on_socket_raw_send(payload): pass
+def on_channel_update(before, after):
+    pass
+
+
+def on_member_update(before, after):
+    pass
+
+
+def on_server_role_update(before, after):
+    pass
+
+
+def on_voice_state_update(before, after):
+    pass
+
+
+def on_socket_raw_send(payload):
+    pass
 ```
 
 --------------------------------
@@ -2191,11 +2232,11 @@ Send a DM to a specific user or respond to a message author.
 
 ```python
 user = client.get_user(381870129706958858)
-await user.send('👀')
+await user.send("👀")
 ```
 
 ```python
-await message.author.send('👋')
+await message.author.send("👋")
 ```
 
 --------------------------------
@@ -2306,7 +2347,8 @@ Demonstrates various ways to restrict command execution using predicates and dec
 async def is_owner(ctx):
     return ctx.author.id == 316026178463072268
 
-@bot.command(name='eval')
+
+@bot.command(name="eval")
 @commands.check(is_owner)
 async def _eval(ctx, *, code):
     """A bad example of an eval command"""
@@ -2317,9 +2359,11 @@ async def _eval(ctx, *, code):
 def is_owner():
     async def predicate(ctx):
         return ctx.author.id == 316026178463072268
+
     return commands.check(predicate)
 
-@bot.command(name='eval')
+
+@bot.command(name="eval")
 @is_owner()
 async def _eval(ctx, *, code):
     """A bad example of an eval command"""
@@ -2327,7 +2371,7 @@ async def _eval(ctx, *, code):
 ```
 
 ```python
-@bot.command(name='eval')
+@bot.command(name="eval")
 @commands.is_owner()
 async def _eval(ctx, *, code):
     """A bad example of an eval command"""
@@ -2338,14 +2382,16 @@ async def _eval(ctx, *, code):
 def is_in_guild(guild_id):
     async def predicate(ctx):
         return ctx.guild and ctx.guild.id == guild_id
+
     return commands.check(predicate)
+
 
 @bot.command()
 @commands.is_owner()
 @is_in_guild(41771983423143937)
 async def secretguilddata(ctx):
     """super secret stuff"""
-    await ctx.send('secret stuff')
+    await ctx.send("secret stuff")
 ```
 
 --------------------------------
@@ -2424,19 +2470,21 @@ from discord.ext import commands
 from typing import List
 import discord
 
+
 class BanFlags(commands.FlagConverter):
-    members: List[discord.Member] = commands.flag(name='member')
+    members: List[discord.Member] = commands.flag(name="member")
     reason: str
     days: int = 1
+
 
 @commands.command()
 async def ban(ctx, *, flags: BanFlags):
     for member in flags.members:
         await member.ban(reason=flags.reason, delete_message_days=flags.days)
 
-    members = ', '.join(str(member) for member in flags.members)
-    plural = f'{flags.days} days' if flags.days != 1 else f'{flags.days} day'
-    await ctx.send(f'Banned {members} for {flags.reason!r} (deleted {plural} worth of messages)')
+    members = ", ".join(str(member) for member in flags.members)
+    plural = f"{flags.days} days" if flags.days != 1 else f"{flags.days} day"
+    await ctx.send(f"Banned {members} for {flags.reason!r} (deleted {plural} worth of messages)")
 ```
 
 --------------------------------
@@ -2518,7 +2566,7 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Demonstrates creating a standard text channel using the create_text_channel coroutine.
 
 ```python
-channel = await guild.create_text_channel('cool-channel')
+channel = await guild.create_text_channel("cool-channel")
 ```
 
 --------------------------------
@@ -2549,11 +2597,11 @@ Updates the welcome screen description and channels. Requires appropriate permis
 
 ```python
 await welcome_screen.edit(
-    description='This is a very cool community server!',
+    description="This is a very cool community server!",
     welcome_channels=[
-        WelcomeChannel(channel=rules_channel, description='Read the rules!', emoji='👨‍🏫'),
-        WelcomeChannel(channel=announcements_channel, description='Watch out for announcements!', emoji=custom_emoji),
-    ]
+        WelcomeChannel(channel=rules_channel, description="Read the rules!", emoji="👨‍🏫"),
+        WelcomeChannel(channel=announcements_channel, description="Watch out for announcements!", emoji=custom_emoji),
+    ],
 )
 ```
 
@@ -2569,10 +2617,11 @@ Shows how to define a simple predicate function and apply it to a command using 
 def check_if_it_is_me(ctx):
     return ctx.message.author.id == 85309593344815104
 
+
 @bot.command()
 @commands.check(check_if_it_is_me)
 async def only_for_me(ctx):
-    await ctx.send('I know you!')
+    await ctx.send("I know you!")
 ```
 
 --------------------------------
@@ -2640,7 +2689,7 @@ Voice operations now use VoiceChannel.connect and AudioSource objects instead of
 
 ```python
 vc = await client.join_voice_channel(channel)
-player = vc.create_ffmpeg_player('testing.mp3', after=lambda: print('done'))
+player = vc.create_ffmpeg_player("testing.mp3", after=lambda: print("done"))
 player.start()
 
 player.is_playing()
@@ -2652,7 +2701,7 @@ player.stop()
 
 ```python
 vc = await channel.connect()
-vc.play(discord.FFmpegPCMAudio('testing.mp3'), after=lambda e: print('done', e))
+vc.play(discord.FFmpegPCMAudio("testing.mp3"), after=lambda e: print("done", e))
 vc.is_playing()
 vc.pause()
 vc.resume()
@@ -2690,9 +2739,9 @@ Source: https://discordpy.readthedocs.io/en/latest/migrating_to_async.html
 Replaces string-based comparisons with discord.py enumeration types for server regions, member status, and channel types.
 
 ```python
-server.region == 'us-west'
-member.status == 'online'
-channel.type == 'text'
+server.region == "us-west"
+member.status == "online"
+channel.type == "text"
 ```
 
 ```python
@@ -2762,12 +2811,13 @@ Inherit from ui.Modal to define a custom popup window with input fields and a su
 import discord
 from discord import ui
 
-class Questionnaire(ui.Modal, title='Questionnaire Response'):
-    name = ui.Label(text='Name', component=ui.TextInput())
-    answer = ui.Label(text='Answer', component=ui.TextInput(style=discord.TextStyle.paragraph))
+
+class Questionnaire(ui.Modal, title="Questionnaire Response"):
+    name = ui.Label(text="Name", component=ui.TextInput())
+    answer = ui.Label(text="Answer", component=ui.TextInput(style=discord.TextStyle.paragraph))
 
     async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'Thanks for your response, {self.name.component.value}!', ephemeral=True)
+        await interaction.response.send_message(f"Thanks for your response, {self.name.component.value}!", ephemeral=True)
 ```
 
 --------------------------------
@@ -2820,32 +2870,32 @@ The send_message and send_file methods have been merged into a single send() met
 
 ```python
 # before
-await client.send_message(channel, 'Hello')
+await client.send_message(channel, "Hello")
 
 # after
-await channel.send('Hello')
+await channel.send("Hello")
 ```
 
 ```python
-e = discord.Embed(title='foo')
-await channel.send('Hello', embed=e)
+e = discord.Embed(title="foo")
+await channel.send("Hello", embed=e)
 ```
 
 ```python
 # before
-await client.send_file(channel, 'cool.png', filename='testing.png', content='Hello')
+await client.send_file(channel, "cool.png", filename="testing.png", content="Hello")
 
 # after
-await channel.send('Hello', file=discord.File('cool.png', 'testing.png'))
+await channel.send("Hello", file=discord.File("cool.png", "testing.png"))
 ```
 
 ```python
 my_files = [
-    discord.File('cool.png', 'testing.png'),
-    discord.File(some_fp, 'cool_filename.png'),
+    discord.File("cool.png", "testing.png"),
+    discord.File(some_fp, "cool_filename.png"),
 ]
 
-await channel.send('Your images:', files=my_files)
+await channel.send("Your images:", files=my_files)
 ```
 
 --------------------------------
@@ -2909,8 +2959,7 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Configures channel-specific permissions for a member or role using keyword arguments for individual permission attributes.
 
 ```python
-await message.channel.set_permissions(message.author, read_messages=True,
-                                                      send_messages=False)
+await message.channel.set_permissions(message.author, read_messages=True, send_messages=False)
 ```
 
 --------------------------------
@@ -2940,7 +2989,7 @@ Source: https://discordpy.readthedocs.io/en/latest/migrating_to_v1.html
 Handle multiple return values from wait_for by unpacking the tuple.
 
 ```python
-reaction, user = await client.wait_for('reaction_add', check=lambda r, u: u.id == 176995180300206080)
+reaction, user = await client.wait_for("reaction_add", check=lambda r, u: u.id == 176995180300206080)
 
 # use user and reaction
 ```
@@ -3175,7 +3224,7 @@ Demonstrates using commands.parameter with a lambda to dynamically set a default
 ```python
 @bot.command()
 async def wave(ctx, to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
-    await ctx.send(f'Hello {to.mention} :wave:')
+    await ctx.send(f"Hello {to.mention} :wave:")
 ```
 
 --------------------------------
@@ -3187,15 +3236,16 @@ Source: https://discordpy.readthedocs.io/en/latest/intents.html
 Enables the privileged members intent by setting the members attribute to True on the Intents object.
 
 ```python
- import discord
- intents = discord.Intents.default()
- intents.members = True
+import discord
 
- # Somewhere else:
- # client = discord.Client(intents=intents)
- # or
- # from discord.ext import commands
- # bot = commands.Bot(command_prefix='!', intents=intents)
+intents = discord.Intents.default()
+intents.members = True
+
+# Somewhere else:
+# client = discord.Client(intents=intents)
+# or
+# from discord.ext import commands
+# bot = commands.Bot(command_prefix='!', intents=intents)
 ```
 
 --------------------------------
@@ -3264,15 +3314,15 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Retrieves the first element in an iterable matching all specified attributes, supporting nested attribute lookups via double underscores.
 
 ```python
-member = discord.utils.get(message.guild.members, name='Foo')
+member = discord.utils.get(message.guild.members, name="Foo")
 ```
 
 ```python
-channel = discord.utils.get(guild.voice_channels, name='Foo', bitrate=64000)
+channel = discord.utils.get(guild.voice_channels, name="Foo", bitrate=64000)
 ```
 
 ```python
-channel = discord.utils.get(client.get_all_channels(), guild__name='Cool', name='general')
+channel = discord.utils.get(client.get_all_channels(), guild__name="Cool", name="general")
 ```
 
 --------------------------------
@@ -3305,6 +3355,7 @@ Example of initializing a bot with specific intents for messages and guild infor
 
 ```python
 import discord
+
 intents = discord.Intents(messages=True, guilds=True)
 # If you also want reaction events enable the following:
 # intents.reactions = True
@@ -3511,19 +3562,22 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
+
 @client.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f"We have logged in as {client.user}")
+
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+    if message.content.startswith("$hello"):
+        await message.channel.send("Hello!")
 
-client.run('your token here')
+
+client.run("your token here")
 ```
 
 --------------------------------
@@ -3541,7 +3595,8 @@ from discord.ext import commands
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='$', intents=intents)
+bot = commands.Bot(command_prefix="$", intents=intents)
+
 
 @bot.command()
 async def test(ctx):
@@ -3571,7 +3626,7 @@ Source: https://discordpy.readthedocs.io/en/latest/faq.html
 Configure the bot's activity status upon initialization.
 
 ```python
-activity = discord.Activity(name='my activity', type=discord.ActivityType.watching)
+activity = discord.Activity(name="my activity", type=discord.ActivityType.watching)
 client = discord.Client(activity=activity)
 ```
 
@@ -3586,15 +3641,15 @@ Uses wait_for to pause execution until a specific message matching the check fun
 ```python
 @client.event
 async def on_message(message):
-    if message.content.startswith('$greet'):
+    if message.content.startswith("$greet"):
         channel = message.channel
-        await channel.send('Say hello!')
+        await channel.send("Say hello!")
 
         def check(m):
-            return m.content == 'hello' and m.channel == channel
+            return m.content == "hello" and m.channel == channel
 
-        msg = await client.wait_for('message', check=check)
-        await channel.send(f'Hello {msg.author}!')
+        msg = await client.wait_for("message", check=check)
+        await channel.send(f"Hello {msg.author}!")
 ```
 
 --------------------------------
@@ -3636,13 +3691,15 @@ The @bot.listen() decorator allows multiple functions to listen to the same even
 ```python
 @bot.listen()
 async def on_message(message):
-    print('one')
+    print("one")
+
 
 # in some other file...
 
-@bot.listen('on_message')
+
+@bot.listen("on_message")
 async def my_message(message):
-    print('two')
+    print("two")
 ```
 
 --------------------------------
@@ -3785,7 +3842,7 @@ Source: https://discordpy.readthedocs.io/en/latest/faq.html
 Pass an Activity object to the Client constructor to set a static playing status.
 
 ```python
-client = discord.Client(activity=discord.Game(name='my game'))
+client = discord.Client(activity=discord.Game(name="my game"))
 ```
 
 --------------------------------
@@ -3845,10 +3902,11 @@ Demonstrates initializing a Webhook object using a URL and an aiohttp session to
 from discord import Webhook
 import aiohttp
 
+
 async def foo():
     async with aiohttp.ClientSession() as session:
-        webhook = Webhook.from_url('url-here', session=session)
-        await webhook.send('Hello World', username='Foo')
+        webhook = Webhook.from_url("url-here", session=session)
+        await webhook.send("Hello World", username="Foo")
 ```
 
 --------------------------------
@@ -3895,11 +3953,16 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html
 Use add_listener to register coroutines as event handlers without using decorators.
 
 ```python
-async def on_ready(): pass
-async def my_message(message): pass
+async def on_ready():
+    pass
+
+
+async def my_message(message):
+    pass
+
 
 bot.add_listener(on_ready)
-bot.add_listener(my_message, 'on_message')
+bot.add_listener(my_message, "on_message")
 ```
 
 --------------------------------
@@ -3913,9 +3976,10 @@ Enables back-referencing behavior where a default value is used if the primary c
 ```python
 import typing
 
+
 @bot.command()
 async def bottles(ctx, amount: typing.Optional[int] = 99, *, liquid="beer"):
-    await ctx.send(f'{amount} bottles of {liquid} on the wall!')
+    await ctx.send(f"{amount} bottles of {liquid} on the wall!")
 ```
 
 --------------------------------
@@ -3932,7 +3996,7 @@ member.deaf
 member.voice.voice_channel
 
 # after
-if member.voice: # can be None
+if member.voice:  # can be None
     member.voice.deaf
     member.voice.channel
 ```
@@ -3948,6 +4012,7 @@ Uses add_exception_type to specify which exceptions should be ignored or handled
 ```python
 import asyncpg
 from discord.ext import tasks, commands
+
 
 class MyCog(commands.Cog):
     def __init__(self, bot):
@@ -3978,7 +4043,7 @@ Uses anext() or __anext__() to fetch the next item without a full loop.
 # before
 it = channel.history()
 first = await it.next()
-if first.content == 'do not iterate':
+if first.content == "do not iterate":
     return
 async for message in it:
     ...
@@ -3986,7 +4051,7 @@ async for message in it:
 # after
 it = channel.history()
 first = await anext(it)  # await it.__anext__() on Python<3.10
-if first.content == 'do not iterate':
+if first.content == "do not iterate":
     return
 async for message in it:
     ...
@@ -4002,17 +4067,17 @@ Use aiohttp instead of the requests library to avoid blocking the event loop dur
 
 ```python
 # bad
-r = requests.get('http://aws.random.cat/meow')
+r = requests.get("http://aws.random.cat/meow")
 if r.status_code == 200:
     js = r.json()
-    await channel.send(js['file'])
+    await channel.send(js["file"])
 
 # good
 async with aiohttp.ClientSession() as session:
-    async with session.get('http://aws.random.cat/meow') as r:
+    async with session.get("http://aws.random.cat/meow") as r:
         if r.status == 200:
             js = await r.json()
-            await channel.send(js['file'])
+            await channel.send(js["file"])
 ```
 
 --------------------------------
@@ -4025,7 +4090,7 @@ Demonstrates how to invoke the callable returned by when_mentioned_or within a c
 
 ```python
 async def get_prefix(bot, message):
-    extras = await prefixes_for(message.guild) # returns a list
+    extras = await prefixes_for(message.guild)  # returns a list
     return commands.when_mentioned_or(*extras)(bot, message)
 ```
 
@@ -4040,15 +4105,13 @@ Mixing Greedy with Optional allows for flexible command invocation syntaxes.
 ```python
 import typing
 
+
 @bot.command()
-async def ban(ctx, members: commands.Greedy[discord.Member],
-                   delete_days: typing.Optional[int] = 0, *,
-                   reason: str):
+async def ban(ctx, members: commands.Greedy[discord.Member], delete_days: typing.Optional[int] = 0, *, reason: str):
     """Mass bans members with an optional delete_days parameter"""
-    delete_seconds = delete_days * 86400 # one day
+    delete_seconds = delete_days * 86400  # one day
     for member in members:
         await member.ban(delete_message_seconds=delete_seconds, reason=reason)
-
 ```
 
 ```text
@@ -4114,10 +4177,12 @@ def cooldown_for_everyone_but_me(interaction: discord.Interaction) -> Optional[a
         return None
     return app_commands.Cooldown(1, 10.0)
 
+
 @tree.command()
 @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_but_me)
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message('Hello')
+    await interaction.response.send_message("Hello")
+
 
 @test.error
 async def on_test_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
@@ -4174,6 +4239,7 @@ Allows a parameter to accept multiple types by attempting conversions from left 
 ```python
 import typing
 
+
 @bot.command()
 async def union(ctx, what: typing.Union[discord.TextChannel, discord.Member]):
     await ctx.send(what)
@@ -4191,10 +4257,11 @@ Defines a predicate function to validate the command invoker and applies it usin
 def check_if_it_is_me(interaction: discord.Interaction) -> bool:
     return interaction.user.id == 85309593344815104
 
+
 @tree.command()
 @app_commands.check(check_if_it_is_me)
 async def only_for_me(interaction: discord.Interaction):
-    await interaction.response.send_message('I know you!', ephemeral=True)
+    await interaction.response.send_message("I know you!", ephemeral=True)
 ```
 
 --------------------------------
@@ -4209,8 +4276,9 @@ Example of using the File component within a LayoutView to reference an attachme
 import discord
 from discord import ui
 
+
 class MyView(ui.LayoutView):
-    file = ui.File('attachment://file.txt')
+    file = ui.File("attachment://file.txt")
     # attachment://file.txt points to an attachment uploaded alongside this view
 ```
 
@@ -4225,6 +4293,7 @@ Updates filtering logic to use standard Python list comprehension syntax with as
 ```python
 def predicate(message):
     return not message.author.bot
+
 
 # before
 user_messages = []
@@ -4358,9 +4427,9 @@ Updates the positions of multiple roles in a guild using a dictionary mapping ro
 
 ```python
 positions = {
-    bots_role: 1, # penultimate role
+    bots_role: 1,  # penultimate role
     tester_role: 2,
-    admin_role: 6
+    admin_role: 6,
 }
 
 await guild.edit_role_positions(positions=positions)
@@ -4405,14 +4474,14 @@ Source: https://discordpy.readthedocs.io/en/latest/migrating_to_async.html
 Demonstrates the transition from direct function calls to asynchronous execution using yield from or await.
 
 ```python
-client.send_message(message.channel, 'Hello')
+client.send_message(message.channel, "Hello")
 ```
 
 ```python
-yield from client.send_message(message.channel, 'Hello')
+yield from client.send_message(message.channel, "Hello")
 
 # or in python 3.5+
-await client.send_message(message.channel, 'Hello')
+await client.send_message(message.channel, "Hello")
 ```
 
 --------------------------------
@@ -4425,6 +4494,7 @@ Demonstrates a basic loop running every 5 seconds within a Cog, including start 
 
 ```python
 from discord.ext import tasks, commands
+
 
 class MyCog(commands.Cog):
     def __init__(self):
@@ -4517,12 +4587,12 @@ Source: https://discordpy.readthedocs.io/en/latest/faq.html
 Use discord.utils.get to find objects by their attributes, ensuring to check for None before accessing properties.
 
 ```python
-guild = discord.utils.get(client.guilds, name='My Server')
+guild = discord.utils.get(client.guilds, name="My Server")
 
 # make sure to check if it's found
 if guild is not None:
     # find a channel by name
-    channel = discord.utils.get(guild.text_channels, name='cool-channel')
+    channel = discord.utils.get(guild.text_channels, name="cool-channel")
 ```
 
 --------------------------------
@@ -4578,7 +4648,7 @@ Demonstrates how to extend the default Context class with custom properties.
 class MyContext(commands.Context):
     @property
     def secret(self):
-        return 'my secret here'
+        return "my secret here"
 ```
 
 --------------------------------
@@ -4907,6 +4977,7 @@ Replaces the instance method with discord.utils.find().
 def predicate(event):
     return event.reason is not None
 
+
 # before
 event = await guild.audit_logs().find(predicate)
 
@@ -4923,12 +4994,12 @@ Source: https://discordpy.readthedocs.io/en/latest/migrating_to_async.html
 Shows the transition from separate login and run calls to a single blocking run call with credentials.
 
 ```python
-client.login('token')
+client.login("token")
 client.run()
 ```
 
 ```python
-client.run('token')
+client.run("token")
 ```
 
 --------------------------------
@@ -4966,9 +5037,9 @@ Requires the user to possess at least one of the specified roles or role IDs.
 
 ```python
 @bot.command()
-@commands.has_any_role('Library Devs', 'Moderators', 492212595072434186)
+@commands.has_any_role("Library Devs", "Moderators", 492212595072434186)
 async def cool(ctx):
-    await ctx.send('You are cool indeed')
+    await ctx.send("You are cool indeed")
 ```
 
 --------------------------------
@@ -5043,16 +5114,17 @@ class MyView(discord.ui.View):
         # Step 3
         await self.message.edit(view=self)
 
-    @discord.ui.button(label='Example')
+    @discord.ui.button(label="Example")
     async def example_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('Hello!', ephemeral=True)
+        await interaction.response.send_message("Hello!", ephemeral=True)
+
 
 @bot.command()
 async def timeout_example(ctx):
     """An example to showcase disabling buttons on timing out"""
     view = MyView()
     # Step 1
-    view.message = await ctx.send('Press me!', view=view)
+    view.message = await ctx.send("Press me!", view=view)
 ```
 
 --------------------------------
@@ -5132,6 +5204,7 @@ Convert synchronous setup functions to asynchronous coroutines to support the ne
 def setup(bot):
     bot.add_cog(MyCog(bot))
 
+
 # after
 async def setup(bot):
     await bot.add_cog(MyCog(bot))
@@ -5209,8 +5282,7 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Examples for configuring channel-specific permission overwrites for members or roles.
 
 ```python
-await message.channel.set_permissions(message.author, read_messages=True,
-                                                      send_messages=False)
+await message.channel.set_permissions(message.author, read_messages=True, send_messages=False)
 ```
 
 ```python
@@ -5233,12 +5305,9 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Demonstrates creating a private channel by providing a dictionary of PermissionOverwrite objects to the overwrites parameter.
 
 ```python
-overwrites = {
-    guild.default_role: discord.PermissionOverwrite(read_messages=False),
-    guild.me: discord.PermissionOverwrite(read_messages=True)
-}
+overwrites = {guild.default_role: discord.PermissionOverwrite(read_messages=False), guild.me: discord.PermissionOverwrite(read_messages=True)}
 
-channel = await guild.create_text_channel('secret', overwrites=overwrites)
+channel = await guild.create_text_channel("secret", overwrites=overwrites)
 ```
 
 --------------------------------
@@ -5351,7 +5420,7 @@ Fetch a channel by ID and send a message to it.
 
 ```python
 channel = client.get_channel(12324234183172)
-await channel.send('hello')
+await channel.send("hello")
 ```
 
 --------------------------------
@@ -5366,7 +5435,7 @@ Requires the user to have specific channel-level permissions to execute the comm
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def test(ctx):
-    await ctx.send('You can manage messages.')
+    await ctx.send("You can manage messages.")
 ```
 
 --------------------------------
@@ -5379,21 +5448,23 @@ Provides selectable choices for command parameters using the choices decorator, 
 
 ```python
 @app_commands.command()
-@app_commands.describe(fruits='fruits to choose from')
-@app_commands.choices(fruits=[
-    Choice(name='apple', value=1),
-    Choice(name='banana', value=2),
-    Choice(name='cherry', value=3),
-])
+@app_commands.describe(fruits="fruits to choose from")
+@app_commands.choices(
+    fruits=[
+        Choice(name="apple", value=1),
+        Choice(name="banana", value=2),
+        Choice(name="cherry", value=3),
+    ]
+)
 async def fruit(interaction: discord.Interaction, fruits: Choice[int]):
-    await interaction.response.send_message(f'Your favourite fruit is {fruits.name}.')
+    await interaction.response.send_message(f"Your favourite fruit is {fruits.name}.")
 ```
 
 ```python
 @app_commands.command()
-@app_commands.describe(fruits='fruits to choose from')
-async def fruit(interaction: discord.Interaction, fruits: Literal['apple', 'banana', 'cherry']):
-    await interaction.response.send_message(f'Your favourite fruit is {fruits}.')
+@app_commands.describe(fruits="fruits to choose from")
+async def fruit(interaction: discord.Interaction, fruits: Literal["apple", "banana", "cherry"]):
+    await interaction.response.send_message(f"Your favourite fruit is {fruits}.")
 ```
 
 ```python
@@ -5402,10 +5473,11 @@ class Fruits(enum.Enum):
     banana = 2
     cherry = 3
 
+
 @app_commands.command()
-@app_commands.describe(fruits='fruits to choose from')
+@app_commands.describe(fruits="fruits to choose from")
 async def fruit(interaction: discord.Interaction, fruits: Fruits):
-    await interaction.response.send_message(f'Your favourite fruit is {fruits}.')
+    await interaction.response.send_message(f"Your favourite fruit is {fruits}.")
 ```
 
 --------------------------------
@@ -5532,18 +5604,21 @@ Demonstrates moving extension loading from the global scope to the setup_hook me
 
 ```python
 # before
-bot.load_extension('my_extension')
+bot.load_extension("my_extension")
+
 
 # after using setup_hook
 class MyBot(commands.Bot):
     async def setup_hook(self):
-        await self.load_extension('my_extension')
+        await self.load_extension("my_extension")
+
 
 # after using async_with
 async def main():
     async with bot:
-        await bot.load_extension('my_extension')
+        await bot.load_extension("my_extension")
         await bot.start(TOKEN)
+
 
 asyncio.run(main())
 ```
@@ -5634,15 +5709,15 @@ Demonstrates the change from using discord.Embed.Empty to None for clearing embe
 
 ```python
 # before
-embed = discord.Embed(title='foo')
+embed = discord.Embed(title="foo")
 embed.title = discord.Embed.Empty
-embed == embed.copy() # False
+embed == embed.copy()  # False
 
 # after
-embed = discord.Embed(title='foo')
+embed = discord.Embed(title="foo")
 embed.title = None
-embed == embed.copy() # True
-{embed, embed} # Raises TypeError
+embed == embed.copy()  # True
+{embed, embed}  # Raises TypeError
 ```
 
 --------------------------------
@@ -5688,6 +5763,7 @@ Register a command to a specific guild using the add_command method. Avoid combi
 async def ping(interaction: Interaction):
     await interaction.response.send_message("Pong!")
 
+
 tree.add_command(ping, guild=discord.Object(123456789012345678))
 ```
 
@@ -5702,7 +5778,8 @@ Demonstrates how to subclass MinimalHelpCommand and bind it to a Cog, ensuring t
 ```python
 class MyHelpCommand(commands.MinimalHelpCommand):
     def get_command_signature(self, command):
-        return '{0.clean_prefix}{1.qualified_name} {1.signature}'.format(self, command)
+        return "{0.clean_prefix}{1.qualified_name} {1.signature}".format(self, command)
+
 
 class MyCog(commands.Cog):
     def __init__(self, bot):
@@ -5724,13 +5801,14 @@ Uses asyncio.run_coroutine_threadsafe to safely execute a coroutine from the mus
 
 ```python
 def my_after(error):
-    coro = some_channel.send('Song is done!')
+    coro = some_channel.send("Song is done!")
     fut = asyncio.run_coroutine_threadsafe(coro, client.loop)
     try:
         fut.result()
     except:
         # an error happened sending the message
         pass
+
 
 voice.play(discord.FFmpegPCMAudio(url), after=my_after)
 ```
@@ -5836,10 +5914,11 @@ Define setup and teardown coroutines to handle initialization and cleanup logic 
 
 ```python
 async def setup(bot):
-    print('I am being loaded!')
+    print("I am being loaded!")
+
 
 async def teardown(bot):
-    print('I am being unloaded!')
+    print("I am being unloaded!")
 ```
 
 --------------------------------
@@ -5986,7 +6065,7 @@ Use the aiohttp library for non-blocking HTTP requests within an async context.
 
 ```python
 async with aiohttp.ClientSession() as session:
-    async with session.get('http://aws.random.cat/meow') as r:
+    async with session.get("http://aws.random.cat/meow") as r:
         if r.status == 200:
             js = await r.json()
 ```
@@ -6062,10 +6141,10 @@ Annotated allows the library to use a specific converter while keeping the type 
 ```python
 from typing import Annotated
 
+
 @bot.command()
 async def fun(ctx, arg: Annotated[str, lambda s: s.upper()]):
     await ctx.send(arg)
-
 ```
 
 --------------------------------
@@ -6097,7 +6176,7 @@ Use the voters() asynchronous iterator to retrieve users who voted for a specifi
 
 ```python
 async for voter in poll_answer.voters():
-    print(f'{voter} has voted for {poll_answer}!')
+    print(f"{voter} has voted for {poll_answer}!")
 ```
 
 ```python
@@ -6158,17 +6237,17 @@ Examples for retrieving and processing guild audit log entries using an asynchro
 
 ```python
 async for entry in guild.audit_logs(limit=100):
-    print(f'{entry.user} did {entry.action} to {entry.target}')
+    print(f"{entry.user} did {entry.action} to {entry.target}")
 ```
 
 ```python
 async for entry in guild.audit_logs(action=discord.AuditLogAction.ban):
-    print(f'{entry.user} banned {entry.target}')
+    print(f"{entry.user} banned {entry.target}")
 ```
 
 ```python
 entries = [entry async for entry in guild.audit_logs(limit=None, user=guild.me)]
-await channel.send(f'I made {len(entries)} moderation actions.')
+await channel.send(f"I made {len(entries)} moderation actions.")
 ```
 
 --------------------------------
@@ -6346,7 +6425,7 @@ Uses the has_permissions check to verify that the user holds specific Discord pe
 @tree.command()
 @app_commands.checks.has_permissions(manage_messages=True)
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message('You can manage messages.')
+    await interaction.response.send_message("You can manage messages.")
 ```
 
 --------------------------------
@@ -6359,9 +6438,9 @@ Uses the has_any_role check to ensure the user possesses at least one of the spe
 
 ```python
 @tree.command()
-@app_commands.checks.has_any_role('Library Devs', 'Moderators', 492212595072434186)
+@app_commands.checks.has_any_role("Library Devs", "Moderators", 492212595072434186)
 async def cool(interaction: discord.Interaction):
-    await interaction.response.send_message('You are cool indeed')
+    await interaction.response.send_message("You are cool indeed")
 ```
 
 --------------------------------
@@ -6373,7 +6452,7 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html
 Sets the command prefix to allow mentions or a specific string.
 
 ```python
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('!'))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"))
 ```
 
 --------------------------------
@@ -6592,12 +6671,13 @@ Replaces the deprecated bot.say with the Context.send method.
 # before
 @bot.command()
 async def foo():
-    await bot.say('Hello')
+    await bot.say("Hello")
+
 
 # after
 @bot.command()
 async def foo(ctx):
-    await ctx.send('Hello')
+    await ctx.send("Hello")
 ```
 
 --------------------------------
@@ -6609,7 +6689,7 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html
 Pass metaclass attributes as keyword-only arguments during class creation.
 
 ```python
-class MyCog(commands.Cog, name='My Cog'):
+class MyCog(commands.Cog, name="My Cog"):
     pass
 ```
 
@@ -6652,10 +6732,10 @@ Replaces the instance method with discord.utils.get().
 
 ```python
 # before
-msg = await channel.history().get(author__name='Dave')
+msg = await channel.history().get(author__name="Dave")
 
 # after
-msg = await discord.utils.get(channel.history(), author__name='Dave')
+msg = await discord.utils.get(channel.history(), author__name="Dave")
 ```
 
 --------------------------------
@@ -6670,8 +6750,9 @@ Demonstrates using parameter() to assist type checkers with custom converters an
 class SomeType:
     foo: int
 
-class MyVeryCoolConverter(commands.Converter[SomeType]):
-    ...  # implementation left as an exercise for the reader
+
+class MyVeryCoolConverter(commands.Converter[SomeType]): ...  # implementation left as an exercise for the reader
+
 
 @bot.command()
 async def bar(ctx, cool_value: MyVeryCoolConverter):
@@ -6687,13 +6768,13 @@ async def bar(ctx, cool_value: SomeType = commands.parameter(converter=MyVeryCoo
 ```python
 @bot.command()
 async def wave(ctx, to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
-    await ctx.send(f'Hello {to.mention} :wave:')
+    await ctx.send(f"Hello {to.mention} :wave:")
 ```
 
 ```python
 @bot.command()
 async def wave(ctx, to: discord.User = commands.Author):
-    await ctx.send(f'Hello {to.mention} :wave:')
+    await ctx.send(f"Hello {to.mention} :wave:")
 ```
 
 --------------------------------
@@ -6870,7 +6951,7 @@ Source: https://discordpy.readthedocs.io/en/latest/faq.html
 Access the ID of a message after sending it.
 
 ```python
-message = await channel.send('hmm…')
+message = await channel.send("hmm…")
 message_id = message.id
 ```
 
@@ -6915,7 +6996,7 @@ Update datetime calculations to use UTC-aware objects to avoid local time ambigu
 # before
 week_ago = datetime.datetime.utcnow() - datetime.timedelta(days=7)
 if member.created_at > week_ago:
-    print(f'Member account {member} was created less than a week ago!')
+    print(f"Member account {member} was created less than a week ago!")
 
 # after
 # The new helper function can be used here:
@@ -6923,7 +7004,7 @@ week_ago = discord.utils.utcnow() - datetime.timedelta(days=7)
 # ...or the equivalent result can be achieved with datetime.datetime.now():
 week_ago = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
 if member.created_at > week_ago:
-    print(f'Member account {member} was created less than a week ago!')
+    print(f"Member account {member} was created less than a week ago!")
 ```
 
 --------------------------------
@@ -7206,9 +7287,9 @@ Define a custom container by subclassing ui.Container and adding components via 
 class MyContainer(ui.Container):
     action_row = ui.ActionRow()
 
-    @action_row.button(label='A button in a container!')
+    @action_row.button(label="A button in a container!")
     async def a_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('You clicked a button!')
+        await interaction.response.send_message("You clicked a button!")
 ```
 
 --------------------------------
@@ -7223,7 +7304,7 @@ Uses check_any to allow execution if the user is either the bot owner or the gui
 @bot.command()
 @commands.check_any(commands.is_owner(), is_guild_owner())
 async def only_for_owners(ctx):
-    await ctx.send('Hello mister owner!')
+    await ctx.send("Hello mister owner!")
 ```
 
 --------------------------------
@@ -7315,14 +7396,12 @@ class BanFlags(commands.FlagConverter):
 
 
 @commands.hybrid_command()
-async def ban(ctx, *, flags: BanFlags):
-    ...
+async def ban(ctx, *, flags: BanFlags): ...
 ```
 
 ```python
 @commands.hybrid_command()
-async def ban(ctx, member: discord.Member, reason: str, days: int = 1):
-    ...
+async def ban(ctx, member: discord.Member, reason: str, days: int = 1): ...
 ```
 
 --------------------------------
@@ -7373,6 +7452,7 @@ Checks if a task is being cancelled using is_being_cancelled to perform final cl
 ```python
 from discord.ext import tasks, commands
 import asyncio
+
 
 class MyCog(commands.Cog):
     def __init__(self, bot):
@@ -7475,6 +7555,7 @@ class MyCog(commands.Cog):
     @app_commands.command()
     async def ping(self, interaction: Interaction):
         await interaction.response.send_message("Pong!")
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(MyCog(...), guild=discord.Object(123456789012345678))
@@ -8035,7 +8116,7 @@ Retrieve the original message object via the message attribute of the command co
 ```python
 @bot.command()
 async def length(ctx):
-    await ctx.send(f'Your message is {len(ctx.message.content)} characters long.')
+    await ctx.send(f"Your message is {len(ctx.message.content)} characters long.")
 ```
 
 --------------------------------
@@ -8189,9 +8270,11 @@ Create a Python file with a setup coroutine to register commands with the bot.
 ```python
 from discord.ext import commands
 
+
 @commands.command()
 async def hello(ctx):
-    await ctx.send(f'Hello {ctx.author.display_name}.')
+    await ctx.send(f"Hello {ctx.author.display_name}.")
+
 
 async def setup(bot):
     bot.add_command(hello)
@@ -8251,6 +8334,7 @@ Defines a predicate function intended to be used with the check_any decorator to
 def is_guild_owner():
     def predicate(ctx):
         return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+
     return commands.check(predicate)
 ```
 
@@ -8272,16 +8356,16 @@ class Greetings(commands.Cog):
     async def on_member_join(self, member):
         channel = member.guild.system_channel
         if channel is not None:
-            await channel.send(f'Welcome {member.mention}.')
+            await channel.send(f"Welcome {member.mention}.")
 
     @commands.command()
     async def hello(self, ctx, *, member: discord.Member = None):
         """Says hello"""
         member = member or ctx.author
         if self._last_member is None or self._last_member.id != member.id:
-            await ctx.send(f'Hello {member.name}~')
+            await ctx.send(f"Hello {member.name}~")
         else:
-            await ctx.send(f'Hello {member.name}... This feels familiar.')
+            await ctx.send(f"Hello {member.name}... This feels familiar.")
         self._last_member = member
 ```
 
@@ -8336,13 +8420,13 @@ Updates the webhook initialization to remove the explicit AsyncWebhookAdapter.
 ```python
 # before
 async with aiohttp.ClientSession() as session:
-    webhook = discord.Webhook.from_url('url-here', adapter=discord.AsyncWebhookAdapter(session))
-    await webhook.send('Hello World', username='Foo')
+    webhook = discord.Webhook.from_url("url-here", adapter=discord.AsyncWebhookAdapter(session))
+    await webhook.send("Hello World", username="Foo")
 
 # after
 async with aiohttp.ClientSession() as session:
-    webhook = discord.Webhook.from_url('url-here', session=session)
-    await webhook.send('Hello World', username='Foo')
+    webhook = discord.Webhook.from_url("url-here", session=session)
+    await webhook.send("Hello World", username="Foo")
 ```
 
 --------------------------------
@@ -8524,7 +8608,7 @@ Use the Range annotation to restrict numeric input within specific bounds.
 ```python
 @app_commands.command()
 async def range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
-    await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
+    await interaction.response.send_message(f"Your value is {value}", ephemeral=True)
 ```
 
 --------------------------------
@@ -8665,14 +8749,13 @@ Passing descriptions directly to the flag() function.
 
 ```python
 class BanFlags(commands.FlagConverter):
-    member: discord.Member = commands.flag(description='The member to ban')
-    reason: str = commands.flag(description='The reason for the ban')
-    days: int = commands.flag(default=1, description='The number of days worth of messages to delete')
+    member: discord.Member = commands.flag(description="The member to ban")
+    reason: str = commands.flag(description="The reason for the ban")
+    days: int = commands.flag(default=1, description="The number of days worth of messages to delete")
 
 
 @commands.hybrid_command()
-async def ban(ctx, *, flags: BanFlags):
-    ...
+async def ban(ctx, *, flags: BanFlags): ...
 ```
 
 --------------------------------
@@ -8811,18 +8894,18 @@ Source: https://discordpy.readthedocs.io/en/latest/faq.html
 Upload single files, multiple files, or files from URLs using discord.File.
 
 ```python
-await channel.send(file=discord.File('my_file.png'))
+await channel.send(file=discord.File("my_file.png"))
 ```
 
 ```python
-with open('my_file.png', 'rb') as fp:
-    await channel.send(file=discord.File(fp, 'new_filename.png'))
+with open("my_file.png", "rb") as fp:
+    await channel.send(file=discord.File(fp, "new_filename.png"))
 ```
 
 ```python
 my_files = [
-    discord.File('result.zip'),
-    discord.File('teaser_graph.png'),
+    discord.File("result.zip"),
+    discord.File("teaser_graph.png"),
 ]
 await channel.send(files=my_files)
 ```
@@ -8834,9 +8917,9 @@ import aiohttp
 async with aiohttp.ClientSession() as session:
     async with session.get(my_url) as resp:
         if resp.status != 200:
-            return await channel.send('Could not download file...')
+            return await channel.send("Could not download file...")
         data = io.BytesIO(await resp.read())
-        await channel.send(file=discord.File(data, 'cool_image.png'))
+        await channel.send(file=discord.File(data, "cool_image.png"))
 ```
 
 --------------------------------
@@ -8914,6 +8997,7 @@ def custom_probe(source, executable):
     # some analysis code here
     return codec, bitrate
 
+
 source = await discord.FFmpegOpusAudio.from_probe("song.webm", method=custom_probe)
 voice_client.play(source)
 ```
@@ -8932,7 +9016,9 @@ Register commands to specific guilds using decorators or class-level configurati
 async def ping(interaction: Interaction):
     await interaction.response.send_message("Pong!")
 
+
 # or GroupCog (applies to all subcommands):
+
 
 @app_commands.guilds(123456789012345678)
 class MyGroup(commands.GroupCog):
@@ -9059,18 +9145,16 @@ Use the @autocomplete decorator to provide dynamic choices for a command paramet
 ```python
 @app_commands.command()
 async def fruits(interaction: discord.Interaction, fruit: str):
-    await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
+    await interaction.response.send_message(f"Your favourite fruit seems to be {fruit}")
 
-@fruits.autocomplete('fruit')
+
+@fruits.autocomplete("fruit")
 async def fruits_autocomplete(
     interaction: discord.Interaction,
     current: str,
 ) -> List[app_commands.Choice[str]]:
-    fruits = ['Banana', 'Pineapple', 'Apple', 'Watermelon', 'Melon', 'Cherry']
-    return [
-        app_commands.Choice(name=fruit, value=fruit)
-        for fruit in fruits if current.lower() in fruit.lower()
-    ]
+    fruits = ["Banana", "Pineapple", "Apple", "Watermelon", "Melon", "Cherry"]
+    return [app_commands.Choice(name=fruit, value=fruit) for fruit in fruits if current.lower() in fruit.lower()]
 ```
 
 --------------------------------
@@ -9126,12 +9210,11 @@ class BanFlags(commands.FlagConverter):
 
 @commands.hybrid_command()
 @app_commands.describe(
-    member='The member to ban',
-    reason='The reason for the ban',
-    days='The number of days worth of messages to delete',
+    member="The member to ban",
+    reason="The reason for the ban",
+    days="The number of days worth of messages to delete",
 )
-async def ban(ctx, *, flags: BanFlags):
-    ...
+async def ban(ctx, *, flags: BanFlags): ...
 ```
 
 --------------------------------
@@ -9146,12 +9229,13 @@ Shows how to build a custom converter by inheriting from an existing converter a
 class MemberRoles(commands.MemberConverter):
     async def convert(self, ctx, argument):
         member = await super().convert(ctx, argument)
-        return [role.name for role in member.roles[1:]] # Remove everyone role!
+        return [role.name for role in member.roles[1:]]  # Remove everyone role!
+
 
 @bot.command()
 async def roles(ctx, *, member: MemberRoles):
     """Tells you a member's roles."""
-    await ctx.send('I see the following roles: ' + ', '.join(member))
+    await ctx.send("I see the following roles: " + ", ".join(member))
 ```
 
 --------------------------------
@@ -9219,12 +9303,12 @@ Updates the webhook initialization to use SyncWebhook instead of RequestsWebhook
 
 ```python
 # before
-webhook = discord.Webhook.partial(123456, 'token-here', adapter=discord.RequestsWebhookAdapter())
-webhook.send('Hello World', username='Foo')
+webhook = discord.Webhook.partial(123456, "token-here", adapter=discord.RequestsWebhookAdapter())
+webhook.send("Hello World", username="Foo")
 
 # after
-webhook = discord.SyncWebhook.partial(123456, 'token-here')
-webhook.send('Hello World', username='Foo')
+webhook = discord.SyncWebhook.partial(123456, "token-here")
+webhook.send("Hello World", username="Foo")
 ```
 
 --------------------------------
@@ -9310,17 +9394,21 @@ Shows how to derive from CommandError to provide specific feedback when a check 
 class NoPrivateMessages(commands.CheckFailure):
     pass
 
+
 def guild_only():
     async def predicate(ctx):
         if ctx.guild is None:
-            raise NoPrivateMessages('Hey no DMs!')
+            raise NoPrivateMessages("Hey no DMs!")
         return True
+
     return commands.check(predicate)
+
 
 @bot.command()
 @guild_only()
 async def test(ctx):
-    await ctx.send('Hey this is not a DM! Nice.')
+    await ctx.send("Hey this is not a DM! Nice.")
+
 
 @test.error
 async def test_error(ctx, error):
@@ -9402,7 +9490,7 @@ Use allowed_installs to specify whether a command is installable in guilds, by u
 @app_commands.command()
 @app_commands.allowed_installs(guilds=False, users=True)
 async def my_command(interaction: discord.Interaction) -> None:
-    await interaction.response.send_message('I am installed in users by default!')
+    await interaction.response.send_message("I am installed in users by default!")
 ```
 
 --------------------------------
@@ -9486,6 +9574,7 @@ Inherit from app_commands.Group to create a command group, applying decorators l
 ```python
 from discord import app_commands
 
+
 @app_commands.guild_only()
 class MyGroup(app_commands.Group):
     pass
@@ -9538,11 +9627,14 @@ Use CogMeta to create a custom metaclass for abstract cog mixins.
 ```python
 import abc
 
+
 class CogABCMeta(commands.CogMeta, abc.ABCMeta):
     pass
 
+
 class SomeMixin(metaclass=abc.ABCMeta):
     pass
+
 
 class SomeCogMixin(SomeMixin, commands.Cog, metaclass=CogABCMeta):
     pass
@@ -9601,12 +9693,14 @@ Wraps a predicate function inside a custom decorator to simplify applying the sa
 def is_me():
     def predicate(interaction: discord.Interaction) -> bool:
         return interaction.user.id == 85309593344815104
+
     return app_commands.check(predicate)
+
 
 @tree.command()
 @is_me()
 async def only_me(interaction: discord.Interaction):
-    await interaction.response.send_message('Only you!')
+    await interaction.response.send_message("Only you!")
 ```
 
 --------------------------------
@@ -9997,27 +10091,28 @@ Demonstrates using a shared coroutine as a pre-invoke hook for both standalone c
 
 ```python
 async def record_usage(ctx):
-    print(ctx.author, 'used', ctx.command, 'at', ctx.message.created_at)
+    print(ctx.author, "used", ctx.command, "at", ctx.message.created_at)
+
 
 @bot.command()
 @commands.before_invoke(record_usage)
-async def who(ctx): # Output: <User> used who at <Time>
-    await ctx.send('i am a bot')
+async def who(ctx):  # Output: <User> used who at <Time>
+    await ctx.send("i am a bot")
+
 
 class What(commands.Cog):
-
     @commands.before_invoke(record_usage)
     @commands.command()
-    async def when(self, ctx): # Output: <User> used when at <Time>
-        await ctx.send(f'and i have existed since {ctx.bot.user.created_at}')
+    async def when(self, ctx):  # Output: <User> used when at <Time>
+        await ctx.send(f"and i have existed since {ctx.bot.user.created_at}")
 
     @commands.command()
-    async def where(self, ctx): # Output: <Nothing>
-        await ctx.send('on Discord')
+    async def where(self, ctx):  # Output: <Nothing>
+        await ctx.send("on Discord")
 
     @commands.command()
-    async def why(self, ctx): # Output: <Nothing>
-        await ctx.send('because someone made me')
+    async def why(self, ctx):  # Output: <Nothing>
+        await ctx.send("because someone made me")
 ```
 
 --------------------------------
@@ -10193,6 +10288,7 @@ async def before_any_command(ctx):
     # do something before a command is called
     pass
 
+
 @bot.after_invoke
 async def after_any_command(ctx):
     # do something after a command is called
@@ -10343,12 +10439,13 @@ Demonstrates catching a CheckFailure exception within a command-specific error h
 @is_in_guild(41771983423143937)
 async def secretguilddata(ctx):
     """super secret stuff"""
-    await ctx.send('secret stuff')
+    await ctx.send("secret stuff")
+
 
 @secretguilddata.error
 async def secretguilddata_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('nothing to see here comrade.')
+        await ctx.send("nothing to see here comrade.")
 ```
 
 --------------------------------
@@ -10462,12 +10559,14 @@ Apply before_invoke and after_invoke decorators directly to specific command fun
 ```python
 @bot.command()
 async def foo(ctx):
-    await ctx.send('foo')
+    await ctx.send("foo")
+
 
 @foo.before_invoke
 async def before_foo_command(ctx):
     # do something before the foo command is called
     pass
+
 
 @foo.after_invoke
 async def after_foo_command(ctx):
@@ -10487,16 +10586,17 @@ Use default_permissions to provide a hint to Discord regarding the permissions r
 @app_commands.command()
 @app_commands.default_permissions(manage_messages=True)
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message('You may or may not have manage messages.')
+    await interaction.response.send_message("You may or may not have manage messages.")
 ```
 
 ```python
 ADMIN_PERMS = discord.Permissions(administrator=True)
 
+
 @app_commands.command()
 @app_commands.default_permissions(ADMIN_PERMS, manage_messages=True)
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message('You may or may not have manage messages.')
+    await interaction.response.send_message("You may or may not have manage messages.")
 ```
 
 --------------------------------
@@ -10559,10 +10659,12 @@ class JoinDistance:
     def delta(self):
         return self.joined - self.created
 
+
 class JoinDistanceConverter(commands.MemberConverter):
     async def convert(self, ctx, argument):
         member = await super().convert(ctx, argument)
         return JoinDistance(member.joined_at, member.created_at)
+
 
 @bot.command()
 async def delta(ctx, *, member: JoinDistanceConverter):
@@ -10585,7 +10687,7 @@ Use allowed_contexts to restrict command usage to specific environments like gui
 @app_commands.command()
 @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=True)
 async def my_command(interaction: discord.Interaction) -> None:
-    await interaction.response.send_message('I am only available in guilds and private channels!')
+    await interaction.response.send_message("I am only available in guilds and private channels!")
 ```
 
 --------------------------------
@@ -10615,6 +10717,7 @@ from discord.ext import commands
 from typing import Tuple
 import discord
 
+
 class BanFlags(commands.FlagConverter):
     members: Tuple[discord.Member, ...]
     reason: str
@@ -10638,10 +10741,12 @@ Implements the Converter interface to perform asynchronous processing or access 
 ```python
 import random
 
+
 class Slapper(commands.Converter):
     async def convert(self, ctx, argument):
         to_slap = random.choice(ctx.guild.members)
-        return f'{ctx.author} slapped {to_slap} because *{argument}*'
+        return f"{ctx.author} slapped {to_slap} because *{argument}*"
+
 
 @bot.command()
 async def slap(ctx, *, reason: Slapper):
@@ -10841,13 +10946,16 @@ Configures a task to run a fixed number of times using the count parameter and e
 from discord.ext import tasks
 import discord
 
+
 @tasks.loop(seconds=5.0, count=5)
 async def slow_count():
     print(slow_count.current_loop)
 
+
 @slow_count.after_loop
 async def after_slow_count():
-    print('done!')
+    print("done!")
+
 
 class MyClient(discord.Client):
     async def setup_hook(self):
@@ -10914,6 +11022,7 @@ class Economy(commands.Cog):
         # implementation here
         ...
 
+
 class Gambling(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -10924,7 +11033,7 @@ class Gambling(commands.Cog):
     @commands.command()
     async def gamble(self, ctx, money: int):
         """Gambles some money."""
-        economy = self.bot.get_cog('Economy')
+        economy = self.bot.get_cog("Economy")
         if economy is not None:
             await economy.withdraw_money(ctx.author, money)
             if self.coinflip() == 1:
@@ -11041,6 +11150,7 @@ utc = datetime.timezone.utc
 # If no tzinfo is given then UTC is assumed.
 time = datetime.time(hour=8, minute=30, tzinfo=utc)
 
+
 class MyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -11063,10 +11173,10 @@ Source: https://discordpy.readthedocs.io/en/latest/interactions/api.html
 Provides descriptions for command parameters using the describe decorator or standard docstrings.
 
 ```python
-@app_commands.command(description='Bans a member')
-@app_commands.describe(member='the member to ban')
+@app_commands.command(description="Bans a member")
+@app_commands.describe(member="the member to ban")
 async def ban(interaction: discord.Interaction, member: discord.Member):
-    await interaction.response.send_message(f'Banned {member}')
+    await interaction.response.send_message(f"Banned {member}")
 ```
 
 ```python
@@ -11079,7 +11189,7 @@ async def ban(interaction: discord.Interaction, member: discord.Member):
     member: discord.Member
         the member to ban
     """
-    await interaction.response.send_message(f'Banned {member}')
+    await interaction.response.send_message(f"Banned {member}")
 ```
 
 --------------------------------
@@ -11137,8 +11247,9 @@ Deletes messages matching a specific condition within a thread. Requires manage_
 def is_me(m):
     return m.author == client.user
 
+
 deleted = await thread.purge(limit=100, check=is_me)
-await thread.send(f'Deleted {len(deleted)} message(s)')
+await thread.send(f"Deleted {len(deleted)} message(s)")
 ```
 
 --------------------------------
@@ -11249,6 +11360,7 @@ Uses the before_loop decorator to ensure the bot is fully connected before the t
 ```python
 from discord.ext import tasks, commands
 
+
 class MyCog(commands.Cog):
     def __init__(self, bot):
         self.index = 0
@@ -11265,7 +11377,7 @@ class MyCog(commands.Cog):
 
     @printer.before_loop
     async def before_printer(self):
-        print('waiting...')
+        print("waiting...")
         await self.bot.wait_until_ready()
 ```
 
@@ -11555,15 +11667,17 @@ Defines a command interface using FlagConverter to allow user-friendly flag synt
 from discord.ext import commands
 import discord
 
+
 class BanFlags(commands.FlagConverter):
     member: discord.Member
     reason: str
     days: int = 1
 
+
 @commands.command()
 async def ban(ctx, *, flags: BanFlags):
-    plural = f'{flags.days} days' if flags.days != 1 else f'{flags.days} day'
-    await ctx.send(f'Banned {flags.member} for {flags.reason!r} (deleted {plural} worth of messages)')
+    plural = f"{flags.days} days" if flags.days != 1 else f"{flags.days} day"
+    await ctx.send(f"Banned {flags.member} for {flags.reason!r} (deleted {plural} worth of messages)")
 ```
 
 --------------------------------
@@ -11654,11 +11768,12 @@ Use the group decorator to define commands that act as subcommands.
 @bot.group()
 async def git(ctx):
     if ctx.invoked_subcommand is None:
-        await ctx.send('Invalid git command passed...')
+        await ctx.send("Invalid git command passed...")
+
 
 @git.command()
 async def push(ctx, remote: str, branch: str):
-    await ctx.send(f'Pushing to {remote} {branch}')
+    await ctx.send(f"Pushing to {remote} {branch}")
 ```
 
 --------------------------------
@@ -11731,10 +11846,10 @@ Define cog_before_invoke and cog_after_invoke methods within a Cog class to hand
 ```python
 class MyCog(commands.Cog):
     async def cog_before_invoke(self, ctx):
-        ctx.secret_cog_data = 'foo'
+        ctx.secret_cog_data = "foo"
 
     async def cog_after_invoke(self, ctx):
-        print('{0.command} is done...'.format(ctx))
+        print("{0.command} is done...".format(ctx))
 
     @commands.command()
     async def foo(self, ctx):
@@ -11861,13 +11976,14 @@ Uses the error decorator to handle exceptions locally within a specific command.
 @bot.command()
 async def info(ctx, *, member: discord.Member):
     """Tells you some info about the member."""
-    msg = f'{member} joined on {member.joined_at} and has {len(member.roles)} roles.'
+    msg = f"{member} joined on {member.joined_at} and has {len(member.roles)} roles."
     await ctx.send(msg)
+
 
 @info.error
 async def info_error(ctx, error):
     if isinstance(error, commands.BadArgument):
-        await ctx.send('I could not find that member...')
+        await ctx.send("I could not find that member...")
 ```
 
 --------------------------------
@@ -11980,7 +12096,7 @@ Example of defining a custom LayoutView subclass with a container containing a t
 
 ```python
 class MyView(ui.LayoutView):
-    container = ui.Container(ui.TextDisplay('I am a text display on a container!'))
+    container = ui.Container(ui.TextDisplay("I am a text display on a container!"))
     # or you can use your subclass:
     # container = MyContainer()
 ```
@@ -12033,7 +12149,7 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Retrieves a message from a channel history matching the specified author name.
 
 ```python
-msg = await discord.utils.get(channel.history(), author__name='Dave')
+msg = await discord.utils.get(channel.history(), author__name="Dave")
 ```
 
 --------------------------------
@@ -12141,8 +12257,9 @@ Deletes messages in a channel that satisfy a specific condition, such as message
 def is_me(m):
     return m.author == client.user
 
+
 deleted = await channel.purge(limit=100, check=is_me)
-await channel.send(f'Deleted {len(deleted)} message(s)')
+await channel.send(f"Deleted {len(deleted)} message(s)")
 ```
 
 --------------------------------
@@ -12315,6 +12432,7 @@ class JoinDistance:
     @property
     def delta(self):
         return self.joined - self.created
+
 
 @bot.command()
 async def delta(ctx, *, member: JoinDistance):
@@ -12753,7 +12871,7 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html
 Remove a registered cog from the bot by its name.
 
 ```python
-await bot.remove_cog('Greetings')
+await bot.remove_cog("Greetings")
 ```
 
 --------------------------------
@@ -13022,7 +13140,7 @@ Source: https://discordpy.readthedocs.io/en/latest/api.html
 Use the fallback method when ffprobe is unavailable on Windows systems.
 
 ```python
-source = await discord.FFmpegOpusAudio.from_probe("song.webm", method='fallback')
+source = await discord.FFmpegOpusAudio.from_probe("song.webm", method="fallback")
 voice_client.play(source)
 ```
 
@@ -13232,11 +13350,11 @@ Use command_attrs to set default attributes for all commands within a cog, which
 class MyCog(commands.Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     async def foo(self, ctx):
-        pass # hidden -> True
+        pass  # hidden -> True
 
     @commands.command(hidden=False)
     async def bar(self, ctx):
-        pass # hidden -> False
+        pass  # hidden -> False
 ```
 
 --------------------------------
@@ -13357,7 +13475,8 @@ Uses the cooldown decorator to limit command usage to once every 5 seconds per m
 @tree.command()
 @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message('Hello')
+    await interaction.response.send_message("Hello")
+
 
 @test.error
 async def on_test_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
@@ -13563,7 +13682,7 @@ Restricts numeric or string input to a specific range or length.
 ```python
 @bot.command()
 async def range(ctx: commands.Context, value: commands.Range[int, 10, 12]):
-    await ctx.send(f'Your value is {value}')
+    await ctx.send(f"Your value is {value}")
 ```
 
 --------------------------------
@@ -13617,6 +13736,7 @@ Use the hybrid_group decorator to create command groups with sub-commands, utili
 @bot.hybrid_group(fallback="get")
 async def tag(ctx, name):
     await ctx.send(f"Showing tag: {name}")
+
 
 @tag.command()
 async def create(ctx, name):
@@ -13698,7 +13818,9 @@ Shows usage of the clean_content converter with and without custom configuration
 async def clean(ctx, *, content: commands.clean_content):
     await ctx.send(content)
 
+
 # or for fine-tuning
+
 
 @bot.command()
 async def clean(ctx, *, content: commands.clean_content(use_nicknames=False)):
@@ -13765,6 +13887,7 @@ Demonstrates using a custom function as a converter via type annotations to tran
 ```python
 def to_upper(argument):
     return argument.upper()
+
 
 @bot.command()
 async def up(ctx, *, content: to_upper):
@@ -13894,12 +14017,14 @@ Encapsulates a check predicate within a factory function to create a reusable de
 def is_me():
     def predicate(ctx):
         return ctx.message.author.id == 85309593344815104
+
     return commands.check(predicate)
+
 
 @bot.command()
 @is_me()
 async def only_me(ctx):
-    await ctx.send('Only you!')
+    await ctx.send("Only you!")
 ```
 
 --------------------------------
@@ -14095,16 +14220,15 @@ The Attachment converter retrieves files uploaded with the message. It can be co
 ```python
 import discord
 
+
 @bot.command()
 async def upload(ctx, attachment: discord.Attachment):
-    await ctx.send(f'You have uploaded <{attachment.url}>')
-
+    await ctx.send(f"You have uploaded <{attachment.url}>")
 ```
 
 ```python
 import typing
 import discord
-
 ```
 
 --------------------------------
@@ -14138,8 +14262,9 @@ Create a cog that functions as a parent group for application commands.
 from discord import app_commands
 from discord.ext import commands
 
+
 @app_commands.guild_only()
-class MyCog(commands.GroupCog, group_name='my-cog'):
+class MyCog(commands.GroupCog, group_name="my-cog"):
     pass
 ```
 
@@ -14198,30 +14323,30 @@ Source: https://discordpy.readthedocs.io/en/latest/migrating_to_v1.html
 Example of a custom Cog class implementing various special methods for checks, error handling, and invocation hooks, along with a listener.
 
 ```python
-class MyCog(commands.Cog, name='Example Cog'):
+class MyCog(commands.Cog, name="Example Cog"):
     def cog_unload(self):
-        print('cleanup goes here')
+        print("cleanup goes here")
 
     def bot_check(self, ctx):
-        print('bot check')
+        print("bot check")
         return True
 
     def bot_check_once(self, ctx):
-        print('bot check once')
+        print("bot check once")
         return True
 
     async def cog_check(self, ctx):
-        print('cog local check')
+        print("cog local check")
         return await ctx.bot.is_owner(ctx.author)
 
     async def cog_command_error(self, ctx, error):
-        print('Error in {0.command.qualified_name}: {1}'.format(ctx, error))
+        print("Error in {0.command.qualified_name}: {1}".format(ctx, error))
 
     async def cog_before_invoke(self, ctx):
-        print('cog local before: {0.command.qualified_name}'.format(ctx))
+        print("cog local before: {0.command.qualified_name}".format(ctx))
 
     async def cog_after_invoke(self, ctx):
-        print('cog local after: {0.command.qualified_name}'.format(ctx))
+        print("cog local after: {0.command.qualified_name}".format(ctx))
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -14240,7 +14365,7 @@ Apply guild_install to make a command available for installation in guilds. This
 @app_commands.command()
 @app_commands.guild_install()
 async def my_guild_install_command(interaction: discord.Interaction) -> None:
-    await interaction.response.send_message('I am installed in guilds by default!')
+    await interaction.response.send_message("I am installed in guilds by default!")
 ```
 
 --------------------------------
@@ -14325,7 +14450,7 @@ Apply user_install to make a command available for installation by users. This d
 @app_commands.command()
 @app_commands.user_install()
 async def my_user_install_command(interaction: discord.Interaction) -> None:
-    await interaction.response.send_message('I am installed in users by default!')
+    await interaction.response.send_message("I am installed in users by default!")
 ```
 
 --------------------------------
@@ -14721,9 +14846,9 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html
 Internal logic used by the library to evaluate string inputs as boolean values.
 
 ```python
-if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+if lowered in ("yes", "y", "true", "t", "1", "enable", "on"):
     return True
-elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+elif lowered in ("no", "n", "false", "f", "0", "disable", "off"):
     return False
 ```
 
@@ -14837,18 +14962,17 @@ Updates custom converter metaclasses to inherit from the base converter type due
 
 ```python
 # before
-class SomeConverterMeta(type):
-    ...
+class SomeConverterMeta(type): ...
 
-class SomeConverter(commands.Converter, metaclass=SomeConverterMeta):
-    ...
+
+class SomeConverter(commands.Converter, metaclass=SomeConverterMeta): ...
+
 
 # after
-class SomeConverterMeta(type(commands.Converter)):
-    ...
+class SomeConverterMeta(type(commands.Converter)): ...
 
-class SomeConverter(commands.Converter, metaclass=SomeConverterMeta):
-    ...
+
+class SomeConverter(commands.Converter, metaclass=SomeConverterMeta): ...
 ```
 
 --------------------------------
@@ -14926,13 +15050,13 @@ Catch asyncio.TimeoutError when the wait_for operation exceeds the specified tim
 def pred(m):
     return m.author == message.author and m.channel == message.channel
 
-try:
 
-    msg = await client.wait_for('message', check=pred, timeout=60.0)
+try:
+    msg = await client.wait_for("message", check=pred, timeout=60.0)
 except asyncio.TimeoutError:
-    await channel.send('You took too long...')
+    await channel.send("You took too long...")
 else:
-    await channel.send('You said {0.content}, {0.author}.'.format(msg))
+    await channel.send("You said {0.content}, {0.author}.".format(msg))
 ```
 
 --------------------------------
@@ -15703,10 +15827,12 @@ class Point(typing.NamedTuple):
     x: int
     y: int
 
+
 class PointTransformer(app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction, value: str) -> Point:
-        (x, _, y) = value.partition(',')
+        (x, _, y) = value.partition(",")
         return Point(x=int(x.strip()), y=int(y.strip()))
+
 
 @app_commands.command()
 async def graph(
@@ -15744,10 +15870,9 @@ Greedy attempts to convert as many arguments as possible until it can no longer 
 
 ```python
 @bot.command()
-async def slap(ctx, members: commands.Greedy[discord.Member], *, reason='no reason'):
+async def slap(ctx, members: commands.Greedy[discord.Member], *, reason="no reason"):
     slapped = ", ".join(x.name for x in members)
-    await ctx.send(f'{slapped} just got slapped for {reason}')
-
+    await ctx.send(f"{slapped} just got slapped for {reason}")
 ```
 
 --------------------------------
@@ -16253,9 +16378,9 @@ Renames parameters in the Discord UI while maintaining the original function par
 
 ```python
 @app_commands.command()
-@app_commands.rename(the_member_to_ban='member')
+@app_commands.rename(the_member_to_ban="member")
 async def ban(interaction: discord.Interaction, the_member_to_ban: discord.Member):
-    await interaction.response.send_message(f'Banned {the_member_to_ban}')
+    await interaction.response.send_message(f"Banned {the_member_to_ban}")
 ```
 
 --------------------------------
@@ -16303,7 +16428,7 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html
 Uses a space delimiter and double-dash prefix for command flags.
 
 ```python
-class PosixLikeFlags(commands.FlagConverter, delimiter=' ', prefix='--'):
+class PosixLikeFlags(commands.FlagConverter, delimiter=" ", prefix="--"):
     hello: str
 ```
 
@@ -16334,7 +16459,7 @@ Source: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html
 Uses an empty delimiter and forward-slash prefix for command flags.
 
 ```python
-class WindowsLikeFlags(commands.FlagConverter, prefix='/', delimiter=''):
+class WindowsLikeFlags(commands.FlagConverter, prefix="/", delimiter=""):
     make: str
 ```
 
@@ -16471,13 +16596,14 @@ Configures custom flag names, default values, and positional flags within a Flag
 ```python
 from typing import List
 
+
 class BanFlags(commands.FlagConverter):
-    members: List[discord.Member] = commands.flag(name='member', default=lambda ctx: [])
+    members: List[discord.Member] = commands.flag(name="member", default=lambda ctx: [])
 ```
 
 ```python
 class BanFlags(commands.FlagConverter):
-    members: List[discord.Member] = commands.flag(name='member', positional=True, default=lambda ctx: [])
+    members: List[discord.Member] = commands.flag(name="member", positional=True, default=lambda ctx: [])
     reason: Optional[str] = None
 ```
 

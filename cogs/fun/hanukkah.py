@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+import datetime
+import logging
+from typing import TYPE_CHECKING
+
+import discord
+from discord import Embed
+from discord.ext import commands
+
+from core.constants import Month
+from core.utils import in_month
+
+if TYPE_CHECKING:
+    from discord.ext.commands import Cog, Context
+
+    from core.bot import Parrot
+
+_log = logging.getLogger("bot.cogs.fun.hanukkah")
+
+HEBCAL_URL = (
+    "https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&year=now&month=x&ss=on&mf=on&c=on&geo=geoname&geonameid=3448439&m=50&s=on"
+)
+
+
+class Hanukkah(Cog, command_attrs={"hidden": True}):
+    """A cog that returns information about Hanukkah festival."""
+
+    def __init__(self, bot: Parrot) -> None:
+        self.bot = bot
+        self.hanukkah_dates: list[datetime.date] = []
+
+        _log.info("Cog loaded: %s", self.__class__.__name__)
+
+    def _parse_time_to_datetime(self, date: str) -> datetime.datetime:
+        """Format the times provided by the api to datetime forms."""
+        try:
+            return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
+        except ValueError:
+            # there is a possibility of an event not having a time, just a day
+            # to catch this, we try again without time information
+            return datetime.datetime.strptime(date, "%Y-%m-%d")
+
+    async def fetch_hanukkah_dates(self) -> list[datetime.date]:
+        """Gets the dates for hanukkah festival."""
+        # clear the datetime objects to prevent a memory link
+        self.hanukkah_dates = []
+        async with self.bot.http_session.get(HEBCAL_URL) as response:
+            json_data = await response.json()
+        festivals = json_data["items"]
+        for festival in festivals:
+            if festival["title"].startswith("Chanukah"):
+                date = festival["date"]
+                self.hanukkah_dates.append(self._parse_time_to_datetime(date).date())
+        return self.hanukkah_dates
+
+    @in_month(Month.NOVEMBER, Month.DECEMBER)
+    @commands.command(name="hanukkah", aliases=("chanukah",))
+    async def hanukkah_festival(self, ctx: Context) -> None:
+        """Tells you about the Hanukkah Festivaltime of festival, festival day, etc)."""
+        hanukkah_dates = await self.fetch_hanukkah_dates()
+        start_day = hanukkah_dates[0]
+        end_day = hanukkah_dates[-1]
+        today = datetime.date.today()
+        embed = Embed(title="Hanukkah", colour=discord.Color.blue())
+        if start_day <= today <= end_day:
+            if start_day == today:
+                now = discord.utils.utcnow()
+                hours = now.hour + 4  # using only hours
+                hanukkah_start_hour = 18
+                if hours < hanukkah_start_hour:
+                    embed.description = f"Hanukkah hasnt started yet, it will start in about {hanukkah_start_hour - hours} hour/s."
+                    await ctx.send(embed=embed)
+                    return
+                if hours > hanukkah_start_hour:
+                    embed.description = f"It is the starting day of Hanukkah! Its been {hours - hanukkah_start_hour} hours hanukkah started!"
+                    await ctx.send(embed=embed)
+                    return
+            festival_day = hanukkah_dates.index(today)
+            number_suffixes = ["st", "nd", "rd", "th"]
+            suffix = number_suffixes[festival_day - 1 if festival_day <= 3 else 3]
+            message = ":menorah:" * festival_day
+            embed.description = f"It is the {festival_day}{suffix} day of Hanukkah!\n{message}"
+        elif today < start_day:
+            format_start = start_day.strftime("%d of %B")
+            embed.description = f"Hanukkah has not started yet. Hanukkah will start at sundown on {format_start}."
+        else:
+            format_end = end_day.strftime("%d of %B")
+            embed.description = f"Looks like you missed Hanukkah! Hanukkah ended on {format_end}."
+
+        await ctx.send(embed=embed)

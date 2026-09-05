@@ -63,7 +63,9 @@ class Akinator:
     def build_embed(self, *, instructions: bool = True) -> discord.Embed:
         embed = discord.Embed(
             title="Guess your character!",
-            description=(f"```swift\nQuestion-Number  : {self.aki.step or 0 + 1}\nProgression-Level: {self.aki.progression:.2f}\n```\n{self.build_bar()}"),
+            description=(
+                f"```swift\nQuestion-Number  : {self.aki.step or 0 + 1}\nProgression-Level: {self.aki.progression:.2f}\n```\n{self.build_bar()}"
+            ),
             color=self.embed_color,
         )
         embed.add_field(name="- Question -", value=self.aki.question)

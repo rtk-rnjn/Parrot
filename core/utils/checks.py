@@ -33,6 +33,7 @@ __all__ = (
     "everyday_at",
 )
 
+
 def resolve_current_month() -> Month:
     return Month(discord.utils.utcnow().month)
 

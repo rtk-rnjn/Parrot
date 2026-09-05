@@ -102,6 +102,8 @@ class Parrot(commands.Bot):
         self.lavalink_node_pool = pomice.NodePool()
         self.default_lavalink_node: pomice.Node | None = None
 
+        self.message_cache: dict[int, discord.Message] = {}
+
     @staticmethod
     def start_lavalink() -> subprocess.Popen | None:
         java = shutil.which("java")
@@ -313,6 +315,19 @@ class Parrot(commands.Bot):
 
     async def __check_once(self, ctx: commands.Context[Parrot]) -> bool:
         return await self.is_owner(ctx.author)
+
+    async def get_or_fetch_message(
+        self,
+        channel: discord.abc.Messageable,
+        message_id: int,
+    ) -> discord.Message:
+        try:
+            return self.message_cache[message_id]
+        except KeyError:
+            message = await channel.fetch_message(message_id)
+            self.message_cache[message_id] = message
+            return message
+
 
 class DisambiguatorView[T](discord.ui.View):
     message: discord.Message

@@ -1,5 +1,5 @@
-import re
 import enum
+import re
 
 ERROR_REPLIES = [
     "Please don't do that.",

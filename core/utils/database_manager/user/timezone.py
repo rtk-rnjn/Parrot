@@ -20,7 +20,7 @@ class _UserTimezoneMixin:
         if cached is not None and isinstance(cached, str):
             return cached
 
-        user_config = await self.users_collection.find_one({"_id": user_id})
+        user_config = await self.users_collection.find_one({"_id": user_id, "timezone": {"$exists": True}}, {"timezone": 1})
         if user_config is None:
             return None
 

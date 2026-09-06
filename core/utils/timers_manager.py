@@ -22,6 +22,7 @@ VALID_EVENT_NAMES = Literal[
     "reminder",
     "mute",
     "todo_due",
+    "giveaway",
 ]
 
 

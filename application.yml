@@ -2,7 +2,7 @@ server:
   port: 2333
   address: 0.0.0.0
   http2:
-    enabled: true
+    enabled: false
 
 plugins:
   youtube:

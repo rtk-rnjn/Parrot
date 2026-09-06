@@ -5,6 +5,7 @@ from .giveaway import _GuildGiveawayMixin  # noqa
 from .leveling import _GuildLevelingMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
 from .prefix import _GuildPrefixMixin  # noqa
+from .starboard import _GuildStarboardMixin  # noqa
 from .tags import _GuildTagsMixin  # noqa
 from .voilation import _GuildVoilationMixin  # noqa
 from .welcomer import _GuildWelcomerMixin  # noqa
@@ -23,4 +24,5 @@ class _GuildMixin(
     _GuildGiveawayMixin,
     _GuildLevelingMixin,
     _GuildWelcomerMixin,
+    _GuildStarboardMixin,
 ): ...

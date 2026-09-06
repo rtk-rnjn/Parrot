@@ -1,16 +1,23 @@
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Literal
+
+import pymongo
+from bson import ObjectId
 from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.results import InsertOneResult
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
-from ..models import GiveawayConfig, GuildConfiguration
+from ..models import Giveaway, GiveawayConfig, GuildConfiguration
 
 
 class _GuildGiveawayMixin:
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
+    giveaways_collection: AsyncCollection[Giveaway]
 
     async def _cache_giveaway_config(self, *, guild_id: int, config: GiveawayConfig) -> None:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_ENABLED.format(guild_id=guild_id)
@@ -111,6 +118,58 @@ class _GuildGiveawayMixin:
 
         await self._cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
         return config["giveaway_config"]["giveaway_role_id"]
+
+    async def create_giveaway(  # noqa: PLR0913
+        self,
+        *,
+        guild_id: int,
+        channel_id: int,
+        message_id: int,
+        host_id: int,
+        prize: str,
+        winners: int,
+        ends_at: datetime,
+        entry_mode: Literal["button", "reaction"],
+    ) -> InsertOneResult:
+        giveaway: Giveaway = {
+            "_id": ObjectId(),
+            "guild_id": guild_id,
+            "channel_id": channel_id,
+            "message_id": message_id,
+            "host_id": host_id,
+            "prize": prize,
+            "winners": winners,
+            "ends_at": ends_at,
+            "entry_mode": entry_mode,
+            "entrants": [],
+            "ended": False,
+            "created_at": datetime.now(ends_at.tzinfo),
+        }
+        return await self.giveaways_collection.insert_one(giveaway)
+
+    async def get_giveaway(self, giveaway_id: ObjectId, /) -> Giveaway | None:
+        return await self.giveaways_collection.find_one({"_id": giveaway_id})
+
+    async def get_giveaway_by_message(self, *, guild_id: int, message_id: int) -> Giveaway | None:
+        return await self.giveaways_collection.find_one({"guild_id": guild_id, "message_id": message_id})
+
+    async def get_giveaways(self, *, guild_id: int | None = None) -> list[Giveaway]:
+        query = {"guild_id": guild_id} if guild_id is not None else {}
+        return await self.giveaways_collection.find(query).to_list(length=None)
+
+    async def add_giveaway_entrant(self, *, giveaway_id: ObjectId, user_id: int) -> bool:
+        result = await self.giveaways_collection.update_one(
+            {"_id": giveaway_id, "ended": False},
+            {"$addToSet": {"entrants": user_id}},
+        )
+        return result.modified_count > 0
+
+    async def end_giveaway(self, giveaway_id: ObjectId, /) -> Giveaway | None:
+        return await self.giveaways_collection.find_one_and_update(
+            {"_id": giveaway_id, "ended": False},
+            {"$set": {"ended": True}},
+            return_document=pymongo.ReturnDocument.AFTER,
+        )
 
     async def _get_int(self, key: str) -> int | None:
         value = await self.redis_client.get(key)

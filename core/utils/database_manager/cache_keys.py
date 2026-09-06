@@ -51,6 +51,8 @@ class RedisKeys(StrEnum):
     GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_CHANNEL_ID = "guild:{guild_id}:welcome_config:on_member_join_channel_id"
     GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_MESSAGE = "guild:{guild_id}:welcome_config:on_member_leave_message"
     GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_CHANNEL_ID = "guild:{guild_id}:welcome_config:on_member_leave_channel_id"
+    GUILD_STARBOARD_CONFIG = "guild:{guild_id}:starboard_config"
+    GUILD_STARBOARD_BOARD_MESSAGES = "guild:{guild_id}:starboard_board_messages"
 
     USER_TIMEZONE = "user:{user_id}:timezone"
 

@@ -9,7 +9,7 @@ from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
 
 from .guild import _GuildMixin
-from .models import GuildConfiguration, UserConfiguration
+from .models import Giveaway, GuildConfiguration, UserConfiguration
 from .scam_links import _ScamLinksMixin
 from .user import _UserMixin
 
@@ -36,6 +36,7 @@ class _DatabaseInfraMixin:
     mongo_db: object
     guilds_collection: AsyncCollection[GuildConfiguration]
     users_collection: AsyncCollection[UserConfiguration]
+    giveaways_collection: AsyncCollection[Giveaway]
 
     async def invalidate_redis(self) -> None:
         """Invalidate all Redis cache entries (useful for testing)."""
@@ -77,6 +78,7 @@ class DatabaseManager(
 
         self.guilds_collection: AsyncCollection[GuildConfiguration] = self.mongo_db["guilds"]
         self.users_collection: AsyncCollection[UserConfiguration] = self.mongo_db["users"]
+        self.giveaways_collection: AsyncCollection[Giveaway] = self.mongo_db["giveaways"]
 
     @property
     def redis_client(self) -> Redis:

@@ -8,8 +8,9 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
 
+from .bot.stats import _BotStatsMixin
 from .guild import _GuildMixin
-from .models import Giveaway, GuildConfiguration, UserConfiguration
+from .models import Giveaway, GuildConfiguration, Stats, UserConfiguration
 from .scam_links import _ScamLinksMixin
 from .user import _UserMixin
 
@@ -37,6 +38,7 @@ class _DatabaseInfraMixin:
     guilds_collection: AsyncCollection[GuildConfiguration]
     users_collection: AsyncCollection[UserConfiguration]
     giveaways_collection: AsyncCollection[Giveaway]
+    stats_collection: AsyncCollection[Stats]
 
     async def invalidate_redis(self) -> None:
         """Invalidate all Redis cache entries (useful for testing)."""
@@ -59,6 +61,7 @@ class DatabaseManager(
     _GuildMixin,
     _UserMixin,
     _ScamLinksMixin,
+    _BotStatsMixin,
 ):
     """Main database manager composed via mixin inheritance."""
 
@@ -79,6 +82,7 @@ class DatabaseManager(
         self.guilds_collection: AsyncCollection[GuildConfiguration] = self.mongo_db["guilds"]
         self.users_collection: AsyncCollection[UserConfiguration] = self.mongo_db["users"]
         self.giveaways_collection: AsyncCollection[Giveaway] = self.mongo_db["giveaways"]
+        self.stats_collection: AsyncCollection[Stats] = self.mongo_db["stats"]
 
     @property
     def redis_client(self) -> Redis:

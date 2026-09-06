@@ -177,3 +177,7 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
         embed = self.embed_builder(leader)
         await ctx.reply(embed=embed)
+
+async def setup(bot: Parrot) -> None:
+    """Load the cog."""
+    await bot.add_cog(Pride(bot))

@@ -450,3 +450,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         random_country = random.choice(list(traditions))
 
         await ctx.send(f"{random_country}:\n{traditions[random_country]}")
+
+async def setup(bot: Parrot) -> None:
+    """Load the cog."""
+    await bot.add_cog(Easter(bot))

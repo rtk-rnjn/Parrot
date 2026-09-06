@@ -42,6 +42,9 @@ LOADABLE_COGS = [
     "cogs.cc",
     "cogs.config",
     "cogs.events",
+    "cogs.fun.easter",
+    "cogs.fun.hanukkah",
+    "cogs.fun.pride",
     "cogs.fun.love",
     "cogs.fun.fun",
     "cogs.games",
@@ -56,6 +59,7 @@ LOADABLE_COGS = [
     "cogs.owner",
     "cogs.reminder",
     "cogs.rtfm",
+    "cogs.stats",
     "cogs.starboard",
     "cogs.tags",
     "cogs.todo",
@@ -77,6 +81,7 @@ class Parrot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
+        # intents.presences = True
 
         super().__init__(
             command_prefix=self.get_prefix,  # type: ignore

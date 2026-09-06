@@ -176,5 +176,73 @@ class Command(TypedDict):
     message_content: str
 
 
+class StatsKind(StrEnum):
+    MESSAGE = "message"
+    COMMAND = "command"
+    EVENT = "event"
+    PRESENCE = "presence"
+    PRESENCE_TRANSITION = "presence_transition"
+    VOICE = "voice"
+    VOICE_TRANSITION = "voice_transition"
+
+
+class StatsEvent(StrEnum):
+    MEMBER_JOIN = "member_join"
+    MEMBER_LEAVE = "member_leave"
+    MEMBER_UPDATE = "member_update"
+    MESSAGE_EDIT = "message_edit"
+    MESSAGE_DELETE = "message_delete"
+    REACTION_ADD = "reaction_add"
+    REACTION_REMOVE = "reaction_remove"
+    TYPING_START = "typing_start"
+    INTERACTION = "interaction"
+    THREAD_CREATE = "thread_create"
+    THREAD_DELETE = "thread_delete"
+    CHANNEL_CREATE = "channel_create"
+    CHANNEL_DELETE = "channel_delete"
+    ROLE_CREATE = "role_create"
+    ROLE_DELETE = "role_delete"
+    BAN_ADD = "ban_add"
+    BAN_REMOVE = "ban_remove"
+    SCHEDULED_EVENT_SUBSCRIBE = "scheduled_event_subscribe"
+    SCHEDULED_EVENT_UNSUBSCRIBE = "scheduled_event_unsubscribe"
+    PRESENCE_ACTIVITY = "presence_activity"
+
+
+class PresenceStatus(StrEnum):
+    ONLINE = "online"
+    OFFLINE = "offline"
+    IDLE = "idle"
+    DND = "dnd"
+
+
+class VoiceState(StrEnum):
+    NORMAL = "normal"
+    MUTED = "muted"
+    DEAFENED = "deafened"
+    STREAMING = "streaming"
+    VIDEO = "video"
+    MUTED_DEAFENED = "muted|deafened"
+    MUTED_STREAMING = "muted|streaming"
+    MUTED_VIDEO = "muted|video"
+    DEAFENED_STREAMING = "deafened|streaming"
+    DEAFENED_VIDEO = "deafened|video"
+    STREAMING_VIDEO = "streaming|video"
+    MUTED_DEAFENED_STREAMING = "muted|deafened|streaming"
+    MUTED_DEAFENED_VIDEO = "muted|deafened|video"
+    MUTED_STREAMING_VIDEO = "muted|streaming|video"
+    DEAFENED_STREAMING_VIDEO = "deafened|streaming|video"
+    MUTED_DEAFENED_STREAMING_VIDEO = "muted|deafened|streaming|video"
+
+
 class Stats(TypedDict):
-    pass
+    _id: ObjectId
+    interval_start: datetime
+    guild_id: int
+    user_id: int
+    kind: StatsKind
+    event: StatsEvent | None
+    channel_id: int | None
+    status: PresenceStatus | None
+    voice_state: VoiceState | None
+    values: dict[str, int | float]

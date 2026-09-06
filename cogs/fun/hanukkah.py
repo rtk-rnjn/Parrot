@@ -12,7 +12,7 @@ from core.constants import Month
 from core.utils import in_month
 
 if TYPE_CHECKING:
-    from discord.ext.commands import Cog, Context
+    from discord.ext.commands import Context
 
     from core.bot import Parrot
 
@@ -23,7 +23,7 @@ HEBCAL_URL = (
 )
 
 
-class Hanukkah(Cog, command_attrs={"hidden": True}):
+class Hanukkah(commands.Cog, command_attrs={"hidden": True}):
     """A cog that returns information about Hanukkah festival."""
 
     def __init__(self, bot: Parrot) -> None:
@@ -89,3 +89,7 @@ class Hanukkah(Cog, command_attrs={"hidden": True}):
             embed.description = f"Looks like you missed Hanukkah! Hanukkah ended on {format_end}."
 
         await ctx.send(embed=embed)
+
+async def setup(bot: Parrot) -> None:
+    """Load the cog."""
+    await bot.add_cog(Hanukkah(bot))

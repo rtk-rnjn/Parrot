@@ -524,7 +524,7 @@ class Blackjack:
         *,
         timeout: float | None = None,
         **kwargs,
-    ) -> discord.Message:
+    ) -> discord.Message | None:
         self.deal_initial()
         self.player = ctx.author
 

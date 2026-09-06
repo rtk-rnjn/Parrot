@@ -113,3 +113,21 @@ class UserConfiguration(TypedDict):
     todo_items: list[TodoItem]
     highlights: list[Highlight]
     highlight_ignored_users: list[int]
+
+
+# For Internal stats
+
+class Command(TypedDict):
+    _id: ObjectId
+    qualified_name: str
+    invoked_by: int
+    invoked_at: datetime
+
+    message_id: int
+    channel_id: int
+    guild_id: int
+
+    message_content: str
+
+class Stats(TypedDict):
+    pass

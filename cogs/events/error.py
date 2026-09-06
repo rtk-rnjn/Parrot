@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import random
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
@@ -19,6 +20,9 @@ if TYPE_CHECKING:
 QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 _log = logging.getLogger("bot.cogs.events.error")
+
+with open("assets/random_quotes.txt", encoding="utf-8") as f:
+    RANDOM_QUOTES = [line.strip() for line in f if line.strip()]
 
 
 class _Named(Protocol):
@@ -58,7 +62,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
         _log.debug("Command invoked: %s", payload)
 
     def _title(self, text: str) -> str:
-        return f"{QUESTION_MARK} {text} {QUESTION_MARK}"
+        return text
 
     def _format_permissions(self, permissions: list[str]) -> str:
         missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in permissions]
@@ -214,7 +218,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
 
         return ErrorResponse(
             title=self._title("Well this is embarrassing!"),
-            description=f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error.",  # pyright: ignore[reportOptionalMemberAccess]
+            description=f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error.\n-# {error}",  # pyright: ignore[reportOptionalMemberAccess]
             should_raise=True,
         )
 
@@ -269,7 +273,9 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
         # sentinel path when owner reinvoke happens
         if not response.title and not response.description:
             return None
-        return await ctx.reply(content=f"**{response.title}**\n{response.description}")
+        embed = discord.Embed(title=response.title, description=response.description, color=discord.Color.red())
+        random_quote = random.choice(RANDOM_QUOTES)
+        return await ctx.reply(content=f"-# _{random_quote}_", embed=embed)
 
     async def _handle_message_cleanup(
         self,

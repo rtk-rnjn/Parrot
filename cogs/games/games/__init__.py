@@ -2,6 +2,7 @@ from .aki import BetaAkinator as Akinator  # noqa: F401
 from .battleship import BetaBattleShip as BattleShip  # noqa: F401
 from .blackjack import Blackjack  # noqa: F401
 from .boggle import Boggle  # noqa: F401
+from .casino import BaccaratGame, PokerGame, RouletteGame, TeenPattiGame, WarGame  # noqa: F401
 from .chess import BetaChess as Chess  # noqa: F401
 from .chimp_test import ChimpTest  # noqa: F401
 from .connect_four import BetaConnectFour as ConnectFour  # noqa: F401

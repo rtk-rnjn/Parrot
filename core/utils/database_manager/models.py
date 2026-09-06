@@ -36,10 +36,31 @@ class CustomCommand(TypedDict):
 class Tag(TypedDict):
     name: str
     content: str
+    nsfw: bool
     creator_id: int
     created_at: datetime
     aliases: list[str]
     used_count: dict[str, int]
+
+
+class TagUserUsage(TypedDict):
+    user_id: int
+    count: int
+
+
+class TopTagUsage(TypedDict):
+    name: str
+    count: int
+
+
+class _TagUserUsageRow(TypedDict):
+    _id: str
+    count: int
+
+
+class _TopTagUsageRow(TypedDict):
+    _id: str
+    count: int
 
 
 class LevelingConfig(TypedDict):
@@ -117,6 +138,7 @@ class UserConfiguration(TypedDict):
 
 # For Internal stats
 
+
 class Command(TypedDict):
     _id: ObjectId
     qualified_name: str
@@ -128,6 +150,7 @@ class Command(TypedDict):
     guild_id: int
 
     message_content: str
+
 
 class Stats(TypedDict):
     pass

@@ -27,6 +27,7 @@ class RedisKeys(StrEnum):
 
     GUILD_TAG_NAMES = "guild:{guild_id}:tag_names"
     GUILD_TAG_CONTENT = "guild:{guild_id}:tag:{tag_name}:content"
+    GUILD_TAG_NSFW = "guild:{guild_id}:tag:{tag_name}:nsfw"
     GUILD_TAG_CREATOR_ID = "guild:{guild_id}:tag:{tag_name}:creator_id"
     GUILD_TAG_CREATED_AT = "guild:{guild_id}:tag:{tag_name}:created_at"
     GUILD_TAG_ALIASES = "guild:{guild_id}:tag:{tag_name}:aliases"

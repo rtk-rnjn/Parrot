@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import re
@@ -218,6 +219,25 @@ class Parrot(commands.Bot):
         except discord.NotFound:
             return None
 
+    async def confirm(
+        self,
+        ctx: commands.Context[Parrot],
+        prompt: str = "Are you sure?",
+        *,
+        timeout: float = 30,
+    ) -> bool:
+        """Ask the command author to confirm an action in the current channel."""
+        result = asyncio.get_running_loop().create_future()
+        view = ConfirmationLayout(ctx.author, prompt, result)
+        message = await ctx.reply(view=view)
+        view.message = message
+
+        try:
+            return await asyncio.wait_for(result, timeout)
+        except TimeoutError:
+            await message.edit(content="Confirmation timed out.", view=None)
+            return False
+
     @property
     def reminder(self) -> Reminder:
         return self.get_cog("Reminder")  # type: ignore
@@ -329,6 +349,45 @@ class Parrot(commands.Bot):
             message = await channel.fetch_message(message_id)
             self.message_cache[message_id] = message
             return message
+
+
+class ConfirmationLayout(discord.ui.LayoutView):
+    def __init__(self, author: discord.User | discord.Member, prompt: str, result: asyncio.Future[bool]) -> None:
+        super().__init__(timeout=None)
+        self.author = author
+        self.result = result
+        self.message: discord.Message
+
+        confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.success)
+        confirm_button.callback = self.confirm_callback
+        cancel_button = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.secondary)
+        cancel_button.callback = self.cancel_callback
+
+        self.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay(prompt),
+                discord.ui.Separator(),
+                discord.ui.ActionRow(confirm_button, cancel_button),
+            ),
+        )
+
+    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
+        if interaction.user.id != self.author.id:
+            await interaction.response.send_message("This confirmation is not for you.", ephemeral=True)
+            return False
+        return True
+
+    async def confirm_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not self.result.done():
+            self.result.set_result(True)
+        await interaction.response.edit_message(content="Confirmed.", view=None)
+        self.stop()
+
+    async def cancel_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not self.result.done():
+            self.result.set_result(False)
+        await interaction.response.edit_message(content="Cancelled.", view=None)
+        self.stop()
 
 
 class DisambiguatorView[T](discord.ui.View):

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import math
 import random
 from collections import Counter
 from io import BytesIO
 from typing import TYPE_CHECKING, ClassVar
-import math
+
 import discord
 from discord.ext import commands
 from jishaku.functools import executor_function
@@ -343,6 +344,7 @@ def get_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         except OSError:
             continue
     return ImageFont.load_default()
+
 
 @executor_function
 def roulette_image(number: int) -> BytesIO:  # noqa: PLR0915

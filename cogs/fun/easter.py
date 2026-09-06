@@ -47,32 +47,32 @@ IRREPLACEABLE = [
 ]  # Colours that are meant to stay the same - Transparent and Black
 
 EMOJIS = [
-    "\U0001f1e6",
-    "\U0001f1e7",
-    "\U0001f1e8",
-    "\U0001f1e9",
-    "\U0001f1ea",
-    "\U0001f1eb",
-    "\U0001f1ec",
-    "\U0001f1ed",
-    "\U0001f1ee",
-    "\U0001f1ef",
-    "\U0001f1f0",
-    "\U0001f1f1",
-    "\U0001f1f2",
-    "\U0001f1f3",
-    "\U0001f1f4",
-    "\U0001f1f5",
-    "\U0001f1f6",
-    "\U0001f1f7",
-    "\U0001f1f8",
-    "\U0001f1f9",
-    "\U0001f1fa",
-    "\U0001f1fb",
-    "\U0001f1fc",
-    "\U0001f1fd",
-    "\U0001f1fe",
-    "\U0001f1ff",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER A}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER B}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER C}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER D}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER E}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER F}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER G}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER H}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER I}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER J}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER K}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER L}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER M}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER N}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER O}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER P}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER Q}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER R}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER S}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER T}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER U}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER V}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER W}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER X}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER Y}",
+    "\N{REGIONAL INDICATOR SYMBOL LETTER Z}",
 ]  # ITS ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 _log = logging.getLogger("bot.cogs.fun.easter")
@@ -450,6 +450,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         random_country = random.choice(list(traditions))
 
         await ctx.send(f"{random_country}:\n{traditions[random_country]}")
+
 
 async def setup(bot: Parrot) -> None:
     """Load the cog."""

@@ -4,7 +4,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, Literal
 
 import discord
-from akinator import AsyncAkinator as AkinatorGame, CantGoBackAnyFurther
+from akinator import AsyncAkinator as AkinatorGame
+from akinator import CantGoBackAnyFurther
 from discord.ext import commands
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, double_wait
@@ -71,7 +72,7 @@ class Akinator:
         embed.add_field(name="- Question -", value=self.aki.question)
 
         if instructions:
-            embed.add_field(name="\u200b", value=self.instructions, inline=False)
+            embed.add_field(name="\N{ZERO WIDTH SPACE}", value=self.instructions, inline=False)
 
         embed.set_footer(text="Figuring out the next question | This may take a second")
         return embed

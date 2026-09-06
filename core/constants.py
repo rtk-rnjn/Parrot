@@ -29,7 +29,7 @@ NEGATIVE_REPLIES: Final[list[str]] = [
     "Nah.",
     "Naw.",
     "Not likely.",
-    "No way, José.",
+    "No way, Jos\N{LATIN SMALL LETTER E WITH ACUTE}.",
     "Not in a million years.",
     "Request cannot be fulfilled.",
     "Certainly not.",

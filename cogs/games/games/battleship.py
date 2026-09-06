@@ -13,7 +13,8 @@ from discord.ext import commands
 from jishaku.functools import executor_function as executor
 from PIL import Image, ImageDraw
 
-from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player as PlayerType
+from .utils import DEFAULT_COLOR, BaseView, DiscordColor
+from .utils import Player as PlayerType
 from .wordle import WordInputButton
 
 Coords = tuple[int, int]
@@ -464,7 +465,7 @@ class Player:
         self.game = game
         self.player = player
 
-        self.embed = discord.Embed(title="Log", description="```\n\u200b\n```")
+        self.embed = discord.Embed(title="Log", description="```\n\N{ZERO WIDTH SPACE}\n```")
 
         self._logs: list[str] = []
         self.log: str = ""
@@ -855,12 +856,12 @@ class BetaBattleShip(BattleShip):
 
         self.player1.embed.set_field_at(
             0,
-            name="\u200b",
+            name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nturn: {self.turn.player}\n```",
         )
         self.player2.embed.set_field_at(
             0,
-            name="\u200b",
+            name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nturn: {self.turn.player}\n```",
         )
 
@@ -918,11 +919,11 @@ class BetaBattleShip(BattleShip):
         self.view2 = BattleshipView(self, user=self.player2, timeout=timeout)
 
         self.player1.embed.add_field(
-            name="\u200b",
+            name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nturn: {self.turn.player}\n```",
         )
         self.player2.embed.add_field(
-            name="\u200b",
+            name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nturn: {self.turn.player}\n```",
         )
 

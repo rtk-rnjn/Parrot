@@ -214,7 +214,7 @@ class Boggle:
         embed.description = "```yml\n3-letter-word: 1p\n4-letter-word: 2p\n5-letter-word: 3p\n...\nwrong-word: -1p\n```"
         corr, wrong, points = self.get_results()
         embed.add_field(
-            name="\u200b",
+            name="\N{ZERO WIDTH SPACE}",
             value=f"You found **{corr}** correct words (plus **{wrong}** wrong guesses)\nand earned **{points}** points!",
         )
         return embed

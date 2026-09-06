@@ -18,7 +18,7 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
         self.value = num
 
         super().__init__(
-            label=str(self.value or "\u200b"),
+            label=str(self.value or "\N{ZERO WIDTH SPACE}"),
             style=style,
         )
 
@@ -110,7 +110,7 @@ class ChimpView(BaseView):
             if isinstance(button, ChimpButton):
                 if num and highlight and button.style != discord.ButtonStyle.green:
                     button.style = style
-                button.label = str(button.value or "\u200b") if show else "\u200b"
+                button.label = str(button.value or "\N{ZERO WIDTH SPACE}") if show else "\N{ZERO WIDTH SPACE}"
 
 
 class ChimpTest:

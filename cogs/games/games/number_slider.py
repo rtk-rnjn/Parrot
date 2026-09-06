@@ -31,7 +31,7 @@ class SlideButton(discord.ui.Button["SlideView"]):
             row=row,
         )
 
-        if label == "\u200b":
+        if label == "\N{ZERO WIDTH SPACE}":
             self.disabled = True
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -62,7 +62,7 @@ class SlideButton(discord.ui.Button["SlideView"]):
                 game.moves += 1
                 game.embed.set_field_at(
                     0,
-                    name="\u200b",
+                    name="\N{ZERO WIDTH SPACE}",
                     value=f"Moves: `{game.moves}`",
                 )
 
@@ -91,7 +91,7 @@ class SlideView(BaseView):
             for i, row in enumerate(self.game.numbers):
                 for j, number in enumerate(row):
                     button = self.children[idx]
-                    button.label = str(number) if number else "\u200b"  # type: ignore[attr-defined]
+                    button.label = str(number) if number else "\N{ZERO WIDTH SPACE}"  # type: ignore[attr-defined]
                     button.disabled = not number  # type: ignore[attr-defined]
                     button.style = (  # type: ignore[attr-defined]
                         self.game.correct_style if number == self.game.completed[i][j] else self.game.wrong_style
@@ -106,7 +106,7 @@ class SlideView(BaseView):
                         style = self.game.wrong_style
 
                     button = SlideButton(
-                        label=str(number) if number else "\u200b",
+                        label=str(number) if number else "\N{ZERO WIDTH SPACE}",
                         style=style,
                         row=i,
                     )
@@ -202,7 +202,7 @@ class NumberSlider:
             description="Slide the tiles back in ascending order!",
             color=embed_color,
         )
-        self.embed.add_field(name="\u200b", value="Moves: `0`")
+        self.embed.add_field(name="\N{ZERO WIDTH SPACE}", value="Moves: `0`")
 
         self.message = await ctx.reply(embed=self.embed, view=self.view)
         self.view.message = self.message

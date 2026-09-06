@@ -115,7 +115,7 @@ class Chess:
             embed = await self.make_embed()
 
             if add_reaction_after_move:
-                await message.add_reaction("✅")
+                await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
             if self.board.is_game_over():
                 break

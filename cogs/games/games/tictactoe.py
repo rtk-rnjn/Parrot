@@ -239,7 +239,7 @@ class TTTView(BaseView):
 
 
 class BetaTictactoe(Tictactoe):
-    BLANK: ClassVar[str] = "\u200b"
+    BLANK: ClassVar[str] = "\N{ZERO WIDTH SPACE}"
     CIRCLE: ClassVar[str] = "O"
     CROSS: ClassVar[str] = "X"
 

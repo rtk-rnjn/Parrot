@@ -10,7 +10,7 @@ from redis.asyncio import Redis
 from ..cache_keys import RedisKeys
 from ..models import GuildConfiguration, StarboardConfig
 
-DEFAULT_STARBOARD_EMOJI = "⭐"
+DEFAULT_STARBOARD_EMOJI = "\N{WHITE MEDIUM STAR}"
 DEFAULT_STARBOARD_THRESHOLD = 3
 
 

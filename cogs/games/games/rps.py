@@ -17,7 +17,7 @@ class RockPaperScissors:
 
     message: discord.Message
 
-    OPTIONS: ClassVar[tuple[str, str, str]] = ("\U0001faa8", "\U00002702", "\U0001f4f0")
+    OPTIONS: ClassVar[tuple[str, str, str]] = ("\N{ROCK}", "\N{BLACK SCISSORS}", "\N{NEWSPAPER}")
     BEATS: ClassVar[dict[str, str]] = {
         OPTIONS[0]: OPTIONS[1],
         OPTIONS[1]: OPTIONS[2],

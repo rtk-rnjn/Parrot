@@ -57,7 +57,7 @@ class LightsOutButton(discord.ui.Button["LightsOutView"]):
             self.view.update_board(clear=True)
 
             game.moves += 1
-            game.embed.set_field_at(0, name="\u200b", value=f"Moves: `{game.moves}`")
+            game.embed.set_field_at(0, name="\N{ZERO WIDTH SPACE}", value=f"Moves: `{game.moves}`")
 
             if game.tiles == game.completed:
                 self.view.disable_all()
@@ -80,7 +80,7 @@ class LightsOutView(SlideView):
                 for _, tile in enumerate(row):
                     button = self.children[idx]
                     button.emoji = tile  # type: ignore[attr-defined]
-                    button.label = "\u200b"  # type: ignore[attr-defined]
+                    button.label = "\N{ZERO WIDTH SPACE}"  # type: ignore[attr-defined]
                     button.style = self.game.button_style  # type: ignore[attr-defined]
                     idx += 1
         else:
@@ -98,7 +98,7 @@ class LightsOutView(SlideView):
 class LightsOut:
     """Lights Out puzzle, button-based.
 
-    Toggle lights on a grid — each toggle flips adjacent tiles too.
+    Toggle lights on a grid \N{EM DASH} each toggle flips adjacent tiles too.
     Goal is to turn all lights off.
     """
 
@@ -151,7 +151,7 @@ class LightsOut:
             description="Turn off all the tiles!",
             color=embed_color,
         )
-        self.embed.add_field(name="\u200b", value="Moves: `0`")
+        self.embed.add_field(name="\N{ZERO WIDTH SPACE}", value="Moves: `0`")
 
         self.message = await ctx.reply(embed=self.embed, view=self.view)
         self.view.message = self.message

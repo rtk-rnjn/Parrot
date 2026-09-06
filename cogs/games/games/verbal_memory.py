@@ -77,7 +77,7 @@ class VerbalView(BaseView):
 class VerbalMemory:
     """Verbal memory test, button-based.
 
-    Words are shown one at a time — indicate whether
+    Words are shown one at a time \N{EM DASH} indicate whether
     each word is new or was already seen.
     """
 
@@ -128,8 +128,8 @@ class VerbalMemory:
         lives_decr: bool = False,
     ) -> None:
         assert self.embed
-        s = "+" if score_incr else "•"
-        label = "-" if lives_decr else "•"
+        s = "+" if score_incr else "\N{BULLET}"
+        label = "-" if lives_decr else "\N{BULLET}"
         self.embed.description = f"```diff\n{s} Score | {self.score}\n{label} Lives | {self.lives}\n```"
 
     async def start(  # noqa: PLR0913

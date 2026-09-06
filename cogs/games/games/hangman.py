@@ -14,7 +14,7 @@ from .wordle import WordInputButton
 if TYPE_CHECKING:
     from core.bot import Parrot
 
-BLANK: Final[str] = "  \u200b"
+BLANK: Final[str] = "  \N{ZERO WIDTH SPACE}"
 
 STAGES: Final[tuple[str, ...]] = (
     """
@@ -144,7 +144,7 @@ class Hangman:
         return word
 
     def lives(self) -> str:
-        return f"`{('❤️' * self._counter) or '💀'} ({self._counter})`"
+        return f"`{('\N{HEAVY BLACK HEART}\N{VARIATION SELECTOR-16}' * self._counter) or '\N{SKULL}'} ({self._counter})`"
 
     async def make_guess(self, guess: str) -> None:
         assert self.message is not None

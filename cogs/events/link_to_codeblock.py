@@ -148,7 +148,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         """Given the entire file contents and target lines, creates a code block.
         First, we split the file contents into a list of lines and then keep and join only the required
         ones together.
-        We then dedent the lines to look nice, and replace all ` characters with `\u200b to prevent
+        We then dedent the lines to look nice, and replace all ` characters with `\N{ZERO WIDTH SPACE} to prevent
         markdown injection.
         Finally, we surround the code with ``` characters.
         """
@@ -171,7 +171,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
 
         # Gets the code lines, dedents them, and inserts zero-width spaces to prevent Markdown injection
         required = "\n".join(split_file_contents[start_line - 1 : end_line])
-        required = textwrap.dedent(required).rstrip().replace("`", "`\u200b")
+        required = textwrap.dedent(required).rstrip().replace("`", "`\N{ZERO WIDTH SPACE}")
 
         # Extracts the code language and checks whether it's a "valid" language
         language = file_path.rsplit("/", maxsplit=1)[-1].rsplit(".", maxsplit=1)[-1]

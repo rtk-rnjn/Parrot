@@ -233,7 +233,7 @@ class GiveawayCog(commands.Cog):
 
         if giveaway.get("entry_mode", "reaction") == "button":
             try:
-                message = await channel.fetch_message(giveaway["message_id"])
+                message = await self.bot.get_or_fetch_message(channel, giveaway["message_id"])
                 await message.edit(embed=self._embed(giveaway, winners=winners), view=GiveawayView(self, giveaway))
             except discord.NotFound, discord.Forbidden:
                 _log.warning("Could not update rerolled giveaway %s", giveaway["_id"])
@@ -253,7 +253,7 @@ class GiveawayCog(commands.Cog):
             return
 
         try:
-            message = await channel.fetch_message(giveaway["message_id"])
+            message = await self.bot.get_or_fetch_message(channel, giveaway["message_id"])
             if giveaway.get("entry_mode", "reaction") == "button":
                 await message.edit(embed=self._embed(giveaway, winners=winners), view=GiveawayView(self, giveaway))
             if winners:

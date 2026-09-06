@@ -36,7 +36,7 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
         if opened := self.view.opened:
             game.moves += 1
             assert game.embed is not None
-            game.embed.set_field_at(0, name="\u200b", value=f"Moves: `{game.moves}`")
+            game.embed.set_field_at(0, name="\N{ZERO WIDTH SPACE}", value=f"Moves: `{game.moves}`")
 
             self.emoji = self.value
             self.disabled = True
@@ -155,7 +155,7 @@ class MemoryGame:
             description="**Memory Game**",
             color=self.embed_color,
         )
-        self.embed.add_field(name="\u200b", value="Moves: `0`")
+        self.embed.add_field(name="\N{ZERO WIDTH SPACE}", value="Moves: `0`")
 
         self.view = MemoryView(
             game=self,

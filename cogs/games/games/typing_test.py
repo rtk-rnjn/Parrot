@@ -72,7 +72,7 @@ class TypingTest:
 
         for position in positions:
             result.append(text[previous:position])
-            result.append("\u200b")
+            result.append("\N{ZERO WIDTH SPACE}")
             previous = position
 
         result.append(text[previous:])
@@ -113,7 +113,7 @@ class TypingTest:
 
                     place = len(results) + 1
                     results.append(
-                        f"**{place}.** {user.mention} — `{elapsed:.2f}s` · `{accuracy:.1f}%` · `{cpm:.0f} CPM`",
+                        f"**{place}.** {user.mention} \N{EM DASH} `{elapsed:.2f}s` \N{MIDDLE DOT} `{accuracy:.1f}%` \N{MIDDLE DOT} `{cpm:.0f} CPM`",
                     )
 
                     embed.description = embed.description + "\n" + "\n".join(results)  # type: ignore[operator]

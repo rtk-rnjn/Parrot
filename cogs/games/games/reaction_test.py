@@ -20,7 +20,7 @@ class ReactionGame:
     Measures how quickly a player reacts to an emoji change.
     """
 
-    def __init__(self, emoji: str = "🖱️") -> None:
+    def __init__(self, emoji: str = "\N{THREE BUTTON MOUSE}\N{VARIATION SELECTOR-16}") -> None:
         self.emoji = emoji
 
     async def wait_for_reaction(
@@ -80,7 +80,7 @@ class ReactionGame:
 
             reacted.add(user.id)
             place = len(results) + 1
-            results.append(f"**{place}.** {user.mention} — `{reaction_time:.2f}s`")
+            results.append(f"**{place}.** {user.mention} \N{EM DASH} `{reaction_time:.2f}s`")
 
             embed.description = "\n".join(results)
             await self.message.edit(embed=embed)

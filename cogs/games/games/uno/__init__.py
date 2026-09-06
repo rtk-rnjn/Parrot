@@ -200,19 +200,19 @@ class WildCardSubview(discord.ui.View):
         )
         self.stop()
 
-    @discord.ui.button(emoji="\U0001f7e5")
+    @discord.ui.button(emoji="\N{LARGE RED CIRCLE}")
     async def red(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.handle(Color.red, button, interaction)
 
-    @discord.ui.button(emoji="\U0001f7e6")
+    @discord.ui.button(emoji="\N{LARGE BLUE CIRCLE}")
     async def blue(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.handle(Color.blue, button, interaction)
 
-    @discord.ui.button(emoji="\U0001f7e8")
+    @discord.ui.button(emoji="\N{LARGE ORANGE CIRCLE}")
     async def yellow(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.handle(Color.yellow, button, interaction)
 
-    @discord.ui.button(emoji="\U0001f7e9")
+    @discord.ui.button(emoji="\N{LARGE GREEN CIRCLE}")
     async def green(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await self.handle(Color.green, button, interaction)
 
@@ -740,7 +740,7 @@ class UNO:
 
         winner = self.winner
         if winner is not None and self._internal_view is not None:
-            content = f"\U0001f389 {winner.name}: **UNO out!** {winner.mention} has won this game!"
+            content = f"\N{PARTY POPPER} {winner.name}: **UNO out!** {winner.mention} has won this game!"
 
             self._internal_view.stop()
             self._internal_view = None

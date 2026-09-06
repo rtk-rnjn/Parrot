@@ -252,25 +252,29 @@ class Blackjack:
         dealer_value = str(self.dealer.value) if self.finished else self.dealer_visible_value()
 
         embed.add_field(
-            name=f"Dealer — {dealer_value}",
+            name=f"Dealer \N{EM DASH} {dealer_value}",
             value=dealer_cards or "-",
             inline=False,
         )
 
         for index, hand in enumerate(self.hands):
-            marker = " ← **YOUR TURN**" if (not self.finished and index == self.current_hand_index and hand.status is HandStatus.ACTIVE) else ""
+            marker = (
+                " \N{LEFTWARDS ARROW} **YOUR TURN**"
+                if (not self.finished and index == self.current_hand_index and hand.status is HandStatus.ACTIVE)
+                else ""
+            )
 
             status = hand.status.value.title()
 
             embed.add_field(
-                name=(f"Hand `{index + 1}` — {hand.value} — ${hand.bet}{marker}"),
+                name=(f"Hand `{index + 1}` \N{EM DASH} {hand.value} \N{EM DASH} ${hand.bet}{marker}"),
                 value=(f"{self.render_cards(hand.cards)}"),
                 inline=False,
             )
             embed.set_footer(text=f"Status: {status}")
 
         if self.insurance_available and not self.finished:
-            embed.set_footer(text="Dealer shows an Ace — insurance is available.")
+            embed.set_footer(text="Dealer shows an Ace \N{EM DASH} insurance is available.")
 
         return embed
 
@@ -445,29 +449,29 @@ class Blackjack:
                 continue
 
             if hand.status is HandStatus.BUST:
-                results.append(f"Hand {index}: busted — lost `${hand.bet}`.")
+                results.append(f"Hand {index}: busted \N{EM DASH} lost `${hand.bet}`.")
                 continue
 
             if hand.is_blackjack and not hand.is_split:
                 if dealer_blackjack:
-                    results.append(f"Hand {index}: push — both have blackjack.")
+                    results.append(f"Hand {index}: push \N{EM DASH} both have blackjack.")
                 else:
                     payout = int(hand.bet * self.BLACKJACK_PAYOUT)
-                    results.append(f"Hand {index}: blackjack — won `${payout}`.")
+                    results.append(f"Hand {index}: blackjack \N{EM DASH} won `${payout}`.")
                 continue
 
             if dealer_blackjack:
-                results.append(f"Hand {index}: dealer blackjack — lost `${hand.bet}`.")
+                results.append(f"Hand {index}: dealer blackjack \N{EM DASH} lost `${hand.bet}`.")
                 continue
 
             if self.dealer.is_bust:
-                results.append(f"Hand {index}: dealer bust — won `${hand.bet}`.")
+                results.append(f"Hand {index}: dealer bust \N{EM DASH} won `${hand.bet}`.")
                 continue
 
             if hand.value > dealer_value:
-                results.append(f"Hand {index}: `{hand.value}` beats `{dealer_value}` — won `${hand.bet}`.")
+                results.append(f"Hand {index}: `{hand.value}` beats `{dealer_value}` \N{EM DASH} won `${hand.bet}`.")
             elif hand.value < dealer_value:
-                results.append(f"Hand {index}: `{hand.value}` loses to `{dealer_value}` — lost `${hand.bet}`.")
+                results.append(f"Hand {index}: `{hand.value}` loses to `{dealer_value}` \N{EM DASH} lost `${hand.bet}`.")
             else:
                 results.append(f"Hand {index}: push at `{hand.value}`.")
 
@@ -477,14 +481,14 @@ class Blackjack:
         results = self.resolve()
 
         embed = discord.Embed(
-            title="Blackjack — Game Over",
+            title="Blackjack \N{EM DASH} Game Over",
             color=self.embed_color,
         )
 
         dealer_cards = self.render_cards(self.dealer.cards)
 
         embed.add_field(
-            name=f"Dealer — {self.dealer.value}",
+            name=f"Dealer \N{EM DASH} {self.dealer.value}",
             value=dealer_cards,
             inline=False,
         )
@@ -584,7 +588,7 @@ class BlackjackButton(WordInputButton):
             self.view.disable_all()
 
             await interaction.response.edit_message(
-                content="**Blackjack — Cancelled**",
+                content="**Blackjack \N{EM DASH} Cancelled**",
                 view=self.view,
             )
 
@@ -626,37 +630,37 @@ class BlackjackView(BaseView):
         self.hit_button = BlackjackButton(
             action="hit",
             label="Hit",
-            emoji="👊",
+            emoji="\N{FISTED HAND SIGN}",
         )
 
         self.stand_button = BlackjackButton(
             action="stand",
             label="Stand",
-            emoji="🛑",
+            emoji="\N{OCTAGONAL SIGN}",
         )
 
         self.double_button = BlackjackButton(
             action="double",
             label="Double",
-            emoji="2️⃣",
+            emoji="\N{DIGIT TWO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}",
         )
 
         self.split_button = BlackjackButton(
             action="split",
             label="Split",
-            emoji="✂️",
+            emoji="\N{BLACK SCISSORS}\N{VARIATION SELECTOR-16}",
         )
 
         self.insurance_button = BlackjackButton(
             action="insurance",
             label="Insurance",
-            emoji="🛡️",
+            emoji="\N{SHIELD}\N{VARIATION SELECTOR-16}",
         )
 
         self.surrender_button = BlackjackButton(
             action="surrender",
             label="Surrender",
-            emoji="🏳️",
+            emoji="\N{WAVING WHITE FLAG}\N{VARIATION SELECTOR-16}",
         )
 
         self.add_item(self.hit_button)
@@ -748,7 +752,7 @@ class BlackjackView(BaseView):
             self.disable_all()
 
             await self.message.edit(
-                content="**Blackjack — Timed Out**",
+                content="**Blackjack \N{EM DASH} Timed Out**",
                 embed=self.game.make_embed(),
                 view=self,
             )

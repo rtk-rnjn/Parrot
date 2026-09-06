@@ -359,7 +359,7 @@ class Love(commands.Cog):
             embed_text = "This state is your true Valenstate! There are no states that would suit you better"
 
         embed = discord.Embed(
-            title=f"Your Valenstate is {valenstate} \u2764",
+            title=f"Your Valenstate is {valenstate} \N{HEAVY BLACK HEART}",
             description=self.valenstates[valenstate]["text"],
             colour=ctx.author.color,
         )
@@ -408,7 +408,7 @@ class Love(commands.Cog):
         status = random.choice(data["titles"])
         embed = discord.Embed(
             title=status,
-            description=f"{who} \N{HEAVY BLACK HEART} {whom} scored {love_percent}%!\n\u200b",
+            description=f"{who} \N{HEAVY BLACK HEART} {whom} scored {love_percent}%!\n\N{ZERO WIDTH SPACE}",
             color=discord.Color.dark_magenta(),
         )
         embed.add_field(name="A letter from Dr. Love:", value=data["text"])

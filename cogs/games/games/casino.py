@@ -218,9 +218,9 @@ class PokerGame(CasinoGame):
         dealer_score = poker_score(self.dealer_cards)
         description = "Press Draw to replace up to three low cards." if not self.finished else f"**{self.result(dealer_score, player_score)}**"
         embed = discord.Embed(title=self.title, color=self.color, description=description)
-        embed.add_field(name=f"Your hand — {self.HAND_NAMES[player_score[0]]}", value=cards_text(self.player_cards), inline=False)
+        embed.add_field(name=f"Your hand \N{EM DASH} {self.HAND_NAMES[player_score[0]]}", value=cards_text(self.player_cards), inline=False)
         embed.add_field(
-            name=f"Dealer hand — {self.HAND_NAMES[dealer_score[0]] if self.finished else 'hidden'}",
+            name=f"Dealer hand \N{EM DASH} {self.HAND_NAMES[dealer_score[0]] if self.finished else 'hidden'}",
             value=cards_text(self.dealer_cards) if self.finished else str(CARD_BACK),
             inline=False,
         )
@@ -263,9 +263,9 @@ class TeenPattiGame(CasinoGame):
         dealer_score = teen_patti_score(self.dealer_cards)
         description = "Press Show Cards to reveal the dealer's hand." if not self.finished else f"**{self.result(dealer_score, player_score)}**"
         embed = discord.Embed(title=self.title, color=self.color, description=description)
-        embed.add_field(name=f"Your hand — {self.HAND_NAMES[player_score[0]]}", value=cards_text(self.player_cards), inline=False)
+        embed.add_field(name=f"Your hand \N{EM DASH} {self.HAND_NAMES[player_score[0]]}", value=cards_text(self.player_cards), inline=False)
         embed.add_field(
-            name=f"Dealer hand — {self.HAND_NAMES[dealer_score[0]] if self.finished else 'hidden'}",
+            name=f"Dealer hand \N{EM DASH} {self.HAND_NAMES[dealer_score[0]] if self.finished else 'hidden'}",
             value=cards_text(self.dealer_cards) if self.finished else str(CARD_BACK),
             inline=False,
         )
@@ -302,8 +302,8 @@ class BaccaratGame(CasinoGame):
         else:
             result = "Tie."
         embed = discord.Embed(title=self.title, color=self.color, description=f"**{result}**")
-        embed.add_field(name=f"Player — {self.player_total}", value=cards_text(self.player_cards), inline=False)
-        embed.add_field(name=f"Banker — {self.dealer_total}", value=cards_text(self.dealer_cards), inline=False)
+        embed.add_field(name=f"Player \N{EM DASH} {self.player_total}", value=cards_text(self.player_cards), inline=False)
+        embed.add_field(name=f"Banker \N{EM DASH} {self.dealer_total}", value=cards_text(self.dealer_cards), inline=False)
         return embed
 
 
@@ -544,7 +544,7 @@ class RouletteGame(CasinoGame):
             description = "Choose a colour to spin the wheel."
         else:
             outcome = "Win" if self.bet == self.result_color else "Lose"
-            description = f"**{outcome}** — the wheel landed on `{self.number}` {self.result_color}."
+            description = f"**{outcome}** \N{EM DASH} the wheel landed on `{self.number}` {self.result_color}."
         embed = discord.Embed(title=self.title, color=self.color, description=description)
         if self.number is not None:
             embed.set_image(url="attachment://roulette.png")

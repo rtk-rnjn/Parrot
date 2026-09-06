@@ -164,7 +164,7 @@ class Twenty48:
                 if num == 2048:
                     self.embed = discord.Embed(description="", color=self.embed_color)
                 if self.embed is not None:
-                    self.embed.description = (self.embed.description or "") + f"⭐: Congrats! You hit **{num}**!\n"
+                    self.embed.description = (self.embed.description or "") + f"\N{WHITE MEDIUM STAR}: Congrats! You hit **{num}**!\n"
 
                     if num == self.win_at:
                         self.embed.description += "**Game Over! You Won**\n"
@@ -401,7 +401,7 @@ class BetaTwenty48(Twenty48):
         # [ ] [^] [-]
         # [<] [v] [>]
 
-        blank_button = discord.ui.Button(style=discord.ButtonStyle.gray, label="\u200b", disabled=True)
+        blank_button = discord.ui.Button(style=discord.ButtonStyle.gray, label="\N{ZERO WIDTH SPACE}", disabled=True)
         up_button = Twenty48_Button(self, "\N{UPWARDS BLACK ARROW}")
         quit_button = Twenty48_Button(self, "\N{BLACK SQUARE FOR STOP}")
 

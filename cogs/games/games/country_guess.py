@@ -112,7 +112,7 @@ class CountryGuesser:
             color=self.embed_color,
         )
         embed.add_field(
-            name="\u200b",
+            name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nblurred: {str(self.hard_mode).lower()}\nflag-mode: {str(self.is_flags).lower()}\n```",
             inline=False,
         )
@@ -374,7 +374,7 @@ class BetaCountryGuesser(CountryGuesser):
         self.embed = self.get_embed()
         self.embed.add_field(
             name="Guess Log",
-            value="```diff\n\u200b\n```",
+            value="```diff\n\N{ZERO WIDTH SPACE}\n```",
             inline=False,
         )
 

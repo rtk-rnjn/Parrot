@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger("bot.cogs.starboard")
 DEFAULT_THRESHOLD = 3
-DEFAULT_EMOJI = "⭐"
+DEFAULT_EMOJI = "\N{WHITE MEDIUM STAR}"
 
 
 class Starboard(commands.Cog):

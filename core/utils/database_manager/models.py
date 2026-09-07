@@ -117,6 +117,7 @@ class GuildConfiguration(TypedDict):
     giveaway_config: GiveawayConfig
     welcome_config: WelcomeConfig
     starboard_config: StarboardConfig
+    birthday_config: BirthdayConfig
 
     custom_commands: list[CustomCommand]
     tags: list[Tag]
@@ -124,12 +125,16 @@ class GuildConfiguration(TypedDict):
     afk_users: dict[str, str]
 
     events: dict[str, bool]  # event_name -> enabled
+    leveling_data: dict[str, int]  # user_id -> xp
 
     # Meta
     custom_commands_db: dict[str, str]
     custom_commands_logs: list[str]
 
-    leveling_data: dict[str, int]  # user_id -> xp
+
+class BirthdayConfig(TypedDict):
+    enabled: bool
+    channel_id: int | None
 
 
 class TodoStatus(StrEnum):
@@ -154,6 +159,7 @@ class Highlight(TypedDict):
 
 class UserConfiguration(TypedDict):
     _id: int
+    birthday: str
     timezone: str
     todo_items: list[TodoItem]
     highlights: list[Highlight]

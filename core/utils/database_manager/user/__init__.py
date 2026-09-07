@@ -1,3 +1,4 @@
+from .birthday import _UserBirthdayMixin  # noqa
 from .highlights import _UserHighlightsMixin  # noqa
 from .timezone import _UserTimezoneMixin  # noqa
 from .todo import _UserTodoMixin  # noqa
@@ -9,4 +10,5 @@ class _UserMixin(
     _UserTimezoneMixin,
     _UserHighlightsMixin,
     _UserTodoMixin,
+    _UserBirthdayMixin,
 ): ...

@@ -9,7 +9,7 @@ import subprocess
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, overload, override
+from typing import TYPE_CHECKING, overload, override
 
 import aiohttp
 import discord
@@ -28,8 +28,11 @@ _ = load_dotenv()
 
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
+
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+
+RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in ("true", "1", "yes")
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -38,6 +41,7 @@ os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 LOADABLE_COGS = [
     "cogs.afk",
+    "cogs.birthday",
     "cogs.automod",
     "cogs.cc",
     "cogs.config",
@@ -185,8 +189,9 @@ class Parrot(commands.Bot):
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             if message.channel.permissions_for(message.guild.me).send_messages:
+                prefix = await self.database_manager.get_command_prefix(guild_id=message.guild.id) or Parrot.DEFAULT_PREFIX
                 await message.channel.send(
-                    f"Prefix: `{await self.database_manager.get_command_prefix(guild_id=message.guild.id)}`",
+                    f"Prefix: `{prefix}`",
                     reference=message,
                 )
 
@@ -247,7 +252,7 @@ class Parrot(commands.Bot):
 
     @property
     def reminder(self) -> Reminder:
-        return self.get_cog("Reminder")  # type: ignore
+        return self.get_cog("Reminder")  # type: ignore[return-value]
 
     @property
     def http_session(self) -> aiohttp.ClientSession:
@@ -262,7 +267,7 @@ class Parrot(commands.Bot):
         /,
         *,
         matches: list[T],
-        entry: Callable[[T], Any],
+        entry: Callable[[T], str],
         ephemeral: bool = False,
     ) -> T:
         if len(matches) == 0:
@@ -284,25 +289,29 @@ class Parrot(commands.Bot):
         return view.selected
 
     async def close(self) -> None:
+        await super().close()
+
         if self._http_session is not None:
             await self._http_session.close()
 
         await self.database_manager.invalidate_redis()
         await self.database_manager.close()
-        await super().close()
 
     @overload
     @staticmethod
     async def paginate(
         ctx: commands.Context[Parrot],
         *,
-        embed: discord.Embed,
+        embed=True,
         pages: list[str],
         suffix: str = "",
         prefix: str = "",
         max_size: int = 1900,
         linspec: str = "\n",
-        **kw,
+        owner: discord.User | discord.Member | None = None,
+        timeout: float = 7200,
+        delete_message: bool = False,
+        additional_buttons: list[discord.ui.Button] | None = None,
     ) -> PaginatorEmbedInterface: ...
 
     @overload
@@ -310,46 +319,55 @@ class Parrot(commands.Bot):
     async def paginate(
         ctx: commands.Context[Parrot],
         *,
-        embed: None,
+        embed=False,
         pages: list[str],
         suffix: str = "",
         prefix: str = "",
         max_size: int = 1900,
         linspec: str = "\n",
-        **kw,
+        owner: discord.User | discord.Member | None = None,
+        timeout: float = 7200,
+        delete_message: bool = False,
+        additional_buttons: list[discord.ui.Button] | None = None,
     ) -> PaginatorInterface: ...
 
     @staticmethod
     async def paginate(  # noqa: PLR0913
         ctx: commands.Context[Parrot],
         *,
-        embed: discord.Embed | None = None,
+        embed: bool = True,
         pages: list[str],
         suffix: str = "",
         prefix: str = "",
         max_size: int = 1900,
         linspec: str = "\n",
-        **kw,
+        owner: discord.User | discord.Member | None = None,
+        timeout: float = 7200,
+        delete_message: bool = False,
+        additional_buttons: list[discord.ui.Button] | None = None,
     ) -> PaginatorEmbedInterface | PaginatorInterface:
         paginator = commands.Paginator(suffix=suffix, prefix=prefix, max_size=max_size, linesep=linspec)
         for line in pages:
             paginator.add_line(line)
 
+        args = [ctx.bot, paginator]
+        kwargs = {"owner": owner or ctx.author, "timeout": timeout, "delete_message": delete_message}
+        if additional_buttons is not None:
+            kwargs["additional_buttons"] = additional_buttons
+
         if embed:
-            interface = PaginatorEmbedInterface(ctx.bot, paginator, owner=ctx.author, **kw)
+            interface = PaginatorEmbedInterface(*args, **kwargs)
         else:
-            interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author, **kw)
+            interface = PaginatorInterface(*args, **kwargs)
         await interface.send_to(ctx)
         return interface
 
     async def __check_once(self, ctx: commands.Context[Parrot]) -> bool:
-        return await self.is_owner(ctx.author)
+        if RESTRICTED_MODE:
+            return await self.is_owner(ctx.author)
+        return True
 
-    async def get_or_fetch_message(
-        self,
-        channel: discord.abc.Messageable,
-        message_id: int,
-    ) -> discord.Message:
+    async def get_or_fetch_message(self, channel: discord.abc.Messageable, message_id: int) -> discord.Message:
         try:
             return self.message_cache[message_id]
         except KeyError:
@@ -401,7 +419,7 @@ class DisambiguatorView[T](discord.ui.View):
     message: discord.Message
     selected: T
 
-    def __init__(self, ctx: commands.Context[Parrot], data: list[T], entry: Callable[[T], Any]):
+    def __init__(self, ctx: commands.Context[Parrot], data: list[T], entry: Callable[[T], str]):
         super().__init__()
         self.ctx = ctx
         self.data: list[T] = data

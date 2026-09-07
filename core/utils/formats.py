@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any
 
 __all__ = ("plural", "human_join")
 
@@ -62,7 +61,7 @@ class plural:
 
 
 def human_join(
-    seq: Sequence[Any],
+    seq: Sequence,
     delim: str = ", ",
     final: str = "or",
 ) -> str:

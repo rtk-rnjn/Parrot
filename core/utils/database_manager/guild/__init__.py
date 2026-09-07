@@ -1,5 +1,6 @@
 from .afk import _GuildAfkMixin  # noqa
 from .automod import _GuildAutomodMixin  # noqa
+from .birthday import _GuildBirthdayMixin  # noqa
 from .custom_commands import _GuildCustomCommandsMixin  # noqa
 from .giveaway import _GuildGiveawayMixin  # noqa
 from .leveling import _GuildLevelingMixin  # noqa
@@ -25,4 +26,5 @@ class _GuildMixin(
     _GuildLevelingMixin,
     _GuildWelcomerMixin,
     _GuildStarboardMixin,
+    _GuildBirthdayMixin,
 ): ...

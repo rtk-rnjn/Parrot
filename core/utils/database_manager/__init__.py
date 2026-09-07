@@ -34,7 +34,6 @@ class _DatabaseInfraMixin:
 
     redis_client: Redis
     mongo_client: AsyncMongoClient
-    mongo_db: object
     guilds_collection: AsyncCollection[GuildConfiguration]
     users_collection: AsyncCollection[UserConfiguration]
     giveaways_collection: AsyncCollection[Giveaway]

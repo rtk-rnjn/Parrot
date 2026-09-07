@@ -14,6 +14,8 @@ Additionally, the bot uses converters which makes specifying roles, members, cha
 
 Note: Do not literally type out `<` `>` `[` `]` `|` etc.
 """
+
+
 class Help(commands.HelpCommand):
     def __init__(self) -> None:
         super().__init__(
@@ -24,8 +26,4 @@ class Help(commands.HelpCommand):
         )
 
     async def send_bot_help(self, mapping: dict[commands.Cog | None, list[commands.Command]]) -> None:
-        ctx = self.context
-        destination = self.get_destination()
-
-
-        data = {cog: mapping[cog] for cog in mapping if cog is not None and mapping[cog]}
+        pass

@@ -286,7 +286,7 @@ class Fun(commands.Cog, ColorHandler):
         ]
         for _, cat in itertools.product(range(3), ls):
             await m.edit(content=cat)
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.5)
 
     @commands.command(name="flop")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -359,7 +359,7 @@ class Fun(commands.Cog, ColorHandler):
         ls.append(f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}")
         for i in ls:
             await m.edit(content=f"{PREFIX}{i}{SUFFIX}")
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.5)
 
     @commands.command(name="boom", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -367,7 +367,7 @@ class Fun(commands.Cog, ColorHandler):
     async def fun_animation_boom(self, ctx: Context[Parrot]):
         """Booms a message!."""
         m = await ctx.reply("THIS MESSAGE WILL SELFDESTRUCT IN 5")
-        await asyncio.sleep(1)
+        await asyncio.sleep(1.5)
         ls = (
             "THIS MESSAGE WILL SELFDESTRUCT IN 4",
             "THIS MESSAGE WILL SELFDESTRUCT IN 3",
@@ -379,7 +379,7 @@ class Fun(commands.Cog, ColorHandler):
         )
         for i in ls:
             await m.edit(content=i)
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.5)
 
     @commands.command(name="table", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -411,7 +411,7 @@ class Fun(commands.Cog, ColorHandler):
 
         for k in lst:
             await m.edit(content=k)
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1.5)
 
     @commands.command(name="funwarn", hidden=True)
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -446,7 +446,7 @@ class Fun(commands.Cog, ColorHandler):
 
         for i in ls:
             await msg.edit(content=i)
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.5)
 
     @commands.group(aliases=("color",), invoke_without_command=True)
     async def colour(

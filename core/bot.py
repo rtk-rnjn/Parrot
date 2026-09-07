@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import logging
 import os
 import re
@@ -18,6 +19,7 @@ import pomice
 from discord.ext import commands
 from dotenv import load_dotenv
 from jishaku.paginators import PaginatorEmbedInterface, PaginatorInterface
+from watchfiles import awatch
 
 from .utils import DatabaseManager, TimersManager
 
@@ -73,6 +75,7 @@ LOADABLE_COGS = [
 _log = logging.getLogger("bot.core")
 
 lavalink_jar = Path("Lavalink.jar")
+COGS_DIR = Path(__file__).resolve().parents[1] / "cogs"
 
 
 class Parrot(commands.Bot):
@@ -117,6 +120,7 @@ class Parrot(commands.Bot):
         self.default_lavalink_node: pomice.Node | None = None
 
         self.message_cache: dict[int, discord.Message] = {}
+        self._cog_autoreload_task: asyncio.Task[None] | None = None
 
     @staticmethod
     def start_lavalink() -> subprocess.Popen | None:
@@ -147,6 +151,50 @@ class Parrot(commands.Bot):
             await self.load_extension(extention)
 
         self.timer_manager.timer_task = self.loop.create_task(self.timer_manager.dispatch_timers())
+        self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs())
+
+    @staticmethod
+    def _cog_extension_paths() -> dict[Path, str]:
+        paths: dict[Path, str] = {}
+        for extension in LOADABLE_COGS:
+            spec = importlib.util.find_spec(extension)
+            if spec is None:
+                _log.warning("Could not find loaded cog extension: %s", extension)
+                continue
+
+            if spec.submodule_search_locations:
+                path = Path(next(iter(spec.submodule_search_locations)))
+            elif spec.origin:
+                path = Path(spec.origin)
+            else:
+                _log.warning("Could not resolve source path for loaded cog extension: %s", extension)
+                continue
+
+            paths[path.resolve()] = extension
+
+        return paths
+
+    async def _autoreload_cogs(self) -> None:
+        extension_paths = self._cog_extension_paths()
+
+        async for changes in awatch(COGS_DIR):
+            extensions: set[str] = set()
+            for _, changed_path in changes:
+                path = Path(changed_path).resolve()  # noqa: ASYNC240
+                if path.suffix != ".py":
+                    continue
+
+                matches = [(root, extension) for root, extension in extension_paths.items() if path == root or root.is_dir() and root in path.parents]
+                if matches:
+                    extensions.add(max(matches, key=lambda match: len(match[0].parts))[1])
+
+            for extension in extensions:
+                try:
+                    await self.reload_extension(extension)
+                except Exception:
+                    _log.exception("Could not autoreload cog extension: %s", extension)
+                else:
+                    _log.info("Autoreloaded cog extension: %s", extension)
 
     async def on_ready(self) -> None:
         if self.started_at is None:
@@ -289,6 +337,13 @@ class Parrot(commands.Bot):
         return view.selected
 
     async def close(self) -> None:
+        if self._cog_autoreload_task is not None:
+            self._cog_autoreload_task.cancel()
+            try:
+                await self._cog_autoreload_task
+            except asyncio.CancelledError:
+                pass
+
         await super().close()
 
         if self._http_session is not None:

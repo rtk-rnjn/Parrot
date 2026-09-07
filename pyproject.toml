@@ -1,5 +1,8 @@
 [tool.ruff]
 line-length = 150
+target-version = "py314"
+
+[tool.ruff.lint]
 select = [
     'A',
     'ASYNC',
@@ -18,7 +21,6 @@ select = [
     'W',
 ]
 ignore = ['A003', 'ASYNC109', 'D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004", "EM101"]
-target-version = "py314"
 
 [tool.black]
 line-length = 125

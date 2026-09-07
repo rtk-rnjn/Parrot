@@ -227,11 +227,8 @@ class TimersManager:
         **data:
             Timer data containing the expiration timestamp and event metadata.
         """
-        time_to_sleep = data["expires_at"] - discord.utils.utcnow()
-        total_seconds = time_to_sleep.total_seconds()
 
-        if total_seconds > 0:
-            await asyncio.sleep(total_seconds)
+        await discord.utils.sleep_until(data["expires_at"], result=None)
 
         await self.call_timer(**data)
 

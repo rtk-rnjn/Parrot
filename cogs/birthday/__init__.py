@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
 from io import BytesIO
 from typing import TYPE_CHECKING
 
+import arrow
 import discord
 from discord.ext import commands, tasks
 from PIL import Image
@@ -15,11 +15,11 @@ if TYPE_CHECKING:
     from core.bot import Parrot
 
 _log = logging.getLogger("bot.cogs.birthday")
-DATE_FORMAT = "%m-%d"
+DATE_FORMAT = "MM-DD"
 
 
 def parse_birthday(value: str) -> str:
-    return datetime.strptime(value.strip(), DATE_FORMAT).strftime(DATE_FORMAT)
+    return arrow.get(f"2000-{value.strip()}", "YYYY-MM-DD").format(DATE_FORMAT)
 
 
 class Birthday(commands.Cog):
@@ -95,7 +95,7 @@ class Birthday(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def check_birthdays(self) -> None:
-        today = datetime.now(UTC).strftime(DATE_FORMAT)
+        today = arrow.utcnow().format(DATE_FORMAT)
         users = await self.bot.database_manager.get_users_with_birthdays()
         birthday_users = {user["_id"]: user for user in users if user.get("birthday") == today}
 

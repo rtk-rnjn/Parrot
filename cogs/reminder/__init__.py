@@ -122,7 +122,7 @@ class ReminderView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message("This snooze button is not for you, sorry!", ephemeral=True)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
         return True
 

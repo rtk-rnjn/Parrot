@@ -7,12 +7,12 @@ import traceback
 from enum import Enum
 from typing import TYPE_CHECKING, Annotated
 
-import discord
 from colorama import Fore
-from discord.ext import commands
 
+import discord
 from core.utils import PaginationView
 from core.utils.database_manager.models import CustomCommand as CustomCommandModel
+from discord.ext import commands
 
 from .jinja import render_sandboxed
 from .variables import JinjaChannel, JinjaGuild, JinjaMember, JinjaMessage
@@ -438,6 +438,19 @@ class CreateCustomCommandButton(discord.ui.Button):
         await interaction.response.send_modal(modal)
 
 
+class EditCustomCommandView(discord.ui.View):
+    def __init__(self, *, author: discord.User | discord.Member, button: EditCustomCommandButton) -> None:
+        super().__init__()
+        self.author = author
+        self.add_item(button)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.author.id:
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
+            return False
+        return True
+
+
 class EditCustomCommandButton(discord.ui.Button):
     def __init__(
         self,
@@ -681,8 +694,8 @@ class CustomCommand(commands.Cog):
             custom_command_ignored_channels=command["ignored_channels"],
         )
         embed = discord.Embed(title=f"Edit Custom Command: {name}", description=command["response"])
-        view = discord.ui.View()
-        view.add_item(button)
+
+        view = EditCustomCommandView(author=ctx.author, button=button)
         await ctx.reply(embed=embed, view=view)
 
     @cc.command(name="delete")

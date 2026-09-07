@@ -298,7 +298,7 @@ class CountryView(BaseView):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "This is not your game!",
+                "You cannot interact with this view.",
                 ephemeral=True,
             )
             return False

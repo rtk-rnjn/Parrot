@@ -86,7 +86,7 @@ class Highlights(commands.Cog):
 
         view = discord.ui.View()
         button = discord.ui.Button(label="View Highlights", style=discord.ButtonStyle.primary)
-        button.callback = self._view_highlights_callback(highlights)
+        button.callback = self._view_highlights_callback(ctx.author, highlights)
 
         await ctx.reply(embed=embed, view=view)
 
@@ -118,8 +118,12 @@ class Highlights(commands.Cog):
         )
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
-    def _view_highlights_callback(self, highlights: set[str] | None):
+    def _view_highlights_callback(self, author: discord.User | discord.Member, highlights: set[str] | None):
         async def callback(interaction: discord.Interaction[Parrot]):
+            if interaction.user != author:
+                await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
+                return
+
             if not highlights:
                 await interaction.response.send_message("You have no highlights.", ephemeral=True)
                 return
@@ -131,7 +135,7 @@ class Highlights(commands.Cog):
             ctx = await commands.Context.from_interaction(interaction)
             await interaction.client.paginate(
                 ctx,
-                embed=discord.Embed(title="Your highlights"),
+                embed=True,
                 pages=pages,
             )
 

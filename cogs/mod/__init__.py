@@ -8,10 +8,10 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
 
 import arrow
-import discord
-from discord.ext import commands
 
+import discord
 from core.utils import FutureTime
+from discord.ext import commands
 
 if TYPE_CHECKING:
     from core.bot import Parrot
@@ -1168,6 +1168,149 @@ class Mod(commands.Cog):
                 await message.clear_reactions()
 
         await ctx.reply(f"Successfully removed {total_reactions} reactions.")
+
+    @commands.group(name="role", invoke_without_command=True)
+    async def role(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
+        """Manage roles in the server.
+
+        This command allows you to manage roles in the server, including
+        creating, deleting, and modifying roles. You must have Manage Roles
+        permissions to use this command.
+        """
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
+
+    @role.command(name="bot", aliases=["bots"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    async def role_bot(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        role: discord.Role = commands.parameter(  # noqa: B008
+            description="The role to assign to bots.",
+        ),
+    ) -> discord.Message:
+        """Assign a role to all bots in the server.
+
+        This command assigns the specified role to all bots in the server.
+        You must have Manage Roles permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.me.top_role <= role:
+            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
+
+        bots = [member for member in ctx.guild.members if member.bot]
+        if not bots:
+            return await ctx.reply("There are no bots in this server.")
+
+        success = 0
+        error = 0
+
+        for bot in bots:
+            try:
+                await bot.add_roles(role, reason=f"Role assigned to bot by {ctx.author} (ID: {ctx.author.id})")
+                success += 1
+            except discord.Forbidden, discord.HTTPException:
+                error += 1
+
+        if error:
+            return await ctx.reply(
+                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} bots, but failed to assign it to {error} bots.",
+            )
+        else:
+            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} bots in the server.")
+
+    @role.command(name="human", aliases=["humans"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    async def role_human(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        role: discord.Role = commands.parameter(  # noqa: B008
+            description="The role to assign to humans.",
+        ),
+    ) -> discord.Message:
+        """Assign a role to all humans in the server.
+
+        This command assigns the specified role to all humans in the server.
+        You must have Manage Roles permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.me.top_role <= role:
+            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
+
+        humans = [member for member in ctx.guild.members if not member.bot]
+        if not humans:
+            return await ctx.reply("There are no humans in this server.")
+
+        success = 0
+        error = 0
+
+        for human in humans:
+            try:
+                await human.add_roles(role, reason=f"Role assigned to human by {ctx.author} (ID: {ctx.author.id})")
+                success += 1
+            except discord.Forbidden, discord.HTTPException:
+                error += 1
+
+        if error:
+            return await ctx.reply(
+                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} humans, but failed to assign it to {error} humans.",
+            )
+        else:
+            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} humans in the server.")
+
+    @role.command(name="everyone", aliases=["all"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    async def role_everyone(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        role: discord.Role = commands.parameter(  # noqa: B008
+            description="The role to assign to everyone.",
+        ),
+    ) -> discord.Message:
+        """Assign a role to everyone in the server.
+
+        This command assigns the specified role to everyone in the server.
+        You must have Manage Roles permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.me.top_role <= role:
+            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
+
+        members = ctx.guild.members
+        if not members:
+            return await ctx.reply("There are no members in this server.")
+
+        success = 0
+        error = 0
+
+        for member in members:
+            try:
+                await member.add_roles(role, reason=f"Role assigned to everyone by {ctx.author} (ID: {ctx.author.id})")
+                success += 1
+            except discord.Forbidden, discord.HTTPException:
+                error += 1
+
+        if error:
+            return await ctx.reply(
+                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} members, but failed to assign it to {error} members.",
+            )
+        else:
+            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} members in the server.")
 
 
 async def setup(bot: Parrot) -> None:

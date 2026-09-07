@@ -453,7 +453,7 @@ class ConfirmationLayout(discord.ui.LayoutView):
 
     async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
         if interaction.user.id != self.author.id:
-            await interaction.response.send_message("This confirmation is not for you.", ephemeral=True)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
         return True
 
@@ -495,7 +495,7 @@ class DisambiguatorView[T](discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.ctx.author.id:
-            await interaction.response.send_message("This select menu is not meant for you, sorry.", ephemeral=True)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
         return True
 

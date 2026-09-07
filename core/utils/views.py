@@ -17,6 +17,16 @@ class DeleteMessageButtonView(discord.ui.View):
 
         self.add_item(button)
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+
+        await interaction.response.send_message(
+            "You cannot interact with this view.",
+            ephemeral=True,
+        )
+        return False
+
     async def delete_message_callback(self, interaction: discord.Interaction) -> None:
         if interaction.user != self.author:
             await interaction.response.send_message("You cannot delete this message.", ephemeral=True)

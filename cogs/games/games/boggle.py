@@ -85,7 +85,7 @@ class BoggleView(BaseView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.game.player:
-            await interaction.response.send_message("This is not your game!", ephemeral=True)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
         return True
 

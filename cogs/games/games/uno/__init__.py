@@ -47,7 +47,7 @@ class HostOnlyView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         if interaction.user != self._view_owner:
-            await interaction.response.send_message("You are not the host of this game.", ephemeral=True)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
         return True
 
@@ -412,7 +412,7 @@ class GameView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user not in self.game.players or interaction.user in self.game._always_skip:
-            await interaction.response.send_message("You are not in this game!", ephemeral=True)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
         return True
 

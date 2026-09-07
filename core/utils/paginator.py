@@ -26,7 +26,7 @@ class PaginationView[PageT: discord.Embed | str](discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
         if self.author == interaction.user:
             return True
-        await interaction.response.send_message(f"Only **{self.author}** can interact. Run the command if you want to.", ephemeral=True)
+        await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
         return False
 
     @discord.ui.button(label="First", style=discord.ButtonStyle.red, disabled=True)

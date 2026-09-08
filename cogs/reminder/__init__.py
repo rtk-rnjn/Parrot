@@ -11,7 +11,8 @@ from discord.ext import commands
 from lxml import etree
 from rapidfuzz import fuzz, process
 
-from core.utils import FriendlyTimeResult, FutureTime, TimerData as Timer, UserFriendlyTime
+from core.utils import FriendlyTimeResult, FutureTime, UserFriendlyTime
+from core.utils import TimerData as Timer
 
 if TYPE_CHECKING:
     from core.bot import Parrot
@@ -85,7 +86,7 @@ class SnoozeModal(discord.ui.Modal, title="Snooze"):
         self.parent.snooze.disabled = True
         await interaction.response.edit_message(view=self.parent)
 
-        await interaction.client.timer_manager.create_timer(
+        await interaction.client.event_scheduler.create_timer(
             event_name="reminder",
             expires_at=when,
             metadata=self.metadata,
@@ -243,7 +244,7 @@ class Reminder(commands.Cog):
         return [TimeZone(label=match[0], key=self._timezone_aliases[match[0]]) for match in matches]
 
     async def get_timezone(self, user_id: int, /) -> str | None:
-        return await self.bot.database_manager.get_user_timezone(user_id)
+        return await self.bot.database.get_user_timezone(user_id)
 
     async def get_tzinfo(self, user_id: int, /) -> datetime.tzinfo:
         tz = await self.get_timezone(user_id)
@@ -307,7 +308,7 @@ class Reminder(commands.Cog):
         label = timezone.label
         key = timezone.key
 
-        await self.bot.database_manager.set_user_timezone(user_id=ctx.author.id, timezone=key)
+        await self.bot.database.set_user_timezone(user_id=ctx.author.id, timezone=key)
         return await ctx.reply(f"Your timezone has been set to {label} (IANA: {key}).")
 
     @timezone.command(name="info")
@@ -417,7 +418,7 @@ class Reminder(commands.Cog):
             reminder_text=when.arg,
         )
 
-        await self.bot.timer_manager.create_timer(
+        await self.bot.event_scheduler.create_timer(
             event_name="reminder",
             expires_at=when.dt,
             metadata=metadata,
@@ -434,7 +435,7 @@ class Reminder(commands.Cog):
         This command will show you a list of all your active reminders, along with the time remaining until each reminder is triggered.
         """
 
-        reminders = await self.bot.timer_manager.search_timers(event_name="reminder", metadata_filter={"user_id": ctx.author.id})
+        reminders = await self.bot.event_scheduler.search_timers(event_name="reminder", metadata_filter={"user_id": ctx.author.id})
 
         if not reminders:
             return await ctx.reply("You have no active reminders.")

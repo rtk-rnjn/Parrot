@@ -131,7 +131,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     async def stats_report(self, ctx: commands.Context[Parrot], guild: discord.Guild | None = None) -> None:
         """Render the last 30 days of bot statistics."""
         since = datetime.now(UTC) - timedelta(days=30)
-        records = await self.bot.database_manager.get_stats_since(since, guild_id=guild.id if guild else None)
+        records = await self.bot.database.get_stats_since(since, guild_id=guild.id if guild else None)
         scope = guild.name if guild else "all guilds"
         if not records:
             await ctx.reply(f"No statistics retained for {scope}.")
@@ -162,7 +162,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
             codeblock = codeblock_converter(msg.content)
             try:
-                result = await self.bot.database_manager.redis_client.execute_command(codeblock.content)
+                result = await self.bot.database.redis_client.execute_command(codeblock.content)
                 if len(str(result)) > 1980:
                     await msg.reply("Result is too long to display.")
                 else:

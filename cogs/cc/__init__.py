@@ -7,12 +7,12 @@ import traceback
 from enum import Enum
 from typing import TYPE_CHECKING, Annotated
 
-from colorama import Fore
-
 import discord
+from colorama import Fore
+from discord.ext import commands
+
 from core.utils import PaginationView
 from core.utils.database_manager.models import CustomCommand as CustomCommandModel
-from discord.ext import commands
 
 from .jinja import render_sandboxed
 from .variables import JinjaChannel, JinjaGuild, JinjaMember, JinjaMessage
@@ -372,9 +372,7 @@ class CreateEditCustomCommandModal(CustomCommandModal):
 
         assert self.response_input is not None
         func = (
-            interaction.client.database_manager.edit_custom_command
-            if self.modal_type == ModalType.EDIT
-            else interaction.client.database_manager.add_custom_command
+            interaction.client.database.edit_custom_command if self.modal_type == ModalType.EDIT else interaction.client.database.add_custom_command
         )
 
         existing_bot_command = interaction.client.get_command(name.lower().strip())
@@ -421,7 +419,7 @@ class DeleteCustomCommandButton(discord.ui.Button):
             await interaction.response.send_message("This command can only be used in a guild.", ephemeral=True)
             return
 
-        deleted = await interaction.client.database_manager.delete_custom_command(guild_id=interaction.guild_id, name=self.command_name)
+        deleted = await interaction.client.database.delete_custom_command(guild_id=interaction.guild_id, name=self.command_name)
         message = (
             f"No command with the name `{self.command_name}` exists." if not deleted else f"Custom command `{self.command_name}` has been deleted."
         )
@@ -590,8 +588,8 @@ class CustomCommand(commands.Cog):
     ) -> None:
         """Build and send the management panel with appropriate pagination."""
 
-        custom_commands = await ctx.bot.database_manager.get_custom_commands(ctx.guild.id) if ctx.guild else []
-        logs = await ctx.bot.database_manager.get_custom_command_logs(guild_id=ctx.guild.id) if ctx.guild else []
+        custom_commands = await ctx.bot.database.get_custom_commands(ctx.guild.id) if ctx.guild else []
+        logs = await ctx.bot.database.get_custom_command_logs(guild_id=ctx.guild.id) if ctx.guild else []
         layout = CustomCommandLayout(author=ctx.author, custom_commands=custom_commands, logs=logs)
 
         await ctx.reply(view=layout)
@@ -600,7 +598,7 @@ class CustomCommand(commands.Cog):
         if ctx.guild is None:
             return
 
-        logs = await self.bot.database_manager.get_custom_command_logs(guild_id=ctx.guild.id)
+        logs = await self.bot.database.get_custom_command_logs(guild_id=ctx.guild.id)
 
         await self._build_and_send_panel(ctx, logs=logs)
 
@@ -646,7 +644,7 @@ class CustomCommand(commands.Cog):
         if context.command is not None or context.invoked_with is None:
             return
 
-        command = await self.bot.database_manager.get_custom_command(guild_id=message.guild.id, name=context.invoked_with)
+        command = await self.bot.database.get_custom_command(guild_id=message.guild.id, name=context.invoked_with)
         if command is None:
             return
 
@@ -662,7 +660,7 @@ class CustomCommand(commands.Cog):
         rendered = await self._render_custom_command(context, response, command_id=context.invoked_with)
         relative_dt = discord.utils.format_dt(message.created_at, style="R")
         if rendered:
-            await self.bot.database_manager.push_custom_command_log(
+            await self.bot.database.push_custom_command_log(
                 guild_id=message.guild.id,
                 log_entry=f"{relative_dt} User {message.author} (`{message.author.id}`) invoked custom command `{context.invoked_with}` in channel {message.channel} (`{message.channel.id}`).",
             )
@@ -682,7 +680,7 @@ class CustomCommand(commands.Cog):
             await ctx.reply("This command can only be used in a guild.")
             return
 
-        command = await self.bot.database_manager.get_custom_command(guild_id=ctx.guild.id, name=name)
+        command = await self.bot.database.get_custom_command(guild_id=ctx.guild.id, name=name)
         if command is None:
             await ctx.reply(f"No command with the name `{name}` exists.")
             return
@@ -710,7 +708,7 @@ class CustomCommand(commands.Cog):
             await ctx.reply("This command can only be used in a guild.")
             return
 
-        result = await self.bot.database_manager.delete_custom_command(guild_id=ctx.guild.id, name=name)
+        result = await self.bot.database.delete_custom_command(guild_id=ctx.guild.id, name=name)
         if not result:
             await ctx.reply(f"No command with the name `{name}` exists.")
             return
@@ -734,7 +732,7 @@ class CustomCommand(commands.Cog):
             await ctx.reply(f"`{new_name}` is not a valid command name. Use only letters, numbers, underscores, and hyphens.")
             return
 
-        result = await self.bot.database_manager.rename_custom_command(guild_id=ctx.guild.id, old_name=old_name, new_name=new_name)
+        result = await self.bot.database.rename_custom_command(guild_id=ctx.guild.id, old_name=old_name, new_name=new_name)
         if not result:
             await ctx.reply(f"Failed to rename `{old_name}` to `{new_name}`. Ensure the old command exists and the new name is not already taken.")
             return

@@ -42,8 +42,8 @@ class Birthday(commands.Cog):
         if ctx.guild is None:
             return
 
-        birthday = await self.bot.database_manager.get_user_birthday(ctx.author.id)
-        config = await self.bot.database_manager.get_birthday_config(ctx.guild.id)
+        birthday = await self.bot.database.get_user_birthday(ctx.author.id)
+        config = await self.bot.database.get_birthday_config(ctx.guild.id)
         channel_id = config.get("channel_id") if config else None
         status = "enabled" if config and config["enabled"] else "disabled"
         saved = birthday or "not set"
@@ -59,48 +59,48 @@ class Birthday(commands.Cog):
             await ctx.reply("Use a valid birthday in `MM-DD` format, for example `04-23`.")
             return
 
-        await self.bot.database_manager.set_user_birthday(user_id=ctx.author.id, birthday=birthday)
+        await self.bot.database.set_user_birthday(user_id=ctx.author.id, birthday=birthday)
         await ctx.reply(f"Your birthday is set to **{birthday}**.")
 
     @birthday.command(name="clear")
     async def clear_birthday(self, ctx: commands.Context[Parrot]) -> None:
         """Remove your saved birthday."""
-        await self.bot.database_manager.clear_user_birthday(ctx.author.id)
+        await self.bot.database.clear_user_birthday(ctx.author.id)
         await ctx.reply("Your birthday has been cleared.")
 
     @birthday.command(name="set-channel")
     @commands.has_guild_permissions(manage_guild=True)
     async def set_channel(self, ctx: commands.Context[Parrot], channel: discord.TextChannel) -> None:
         """Choose where birthday wishes are sent."""
-        await self.bot.database_manager.edit_birthday_config(guild_id=ctx.guild.id, channel_id=channel.id)
+        await self.bot.database.edit_birthday_config(guild_id=ctx.guild.id, channel_id=channel.id)
         await ctx.reply(f"Birthday wishes will be sent in {channel.mention}.")
 
     @birthday.command(name="enable")
     @commands.has_guild_permissions(manage_guild=True)
     async def enable(self, ctx: commands.Context[Parrot]) -> None:
         """Enable birthday wishes for this server."""
-        config = await self.bot.database_manager.get_birthday_config(ctx.guild.id)
+        config = await self.bot.database.get_birthday_config(ctx.guild.id)
         if not config or config["channel_id"] is None:
             await ctx.reply("Set a birthday channel first with `birthday set-channel #channel`.")
             return
-        await self.bot.database_manager.edit_birthday_config(guild_id=ctx.guild.id, enabled=True)
+        await self.bot.database.edit_birthday_config(guild_id=ctx.guild.id, enabled=True)
         await ctx.reply("Birthday wishes enabled.")
 
     @birthday.command(name="disable")
     @commands.has_guild_permissions(manage_guild=True)
     async def disable(self, ctx: commands.Context[Parrot]) -> None:
         """Disable birthday wishes for this server."""
-        await self.bot.database_manager.edit_birthday_config(guild_id=ctx.guild.id, enabled=False)
+        await self.bot.database.edit_birthday_config(guild_id=ctx.guild.id, enabled=False)
         await ctx.reply("Birthday wishes disabled.")
 
     @tasks.loop(minutes=30)
     async def check_birthdays(self) -> None:
         today = arrow.utcnow().format(DATE_FORMAT)
-        users = await self.bot.database_manager.get_users_with_birthdays()
+        users = await self.bot.database.get_users_with_birthdays()
         birthday_users = {user["_id"]: user for user in users if user.get("birthday") == today}
 
         for guild in self.bot.guilds:
-            config = await self.bot.database_manager.get_birthday_config(guild.id)
+            config = await self.bot.database.get_birthday_config(guild.id)
             if not config or not config["enabled"] or config["channel_id"] is None:
                 continue
 

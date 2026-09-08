@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
+import discord
 from discord.ext import commands
 
 from .automod import Rule
@@ -24,7 +25,7 @@ class Automod(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def automod(self, ctx: commands.Context[Parrot]) -> None:
         """Shows the help message for the automod feature."""
-        pass
+        # embed = discord.Embed(title="Welcome to Automod")
 
 
 async def setup(bot: Parrot) -> None:

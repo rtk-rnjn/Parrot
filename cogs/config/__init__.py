@@ -42,7 +42,7 @@ class UpdateBotPrefixModal(discord.ui.Modal, title="Update Bot Prefix"):
             )
             return
 
-        await interaction.client.database_manager.set_command_prefix(
+        await interaction.client.database.set_command_prefix(
             guild_id=interaction.guild.id,
             command_prefix=new_prefix,
         )
@@ -180,8 +180,8 @@ class ConfigurationLayout(discord.ui.LayoutView):
 
         await interaction.response.defer(ephemeral=True)
 
-        await interaction.client.database_manager.delete_mute_role(guild_id=interaction.guild.id)
-        await interaction.client.timer_manager.delete_timer(event_name="mute", metadata_filter={"guild_id": interaction.guild.id}, multiple=True)
+        await interaction.client.database.delete_mute_role(guild_id=interaction.guild.id)
+        await interaction.client.event_scheduler.delete_timer(event_name="mute", metadata_filter={"guild_id": interaction.guild.id}, multiple=True)
 
         await interaction.followup.send(
             "The mute role has been deleted. Users will no longer be muted until a new mute role is set.",
@@ -198,7 +198,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
         if not await self._require_administrator(interaction):
             return
         assert interaction.guild is not None
-        updated = await interaction.client.database_manager.edit_welcome_config(guild_id=interaction.guild.id, enabled=True)
+        updated = await interaction.client.database.edit_welcome_config(guild_id=interaction.guild.id, enabled=True)
         if not updated:
             await interaction.response.send_message("Welcome messages are not configured for this server.", ephemeral=True)
             return
@@ -210,7 +210,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
         if not await self._require_administrator(interaction):
             return
         assert interaction.guild is not None
-        updated = await interaction.client.database_manager.edit_welcome_config(guild_id=interaction.guild.id, enabled=False)
+        updated = await interaction.client.database.edit_welcome_config(guild_id=interaction.guild.id, enabled=False)
         if not updated:
             await interaction.response.send_message("Welcome messages are not configured for this server.", ephemeral=True)
             return
@@ -223,7 +223,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
             return
         assert interaction.guild is not None
         channel = self.welcome_join_channel_select.values[0]
-        updated = await interaction.client.database_manager.edit_welcome_config(
+        updated = await interaction.client.database.edit_welcome_config(
             guild_id=interaction.guild.id,
             on_member_join_channel_id=channel.id,
         )
@@ -237,7 +237,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
             return
         assert interaction.guild is not None
         channel = self.welcome_leave_channel_select.values[0]
-        updated = await interaction.client.database_manager.edit_welcome_config(
+        updated = await interaction.client.database.edit_welcome_config(
             guild_id=interaction.guild.id,
             on_member_leave_channel_id=channel.id,
         )
@@ -250,7 +250,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
         if not await self._require_administrator(interaction):
             return
         assert interaction.guild is not None
-        updated = await interaction.client.database_manager.edit_leveling_config(guild_id=interaction.guild.id, enabled=True)
+        updated = await interaction.client.database.edit_leveling_config(guild_id=interaction.guild.id, enabled=True)
         if not updated:
             await interaction.response.send_message("Leveling is not configured for this server.", ephemeral=True)
             return
@@ -264,7 +264,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
         if not await self._require_administrator(interaction):
             return
         assert interaction.guild is not None
-        updated = await interaction.client.database_manager.edit_leveling_config(guild_id=interaction.guild.id, enabled=False)
+        updated = await interaction.client.database.edit_leveling_config(guild_id=interaction.guild.id, enabled=False)
         if not updated:
             await interaction.response.send_message("Leveling is not configured for this server.", ephemeral=True)
             return
@@ -297,12 +297,12 @@ class Config(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None, "This command can only be used in a server (guild)."
 
-        prefix = await self.bot.database_manager.get_command_prefix(guild_id=ctx.guild.id)
-        mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
-        welcome_enabled = await self.bot.database_manager.is_welcome_enabled(ctx.guild.id)
-        welcome_join_channel_id = await self.bot.database_manager.get_welcome_join_channel_id(ctx.guild.id)
-        welcome_leave_channel_id = await self.bot.database_manager.get_welcome_leave_channel_id(ctx.guild.id)
-        leveling_enabled = await self.bot.database_manager.is_leveling_enabled(ctx.guild.id)
+        prefix = await self.bot.database.get_command_prefix(guild_id=ctx.guild.id)
+        mute_role_id = await self.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
+        welcome_enabled = await self.bot.database.is_welcome_enabled(ctx.guild.id)
+        welcome_join_channel_id = await self.bot.database.get_welcome_join_channel_id(ctx.guild.id)
+        welcome_leave_channel_id = await self.bot.database.get_welcome_leave_channel_id(ctx.guild.id)
+        leveling_enabled = await self.bot.database.is_leveling_enabled(ctx.guild.id)
         welcome_join_channel = ctx.guild.get_channel(welcome_join_channel_id) if welcome_join_channel_id else None
         welcome_leave_channel = ctx.guild.get_channel(welcome_leave_channel_id) if welcome_leave_channel_id else None
         if not isinstance(welcome_join_channel, discord.TextChannel):

@@ -8,10 +8,10 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
 
 import arrow
-
 import discord
-from core.utils import FutureTime
 from discord.ext import commands
+
+from core.utils import FutureTime
 
 if TYPE_CHECKING:
     from core.bot import Parrot
@@ -540,7 +540,7 @@ class Mod(commands.Cog):
             await member.timeout(None, reason=reason)
             return await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
 
-        mute_role_id = await ctx.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
+        mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
         if mute_role_id is None:
             return await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
 
@@ -548,8 +548,8 @@ class Mod(commands.Cog):
         if mute_role is None:
             return await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
 
-        await ctx.bot.database_manager.remove_muted_member(guild_id=ctx.guild.id, member_id=member.id)
-        await ctx.bot.timer_manager.delete_timer(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
+        await ctx.bot.database.remove_muted_member(guild_id=ctx.guild.id, member_id=member.id)
+        await ctx.bot.event_scheduler.delete_timer(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
         await member.remove_roles(mute_role, reason=reason)
 
         return await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
@@ -566,7 +566,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        mute_role_id = await ctx.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
+        mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
         if mute_role_id is None:
             return await ctx.reply("No mute role has been set for this server. Use `mute role <role>` to set a mute role first.")
 
@@ -581,7 +581,7 @@ class Mod(commands.Cog):
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
         if duration is not None:
-            await ctx.bot.timer_manager.create_timer(
+            await ctx.bot.event_scheduler.create_timer(
                 event_name="mute",
                 expires_at=duration.dt,
                 metadata=MuteMetadata(
@@ -593,7 +593,7 @@ class Mod(commands.Cog):
             )
 
         await member.add_roles(mute_role, reason=reason)
-        await ctx.bot.database_manager.add_muted_member(guild_id=ctx.guild.id, member_id=member.id)
+        await ctx.bot.database.add_muted_member(guild_id=ctx.guild.id, member_id=member.id)
 
         if duration is not None:
             relative_duration = discord.utils.format_dt(duration.dt, style="R")
@@ -651,7 +651,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        await ctx.bot.database_manager.set_guild_mute_role(guild_id=ctx.guild.id, mute_role_id=role.id)
+        await ctx.bot.database.set_guild_mute_role(guild_id=ctx.guild.id, mute_role_id=role.id)
         suggestion = (
             "-# Make sure the mute role has the correct permissions set to prevent muted members "
             "from sending messages or interacting with the server. Use `mute sync` to automatically adjust the permissions of the mute role."
@@ -671,7 +671,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        mute_role_id = await ctx.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
+        mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
         if mute_role_id is None:
             return await ctx.reply("No mute role has been set for this server. Use `mute role <role>` to set a mute role first.")
 
@@ -719,7 +719,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        existing_role_id = await ctx.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
+        existing_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
         existing_role = ctx.guild.get_role(existing_role_id) if existing_role_id else None
 
         if existing_role is not None:
@@ -729,7 +729,7 @@ class Mod(commands.Cog):
             )
 
         mute_role = await ctx.guild.create_role(name=role_name, reason=f"Mute role created by {ctx.author} (ID: {ctx.author.id})")
-        await ctx.bot.database_manager.set_guild_mute_role(guild_id=ctx.guild.id, mute_role_id=mute_role.id)
+        await ctx.bot.database.set_guild_mute_role(guild_id=ctx.guild.id, mute_role_id=mute_role.id)
 
         message_contents = [
             f"A new mute role **{mute_role}** (ID: {mute_role.id}) has been created for this server. ",
@@ -763,7 +763,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        mute_role_id = await ctx.bot.database_manager.get_guild_mute_role(guild_id=ctx.guild.id)
+        mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
         if mute_role_id is None:
             return await ctx.reply("No mute role has been set for this server.")
 
@@ -772,8 +772,8 @@ class Mod(commands.Cog):
             return await ctx.reply("The configured mute role does not exist in this server.")
 
         await mute_role.delete(reason=f"Mute role removed by {ctx.author} (ID: {ctx.author.id})")
-        await ctx.bot.database_manager.delete_mute_role(guild_id=ctx.guild.id)
-        await ctx.bot.timer_manager.delete_timer(event_name="mute", metadata_filter={"guild_id": ctx.guild.id}, multiple=True)
+        await ctx.bot.database.delete_mute_role(guild_id=ctx.guild.id)
+        await ctx.bot.event_scheduler.delete_timer(event_name="mute", metadata_filter={"guild_id": ctx.guild.id}, multiple=True)
 
         return await ctx.reply(f"The mute role **{mute_role}** (ID: {mute_role.id}) has been removed from the server.")
 
@@ -784,7 +784,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        muted_members = await ctx.bot.database_manager.get_muted_members(guild_id=ctx.guild.id)
+        muted_members = await ctx.bot.database.get_muted_members(guild_id=ctx.guild.id)
         if not muted_members:
             return await ctx.reply("There are no currently muted members in this server.")
 
@@ -821,7 +821,7 @@ class Mod(commands.Cog):
             _log.warning("Member not found for mute timer completion: %s", metadata)
             return
 
-        mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=guild.id)
+        mute_role_id = await self.bot.database.get_guild_mute_role(guild_id=guild.id)
         if mute_role_id is None:
             _log.warning("Mute role not set for guild: %s", guild.id)
             return
@@ -839,7 +839,7 @@ class Mod(commands.Cog):
             reason = "Mute timer completed. Original moderator not found."
 
         await member.remove_roles(mute_role, reason=reason)
-        await self.bot.database_manager.remove_muted_member(guild_id=guild.id, member_id=member.id)
+        await self.bot.database.remove_muted_member(guild_id=guild.id, member_id=member.id)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
@@ -847,9 +847,9 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert member.guild is not None
 
-        muted_members = await self.bot.database_manager.get_muted_members(guild_id=member.guild.id)
+        muted_members = await self.bot.database.get_muted_members(guild_id=member.guild.id)
         if member.id in muted_members:
-            mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=member.guild.id)
+            mute_role_id = await self.bot.database.get_guild_mute_role(guild_id=member.guild.id)
             if mute_role_id is None:
                 _log.warning("Mute role not set for guild: %s", member.guild.id)
                 return
@@ -871,9 +871,9 @@ class Mod(commands.Cog):
         if not removed_roles:
             return
 
-        muted_members = await self.bot.database_manager.get_muted_members(guild_id=before.guild.id)
+        muted_members = await self.bot.database.get_muted_members(guild_id=before.guild.id)
         if after.id in muted_members:
-            mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=before.guild.id)
+            mute_role_id = await self.bot.database.get_guild_mute_role(guild_id=before.guild.id)
             if mute_role_id is None:
                 _log.warning("Mute role not set for guild: %s", before.guild.id)
                 return
@@ -898,19 +898,19 @@ class Mod(commands.Cog):
 
         added_mute_role = after_roles - before_roles
 
-        mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=before.guild.id)
+        mute_role_id = await self.bot.database.get_guild_mute_role(guild_id=before.guild.id)
         if mute_role_id is None:
             _log.warning("Mute role not set for guild: %s", before.guild.id)
             return
 
         has_mute_role = any(role.id == mute_role_id for role in added_mute_role)
         if added_mute_role and has_mute_role:
-            await self.bot.database_manager.add_muted_member(guild_id=before.guild.id, member_id=after.id)
+            await self.bot.database.add_muted_member(guild_id=before.guild.id, member_id=after.id)
 
     @commands.Cog.listener("on_ready")
     async def sync_mute_roles(self) -> None:
         """Sync mute roles for all guilds on bot startup."""
-        async for guild_id, muted_members_id in self.bot.database_manager.get_all_muted_members():
+        async for guild_id, muted_members_id in self.bot.database.get_all_muted_members():
             guild = self.bot.get_guild(guild_id)
             if guild is None:
                 _log.warning("Guild not found for mute role sync: %s", guild_id)
@@ -919,7 +919,7 @@ class Mod(commands.Cog):
             if not guild.chunked:
                 await guild.chunk()
 
-            mute_role_id = await self.bot.database_manager.get_guild_mute_role(guild_id=guild.id)
+            mute_role_id = await self.bot.database.get_guild_mute_role(guild_id=guild.id)
             if mute_role_id is None:
                 _log.warning("Mute role not set for guild: %s", guild.id)
                 continue

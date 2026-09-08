@@ -28,7 +28,7 @@ class Stats(commands.Cog):
         _log.info("Cog loaded: %s", type(self).__name__)
 
     async def cog_load(self) -> None:
-        await self.bot.database_manager.stats_collection.create_index(
+        await self.bot.database.stats_collection.create_index(
             [
                 ("interval_start", 1),
                 ("guild_id", 1),
@@ -42,7 +42,7 @@ class Stats(commands.Cog):
             unique=True,
             name="stats_bucket_identity",
         )
-        await self.bot.database_manager.stats_collection.create_index(
+        await self.bot.database.stats_collection.create_index(
             "interval_start",
             expireAfterSeconds=30 * 24 * 60 * 60,
             name="stats_30_day_retention",
@@ -187,7 +187,7 @@ class Stats(commands.Cog):
             return
 
         records = list(self._records.values())
-        await self.bot.database_manager.flush_stats(records)
+        await self.bot.database.flush_stats(records)
         self._records.clear()
         _log.debug("Flushed %s stats records", len(records))
 

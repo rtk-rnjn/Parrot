@@ -60,11 +60,11 @@ class Meta(commands.Cog):
         message = await ctx.reply("Pinging...")
 
         mongo_start_time = time.perf_counter()
-        await self.bot.database_manager.ping_mongo_server()
+        await self.bot.database.ping_mongo_server()
         mongo_latency = (time.perf_counter() - mongo_start_time) * 1000
 
         redis_start_time = time.perf_counter()
-        await self.bot.database_manager.ping_redis_server()
+        await self.bot.database.ping_redis_server()
         redis_latency = (time.perf_counter() - redis_start_time) * 1000
 
         api_latency = (time.perf_counter() - start_time) * 1000

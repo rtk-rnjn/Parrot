@@ -27,7 +27,7 @@ class GiveawayCog(commands.Cog):
 
     async def cog_load(self) -> None:
         """Restore persistent views and reconcile giveaways after a restart."""
-        for giveaway in await self.bot.database_manager.get_giveaways():
+        for giveaway in await self.bot.database.get_giveaways():
             if giveaway.get("entry_mode", "reaction") == "button":
                 self.bot.add_view(GiveawayView(self, giveaway), message_id=giveaway["message_id"])
 
@@ -37,12 +37,12 @@ class GiveawayCog(commands.Cog):
                 self.bot.loop.create_task(self._recover_giveaway(giveaway["_id"]))
                 continue
 
-            timers = await self.bot.timer_manager.search_timers(
+            timers = await self.bot.event_scheduler.search_timers(
                 event_name="giveaway",
                 metadata_filter={"giveaway_id": str(giveaway["_id"])},
             )
             if not timers:
-                await self.bot.timer_manager.create_timer(
+                await self.bot.event_scheduler.create_timer(
                     event_name="giveaway",
                     expires_at=giveaway["ends_at"],
                     metadata={"giveaway_id": str(giveaway["_id"])},
@@ -111,7 +111,7 @@ class GiveawayCog(commands.Cog):
         }
         message = await ctx.reply(embed=self._embed(draft))
 
-        result = await self.bot.database_manager.create_giveaway(
+        result = await self.bot.database.create_giveaway(
             guild_id=ctx.guild.id,
             channel_id=ctx.channel.id,
             message_id=message.id,
@@ -122,7 +122,7 @@ class GiveawayCog(commands.Cog):
             entry_mode="button",
         )
         giveaway_id = result.inserted_id
-        giveaway = await self.bot.database_manager.get_giveaway(giveaway_id)
+        giveaway = await self.bot.database.get_giveaway(giveaway_id)
         if giveaway is None:
             await ctx.reply("The giveaway could not be saved.")
             return
@@ -131,7 +131,7 @@ class GiveawayCog(commands.Cog):
         await message.edit(embed=self._embed(giveaway), view=view)
         self.bot.add_view(view, message_id=message.id)
 
-        await self.bot.timer_manager.create_timer(
+        await self.bot.event_scheduler.create_timer(
             event_name="giveaway",
             expires_at=ends_at,
             metadata={"giveaway_id": str(giveaway_id)},
@@ -151,11 +151,11 @@ class GiveawayCog(commands.Cog):
         if ctx.guild is None or message.guild != ctx.guild or message.author.id != ctx.author.id:
             await ctx.reply("The message must be your own message in this server.")
             return
-        if await self.bot.database_manager.get_giveaway_by_message(guild_id=ctx.guild.id, message_id=message.id):
+        if await self.bot.database.get_giveaway_by_message(guild_id=ctx.guild.id, message_id=message.id):
             await ctx.reply("That message is already a giveaway.")
             return
 
-        result = await self.bot.database_manager.create_giveaway(
+        result = await self.bot.database.create_giveaway(
             guild_id=ctx.guild.id,
             channel_id=message.channel.id,
             message_id=message.id,
@@ -166,7 +166,7 @@ class GiveawayCog(commands.Cog):
             entry_mode="reaction",
         )
         await message.add_reaction(GIVEAWAY_EMOJI)
-        await self.bot.timer_manager.create_timer(
+        await self.bot.event_scheduler.create_timer(
             event_name="giveaway",
             expires_at=duration.dt,
             metadata={"giveaway_id": str(result.inserted_id)},
@@ -184,17 +184,17 @@ class GiveawayCog(commands.Cog):
             await ctx.reply("That is not a valid giveaway ID.")
             return
 
-        giveaway = await self.bot.database_manager.get_giveaway(object_id)
+        giveaway = await self.bot.database.get_giveaway(object_id)
         if giveaway is None or giveaway["guild_id"] != ctx.guild.id or giveaway["ended"]:
             await ctx.reply("No active giveaway with that ID was found.")
             return
 
-        giveaway = await self.bot.database_manager.end_giveaway(object_id)
+        giveaway = await self.bot.database.end_giveaway(object_id)
         if giveaway is None:
             await ctx.reply("That giveaway has already ended.")
             return
 
-        await self.bot.timer_manager.delete_timer(event_name="giveaway", metadata_filter={"giveaway_id": giveaway_id})
+        await self.bot.event_scheduler.delete_timer(event_name="giveaway", metadata_filter={"giveaway_id": giveaway_id})
         await self._finish_giveaway(giveaway)
         await ctx.reply("Giveaway ended.", delete_after=10)
 
@@ -203,12 +203,12 @@ class GiveawayCog(commands.Cog):
         if payload.guild_id is None or (self.bot.user is not None and payload.user_id == self.bot.user.id) or str(payload.emoji) != GIVEAWAY_EMOJI:
             return
 
-        giveaway = await self.bot.database_manager.get_giveaway_by_message(
+        giveaway = await self.bot.database.get_giveaway_by_message(
             guild_id=payload.guild_id,
             message_id=payload.message_id,
         )
         if giveaway is not None and giveaway.get("entry_mode", "reaction") == "reaction" and not giveaway["ended"]:
-            await self.bot.database_manager.add_giveaway_entrant(giveaway_id=giveaway["_id"], user_id=payload.user_id)
+            await self.bot.database.add_giveaway_entrant(giveaway_id=giveaway["_id"], user_id=payload.user_id)
 
     @commands.Cog.listener()
     async def on_giveaway_timer_complete(self, metadata: dict[str, object]) -> None:
@@ -216,12 +216,12 @@ class GiveawayCog(commands.Cog):
         if object_id is None:
             return
 
-        giveaway = await self.bot.database_manager.end_giveaway(object_id)
+        giveaway = await self.bot.database.end_giveaway(object_id)
         if giveaway is not None:
             await self._finish_giveaway(giveaway)
 
     async def _recover_giveaway(self, giveaway_id: ObjectId) -> None:
-        giveaway = await self.bot.database_manager.end_giveaway(giveaway_id)
+        giveaway = await self.bot.database.end_giveaway(giveaway_id)
         if giveaway is not None:
             await self._finish_giveaway(giveaway)
 
@@ -283,21 +283,20 @@ class GiveawayView(discord.ui.View):
         enter.callback = self.enter_callback
         self.add_item(enter)
 
-
     async def enter_callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        giveaway = await self.cog.bot.database_manager.get_giveaway(self._giveaway_id(interaction.data))
+        giveaway = await self.cog.bot.database.get_giveaway(self._giveaway_id(interaction.data))
         if giveaway is None or giveaway["ended"]:
             await interaction.response.send_message("This giveaway has ended.", ephemeral=True)
             return
 
-        added = await self.cog.bot.database_manager.add_giveaway_entrant(
+        added = await self.cog.bot.database.add_giveaway_entrant(
             giveaway_id=giveaway["_id"],
             user_id=interaction.user.id,
         )
         await interaction.response.send_message("You are entered!" if added else "You are already entered.", ephemeral=True)
 
     async def reroll_callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        giveaway = await self.cog.bot.database_manager.get_giveaway(self._giveaway_id(interaction.data))
+        giveaway = await self.cog.bot.database.get_giveaway(self._giveaway_id(interaction.data))
         if giveaway is None or not giveaway["ended"]:
             await interaction.response.send_message("This giveaway has not ended yet.", ephemeral=True)
             return

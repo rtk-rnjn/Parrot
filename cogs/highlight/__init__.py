@@ -46,7 +46,7 @@ class Highlights(commands.Cog):
         """
         assert ctx.guild is not None
 
-        await self.bot.database_manager.add_user_highlight(
+        await self.bot.database.add_user_highlight(
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
             words=[trigger],
@@ -63,7 +63,7 @@ class Highlights(commands.Cog):
         """Remove an existing highlight."""
         assert ctx.guild is not None
 
-        await self.bot.database_manager.remove_user_highlight(
+        await self.bot.database.remove_user_highlight(
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
             words=[trigger],
@@ -74,7 +74,7 @@ class Highlights(commands.Cog):
         """List all highlights."""
         assert ctx.guild is not None
 
-        highlights = await self.bot.database_manager.get_user_highlights(
+        highlights = await self.bot.database.get_user_highlights(
             guild_id=ctx.guild.id,
             user_id=ctx.author.id,
         )
@@ -98,7 +98,7 @@ class Highlights(commands.Cog):
         user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
     ) -> None:
         """Block a user from triggering your highlights."""
-        await self.bot.database_manager.add_user_highlight_ignored_user(
+        await self.bot.database.add_user_highlight_ignored_user(
             user_id=ctx.author.id,
             ignored_user_id=user.id,
         )
@@ -112,7 +112,7 @@ class Highlights(commands.Cog):
         user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
     ) -> None:
         """Unblock a user from triggering your highlights."""
-        await self.bot.database_manager.remove_user_highlight_ignored_user(
+        await self.bot.database.remove_user_highlight_ignored_user(
             user_id=ctx.author.id,
             ignored_user_id=user.id,
         )
@@ -172,8 +172,8 @@ class Highlights(commands.Cog):
             if member.bot or member == message.author:
                 continue
 
-            highlights = await self.bot.database_manager.get_user_highlights(guild_id=message.guild.id, user_id=member.id)
-            ignored_users = await self.bot.database_manager.get_user_highlight_ignored_users(user_id=member.id)
+            highlights = await self.bot.database.get_user_highlights(guild_id=message.guild.id, user_id=member.id)
+            ignored_users = await self.bot.database.get_user_highlight_ignored_users(user_id=member.id)
 
             if not highlights or (ignored_users and message.author.id in ignored_users):
                 continue
@@ -184,7 +184,7 @@ class Highlights(commands.Cog):
                     notified_users.append(member)
 
     @commands.Cog.listener("on_highlight")
-    async def on_highlight_notify(self, message: discord.Message, member: discord.Member, highlight: str) -> None:  # noqa: C901
+    async def on_highlight_notify(self, message: discord.Message, member: discord.Member, *, highlight: str) -> None:  # noqa: C901
         try:
             await self.bot.wait_for(
                 "user_activity",
@@ -239,7 +239,7 @@ class Highlights(commands.Cog):
                 content = esc(ms.content)
                 relative_time = discord.utils.format_dt(ms.created_at, style="R")
 
-                text = f"{relative_time} `@{str(ms.author):<15}`: {esc(content)}\n"
+                text = f"{relative_time} `@{str(ms.author)}`: {esc(content)}\n"
 
                 if len(initial_description + em.description + text) <= 4096:
                     em.description = text + em.description

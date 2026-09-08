@@ -166,9 +166,6 @@ class UserConfiguration(TypedDict):
     highlight_ignored_users: list[int]
 
 
-# For Internal stats
-
-
 class Command(TypedDict):
     _id: ObjectId
     qualified_name: str

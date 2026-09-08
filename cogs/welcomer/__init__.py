@@ -22,11 +22,11 @@ class Welcomer(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
-        if not await self.bot.database_manager.is_welcome_enabled(member.guild.id):
+        if not await self.bot.database.is_welcome_enabled(member.guild.id):
             return
 
-        channel_id = await self.bot.database_manager.get_welcome_join_channel_id(member.guild.id)
-        message = await self.bot.database_manager.get_welcome_join_message(member.guild.id)
+        channel_id = await self.bot.database.get_welcome_join_channel_id(member.guild.id)
+        message = await self.bot.database.get_welcome_join_message(member.guild.id)
         if channel_id is None or message is None:
             return
 
@@ -41,11 +41,11 @@ class Welcomer(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member) -> None:
-        if not await self.bot.database_manager.is_welcome_enabled(member.guild.id):
+        if not await self.bot.database.is_welcome_enabled(member.guild.id):
             return
 
-        channel_id = await self.bot.database_manager.get_welcome_leave_channel_id(member.guild.id)
-        message = await self.bot.database_manager.get_welcome_leave_message(member.guild.id)
+        channel_id = await self.bot.database.get_welcome_leave_channel_id(member.guild.id)
+        message = await self.bot.database.get_welcome_leave_message(member.guild.id)
         if channel_id is None or message is None:
             return
 
@@ -81,7 +81,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        enabled = await self.bot.database_manager.is_welcome_enabled(ctx.guild.id)
+        enabled = await self.bot.database.is_welcome_enabled(ctx.guild.id)
         await ctx.reply(f"Welcome messages are currently {'enabled' if enabled else 'disabled'}.")
 
     @welcome.command(name="enable")
@@ -91,7 +91,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_welcome_config(guild_id=ctx.guild.id, enabled=True)
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, enabled=True)
         await ctx.reply("Welcome messages enabled." if updated else "Welcome messages have not been configured yet.")
 
     @welcome.command(name="disable")
@@ -101,7 +101,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_welcome_config(guild_id=ctx.guild.id, enabled=False)
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, enabled=False)
         await ctx.reply("Welcome messages disabled." if updated else "Welcome messages have not been configured yet.")
 
     @welcome.command(name="join-message", aliases=["welcome-message", "join_message", "welcome_message"])
@@ -116,7 +116,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_message=message)
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_message=message)
         await ctx.reply("Join message updated." if updated else "Welcome messages have not been configured yet.")
 
     @welcome.command(name="leave-message", aliases=["goodbye-message", "leave_message", "goodbye_message"])
@@ -131,7 +131,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_welcome_config(guild_id=ctx.guild.id, on_member_leave_message=message)
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_leave_message=message)
         await ctx.reply("Leave message updated." if updated else "Welcome messages have not been configured yet.")
 
     @welcome.command(name="join-channel", aliases=["welcome-channel", "join_channel", "welcome_channel"])
@@ -141,7 +141,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_channel_id=channel.id)
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_channel_id=channel.id)
         await ctx.reply("Join channel updated." if updated else "Welcome messages have not been configured yet.")
 
     @welcome.command(name="leave-channel", aliases=["goodbye-channel", "leave_channel", "goodbye_channel"])
@@ -151,7 +151,7 @@ class Welcomer(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_welcome_config(guild_id=ctx.guild.id, on_member_leave_channel_id=channel.id)
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_leave_channel_id=channel.id)
         await ctx.reply("Leave channel updated." if updated else "Welcome messages have not been configured yet.")
 
 

@@ -32,7 +32,7 @@ class Leveling(commands.Cog):
 
     async def cog_unload(self) -> None:
         self.flush_xp.cancel()
-        await self.bot.database_manager.flush_all_leveling_data()
+        await self.bot.database.flush_all_leveling_data()
 
     def _calculate_xp_for_message(self, message: discord.Message) -> int:
         """Calculate the XP to award for a message."""
@@ -73,7 +73,7 @@ class Leveling(commands.Cog):
 
         enabled = self._enabled_guilds.get(message.guild.id)
         if enabled is None:
-            enabled = await self.bot.database_manager.is_leveling_enabled(message.guild.id)
+            enabled = await self.bot.database.is_leveling_enabled(message.guild.id)
             self._enabled_guilds[message.guild.id] = enabled
 
         if not enabled:
@@ -84,7 +84,7 @@ class Leveling(commands.Cog):
         if retry_after:
             return
 
-        await self.bot.database_manager.incr_user_xp(
+        await self.bot.database.incr_user_xp(
             guild_id=message.guild.id,
             user_id=message.author.id,
             xp=self._calculate_xp_for_message(message),
@@ -92,7 +92,7 @@ class Leveling(commands.Cog):
 
     @tasks.loop(seconds=XP_FLUSH_INTERVAL_SECONDS)
     async def flush_xp(self) -> None:
-        flushed_users = await self.bot.database_manager.flush_all_leveling_data()
+        flushed_users = await self.bot.database.flush_all_leveling_data()
         if flushed_users:
             _log.debug("Flushed XP for %s users", flushed_users)
 
@@ -106,7 +106,7 @@ class Leveling(commands.Cog):
         if ctx.guild is None:
             return
 
-        enabled = await self.bot.database_manager.is_leveling_enabled(ctx.guild.id)
+        enabled = await self.bot.database.is_leveling_enabled(ctx.guild.id)
         await ctx.reply(f"Leveling is currently {'enabled' if enabled else 'disabled'}.")
 
     @leveling.command(name="enable")
@@ -116,7 +116,7 @@ class Leveling(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_leveling_config(guild_id=ctx.guild.id, enabled=True)
+        updated = await self.bot.database.edit_leveling_config(guild_id=ctx.guild.id, enabled=True)
         if not updated:
             await ctx.reply("Leveling has not been configured for this server yet.")
             return
@@ -131,7 +131,7 @@ class Leveling(commands.Cog):
         if ctx.guild is None:
             return
 
-        updated = await self.bot.database_manager.edit_leveling_config(guild_id=ctx.guild.id, enabled=False)
+        updated = await self.bot.database.edit_leveling_config(guild_id=ctx.guild.id, enabled=False)
         if not updated:
             await ctx.reply("Leveling has not been configured for this server yet.")
             return
@@ -146,7 +146,7 @@ class Leveling(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database_manager.set_level_role(guild_id=ctx.guild.id, level=level, role_id=role.id)
+        await self.bot.database.set_level_role(guild_id=ctx.guild.id, level=level, role_id=role.id)
         await ctx.reply(f"Level {level} will award {role.mention}.")
 
     @leveling.command(name="unrole")
@@ -156,7 +156,7 @@ class Leveling(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database_manager.remove_level_role(guild_id=ctx.guild.id, level=level)
+        await self.bot.database.remove_level_role(guild_id=ctx.guild.id, level=level)
         await ctx.reply(f"Removed the role assignment for level {level}.")
 
     @commands.command(name="rank", aliases=["level"])
@@ -166,10 +166,10 @@ class Leveling(commands.Cog):
             return
 
         user = member or ctx.author
-        xp = await self.bot.database_manager.get_user_xp(guild_id=ctx.guild.id, user_id=user.id)
+        xp = await self.bot.database.get_user_xp(guild_id=ctx.guild.id, user_id=user.id)
         xp = xp or 0
 
-        rank = await self.bot.database_manager.predict_user_rank(guild_id=ctx.guild.id, user_id=user.id)
+        rank = await self.bot.database.predict_user_rank(guild_id=ctx.guild.id, user_id=user.id)
         file = await rank_card(
             level=self._calculate_level_for_xp(xp),
             rank=rank or 1,

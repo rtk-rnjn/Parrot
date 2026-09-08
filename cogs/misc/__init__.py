@@ -101,7 +101,7 @@ class Misc(commands.Cog):
             return
         ini = time.perf_counter()
 
-        prefix = await self.bot.database_manager.get_command_prefix(guild_id=message.guild.id)
+        prefix = await self.bot.database.get_command_prefix(guild_id=message.guild.id)
         message.content = f"{prefix} {message.content.strip()}"
         message.author = interaction.user
         await self.bot.process_commands(message)

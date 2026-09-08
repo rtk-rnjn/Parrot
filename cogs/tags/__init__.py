@@ -22,7 +22,7 @@ class Tags(commands.Cog):
         """List all tags in the server."""
         assert ctx.guild is not None
 
-        tags = await self.bot.database_manager.get_all_tags(guild_id=ctx.guild.id)
+        tags = await self.bot.database.get_all_tags(guild_id=ctx.guild.id)
         if not tags:
             await ctx.reply("No tags found in this server.")
             return
@@ -39,15 +39,15 @@ class Tags(commands.Cog):
         """View a specific tag."""
         assert ctx.guild is not None
 
-        content = await self.bot.database_manager.get_tag_content(guild_id=ctx.guild.id, name_or_alias=name)
+        content = await self.bot.database.get_tag_content(guild_id=ctx.guild.id, name_or_alias=name)
         if content is None:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
         channel_is_nsfw = getattr(ctx.channel, "is_nsfw", lambda: False)()
-        if await self.bot.database_manager.is_tag_nsfw(guild_id=ctx.guild.id, name_or_alias=name) and not channel_is_nsfw:
+        if await self.bot.database.is_tag_nsfw(guild_id=ctx.guild.id, name_or_alias=name) and not channel_is_nsfw:
             raise commands.NSFWChannelRequired(ctx.channel)  # type: ignore[arg-type]
 
-        await self.bot.database_manager.increment_tag_used_count(
+        await self.bot.database.increment_tag_used_count(
             guild_id=ctx.guild.id,
             name_or_alias=name,
             author_id=ctx.author.id,
@@ -64,13 +64,13 @@ class Tags(commands.Cog):
         """Create a new tag."""
         assert ctx.guild is not None
 
-        exists = await self.bot.database_manager.is_tag_present(guild_id=ctx.guild.id, name_or_alias=name)
+        exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=name)
         if exists:
             await ctx.reply(f"Tag `{name}` already exists.")
             return
 
         channel_is_nsfw = getattr(ctx.channel, "is_nsfw", lambda: False)()
-        await self.bot.database_manager.create_tag(
+        await self.bot.database.create_tag(
             guild_id=ctx.guild.id,
             name=name,
             content=content,
@@ -84,20 +84,20 @@ class Tags(commands.Cog):
         """Delete a tag."""
         assert ctx.guild is not None
 
-        tag_name = await self.bot.database_manager.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
+        tag_name = await self.bot.database.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
         if tag_name is None:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
 
         is_admin = isinstance(ctx.author, discord.Member) and ctx.author.guild_permissions.administrator
-        owner_id = await self.bot.database_manager.get_tag_owner_id(guild_id=ctx.guild.id, name_or_alias=tag_name)
+        owner_id = await self.bot.database.get_tag_owner_id(guild_id=ctx.guild.id, name_or_alias=tag_name)
         if not is_admin and owner_id != ctx.author.id:
             await ctx.reply("Only the tag owner or a server administrator can delete this tag.")
             return
         if not await self.bot.confirm(ctx, f"Are you sure you want to delete tag `{tag_name}`?"):
             return
 
-        deleted = await self.bot.database_manager.delete_tag(
+        deleted = await self.bot.database.delete_tag(
             guild_id=ctx.guild.id,
             name=tag_name,
             creator_id=ctx.author.id,
@@ -113,17 +113,14 @@ class Tags(commands.Cog):
         """View a tag with mentions escaped."""
         assert ctx.guild is not None
 
-        content = await self.bot.database_manager.get_tag_content(guild_id=ctx.guild.id, name_or_alias=name)
+        content = await self.bot.database.get_tag_content(guild_id=ctx.guild.id, name_or_alias=name)
         if content is None:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
-        if (
-            await self.bot.database_manager.is_tag_nsfw(guild_id=ctx.guild.id, name_or_alias=name)
-            and not getattr(ctx.channel, "is_nsfw", lambda: False)()
-        ):
+        if await self.bot.database.is_tag_nsfw(guild_id=ctx.guild.id, name_or_alias=name) and not getattr(ctx.channel, "is_nsfw", lambda: False)():
             raise commands.NSFWChannelRequired(ctx.channel)  # type: ignore[arg-type]
 
-        await self.bot.database_manager.increment_tag_used_count(
+        await self.bot.database.increment_tag_used_count(
             guild_id=ctx.guild.id,
             name_or_alias=name,
             author_id=ctx.author.id,
@@ -135,20 +132,20 @@ class Tags(commands.Cog):
         """Transfer a tag to another server member."""
         assert ctx.guild is not None
 
-        tag_name = await self.bot.database_manager.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
+        tag_name = await self.bot.database.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
         if tag_name is None:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
 
         is_admin = isinstance(ctx.author, discord.Member) and ctx.author.guild_permissions.administrator
-        owner_id = await self.bot.database_manager.get_tag_owner_id(guild_id=ctx.guild.id, name_or_alias=tag_name)
+        owner_id = await self.bot.database.get_tag_owner_id(guild_id=ctx.guild.id, name_or_alias=tag_name)
         if not is_admin and owner_id != ctx.author.id:
             await ctx.reply("Only the tag owner or a server administrator can transfer this tag.")
             return
         if not await self.bot.confirm(ctx, f"Transfer `{tag_name}` to {member.mention}?"):
             return
 
-        transferred = await self.bot.database_manager.transfer_tag_ownership(
+        transferred = await self.bot.database.transfer_tag_ownership(
             guild_id=ctx.guild.id,
             name=tag_name,
             new_creator_id=member.id,
@@ -160,7 +157,7 @@ class Tags(commands.Cog):
         """Search tag names and aliases."""
         assert ctx.guild is not None
 
-        matches = await self.bot.database_manager.search_tags(guild_id=ctx.guild.id, query=query)
+        matches = await self.bot.database.search_tags(guild_id=ctx.guild.id, query=query)
         if not matches:
             await ctx.reply(f"No tags found matching `{query}`.")
             return
@@ -171,7 +168,7 @@ class Tags(commands.Cog):
         """Show usage counts for a tag."""
         assert ctx.guild is not None
 
-        usage = await self.bot.database_manager.get_tag_usage(guild_id=ctx.guild.id, name_or_alias=name)
+        usage = await self.bot.database.get_tag_usage(guild_id=ctx.guild.id, name_or_alias=name)
         if usage is None:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
@@ -188,7 +185,7 @@ class Tags(commands.Cog):
         """Show users with the most tag uses."""
         assert ctx.guild is not None
 
-        rows = await self.bot.database_manager.get_top_tag_users(guild_id=ctx.guild.id)
+        rows = await self.bot.database.get_top_tag_users(guild_id=ctx.guild.id)
         pages = []
         for index, row in enumerate(rows, start=1):
             user = await self.bot.get_or_fetch_user(row["user_id"])
@@ -201,7 +198,7 @@ class Tags(commands.Cog):
         """Show the most-used tags."""
         assert ctx.guild is not None
 
-        rows = await self.bot.database_manager.get_top_used_tags(guild_id=ctx.guild.id)
+        rows = await self.bot.database.get_top_used_tags(guild_id=ctx.guild.id)
         if not rows:
             await ctx.reply("No tag usage recorded yet.")
             return
@@ -212,12 +209,12 @@ class Tags(commands.Cog):
         """Mark a tag as NSFW."""
         assert ctx.guild is not None
 
-        tag_name = await self.bot.database_manager.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
+        tag_name = await self.bot.database.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
         if tag_name is None:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
 
-        marked = await self.bot.database_manager.mark_tag_nsfw(
+        marked = await self.bot.database.mark_tag_nsfw(
             guild_id=ctx.guild.id,
             name=tag_name,
             creator_id=ctx.author.id,
@@ -233,12 +230,12 @@ class Tags(commands.Cog):
         """Edit a tag's content."""
         assert ctx.guild is not None
 
-        exists = await self.bot.database_manager.is_tag_present(guild_id=ctx.guild.id, name_or_alias=name)
+        exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=name)
         if not exists:
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
 
-        await self.bot.database_manager.edit_tag_content(guild_id=ctx.guild.id, creator_id=ctx.author.id, name=name, content=new_content)
+        await self.bot.database.edit_tag_content(guild_id=ctx.guild.id, creator_id=ctx.author.id, name=name, content=new_content)
         await ctx.reply(f"Tag `{name}` updated successfully.")
 
     @tag.group(name="alias", invoke_without_command=True)
@@ -251,17 +248,17 @@ class Tags(commands.Cog):
         """Add an alias to a tag."""
         assert ctx.guild is not None
 
-        exists = await self.bot.database_manager.is_tag_present(guild_id=ctx.guild.id, name_or_alias=tag_name)
+        exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=tag_name)
         if not exists:
             await ctx.reply(f"No tag found with the name: `{tag_name}`")
             return
 
-        alias_exists = await self.bot.database_manager.is_tag_present(guild_id=ctx.guild.id, name_or_alias=alias)
+        alias_exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=alias)
         if alias_exists:
             await ctx.reply(f"Alias `{alias}` already exists as a tag or alias.")
             return
 
-        await self.bot.database_manager.add_tag_alias(guild_id=ctx.guild.id, name=tag_name, alias=alias)
+        await self.bot.database.add_tag_alias(guild_id=ctx.guild.id, name=tag_name, alias=alias)
         await ctx.reply(f"Alias `{alias}` added to tag `{tag_name}` successfully.")
 
     @tag_alias.command(name="remove", aliases=["delete", "rm", "del"])
@@ -269,17 +266,17 @@ class Tags(commands.Cog):
         """Remove an alias from a tag."""
         assert ctx.guild is not None
 
-        exists = await self.bot.database_manager.is_tag_present(guild_id=ctx.guild.id, name_or_alias=tag_name)
+        exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=tag_name)
         if not exists:
             await ctx.reply(f"No tag found with the name: `{tag_name}`")
             return
 
-        alias_exists = await self.bot.database_manager.is_tag_present(guild_id=ctx.guild.id, name_or_alias=alias)
+        alias_exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=alias)
         if not alias_exists:
             await ctx.reply(f"No alias found with the name: `{alias}`")
             return
 
-        await self.bot.database_manager.remove_tag_alias(
+        await self.bot.database.remove_tag_alias(
             guild_id=ctx.guild.id,
             creator_id=ctx.author.id,
             name=tag_name,

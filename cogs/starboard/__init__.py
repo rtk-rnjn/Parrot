@@ -23,13 +23,13 @@ class Starboard(commands.Cog):
         _log.info("Cog loaded: %s", type(self).__name__)
 
     @commands.group(name="starboard", aliases=["startboard"], invoke_without_command=True)
-    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
     async def starboard(self, ctx: commands.Context[Parrot]) -> None:
         """Configure this server's starboard."""
         if ctx.guild is None:
             return
 
-        config = await self.bot.database_manager.get_starboard_config(ctx.guild.id)
+        config = await self.bot.database.get_starboard_config(ctx.guild.id)
         if config is None or not config["enabled"]:
             await ctx.reply("The starboard is disabled.")
             return
@@ -45,8 +45,8 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        current = await self.bot.database_manager.get_starboard_config(ctx.guild.id)
-        await self.bot.database_manager.edit_starboard_config(
+        current = await self.bot.database.get_starboard_config(ctx.guild.id)
+        await self.bot.database.edit_starboard_config(
             guild_id=ctx.guild.id,
             enabled=True,
             channel_id=channel.id,
@@ -55,7 +55,7 @@ class Starboard(commands.Cog):
         )
         await ctx.reply(f"Starboard channel set to {channel.mention}.")
 
-    @starboard.command(name="threshold")
+    @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_guild_permissions(manage_guild=True)
     async def set_threshold(
         self,
@@ -66,22 +66,22 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        config = await self.bot.database_manager.get_starboard_config(ctx.guild.id)
+        config = await self.bot.database.get_starboard_config(ctx.guild.id)
         if config is None or not config["enabled"]:
             await ctx.reply("Set a starboard channel first.")
             return
 
-        await self.bot.database_manager.edit_starboard_config(guild_id=ctx.guild.id, threshold=threshold)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, threshold=threshold)
         await ctx.reply(f"Starboard threshold set to {threshold} stars.")
 
-    @starboard.command(name="emoji")
+    @starboard.command(name="emoji", aliases=["emote"])
     @commands.has_guild_permissions(manage_guild=True)
     async def set_emoji(self, ctx: commands.Context[Parrot], *, emoji: str) -> None:
         """Set the native or custom emoji used for starboard reactions."""
         if ctx.guild is None:
             return
 
-        config = await self.bot.database_manager.get_starboard_config(ctx.guild.id)
+        config = await self.bot.database.get_starboard_config(ctx.guild.id)
         if config is None or not config["enabled"]:
             await ctx.reply("Set a starboard channel first.")
             return
@@ -93,7 +93,7 @@ class Starboard(commands.Cog):
 
         parsed_emoji = discord.PartialEmoji.from_str(emoji)
         stored_emoji = str(parsed_emoji) if parsed_emoji is not None else emoji
-        await self.bot.database_manager.edit_starboard_config(guild_id=ctx.guild.id, emoji=stored_emoji)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, emoji=stored_emoji)
         await ctx.reply(f"Starboard emoji set to {stored_emoji}.")
 
     @starboard.command(name="disable")
@@ -103,8 +103,18 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database_manager.edit_starboard_config(guild_id=ctx.guild.id, enabled=False)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, enabled=False)
         await ctx.reply("Starboard disabled.")
+
+    @starboard.command(name="enable")
+    @commands.has_guild_permissions(manage_guild=True)
+    async def enable(self, ctx: commands.Context[Parrot]) -> None:
+        """Enable the starboard for this server."""
+        if ctx.guild is None:
+            return
+
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, enabled=True)
+        await ctx.reply("Starboard enabled.")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
@@ -118,7 +128,7 @@ class Starboard(commands.Cog):
         if payload.guild_id is None or (self.bot.user is not None and payload.user_id == self.bot.user.id):
             return
 
-        config = await self.bot.database_manager.get_starboard_config(payload.guild_id)
+        config = await self.bot.database.get_starboard_config(payload.guild_id)
         if config is None or not config["enabled"] or str(payload.emoji) != config["emoji"]:
             return
         if payload.channel_id == config["channel_id"]:
@@ -135,7 +145,7 @@ class Starboard(commands.Cog):
 
         reaction = next((reaction for reaction in source_message.reactions if str(reaction.emoji) == config["emoji"]), None)
         count = reaction.count if reaction else 0
-        board_message_id = await self.bot.database_manager.get_starboard_board_message(payload.guild_id, source_message.id)
+        board_message_id = await self.bot.database.get_starboard_board_message(payload.guild_id, source_message.id)
 
         if count < config["threshold"]:
             if board_message_id is not None:
@@ -167,11 +177,11 @@ class Starboard(commands.Cog):
         embed = self._build_embed(source_message)
         if board_message_id is not None:
             try:
-                board_message = await channel.fetch_message(board_message_id)
+                board_message = await self.bot.get_or_fetch_message(channel, board_message_id)
                 await board_message.edit(content=content, embed=embed)
                 return
             except discord.Forbidden, discord.NotFound:
-                await self.bot.database_manager.delete_starboard_board_message(
+                await self.bot.database.delete_starboard_board_message(
                     guild_id=source_message.guild.id,
                     source_message_id=source_message.id,
                 )
@@ -186,7 +196,7 @@ class Starboard(commands.Cog):
             _log.warning("Cannot post to starboard channel %s", channel.id)
             return
 
-        await self.bot.database_manager.set_starboard_board_message(
+        await self.bot.database.set_starboard_board_message(
             guild_id=source_message.guild.id,
             source_message_id=source_message.id,
             board_message_id=board_message.id,
@@ -199,7 +209,7 @@ class Starboard(commands.Cog):
         except discord.Forbidden, discord.NotFound:
             pass
         finally:
-            await self.bot.database_manager.delete_starboard_board_message(
+            await self.bot.database.delete_starboard_board_message(
                 guild_id=guild_id,
                 source_message_id=source_id,
             )

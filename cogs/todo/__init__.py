@@ -36,7 +36,7 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
     async def on_submit(self, interaction: discord.Interaction[Parrot]):
         future_time = FutureTime(self.due_date.value)
         datetime = future_time.dt
-        await interaction.client.database_manager.edit_user_todo_item(
+        await interaction.client.database.edit_user_todo_item(
             user_id=interaction.user.id,
             todo_item_id=self.todo_item["id"],
             due=datetime,
@@ -45,7 +45,7 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
 
         relative_time = discord.utils.format_dt(datetime, style="R")
         await interaction.response.send_message(f"For to-do item (ID: `{self.todo_item['id']}`), due {relative_time}", ephemeral=True)
-        await interaction.client.timer_manager.create_timer(
+        await interaction.client.event_scheduler.create_timer(
             event_name="todo_due",
             expires_at=datetime,
             metadata=TodoItemMetadata(item=self.todo_item, user_id=interaction.user.id),
@@ -79,7 +79,7 @@ class TodoEditModal(discord.ui.Modal, title="Edit To-Do Item"):
     async def on_submit(self, interaction: discord.Interaction[Parrot]):
         future_time = FutureTime(self.due_date_input.value) if self.due_date_input.value else None
         datetime = future_time.dt if future_time else None
-        await interaction.client.database_manager.edit_user_todo_item(
+        await interaction.client.database.edit_user_todo_item(
             user_id=interaction.user.id,
             todo_item_id=self.todo_item["id"],
             title=self.title_input.value,
@@ -118,7 +118,7 @@ class TodoStatusButton(discord.ui.Button):
         self.todo_item = todo_item
 
     async def callback(self, interaction: discord.Interaction[Parrot]):
-        await interaction.client.database_manager.edit_user_todo_item(
+        await interaction.client.database.edit_user_todo_item(
             user_id=interaction.user.id,
             todo_item_id=self.todo_item["id"],
             status=self.status,
@@ -289,7 +289,7 @@ class Todo(commands.Cog):
     @todo.command(name="add")
     async def add_todo(self, ctx: commands.Context[Parrot], *, title: str) -> None:
         """Add a new to-do item."""
-        todo_item = await self.bot.database_manager.create_user_todo_item(user_id=ctx.author.id, title=title)
+        todo_item = await self.bot.database.create_user_todo_item(user_id=ctx.author.id, title=title)
         embed = discord.Embed(
             title=f"ID: {todo_item['id']}",
             description=todo_item["title"],
@@ -300,7 +300,7 @@ class Todo(commands.Cog):
     @todo.command(name="list", aliases=["ls"])
     async def list_todo(self, ctx: commands.Context[Parrot]) -> None:
         """List your to-do items."""
-        todo_items = await self.bot.database_manager.get_user_todo_items(user_id=ctx.author.id)
+        todo_items = await self.bot.database.get_user_todo_items(user_id=ctx.author.id)
         if not todo_items:
             await ctx.reply("You have no to-do items.")
             return
@@ -316,7 +316,7 @@ class Todo(commands.Cog):
     @todo.command(name="remove", aliases=["delete", "rm", "del"])
     async def remove_todo(self, ctx: commands.Context[Parrot], *, id: str) -> None:  # noqa: A002
         """Remove a to-do item."""
-        removed = await self.bot.database_manager.delete_user_todo_item(user_id=ctx.author.id, todo_item_id=ObjectId(id))
+        removed = await self.bot.database.delete_user_todo_item(user_id=ctx.author.id, todo_item_id=ObjectId(id))
         if removed:
             await ctx.reply(f"Removed to-do item (ID: `{id}`)")
         else:
@@ -325,7 +325,7 @@ class Todo(commands.Cog):
     @todo.command(name="view", aliases=["show"])
     async def view_todo(self, ctx: commands.Context[Parrot], *, id: str) -> None:  # noqa: A002
         """View a to-do item."""
-        todo_item = await self.bot.database_manager.get_user_todo_item(user_id=ctx.author.id, todo_item_id=ObjectId(id))
+        todo_item = await self.bot.database.get_user_todo_item(user_id=ctx.author.id, todo_item_id=ObjectId(id))
         if not todo_item:
             await ctx.reply(f"No to-do item found with ID: `{id}`")
             return

@@ -35,7 +35,7 @@ class AFK(commands.Cog):
 
         reason = reason.strip() or DEFAULT_REASON
 
-        await self.bot.database_manager.set_user_as_afk(guild_id=ctx.guild.id, user_id=ctx.author.id, reason=reason)
+        await self.bot.database.set_user_as_afk(guild_id=ctx.guild.id, user_id=ctx.author.id, reason=reason)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -56,12 +56,12 @@ class AFK(commands.Cog):
         if message.guild is None or message.author.bot:
             return
 
-        afk_reason = await self.bot.database_manager.get_afk_reason(guild_id=message.guild.id, user_id=message.author.id)
+        afk_reason = await self.bot.database.get_afk_reason(guild_id=message.guild.id, user_id=message.author.id)
 
         mentioned_ids = {member.id for member in message.mentions if not member.bot}
 
         if mentioned_ids:
-            afk_users = await self.bot.database_manager.get_afk_users(guild_id=message.guild.id)
+            afk_users = await self.bot.database.get_afk_users(guild_id=message.guild.id)
 
             for user_id, afk_reason in afk_users.items():
                 member = message.guild.get_member(user_id)
@@ -74,7 +74,7 @@ class AFK(commands.Cog):
         if afk_reason is None:
             return
 
-        await self.bot.database_manager.remove_user_from_afk(guild_id=message.guild.id, user_id=message.author.id)
+        await self.bot.database.remove_user_from_afk(guild_id=message.guild.id, user_id=message.author.id)
         await message.reply(f"Welcome back, {message.author.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
 

@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 from jishaku.paginators import PaginatorEmbedInterface, PaginatorInterface
 from watchfiles import awatch
 
+from .help import Help as BotHelp
 from .utils import DatabaseManager, TimersManager
 
 if TYPE_CHECKING:
@@ -35,6 +36,7 @@ SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 
 RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in ("true", "1", "yes")
+OWNER_ID = os.getenv("OWNER_ID")
 
 os.environ["JISHAKU_HIDE"] = "True"
 os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
@@ -102,14 +104,16 @@ class Parrot(commands.Bot):
             strip_after_prefix=True,
             shard_id=1,
             max_messages=2**12,
+            owner_ids={int(OWNER_ID)} if OWNER_ID else None,
+            help_command=BotHelp(),
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
-        self.database_manager = DatabaseManager(self)
-        self.timer_manager = TimersManager(self)
+        self.database = DatabaseManager(self)
+        self.event_scheduler = TimersManager(self)
 
-        self.started_at: datetime | None = None
+        self._started_at: datetime | None = None
 
         self.before_invoke(self.__before_invoke)
         self.check_once(self.__check_once)
@@ -150,7 +154,7 @@ class Parrot(commands.Bot):
         for extention in LOADABLE_COGS:
             await self.load_extension(extention)
 
-        self.timer_manager.timer_task = self.loop.create_task(self.timer_manager.dispatch_timers())
+        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.dispatch_timers())
         self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs())
 
     @staticmethod
@@ -197,8 +201,8 @@ class Parrot(commands.Bot):
                     _log.info("Autoreloaded cog extension: %s", extension)
 
     async def on_ready(self) -> None:
-        if self.started_at is None:
-            self.started_at = discord.utils.utcnow()
+        if self._started_at is None:
+            self._started_at = discord.utils.utcnow()
             try:
                 node = await self.lavalink_node_pool.create_node(
                     bot=self,
@@ -219,7 +223,7 @@ class Parrot(commands.Bot):
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
         if message.guild is not None:
-            prefix = await self.database_manager.get_command_prefix(guild_id=message.guild.id)
+            prefix = await self.database.get_command_prefix(guild_id=message.guild.id)
         else:
             prefix = Parrot.DEFAULT_PREFIX
 
@@ -237,7 +241,7 @@ class Parrot(commands.Bot):
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             if message.channel.permissions_for(message.guild.me).send_messages:
-                prefix = await self.database_manager.get_command_prefix(guild_id=message.guild.id) or Parrot.DEFAULT_PREFIX
+                prefix = await self.database.get_command_prefix(guild_id=message.guild.id) or Parrot.DEFAULT_PREFIX
                 await message.channel.send(
                     f"Prefix: `{prefix}`",
                     reference=message,
@@ -299,6 +303,12 @@ class Parrot(commands.Bot):
             return False
 
     @property
+    def started_at(self) -> datetime:
+        if self._started_at is None:
+            raise RuntimeError("Bot has not started yet.")
+        return self._started_at
+
+    @property
     def reminder(self) -> Reminder:
         return self.get_cog("Reminder")  # type: ignore[return-value]
 
@@ -349,8 +359,8 @@ class Parrot(commands.Bot):
         if self._http_session is not None:
             await self._http_session.close()
 
-        await self.database_manager.invalidate_redis()
-        await self.database_manager.close()
+        await self.database.invalidate_redis()
+        await self.database.close()
 
     @overload
     @staticmethod

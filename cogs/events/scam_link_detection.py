@@ -45,22 +45,22 @@ class ScamLinkManager:
         # Other commit messages are ignored. Also to avoid duplicate links getting added or removed, we will be using `last_updated` attribute.
 
     async def add(self, link: str):
-        await self.bot.database_manager.add_scam_link(link)
+        await self.bot.database.add_scam_link(link)
 
     async def remove(self, link: str):
-        await self.bot.database_manager.remove_scam_link(link)
+        await self.bot.database.remove_scam_link(link)
 
     async def is_scam_link(self, link: str) -> bool:
-        return await self.bot.database_manager.is_scam_link(link)
+        return await self.bot.database.is_scam_link(link)
 
     async def update_cache(self):
         if self.already_fetched:
             await self.process_latest_commit()
             return
 
-        exists = await self.bot.database_manager.is_scam_links_cache_exists()
+        exists = await self.bot.database.is_scam_links_cache_exists()
         if exists:
-            count = await self.bot.database_manager.get_scam_links_count()
+            count = await self.bot.database.get_scam_links_count()
             if count and count > 20000:
                 await self.fetch_latest_commit()
                 self.already_fetched = True
@@ -70,8 +70,8 @@ class ScamLinkManager:
         if not links:
             return
 
-        await self.bot.database_manager.invalidate_scam_links_cache()
-        await self.bot.database_manager.add_scam_link(*links)
+        await self.bot.database.invalidate_scam_links_cache()
+        await self.bot.database.add_scam_link(*links)
 
     async def fetch_scam_links_from_source(self) -> list[str]:
         async with self.bot.http_session.get(self.source_uri, headers=GITHUB_HEADERS) as response:
@@ -173,14 +173,14 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
         await self.scam_links_manager.update_cache()
 
     async def warned_already(self, *, channel: discord.abc.MessageableChannel, link: str) -> bool:
-        exists = await self.bot.database_manager.check_if_link_warned(link=link, channel_id=channel.id)
+        exists = await self.bot.database.check_if_link_warned(link=link, channel_id=channel.id)
         if isinstance(exists, int) and bool(exists):
             return True
 
         return False
 
     async def mark_warned(self, *, channel: discord.abc.MessageableChannel, link: str) -> None:
-        await self.bot.database_manager.flag_link_as_warned(link=link, channel_id=channel.id)
+        await self.bot.database.flag_link_as_warned(link=link, channel_id=channel.id)
 
     @commands.group(name="sl", hidden=True, aliases=["scamlink", "scamlinks", "scam_link", "scam_links"])
     @commands.is_owner()

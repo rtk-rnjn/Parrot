@@ -20,8 +20,8 @@ class Welcomer(commands.Cog):
         self.bot = bot
         _log.info("Cog loaded: %s", type(self).__name__)
 
-    @commands.Cog.listener()
-    async def on_member_join(self, member: discord.Member) -> None:
+    @commands.Cog.listener("on_member_join")
+    async def member_welcome(self, member: discord.Member) -> None:
         if not await self.bot.database.is_welcome_enabled(member.guild.id):
             return
 
@@ -38,6 +38,40 @@ class Welcomer(commands.Cog):
             return
 
         await channel.send(self._format_message(message, member), allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.Cog.listener("on_member_join")
+    async def member_join_role(self, member: discord.Member) -> None:
+        if not await self.bot.database.is_welcome_enabled(member.guild.id):
+            return
+
+        role_id = await self.bot.database.get_welcome_join_role_id(member.guild.id)
+        if role_id is None:
+            return
+
+        role = member.guild.get_role(role_id)
+        if role is None:
+            return
+        me = member.guild.me
+        if me is None or not member.guild.me.guild_permissions.manage_roles:
+            return
+        if not member.guild.me.top_role > role:
+            _log.warning(
+                "Cannot assign join role %s to member %s in guild %s: bot's top role is lower than the join role.",
+                role.id,
+                member.id,
+                member.guild.id,
+            )
+            return
+
+        try:
+            await member.add_roles(role, reason="Join role configured in Welcomer cog.")
+        except discord.Forbidden:
+            _log.warning(
+                "Cannot assign join role %s to member %s in guild %s: missing permissions.",
+                role.id,
+                member.id,
+                member.guild.id,
+            )
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member) -> None:
@@ -118,6 +152,16 @@ class Welcomer(commands.Cog):
 
         updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_message=message)
         await ctx.reply("Join message updated." if updated else "Welcome messages have not been configured yet.")
+
+    @welcome.command(name="role", aliases=["join-role", "welcome-role", "join_role", "welcome_role"])
+    @commands.has_guild_permissions(manage_guild=True)
+    async def set_join_role(self, ctx: commands.Context[Parrot], role: discord.Role) -> None:
+        """Set the role assigned to new members."""
+        if ctx.guild is None:
+            return
+
+        updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_role_id=role.id)
+        await ctx.reply("Join role updated." if updated else "Welcome messages have not been configured yet.")
 
     @welcome.command(name="leave-message", aliases=["goodbye-message", "leave_message", "goodbye_message"])
     @commands.has_guild_permissions(manage_guild=True)

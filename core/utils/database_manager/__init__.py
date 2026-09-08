@@ -8,10 +8,11 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
 
-from .bot.stats import _BotStatsMixin
+from .bot import _BotMixin
 from .guild import _GuildMixin
 from .models import Giveaway, GuildConfiguration, Stats, UserConfiguration
 from .scam_links import _ScamLinksMixin
+from .cache_keys import RedisKeys
 from .user import _UserMixin
 
 if TYPE_CHECKING:
@@ -60,7 +61,7 @@ class DatabaseManager(
     _GuildMixin,
     _UserMixin,
     _ScamLinksMixin,
-    _BotStatsMixin,
+    _BotMixin,
 ):
     """Main database manager composed via mixin inheritance."""
 
@@ -99,3 +100,39 @@ class DatabaseManager(
     async def ping_redis_server(self) -> bool:
         """Ping the Redis server to check if it's reachable."""
         return await self.redis_client.ping()
+
+    async def is_guild_registered(self, guild_id: int, /) -> bool:
+        """Check if a guild is registered in the database."""
+        redis_key = RedisKeys.REGISTERED_GUILDS
+        if await self.redis_client.sismember(redis_key, str(guild_id)):
+            return True
+
+        exists = await self.guilds_collection.count_documents({"_id": guild_id}, limit=1) > 0
+        if exists:
+            await self.redis_client.sadd(redis_key, str(guild_id))
+
+        return exists
+
+    async def is_user_registered(self, user_id: int, /) -> bool:
+        """Check if a user is registered in the database."""
+        redis_key = RedisKeys.REGISTERED_USERS
+        if await self.redis_client.sismember(redis_key, str(user_id)):
+            return True
+
+        exists = await self.users_collection.count_documents({"_id": user_id}, limit=1) > 0
+        if exists:
+            await self.redis_client.sadd(redis_key, str(user_id))
+
+        return exists
+
+    async def register_guild(self, guild_id: int, /) -> None:
+        """Register a guild in the database."""
+        if not await self.is_guild_registered(guild_id):
+            await self.guilds_collection.insert_one(self.empty_guild_config(guild_id))
+            await self.redis_client.sadd(RedisKeys.REGISTERED_GUILDS, str(guild_id))
+
+    async def register_user(self, user_id: int, /) -> None:
+        """Register a user in the database."""
+        if not await self.is_user_registered(user_id):
+            await self.users_collection.insert_one(self.empty_user_config(user_id))
+            await self.redis_client.sadd(RedisKeys.REGISTERED_USERS, str(user_id))

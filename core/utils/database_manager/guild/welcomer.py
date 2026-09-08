@@ -19,6 +19,7 @@ class _GuildWelcomerMixin:
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_CHANNEL_ID: config["on_member_join_channel_id"],
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_MESSAGE: config["on_member_leave_message"],
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_CHANNEL_ID: config["on_member_leave_channel_id"],
+            RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID: config["on_member_join_role_id"],
         }
         for key, value in values.items():
             redis_key = key.format(guild_id=guild_id)
@@ -34,6 +35,7 @@ class _GuildWelcomerMixin:
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_CHANNEL_ID.format(guild_id=guild_id),
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_MESSAGE.format(guild_id=guild_id),
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_CHANNEL_ID.format(guild_id=guild_id),
+            RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID.format(guild_id=guild_id),
         )
 
     async def edit_welcome_config(  # noqa: PLR0913
@@ -43,6 +45,7 @@ class _GuildWelcomerMixin:
         enabled: bool = MISSING,
         on_member_join_message: str | None = MISSING,
         on_member_join_channel_id: int | None = MISSING,
+        on_member_join_role_id: int | None = MISSING,
         on_member_leave_message: str | None = MISSING,
         on_member_leave_channel_id: int | None = MISSING,
     ) -> bool:
@@ -51,6 +54,7 @@ class _GuildWelcomerMixin:
             ("enabled", enabled),
             ("on_member_join_message", on_member_join_message),
             ("on_member_join_channel_id", on_member_join_channel_id),
+            ("on_member_join_role_id", on_member_join_role_id),
             ("on_member_leave_message", on_member_leave_message),
             ("on_member_leave_channel_id", on_member_leave_channel_id),
         ):
@@ -154,3 +158,24 @@ class _GuildWelcomerMixin:
         welcome_config = config["welcome_config"]
         await self._cache_welcome_config(guild_id=guild_id, config=welcome_config)
         return welcome_config.get(field)
+
+    async def get_welcome_join_role_id(self, guild_id: int, /) -> int | None:
+        key = RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID.format(guild_id=guild_id)
+        value = await self.redis_client.get(key)
+        if value is not None:
+            return int(value)
+
+        return await self._get_welcome_config_value(
+            guild_id=guild_id,
+            field="on_member_join_role_id",
+            query_field="welcome_config.on_member_join_role_id",
+        )
+
+    async def set_welcome_join_role_id(self, guild_id: int, role_id: int | None, /) -> bool:
+        updated = await self.edit_welcome_config(guild_id=guild_id, on_member_join_role_id=role_id)
+        if updated:
+            await self.redis_client.set(
+                RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID.format(guild_id=guild_id),
+                role_id if role_id is not None else "",
+            )
+        return updated

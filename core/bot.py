@@ -215,7 +215,6 @@ class Parrot(commands.Bot):
                     spotify_client_id=SPOTIFY_CLIENT_ID,
                     spotify_client_secret=SPOTIFY_CLIENT_SECRET,
                     session=self.http_session,
-                    logger=_log,
                 )
 
                 self.default_lavalink_node = node
@@ -266,6 +265,9 @@ class Parrot(commands.Bot):
         if ctx.guild is not None and not ctx.guild.chunked:
             await ctx.bot.wait_until_ready()
             self.loop.create_task(ctx.guild.chunk())
+
+            await self.database.register_guild(ctx.guild.id)
+            await self.database.register_user(ctx.author.id)
 
     async def get_or_fetch_member(self, guild: discord.Guild, member_id: int) -> discord.Member | None:
         member = guild.get_member(member_id)

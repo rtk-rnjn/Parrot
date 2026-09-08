@@ -93,6 +93,7 @@ class WelcomeConfig(TypedDict):
     enabled: bool
     on_member_join_message: str | None
     on_member_join_channel_id: int | None
+    on_member_join_role_id: int | None
     on_member_leave_message: str | None
     on_member_leave_channel_id: int | None
 

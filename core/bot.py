@@ -36,6 +36,7 @@ SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 
 RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in ("true", "1", "yes")
+LAVALINK_PASSWORD = os.environ.get("LAVALINK_PASSWORD", "youshallnotpass")
 OWNER_ID = os.getenv("OWNER_ID")
 
 os.environ["JISHAKU_HIDE"] = "True"
@@ -208,10 +209,13 @@ class Parrot(commands.Bot):
                     bot=self,
                     host="localhost",
                     port=2333,
-                    password="youshallnotpass",
+                    password=LAVALINK_PASSWORD,
                     identifier="MAIN",
+                    loop=self.loop,
                     spotify_client_id=SPOTIFY_CLIENT_ID,
                     spotify_client_secret=SPOTIFY_CLIENT_SECRET,
+                    session=self.http_session,
+                    logger=_log,
                 )
 
                 self.default_lavalink_node = node

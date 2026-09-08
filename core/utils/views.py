@@ -12,7 +12,7 @@ class DeleteMessageButtonView(discord.ui.View):
         super().__init__(timeout=None)
         self.author = author
 
-        button = discord.ui.Button(emoji="\N{WASTEBASKET}", style=discord.ButtonStyle.red)
+        button = discord.ui.Button[DeleteMessageButtonView](emoji="\N{WASTEBASKET}", style=discord.ButtonStyle.red)
         button.callback = self.delete_message_callback
 
         self.add_item(button)
@@ -21,10 +21,7 @@ class DeleteMessageButtonView(discord.ui.View):
         if interaction.user == self.author:
             return True
 
-        await interaction.response.send_message(
-            "You cannot interact with this view.",
-            ephemeral=True,
-        )
+        await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
         return False
 
     async def delete_message_callback(self, interaction: discord.Interaction) -> None:

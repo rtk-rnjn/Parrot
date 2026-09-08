@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+from asyncio import gather
 from collections import defaultdict
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from time import perf_counter
 from typing import TYPE_CHECKING, Any
 
 import discord
@@ -183,6 +185,7 @@ class Stats(commands.Cog):
         for key in tuple(self._voice):
             self._accrue_voice(key, now)
 
+        await self._record_health_metrics(now)
         if not self._records:
             return
 
@@ -190,6 +193,46 @@ class Stats(commands.Cog):
         await self.bot.database.flush_stats(records)
         self._records.clear()
         _log.debug("Flushed %s stats records", len(records))
+
+    async def _record_health_metrics(self, now: datetime) -> None:
+        interval_start = self._interval_start(now)
+        bot_latency = self.bot.latency * 1000
+        self._increment(
+            interval_start=interval_start,
+            guild_id=0,
+            user_id=0,
+            kind=StatsKind.EVENT,
+            event=StatsEvent.BOT_PING,
+            values={"latency_ms": bot_latency, "samples": 1},
+        )
+
+        async def measure_ping(name: str, ping: Any) -> float | None:
+            try:
+                started_at = perf_counter()
+                await ping()
+            except Exception:
+                _log.warning("Failed to measure %s latency", name, exc_info=True)
+                return None
+            return (perf_counter() - started_at) * 1000
+
+        mongo_latency, redis_latency = await gather(
+            measure_ping("MongoDB", self.bot.database.ping_mongo_server),
+            measure_ping("Redis", self.bot.database.ping_redis_server),
+        )
+        database_values: dict[str, float] = {"samples": 1}
+        if mongo_latency is not None:
+            database_values["mongo_latency_ms"] = mongo_latency
+        if redis_latency is not None:
+            database_values["redis_latency_ms"] = redis_latency
+        if len(database_values) > 1:
+            self._increment(
+                interval_start=interval_start,
+                guild_id=0,
+                user_id=0,
+                kind=StatsKind.EVENT,
+                event=StatsEvent.DATABASE_PING,
+                values=database_values,
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:

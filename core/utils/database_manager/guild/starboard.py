@@ -5,7 +5,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
-from ..models import GuildConfiguration, StarboardConfig
+from ..models import GuildConfiguration
 
 DEFAULT_STARBOARD_EMOJI = "\N{WHITE MEDIUM STAR}"
 DEFAULT_STARBOARD_THRESHOLD = 3
@@ -14,23 +14,6 @@ DEFAULT_STARBOARD_THRESHOLD = 3
 class _GuildStarboardMixin:
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
-
-    async def _cache_starboard_config(self, *, guild_id: int, config: StarboardConfig) -> None:
-        config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
-        await self.redis_client.hset(
-            config_key,
-            mapping={
-                "enabled": int(config["enabled"]),
-                "channel_id": config["channel_id"],
-                "threshold": config["threshold"],
-                "emoji": config["emoji"],
-            },
-        )
-
-        messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)
-        await self.redis_client.delete(messages_key)
-        if config["board_messages"]:
-            await self.redis_client.hset(messages_key, mapping={key: str(value) for key, value in config["board_messages"].items()})
 
     async def _invalidate_starboard_cache(self, guild_id: int, /) -> None:
         await self.redis_client.delete(

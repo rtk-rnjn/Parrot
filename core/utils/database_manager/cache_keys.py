@@ -15,7 +15,7 @@ class RedisKeys(StrEnum):
     GUILD_AUTOMOD_RULES = "guild:{guild_id}:automod_rules"
     GUILD_AUTOMOD_RULE_TRIGGER = "guild:{guild_id}:automod_rule:{rule_name}:trigger"
     GUILD_AUTOMOD_RULE_CONDITIONS = "guild:{guild_id}:automod_rule:{rule_name}:conditions"
-    GUILD_AUTOMOD_RULE_EFFECTS = "guild:{guild_id}:automod_rule:{rule_name}:effects"
+    GUILD_AUTOMOD_RULE_EFFECTS = "guild:{bot_prefixguild_id}:automod_rule:{rule_name}:effects"
     GUILD_AUTOMOD_RULE_ENABLED = "guild:{guild_id}:automod_rule:{rule_name}:enabled"
     GUILD_AUTOMOD_RULE_PRIORITY = "guild:{guild_id}:automod_rule:{rule_name}:priority"
     GUILD_AUTOMOD_RULE_CONDITION_MATCH_MODE = "guild:{guild_id}:automod_rule:{rule_name}:condition_match_mode"

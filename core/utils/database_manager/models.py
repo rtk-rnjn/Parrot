@@ -100,7 +100,7 @@ class WelcomeConfig(TypedDict):
 
 class StarboardConfig(TypedDict):
     enabled: bool
-    channel_id: int
+    channel_id: int | None
     threshold: int
     emoji: str
     board_messages: dict[str, int]
@@ -191,6 +191,8 @@ class StatsKind(StrEnum):
 
 
 class StatsEvent(StrEnum):
+    BOT_PING = "bot_ping"
+    DATABASE_PING = "database_ping"
     MEMBER_JOIN = "member_join"
     MEMBER_LEAVE = "member_leave"
     MEMBER_UPDATE = "member_update"

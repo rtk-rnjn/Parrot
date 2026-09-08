@@ -5,7 +5,7 @@ import time
 from collections import Counter
 from datetime import datetime
 from typing import TYPE_CHECKING
-
+import io
 import discord
 from discord.ext import commands
 
@@ -298,13 +298,16 @@ class Meta(commands.Cog):
         """
         target: discord.Member = member or ctx.author
 
+        avatar_bytes = await target.display_avatar.read()
+        file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.gif")
+
         embed = (
             discord.Embed(
                 title=f"{target}'s Avatar",
                 colour=target.colour,
                 timestamp=discord.utils.utcnow(),
             )
-            .set_image(url=target.display_avatar.url)
+            .set_image(url="attachment://avatar.gif")
             .set_footer(text=f"ID: {target.id}")
         )
 
@@ -314,7 +317,7 @@ class Meta(commands.Cog):
             content = None
 
         delete_view = DeleteMessageButtonView(author=ctx.author)
-        message = await ctx.reply(content, embed=embed, view=delete_view)
+        message = await ctx.reply(content, embed=embed, view=delete_view, file=file, mention_author=False)
         delete_view.message = message
 
         return message

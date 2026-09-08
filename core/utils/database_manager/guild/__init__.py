@@ -76,8 +76,8 @@ class _GuildMixin(
             },
             "starboard_config": {
                 "enabled": False,
-                "channel_id": 0,
-                "threshold": 0,
+                "channel_id": None,
+                "threshold": 3,
                 "emoji": "",
                 "board_messages": {},
             },
@@ -93,3 +93,6 @@ class _GuildMixin(
             "custom_commands_db": {},
             "custom_commands_logs": [],
         }
+
+    async def get_guild_config(self, guild_id: int) -> GuildConfiguration | None:
+        return await self.guilds_collection.find_one({"_id": guild_id})

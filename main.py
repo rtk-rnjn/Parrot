@@ -120,7 +120,7 @@ async def start_bot() -> None:
     bot = Parrot()
 
     try:
-        await bot.database_manager.invalidate_redis()
+        await bot.database.invalidate_redis()
         async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as session:
             async with bot:
                 bot._http_session = session

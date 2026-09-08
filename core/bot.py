@@ -491,11 +491,11 @@ class DisambiguatorView[T](discord.ui.View):
 
         options = []
         for i, x in enumerate(data):
-            opt = entry(x)
-            if not isinstance(opt, discord.SelectOption):
-                opt = discord.SelectOption(label=str(opt))
-            opt.value = str(i)
-            options.append(opt)
+            option = entry(x)
+            if not isinstance(option, discord.SelectOption):
+                option = discord.SelectOption(label=str(option))
+            option.value = str(i)
+            options.append(option)
 
         select = discord.ui.Select(options=options)
 

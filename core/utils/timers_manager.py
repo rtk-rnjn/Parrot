@@ -83,7 +83,7 @@ class TimersManager:
             Bot instance providing the MongoDB database, asyncio event loop,
             event dispatcher, and shutdown state.
         """
-        self.timers_collection: AsyncCollection[TimerData] = bot.database_manager.mongo_db["timers"]
+        self.timers_collection: AsyncCollection[TimerData] = bot.database.mongo_db["timers"]
 
         # Event used to put the dispatcher to sleep while there are no timers.
         # Unlike an asyncio.Queue, the event does not carry the timer itself;

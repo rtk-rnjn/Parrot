@@ -29,14 +29,26 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        config = await self.bot.database.get_starboard_config(ctx.guild.id)
-        if config is None or not config["enabled"]:
-            await ctx.reply("The starboard is disabled.")
+        starboard_enabled = await self.bot.database.is_starboard_enabled(ctx.guild.id)
+        if not starboard_enabled:
+            await ctx.reply("Starboard is disabled.")
             return
 
-        channel = ctx.guild.get_channel(config["channel_id"])
-        channel_name = channel.mention if isinstance(channel, discord.TextChannel) else f"<#{config['channel_id']}>"
-        await ctx.reply(f"The starboard is enabled in {channel_name} with a threshold of {config['threshold']} {config['emoji']}.")
+        board_channel_id = await self.bot.database.get_starboard_board_channel_id(ctx.guild.id)
+        if board_channel_id is None:
+            await ctx.reply("Starboard is enabled, but no channel is set.")
+            return
+
+        channel = ctx.guild.get_channel(board_channel_id)
+        if channel is None:
+            await ctx.reply("Starboard is enabled, but the channel is invalid or deleted.")
+            return
+
+        threshold = await self.bot.database.get_starboard_threshold(ctx.guild.id)
+        emoji = await self.bot.database.get_starboard_emoji(ctx.guild.id)
+
+        channel_name = channel.mention
+        await ctx.reply(f"The starboard is enabled in {channel_name} with a threshold of {threshold} {emoji}.")
 
     @starboard.command(name="set-channel", aliases=["channel"])
     @commands.has_guild_permissions(manage_guild=True)
@@ -45,14 +57,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        current = await self.bot.database.get_starboard_config(ctx.guild.id)
-        await self.bot.database.edit_starboard_config(
-            guild_id=ctx.guild.id,
-            enabled=True,
-            channel_id=channel.id,
-            threshold=current["threshold"] if current else DEFAULT_THRESHOLD,
-            emoji=current["emoji"] if current else DEFAULT_EMOJI,
-        )
+        await self.bot.database.set_starboard_board_channel(ctx.guild.id, channel.id)
         await ctx.reply(f"Starboard channel set to {channel.mention}.")
 
     @starboard.command(name="threshold", aliases=["limit"])
@@ -66,13 +71,8 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        config = await self.bot.database.get_starboard_config(ctx.guild.id)
-        if config is None or not config["enabled"]:
-            await ctx.reply("Set a starboard channel first.")
-            return
-
-        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, threshold=threshold)
-        await ctx.reply(f"Starboard threshold set to {threshold} stars.")
+        await self.bot.database.set_starboard_threshold(guild_id=ctx.guild.id, threshold=threshold)
+        await ctx.reply(f"Starboard threshold set to {threshold}.")
 
     @starboard.command(name="emoji", aliases=["emote"])
     @commands.has_guild_permissions(manage_guild=True)
@@ -81,20 +81,13 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        config = await self.bot.database.get_starboard_config(ctx.guild.id)
-        if config is None or not config["enabled"]:
-            await ctx.reply("Set a starboard channel first.")
+        emote = discord.PartialEmoji.from_str(emoji)
+        if emote.is_custom_emoji() and ctx.guild.get_emoji(emote.id) is None: # pyright: ignore[reportArgumentType]
+            await ctx.reply("That custom emoji is not available in this server.")
             return
 
-        emoji = emoji.strip()
-        if not emoji:
-            await ctx.reply("Provide a native or custom emoji.")
-            return
-
-        parsed_emoji = discord.PartialEmoji.from_str(emoji)
-        stored_emoji = str(parsed_emoji) if parsed_emoji is not None else emoji
-        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, emoji=stored_emoji)
-        await ctx.reply(f"Starboard emoji set to {stored_emoji}.")
+        await self.bot.database.set_starboard_emoji(guild_id=ctx.guild.id, emoji=emoji)
+        await ctx.reply(f"Starboard emoji set to {emoji}.")
 
     @starboard.command(name="disable")
     @commands.has_guild_permissions(manage_guild=True)
@@ -103,7 +96,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, enabled=False)
+        await self.bot.database.disable_starboard(ctx.guild.id)
         await ctx.reply("Starboard disabled.")
 
     @starboard.command(name="enable")
@@ -113,7 +106,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, enabled=True)
+        await self.bot.database.enable_starboard(ctx.guild.id)
         await ctx.reply("Starboard enabled.")
 
     @commands.Cog.listener()
@@ -124,11 +117,24 @@ class Starboard(commands.Cog):
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
         await self._update_board(payload)
 
-    async def _update_board(self, payload: discord.RawReactionActionEvent) -> None:
+    async def _update_board(self, payload: discord.RawReactionActionEvent) -> None:  # noqa: PLR0911
         if payload.guild_id is None or (self.bot.user is not None and payload.user_id == self.bot.user.id):
             return
 
-        config = await self.bot.database.get_starboard_config(payload.guild_id)
+        is_starboard_enabled = await self.bot.database.is_starboard_enabled(payload.guild_id)
+        if not is_starboard_enabled:
+            return
+
+        emoji = await self.bot.database.get_starboard_emoji(payload.guild_id)
+        threshold = await self.bot.database.get_starboard_threshold(payload.guild_id)
+        channel_id = await self.bot.database.get_starboard_board_channel_id(payload.guild_id)
+        config = {
+            "enabled": is_starboard_enabled,
+            "emoji": emoji,
+            "threshold": threshold,
+            "channel_id": channel_id,
+        }
+
         if config is None or not config["enabled"] or str(payload.emoji) != config["emoji"]:
             return
         if payload.channel_id == config["channel_id"]:

@@ -10,6 +10,10 @@ import discord
 import psutil
 import pygit2
 from discord.ext import commands
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 if TYPE_CHECKING:
     from .bot import Parrot

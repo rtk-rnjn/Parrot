@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
-
 from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
@@ -73,35 +70,89 @@ class _GuildStarboardMixin:
         await self._invalidate_starboard_cache(guild_id)
         return True
 
-    async def delete_starboard_config(self, guild_id: int, /) -> bool:
-        result = await self.guilds_collection.update_one(
-            {"_id": guild_id, "starboard_config": {"$exists": True}},
-            {"$unset": {"starboard_config": ""}},
-        )
-        await self._invalidate_starboard_cache(guild_id)
-        return result.modified_count > 0
-
-    async def get_starboard_config(self, guild_id: int, /) -> StarboardConfig | None:
+    async def is_starboard_enabled(self, guild_id: int, /) -> bool:
         config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
-        cached = await self.redis_client.hgetall(config_key)
-        if cached:
-            messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)
-            messages = await self.redis_client.hgetall(messages_key)
-            return self._starboard_config_from_values(
-                {self._redis_text(key): self._redis_text(value) for key, value in cached.items()},
-                {self._redis_text(key): self._redis_text(value) for key, value in messages.items()},
-            )
+        cached = await self.redis_client.hget(config_key, "enabled")
+        if cached is not None:
+            return bool(int(cached))
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "starboard_config": {"$exists": True}},
-            {"starboard_config": 1},
+            {"_id": guild_id},
+            {"starboard_config.enabled": 1},
+        )
+        if guild is None:
+            return False
+
+        enabled = bool(guild.get("starboard_config", {}).get("enabled", True))
+        await self.redis_client.hset(config_key, "enabled", int(enabled))
+        return enabled
+
+    async def enable_starboard(self, guild_id: int, /) -> None:
+        await self.edit_starboard_config(guild_id=guild_id, enabled=True)
+
+    async def disable_starboard(self, guild_id: int, /) -> None:
+        await self.edit_starboard_config(guild_id=guild_id, enabled=False)
+
+    async def get_starboard_board_channel_id(self, guild_id: int, /) -> int | None:
+        config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
+        cached = await self.redis_client.hget(config_key, "channel_id")
+        if cached is not None:
+            return int(cached)
+
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id},
+            {"starboard_config.channel_id": 1},
         )
         if guild is None:
             return None
 
-        config = self._normalise_starboard_config(guild["starboard_config"])
-        await self._cache_starboard_config(guild_id=guild_id, config=config)
-        return config
+        channel_id = guild.get("starboard_config", {}).get("channel_id")
+        if channel_id is not None:
+            await self.redis_client.hset(config_key, "channel_id", channel_id)
+        return channel_id
+
+    async def get_starboard_emoji(self, guild_id: int, /) -> str:
+        config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
+        cached = await self.redis_client.hget(config_key, "emoji")
+        if cached is not None and isinstance(cached, str):
+            return cached
+
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id},
+            {"starboard_config.emoji": 1},
+        )
+        if guild is None:
+            return DEFAULT_STARBOARD_EMOJI
+
+        emoji = guild.get("starboard_config", {}).get("emoji", DEFAULT_STARBOARD_EMOJI)
+        await self.redis_client.hset(config_key, "emoji", emoji)
+        return emoji
+
+    async def set_starboard_board_channel(self, guild_id: int, channel_id: int, /) -> None:
+        await self.edit_starboard_config(guild_id=guild_id, channel_id=channel_id)
+
+    async def get_starboard_threshold(self, guild_id: int, /) -> int:
+        config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
+        cached = await self.redis_client.hget(config_key, "threshold")
+        if cached is not None:
+            return int(cached)
+
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id},
+            {"starboard_config.threshold": 1},
+        )
+        if guild is None:
+            return DEFAULT_STARBOARD_THRESHOLD
+
+        threshold = guild.get("starboard_config", {}).get("threshold", DEFAULT_STARBOARD_THRESHOLD)
+        await self.redis_client.hset(config_key, "threshold", threshold)
+        return threshold
+
+    async def set_starboard_emoji(self, *, guild_id: int, emoji: str) -> None:
+        await self.edit_starboard_config(guild_id=guild_id, emoji=emoji)
+
+    async def set_starboard_threshold(self, *, guild_id: int, threshold: int) -> None:
+        await self.edit_starboard_config(guild_id=guild_id, threshold=threshold)
 
     async def get_starboard_board_message(self, guild_id: int, source_message_id: int, /) -> int | None:
         messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)
@@ -136,29 +187,3 @@ class _GuildStarboardMixin:
         )
         messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)
         await self.redis_client.hdel(messages_key, str(source_message_id))
-
-    @staticmethod
-    def _normalise_starboard_config(config: Mapping[str, Any]) -> StarboardConfig:
-        return {
-            "enabled": bool(config.get("enabled", True)),
-            "channel_id": int(config["channel_id"]),
-            "threshold": int(config.get("threshold", DEFAULT_STARBOARD_THRESHOLD)),
-            "emoji": str(config.get("emoji", DEFAULT_STARBOARD_EMOJI)),
-            "board_messages": {str(key): int(value) for key, value in config.get("board_messages", {}).items()},
-        }
-
-    @classmethod
-    def _starboard_config_from_values(cls, config: Mapping[str, Any], messages: Mapping[str, Any]) -> StarboardConfig:
-        return cls._normalise_starboard_config(
-            {
-                "enabled": bool(int(config["enabled"])),
-                "channel_id": int(config["channel_id"]),
-                "threshold": int(config["threshold"]),
-                "emoji": config["emoji"],
-                "board_messages": messages,
-            },
-        )
-
-    @staticmethod
-    def _redis_text(value: object) -> str:
-        return value.decode() if isinstance(value, bytes) else str(value)

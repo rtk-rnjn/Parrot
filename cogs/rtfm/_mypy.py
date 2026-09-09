@@ -115,150 +115,68 @@ class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" "
     pretty: Annotated[bool | None, convert_bool] = commands.flag(description="Enable pretty output.", default=None)
 
 
-def validate_flag(flag: MypyConverter) -> str:  # noqa: C901, PLR0912, PLR0915
-    cmd_str = "mypy"
-
-    if flag.no_namespace_packages:
-        cmd_str += " --no-namespace-packages"
-    if flag.ignore_missing_imports:
-        cmd_str += " --ignore-missing-imports"
-    if flag.follow_imports:
-        cmd_str += f" --follow-imports {flag.follow_imports}"
-    if flag.no_site_packages:
-        cmd_str += " --no-site-packages"
-    if flag.no_silence_site_packages:
-        cmd_str += " --no-silence-site-packages"
-
-    if flag.disallow_any_unimported:
-        cmd_str += " --disallow-any-unimported"
-    if flag.disallow_any_expr:
-        cmd_str += " --disallow-any-expr"
-    if flag.disallow_any_decorated:
-        cmd_str += " --disallow-any-decorated"
-    if flag.disallow_any_explicit:
-        cmd_str += " --disallow-any-explicit"
-
-    if flag.disallow_any_generics:
-        cmd_str += " --disallow-any-generics"
-    if flag.allow_any_generics:
-        cmd_str += " --allow-any-generics"
-
-    if flag.disallow_subclassing_any:
-        cmd_str += " --disallow-subclassing-any"
-    if flag.allow_subclassing_any:
-        cmd_str += " --allow-subclassing-any"
-
-    if flag.disallow_untyped_calls:
-        cmd_str += " --disallow-untyped-calls"
-    if flag.allow_untyped_calls:
-        cmd_str += " --allow-untyped-calls"
-
-    if flag.disallow_untyped_defs:
-        cmd_str += " --disallow-untyped-defs"
-    if flag.allow_untyped_defs:
-        cmd_str += " --allow-untyped-defs"
-
-    if flag.disallow_incomplete_defs:
-        cmd_str += " --disallow-incomplete-defs"
-    if flag.allow_incomplete_defs:
-        cmd_str += " --allow-incomplete-defs"
-
-    if flag.check_untyped_defs:
-        cmd_str += " --check-untyped-defs"
-    if flag.no_check_untyped_defs:
-        cmd_str += " --no-check-untyped-defs"
-
-    if flag.disallow_untyped_decorators:
-        cmd_str += " --disallow-untyped-decorators"
-    if flag.allow_untyped_decorators:
-        cmd_str += " --allow-untyped-decorators"
-
-    if flag.implicit_optional:
-        cmd_str += " --implicit-optional"
-    if flag.no_implicit_optional:
-        cmd_str += " --no-implicit-optional"
-
-    if flag.no_strict_optional:
-        cmd_str += " --no-strict-optional"
-    if flag.strict_optional:
-        cmd_str += " --strict-optional"
-
-    if flag.warn_redunant_casts:
-        cmd_str += " --warn-redunant-casts"
-    if flag.no_warn_redunant_casts:
-        cmd_str += " --no-warn-redunant-casts"
-
-    if flag.warn_unused_ignores:
-        cmd_str += " --warn-unused-ignores"
-    if flag.no_warn_unused_ignores:
-        cmd_str += " --no-warn-unused-ignores"
-
-    if flag.no_warn_no_return:
-        cmd_str += " --no-warn-no-return"
-    if flag.warn_no_return:
-        cmd_str += " --warn-no-return"
-
-    if flag.warn_return_any:
-        cmd_str += " --warn-return-any"
-    if flag.no_warn_return_any:
-        cmd_str += " --no-warn-return-any"
-
-    if flag.warn_unreachable:
-        cmd_str += " --warn-unreachable"
-    if flag.no_warn_unreachable:
-        cmd_str += " --no-warn-unreachable"
-
-    if flag.allow_untyped_globals:
-        cmd_str += " --allow-untyped-globals"
-    if flag.disallow_untyped_globals:
-        cmd_str += " --disallow-untyped-globals"
-
-    if flag.allow_redifinition:
-        cmd_str += " --allow-redifinition"
-    if flag.disallow_redifinition:
-        cmd_str += " --disallow-redifinition"
-
-    if flag.no_implicit_reexport:
-        cmd_str += " --no-implicit-reexport"
-    if flag.implicit_reexport:
-        cmd_str += " --implicit-reexport"
-
-    if flag.strict_equality:
-        cmd_str += " --strict-equality"
-
-    if flag.no_strict_equality:
-        cmd_str += " --no-strict-equality"
-
-    if flag.strict_concatenate:
-        cmd_str += " --strict-concatenate"
-
-    if flag.no_strict_concatenate:
-        cmd_str += " --no-strict-concatenate"
-
-    if flag.strict:
-        cmd_str += " --strict"
-
-    if flag.show_error_context:
-        cmd_str += " --show-error-context"
-    if flag.hide_error_context:
-        cmd_str += " --hide-error-context"
-
-    if flag.show_column_numbers:
-        cmd_str += " --show-column-numbers"
-    if flag.hide_column_numbers:
-        cmd_str += " --hide-column-numbers"
-
-    if flag.show_error_end:
-        cmd_str += " --show-error-end"
-    if flag.hide_error_end:
-        cmd_str += " --hide-error-end"
-
-    if flag.hide_error_codes:
-        cmd_str += " --hide-error-codes"
-    if flag.show_error_codes:
-        cmd_str += " --show-error-codes"
-
-    if flag.pretty:
-        cmd_str += " --pretty"
-
-    return f"{cmd_str} "
+def validate_flag(flag: MypyConverter) -> str:
+    options = [
+        option
+        for enabled, option in (
+            (flag.no_namespace_packages, "--no-namespace-packages"),
+            (flag.ignore_missing_imports, "--ignore-missing-imports"),
+            (flag.follow_imports, f"--follow-imports {flag.follow_imports}"),
+            (flag.no_site_packages, "--no-site-packages"),
+            (flag.no_silence_site_packages, "--no-silence-site-packages"),
+            (flag.disallow_any_unimported, "--disallow-any-unimported"),
+            (flag.disallow_any_expr, "--disallow-any-expr"),
+            (flag.disallow_any_decorated, "--disallow-any-decorated"),
+            (flag.disallow_any_explicit, "--disallow-any-explicit"),
+            (flag.disallow_any_generics, "--disallow-any-generics"),
+            (flag.allow_any_generics, "--allow-any-generics"),
+            (flag.disallow_subclassing_any, "--disallow-subclassing-any"),
+            (flag.allow_subclassing_any, "--allow-subclassing-any"),
+            (flag.disallow_untyped_calls, "--disallow-untyped-calls"),
+            (flag.allow_untyped_calls, "--allow-untyped-calls"),
+            (flag.disallow_untyped_defs, "--disallow-untyped-defs"),
+            (flag.allow_untyped_defs, "--allow-untyped-defs"),
+            (flag.disallow_incomplete_defs, "--disallow-incomplete-defs"),
+            (flag.allow_incomplete_defs, "--allow-incomplete-defs"),
+            (flag.check_untyped_defs, "--check-untyped-defs"),
+            (flag.no_check_untyped_defs, "--no-check-untyped-defs"),
+            (flag.disallow_untyped_decorators, "--disallow-untyped-decorators"),
+            (flag.allow_untyped_decorators, "--allow-untyped-decorators"),
+            (flag.implicit_optional, "--implicit-optional"),
+            (flag.no_implicit_optional, "--no-implicit-optional"),
+            (flag.no_strict_optional, "--no-strict-optional"),
+            (flag.strict_optional, "--strict-optional"),
+            (flag.warn_redunant_casts, "--warn-redunant-casts"),
+            (flag.no_warn_redunant_casts, "--no-warn-redunant-casts"),
+            (flag.warn_unused_ignores, "--warn-unused-ignores"),
+            (flag.no_warn_unused_ignores, "--no-warn-unused-ignores"),
+            (flag.no_warn_no_return, "--no-warn-no-return"),
+            (flag.warn_no_return, "--warn-no-return"),
+            (flag.warn_return_any, "--warn-return-any"),
+            (flag.no_warn_return_any, "--no-warn-return-any"),
+            (flag.warn_unreachable, "--warn-unreachable"),
+            (flag.no_warn_unreachable, "--no-warn-unreachable"),
+            (flag.allow_untyped_globals, "--allow-untyped-globals"),
+            (flag.disallow_untyped_globals, "--disallow-untyped-globals"),
+            (flag.allow_redifinition, "--allow-redifinition"),
+            (flag.disallow_redifinition, "--disallow-redifinition"),
+            (flag.no_implicit_reexport, "--no-implicit-reexport"),
+            (flag.implicit_reexport, "--implicit-reexport"),
+            (flag.strict_equality, "--strict-equality"),
+            (flag.no_strict_equality, "--no-strict-equality"),
+            (flag.strict_concatenate, "--strict-concatenate"),
+            (flag.no_strict_concatenate, "--no-strict-concatenate"),
+            (flag.strict, "--strict"),
+            (flag.show_error_context, "--show-error-context"),
+            (flag.hide_error_context, "--hide-error-context"),
+            (flag.show_column_numbers, "--show-column-numbers"),
+            (flag.hide_column_numbers, "--hide-column-numbers"),
+            (flag.show_error_end, "--show-error-end"),
+            (flag.hide_error_end, "--hide-error-end"),
+            (flag.hide_error_codes, "--hide-error-codes"),
+            (flag.show_error_codes, "--show-error-codes"),
+            (flag.pretty, "--pretty"),
+        )
+        if enabled
+    ]
+    return f"mypy {' '.join(options)} "

@@ -27,12 +27,31 @@ class Hub(commands.Cog):
         after: discord.VoiceState,
     ) -> None:
         if before.channel is None and after.channel is not None:
+            _log.debug(
+                "%s joined voice channel %s in guild %s",
+                member,
+                after.channel.id,
+                member.guild.id,
+            )
             await self._handle_join(member, after.channel)
 
         elif before.channel is not None and after.channel is None:
+            _log.debug(
+                "%s left voice channel %s in guild %s",
+                member,
+                before.channel.id,
+                member.guild.id,
+            )
             await self._handle_leave(member, before.channel)
 
         elif before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
+            _log.debug(
+                "%s moved from voice channel %s to %s in guild %s",
+                member,
+                before.channel.id,
+                after.channel.id,
+                member.guild.id,
+            )
             await self._handle_move(
                 member,
                 before.channel,
@@ -87,6 +106,10 @@ class Hub(commands.Cog):
         if hub_channel_id is None:
             return
 
+        existing_channel = await self._find_existing_channel(member)
+        if existing_channel and after.id == existing_channel.id and before.id == hub_channel_id:
+            return
+
         if after.id == hub_channel_id:
             await self._create_personal_channel(member, after)
 
@@ -123,7 +146,29 @@ class Hub(commands.Cog):
                     member.guild.id,
                 )
 
-    async def _create_personal_channel(  # noqa: C901, PLR0911
+    async def _find_existing_channel(self, member: discord.Member) -> discord.VoiceChannel | None:
+        for voice_channel in member.guild.voice_channels:
+            owner_id = await self.bot.database.get_hub_channel_owner_id(
+                guild_id=member.guild.id,
+                channel_id=voice_channel.id,
+            )
+            if owner_id != member.id:
+                continue
+            try:
+                await member.move_to(
+                    voice_channel,
+                    reason="Returning member to their existing temporary channel",
+                )
+            except discord.HTTPException:
+                _log.exception(
+                    "Failed to move %s to existing channel %s",
+                    member,
+                    voice_channel.id,
+                )
+            return voice_channel
+        return None
+
+    async def _create_personal_channel(
         self,
         member: discord.Member,
         hub_channel: discord.VoiceChannel,
@@ -150,27 +195,8 @@ class Hub(commands.Cog):
         if existing_channel_id is None:
             return None
 
-        # Look for an existing temporary channel owned by this member.
-        for voice_channel in guild.voice_channels:
-            owner_id = await self.bot.database.get_hub_channel_owner_id(
-                guild_id=guild.id,
-                channel_id=voice_channel.id,
-            )
-
-            if owner_id == member.id:
-                try:
-                    await member.move_to(
-                        voice_channel,
-                        reason="Returning member to their existing temporary channel",
-                    )
-                except discord.HTTPException:
-                    _log.exception(
-                        "Failed to move %s to existing channel %s",
-                        member,
-                        voice_channel.id,
-                    )
-
-                return voice_channel
+        if existing_channel := await self._find_existing_channel(member):
+            return existing_channel
 
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(

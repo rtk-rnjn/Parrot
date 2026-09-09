@@ -75,7 +75,8 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
 
         cut_off = 90
         names = [o.name for o in objects]
-        if data := process.extractOne(argument, names, scorer=fuzz.WRatio, score_cutoff=cut_off):
+        data = process.extractOne(argument, names, scorer=fuzz.WRatio, score_cutoff=cut_off)
+        if data is not None:
             result, score, position = data
             return objects[position], result, int(score)
         return None
@@ -96,26 +97,17 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
         )
         return isinstance(error, ignore)
 
-    async def _build_error_response(  # noqa: C901, PLR0911, PLR0912
+    async def _permission_error_response(
         self,
         ctx: commands.Context[Parrot],
         error: commands.CommandError,
-    ) -> ErrorResponse:
+    ) -> ErrorResponse | None:
         if isinstance(error, commands.BotMissingPermissions):
             fmt = self._format_permissions(error.missing_permissions)
             return ErrorResponse(
                 title=self._title("Bot Missing Permissions"),
                 description=f"Please provide the following permission(s) to the bot.\nPermission(s) missing: {fmt}",
                 reset_cooldown=True,
-            )
-
-        if isinstance(error, commands.CommandOnCooldown):
-            now = arrow.utcnow().shift(seconds=error.retry_after).datetime
-            discord_time = discord.utils.format_dt(now, "R")
-            return ErrorResponse(
-                title=self._title("Command On Cooldown"),
-                description=f"You are on command cooldown, please retry **{discord_time}**",
-                delete_after=error.retry_after,
             )
 
         if isinstance(error, commands.MissingPermissions):
@@ -151,8 +143,17 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
                 reset_cooldown=True,
             )
 
-        if isinstance(error, commands.BadArgument):
-            return self._handle_bad_argument(ctx, error)
+        return None
+
+    def _command_error_response(self, ctx: commands.Context[Parrot], error: commands.CommandError) -> ErrorResponse | None:
+        if isinstance(error, commands.CommandOnCooldown):
+            now = arrow.utcnow().shift(seconds=error.retry_after).datetime
+            discord_time = discord.utils.format_dt(now, "R")
+            return ErrorResponse(
+                title=self._title("Command On Cooldown"),
+                description=f"You are on command cooldown, please retry **{discord_time}**",
+                delete_after=error.retry_after,
+            )
 
         if isinstance(error, (commands.MissingRequiredArgument, commands.BadUnionArgument, commands.TooManyArguments)):
             command = ctx.command
@@ -179,11 +180,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
 
         if isinstance(error, commands.CheckAnyFailure):
             desc = " or\n".join([e.__str__().format(ctx=ctx) for e in error.errors])
-            return ErrorResponse(
-                title=self._title("Unexpected Error"),
-                description=desc,
-                reset_cooldown=True,
-            )
+            return ErrorResponse(title=self._title("Unexpected Error"), description=desc, reset_cooldown=True)
 
         if isinstance(error, commands.CheckFailure):
             return ErrorResponse(
@@ -193,22 +190,10 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             )
 
         if isinstance(error, asyncio.TimeoutError):
-            return ErrorResponse(
-                title=self._title("Timeout Error"),
-                description="Command took too long to respond",
-            )
+            return ErrorResponse(title=self._title("Timeout Error"), description="Command took too long to respond")
 
-        if isinstance(error, commands.InvalidEndOfQuotedStringError):
-            return ErrorResponse(
-                title=self._title("Invalid End Of Quoted String Error"),
-                description="Invalid end of quoted string. Expected space after closing quotation mark. Did you forget to close the quotation mark?",
-            )
-
-        if isinstance(error, commands.UnexpectedQuoteError):
-            return ErrorResponse(
-                title=self._title("Unexpected Quote Error"),
-                description="Unexpected quote mark. Did you forget to close the quotation mark?",
-            )
+        if isinstance(error, (commands.InvalidEndOfQuotedStringError, commands.UnexpectedQuoteError)):
+            return self._quote_error_response(error)
 
         if isinstance(error, commands.DisabledCommand):
             return ErrorResponse(
@@ -216,13 +201,49 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
                 description="This command is disabled in this server, ask your server admin to enable it.",
             )
 
+        return None
+
+    def _quote_error_response(self, error: commands.CommandError) -> ErrorResponse:
+        if isinstance(error, commands.InvalidEndOfQuotedStringError):
+            return ErrorResponse(
+                title=self._title("Invalid End Of Quoted String Error"),
+                description="Invalid end of quoted string. Expected space after closing quotation mark. Did you forget to close the quotation mark?",
+            )
+        return ErrorResponse(
+            title=self._title("Unexpected Quote Error"),
+            description="Unexpected quote mark. Did you forget to close the quotation mark?",
+        )
+
+    async def _build_error_response(
+        self,
+        ctx: commands.Context[Parrot],
+        error: commands.CommandError,
+    ) -> ErrorResponse:
+        response = await self._permission_error_response(ctx, error)
+        if response is not None:
+            return response
+        if isinstance(error, commands.BadArgument):
+            return self._handle_bad_argument(ctx, error)
+        response = self._command_error_response(ctx, error)
+        if response is not None:
+            return response
         return ErrorResponse(
             title=self._title("Well this is embarrassing!"),
             description=f"For some reason **{ctx.command.qualified_name}** is not working. If possible report this error.\n-# {error}",  # pyright: ignore[reportOptionalMemberAccess]
             should_raise=True,
         )
 
-    def _handle_bad_argument(self, ctx: commands.Context[Parrot], error: commands.BadArgument) -> ErrorResponse:  # noqa: C901, PLR0911, PLR0912
+    def _add_fuzzy_hint(self, error: commands.BadArgument, objects: Sequence[_Named], description: str) -> str:
+        argument = getattr(error, "argument", None)
+        if not objects or not isinstance(argument, str):
+            return description
+        obj = self._get_object_by_fuzzy(argument=argument, objects=objects)
+        if obj is not None:
+            _, result, score = obj
+            return f"{description}\nDid you mean: `{result}`?\n-# Confidence: {score}%"
+        return description
+
+    def _handle_bad_argument(self, ctx: commands.Context[Parrot], error: commands.BadArgument) -> ErrorResponse:
         description = str(error)
         title = self._title("Bad Argument")
         objects: Sequence[_Named] = []
@@ -254,18 +275,9 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             description = f"Value you provided is out of range. Expected a value between {error.minimum} and {error.maximum}"
             title = self._title("Value Out Of Range")
 
-        # optional fuzzy hint
-        arg = getattr(error, "argument", None)
-        if objects and isinstance(arg, str):
-            obj = self._get_object_by_fuzzy(argument=arg, objects=objects)
-            if obj:
-                _, result, score = obj
-                description += f"\nDid you mean: `{result}`?"
-                description += f"\n-# Confidence: {score}%"
-
         return ErrorResponse(
             title=title,
-            description=description,
+            description=self._add_fuzzy_hint(error, objects, description),
             reset_cooldown=True,
         )
 

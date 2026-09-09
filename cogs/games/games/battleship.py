@@ -153,8 +153,10 @@ class Board:
         cur.rounded_rectangle((x1, y1, x2, y2), radius=5, fill=ship.color)
 
     def get_ship(self, coord: Coords) -> Ship | None:
-        if s := [ship for ship in self.ships if coord in ship.span]:
+        s = [ship for ship in self.ships if coord in ship.span]
+        if s:
             return s[0]
+        return None
 
     @executor
     def to_image(self, hide: bool = False) -> BytesIO:
@@ -179,9 +181,11 @@ class Board:
                                 self.draw_sq(cur, x, y, coord=coord, ship=hit_ship)
                             self.draw_dot(cur, x, y, fill=RED)
 
-                    elif ship := self.get_ship(coord):
-                        if not hide:
-                            self.draw_sq(cur, x, y, coord=coord, ship=ship)
+                    else:
+                        ship = self.get_ship(coord)
+                        if ship is not None:
+                            if not hide:
+                                self.draw_sq(cur, x, y, coord=coord, ship=ship)
             buffer = BytesIO()
             img.save(buffer, "PNG")
 
@@ -445,7 +449,8 @@ class BattleShip:
                 await self.player2.send(files=[f4, f3])
                 self.turn = next_turn
 
-                if winner := self.who_won():
+                winner = self.who_won()
+                if winner is not None:
                     await winner.send("Congrats, you won! :)")
 
                     other = self.player2 if winner == self.player1 else self.player1
@@ -880,7 +885,8 @@ class BetaBattleShip(BattleShip):
                 attachments=[f4, f3],
             )
 
-        if winner := self.who_won():
+        winner = self.who_won()
+        if winner is not None:
             await winner.send("Congrats, you won! :)")
 
             other = self.player2 if winner == self.player1 else self.player1

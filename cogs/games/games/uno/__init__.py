@@ -816,7 +816,7 @@ class UNO:
 
         return [originator]
 
-    async def play(self, interaction: discord.Interaction, hand: Hand, card: Card):  # noqa: PLR0912, PLR0913, C901
+    async def play(self, interaction: discord.Interaction, hand: Hand, card: Card):  # noqa: PLR0913
         if self.current_player != hand.player:
             if self.rule_set.jump_in and self.current == card:
                 await self.handle_jump_in(hand, card)

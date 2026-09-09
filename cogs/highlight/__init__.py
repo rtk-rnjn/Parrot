@@ -184,7 +184,41 @@ class Highlights(commands.Cog):
                     notified_users.append(member)
 
     @commands.Cog.listener("on_highlight")
-    async def on_highlight_notify(self, message: discord.Message, member: discord.Member, *, highlight: str) -> None:  # noqa: C901
+    async def _send_highlight_notification(self, message: discord.Message, member: discord.Member, highlight: str) -> None:
+        initial_description = f"In {message.channel.mention} for `{(message.guild.name)}`you were highlighted with the word **{highlight}**\n\n"
+
+        em = (
+            discord.Embed(description="", timestamp=message.created_at)
+            .set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+            .set_footer(text="Triggered")
+        )
+
+        def esc(string: str) -> str:
+            st = discord.utils.escape_markdown(string)
+            return string.replace(f"{highlight}", f"**{highlight}**")
+
+        content = esc(message.content)[:2000]
+        relative_time = discord.utils.format_dt(message.created_at, style="R")
+        em.description = f"{relative_time} `@{str(message.author)}`: {content}"
+
+        try:
+            async for ms in message.channel.history(limit=3, before=message):
+                content = esc(ms.content)
+                relative_time = discord.utils.format_dt(ms.created_at, style="R")
+                text = f"{relative_time} `@{str(ms.author)}`: {esc(content)}\n"
+                if len(initial_description + em.description + text) <= 4096:
+                    em.description = text + em.description
+        except discord.HTTPException:
+            pass
+
+        em.description = initial_description + em.description
+        try:
+            await member.send(embed=em)
+        except discord.Forbidden:
+            _log.warning("Could not send highlight notification to %s", member)
+
+    @commands.Cog.listener("on_highlight")
+    async def on_highlight_notify(self, message: discord.Message, member: discord.Member, *, highlight: str) -> None:
         try:
             await self.bot.wait_for(
                 "user_activity",
@@ -202,56 +236,7 @@ class Highlights(commands.Cog):
         if member in message.mentions:
             return
 
-        if TYPE_CHECKING:
-            assert isinstance(message.channel, discord.abc.GuildChannel)
-            assert message.guild is not None
-
-        initial_description = f"In {message.channel.mention} for `{(message.guild.name)}`you were highlighted with the word **{highlight}**\n\n"
-
-        em = (
-            discord.Embed(
-                description="",
-                timestamp=message.created_at,
-            )
-            .set_author(
-                name=message.author.display_name,
-                icon_url=message.author.display_avatar.url,
-            )
-            .set_footer(text="Triggered")
-        )
-
-        def esc(string: str) -> str:
-            st = discord.utils.escape_markdown(string)
-            st = string.replace(f"{highlight}", f"**{highlight}**")
-            return st
-
-        if len(message.content) > 2000:
-            content = esc(message.content)[:2000]
-        else:
-            content = esc(message.content)
-
-        relative_time = discord.utils.format_dt(message.created_at, style="R")
-        em.description = f"{relative_time} `@{str(message.author)}`: {content}"
-
-        # Add some history
-        try:
-            async for ms in message.channel.history(limit=3, before=message):
-                content = esc(ms.content)
-                relative_time = discord.utils.format_dt(ms.created_at, style="R")
-
-                text = f"{relative_time} `@{str(ms.author)}`: {esc(content)}\n"
-
-                if len(initial_description + em.description + text) <= 4096:
-                    em.description = text + em.description
-        except discord.HTTPException:
-            pass
-
-        em.description = initial_description + em.description
-
-        try:
-            await member.send(embed=em)
-        except discord.Forbidden:
-            _log.warning("Could not send highlight notification to %s", member)
+        await self._send_highlight_notification(message, member, highlight)
 
 
 async def setup(bot: Parrot) -> None:

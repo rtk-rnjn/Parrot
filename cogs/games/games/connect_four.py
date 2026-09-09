@@ -84,35 +84,31 @@ class ConnectFour:
         self.turn = self.red_player if user == self.blue_player else self.blue_player
         return self.board
 
-    def is_game_over(self) -> bool:  # noqa: PLR0912, C901
+    def is_game_over(self) -> bool:
         if all(i != BLANK for i in self.board[0]):
             return True
 
-        for x in range(6):
-            for i in range(4):
-                if self.board[x][i] == self.board[x][i + 1] == self.board[x][i + 2] == self.board[x][i + 3] and self.board[x][i] != BLANK:
-                    self.winner = self.emoji_to_player[self.board[x][i]]
-                    return True
-
-        for x in range(3):
-            for i in range(7):
-                if self.board[x][i] == self.board[x + 1][i] == self.board[x + 2][i] == self.board[x + 3][i] and self.board[x][i] != BLANK:
-                    self.winner = self.emoji_to_player[self.board[x][i]]
-                    return True
-
-        for x in range(3):
-            for i in range(4):
-                if self.board[x][i] == self.board[x + 1][i + 1] == self.board[x + 2][i + 2] == self.board[x + 3][i + 3] and self.board[x][i] != BLANK:
-                    self.winner = self.emoji_to_player[self.board[x][i]]
-                    return True
-
-        for x in range(5, 2, -1):
-            for i in range(4):
-                if self.board[x][i] == self.board[x - 1][i + 1] == self.board[x - 2][i + 2] == self.board[x - 3][i + 3] and self.board[x][i] != BLANK:
-                    self.winner = self.emoji_to_player[self.board[x][i]]
-                    return True
+        directions = (
+            (range(6), range(4), 0, 1),
+            (range(3), range(7), 1, 0),
+            (range(3), range(4), 1, 1),
+            (range(5, 2, -1), range(4), -1, 1),
+        )
+        for rows, columns, row_step, column_step in directions:
+            winner = self._winner_in_direction(rows, columns, row_step, column_step)
+            if winner is not None:
+                self.winner = winner
+                return True
 
         return False
+
+    def _winner_in_direction(self, rows, columns, row_step: int, column_step: int) -> Player | None:
+        for row in rows:
+            for column in columns:
+                pieces = [self.board[row + offset * row_step][column + offset * column_step] for offset in range(4)]
+                if pieces[0] != BLANK and len(set(pieces)) == 1:
+                    return self.emoji_to_player[pieces[0]]
+        return None
 
     async def start(
         self,
@@ -155,7 +151,8 @@ class ConnectFour:
             emoji = str(reaction.emoji)
             self.place_move(emoji, user)
 
-            if status := self.is_game_over():
+            status = self.is_game_over()
+            if status:
                 break
 
             if remove_reaction_after:

@@ -56,7 +56,7 @@ class UpdateBotPrefixModal(discord.ui.Modal, title="Update Bot Prefix"):
 
 
 class ConfigurationLayout(discord.ui.LayoutView):
-    action_row = discord.ui.ActionRow()
+    # action_row = discord.ui.ActionRow()
 
     def __init__(self, **kwargs: Unpack[GuildConfiguration]) -> None:
         super().__init__()
@@ -94,12 +94,13 @@ class ConfigurationLayout(discord.ui.LayoutView):
             accessory=mute_role_delete_button,
         )
 
-        hub_channel_selector = discord.ui.ChannelSelect(
+        self.hub_channel_selector = discord.ui.ChannelSelect(
             placeholder="Select a hub channel...",
             channel_types=[discord.ChannelType.voice],
             default_values=[discord.Object(id=kwargs["hub_channel_id"])] if kwargs["hub_channel_id"] else [],
         )
-        hub_channel_action = discord.ui.ActionRow(hub_channel_selector)
+        self.hub_channel_selector.callback = self.set_hub_channel_callback
+        hub_channel_action = discord.ui.ActionRow(self.hub_channel_selector)
 
         self.welcome_enable_button = discord.ui.Button(
             label="Enable",
@@ -153,7 +154,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
             mute_role_action,
             discord.ui.Separator(),
             discord.ui.TextDisplay(
-                "### Hub Channel\n-# This is basically Join To Create. When a user joins this channel, a temporary voice channel will be created for them."
+                "### Hub Channel\n-# This is basically Join To Create. When a user joins this channel, a temporary voice channel will be created for them.",
             ),
             hub_channel_action,
             discord.ui.Separator(),
@@ -281,13 +282,21 @@ class ConfigurationLayout(discord.ui.LayoutView):
         self.leveling_disable_button.disabled = True
         await interaction.response.edit_message(view=self)
 
-    @action_row.button(emoji="\N{DIGIT ONE}", style=discord.ButtonStyle.red, disabled=True)
-    async def button_one_callback(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
-        pass
+    async def set_hub_channel_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        channel = self.hub_channel_selector.values[0]
+        await interaction.client.database.set_hub_channel_id(guild_id=interaction.guild.id, hub_channel_id=channel.id)
+        await interaction.response.send_message("Hub channel updated.", ephemeral=True)
 
-    @action_row.button(emoji="\N{DIGIT TWO}", style=discord.ButtonStyle.green)
-    async def button_two_callback(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
-        await interaction.response.send_message("Button two clicked!", ephemeral=True)
+    # @action_row.button(emoji="\N{DIGIT ONE}", style=discord.ButtonStyle.red, disabled=True)
+    # async def button_one_callback(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
+    #     pass
+
+    # @action_row.button(emoji="\N{DIGIT TWO}", style=discord.ButtonStyle.green)
+    # async def button_two_callback(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
+    #     await interaction.response.send_message("Button two clicked!", ephemeral=True)
 
 
 class Config(commands.Cog):

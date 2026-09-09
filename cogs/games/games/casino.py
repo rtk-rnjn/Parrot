@@ -54,18 +54,22 @@ def rank_value(card: str) -> int:
     return int(rank)
 
 
-def poker_score(cards: list[str]) -> tuple[int, list[int]]:  # noqa: C901, PLR0911
-    values = sorted((rank_value(card) for card in cards), reverse=True)
-    counts = Counter(values)
-    groups = sorted(((count, value) for value, count in counts.items()), reverse=True)
+def _straight_high(values: list[int]) -> int:
     unique = sorted(set(values))
-    straight_high = 0
-    if len(unique) == 5:
-        if unique == [2, 3, 4, 5, 14]:
-            straight_high = 5
-        elif unique[-1] - unique[0] == 4:
-            straight_high = unique[-1]
-    flush = len({card[1] for card in cards}) == 1
+    if len(unique) != 5:
+        return 0
+    if unique == [2, 3, 4, 5, 14]:
+        return 5
+    return unique[-1] if unique[-1] - unique[0] == 4 else 0
+
+
+def _poker_score_from_groups(
+    values: list[int],
+    counts: Counter[int],
+    groups: list[tuple[int, int]],
+    straight_high: int,
+    flush: bool,
+) -> tuple[int, list[int]]:
     if straight_high and flush:
         return 8, [straight_high]
     if groups[0][0] == 4:
@@ -77,14 +81,25 @@ def poker_score(cards: list[str]) -> tuple[int, list[int]]:  # noqa: C901, PLR09
     if straight_high:
         return 4, [straight_high]
     if groups[0][0] == 3:
-        return 3, [groups[0][1], *sorted((value for value, count in counts.items() if count == 1), reverse=True)]
+        kickers = sorted((value for value, count in counts.items() if count == 1), reverse=True)
+        return 3, [groups[0][1], *kickers]
     pairs = sorted((value for value, count in counts.items() if count == 2), reverse=True)
     if len(pairs) == 2:
         kicker = next(value for value, count in counts.items() if count == 1)
         return 2, [*pairs, kicker]
     if len(pairs) == 1:
-        return 1, [pairs[0], *sorted((value for value, count in counts.items() if count == 1), reverse=True)]
+        kickers = sorted((value for value, count in counts.items() if count == 1), reverse=True)
+        return 1, [pairs[0], *kickers]
     return 0, values
+
+
+def poker_score(cards: list[str]) -> tuple[int, list[int]]:
+    values = sorted((rank_value(card) for card in cards), reverse=True)
+    counts = Counter(values)
+    groups = sorted(((count, value) for value, count in counts.items()), reverse=True)
+    straight_high = _straight_high(values)
+    flush = len({card[1] for card in cards}) == 1
+    return _poker_score_from_groups(values, counts, groups, straight_high, flush)
 
 
 def teen_patti_score(cards: list[str]) -> tuple[int, list[int]]:

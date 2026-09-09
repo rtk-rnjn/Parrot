@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import io
 import logging
 import time
 from collections import Counter
 from datetime import datetime
 from typing import TYPE_CHECKING
-import io
+
 import discord
 from discord.ext import commands
 
@@ -23,6 +24,28 @@ class Meta(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         _log.info("Cog loaded: %s", self.__class__.__name__)
+
+    def _permission_names(self, permissions: discord.Permissions, *, role: bool = False) -> str:
+        names = []
+        if permissions.administrator:
+            names.append("Administrator")
+        if permissions.kick_members and permissions.ban_members and permissions.manage_messages:
+            names.append("Server Moderator")
+        if permissions.manage_guild:
+            names.append("Server Manager")
+        if permissions.manage_roles:
+            names.append("Role Manager")
+        if permissions.moderate_members:
+            names.append("Can Timeout Members")
+        if permissions.manage_channels:
+            names.append("Channel Manager")
+        if role and permissions.manage_emojis:
+            names.append("Emoji Manager")
+        if not role and permissions.manage_messages:
+            names.append("Message Manager")
+        if not role and permissions.mention_everyone:
+            names.append("Mention Everyone")
+        return ", ".join(names) if names else "None"
 
     @commands.command(
         name="ping",
@@ -165,7 +188,7 @@ class Meta(commands.Cog):
         per=5.0,
         type=commands.BucketType.member,
     )
-    async def user_info(  # noqa: C901
+    async def user_info(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -193,33 +216,7 @@ class Meta(commands.Cog):
         target: discord.Member = member or ctx.author
 
         roles = target.roles
-        key_permissions: list[str] = []
-
-        if target.guild_permissions.administrator:
-            key_permissions.append("Administrator")
-
-        if target.guild_permissions.kick_members and target.guild_permissions.ban_members and target.guild_permissions.manage_messages:
-            key_permissions.append("Server Moderator")
-
-        if target.guild_permissions.manage_guild:
-            key_permissions.append("Server Manager")
-
-        if target.guild_permissions.manage_roles:
-            key_permissions.append("Role Manager")
-
-        if target.guild_permissions.moderate_members:
-            key_permissions.append("Can Timeout Members")
-
-        if target.guild_permissions.manage_channels:
-            key_permissions.append("Channel Manager")
-
-        if target.guild_permissions.manage_messages:
-            key_permissions.append("Message Manager")
-
-        if target.guild_permissions.mention_everyone:
-            key_permissions.append("Mention Everyone")
-
-        permissions = ", ".join(key_permissions) if key_permissions else "None"
+        permissions = self._permission_names(target.guild_permissions)
 
         embed = (
             discord.Embed(
@@ -322,13 +319,81 @@ class Meta(commands.Cog):
 
         return message
 
+    def _server_summary_fields(self, guild: discord.Guild) -> list[tuple[str, object, bool]]:
+        statuses = [len(list(filter(lambda member: str(member.status) == status, guild.members))) for status in ("online", "idle", "dnd", "offline")]
+        return [
+            ("Owner", guild.owner, True),
+            ("Region", "Deprecated", True),
+            ("Created at", f"{discord.utils.format_dt(guild.created_at)}", True),
+            (
+                "Total Members",
+                f"Members: {len(guild.members)}\nHumans: {len([member for member in guild.members if not member.bot])}\nBots: {len([member for member in guild.members if member.bot])}",
+                True,
+            ),
+            ("Total channels", f"Categories: {len(guild.categories)}\nText: {len(guild.text_channels)}\nVoice:{len(guild.voice_channels)}", True),
+            ("General", f"Roles: {len(guild.roles)}\nEmojis: {len(guild.emojis)}\nBoost Level: {guild.premium_tier}", True),
+            (
+                "Statuses",
+                f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]",
+                True,
+            ),
+        ]
+
+    async def _add_server_details(self, embed: discord.Embed, guild: discord.Guild) -> None:
+        features = {
+            "PARTNERED": "Partnered",
+            "VERIFIED": "Verified",
+            "DISCOVERABLE": "Server Discovery",
+            "COMMUNITY": "Community Server",
+            "FEATURABLE": "Featured",
+            "WELCOME_SCREEN_ENABLED": "Welcome Screen",
+            "INVITE_SPLASH": "Invite Splash",
+            "VIP_REGIONS": "VIP Voice Servers",
+            "VANITY_URL": "Vanity Invite",
+            "COMMERCE": "Commerce",
+            "LURKABLE": "Lurkable",
+            "NEWS": "News Channels",
+            "ANIMATED_ICON": "Animated Icon",
+            "BANNER": "Banner",
+        }
+        if info := [f":ballot_box_with_check: {label}" for feature, label in features.items() if feature in guild.features]:
+            embed.add_field(name="Features", value="\n".join(info))
+
+        boosts = f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"
+        if guild.premium_tier != 0:
+            last_boost = max(guild.members, key=lambda member: member.premium_since or guild.created_at)
+            if last_boost.premium_since is not None:
+                boosts = f"{boosts}\nLast Boost: {last_boost} ({discord.utils.format_dt(last_boost.premium_since, 'R')})"
+        else:
+            boosts = "Level 0"
+        embed.add_field(name="Boosts", value=boosts, inline=True)
+
+        emoji_stats = Counter()
+        for emoji in guild.emojis:
+            category = "animated" if emoji.animated else "regular"
+            emoji_stats[category] += 1
+            if not emoji.available:
+                emoji_stats[f"{category}_disabled"] += 1
+        emoji_text = f"Regular: {emoji_stats['regular']}/{guild.emoji_limit}\nAnimated: {emoji_stats['animated']}/{guild.emoji_limit}\n"
+        if emoji_stats["disabled"] or emoji_stats["animated_disabled"]:
+            emoji_text += f"Disabled: {emoji_stats['disabled']} regular, {emoji_stats['animated_disabled']} animated\n"
+        emoji_text += f"Total Emoji: {len(guild.emojis)}/{guild.emoji_limit * 2}"
+        embed.add_field(name="Emoji", value=emoji_text, inline=True)
+
+        if guild.me.guild_permissions.ban_members:
+            embed.add_field(name="Banned Members", value=f"{len([_ async for _ in guild.bans(limit=1000)])}+", inline=True)
+        if guild.me.guild_permissions.manage_guild:
+            embed.add_field(name="Invites", value=f"{len(await guild.invites())}", inline=True)
+        if guild.banner:
+            embed.set_image(url=guild.banner.url)
+
     @commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])
     @commands.cooldown(
         rate=1,
         per=5.0,
         type=commands.BucketType.member,
     )
-    async def server_info(self, ctx: commands.Context[Parrot]) -> discord.Message:  # noqa: C901, PLR0912
+    async def server_info(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """
         Display detailed information about the current server.
 
@@ -358,115 +423,9 @@ class Meta(commands.Cog):
         if ctx.guild.icon:
             embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.set_footer(text=f"ID: {ctx.guild.id}")
-        statuses = [
-            len(list(filter(lambda m: str(m.status) == "online", ctx.guild.members))),
-            len(list(filter(lambda m: str(m.status) == "idle", ctx.guild.members))),
-            len(list(filter(lambda m: str(m.status) == "dnd", ctx.guild.members))),
-            len(list(filter(lambda m: str(m.status) == "offline", ctx.guild.members))),
-        ]
-
-        fields = [
-            ("Owner", ctx.guild.owner, True),
-            ("Region", "Deprecated", True),
-            ("Created at", f"{discord.utils.format_dt(ctx.guild.created_at)}", True),
-            (
-                "Total Members",
-                (
-                    f"Members: {len(ctx.guild.members)}\n"
-                    f"Humans: {len(list(filter(lambda m: not m.bot, ctx.guild.members)))}\n"
-                    f"Bots: {len(list(filter(lambda m: m.bot, ctx.guild.members)))}"
-                ),
-                True,
-            ),
-            (
-                "Total channels",
-                (f"Categories: {len(ctx.guild.categories)}\nText: {len(ctx.guild.text_channels)}\nVoice:{len(ctx.guild.voice_channels)}"),
-                True,
-            ),
-            (
-                "General",
-                (f"Roles: {len(ctx.guild.roles)}\nEmojis: {len(ctx.guild.emojis)}\nBoost Level: {ctx.guild.premium_tier}"),
-                True,
-            ),
-            (
-                "Statuses",
-                (
-                    f":green_circle: {statuses[0]}\n"
-                    f":yellow_circle: {statuses[1]}\n"
-                    f":red_circle: {statuses[2]}\n"
-                    f":black_circle: {statuses[3]} [Blame Discord]"
-                ),
-                True,
-            ),
-        ]
-
-        for name, value, inline in fields:
+        for name, value, inline in self._server_summary_fields(ctx.guild):
             embed.add_field(name=name, value=value, inline=inline)
-
-        features = set(ctx.guild.features)
-        all_features = {
-            "PARTNERED": "Partnered",
-            "VERIFIED": "Verified",
-            "DISCOVERABLE": "Server Discovery",
-            "COMMUNITY": "Community Server",
-            "FEATURABLE": "Featured",
-            "WELCOME_SCREEN_ENABLED": "Welcome Screen",
-            "INVITE_SPLASH": "Invite Splash",
-            "VIP_REGIONS": "VIP Voice Servers",
-            "VANITY_URL": "Vanity Invite",
-            "COMMERCE": "Commerce",
-            "LURKABLE": "Lurkable",
-            "NEWS": "News Channels",
-            "ANIMATED_ICON": "Animated Icon",
-            "BANNER": "Banner",
-        }
-
-        if info := [f":ballot_box_with_check: {label}" for feature, label in all_features.items() if feature in features]:
-            embed.add_field(name="Features", value="\n".join(info))
-
-        if ctx.guild.premium_tier != 0:
-            boosts = f"Level {ctx.guild.premium_tier}\n{ctx.guild.premium_subscription_count} boosts"
-
-            def key(m: discord.Member) -> datetime:
-                if ctx.guild is None:
-                    return discord.utils.utcnow()
-
-                return m.premium_since or ctx.guild.created_at
-
-            last_boost = max(ctx.guild.members, key=key)
-            if last_boost.premium_since is not None:
-                boosts = f"{boosts}\nLast Boost: {last_boost} ({discord.utils.format_dt(last_boost.premium_since, 'R')})"
-            embed.add_field(name="Boosts", value=boosts, inline=True)
-        else:
-            embed.add_field(name="Boosts", value="Level 0", inline=True)
-
-        emoji_stats = Counter()
-        for emoji in ctx.guild.emojis:
-            if emoji.animated:
-                emoji_stats["animated"] += 1
-                emoji_stats["animated_disabled"] += not emoji.available
-            else:
-                emoji_stats["regular"] += 1
-                emoji_stats["disabled"] += not emoji.available
-
-        fmt = f"Regular: {emoji_stats['regular']}/{ctx.guild.emoji_limit}\nAnimated: {emoji_stats['animated']}/{ctx.guild.emoji_limit}\n"
-        if emoji_stats["disabled"] or emoji_stats["animated_disabled"]:
-            fmt = f"{fmt}Disabled: {emoji_stats['disabled']} regular, {emoji_stats['animated_disabled']} animated\n"
-
-        fmt = f"{fmt}Total Emoji: {len(ctx.guild.emojis)}/{ctx.guild.emoji_limit * 2}"
-        embed.add_field(name="Emoji", value=fmt, inline=True)
-
-        if ctx.guild.me.guild_permissions.ban_members:
-            embed.add_field(
-                name="Banned Members",
-                value=f"{len([_ async for _ in ctx.guild.bans(limit=1000)])}+",
-                inline=True,
-            )
-        if ctx.guild.me.guild_permissions.manage_guild:
-            embed.add_field(name="Invites", value=f"{len(await ctx.guild.invites())}", inline=True)
-
-        if ctx.guild.banner:
-            embed.set_image(url=ctx.guild.banner.url)
+        await self._add_server_details(embed, ctx.guild)
 
         return await ctx.reply(embed=embed)
 
@@ -476,7 +435,7 @@ class Meta(commands.Cog):
         per=5.0,
         type=commands.BucketType.member,
     )
-    async def roleinfo(  # noqa: C901
+    async def roleinfo(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -515,22 +474,8 @@ class Meta(commands.Cog):
         ]
         for name, value, inline in data:
             embed.add_field(name=name, value=value, inline=inline)
-        perms = []
-        if role.permissions.administrator:
-            perms.append("Administrator")
-        if role.permissions.kick_members and role.permissions.ban_members and role.permissions.manage_messages:
-            perms.append("Server Moderator")
-        if role.permissions.manage_guild:
-            perms.append("Server Manager")
-        if role.permissions.manage_roles:
-            perms.append("Role Manager")
-        if role.permissions.moderate_members:
-            perms.append("Can Timeout Members")
-        if role.permissions.manage_channels:
-            perms.append("Channel Manager")
-        if role.permissions.manage_emojis:
-            perms.append("Emoji Manager")
-        embed.description = f"Key perms: {', '.join(perms or ['N/A'])}"
+        permissions = self._permission_names(role.permissions, role=True)
+        embed.description = f"Key perms: {permissions if permissions != 'None' else 'N/A'}"
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
             embed.set_thumbnail(

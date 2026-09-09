@@ -40,40 +40,37 @@ def validate_flake8_code(code: str) -> list[str]:
     return POSSIBLE_FLAKE8_CODE.findall(code)
 
 
-def validate_flag(flag: Flake8Converter) -> str:  # noqa: C901
-    cmd = "flake8 "
-    if flag.count:
-        cmd += "--count "
-
-    if flag.verbose:
-        cmd += "-v "
-
+def validate_flag(flag: Flake8Converter) -> str:
+    options = [
+        option
+        for enabled, option in (
+            (flag.count, "--count"),
+            (flag.verbose, "-v"),
+            (flag.statistics, "--statistics"),
+            (flag.doctests, "--doctests"),
+        )
+        if enabled
+    ]
     if flag.color:
-        cmd += f"--color={flag.color} "
+        options.append(f"--color={flag.color}")
 
     if flag.ignore:
         _ig = flag.ignore.replace(",", " ")
         if codes := validate_flake8_code(_ig):
-            cmd += f"--ignore {','.join(codes)} "
+            options.extend(("--ignore", ",".join(codes)))
 
     if flag.select:
         _sl = flag.select.replace(",", " ")
         if codes := validate_flake8_code(_sl):
-            cmd += f"--select {','.join(codes)} "
+            options.extend(("--select", ",".join(codes)))
 
     if flag.max_line_length:
-        cmd += f"--max-line-length {flag.max_line_length} "
+        options.extend(("--max-line-length", str(flag.max_line_length)))
 
     if flag.max_doc_length:
-        cmd += f"--max-doc-length {flag.max_doc_length} "
+        options.extend(("--max-doc-length", str(flag.max_doc_length)))
 
     if flag.max_complexity:
-        cmd += f"--max-complexity {flag.max_complexity} "
+        options.extend(("--max-complexity", str(flag.max_complexity)))
 
-    if flag.statistics:
-        cmd += "--statistics "
-
-    if flag.doctests:
-        cmd += "--doctests "
-
-    return cmd
+    return f"{' '.join(('flake8', *options))} "

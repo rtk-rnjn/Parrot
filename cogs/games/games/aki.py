@@ -91,7 +91,61 @@ class Akinator:
 
         return embed
 
-    async def start(  # noqa: PLR0912, PLR0913, C901
+    async def _wait_for_reaction(
+        self,
+        ctx: commands.Context[Parrot],
+        timeout: float | None,
+    ) -> tuple[discord.Reaction, discord.User] | None:
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
+            emoji = str(reaction.emoji)
+            if self.message is None or reaction.message.id != self.message.id or user != ctx.author:
+                return False
+            try:
+                Options(emoji)
+                return True
+            except ValueError:
+                return emoji in (BACK, STOP)
+
+        try:
+            done, _ = await double_wait(
+                ctx.bot.wait_for("reaction_add", timeout=timeout, check=check),
+                ctx.bot.wait_for("reaction_remove", timeout=timeout, check=check),
+            )
+        except TimeoutError:
+            return None
+        return done.pop().result()
+
+    async def _process_reaction(
+        self,
+        ctx: commands.Context[Parrot],
+        reaction: discord.Reaction,
+        user: discord.User,
+        remove_reaction_after: bool,
+    ) -> bool:
+        if remove_reaction_after and self.message is not None:
+            try:
+                await self.message.remove_reaction(reaction, user)
+            except discord.DiscordException:
+                pass
+
+        emoji = str(reaction.emoji)
+        if emoji == STOP:
+            await ctx.reply("**Session ended**")
+            if self.message is not None:
+                await self.message.delete()
+            return True
+
+        if emoji == BACK:
+            try:
+                await self.aki.back()
+            except CantGoBackAnyFurther:
+                if self.message is not None:
+                    await self.message.reply("I cannot go back any further", delete_after=10)
+        else:
+            await self.aki.answer(Options(emoji).name)
+        return False
+
+    async def start(  # noqa: PLR0913
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -137,44 +191,13 @@ class Akinator:
             await self.message.add_reaction(STOP)
 
         while (self.aki.progression or 0) <= self.win_at:
-
-            def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                emoji = str(reaction.emoji)
-                if self.message is not None and reaction.message.id == self.message.id and user == ctx.author:
-                    try:
-                        return bool(Options(emoji))
-                    except ValueError:
-                        return emoji in (BACK, STOP)
-                return False
-
-            try:
-                done, _ = await double_wait(
-                    ctx.bot.wait_for("reaction_add", timeout=timeout, check=check),
-                    ctx.bot.wait_for("reaction_remove", timeout=timeout, check=check),
-                )
-                reaction, user = done.pop().result()
-            except TimeoutError:
+            reaction_result = await self._wait_for_reaction(ctx, timeout)
+            if reaction_result is None:
                 return
+            reaction, user = reaction_result
 
-            if remove_reaction_after:
-                try:
-                    await self.message.remove_reaction(reaction, user)
-                except discord.DiscordException:
-                    pass
-
-            emoji = str(reaction.emoji)
-
-            if emoji == STOP:
-                await ctx.reply("**Session ended**")
-                return await self.message.delete()
-
-            if emoji == BACK:
-                try:
-                    await self.aki.back()
-                except CantGoBackAnyFurther:
-                    await self.message.reply("I cannot go back any further", delete_after=10)
-            else:
-                await self.aki.answer(Options(emoji).name)
+            if await self._process_reaction(ctx, reaction, user, remove_reaction_after):
+                return
 
             embed = self.build_embed()
             await self.message.edit(embed=embed)

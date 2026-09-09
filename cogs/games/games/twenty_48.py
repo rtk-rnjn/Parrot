@@ -204,7 +204,65 @@ class Twenty48:
         buf.seek(0)
         return discord.File(buf, "2048.png")
 
-    async def start(  # noqa: PLR0913, PLR0912, C901
+    async def _wait_for_reaction(
+        self,
+        ctx: commands.Context[Parrot],
+        timeout: float | None,
+    ) -> tuple[discord.Reaction, discord.User] | None:
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
+            return (
+                str(reaction.emoji) in self._controls and user == self.player and self.message is not None and reaction.message.id == self.message.id
+            )
+
+        try:
+            done, _ = await double_wait(
+                ctx.bot.wait_for("reaction_add", timeout=timeout, check=check),
+                ctx.bot.wait_for("reaction_remove", timeout=timeout, check=check),
+            )
+        except TimeoutError:
+            return None
+        return done.pop().result()
+
+    async def _process_reaction(
+        self,
+        emoji: str,
+        user: discord.User,
+        delete_button: bool,
+        remove_reaction_after: bool,
+    ) -> bool:
+        stop = "\N{BLACK SQUARE FOR STOP}"
+        if delete_button and emoji == stop:
+            if self.message is not None:
+                await self.message.delete()
+            return True
+
+        moves = {
+            "\N{BLACK RIGHTWARDS ARROW}": self.move_right,
+            "\N{LEFTWARDS BLACK ARROW}": self.move_left,
+            "\N{DOWNWARDS BLACK ARROW}": self.move_down,
+            "\N{UPWARDS BLACK ARROW}": self.move_up,
+        }
+        move = moves.get(emoji)
+        if move is not None:
+            move()
+
+        if remove_reaction_after and self.message is not None:
+            try:
+                await self.message.remove_reaction(emoji, user)
+            except discord.DiscordException:
+                pass
+        return False
+
+    async def _update_message(self) -> None:
+        if self.message is None:
+            return
+        if self._render_image:
+            image = await self.render_image()
+            await self.message.edit(attachments=[image], embed=self.embed)
+        else:
+            await self.message.edit(content=self.number_to_emoji(), embed=self.embed)
+
+    async def start(  # noqa: PLR0913
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -236,47 +294,14 @@ class Twenty48:
             await self.message.add_reaction(button)
 
         while not ctx.bot.is_closed():
-
-            def check(reaction: discord.Reaction, user: discord.User) -> bool:
-                return (
-                    str(reaction.emoji) in self._controls
-                    and user == self.player
-                    and self.message is not None
-                    and reaction.message.id == self.message.id
-                )
-
-            try:
-                done, _ = await double_wait(
-                    ctx.bot.wait_for("reaction_add", timeout=timeout, check=check),
-                    ctx.bot.wait_for("reaction_remove", timeout=timeout, check=check),
-                )
-                reaction, user = done.pop().result()
-            except TimeoutError:
+            reaction_result = await self._wait_for_reaction(ctx, timeout)
+            if reaction_result is None:
                 break
+            reaction, user = reaction_result
 
             emoji = str(reaction.emoji)
-
-            if delete_button and emoji == "\N{BLACK SQUARE FOR STOP}":
-                await self.message.delete()
+            if await self._process_reaction(emoji, user, delete_button, remove_reaction_after):
                 break
-
-            if emoji == "\N{BLACK RIGHTWARDS ARROW}":
-                self.move_right()
-
-            elif emoji == "\N{LEFTWARDS BLACK ARROW}":
-                self.move_left()
-
-            elif emoji == "\N{DOWNWARDS BLACK ARROW}":
-                self.move_down()
-
-            elif emoji == "\N{UPWARDS BLACK ARROW}":
-                self.move_up()
-
-            if remove_reaction_after:
-                try:
-                    await self.message.remove_reaction(emoji, user)
-                except discord.DiscordException:
-                    pass
 
             lost = self.spawn_new()
             won = self.check_win()
@@ -287,12 +312,7 @@ class Twenty48:
                     color=self.embed_color,
                 )
 
-            if self._render_image:
-                image = await self.render_image()
-                await self.message.edit(attachments=[image], embed=self.embed)
-            else:
-                board_string = self.number_to_emoji()
-                await self.message.edit(content=board_string, embed=self.embed)
+            await self._update_message()
 
             if won or lost:
                 break

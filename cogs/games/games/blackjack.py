@@ -429,7 +429,41 @@ class Blackjack:
 
         return False
 
-    def resolve(self) -> list[str]:  # noqa: PLR0912, C901
+    def _resolve_insurance(self, index: int, hand: BlackjackHand, dealer_blackjack: bool) -> str | None:
+        if not hand.insurance:
+            return None
+
+        if dealer_blackjack:
+            insurance_profit = int(hand.insurance * self.INSURANCE_PAYOUT)
+            return f"Hand {index}: insurance paid `${insurance_profit}`."
+
+        return f"Hand {index}: insurance lost `${hand.insurance}`."
+
+    def _resolve_hand(self, index: int, hand: BlackjackHand, dealer_blackjack: bool, dealer_value: int) -> str:
+        if hand.status is HandStatus.SURRENDERED:
+            result = f"Hand {index}: surrendered for `${hand.bet // 2}` returned."
+        elif hand.status is HandStatus.BUST:
+            result = f"Hand {index}: busted \N{EM DASH} lost `${hand.bet}`."
+        elif hand.is_blackjack and not hand.is_split:
+            if dealer_blackjack:
+                result = f"Hand {index}: push \N{EM DASH} both have blackjack."
+            else:
+                payout = int(hand.bet * self.BLACKJACK_PAYOUT)
+                result = f"Hand {index}: blackjack \N{EM DASH} won `${payout}`."
+        elif dealer_blackjack:
+            result = f"Hand {index}: dealer blackjack \N{EM DASH} lost `${hand.bet}`."
+        elif self.dealer.is_bust:
+            result = f"Hand {index}: dealer bust \N{EM DASH} won `${hand.bet}`."
+        elif hand.value > dealer_value:
+            result = f"Hand {index}: `{hand.value}` beats `{dealer_value}` \N{EM DASH} won `${hand.bet}`."
+        elif hand.value < dealer_value:
+            result = f"Hand {index}: `{hand.value}` loses to `{dealer_value}` \N{EM DASH} lost `${hand.bet}`."
+        else:
+            result = f"Hand {index}: push at `{hand.value}`."
+
+        return result
+
+    def resolve(self) -> list[str]:
         """Resolve all hands and return human-readable results."""
         results: list[str] = []
 
@@ -437,43 +471,11 @@ class Blackjack:
         dealer_value = self.dealer.value
 
         for index, hand in enumerate(self.hands, start=1):
-            if hand.insurance:
-                if dealer_blackjack:
-                    insurance_profit = int(hand.insurance * self.INSURANCE_PAYOUT)
-                    results.append(f"Hand {index}: insurance paid `${insurance_profit}`.")
-                else:
-                    results.append(f"Hand {index}: insurance lost `${hand.insurance}`.")
+            insurance_result = self._resolve_insurance(index, hand, dealer_blackjack)
+            if insurance_result:
+                results.append(insurance_result)
 
-            if hand.status is HandStatus.SURRENDERED:
-                results.append(f"Hand {index}: surrendered for `${hand.bet // 2}` returned.")
-                continue
-
-            if hand.status is HandStatus.BUST:
-                results.append(f"Hand {index}: busted \N{EM DASH} lost `${hand.bet}`.")
-                continue
-
-            if hand.is_blackjack and not hand.is_split:
-                if dealer_blackjack:
-                    results.append(f"Hand {index}: push \N{EM DASH} both have blackjack.")
-                else:
-                    payout = int(hand.bet * self.BLACKJACK_PAYOUT)
-                    results.append(f"Hand {index}: blackjack \N{EM DASH} won `${payout}`.")
-                continue
-
-            if dealer_blackjack:
-                results.append(f"Hand {index}: dealer blackjack \N{EM DASH} lost `${hand.bet}`.")
-                continue
-
-            if self.dealer.is_bust:
-                results.append(f"Hand {index}: dealer bust \N{EM DASH} won `${hand.bet}`.")
-                continue
-
-            if hand.value > dealer_value:
-                results.append(f"Hand {index}: `{hand.value}` beats `{dealer_value}` \N{EM DASH} won `${hand.bet}`.")
-            elif hand.value < dealer_value:
-                results.append(f"Hand {index}: `{hand.value}` loses to `{dealer_value}` \N{EM DASH} lost `${hand.bet}`.")
-            else:
-                results.append(f"Hand {index}: push at `{hand.value}`.")
+            results.append(self._resolve_hand(index, hand, dealer_blackjack, dealer_value))
 
         return results
 

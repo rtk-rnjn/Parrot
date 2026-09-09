@@ -26,12 +26,18 @@ from discord.ext import commands
 from jishaku.paginators import PaginatorInterface
 from yapf.yapflib.yapf_api import FormatCode as yapf_format
 
-from ._bandit import BanditConverter, validate_flag as bandit_validate_flag
-from ._flake8 import Flake8Converter, validate_flag as flake8_validate_flag
-from ._mypy import MypyConverter, validate_flag as mypy_validate_flag
-from ._pylint import PyLintConverter, validate_flag as pylint_validate_flag
-from ._pyright import PyrightConverter, validate_flag as pyright_validate_flag
-from ._ruff import RuffConverter, validate_flag as ruff_validate_flag
+from ._bandit import BanditConverter
+from ._bandit import validate_flag as bandit_validate_flag
+from ._flake8 import Flake8Converter
+from ._flake8 import validate_flag as flake8_validate_flag
+from ._mypy import MypyConverter
+from ._mypy import validate_flag as mypy_validate_flag
+from ._pylint import PyLintConverter
+from ._pylint import validate_flag as pylint_validate_flag
+from ._pyright import PyrightConverter
+from ._pyright import validate_flag as pyright_validate_flag
+from ._ruff import RuffConverter
+from ._ruff import validate_flag as ruff_validate_flag
 
 GITHUB_API_URL = "https://api.github.com"
 
@@ -136,7 +142,33 @@ class LintCode:
         self.lint_type = lint_type
         return self
 
-    async def lint(self, ctx: commands.Context) -> None:  # noqa: PLR0912, C901
+    def _lint_command(self) -> str:
+        converters = {
+            "flake8": (Flake8Converter, flake8_validate_flag),
+            "bandit": (BanditConverter, bandit_validate_flag),
+            "pylint": (PyLintConverter, pylint_validate_flag),
+            "mypy": (MypyConverter, mypy_validate_flag),
+            "pyright": (PyrightConverter, pyright_validate_flag),
+            "ruff": (RuffConverter, ruff_validate_flag),
+        }
+        converter_type, validator = converters.get(self.lint_type, (None, None))
+        if converter_type is not None and isinstance(self.flag, converter_type):
+            return validator(self.flag)
+        return ""
+
+    async def _send_lint_output(self, ctx: commands.Context, data: dict[str, str]) -> None:
+        if "main" in data:
+            await ctx.reply(f"```ansi\n{data['main']}```")
+        for key, color in (("stdout", Fore.WHITE), ("stderr", Fore.RED)):
+            if key not in data:
+                continue
+            pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
+            for line in data[key].splitlines():
+                pages.add_line(f"{color}{line}")
+            interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
+            await interface.send_to(ctx)
+
+    async def lint(self, ctx: commands.Context) -> None:
         if self.lint_type not in {"flake8", "bandit", "pylint", "mypy"}:
             await ctx.reply("Invalid lint type.")
             return
@@ -147,43 +179,14 @@ class LintCode:
 
         filename = await code_to_file(self.source)
 
-        cmd_str = ""
-        if self.lint_type == "flake8" and isinstance(self.flag, Flake8Converter):
-            cmd_str = flake8_validate_flag(self.flag)
-        elif self.lint_type == "bandit" and isinstance(self.flag, BanditConverter):
-            cmd_str = bandit_validate_flag(self.flag)
-        elif self.lint_type == "pylint" and isinstance(self.flag, PyLintConverter):
-            cmd_str = pylint_validate_flag(self.flag)
-        elif self.lint_type == "mypy" and isinstance(self.flag, MypyConverter):
-            cmd_str = mypy_validate_flag(self.flag)
-        elif self.lint_type == "pyright" and isinstance(self.flag, PyrightConverter):
-            cmd_str = pyright_validate_flag(self.flag)
-        elif self.lint_type == "ruff" and isinstance(self.flag, RuffConverter):
-            cmd_str = ruff_validate_flag(self.flag)
-
+        cmd_str = self._lint_command()
         data = await lint(cmd_str, filename) if cmd_str else {}
 
         if not data:
             await ctx.reply("No output.")
             return
 
-        if "main" in data:
-            await ctx.reply(f"```ansi\n{data['main']}```")
-        if "stdout" in data:
-            pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
-            for line in data["stdout"].splitlines():
-                pages.add_line(f"{Fore.WHITE}{line}")
-
-            interference = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
-            await interference.send_to(ctx)
-
-        if "stderr" in data:
-            pages = commands.Paginator(prefix="```ansi\n", suffix="```", max_size=1980)
-            for line in data["stderr"].splitlines():
-                pages.add_line(f"{Fore.RED}{line}")
-
-            interference = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
-            await interference.send_to(ctx)
+        await self._send_lint_output(ctx, data)
 
     async def lint_with_pyright(self, ctx: commands.Context) -> None:
         filename = await code_to_file(self.source)

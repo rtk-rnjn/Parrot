@@ -34,32 +34,20 @@ def validate_bandit_code(code: str) -> list[str]:
     return POSSIBLE_BANDIT_CODE.findall(code)
 
 
-def validate_flag(flag: BanditConverter) -> str:  # noqa: C901
-    cmd = "bandit"
+def validate_flag(flag: BanditConverter) -> str:
+    options = []
     if flag.read:
-        cmd += " -r"
+        options.append("-r")
     if flag.verbose:
-        cmd += " -v"
+        options.append("-v")
 
     if flag.skip:
         _sp = flag.skip.replace(" ", "")
         codes = validate_bandit_code(_sp)
         if codes:
-            cmd += f" --skip {','.join(codes)}"
+            options.extend(("--skip", ",".join(codes)))
     if flag.level:
-        if flag.level == "low":
-            cmd += " -l"
-        elif flag.level == "medium":
-            cmd += " -ll"
-        elif flag.level == "high":
-            cmd += " -lll"
-
+        options.append({"low": "-l", "medium": "-ll", "high": "-lll"}[flag.level])
     if flag.confidence:
-        if flag.confidence == "low":
-            cmd += " -i"
-        elif flag.confidence == "medium":
-            cmd += " -ii"
-        elif flag.confidence == "high":
-            cmd += " -iii"
-
-    return f"{cmd} "
+        options.append({"low": "-i", "medium": "-ii", "high": "-iii"}[flag.confidence])
+    return f"{' '.join(('bandit', *options))} "

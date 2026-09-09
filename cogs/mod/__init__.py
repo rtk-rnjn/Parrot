@@ -1009,10 +1009,47 @@ class Mod(commands.Cog):
 
         await ctx.reply("\n".join(messages), delete_after=10)
 
+    def _prepare_purge_predicates(self, flags: PurgeFlags) -> list[Callable[[discord.Message], Any]]:  # noqa: C901
+        predicates: list[Callable[[discord.Message], Any]] = []
+        if flags.bot:
+            if flags.webhooks:
+                predicates.append(lambda m: m.author.bot)
+            else:
+                predicates.append(lambda m: (m.webhook_id is None or m.interaction is not None) and m.author.bot)
+        elif flags.webhooks:
+            predicates.append(lambda m: m.webhook_id is not None)
+
+        if flags.embeds:
+            predicates.append(lambda m: len(m.embeds))
+
+        if flags.files:
+            predicates.append(lambda m: len(m.attachments))
+
+        if flags.reactions:
+            predicates.append(lambda m: len(m.reactions))
+
+        if flags.emoji:
+            custom_emoji = re.compile(r"<a?:(\w+):(\d+)>")
+            predicates.append(lambda m: custom_emoji.search(m.content))
+
+        if flags.user:
+            predicates.append(lambda m: m.author == flags.user)
+
+        if flags.contains:
+            predicates.append(lambda m: flags.contains in m.content)  # type: ignore
+
+        if flags.prefix:
+            predicates.append(lambda m: m.content.startswith(flags.prefix))  # type: ignore
+
+        if flags.suffix:
+            predicates.append(lambda m: m.content.endswith(flags.suffix))  # type: ignore
+
+        return predicates
+
     @commands.command(aliases=["remove"])
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge(  # noqa: PLR0912, PLR0915, C901
+    async def purge(  # noqa: C901
         self,
         ctx: commands.Context[Parrot],
         limit: commands.Range[int, 1, 2000] = commands.parameter(  # noqa: B008
@@ -1054,39 +1091,7 @@ class Mod(commands.Cog):
 
         await ctx.defer()
 
-        predicates: list[Callable[[discord.Message], Any]] = []
-        if flags.bot:
-            if flags.webhooks:
-                predicates.append(lambda m: m.author.bot)
-            else:
-                predicates.append(lambda m: (m.webhook_id is None or m.interaction is not None) and m.author.bot)
-        elif flags.webhooks:
-            predicates.append(lambda m: m.webhook_id is not None)
-
-        if flags.embeds:
-            predicates.append(lambda m: len(m.embeds))
-
-        if flags.files:
-            predicates.append(lambda m: len(m.attachments))
-
-        if flags.reactions:
-            predicates.append(lambda m: len(m.reactions))
-
-        if flags.emoji:
-            custom_emoji = re.compile(r"<a?:(\w+):(\d+)>")
-            predicates.append(lambda m: custom_emoji.search(m.content))
-
-        if flags.user:
-            predicates.append(lambda m: m.author == flags.user)
-
-        if flags.contains:
-            predicates.append(lambda m: flags.contains in m.content)  # type: ignore
-
-        if flags.prefix:
-            predicates.append(lambda m: m.content.startswith(flags.prefix))  # type: ignore
-
-        if flags.suffix:
-            predicates.append(lambda m: m.content.endswith(flags.suffix))  # type: ignore
+        predicates: list[Callable[[discord.Message], Any]] = self._prepare_purge_predicates(flags)
 
         if not predicates:
             # If nothing is passed then default to `True` to emulate ?purge all behaviour
@@ -1102,13 +1107,6 @@ class Mod(commands.Cog):
         def predicate(m: discord.Message) -> bool:
             r = op(p(m) for p in predicates)
             return r
-
-        if flags.after:
-            if limit is None:
-                limit = 2000
-
-        if limit is None:
-            limit = 100
 
         before = discord.Object(id=flags.before) if flags.before else None
         after = discord.Object(id=flags.after) if flags.after else None

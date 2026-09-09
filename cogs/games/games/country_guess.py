@@ -145,7 +145,62 @@ class CountryGuesser:
 
         return message, content
 
-    async def start(  # noqa: PLR0912, PLR0913, C901
+    async def _handle_incorrect_guess(
+        self,
+        ctx: commands.Context[Parrot],
+        msg: discord.Message,
+        response: str,
+    ) -> bool:
+        self.guesses -= 1
+
+        if not self.guesses:
+            await msg.reply(
+                f"Game Over! you lost, The country was `{self.country.title()}`",
+            )
+            return False
+
+        acc = self.get_accuracy(response)
+
+        if not self.hints:
+            await msg.reply(
+                f"That was incorrect! but you are `{acc}%` of the way there!\nYou have **{self.guesses}** guesses left.",
+                mention_author=False,
+            )
+            return True
+
+        await msg.reply(
+            f"That is incorrect! but you are `{acc}%` of the way there!\nWould you like a hint? type: `(y/n)`",
+            mention_author=False,
+        )
+
+        try:
+            hint_result = await self.wait_for_response(
+                ctx,
+                options=("y", "n"),
+            )
+        except TimeoutError:
+            return False
+
+        if hint_result is None:
+            return True
+
+        hint_msg, resp = hint_result
+        if resp == "y":
+            hint = self.get_hint()
+            self.hints -= 1
+            await hint_msg.reply(
+                f"Here is your hint: `{hint}`",
+                mention_author=False,
+            )
+        else:
+            await hint_msg.reply(
+                f"Okay continue guessing! You have **{self.guesses}** guesses left.",
+                mention_author=False,
+            )
+
+        return True
+
+    async def start(  # noqa: PLR0913
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -179,51 +234,8 @@ class CountryGuesser:
                     f"That is correct! The country was `{self.country.title()}`",
                 )
                 break
-            else:
-                self.guesses -= 1
-
-                if not self.guesses:
-                    await msg.reply(
-                        f"Game Over! you lost, The country was `{self.country.title()}`",
-                    )
-                    break
-
-                acc = self.get_accuracy(response)
-
-                if not self.hints:
-                    await msg.reply(
-                        f"That was incorrect! but you are `{acc}%` of the way there!\nYou have **{self.guesses}** guesses left.",
-                        mention_author=False,
-                    )
-                else:
-                    await msg.reply(
-                        f"That is incorrect! but you are `{acc}%` of the way there!\nWould you like a hint? type: `(y/n)`",
-                        mention_author=False,
-                    )
-
-                    try:
-                        hint_result = await self.wait_for_response(
-                            ctx,
-                            options=("y", "n"),
-                        )
-                    except TimeoutError:
-                        break
-                    else:
-                        if hint_result is None:
-                            continue
-                        hint_msg, resp = hint_result
-                        if resp == "y":
-                            hint = self.get_hint()
-                            self.hints -= 1
-                            await hint_msg.reply(
-                                f"Here is your hint: `{hint}`",
-                                mention_author=False,
-                            )
-                        else:
-                            await hint_msg.reply(
-                                f"Okay continue guessing! You have **{self.guesses}** guesses left.",
-                                mention_author=False,
-                            )
+            elif not await self._handle_incorrect_guess(ctx, msg, response):
+                break
 
         return self.message
 

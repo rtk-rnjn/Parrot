@@ -117,7 +117,8 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
         """Sends a message with a video of a random pride anthem.
         If `genre` is supplied, it will select from that genre only.
         """
-        if anthem := self.get_video(genre):
+        anthem = self.get_video(genre)
+        if anthem:
             await ctx.reply(anthem["url"])
         else:
             await ctx.reply("I couldn't find a video, sorry!")

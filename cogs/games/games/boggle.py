@@ -176,7 +176,8 @@ class Boggle:
         return [[random.choice(die) for die in row] for row in self.DICE_MATRIX]
 
     def get_results(self) -> tuple[int, int, int]:
-        corr = len(guesses := self.correct_guesses)
+        guesses = self.correct_guesses
+        corr = len(guesses)
         wrong = len(self.wrong_guesses)
 
         points = sum(len(guess) - 2 for guess in guesses)

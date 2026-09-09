@@ -58,6 +58,10 @@ class Player(pomice.Player):
         for member in members:
             if member.guild_permissions.manage_channels or member.guild_permissions.manage_guild:
                 possible_djs.append(member)
+
+            if self.ctx and self.channel.permissions_for(member).manage_channels:
+                possible_djs.append(member)
+
         return possible_djs
 
     def _non_bot_members(self) -> int:

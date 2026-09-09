@@ -75,13 +75,13 @@ class ConfigurationLayout(discord.ui.LayoutView):
             accessory=prefix_section_button,
         )
 
-        mute_role_selector = discord.ui.ActionRow(
-            discord.ui.RoleSelect(
-                placeholder="Select a mute role...",
-                min_values=0,
-                max_values=1,
-            ),
+        mute_role_selector = discord.ui.RoleSelect(
+            placeholder="Select a mute role...",
+            min_values=0,
+            max_values=1,
+            default_values=[discord.Object(id=kwargs["mute_role_id"])] if kwargs["mute_role_id"] else [],
         )
+        mute_role_action = discord.ui.ActionRow(mute_role_selector)
         mute_role_delete_button = discord.ui.Button(
             emoji="\N{WASTEBASKET}",
             style=discord.ButtonStyle.red,
@@ -93,6 +93,13 @@ class ConfigurationLayout(discord.ui.LayoutView):
             ),
             accessory=mute_role_delete_button,
         )
+
+        hub_channel_selector = discord.ui.ChannelSelect(
+            placeholder="Select a hub channel...",
+            channel_types=[discord.ChannelType.voice],
+            default_values=[discord.Object(id=kwargs["hub_channel_id"])] if kwargs["hub_channel_id"] else [],
+        )
+        hub_channel_action = discord.ui.ActionRow(hub_channel_selector)
 
         self.welcome_enable_button = discord.ui.Button(
             label="Enable",
@@ -143,7 +150,12 @@ class ConfigurationLayout(discord.ui.LayoutView):
             prefix_section,
             discord.ui.Separator(),
             mute_role_section,
-            mute_role_selector,
+            mute_role_action,
+            discord.ui.Separator(),
+            discord.ui.TextDisplay(
+                "### Hub Channel\n-# This is basically Join To Create. When a user joins this channel, a temporary voice channel will be created for them."
+            ),
+            hub_channel_action,
             discord.ui.Separator(),
             discord.ui.TextDisplay("### Welcome Messages\n-# Configure whether join and leave messages are enabled and where they are sent."),
             welcome_toggle_row,

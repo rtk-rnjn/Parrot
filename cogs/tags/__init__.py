@@ -32,7 +32,7 @@ class Tags(commands.Cog):
             page = f"{index}. `{tag['name']}`"
             pages.append(page)
 
-        await self.bot.paginate(ctx, embed=discord.Embed(), pages=pages)
+        await self.bot.paginate(ctx, embed=True, pages=pages)
 
     @commands.group(name="tag")
     async def tag(self, ctx: commands.Context[Parrot], *, name: str) -> None:
@@ -161,7 +161,7 @@ class Tags(commands.Cog):
         if not matches:
             await ctx.reply(f"No tags found matching `{query}`.")
             return
-        await self.bot.paginate(ctx, embed=discord.Embed(title=f"Tags matching {query}"), pages=[f"`{name}`" for name in matches])
+        await self.bot.paginate(ctx, embed=True, pages=[f"{index}. `{tag}`" for index, tag in enumerate(matches, start=1)])
 
     @tag.command(name="count", aliases=["usage", "stats"])
     async def tag_usage(self, ctx: commands.Context[Parrot], *, name: str) -> None:

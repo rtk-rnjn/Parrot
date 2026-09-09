@@ -10,12 +10,15 @@ class RedisKeys(StrEnum):
     GUILD_MUTE_ROLE_ID = "guild:{guild_id}:mute_role_id"
     GUILD_MUTED_MEMBERS = "guild:{guild_id}:muted_members"
 
+    GUILD_HUB_CHANNEL_ID = "guild:{guild_id}:hub_channel_id"
+    GUILD_HUB_CHANNEL_OWNER = "guild:{guild_id}:hub_channel:{channel_id}:owner"
+
     GUILD_MEMBER_VOILATION_COUNT = "guild:{guild_id}:violations:{voilation_name}:member:{user_id}"
 
     GUILD_AUTOMOD_RULES = "guild:{guild_id}:automod_rules"
     GUILD_AUTOMOD_RULE_TRIGGER = "guild:{guild_id}:automod_rule:{rule_name}:trigger"
     GUILD_AUTOMOD_RULE_CONDITIONS = "guild:{guild_id}:automod_rule:{rule_name}:conditions"
-    GUILD_AUTOMOD_RULE_EFFECTS = "guild:{bot_prefixguild_id}:automod_rule:{rule_name}:effects"
+    GUILD_AUTOMOD_RULE_EFFECTS = "guild:{guild_id}:automod_rule:{rule_name}:effects"
     GUILD_AUTOMOD_RULE_ENABLED = "guild:{guild_id}:automod_rule:{rule_name}:enabled"
     GUILD_AUTOMOD_RULE_PRIORITY = "guild:{guild_id}:automod_rule:{rule_name}:priority"
     GUILD_AUTOMOD_RULE_CONDITION_MATCH_MODE = "guild:{guild_id}:automod_rule:{rule_name}:condition_match_mode"

@@ -10,6 +10,7 @@ from .automod import _GuildAutomodMixin  # noqa
 from .birthday import _GuildBirthdayMixin  # noqa
 from .custom_commands import _GuildCustomCommandsMixin  # noqa
 from .giveaway import _GuildGiveawayMixin  # noqa
+from .hub import _GuildHubMixin  # noqa
 from .leveling import _GuildLevelingMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
 from .prefix import _GuildPrefixMixin  # noqa
@@ -37,6 +38,7 @@ class _GuildMixin(
     _GuildAutomodMixin,
     _GuildAfkMixin,
     _GuildGiveawayMixin,
+    _GuildHubMixin,
     _GuildLevelingMixin,
     _GuildWelcomerMixin,
     _GuildStarboardMixin,
@@ -47,6 +49,7 @@ class _GuildMixin(
             "_id": guild_id,
             "command_prefix": DEFAULT_PREFIX,
             "mute_role_id": None,
+            "hub_channel_id": None,
             "muted_members": [],
             "violations": {},
             "automod": {

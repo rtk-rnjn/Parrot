@@ -346,7 +346,7 @@ class Misc(commands.Cog):
         if not pages:
             return await ctx.reply("You haven't been ghost pinged.")
 
-        interface = await self.bot.paginate(ctx, embed=discord.Embed(title="Ghost Pings"), pages=pages)
+        interface = await self.bot.paginate(ctx, embed=True, pages=pages)
         return interface.message
 
     @commands.command(name="boxplot", aliases=("box", "boxwhisker", "numsetdata"))

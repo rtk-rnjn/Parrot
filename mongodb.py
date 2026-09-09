@@ -30,10 +30,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
-try:
-    import readline
-except ImportError:  # pragma: no cover - Windows may not provide readline.
-    readline = None
+import readline
 
 type Document = MutableMapping[str, Any]
 type ReadonlyDocument = Mapping[str, Any]

@@ -268,7 +268,7 @@ class Mod(commands.Cog):
             error_message = "Cannot ban the bot itself."
             return await ctx.reply(error_message)
 
-        if member.top_role >= ctx.guild.me.top_role:
+        if isinstance(member, discord.Member) and member.top_role >= ctx.guild.me.top_role:
             error_message = f"Cannot ban {member}. The bot's role is not high enough."
             return await ctx.reply(error_message)
 

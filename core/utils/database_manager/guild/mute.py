@@ -21,7 +21,7 @@ class _GuildMuteRoleMixin:
         )
 
         redis_key = RedisKeys.GUILD_MUTE_ROLE_ID.format(guild_id=guild_id)
-        _ = await self.redis_client.set(redis_key, mute_role_id, ex=3600)
+        _ = await self.redis_client.set(redis_key, mute_role_id)
 
     async def get_guild_mute_role(self, *, guild_id: int) -> int | None:
         redis_key = RedisKeys.GUILD_MUTE_ROLE_ID.format(guild_id=guild_id)
@@ -39,7 +39,7 @@ class _GuildMuteRoleMixin:
 
         mute_role_id = guild_config.get("mute_role_id")
         if mute_role_id is not None:
-            _ = await self.redis_client.set(redis_key, mute_role_id, ex=3600)
+            _ = await self.redis_client.set(redis_key, mute_role_id)
 
         return mute_role_id
 
@@ -61,7 +61,6 @@ class _GuildMuteRoleMixin:
         muted_members = guild_config.get("muted_members", [])
         if muted_members:
             _ = await self.redis_client.sadd(redis_key, *muted_members)
-            _ = await self.redis_client.expire(redis_key, 3600)
 
         return muted_members
 
@@ -74,7 +73,6 @@ class _GuildMuteRoleMixin:
 
         redis_key = RedisKeys.GUILD_MUTED_MEMBERS.format(guild_id=guild_id)
         _ = await self.redis_client.sadd(redis_key, member_id)
-        _ = await self.redis_client.expire(redis_key, 3600)
 
     async def remove_muted_member(self, *, guild_id: int, member_id: int) -> None:
         _ = await self.guilds_collection.update_one(

@@ -25,7 +25,7 @@ class _UserTimezoneMixin:
             return None
 
         timezone = user_config["timezone"]
-        _ = await self.redis_client.set(redis_key, timezone, ex=3600)
+        _ = await self.redis_client.set(redis_key, timezone)
         return timezone
 
     async def set_user_timezone(self, *, user_id: int, timezone: str) -> None:
@@ -37,4 +37,4 @@ class _UserTimezoneMixin:
             upsert=True,
         )
 
-        _ = await self.redis_client.set(redis_key, timezone, ex=3600)
+        _ = await self.redis_client.set(redis_key, timezone)

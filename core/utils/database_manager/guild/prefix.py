@@ -25,7 +25,7 @@ class _GuildPrefixMixin:
             return None
 
         command_prefix = guild_config["command_prefix"]
-        _ = await self.redis_client.set(redis_key, command_prefix, ex=3600)
+        _ = await self.redis_client.set(redis_key, command_prefix)
         return command_prefix
 
     async def set_command_prefix(self, *, guild_id: int, command_prefix: str) -> None:
@@ -37,4 +37,4 @@ class _GuildPrefixMixin:
             upsert=True,
         )
 
-        _ = await self.redis_client.set(redis_key, command_prefix, ex=3600)
+        _ = await self.redis_client.set(redis_key, command_prefix)

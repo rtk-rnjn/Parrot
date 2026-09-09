@@ -191,7 +191,7 @@ class Music(commands.Cog):
         for index, track in enumerate(ctx.voice_client.queue, start=1):
             pages.append(f"{index}. [{track.title}](<{track.uri}>) by {track.author}")
 
-        await self.bot.paginate(ctx, embed=discord.Embed(title="Current Queue"), pages=pages)
+        await self.bot.paginate(ctx, embed=True, pages=pages)
 
     @commands.command(name="nowplaying", aliases=["np"])
     async def now_playing(self, ctx: Context[Parrot]) -> None:

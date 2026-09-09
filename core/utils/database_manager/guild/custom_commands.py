@@ -7,8 +7,6 @@ from redis.asyncio import Redis
 from ..cache_keys import RedisKeys
 from ..models import CustomCommand, GuildConfiguration
 
-_CACHE_TTL = 3600
-
 
 class _GuildCustomCommandsMixin:
     """Persistence and cache operations for guild custom commands."""
@@ -44,19 +42,14 @@ class _GuildCustomCommandsMixin:
         names_key = self._custom_command_names_key(guild_id)
 
         await self.redis_client.sadd(names_key, name)
-        await self.redis_client.expire(names_key, _CACHE_TTL)
-
-        await self.redis_client.set(self._custom_command_response_key(guild_id, name), response, ex=_CACHE_TTL)
 
         if ignored_roles:
             await self.redis_client.sadd(self._custom_command_ignored_roles_key(guild_id, name), *ignored_roles)
-            await self.redis_client.expire(self._custom_command_ignored_roles_key(guild_id, name), _CACHE_TTL)
 
         if ignored_channels:
             await self.redis_client.sadd(self._custom_command_ignored_channels_key(guild_id, name), *ignored_channels or [])
-            await self.redis_client.expire(self._custom_command_ignored_channels_key(guild_id, name), _CACHE_TTL)
 
-        await self.redis_client.set(self._custom_command_enabled_key(guild_id, name), int(enabled), ex=_CACHE_TTL)
+        await self.redis_client.set(self._custom_command_enabled_key(guild_id, name), int(enabled))
 
     async def _invalidate_custom_command_cache(self, *, guild_id: int, name: str) -> None:
         names_key = self._custom_command_names_key(guild_id)

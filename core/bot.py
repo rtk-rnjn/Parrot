@@ -367,6 +367,7 @@ class Parrot(commands.Bot):
 
         await self.database.invalidate_redis()
         await self.database.close()
+        await self.lavalink_node_pool.disconnect()
 
     @overload
     @staticmethod

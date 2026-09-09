@@ -110,6 +110,9 @@ class GuildConfiguration(TypedDict):
     _id: int
     command_prefix: str
     mute_role_id: int | None
+    hub_channel_id: int | None
+    hub_channel_owners: dict[str, int]  # channel_id -> owner_id
+
     muted_members: list[int]
     violations: dict[str, dict[str, int]]
     automod: AutomodConfig

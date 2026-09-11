@@ -1319,6 +1319,72 @@ class Mod(commands.Cog):
         else:
             return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} members in the server.")
 
+    @role.command(name="add", aliases=["assign", "give", "+=", "+"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def role_add(
+        self,
+        ctx: commands.Context[Parrot],
+        member: discord.Member = commands.parameter(  # noqa: B008
+            description="The member to assign the role to.",
+        ),
+        *,
+        role: discord.Role = commands.parameter(  # noqa: B008
+            description="The role to assign to the member.",
+        ),
+    ) -> discord.Message:
+        """Assign a role to a member in the server.
+
+        This command assigns the specified role to the specified member in the
+        server. You must have Manage Roles permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.me.top_role <= role:
+            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
+
+        try:
+            await member.add_roles(role, reason=f"Role assigned by {ctx.author} (ID: {ctx.author.id})")
+            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to {member}.")
+        except discord.Forbidden:
+            return await ctx.reply(f"Failed to assign the role **{role}** (ID: {role.id}) to {member} due to insufficient permissions.")
+        except discord.HTTPException as e:
+            return await ctx.reply(f"Failed to assign the role **{role}** (ID: {role.id}) to {member} due to an error: {e}.")
+
+    @role.command(name="remove", aliases=["unassign", "take", "-=", "-"])
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
+    async def role_remove(
+        self,
+        ctx: commands.Context[Parrot],
+        member: discord.Member = commands.parameter(  # noqa: B008
+            description="The member to remove the role from.",
+        ),
+        *,
+        role: discord.Role = commands.parameter(  # noqa: B008
+            description="The role to remove from the member.",
+        ),
+    ) -> discord.Message:
+        """Remove a role from a member in the server.
+
+        This command removes the specified role from the specified member in the
+        server. You must have Manage Roles permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.me.top_role <= role:
+            return await ctx.reply(f"Cannot remove the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
+
+        try:
+            await member.remove_roles(role, reason=f"Role removed by {ctx.author} (ID: {ctx.author.id})")
+            return await ctx.reply(f"Successfully removed the role **{role}** (ID: {role.id}) from {member}.")
+        except discord.Forbidden:
+            return await ctx.reply(f"Failed to remove the role **{role}** (ID: {role.id}) from {member} due to insufficient permissions.")
+        except discord.HTTPException as e:
+            return await ctx.reply(f"Failed to remove the role **{role}** (ID: {role.id}) from {member} due to an error: {e}.")
+
 
 async def setup(bot: Parrot) -> None:
     """Load the moderation cog into the bot."""

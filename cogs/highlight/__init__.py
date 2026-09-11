@@ -33,7 +33,7 @@ class Highlights(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @highlight.command(name="add", aliases=["create", "new"])
+    @highlight.command(name="add", aliases=["create", "new", "+", "+="])
     async def add_highlight(
         self,
         ctx: commands.Context[Parrot],

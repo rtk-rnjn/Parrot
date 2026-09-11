@@ -286,7 +286,7 @@ class Todo(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @todo.command(name="add")
+    @todo.command(name="add", aliases=["create", "new", "+", "+="])
     async def add_todo(self, ctx: commands.Context[Parrot], *, title: str) -> None:
         """Add a new to-do item."""
         todo_item = await self.bot.database.create_user_todo_item(user_id=ctx.author.id, title=title)
@@ -297,7 +297,7 @@ class Todo(commands.Cog):
         view = TodoCreateView(author=ctx.author, todo_item=todo_item)
         await ctx.reply(embed=embed, view=view)
 
-    @todo.command(name="list", aliases=["ls"])
+    @todo.command(name="list", aliases=["ls", "all"])
     async def list_todo(self, ctx: commands.Context[Parrot]) -> None:
         """List your to-do items."""
         todo_items = await self.bot.database.get_user_todo_items(user_id=ctx.author.id)

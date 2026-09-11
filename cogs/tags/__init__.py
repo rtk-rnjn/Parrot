@@ -59,7 +59,7 @@ class Tags(commands.Cog):
         """List all tags in the server."""
         await ctx.invoke(self.tags)
 
-    @tag.command(name="create", aliases=["add", "new"])
+    @tag.command(name="create", aliases=["add", "new", "+"])
     async def create_tag(self, ctx: commands.Context[Parrot], name: str, *, content: Annotated[str, commands.clean_content]) -> None:
         """Create a new tag."""
         assert ctx.guild is not None

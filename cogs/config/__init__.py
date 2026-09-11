@@ -62,134 +62,220 @@ class ConfigurationLayout(discord.ui.LayoutView):
         super().__init__()
         self.kwargs = kwargs
 
-        welcome_join_channel_id = kwargs["welcome_config"]["on_member_join_channel_id"]
-        self.welcome_join_channel = discord.Object(id=welcome_join_channel_id) if welcome_join_channel_id is not None else None
-        welcome_leave_channel_id = kwargs["welcome_config"]["on_member_leave_channel_id"]
-        self.welcome_leave_channel = discord.Object(id=welcome_leave_channel_id) if welcome_leave_channel_id is not None else None
-        prefix_section_button = discord.ui.Button(label=kwargs["command_prefix"], style=discord.ButtonStyle.green)
-        prefix_section_button.callback = self.change_prefix_callback
-        prefix_section = discord.ui.Section(
+        self._setup_welcome_channels(kwargs)
+        self._setup_prefix_section(kwargs)
+        self._setup_mute_role_section(kwargs)
+        self._setup_hub_channel(kwargs)
+        self._setup_welcome_section(kwargs)
+        self._setup_leveling_section(kwargs)
+        self._setup_global_chat_section(kwargs)
+
+        self._build_container()
+
+    def _setup_welcome_channels(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        welcome_config = kwargs["welcome_config"]
+
+        join_channel_id = welcome_config["on_member_join_channel_id"]
+        leave_channel_id = welcome_config["on_member_leave_channel_id"]
+
+        self.welcome_join_channel = discord.Object(id=join_channel_id) if join_channel_id is not None else None
+        self.welcome_leave_channel = discord.Object(id=leave_channel_id) if leave_channel_id is not None else None
+
+    def _setup_prefix_section(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        button = discord.ui.Button(
+            label=kwargs["command_prefix"],
+            style=discord.ButtonStyle.green,
+        )
+        button.callback = self.change_prefix_callback
+
+        self.prefix_section = discord.ui.Section(
             discord.ui.TextDisplay(
                 "### Bot Prefix\n-# The bot prefix is the character(s) that you use to invoke commands. ",
             ),
-            accessory=prefix_section_button,
+            accessory=button,
         )
 
-        mute_role_selector = discord.ui.RoleSelect(
+    def _setup_mute_role_section(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        mute_role_id = kwargs["mute_role_id"]
+
+        selector = discord.ui.RoleSelect(
             placeholder="Select a mute role...",
             min_values=0,
             max_values=1,
-            default_values=[discord.Object(id=kwargs["mute_role_id"])] if kwargs["mute_role_id"] else [],
+            default_values=[discord.Object(id=mute_role_id)] if mute_role_id else [],
         )
-        mute_role_action = discord.ui.ActionRow(mute_role_selector)
-        mute_role_delete_button = discord.ui.Button(
+
+        self.mute_role_action = discord.ui.ActionRow(selector)
+
+        delete_button = discord.ui.Button(
             emoji="\N{WASTEBASKET}",
             style=discord.ButtonStyle.red,
         )
-        mute_role_delete_button.callback = self.delete_mute_role_callback
-        mute_role_section = discord.ui.Section(
+        delete_button.callback = self.delete_mute_role_callback
+
+        self.mute_role_section = discord.ui.Section(
             discord.ui.TextDisplay(
                 "### Mute Role\n-# The mute role is the role that is assigned to users when they are muted.",
             ),
-            accessory=mute_role_delete_button,
+            accessory=delete_button,
         )
+
+    def _setup_hub_channel(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        hub_channel_id = kwargs["hub_channel_id"]
 
         self.hub_channel_selector = discord.ui.ChannelSelect(
             placeholder="Select a hub channel...",
             channel_types=[discord.ChannelType.voice],
-            default_values=[discord.Object(id=kwargs["hub_channel_id"])] if kwargs["hub_channel_id"] else [],
+            default_values=[discord.Object(id=hub_channel_id)] if hub_channel_id else [],
         )
         self.hub_channel_selector.callback = self.set_hub_channel_callback
-        hub_channel_action = discord.ui.ActionRow(self.hub_channel_selector)
+
+        self.hub_channel_action = discord.ui.ActionRow(
+            self.hub_channel_selector,
+        )
+
+    def _setup_welcome_section(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        enabled = kwargs["welcome_config"]["enabled"]
 
         self.welcome_enable_button = discord.ui.Button(
             label="Enable",
             style=discord.ButtonStyle.success,
-            disabled=kwargs["welcome_config"]["enabled"],
+            disabled=enabled,
         )
         self.welcome_enable_button.callback = self.enable_welcome_callback
+
         self.welcome_disable_button = discord.ui.Button(
             label="Disable",
             style=discord.ButtonStyle.danger,
-            disabled=not kwargs["welcome_config"]["enabled"],
+            disabled=not enabled,
         )
         self.welcome_disable_button.callback = self.disable_welcome_callback
-        welcome_toggle_row = discord.ui.ActionRow(self.welcome_enable_button, self.welcome_disable_button)
+
+        self.welcome_toggle_row = discord.ui.ActionRow(
+            self.welcome_enable_button,
+            self.welcome_disable_button,
+        )
 
         self.welcome_join_channel_select = discord.ui.ChannelSelect(
             placeholder="Select the member join channel...",
             channel_types=[discord.ChannelType.text],
-            default_values=[self.welcome_join_channel] if self.welcome_join_channel else [],
+            default_values=([self.welcome_join_channel] if self.welcome_join_channel else []),
         )
         self.welcome_join_channel_select.callback = self.set_welcome_join_channel_callback
+
         self.welcome_leave_channel_select = discord.ui.ChannelSelect(
             placeholder="Select the member leave channel...",
             channel_types=[discord.ChannelType.text],
-            default_values=[self.welcome_leave_channel] if self.welcome_leave_channel else [],
+            default_values=([self.welcome_leave_channel] if self.welcome_leave_channel else []),
         )
         self.welcome_leave_channel_select.callback = self.set_welcome_leave_channel_callback
+
+    def _setup_leveling_section(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        enabled = kwargs["leveling_config"]["enabled"]
 
         self.leveling_enable_button = discord.ui.Button(
             label="Enable",
             style=discord.ButtonStyle.success,
-            disabled=kwargs["leveling_config"]["enabled"],
+            disabled=enabled,
         )
         self.leveling_enable_button.callback = self.enable_leveling_callback
+
         self.leveling_disable_button = discord.ui.Button(
             label="Disable",
             style=discord.ButtonStyle.danger,
-            disabled=not kwargs["leveling_config"]["enabled"],
+            disabled=not enabled,
         )
         self.leveling_disable_button.callback = self.disable_leveling_callback
-        leveling_toggle_row = discord.ui.ActionRow(self.leveling_enable_button, self.leveling_disable_button)
+
+        self.leveling_toggle_row = discord.ui.ActionRow(
+            self.leveling_enable_button,
+            self.leveling_disable_button,
+        )
+
+    def _setup_global_chat_section(
+        self,
+        kwargs: GuildConfiguration,
+    ) -> None:
+        config = kwargs["global_chat_config"]
+        enabled = config["enabled"]
+        channel_id = config["channel_id"]
 
         self.global_chat_enable_button = discord.ui.Button(
             label="Enable",
             style=discord.ButtonStyle.success,
-            disabled=kwargs["global_chat_config"]["enabled"],
+            disabled=enabled,
         )
         self.global_chat_enable_button.callback = self.enable_global_chat_callback
+
         self.global_chat_disable_button = discord.ui.Button(
             label="Disable",
             style=discord.ButtonStyle.danger,
-            disabled=not kwargs["global_chat_config"]["enabled"],
+            disabled=not enabled,
         )
         self.global_chat_disable_button.callback = self.disable_global_chat_callback
-        global_chat_toggle_row = discord.ui.ActionRow(self.global_chat_enable_button, self.global_chat_disable_button)
+
+        self.global_chat_toggle_row = discord.ui.ActionRow(
+            self.global_chat_enable_button,
+            self.global_chat_disable_button,
+        )
+
         self.global_chat_channel_select = discord.ui.ChannelSelect(
             placeholder="Select the global chat channel...",
             channel_types=[discord.ChannelType.text],
-            default_values=[discord.Object(id=kwargs["global_chat_config"]["channel_id"])] if kwargs["global_chat_config"]["channel_id"] else [],
+            default_values=([discord.Object(id=channel_id)] if channel_id else []),
         )
         self.global_chat_channel_select.callback = self.set_global_chat_channel_callback
 
+    def _build_container(self) -> None:
         container = discord.ui.Container(
             discord.ui.TextDisplay(
                 "## Configuration\n-# This is the configuration panel for the bot. You can change various settings here.\n",
             ),
             discord.ui.Separator(),
-            prefix_section,
+            self.prefix_section,
             discord.ui.Separator(),
-            mute_role_section,
-            mute_role_action,
+            self.mute_role_section,
+            self.mute_role_action,
             discord.ui.Separator(),
             discord.ui.TextDisplay(
                 "### Hub Channel\n-# When a user joins this channel, a temporary voice channel will be created for them.",
             ),
-            hub_channel_action,
+            self.hub_channel_action,
             discord.ui.Separator(),
-            discord.ui.TextDisplay("### Welcome Messages\n-# Configure whether join and leave messages are enabled and where they are sent."),
-            welcome_toggle_row,
+            discord.ui.TextDisplay(
+                "### Welcome Messages\n-# Configure whether join and leave messages are enabled and where they are sent.",
+            ),
+            self.welcome_toggle_row,
             discord.ui.ActionRow(self.welcome_join_channel_select),
             discord.ui.ActionRow(self.welcome_leave_channel_select),
             discord.ui.Separator(),
-            discord.ui.TextDisplay("### Leveling\n-# Enable or disable XP tracking for this server."),
-            leveling_toggle_row,
+            discord.ui.TextDisplay(
+                "### Leveling\n-# Enable or disable XP tracking for this server.",
+            ),
+            self.leveling_toggle_row,
             discord.ui.Separator(),
             discord.ui.TextDisplay(
                 "### Global Chat\n-# Global chat allows users to chat across multiple servers.",
             ),
-            global_chat_toggle_row,
+            self.global_chat_toggle_row,
             discord.ui.ActionRow(self.global_chat_channel_select),
         )
 

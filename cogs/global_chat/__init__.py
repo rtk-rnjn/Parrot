@@ -25,6 +25,8 @@ with open("assets/profane_words.json") as file:
 class GlobalChat(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self.user_cooldown = commands.CooldownMapping.from_cooldown(1, 5, commands.BucketType.user)
+        self.channel_cooldown = commands.CooldownMapping.from_cooldown(1, 10, commands.BucketType.channel)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -43,6 +45,16 @@ class GlobalChat(commands.Cog):
             or message.content.startswith((".", "!", "$", "?", "-", "+"))
             or not message.content.strip()
         ):
+            return
+
+        user_bucket = self.user_cooldown.get_bucket(message)
+        user_retry_after = user_bucket.update_rate_limit() if user_bucket is not None else None
+        if user_retry_after:
+            return
+
+        channel_bucket = self.channel_cooldown.get_bucket(message)
+        channel_retry_after = channel_bucket.update_rate_limit() if channel_bucket is not None else None
+        if channel_retry_after:
             return
 
         async for guild_id, webhook_uri in self.bot.database.fetch_active_global_chat_webhooks():

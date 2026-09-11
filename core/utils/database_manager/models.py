@@ -106,15 +106,26 @@ class StarboardConfig(TypedDict):
     board_messages: dict[str, int]
 
 
+class BirthdayConfig(TypedDict):
+    enabled: bool
+    channel_id: int | None
+
+
+class GlobalChatConfig(TypedDict):
+    enabled: bool
+    channel_id: int | None
+    webhook_uri: str | None
+
 class GuildConfiguration(TypedDict):
     _id: int
     command_prefix: str
     mute_role_id: int | None
     hub_channel_id: int | None
+
     hub_channel_owners: dict[str, int]  # channel_id -> owner_id
 
     muted_members: list[int]
-    violations: dict[str, dict[str, int]]
+    violations: dict[str, dict[str, int]]  # violation_name -> {user_id -> count}
     automod: AutomodConfig
 
     leveling_config: LevelingConfig
@@ -122,6 +133,7 @@ class GuildConfiguration(TypedDict):
     welcome_config: WelcomeConfig
     starboard_config: StarboardConfig
     birthday_config: BirthdayConfig
+    global_chat_config: GlobalChatConfig
 
     custom_commands: list[CustomCommand]
     tags: list[Tag]
@@ -134,11 +146,6 @@ class GuildConfiguration(TypedDict):
     # Meta
     custom_commands_db: dict[str, str]
     custom_commands_logs: list[str]
-
-
-class BirthdayConfig(TypedDict):
-    enabled: bool
-    channel_id: int | None
 
 
 class TodoStatus(StrEnum):
@@ -181,77 +188,3 @@ class Command(TypedDict):
     guild_id: int
 
     message_content: str
-
-
-class StatsKind(StrEnum):
-    MESSAGE = "message"
-    COMMAND = "command"
-    EVENT = "event"
-    PRESENCE = "presence"
-    PRESENCE_TRANSITION = "presence_transition"
-    VOICE = "voice"
-    VOICE_TRANSITION = "voice_transition"
-
-
-class StatsEvent(StrEnum):
-    BOT_PING = "bot_ping"
-    DATABASE_PING = "database_ping"
-    MEMBER_JOIN = "member_join"
-    MEMBER_LEAVE = "member_leave"
-    MEMBER_UPDATE = "member_update"
-    MESSAGE_EDIT = "message_edit"
-    MESSAGE_DELETE = "message_delete"
-    REACTION_ADD = "reaction_add"
-    REACTION_REMOVE = "reaction_remove"
-    TYPING_START = "typing_start"
-    INTERACTION = "interaction"
-    THREAD_CREATE = "thread_create"
-    THREAD_DELETE = "thread_delete"
-    CHANNEL_CREATE = "channel_create"
-    CHANNEL_DELETE = "channel_delete"
-    ROLE_CREATE = "role_create"
-    ROLE_DELETE = "role_delete"
-    BAN_ADD = "ban_add"
-    BAN_REMOVE = "ban_remove"
-    SCHEDULED_EVENT_SUBSCRIBE = "scheduled_event_subscribe"
-    SCHEDULED_EVENT_UNSUBSCRIBE = "scheduled_event_unsubscribe"
-    PRESENCE_ACTIVITY = "presence_activity"
-
-
-class PresenceStatus(StrEnum):
-    ONLINE = "online"
-    OFFLINE = "offline"
-    IDLE = "idle"
-    DND = "dnd"
-
-
-class VoiceState(StrEnum):
-    NORMAL = "normal"
-    MUTED = "muted"
-    DEAFENED = "deafened"
-    STREAMING = "streaming"
-    VIDEO = "video"
-    MUTED_DEAFENED = "muted|deafened"
-    MUTED_STREAMING = "muted|streaming"
-    MUTED_VIDEO = "muted|video"
-    DEAFENED_STREAMING = "deafened|streaming"
-    DEAFENED_VIDEO = "deafened|video"
-    STREAMING_VIDEO = "streaming|video"
-    MUTED_DEAFENED_STREAMING = "muted|deafened|streaming"
-    MUTED_DEAFENED_VIDEO = "muted|deafened|video"
-    MUTED_STREAMING_VIDEO = "muted|streaming|video"
-    DEAFENED_STREAMING_VIDEO = "deafened|streaming|video"
-    MUTED_DEAFENED_STREAMING_VIDEO = "muted|deafened|streaming|video"
-
-
-class Stats(TypedDict):
-    _id: ObjectId
-    interval_start: datetime
-    guild_id: int
-    user_id: int
-    kind: StatsKind
-    event: StatsEvent | None
-    channel_id: int | None
-    status: PresenceStatus | None
-    voice_state: VoiceState | None
-    values: dict[str, int | float]

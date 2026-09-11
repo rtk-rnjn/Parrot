@@ -969,7 +969,14 @@ class Mod(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.cooldown(1, 5.0, type=commands.BucketType.channel)
-    async def cleanup(self, ctx: commands.Context[Parrot], search: int = 100):
+    async def cleanup(
+        self,
+        ctx: commands.Context[Parrot],
+        search: commands.Range[int, 2, 1000] | None = commands.parameter(  # noqa: B008
+            description="The number of messages to search through.",
+            default=25,
+        ),
+    ):
         """Cleans up the bot's messages from the channel.
 
         If a search number is specified, it searches that many messages to delete.
@@ -985,6 +992,8 @@ class Mod(commands.Cog):
         """
 
         assert isinstance(ctx.me, discord.Member) and isinstance(ctx.author, discord.Member)
+
+        search = search or 25
 
         strategy = self._basic_cleanup_strategy
         is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
@@ -1052,7 +1061,7 @@ class Mod(commands.Cog):
     async def purge(  # noqa: C901
         self,
         ctx: commands.Context[Parrot],
-        limit: commands.Range[int, 1, 2000] = commands.parameter(  # noqa: B008
+        limit: commands.Range[int, 1, 2000] | None = commands.parameter(  # noqa: B008
             description="The number of messages to search through.",
             default=100,
         ),

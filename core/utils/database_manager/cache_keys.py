@@ -15,6 +15,10 @@ class RedisKeys(StrEnum):
 
     GUILD_MEMBER_VOILATION_COUNT = "guild:{guild_id}:violations:{voilation_name}:member:{user_id}"
 
+    GUILD_GLOBAL_CHAT_CONFIG_ENABLED = "guild:{guild_id}:global_chat_config:enabled"
+    GUILD_GLOBAL_CHAT_CONFIG_CHANNEL_ID = "guild:{guild_id}:global_chat_config:channel_id"
+    GUILD_GLOBAL_CHAT_CONFIG_WEBHOOK_URI = "guild:{guild_id}:global_chat_config:webhook_uri"
+
     GUILD_AUTOMOD_RULES = "guild:{guild_id}:automod_rules"
     GUILD_AUTOMOD_RULE_TRIGGER = "guild:{guild_id}:automod_rule:{rule_name}:trigger"
     GUILD_AUTOMOD_RULE_CONDITIONS = "guild:{guild_id}:automod_rule:{rule_name}:conditions"

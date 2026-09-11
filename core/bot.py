@@ -58,6 +58,7 @@ LOADABLE_COGS = [
     "cogs.fun.fun",
     "cogs.games",
     "cogs.giveaway",
+    "cogs.global_chat",
     "cogs.highlight",
     "cogs.hub",
     "cogs.leveling",

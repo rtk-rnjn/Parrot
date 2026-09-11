@@ -10,6 +10,7 @@ from .automod import _GuildAutomodMixin  # noqa
 from .birthday import _GuildBirthdayMixin  # noqa
 from .custom_commands import _GuildCustomCommandsMixin  # noqa
 from .giveaway import _GuildGiveawayMixin  # noqa
+from .global_chat import _GuildGlobalChatMixin  # noqa
 from .hub import _GuildHubMixin  # noqa
 from .leveling import _GuildLevelingMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
@@ -43,6 +44,7 @@ class _GuildMixin(
     _GuildWelcomerMixin,
     _GuildStarboardMixin,
     _GuildBirthdayMixin,
+    _GuildGlobalChatMixin,
 ):
     def empty_guild_config(self, guild_id: int) -> GuildConfiguration:
         return {
@@ -50,6 +52,12 @@ class _GuildMixin(
             "command_prefix": DEFAULT_PREFIX,
             "mute_role_id": None,
             "hub_channel_id": None,
+            "hub_channel_owners": {},
+            "global_chat_config": {
+                "enabled": False,
+                "channel_id": None,
+                "webhook_uri": None,
+            },
             "muted_members": [],
             "violations": {},
             "automod": {

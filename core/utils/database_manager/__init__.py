@@ -10,7 +10,7 @@ from redis.asyncio import Redis
 
 from .bot import _BotMixin
 from .guild import _GuildMixin
-from .models import Giveaway, GuildConfiguration, Stats, UserConfiguration
+from .models import Giveaway, GuildConfiguration, UserConfiguration
 from .scam_links import _ScamLinksMixin
 from .cache_keys import RedisKeys
 from .user import _UserMixin
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 __all__ = ("DatabaseManager",)
 
-_ = load_dotenv()
+load_dotenv()
 
 MONGO_URI = os.environ.get(
     "MONGO_URI",
@@ -37,8 +37,8 @@ class _DatabaseInfraMixin:
     mongo_client: AsyncMongoClient
     guilds_collection: AsyncCollection[GuildConfiguration]
     users_collection: AsyncCollection[UserConfiguration]
+
     giveaways_collection: AsyncCollection[Giveaway]
-    stats_collection: AsyncCollection[Stats]
 
     async def invalidate_redis(self) -> None:
         """Invalidate all Redis cache entries (useful for testing)."""
@@ -82,7 +82,6 @@ class DatabaseManager(
         self.guilds_collection: AsyncCollection[GuildConfiguration] = self.mongo_db["guilds"]
         self.users_collection: AsyncCollection[UserConfiguration] = self.mongo_db["users"]
         self.giveaways_collection: AsyncCollection[Giveaway] = self.mongo_db["giveaways"]
-        self.stats_collection: AsyncCollection[Stats] = self.mongo_db["stats"]
 
     @property
     def redis_client(self) -> Redis:

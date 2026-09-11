@@ -129,6 +129,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
         )
         self.welcome_leave_channel_select.callback = self.set_welcome_leave_channel_callback
 
+
         self.leveling_enable_button = discord.ui.Button(
             label="Enable",
             style=discord.ButtonStyle.success,
@@ -143,6 +144,26 @@ class ConfigurationLayout(discord.ui.LayoutView):
         self.leveling_disable_button.callback = self.disable_leveling_callback
         leveling_toggle_row = discord.ui.ActionRow(self.leveling_enable_button, self.leveling_disable_button)
 
+        self.global_chat_enable_button = discord.ui.Button(
+            label="Enable",
+            style=discord.ButtonStyle.success,
+            disabled=kwargs["global_chat_config"]["enabled"],
+        )
+        self.global_chat_enable_button.callback = self.enable_global_chat_callback
+        self.global_chat_disable_button = discord.ui.Button(
+            label="Disable",
+            style=discord.ButtonStyle.danger,
+            disabled=not kwargs["global_chat_config"]["enabled"],
+        )
+        self.global_chat_disable_button.callback = self.disable_global_chat_callback
+        global_chat_toggle_row = discord.ui.ActionRow(self.global_chat_enable_button, self.global_chat_disable_button)
+        self.global_chat_channel_select = discord.ui.ChannelSelect(
+            placeholder="Select the global chat channel...",
+            channel_types=[discord.ChannelType.text],
+            default_values=[discord.Object(id=kwargs["global_chat_config"]["channel_id"])] if kwargs["global_chat_config"]["channel_id"] else [],
+        )
+        self.global_chat_channel_select.callback = self.set_global_chat_channel_callback
+
         container = discord.ui.Container(
             discord.ui.TextDisplay(
                 "## Configuration\n-# This is the configuration panel for the bot. You can change various settings here.\n",
@@ -154,7 +175,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
             mute_role_action,
             discord.ui.Separator(),
             discord.ui.TextDisplay(
-                "### Hub Channel\n-# This is basically Join To Create. When a user joins this channel, a temporary voice channel will be created for them.",
+                "### Hub Channel\n-# When a user joins this channel, a temporary voice channel will be created for them.",
             ),
             hub_channel_action,
             discord.ui.Separator(),
@@ -165,6 +186,12 @@ class ConfigurationLayout(discord.ui.LayoutView):
             discord.ui.Separator(),
             discord.ui.TextDisplay("### Leveling\n-# Enable or disable XP tracking for this server."),
             leveling_toggle_row,
+            discord.ui.Separator(),
+            discord.ui.TextDisplay(
+                "### Global Chat\n-# Global chat allows users to chat across multiple servers.",
+            ),
+            global_chat_toggle_row,
+            discord.ui.ActionRow(self.global_chat_channel_select),
         )
 
         self.add_item(container)
@@ -290,14 +317,55 @@ class ConfigurationLayout(discord.ui.LayoutView):
         await interaction.client.database.set_hub_channel_id(guild_id=interaction.guild.id, hub_channel_id=channel.id)
         await interaction.response.send_message("Hub channel updated.", ephemeral=True)
 
-    # @action_row.button(emoji="\N{DIGIT ONE}", style=discord.ButtonStyle.red, disabled=True)
-    # async def button_one_callback(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
-    #     pass
+    async def enable_global_chat_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        await interaction.client.database.enable_global_chat(guild_id=interaction.guild.id)
+        self.global_chat_enable_button.disabled = True
+        self.global_chat_disable_button.disabled = False
+        await interaction.response.edit_message(view=self)
 
-    # @action_row.button(emoji="\N{DIGIT TWO}", style=discord.ButtonStyle.green)
-    # async def button_two_callback(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
-    #     await interaction.response.send_message("Button two clicked!", ephemeral=True)
+    async def disable_global_chat_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        await interaction.client.database.disable_global_chat(guild_id=interaction.guild.id)
+        self.global_chat_enable_button.disabled = False
+        self.global_chat_disable_button.disabled = True
+        await interaction.response.edit_message(view=self)
 
+    async def set_global_chat_channel_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if not await self._require_administrator(interaction):
+            return
+        assert interaction.guild is not None
+        channel = self.global_chat_channel_select.values[0]
+        guild_channel = interaction.guild.get_channel(channel.id)
+        if guild_channel is None:
+            await interaction.response.send_message(
+                "The selected channel does not exist in this server. Please select a different channel.",
+                ephemeral=True,
+            )
+            return
+
+        if not guild_channel.permissions_for(interaction.guild.me).manage_webhooks:
+            await interaction.response.send_message(
+                "Bot do not have permission to manage webhooks in that channel. Please select a different channel.",
+                ephemeral=True,
+            )
+            return
+
+        assert isinstance(guild_channel, discord.TextChannel), "Selected channel is not a text channel."
+
+        await interaction.response.defer(ephemeral=True)
+
+        webhook = await guild_channel.create_webhook(name="Parrot Global Chat", reason="Global chat webhook for Parrot bot.")
+        await interaction.client.database.set_global_chat_channel_id(guild_id=interaction.guild.id, channel_id=channel.id)
+        await interaction.client.database.set_global_chat_webhook_uri(guild_id=interaction.guild.id, webhook_uri=webhook.url)
+        await interaction.followup.send(
+            f"Global chat channel updated to {guild_channel.mention}. A webhook has been created for global chat messages.",
+            ephemeral=True,
+        )
 
 class Config(commands.Cog):
     """Cog for managing bot configuration."""

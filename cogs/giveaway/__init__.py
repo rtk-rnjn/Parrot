@@ -74,7 +74,7 @@ class GiveawayCog(commands.Cog):
         except Exception:
             return None
 
-    @commands.group(name="giveaway", invoke_without_command=True)
+    @commands.group(name="giveaway", invoke_without_command=True, aliases=["gaw", "gw"])
     @commands.guild_only()
     async def giveaway(self, ctx: commands.Context[Parrot]) -> None:
         """Manage giveaways in this server."""

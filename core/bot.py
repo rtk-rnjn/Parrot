@@ -136,7 +136,7 @@ class Parrot(commands.Bot):
             _log.warning("Java executable not found in PATH. Lavalink will not be started.")
             return
 
-        if not lavalink_jar.exists():  # noqa: ASYNC240
+        if not await asyncio.to_thread(lavalink_jar.exists):
             _log.warning("Lavalink.jar not found. Lavalink will not be started.")
             return
 
@@ -187,7 +187,7 @@ class Parrot(commands.Bot):
         async for changes in awatch(COGS_DIR, debounce=3200):
             extensions: set[str] = set()
             for _, changed_path in changes:
-                path = Path(changed_path).resolve()  # noqa: ASYNC240
+                path = await asyncio.to_thread(Path(changed_path).resolve)
                 if path.suffix != ".py":
                     continue
 

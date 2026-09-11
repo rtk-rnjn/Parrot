@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, ClassVar
 import discord
 from discord.ext import commands
 
-from core.constants import BLACK_JACK_CARDS, CARD_BACK
+from core.constants import CARD_BACK_EMOJI, CARDS_EMOJIS_MAP
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor
 from .wordle import WordInputButton
@@ -16,8 +16,8 @@ from .wordle import WordInputButton
 if TYPE_CHECKING:
     from core import Parrot
 
-_black_jack_cards = BLACK_JACK_CARDS.copy()
-_card_back = CARD_BACK
+_black_jack_cards = CARDS_EMOJIS_MAP.copy()
+_card_back = CARD_BACK_EMOJI
 
 
 class HandStatus(Enum):

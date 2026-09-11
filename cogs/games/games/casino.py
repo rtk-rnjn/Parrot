@@ -11,7 +11,7 @@ from discord.ext import commands
 from jishaku.functools import executor_function
 from PIL import Image, ImageDraw, ImageFont
 
-from core.constants import BLACK_JACK_CARDS, CARD_BACK
+from core.constants import CARD_BACK_EMOJI, CARDS_EMOJIS_MAP
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor
 
@@ -34,7 +34,7 @@ class CardDeck:
 
 
 def card_emoji(card: str) -> str:
-    emoji = BLACK_JACK_CARDS.get(card)
+    emoji = CARDS_EMOJIS_MAP.get(card)
     if emoji is None:
         message = f"No card emoji registered for {card!r}"
         raise KeyError(message)
@@ -236,7 +236,7 @@ class PokerGame(CasinoGame):
         embed.add_field(name=f"Your hand \N{EM DASH} {self.HAND_NAMES[player_score[0]]}", value=cards_text(self.player_cards), inline=False)
         embed.add_field(
             name=f"Dealer hand \N{EM DASH} {self.HAND_NAMES[dealer_score[0]] if self.finished else 'hidden'}",
-            value=cards_text(self.dealer_cards) if self.finished else str(CARD_BACK),
+            value=cards_text(self.dealer_cards) if self.finished else str(CARD_BACK_EMOJI),
             inline=False,
         )
         return embed
@@ -281,7 +281,7 @@ class TeenPattiGame(CasinoGame):
         embed.add_field(name=f"Your hand \N{EM DASH} {self.HAND_NAMES[player_score[0]]}", value=cards_text(self.player_cards), inline=False)
         embed.add_field(
             name=f"Dealer hand \N{EM DASH} {self.HAND_NAMES[dealer_score[0]] if self.finished else 'hidden'}",
-            value=cards_text(self.dealer_cards) if self.finished else str(CARD_BACK),
+            value=cards_text(self.dealer_cards) if self.finished else str(CARD_BACK_EMOJI),
             inline=False,
         )
         return embed

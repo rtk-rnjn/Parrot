@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+__all__ = ("RedisKeys",)
 
 class RedisKeys(StrEnum):
     """Templates for keys used by the Redis cache."""

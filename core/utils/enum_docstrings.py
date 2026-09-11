@@ -8,6 +8,8 @@ from enum import Enum
 from functools import partial
 from operator import is_
 
+__all__ = ("enum_docstrings",)
+
 
 def enum_docstrings[E: Enum](enum: type[E]) -> type[E]:
     '''Attach docstrings to enum members

@@ -4,6 +4,7 @@ from redis.asyncio import Redis
 
 from .cache_keys import RedisKeys
 
+__all__ = ("_ScamLinksMixin",)
 
 class _ScamLinksMixin:
     redis_client: Redis

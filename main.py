@@ -111,7 +111,7 @@ def setup_logging() -> None:
 async def start_bot() -> None:
     _log = logging.getLogger("bot")
 
-    lavalink_process = Parrot.start_lavalink()
+    lavalink_process = await Parrot.start_lavalink()
     if lavalink_process is not None:
         _log.info("Lavalink process started.")
     else:
@@ -132,7 +132,7 @@ async def start_bot() -> None:
         await bot.close()
         if lavalink_process is not None:
             lavalink_process.terminate()
-            lavalink_process.wait()
+            await lavalink_process.wait()
         _log.info("Bot has been shut down.")
 
 

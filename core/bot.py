@@ -130,25 +130,25 @@ class Parrot(commands.Bot):
         self._cog_autoreload_task: asyncio.Task[None] | None = None
 
     @staticmethod
-    def start_lavalink() -> subprocess.Popen | None:
+    async def start_lavalink() -> asyncio.subprocess.Process | None:
         java = shutil.which("java")
         if java is None:
-            raise RuntimeError("Java is not installed or not found in PATH.")
+            _log.warning("Java executable not found in PATH. Lavalink will not be started.")
+            return
 
-        if not lavalink_jar.exists():
-            error = f"Lavalink.jar not found at {lavalink_jar.resolve()}."
-            raise RuntimeError(error)
+        if not lavalink_jar.exists():  # noqa: ASYNC240
+            _log.warning("Lavalink.jar not found. Lavalink will not be started.")
+            return
 
         try:
-            process = subprocess.Popen(
-                [java, "-jar", str(lavalink_jar)],
+            process = await asyncio.create_subprocess_shell(
+                " ".join([java, "-jar", str(lavalink_jar)]),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
             return process
-        except Exception as e:
-            error = f"Failed to start Lavalink: {e}"
-            raise RuntimeError(error) from e
+        except Exception:
+            _log.exception("Failed to start Lavalink process.")
 
     @override
     async def setup_hook(self) -> None:

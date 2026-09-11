@@ -12,10 +12,10 @@ import discord
 from discord.ext import commands
 from rapidfuzz import fuzz, process
 
-from core.utils import human_join
+from core import human_join
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 

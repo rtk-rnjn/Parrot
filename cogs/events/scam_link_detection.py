@@ -15,7 +15,7 @@ except ImportError:
     from json import loads
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.scam_link_detection")
 

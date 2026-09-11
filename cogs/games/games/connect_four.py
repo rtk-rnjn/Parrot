@@ -8,7 +8,7 @@ from discord.ext import commands
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, double_wait
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 RED = "\N{LARGE RED CIRCLE}"

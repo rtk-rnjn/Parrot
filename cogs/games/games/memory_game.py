@@ -17,7 +17,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class MemoryButton(discord.ui.Button["MemoryView"]):

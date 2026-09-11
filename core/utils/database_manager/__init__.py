@@ -9,14 +9,14 @@ from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
 
 from .bot import _BotMixin
+from .cache_keys import RedisKeys
 from .guild import _GuildMixin
 from .models import Giveaway, GuildConfiguration, UserConfiguration
 from .scam_links import _ScamLinksMixin
-from .cache_keys import RedisKeys
 from .user import _UserMixin
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 __all__ = ("DatabaseManager",)
 

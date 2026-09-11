@@ -35,7 +35,7 @@ from .games import (
 )
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.games")
 

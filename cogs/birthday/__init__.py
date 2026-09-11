@@ -12,7 +12,7 @@ from PIL import Image
 from .card import birthday_card_file
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.birthday")
 DATE_FORMAT = "MM-DD"

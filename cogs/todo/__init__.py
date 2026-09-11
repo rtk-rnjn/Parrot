@@ -8,11 +8,11 @@ import discord
 from bson import ObjectId
 from discord.ext import commands
 
-from core.utils import FutureTime
+from core import FutureTime
 from core.utils.database_manager.models import TodoItem
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.todo")
 

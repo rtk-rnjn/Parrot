@@ -11,7 +11,7 @@ from discord.ext import commands, tasks
 from .utils import rank_card
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.leveling")
 

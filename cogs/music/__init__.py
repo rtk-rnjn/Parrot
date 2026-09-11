@@ -11,7 +11,7 @@ from discord.ext.commands import Context
 from .player import Player
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 _log = logging.getLogger("bot.cogs.music")

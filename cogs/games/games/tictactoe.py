@@ -8,7 +8,7 @@ from discord.ext import commands
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class Tictactoe:

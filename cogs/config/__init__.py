@@ -9,8 +9,8 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from cogs.leveling import Leveling
-    from core.bot import Parrot
-    from core.utils.database_manager.models import GuildConfiguration
+    from core import Parrot
+    from core.utils.database_manager import GuildConfiguration
 
 
 _log = logging.getLogger("bot.cogs.config")
@@ -128,7 +128,6 @@ class ConfigurationLayout(discord.ui.LayoutView):
             default_values=[self.welcome_leave_channel] if self.welcome_leave_channel else [],
         )
         self.welcome_leave_channel_select.callback = self.set_welcome_leave_channel_callback
-
 
         self.leveling_enable_button = discord.ui.Button(
             label="Enable",
@@ -366,6 +365,7 @@ class ConfigurationLayout(discord.ui.LayoutView):
             f"Global chat channel updated to {guild_channel.mention}. A webhook has been created for global chat messages.",
             ephemeral=True,
         )
+
 
 class Config(commands.Cog):
     """Cog for managing bot configuration."""

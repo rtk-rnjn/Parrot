@@ -10,7 +10,7 @@ from .number_slider import SlideView
 from .utils import DEFAULT_COLOR, DiscordColor, Player, chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 BULB = "\N{ELECTRIC LIGHT BULB}"
 

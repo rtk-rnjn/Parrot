@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.starboard")
 DEFAULT_THRESHOLD = 3
@@ -82,7 +82,7 @@ class Starboard(commands.Cog):
             return
 
         emote = discord.PartialEmoji.from_str(emoji)
-        if emote.is_custom_emoji() and ctx.guild.get_emoji(emote.id) is None: # pyright: ignore[reportArgumentType]
+        if emote.is_custom_emoji() and ctx.guild.get_emoji(emote.id) is None:  # pyright: ignore[reportArgumentType]
             await ctx.reply("That custom emoji is not available in this server.")
             return
 

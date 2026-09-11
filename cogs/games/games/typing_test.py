@@ -12,7 +12,7 @@ from rapidfuzz import fuzz
 from .utils import DEFAULT_COLOR, DiscordColor, Player
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 with open("assets/random_sentences.txt", encoding="utf-8") as file:

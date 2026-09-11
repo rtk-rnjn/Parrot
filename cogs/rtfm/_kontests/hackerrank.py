@@ -14,7 +14,7 @@ UPCOMING = "contests/upcoming"
 PAST = "contests/past"
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class HackerRankContest:

@@ -14,7 +14,7 @@ from .utils import DEFAULT_COLOR, BaseView, DiscordColor
 from .wordle import WordInputButton
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _black_jack_cards = BLACK_JACK_CARDS.copy()
 _card_back = CARD_BACK

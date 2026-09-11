@@ -11,14 +11,14 @@ import discord
 from colorama import Fore
 from discord.ext import commands
 
-from core.utils import PaginationView
+from core import PaginationView
 from core.utils.database_manager.models import CustomCommand as CustomCommandModel
 
 from .jinja import render_sandboxed
 from .variables import JinjaChannel, JinjaGuild, JinjaMember, JinjaMessage
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 VALID_COMMAND_NAME = re.compile(r"^[a-z0-9_-]{1,32}$", re.IGNORECASE)
 

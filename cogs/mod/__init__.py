@@ -11,10 +11,10 @@ import arrow
 import discord
 from discord.ext import commands
 
-from core.utils import FutureTime
+from core import FutureTime
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.mod")
 

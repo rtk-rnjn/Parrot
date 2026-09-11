@@ -15,7 +15,7 @@ from .cards import Card, create_deck
 from .enums import CardType, Color
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 COLORS = {
     Color.red: (255, 69, 69),

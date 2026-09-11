@@ -8,13 +8,13 @@ import discord
 from discord import Embed
 from discord.ext import commands
 
+from core import in_month
 from core.constants import Month
-from core.utils import in_month
 
 if TYPE_CHECKING:
     from discord.ext.commands import Context
 
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.fun.hanukkah")
 
@@ -89,6 +89,7 @@ class Hanukkah(commands.Cog, command_attrs={"hidden": True}):
             embed.description = f"Looks like you missed Hanukkah! Hanukkah ended on {format_end}."
 
         await ctx.send(embed=embed)
+
 
 async def setup(bot: Parrot) -> None:
     """Load the cog."""

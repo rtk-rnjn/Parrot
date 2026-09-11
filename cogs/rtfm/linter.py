@@ -15,7 +15,7 @@ from ._utils import (
 )
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class Linter(commands.Cog):

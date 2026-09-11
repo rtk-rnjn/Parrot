@@ -18,10 +18,10 @@ from discord.ext.commands import Context
 from PIL import Image, ImageColor
 from rapidfuzz.process import extractOne as rf_extract_one
 
-from core.utils import PaginationView
+from core import PaginationView
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.fun")
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 from .birthday import _UserBirthdayMixin  # noqa
 from .highlights import _UserHighlightsMixin  # noqa
 from .timezone import _UserTimezoneMixin  # noqa

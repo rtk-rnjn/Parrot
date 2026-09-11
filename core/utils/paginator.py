@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class PaginationView[PageT: discord.Embed | str](discord.ui.View):

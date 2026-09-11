@@ -12,11 +12,11 @@ import discord
 from discord.ext import commands
 from rapidfuzz import fuzz
 
+from core import in_month
 from core.constants import Month
-from core.utils import in_month
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 NAMES: dict = json.loads(Path(r"assets/pride/drag_queen_names.json").read_text("utf8"))
@@ -178,6 +178,7 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
         embed = self.embed_builder(leader)
         await ctx.reply(embed=embed)
+
 
 async def setup(bot: Parrot) -> None:
     """Load the cog."""

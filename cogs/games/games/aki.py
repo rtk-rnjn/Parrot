@@ -4,14 +4,13 @@ from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, Literal
 
 import discord
-from akinator import AsyncAkinator as AkinatorGame
-from akinator import CantGoBackAnyFurther
+from akinator import AsyncAkinator as AkinatorGame, CantGoBackAnyFurther
 from discord.ext import commands
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, double_wait
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class Options(Enum):

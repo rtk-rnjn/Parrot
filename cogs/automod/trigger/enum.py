@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from core.utils import enum_docstrings
+from core import enum_docstrings
 
 
 @enum_docstrings

@@ -15,7 +15,7 @@ from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 

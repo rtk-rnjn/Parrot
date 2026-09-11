@@ -10,7 +10,7 @@ import pomice
 from discord.ext.commands import Context
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 MEMBER_ID = int
 VoteSet = set[MEMBER_ID]

@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 loads = discord.utils._from_json
 
@@ -80,6 +80,7 @@ class GlobalChat(commands.Cog):
         content = discord.utils.escape_mentions(content)
 
         return content
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(GlobalChat(bot))

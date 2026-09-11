@@ -16,7 +16,7 @@ from core.constants import BLACK_JACK_CARDS, CARD_BACK
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class CardDeck:

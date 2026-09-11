@@ -26,18 +26,12 @@ from discord.ext import commands
 from jishaku.paginators import PaginatorInterface
 from yapf.yapflib.yapf_api import FormatCode as yapf_format
 
-from ._bandit import BanditConverter
-from ._bandit import validate_flag as bandit_validate_flag
-from ._flake8 import Flake8Converter
-from ._flake8 import validate_flag as flake8_validate_flag
-from ._mypy import MypyConverter
-from ._mypy import validate_flag as mypy_validate_flag
-from ._pylint import PyLintConverter
-from ._pylint import validate_flag as pylint_validate_flag
-from ._pyright import PyrightConverter
-from ._pyright import validate_flag as pyright_validate_flag
-from ._ruff import RuffConverter
-from ._ruff import validate_flag as ruff_validate_flag
+from ._bandit import BanditConverter, validate_flag as bandit_validate_flag
+from ._flake8 import Flake8Converter, validate_flag as flake8_validate_flag
+from ._mypy import MypyConverter, validate_flag as mypy_validate_flag
+from ._pylint import PyLintConverter, validate_flag as pylint_validate_flag
+from ._pyright import PyrightConverter, validate_flag as pyright_validate_flag
+from ._ruff import RuffConverter, validate_flag as ruff_validate_flag
 
 GITHUB_API_URL = "https://api.github.com"
 

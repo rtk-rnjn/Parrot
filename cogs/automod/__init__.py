@@ -9,7 +9,7 @@ from discord.ext import commands
 from .automod import Rule
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 VALID_RULE_NAME = re.compile(r"^[a-z0-9_-]{1,32}$", re.IGNORECASE)
 

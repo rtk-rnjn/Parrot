@@ -10,7 +10,7 @@ from discord.ext import commands
 from .utils import BaseView, chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class ChimpButton(discord.ui.Button["ChimpView"]):

@@ -12,7 +12,7 @@ from .utils import DEFAULT_COLOR, BaseView, DiscordColor
 from .wordle import WordInputButton
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 BLANK: Final[str] = "  \N{ZERO WIDTH SPACE}"
 

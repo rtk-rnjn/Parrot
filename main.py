@@ -11,7 +11,7 @@ from aiohttp import AsyncResolver, ClientSession, TCPConnector
 from dotenv import load_dotenv
 from rich.logging import RichHandler
 
-from core.bot import Parrot
+from core import Parrot
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)

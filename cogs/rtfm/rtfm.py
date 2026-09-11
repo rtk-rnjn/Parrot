@@ -52,7 +52,7 @@ except ImportError:
 if TYPE_CHECKING:
     import frontmatter
 
-    from core.bot import Parrot
+    from core import Parrot
 
 
 _log = logging.getLogger("bot.cogs.rtfm")

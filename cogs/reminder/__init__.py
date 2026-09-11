@@ -11,11 +11,10 @@ from discord.ext import commands
 from lxml import etree
 from rapidfuzz import fuzz, process
 
-from core.utils import FriendlyTimeResult, FutureTime, UserFriendlyTime
-from core.utils import TimerData as Timer
+from core import FriendlyTimeResult, FutureTime, TimerData as Timer, UserFriendlyTime
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.reminder")
 

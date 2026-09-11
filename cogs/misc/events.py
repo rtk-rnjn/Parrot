@@ -9,7 +9,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.misc.events")
 

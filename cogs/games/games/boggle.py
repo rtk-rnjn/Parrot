@@ -10,7 +10,7 @@ from english_words import get_english_words_set
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, chunk
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class BoggleButton(discord.ui.Button["BoggleView"]):

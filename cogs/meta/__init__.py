@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
-from core.utils import DeleteMessageButtonView
+from core import DeleteMessageButtonView
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.meta")
 

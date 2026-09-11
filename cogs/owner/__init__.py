@@ -10,7 +10,7 @@ from discord.ext import commands
 from jishaku.codeblocks import codeblock_converter
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 _log = logging.getLogger("bot.cogs.owner")

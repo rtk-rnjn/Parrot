@@ -183,7 +183,7 @@ class Parrot(commands.Bot):
     async def _autoreload_cogs(self) -> None:
         extension_paths = self._cog_extension_paths()
 
-        async for changes in awatch(COGS_DIR):
+        async for changes in awatch(COGS_DIR, debounce=3200):
             extensions: set[str] = set()
             for _, changed_path in changes:
                 path = Path(changed_path).resolve()  # noqa: ASYNC240

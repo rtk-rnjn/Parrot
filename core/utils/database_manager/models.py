@@ -116,6 +116,12 @@ class GlobalChatConfig(TypedDict):
     channel_id: int | None
     webhook_uri: str | None
 
+
+class TelephoneConfig(TypedDict):
+    enabled: bool
+    blocked_servers: list[int]
+
+
 class GuildConfiguration(TypedDict):
     _id: int
     command_prefix: str
@@ -134,6 +140,7 @@ class GuildConfiguration(TypedDict):
     starboard_config: StarboardConfig
     birthday_config: BirthdayConfig
     global_chat_config: GlobalChatConfig
+    telephone_config: TelephoneConfig
 
     custom_commands: list[CustomCommand]
     tags: list[Tag]

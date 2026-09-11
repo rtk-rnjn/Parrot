@@ -15,7 +15,7 @@ from discord.utils import _from_json as loads
 from PIL import Image
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
     type Context = commands.Context[Parrot]
 

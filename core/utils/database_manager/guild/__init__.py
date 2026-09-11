@@ -101,6 +101,10 @@ class _GuildMixin(
             "afk_users": {},
             "events": {},
             "leveling_data": {},
+            "telephone_config": {
+                "enabled": False,
+                "blocked_servers": [],
+            },
             "custom_commands_db": {},
             "custom_commands_logs": [],
         }

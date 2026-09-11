@@ -13,7 +13,7 @@ from pymongo.errors import ConnectionFailure
 from pymongo.results import DeleteResult, InsertOneResult
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 __all__ = ("TimersManager", "TimerData")

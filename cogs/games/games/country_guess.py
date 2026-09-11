@@ -14,7 +14,7 @@ from PIL import Image, ImageFilter, ImageOps
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 class CountryGuesser:

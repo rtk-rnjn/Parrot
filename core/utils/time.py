@@ -13,7 +13,7 @@ from discord.ext import commands
 from .formats import human_join, plural
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 __all__ = (
     "ShortTime",

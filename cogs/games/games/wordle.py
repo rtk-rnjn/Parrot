@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 BORDER: Final[int] = 40

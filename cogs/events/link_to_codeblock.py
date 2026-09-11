@@ -13,7 +13,7 @@ from aiohttp import ClientResponseError
 from discord.ext import commands
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 _log = logging.getLogger("bot.cogs.link_to_codeblock")
 

@@ -3,6 +3,7 @@ from enum import StrEnum
 
 class RedisKeys(StrEnum):
     """Templates for keys used by the Redis cache."""
+
     REGISTERED_GUILDS = "registered_guilds"
     REGISTERED_USERS = "registered_users"
 
@@ -65,6 +66,10 @@ class RedisKeys(StrEnum):
     GUILD_STARBOARD_CONFIG = "guild:{guild_id}:starboard_config"
     GUILD_STARBOARD_BOARD_MESSAGES = "guild:{guild_id}:starboard_board_messages"
     GUILD_BIRTHDAY_CONFIG = "guild:{guild_id}:birthday_config"
+
+    GUILD_TELEPHONE_CONFIG_ENABLED = "guild:{guild_id}:telephone_config:enabled"
+    GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS = "guild:{guild_id}:telephone_config:blocked_servers"
+    GUILD_TELEPHONE_LINE_BUSY = "guild:{guild_id}:telephone_line_busy"
 
     USER_TIMEZONE = "user:{user_id}:timezone"
 

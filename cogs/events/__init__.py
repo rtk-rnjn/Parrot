@@ -7,7 +7,7 @@ from .link_to_codeblock import LinkToCodeblock
 from .scam_link_detection import ScamLinkDetection
 
 if TYPE_CHECKING:
-    from core.bot import Parrot
+    from core import Parrot
 
 
 async def setup(bot: Parrot) -> None:

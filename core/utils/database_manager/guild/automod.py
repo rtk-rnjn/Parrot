@@ -11,4 +11,3 @@ class _GuildAutomodMixin:
 
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
-

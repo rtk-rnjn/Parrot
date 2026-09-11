@@ -13,8 +13,7 @@ from discord.ext import commands
 from jishaku.functools import executor_function as executor
 from PIL import Image, ImageDraw
 
-from .utils import DEFAULT_COLOR, BaseView, DiscordColor
-from .utils import Player as PlayerType
+from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player as PlayerType
 from .wordle import WordInputButton
 
 Coords = tuple[int, int]

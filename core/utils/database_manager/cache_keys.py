@@ -71,6 +71,7 @@ class RedisKeys(StrEnum):
     GUILD_TELEPHONE_CONFIG_ENABLED = "guild:{guild_id}:telephone_config:enabled"
     GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS = "guild:{guild_id}:telephone_config:blocked_servers"
     GUILD_TELEPHONE_LINE_BUSY = "guild:{guild_id}:telephone_line_busy"
+    GUILD_TELEPHONE_CONFIG_CHANNEL_ID = "guild:{guild_id}:telephone_channel_id"
 
     USER_TIMEZONE = "user:{user_id}:timezone"
 

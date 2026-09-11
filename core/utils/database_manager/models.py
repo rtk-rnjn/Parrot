@@ -145,6 +145,7 @@ class GlobalChatConfig(TypedDict):
 
 class TelephoneConfig(TypedDict):
     enabled: bool
+    channel_id: int | None
     blocked_servers: list[int]
 
 

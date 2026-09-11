@@ -17,6 +17,7 @@ from .mute import _GuildMuteRoleMixin  # noqa
 from .prefix import _GuildPrefixMixin  # noqa
 from .starboard import _GuildStarboardMixin  # noqa
 from .tags import _GuildTagsMixin  # noqa
+from .telephone import _GuildTelephoneMixin  # noqa
 from .voilation import _GuildVoilationMixin  # noqa
 from .welcomer import _GuildWelcomerMixin  # noqa
 
@@ -45,6 +46,7 @@ class _GuildMixin(
     _GuildStarboardMixin,
     _GuildBirthdayMixin,
     _GuildGlobalChatMixin,
+    _GuildTelephoneMixin,
 ):
     def empty_guild_config(self, guild_id: int) -> GuildConfiguration:
         return {

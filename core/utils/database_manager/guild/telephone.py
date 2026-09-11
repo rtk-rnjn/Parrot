@@ -21,7 +21,8 @@ class _GuildTelephoneMixin:
             return bool(int(cached))
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "telephone_config.enabled": {"$exists": True}}, {"telephone_config.enabled": 1}
+            {"_id": guild_id, "telephone_config.enabled": {"$exists": True}},
+            {"telephone_config.enabled": 1},
         )
         if guild_config is None:
             return False
@@ -101,4 +102,46 @@ class _GuildTelephoneMixin:
 
     async def clear_telephone_line_busy(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_LINE_BUSY.format(guild_id=guild_id)
+        _ = await self.redis_client.delete(redis_key)
+
+    async def set_telephone_channel_id(self, *, guild_id: int, channel_id: int | None) -> None:
+        redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
+
+        _ = await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {"telephone_config.channel_id": channel_id}},
+            upsert=True,
+        )
+
+        if channel_id is not None:
+            _ = await self.redis_client.set(redis_key, channel_id)
+
+    async def get_telephone_channel_id(self, *, guild_id: int) -> int | None:
+        redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
+
+        cached = await self.redis_client.get(redis_key)
+        if cached is not None:
+            return int(cached)
+
+        guild_config = await self.guilds_collection.find_one(
+            {"_id": guild_id, "telephone_config.channel_id": {"$exists": True}},
+            {"telephone_config.channel_id": 1},
+        )
+        if guild_config is None:
+            return None
+
+        channel_id = guild_config["telephone_config"]["channel_id"]
+        if channel_id is not None:
+            _ = await self.redis_client.set(redis_key, channel_id)
+        return channel_id
+
+    async def clear_telephone_channel_id(self, *, guild_id: int) -> None:
+        redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
+
+        _ = await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {"telephone_config.channel_id": None}},
+            upsert=True,
+        )
+
         _ = await self.redis_client.delete(redis_key)

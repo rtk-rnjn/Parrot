@@ -73,6 +73,7 @@ LOADABLE_COGS = [
     "cogs.starboard",
     "cogs.tags",
     "cogs.todo",
+    "cogs.telephone",
     "cogs.welcomer",
 ]
 

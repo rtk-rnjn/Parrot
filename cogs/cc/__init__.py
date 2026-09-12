@@ -12,7 +12,7 @@ from colorama import Fore
 from discord.ext import commands
 
 from core import PaginationView
-from core.utils.database_manager.models import CustomCommand as CustomCommandModel
+from core.utils.database.models import CustomCommand as CustomCommandModel
 
 from .jinja import render_sandboxed
 from .variables import JinjaChannel, JinjaGuild, JinjaMember, JinjaMessage

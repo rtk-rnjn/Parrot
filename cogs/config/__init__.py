@@ -10,7 +10,7 @@ from discord.ext import commands
 if TYPE_CHECKING:
     from cogs.leveling import Leveling
     from core import Parrot
-    from core.utils.database_manager import GuildConfiguration
+    from core.utils.database import GuildConfiguration
 
 
 _log = logging.getLogger("bot.cogs.config")

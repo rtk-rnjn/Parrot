@@ -9,7 +9,7 @@ from bson import ObjectId
 from discord.ext import commands
 
 from core import FutureTime
-from core.utils.database_manager.models import Giveaway
+from core.utils.database.models import Giveaway
 
 if TYPE_CHECKING:
     from core import Parrot

@@ -17,7 +17,7 @@ from .checks import (  # noqa
     resolve_current_time,
     seasonal_task,
 )
-from .database_manager import DatabaseManager  # noqa
+from .database import DatabaseManager  # noqa
 from .enum_docstrings import enum_docstrings  # noqa
 from .formats import human_join, plural  # noqa
 from .paginator import PaginationView  # noqa

@@ -105,6 +105,3 @@ class BaseView(discord.ui.View):
             except discord.HTTPException:
                 pass
         self.stop()
-
-    async def on_error(self, interaction: discord.Interaction[Parrot], error: Exception, item: discord.ui.Item[Any], /) -> None:
-        raise error

@@ -4,6 +4,7 @@ import unicodedata
 from typing import TYPE_CHECKING, TypedDict
 
 import discord
+import logging
 from discord.ext import commands
 
 if TYPE_CHECKING:
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 
 loads = discord.utils._from_json
 
+_log = logging.getLogger("bot.cogs.global_chat")
 
 class ProfaneWord(TypedDict):
     word: str
@@ -25,8 +27,8 @@ with open("assets/profane_words.json") as file:
 class GlobalChat(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.user_cooldown = commands.CooldownMapping.from_cooldown(1, 5, commands.BucketType.user)
-        self.channel_cooldown = commands.CooldownMapping.from_cooldown(1, 10, commands.BucketType.channel)
+        self.channel_cooldown = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.channel)
+        _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -38,23 +40,26 @@ class GlobalChat(commands.Cog):
         is_global_chat_enabled = await self.bot.database.is_global_chat_enabled(message.guild.id)
         global_chat_channel_id = await self.bot.database.get_global_chat_channel_id(message.guild.id)
 
-        if (
-            not is_global_chat_enabled
-            or global_chat_channel_id is None
-            or message.channel.id != global_chat_channel_id
-            or message.content.startswith((".", "!", "$", "?", "-", "+"))
-            or not message.content.strip()
-        ):
+        if not is_global_chat_enabled:
+            _log.debug("Global chat is not enabled for guild %s", message.guild.id)
             return
 
-        user_bucket = self.user_cooldown.get_bucket(message)
-        user_retry_after = user_bucket.update_rate_limit() if user_bucket is not None else None
-        if user_retry_after:
+        if global_chat_channel_id is None:
+            _log.debug("Global chat channel is not set for guild %s", message.guild.id)
+            return
+
+        if message.channel.id != global_chat_channel_id:
+            _log.debug("Message is not in the global chat channel for guild %s", message.guild.id)
+            return
+
+        if message.content.startswith((".", "!", "$", "?", "-", "+")) or not message.content.strip():
+            _log.debug("Message is a command or empty, ignoring.")
             return
 
         channel_bucket = self.channel_cooldown.get_bucket(message)
         channel_retry_after = channel_bucket.update_rate_limit() if channel_bucket is not None else None
         if channel_retry_after:
+            _log.debug("Message is being sent too quickly in channel %s, ignoring.", message.channel.id)
             return
 
         async for guild_id, webhook_uri in self.bot.database.fetch_active_global_chat_webhooks():
@@ -63,6 +68,7 @@ class GlobalChat(commands.Cog):
 
             guild = self.bot.get_guild(guild_id)
             if guild is None:
+                _log.warning("Guild with ID %s not found in bot cache.", guild_id)
                 continue
 
             webhook = discord.Webhook.from_url(webhook_uri, client=self.bot)

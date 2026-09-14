@@ -1016,7 +1016,7 @@ class Mod(commands.Cog):
             spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
             messages.extend(f"- **{author}**: {count}" for author, count in spammers)
 
-        await ctx.reply("\n".join(messages), delete_after=10)
+        await ctx.send("\n".join(messages), delete_after=10)
 
     def _prepare_purge_predicates(self, flags: PurgeFlags) -> list[Callable[[discord.Message], Any]]:  # noqa: C901
         predicates: list[Callable[[discord.Message], Any]] = []
@@ -1155,9 +1155,9 @@ class Mod(commands.Cog):
         to_send = "\n".join(messages)
 
         if len(to_send) > 2000:
-            await ctx.reply(f"Successfully removed {deleted} messages.", delete_after=10)
+            await ctx.send(f"Successfully removed {deleted} messages.", delete_after=10)
         else:
-            await ctx.reply(to_send, delete_after=10)
+            await ctx.send(to_send, delete_after=10)
 
     @commands.command(name="clear_reactions", aliases=["clear-reactions"])
     @commands.has_permissions(manage_messages=True)

@@ -73,6 +73,9 @@ class RedisKeys(StrEnum):
     GUILD_TELEPHONE_LINE_BUSY = "guild:{guild_id}:telephone_line_busy"
     GUILD_TELEPHONE_CONFIG_CHANNEL_ID = "guild:{guild_id}:telephone_channel_id"
 
+    GUILD_EVENT_ENABLED = "guild:{guild_id}:event:{event_name}:enabled"
+    GUILD_EVENT_WEBHOOK_URI = "guild:{guild_id}:event:{event_name}:webhook_uri"
+
     USER_TIMEZONE = "user:{user_id}:timezone"
 
     SCAM_LINKS_CACHE = "scam_links_cache"

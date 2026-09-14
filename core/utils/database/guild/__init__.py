@@ -20,6 +20,7 @@ from .tags import _GuildTagsMixin  # noqa
 from .telephone import _GuildTelephoneMixin  # noqa
 from .voilation import _GuildVoilationMixin  # noqa
 from .welcomer import _GuildWelcomerMixin  # noqa
+from .events import _GuildEventsxMixin # noqa
 
 if TYPE_CHECKING:
     from ..models import GuildConfiguration
@@ -47,6 +48,7 @@ class _GuildMixin(
     _GuildBirthdayMixin,
     _GuildGlobalChatMixin,
     _GuildTelephoneMixin,
+    _GuildEventsxMixin,
 ):
     def empty_guild_config(self, guild_id: int) -> GuildConfiguration:
         return {
@@ -101,10 +103,32 @@ class _GuildMixin(
             "custom_commands": [],
             "tags": [],
             "afk_users": {},
-            "events": {},
+            "events": {
+                "on_member_join": {"enabled": False, "webhook_uri": None},
+                "on_member_leave": {"enabled": False, "webhook_uri": None},
+                "on_member_ban": {"enabled": False, "webhook_uri": None},
+                "on_member_unban": {"enabled": False, "webhook_uri": None},
+                "on_message_delete": {"enabled": False, "webhook_uri": None},
+                "on_message_edit": {"enabled": False, "webhook_uri": None},
+                "on_channel_delete": {"enabled": False, "webhook_uri": None},
+                "on_channel_create": {"enabled": False, "webhook_uri": None},
+                "on_channel_update": {"enabled": False, "webhook_uri": None},
+                "on_thread_create": {"enabled": False, "webhook_uri": None},
+                "on_thread_delete": {"enabled": False, "webhook_uri": None},
+                "on_thread_update": {"enabled": False, "webhook_uri": None},
+                "on_server_update": {"enabled": False, "webhook_uri": None},
+                "on_webhook_update": {"enabled": False, "webhook_uri": None},
+                "on_role_create": {"enabled": False, "webhook_uri": None},
+                "on_role_delete": {"enabled": False, "webhook_uri": None},
+                "on_role_update": {"enabled": False, "webhook_uri": None},
+                "on_member_join_voice": {"enabled": False, "webhook_uri": None},
+                "on_member_leave_voice": {"enabled": False, "webhook_uri": None},
+                "on_member_move_voice": {"enabled": False, "webhook_uri": None},
+            },
             "leveling_data": {},
             "telephone_config": {
                 "enabled": False,
+                "channel_id": None,
                 "blocked_servers": [],
             },
             "custom_commands_db": {},

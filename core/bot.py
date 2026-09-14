@@ -7,8 +7,10 @@ import os
 import re
 import shutil
 import subprocess
+from collections import Counter
 from collections.abc import Callable
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, overload, override
 
@@ -83,6 +85,13 @@ lavalink_jar = Path("Lavalink.jar")
 COGS_DIR = Path(__file__).resolve().parents[1] / "cogs"
 
 
+class SpamSeverity(Enum):
+    NONE = 0
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+
+
 class Parrot(commands.Bot):
     DEFAULT_PREFIX = os.environ.get("DEFAULT_PREFIX", "$")
 
@@ -128,6 +137,10 @@ class Parrot(commands.Bot):
 
         self.message_cache: dict[int, discord.Message] = {}
         self._cog_autoreload_task: asyncio.Task[None] | None = None
+
+        self.spam_control = commands.CooldownMapping.from_cooldown(3, 6, commands.BucketType.user)
+        self.spam_counter = Counter[int]()
+        self.temporary_ban_list: dict[int, float] = {}  # user_id -> timestamp of when the ban expires
 
     @staticmethod
     async def start_lavalink() -> asyncio.subprocess.Process | None:
@@ -185,6 +198,9 @@ class Parrot(commands.Bot):
         extension_paths = self._cog_extension_paths()
 
         async for changes in awatch(COGS_DIR, debounce=3200):
+            if not changes:
+                continue
+
             extensions: set[str] = set()
             for _, changed_path in changes:
                 path = await asyncio.to_thread(Path(changed_path).resolve)
@@ -255,6 +271,57 @@ class Parrot(commands.Bot):
             return
 
         await self.process_commands(message)
+
+    async def process_commands(self, message: discord.Message, /) -> None:
+        ctx: commands.Context[Parrot] = await self.get_context(message, cls=commands.Context)
+
+        if ctx.command is None:
+            return
+
+        if ctx.author.id in self.temporary_ban_list:
+            return
+
+        spam_severity = self._check_for_spam(message)
+        match spam_severity:
+            case SpamSeverity.HIGH:
+                self.loop.create_task(self._temporarily_ban_user(ctx.author, duration=60))
+                return
+
+            case SpamSeverity.MEDIUM:
+                await ctx.reply("You are sending commands too quickly. Please slow down.", delete_after=5)
+                return
+
+            case SpamSeverity.LOW:
+                await ctx.reply("You are sending commands too quickly. Please slow down.", delete_after=5)
+                return
+
+            case SpamSeverity.NONE:
+                pass
+
+        await self.invoke(ctx)
+
+    def _check_for_spam(self, message: discord.Message) -> SpamSeverity:
+        bucket = self.spam_control.get_bucket(message)
+        retry_after = bucket.update_rate_limit(message.created_at.timestamp()) if bucket else None
+        if retry_after is not None:
+            self.spam_counter[message.author.id] += 1
+            if self.spam_counter[message.author.id] >= 5:
+                return SpamSeverity.HIGH
+
+            if self.spam_counter[message.author.id] >= 3:
+                return SpamSeverity.MEDIUM
+
+            return SpamSeverity.LOW
+
+        return SpamSeverity.NONE
+
+    async def _temporarily_ban_user(self, user: discord.User | discord.Member, /, *, duration: float) -> None:
+        if user.id in self.temporary_ban_list:
+            return
+
+        self.temporary_ban_list[user.id] = discord.utils.utcnow().timestamp() + duration
+        user_id = await asyncio.sleep(duration, result=user.id)
+        self.temporary_ban_list.pop(user_id, None)
 
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
         if after.guild is None or after.author.bot:

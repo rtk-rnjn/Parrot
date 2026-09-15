@@ -33,7 +33,7 @@ class _GuildHubMixin(DatabaseMixin):
             await self.redis_client.set(redis_key, hub_channel_id)
         return hub_channel_id
 
-    async def set_hub_channel_id(self, *, guild_id: int, hub_channel_id: int | None) -> None:
+    async def edit_hub_config(self, *, guild_id: int, hub_channel_id: int | None) -> None:
         redis_key = RedisKeys.GUILD_HUB_CHANNEL_ID.format(guild_id=guild_id)
 
         if hub_channel_id is None:

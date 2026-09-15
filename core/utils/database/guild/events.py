@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
 from typing import Literal
 
+from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 EVENT_NAME = Literal[
@@ -58,32 +58,30 @@ class _GuildEventsMixin(DatabaseMixin):
 
         return False
 
-    async def enable_event(self, guild_id: int, *, event_name: EVENT_NAME) -> None:
-        key = RedisKeys.GUILD_EVENT_ENABLED.format(guild_id=guild_id, event_name=event_name)
-        await self.redis_client.set(key, 1)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"events.{event_name}.enabled": True}},
-            upsert=True,
-        )
+    async def edit_event(
+        self,
+        guild_id: int,
+        *,
+        event_name: EVENT_NAME,
+        enabled: bool = MISSING,
+        webhook_uri: str | None = MISSING,
+    ) -> bool:
+        updates = {
+            f"events.{event_name}.{field}": value for field, value in (("enabled", enabled), ("webhook_uri", webhook_uri)) if value is not MISSING
+        }
+        if not updates:
+            return False
 
-    async def disable_event(self, guild_id: int, *, event_name: EVENT_NAME) -> None:
-        key = RedisKeys.GUILD_EVENT_ENABLED.format(guild_id=guild_id, event_name=event_name)
-        await self.redis_client.set(key, 0)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"events.{event_name}.enabled": False}},
-            upsert=True,
-        )
-
-    async def set_event_webhook(self, guild_id: int, *, event_name: EVENT_NAME, webhook_uri: str | None) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"events.{event_name}.webhook_uri": webhook_uri}},
-            upsert=True,
-        )
-        key = RedisKeys.GUILD_EVENT_WEBHOOK_URI.format(guild_id=guild_id, event_name=event_name)
-        if webhook_uri is not None:
-            await self.redis_client.set(key, webhook_uri)
-        else:
-            await self.redis_client.delete(key)
+        result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
+        if enabled is not MISSING:
+            await self.redis_client.set(
+                RedisKeys.GUILD_EVENT_ENABLED.format(guild_id=guild_id, event_name=event_name),
+                int(enabled),
+            )
+        if webhook_uri is not MISSING:
+            key = RedisKeys.GUILD_EVENT_WEBHOOK_URI.format(guild_id=guild_id, event_name=event_name)
+            if webhook_uri is None:
+                await self.redis_client.delete(key)
+            else:
+                await self.redis_client.set(key, webhook_uri)
+        return result.matched_count > 0 or result.upserted_id is not None

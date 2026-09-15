@@ -651,7 +651,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        await ctx.bot.database.set_guild_mute_role(guild_id=ctx.guild.id, mute_role_id=role.id)
+        await ctx.bot.database.edit_mute_config(guild_id=ctx.guild.id, mute_role_id=role.id)
         suggestion = (
             "-# Make sure the mute role has the correct permissions set to prevent muted members "
             "from sending messages or interacting with the server. Use `mute sync` to automatically adjust the permissions of the mute role."
@@ -729,7 +729,7 @@ class Mod(commands.Cog):
             )
 
         mute_role = await ctx.guild.create_role(name=role_name, reason=f"Mute role created by {ctx.author} (ID: {ctx.author.id})")
-        await ctx.bot.database.set_guild_mute_role(guild_id=ctx.guild.id, mute_role_id=mute_role.id)
+        await ctx.bot.database.edit_mute_config(guild_id=ctx.guild.id, mute_role_id=mute_role.id)
 
         message_contents = [
             f"A new mute role **{mute_role}** (ID: {mute_role.id}) has been created for this server. ",

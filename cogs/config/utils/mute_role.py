@@ -31,7 +31,7 @@ class MuteRoleSelect(discord.ui.RoleSelect):
         if selected_role is not None:
             new_mute_role_id = selected_role.id
 
-            await interaction.client.database.set_guild_mute_role(guild_id=interaction.guild.id, mute_role_id=new_mute_role_id)
+            await interaction.client.database.edit_mute_config(guild_id=interaction.guild.id, mute_role_id=new_mute_role_id)
             await interaction.followup.send(f"Mute role updated to {selected_role.mention}.", ephemeral=True)
 
         else:

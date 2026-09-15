@@ -32,9 +32,9 @@ class HubChannelSelect(discord.ui.ChannelSelect):
         if selected_channel is not None:
             new_hub_channel_id = selected_channel.id
 
-            await interaction.client.database.set_hub_channel_id(guild_id=interaction.guild.id, hub_channel_id=new_hub_channel_id)
+            await interaction.client.database.edit_hub_config(guild_id=interaction.guild.id, hub_channel_id=new_hub_channel_id)
             await interaction.followup.send(f"Hub channel updated to {selected_channel.mention}.", ephemeral=True)
 
         else:
-            await interaction.client.database.set_hub_channel_id(guild_id=interaction.guild.id, hub_channel_id=None)
+            await interaction.client.database.edit_hub_config(guild_id=interaction.guild.id, hub_channel_id=None)
             await interaction.followup.send("Hub channel has been removed.", ephemeral=True)

@@ -57,7 +57,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database.set_starboard_board_channel(ctx.guild.id, channel.id)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, channel_id=channel.id)
         await ctx.reply(f"Starboard channel set to {channel.mention}.")
 
     @starboard.command(name="threshold", aliases=["limit"])
@@ -71,7 +71,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database.set_starboard_threshold(guild_id=ctx.guild.id, threshold=threshold)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, threshold=threshold)
         await ctx.reply(f"Starboard threshold set to {threshold}.")
 
     @starboard.command(name="emoji", aliases=["emote"])
@@ -86,7 +86,7 @@ class Starboard(commands.Cog):
             await ctx.reply("That custom emoji is not available in this server.")
             return
 
-        await self.bot.database.set_starboard_emoji(guild_id=ctx.guild.id, emoji=emoji)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, emoji=emoji)
         await ctx.reply(f"Starboard emoji set to {emoji}.")
 
     @starboard.command(name="disable")
@@ -96,7 +96,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database.disable_starboard(ctx.guild.id)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, enabled=False)
         await ctx.reply("Starboard disabled.")
 
     @starboard.command(name="enable")
@@ -106,7 +106,7 @@ class Starboard(commands.Cog):
         if ctx.guild is None:
             return
 
-        await self.bot.database.enable_starboard(ctx.guild.id)
+        await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, enabled=True)
         await ctx.reply("Starboard enabled.")
 
     @commands.Cog.listener()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
@@ -32,26 +33,27 @@ class _GuildTelephoneMixin(DatabaseMixin):
         await self.redis_client.set(redis_key, enabled)
         return enabled
 
-    async def enable_telephone(self, *, guild_id: int) -> None:
-        redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_ENABLED.format(guild_id=guild_id)
+    async def edit_telephone_config(
+        self,
+        *,
+        guild_id: int,
+        enabled: bool = MISSING,
+        channel_id: int | None = MISSING,
+    ) -> bool:
+        updates = {f"telephone_config.{field}": value for field, value in (("enabled", enabled), ("channel_id", channel_id)) if value is not MISSING}
+        if not updates:
+            return False
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"telephone_config.enabled": True}},
-            upsert=True,
-        )
-
-        await self.redis_client.set(redis_key, True)
-
-    async def disable_telephone(self, *, guild_id: int) -> None:
-        redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_ENABLED.format(guild_id=guild_id)
-
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"telephone_config.enabled": False}},
-            upsert=True,
-        )
-        await self.redis_client.set(redis_key, False)
+        result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
+        if enabled is not MISSING:
+            await self.redis_client.set(RedisKeys.GUILD_TELEPHONE_CONFIG_ENABLED.format(guild_id=guild_id), int(enabled))
+        if channel_id is not MISSING:
+            key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
+            if channel_id is None:
+                await self.redis_client.delete(key)
+            else:
+                await self.redis_client.set(key, channel_id)
+        return result.matched_count > 0 or result.upserted_id is not None
 
     async def get_telephone_blocked_servers(self, *, guild_id: int) -> list[int]:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS.format(guild_id=guild_id)
@@ -104,18 +106,6 @@ class _GuildTelephoneMixin(DatabaseMixin):
     async def clear_telephone_line_busy(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_LINE_BUSY.format(guild_id=guild_id)
         await self.redis_client.delete(redis_key)
-
-    async def set_telephone_channel_id(self, *, guild_id: int, channel_id: int | None) -> None:
-        redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
-
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"telephone_config.channel_id": channel_id}},
-            upsert=True,
-        )
-
-        if channel_id is not None:
-            await self.redis_client.set(redis_key, channel_id)
 
     async def get_telephone_channel_id(self, *, guild_id: int) -> int | None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)

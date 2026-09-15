@@ -29,7 +29,7 @@ class _GuildPrefixMixin(DatabaseMixin):
         await self.redis_client.set(redis_key, command_prefix)
         return command_prefix
 
-    async def set_command_prefix(self, *, guild_id: int, command_prefix: str) -> None:
+    async def edit_prefix_config(self, *, guild_id: int, command_prefix: str) -> None:
         redis_key = RedisKeys.GUILD_COMMAND_PREFIX.format(guild_id=guild_id)
 
         await self.guilds_collection.update_one(

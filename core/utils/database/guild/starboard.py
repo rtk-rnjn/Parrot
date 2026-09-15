@@ -71,12 +71,6 @@ class _GuildStarboardMixin(DatabaseMixin):
         await self.redis_client.hset(config_key, "enabled", int(enabled))
         return enabled
 
-    async def enable_starboard(self, guild_id: int, /) -> None:
-        await self.edit_starboard_config(guild_id=guild_id, enabled=True)
-
-    async def disable_starboard(self, guild_id: int, /) -> None:
-        await self.edit_starboard_config(guild_id=guild_id, enabled=False)
-
     async def get_starboard_board_channel_id(self, guild_id: int, /) -> int | None:
         config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
         cached = await self.redis_client.hget(config_key, "channel_id")
@@ -112,9 +106,6 @@ class _GuildStarboardMixin(DatabaseMixin):
         await self.redis_client.hset(config_key, "emoji", emoji)
         return emoji
 
-    async def set_starboard_board_channel(self, guild_id: int, channel_id: int, /) -> None:
-        await self.edit_starboard_config(guild_id=guild_id, channel_id=channel_id)
-
     async def get_starboard_threshold(self, guild_id: int, /) -> int:
         config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
         cached = await self.redis_client.hget(config_key, "threshold")
@@ -131,12 +122,6 @@ class _GuildStarboardMixin(DatabaseMixin):
         threshold = guild.get("starboard_config", {}).get("threshold", DEFAULT_STARBOARD_THRESHOLD)
         await self.redis_client.hset(config_key, "threshold", threshold)
         return threshold
-
-    async def set_starboard_emoji(self, *, guild_id: int, emoji: str) -> None:
-        await self.edit_starboard_config(guild_id=guild_id, emoji=emoji)
-
-    async def set_starboard_threshold(self, *, guild_id: int, threshold: int) -> None:
-        await self.edit_starboard_config(guild_id=guild_id, threshold=threshold)
 
     async def get_starboard_board_message(self, guild_id: int, source_message_id: int, /) -> int | None:
         messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)

@@ -33,7 +33,7 @@ class UpdateBotPrefixModal(discord.ui.Modal, title="Update Bot Prefix"):
             await interaction.followup.send("This command can only be used in a server (guild).", ephemeral=True)
             return
 
-        await interaction.client.database.set_command_prefix(guild_id=interaction.guild.id, command_prefix=new_prefix)
+        await interaction.client.database.edit_prefix_config(guild_id=interaction.guild.id, command_prefix=new_prefix)
         await interaction.followup.send(f"Bot prefix updated to `{new_prefix}`.", ephemeral=True)
 
 

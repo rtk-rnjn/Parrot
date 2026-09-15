@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 
@@ -15,7 +14,7 @@ class _GuildMuteRoleMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
-    async def set_guild_mute_role(self, *, guild_id: int, mute_role_id: int) -> None:
+    async def edit_mute_config(self, *, guild_id: int, mute_role_id: int | None) -> None:
         await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$set": {"mute_role_id": mute_role_id}},

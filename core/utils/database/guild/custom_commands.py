@@ -224,24 +224,6 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         await self.__invalidate_custom_command_cache(guild_id=guild_id, name=old_name)
         return True
 
-    async def disable_custom_command(
-        self,
-        *,
-        guild_id: int,
-        name: str,
-    ) -> bool:
-        """Disable an existing command."""
-        return await self.edit_custom_command(guild_id=guild_id, name=name, enabled=False)
-
-    async def enable_custom_command(
-        self,
-        *,
-        guild_id: int,
-        name: str,
-    ) -> bool:
-        """Enable an existing command."""
-        return await self.edit_custom_command(guild_id=guild_id, name=name, enabled=True)
-
     async def get_custom_command(self, *, guild_id: int, name: str) -> CustomCommand | None:
         """Return a custom command object for a guild."""
         guild = await self.guilds_collection.find_one(

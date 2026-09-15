@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
@@ -29,35 +30,35 @@ class _GuildGlobalChatMixin(DatabaseMixin):
         await self.redis_client.set(key, int(enabled))
         return enabled
 
-    async def enable_global_chat(self, guild_id: int) -> None:
-        """Enable global chat for a guild."""
-        key = RedisKeys.GUILD_GLOBAL_CHAT_CONFIG_ENABLED.format(guild_id=guild_id)
-        await self.redis_client.set(key, 1)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"global_chat_config.enabled": True}},
-            upsert=True,
-        )
+    async def edit_global_chat_config(
+        self,
+        *,
+        guild_id: int,
+        enabled: bool = MISSING,
+        channel_id: int | None = MISSING,
+        webhook_uri: str | None = MISSING,
+    ) -> bool:
+        updates = {
+            f"global_chat_config.{field}": value
+            for field, value in (("enabled", enabled), ("channel_id", channel_id), ("webhook_uri", webhook_uri))
+            if value is not MISSING
+        }
+        if not updates:
+            return False
 
-    async def disable_global_chat(self, guild_id: int) -> None:
-        """Disable global chat for a guild."""
-        key = RedisKeys.GUILD_GLOBAL_CHAT_CONFIG_ENABLED.format(guild_id=guild_id)
-        await self.redis_client.set(key, 0)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"global_chat_config.enabled": False}},
-            upsert=True,
-        )
-
-    async def set_global_chat_channel_id(self, guild_id: int, channel_id: int) -> None:
-        """Set the global chat channel ID for a guild."""
-        key = RedisKeys.GUILD_GLOBAL_CHAT_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
-        await self.redis_client.set(key, channel_id)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"global_chat_config.channel_id": channel_id}},
-            upsert=True,
-        )
+        result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
+        for field, value in (("enabled", enabled), ("channel_id", channel_id), ("webhook_uri", webhook_uri)):
+            if value is MISSING:
+                continue
+            key = getattr(
+                RedisKeys, f"GUILD_GLOBAL_CHAT_CONFIG_{field.upper()}" if field != "webhook_uri" else "GUILD_GLOBAL_CHAT_CONFIG_WEBHOOK_URI"
+            )
+            redis_key = key.format(guild_id=guild_id)
+            if value is None:
+                await self.redis_client.delete(redis_key)
+            else:
+                await self.redis_client.set(redis_key, int(value) if isinstance(value, bool) else value)
+        return result.matched_count > 0 or result.upserted_id is not None
 
     async def get_global_chat_channel_id(self, guild_id: int) -> int | None:
         """Get the global chat channel ID for a guild."""
@@ -74,16 +75,6 @@ class _GuildGlobalChatMixin(DatabaseMixin):
         if channel_id is not None:
             await self.redis_client.set(key, channel_id)
         return channel_id
-
-    async def set_global_chat_webhook_uri(self, guild_id: int, webhook_uri: str) -> None:
-        """Set the global chat webhook URI for a guild."""
-        key = RedisKeys.GUILD_GLOBAL_CHAT_CONFIG_WEBHOOK_URI.format(guild_id=guild_id)
-        await self.redis_client.set(key, webhook_uri)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"global_chat_config.webhook_uri": webhook_uri}},
-            upsert=True,
-        )
 
     async def get_global_chat_webhook_uri(self, guild_id: int) -> str | None:
         """Get the global chat webhook URI for a guild."""

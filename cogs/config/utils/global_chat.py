@@ -26,10 +26,10 @@ class GlobalChatToggleButton(discord.ui.Button):
         new_enabled_state = not self.enabled
 
         if new_enabled_state:
-            await interaction.client.database.enable_global_chat(guild_id=interaction.guild.id)
+            await interaction.client.database.edit_global_chat_config(guild_id=interaction.guild.id, enabled=True)
             await interaction.followup.send("Global chat has been enabled.", ephemeral=True)
         else:
-            await interaction.client.database.disable_global_chat(guild_id=interaction.guild.id)
+            await interaction.client.database.edit_global_chat_config(guild_id=interaction.guild.id, enabled=False)
             await interaction.followup.send("Global chat has been disabled.", ephemeral=True)
 
         self.enabled = new_enabled_state
@@ -60,5 +60,8 @@ class GlobalChatChannelSelect(discord.ui.ChannelSelect):
         if selected_channel is not None:
             new_global_chat_channel_id = selected_channel.id
 
-            await interaction.client.database.set_global_chat_channel_id(guild_id=interaction.guild.id, channel_id=new_global_chat_channel_id)
+            await interaction.client.database.edit_global_chat_config(
+                guild_id=interaction.guild.id,
+                channel_id=new_global_chat_channel_id,
+            )
             await interaction.followup.send(f"Global chat channel updated to {selected_channel.mention}.", ephemeral=True)

@@ -202,7 +202,7 @@ class Telephone(commands.Cog):
         """Enables the telephone game in the server."""
         assert ctx.guild is not None
 
-        await self.bot.database.enable_telephone(guild_id=ctx.guild.id)
+        await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, enabled=True)
         await ctx.send(":white_check_mark: **The telephone game has been enabled!**")
 
     @telephone.command(name="disable", aliases=["off"])
@@ -211,7 +211,7 @@ class Telephone(commands.Cog):
         """Disables the telephone game in the server."""
         assert ctx.guild is not None
 
-        await self.bot.database.disable_telephone(guild_id=ctx.guild.id)
+        await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, enabled=False)
         await ctx.send(":white_check_mark: **The telephone game has been disabled!**")
 
     @telephone.command(name="setchannel", aliases=["setchan", "channel"])
@@ -228,7 +228,7 @@ class Telephone(commands.Cog):
         """Sets the channel for the telephone game in the server."""
         assert ctx.guild is not None
 
-        await self.bot.database.set_telephone_channel_id(
+        await self.bot.database.edit_telephone_config(
             guild_id=ctx.guild.id,
             channel_id=channel.id,
         )

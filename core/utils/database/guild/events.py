@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
 from typing import Literal
 
 from pymongo.asynchronous.collection import AsyncCollection
@@ -32,8 +34,8 @@ EVENT_NAME = Literal[
 ]
 
 
-class _GuildEventsxMixin:
-    """Guild command prefix operations."""
+class _GuildEventsMixin(DatabaseMixin):
+    """Guild event enablement and webhook operations."""
 
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
@@ -73,7 +75,6 @@ class _GuildEventsxMixin:
             {"$set": {f"events.{event_name}.enabled": False}},
             upsert=True,
         )
-
 
     async def set_event_webhook(self, guild_id: int, *, event_name: EVENT_NAME, webhook_uri: str | None) -> None:
         await self.guilds_collection.update_one(

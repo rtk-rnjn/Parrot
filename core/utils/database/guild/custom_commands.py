@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
 from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
@@ -8,7 +10,7 @@ from ..cache_keys import RedisKeys
 from ..models import CustomCommand, GuildConfiguration
 
 
-class _GuildCustomCommandsMixin:
+class _GuildCustomCommandsMixin(DatabaseMixin):
     """Persistence and cache operations for guild custom commands."""
 
     redis_client: Redis

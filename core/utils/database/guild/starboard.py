@@ -5,13 +5,14 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 DEFAULT_STARBOARD_EMOJI = "\N{WHITE MEDIUM STAR}"
 DEFAULT_STARBOARD_THRESHOLD = 3
 
 
-class _GuildStarboardMixin:
+class _GuildStarboardMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
@@ -144,7 +145,7 @@ class _GuildStarboardMixin:
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, f"starboard_config.board_messages.{source_message_id}": {"$exists": True}},
+            {"_id": guild_id, f"starboard_config.board_messages.{source_message_id}": {"$exists": True, "$ne": None}},
             {f"starboard_config.board_messages.{source_message_id}": 1},
         )
         if guild is None:
@@ -166,7 +167,7 @@ class _GuildStarboardMixin:
     async def delete_starboard_board_message(self, *, guild_id: int, source_message_id: int) -> None:
         await self.guilds_collection.update_one(
             {"_id": guild_id},
-            {"$unset": {f"starboard_config.board_messages.{source_message_id}": ""}},
+            {"$set": {f"starboard_config.board_messages.{source_message_id}": None}},
         )
         messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)
         await self.redis_client.hdel(messages_key, str(source_message_id))

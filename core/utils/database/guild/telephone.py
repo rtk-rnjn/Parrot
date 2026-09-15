@@ -4,11 +4,12 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 
-class _GuildTelephoneMixin:
-    """Guild command prefix operations."""
+class _GuildTelephoneMixin(DatabaseMixin):
+    """Guild telephone state, channel, and block-list operations."""
 
     redis_client: Redis  # decode = True
     guilds_collection: AsyncCollection[GuildConfiguration]
@@ -28,31 +29,31 @@ class _GuildTelephoneMixin:
             return False
 
         enabled = guild_config["telephone_config"]["enabled"]
-        _ = await self.redis_client.set(redis_key, enabled)
+        await self.redis_client.set(redis_key, enabled)
         return enabled
 
     async def enable_telephone(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_ENABLED.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$set": {"telephone_config.enabled": True}},
             upsert=True,
         )
 
-        _ = await self.redis_client.set(redis_key, True)
+        await self.redis_client.set(redis_key, True)
 
     async def disable_telephone(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_ENABLED.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$set": {"telephone_config.enabled": False}},
             upsert=True,
         )
-        _ = await self.redis_client.set(redis_key, False)
+        await self.redis_client.set(redis_key, False)
 
-    async def telephone_config_get_blocked_servers(self, *, guild_id: int) -> list[int]:
+    async def get_telephone_blocked_servers(self, *, guild_id: int) -> list[int]:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS.format(guild_id=guild_id)
 
         cached = await self.redis_client.smembers(redis_key)
@@ -65,34 +66,34 @@ class _GuildTelephoneMixin:
 
         blocked_servers = guild_config.get("telephone_config", {}).get("blocked_servers", [])
         if blocked_servers:
-            _ = await self.redis_client.sadd(redis_key, *blocked_servers)
+            await self.redis_client.sadd(redis_key, *blocked_servers)
         return blocked_servers
 
-    async def telephone_config_add_blocked_server(self, *, guild_id: int, server_id: int) -> None:
+    async def add_telephone_blocked_server(self, *, guild_id: int, server_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$addToSet": {"telephone_config.blocked_servers": server_id}},
             upsert=True,
         )
 
-        _ = await self.redis_client.sadd(redis_key, server_id)
+        await self.redis_client.sadd(redis_key, server_id)
 
-    async def telephone_config_remove_blocked_server(self, *, guild_id: int, server_id: int) -> None:
+    async def remove_telephone_blocked_server(self, *, guild_id: int, server_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$pull": {"telephone_config.blocked_servers": server_id}},
             upsert=True,
         )
 
-        _ = await self.redis_client.srem(redis_key, server_id)
+        await self.redis_client.srem(redis_key, server_id)
 
     async def set_telephone_line_busy(self, *, guild_id: int, busy: bool) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_LINE_BUSY.format(guild_id=guild_id)
-        _ = await self.redis_client.set(redis_key, busy)
+        await self.redis_client.set(redis_key, busy)
 
     async def is_telephone_line_busy(self, *, guild_id: int) -> bool:
         redis_key = RedisKeys.GUILD_TELEPHONE_LINE_BUSY.format(guild_id=guild_id)
@@ -102,19 +103,19 @@ class _GuildTelephoneMixin:
 
     async def clear_telephone_line_busy(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_LINE_BUSY.format(guild_id=guild_id)
-        _ = await self.redis_client.delete(redis_key)
+        await self.redis_client.delete(redis_key)
 
     async def set_telephone_channel_id(self, *, guild_id: int, channel_id: int | None) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$set": {"telephone_config.channel_id": channel_id}},
             upsert=True,
         )
 
         if channel_id is not None:
-            _ = await self.redis_client.set(redis_key, channel_id)
+            await self.redis_client.set(redis_key, channel_id)
 
     async def get_telephone_channel_id(self, *, guild_id: int) -> int | None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
@@ -132,16 +133,16 @@ class _GuildTelephoneMixin:
 
         channel_id = guild_config["telephone_config"]["channel_id"]
         if channel_id is not None:
-            _ = await self.redis_client.set(redis_key, channel_id)
+            await self.redis_client.set(redis_key, channel_id)
         return channel_id
 
     async def clear_telephone_channel_id(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$set": {"telephone_config.channel_id": None}},
             upsert=True,
         )
 
-        _ = await self.redis_client.delete(redis_key)
+        await self.redis_client.delete(redis_key)

@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
+from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..models import BirthdayConfig, GuildConfiguration
 
-_MISSING = object()
 
-
-class _GuildBirthdayMixin:
+class _GuildBirthdayMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
@@ -17,10 +18,10 @@ class _GuildBirthdayMixin:
         self,
         *,
         guild_id: int,
-        enabled: bool | object = _MISSING,
-        channel_id: int | None | object = _MISSING,
+        enabled: bool | object = MISSING,
+        channel_id: int | None | object = MISSING,
     ) -> bool:
-        updates = {f"birthday_config.{field}": value for field, value in (("enabled", enabled), ("channel_id", channel_id)) if value is not _MISSING}
+        updates = {f"birthday_config.{field}": value for field, value in (("enabled", enabled), ("channel_id", channel_id)) if value is not MISSING}
         if not updates:
             return False
 

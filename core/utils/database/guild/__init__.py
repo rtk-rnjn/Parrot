@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
 
+from ..mixin import DatabaseMixin
 from .afk import _GuildAfkMixin  # noqa
 from .automod import _GuildAutomodMixin  # noqa
 from .birthday import _GuildBirthdayMixin  # noqa
 from .custom_commands import _GuildCustomCommandsMixin  # noqa
+from .events import _GuildEventsMixin  # noqa
 from .giveaway import _GuildGiveawayMixin  # noqa
 from .global_chat import _GuildGlobalChatMixin  # noqa
 from .hub import _GuildHubMixin  # noqa
@@ -18,9 +20,8 @@ from .prefix import _GuildPrefixMixin  # noqa
 from .starboard import _GuildStarboardMixin  # noqa
 from .tags import _GuildTagsMixin  # noqa
 from .telephone import _GuildTelephoneMixin  # noqa
-from .voilation import _GuildVoilationMixin  # noqa
+from .violation import _GuildViolationMixin  # noqa
 from .welcomer import _GuildWelcomerMixin  # noqa
-from .events import _GuildEventsxMixin # noqa
 
 if TYPE_CHECKING:
     from ..models import GuildConfiguration
@@ -36,7 +37,7 @@ class _GuildMixin(
     _GuildPrefixMixin,
     _GuildCustomCommandsMixin,
     _GuildMuteRoleMixin,
-    _GuildVoilationMixin,
+    _GuildViolationMixin,
     _GuildTagsMixin,
     _GuildAutomodMixin,
     _GuildAfkMixin,
@@ -48,9 +49,10 @@ class _GuildMixin(
     _GuildBirthdayMixin,
     _GuildGlobalChatMixin,
     _GuildTelephoneMixin,
-    _GuildEventsxMixin,
+    _GuildEventsMixin,
+    DatabaseMixin,
 ):
-    def empty_guild_config(self, guild_id: int) -> GuildConfiguration:
+    def create_guild_configuration(self, guild_id: int) -> GuildConfiguration:
         return {
             "_id": guild_id,
             "command_prefix": DEFAULT_PREFIX,
@@ -135,5 +137,6 @@ class _GuildMixin(
             "custom_commands_logs": [],
         }
 
-    async def get_guild_config(self, guild_id: int) -> GuildConfiguration | None:
-        return await self.guilds_collection.find_one({"_id": guild_id})
+    def empty_guild_config(self, guild_id: int) -> GuildConfiguration:
+        """Compatibility alias for :meth:`create_guild_configuration`."""
+        return self.create_guild_configuration(guild_id)

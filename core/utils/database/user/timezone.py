@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
@@ -7,7 +9,7 @@ from ..cache_keys import RedisKeys
 from ..models import UserConfiguration
 
 
-class _UserTimezoneMixin:
+class _UserTimezoneMixin(DatabaseMixin):
     """User timezone operations."""
 
     redis_client: Redis
@@ -25,16 +27,16 @@ class _UserTimezoneMixin:
             return None
 
         timezone = user_config["timezone"]
-        _ = await self.redis_client.set(redis_key, timezone)
+        await self.redis_client.set(redis_key, timezone)
         return timezone
 
     async def set_user_timezone(self, *, user_id: int, timezone: str) -> None:
         redis_key = RedisKeys.USER_TIMEZONE.format(user_id=user_id)
 
-        _ = await self.users_collection.update_one(
+        await self.users_collection.update_one(
             {"_id": user_id},
             {"$set": {"timezone": timezone}},
             upsert=True,
         )
 
-        _ = await self.redis_client.set(redis_key, timezone)
+        await self.redis_client.set(redis_key, timezone)

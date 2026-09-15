@@ -4,11 +4,12 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 
-class _GuildGlobalChatMixin:
-    """Guild command prefix operations."""
+class _GuildGlobalChatMixin(DatabaseMixin):
+    """Guild global-chat configuration and channel operations."""
 
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]

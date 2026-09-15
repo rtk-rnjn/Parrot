@@ -11,6 +11,7 @@ from redis.asyncio import Redis
 from .bot import _BotMixin
 from .cache_keys import RedisKeys
 from .guild import _GuildMixin
+from .mixin import DatabaseMixin
 from .models import Giveaway, GuildConfiguration, UserConfiguration
 from .scam_links import _ScamLinksMixin
 from .user import _UserMixin
@@ -30,8 +31,8 @@ MONGO_URI = os.environ.get(
 CACHE_TTL_SECONDS = 3600
 
 
-class _DatabaseInfraMixin:
-    """Infrastructure and lifecycle methods only."""
+class _DatabaseInfraMixin(DatabaseMixin):
+    """Shared database connections, lifecycle operations, and base lookups."""
 
     redis_client: Redis
     mongo_client: AsyncMongoClient
@@ -63,7 +64,12 @@ class DatabaseManager(
     _ScamLinksMixin,
     _BotMixin,
 ):
-    """Main database manager composed via mixin inheritance."""
+    """Database facade composed from guild, user, bot, and infrastructure mixins.
+
+    Domain methods use ``get_*``, ``set_*``, ``add_*``, ``remove_*``, and
+    ``delete_*`` verbs. MongoDB and Redis clients remain available for the few
+    components that need transactions or scheduler-specific collections.
+    """
 
     def __init__(self, bot: Parrot, /) -> None:
         self.bot = bot
@@ -127,11 +133,11 @@ class DatabaseManager(
     async def register_guild(self, guild_id: int, /) -> None:
         """Register a guild in the database."""
         if not await self.is_guild_registered(guild_id):
-            await self.guilds_collection.insert_one(self.empty_guild_config(guild_id))
+            await self.guilds_collection.insert_one(self.create_guild_configuration(guild_id))
             await self.redis_client.sadd(RedisKeys.REGISTERED_GUILDS, str(guild_id))
 
     async def register_user(self, user_id: int, /) -> None:
         """Register a user in the database."""
         if not await self.is_user_registered(user_id):
-            await self.users_collection.insert_one(self.empty_user_config(user_id))
+            await self.users_collection.insert_one(self.create_user_configuration(user_id))
             await self.redis_client.sadd(RedisKeys.REGISTERED_USERS, str(user_id))

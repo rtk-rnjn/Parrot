@@ -2,6 +2,7 @@ from enum import StrEnum
 
 __all__ = ("RedisKeys",)
 
+
 class RedisKeys(StrEnum):
     """Templates for keys used by the Redis cache."""
 
@@ -15,7 +16,7 @@ class RedisKeys(StrEnum):
     GUILD_HUB_CHANNEL_ID = "guild:{guild_id}:hub_channel_id"
     GUILD_HUB_CHANNEL_OWNER = "guild:{guild_id}:hub_channel:{channel_id}:owner"
 
-    GUILD_MEMBER_VOILATION_COUNT = "guild:{guild_id}:violations:{voilation_name}:member:{user_id}"
+    GUILD_MEMBER_VIOLATION_COUNT = "guild:{guild_id}:violations:{violation_name}:member:{user_id}"
 
     GUILD_GLOBAL_CHAT_CONFIG_ENABLED = "guild:{guild_id}:global_chat_config:enabled"
     GUILD_GLOBAL_CHAT_CONFIG_CHANNEL_ID = "guild:{guild_id}:global_chat_config:channel_id"

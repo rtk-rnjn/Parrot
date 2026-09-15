@@ -3,10 +3,12 @@ from __future__ import annotations
 from redis.asyncio import Redis
 
 from .cache_keys import RedisKeys
+from .mixin import DatabaseMixin
 
 __all__ = ("_ScamLinksMixin",)
 
-class _ScamLinksMixin:
+
+class _ScamLinksMixin(DatabaseMixin):
     redis_client: Redis
 
     async def add_scam_link(self, *links: str) -> None:

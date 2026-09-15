@@ -5,10 +5,11 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration, WelcomeConfig
 
 
-class _GuildWelcomerMixin:
+class _GuildWelcomerMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
@@ -77,7 +78,7 @@ class _GuildWelcomerMixin:
     async def delete_welcome_config(self, *, guild_id: int) -> bool:
         result = await self.guilds_collection.update_one(
             {"_id": guild_id, "welcome_config": {"$exists": True}},
-            {"$unset": {"welcome_config": ""}},
+            {"$set": {"welcome_config": None}},
         )
         await self._invalidate_welcome_config_cache(guild_id=guild_id)
         return result.modified_count > 0

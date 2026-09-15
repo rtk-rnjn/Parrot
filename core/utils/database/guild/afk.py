@@ -4,11 +4,12 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 
-class _GuildAfkMixin:
-    """Guild command prefix operations."""
+class _GuildAfkMixin(DatabaseMixin):
+    """Guild AFK state and reason operations."""
 
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
@@ -35,7 +36,7 @@ class _GuildAfkMixin:
 
         await self.guilds_collection.update_one(
             {"_id": guild_id},
-            {"$unset": {f"afk_users.{user_id}": ""}},
+            {"$set": {f"afk_users.{user_id}": None}},
             upsert=True,
         )
 
@@ -45,7 +46,7 @@ class _GuildAfkMixin:
         if maybe_afk:
             return True
 
-        data = await self.guilds_collection.find_one({"_id": guild_id, f"afk_users.{user_id}": {"$exists": True}})
+        data = await self.guilds_collection.find_one({"_id": guild_id, f"afk_users.{user_id}": {"$exists": True, "$ne": None}})
         if data is not None:
             await self.redis_client.sadd(afk_users_key, user_id)
             await self.redis_client.set(
@@ -73,12 +74,14 @@ class _GuildAfkMixin:
         data = await self.guilds_collection.find_one({"_id": guild_id, "afk_users": {"$exists": True}}, {"afk_users": 1})
         if data is not None:
             for user_id, reason in data["afk_users"].items():
+                if reason is None:
+                    continue
                 await self.redis_client.sadd(afk_users_key, user_id)
                 await self.redis_client.set(
                     RedisKeys.GUILD_AFK_USER_REASON.format(guild_id=guild_id, user_id=user_id),
                     reason,
                 )
-            return {int(user_id): reason for user_id, reason in data["afk_users"].items()}
+            return {int(user_id): reason for user_id, reason in data["afk_users"].items() if reason is not None}
 
         return {}
 
@@ -89,7 +92,7 @@ class _GuildAfkMixin:
             return reason
 
         data = await self.guilds_collection.find_one(
-            {"_id": guild_id, f"afk_users.{user_id}": {"$exists": True}},
+            {"_id": guild_id, f"afk_users.{user_id}": {"$exists": True, "$ne": None}},
             {f"afk_users.{user_id}": 1},
         )
         if data is not None:

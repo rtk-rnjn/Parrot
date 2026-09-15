@@ -4,11 +4,12 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
 
-class _GuildPrefixMixin:
-    """Guild command prefix operations."""
+class _GuildPrefixMixin(DatabaseMixin):
+    """Guild command-prefix operations."""
 
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
@@ -25,16 +26,16 @@ class _GuildPrefixMixin:
             return None
 
         command_prefix = guild_config["command_prefix"]
-        _ = await self.redis_client.set(redis_key, command_prefix)
+        await self.redis_client.set(redis_key, command_prefix)
         return command_prefix
 
     async def set_command_prefix(self, *, guild_id: int, command_prefix: str) -> None:
         redis_key = RedisKeys.GUILD_COMMAND_PREFIX.format(guild_id=guild_id)
 
-        _ = await self.guilds_collection.update_one(
+        await self.guilds_collection.update_one(
             {"_id": guild_id},
             {"$set": {"command_prefix": command_prefix}},
             upsert=True,
         )
 
-        _ = await self.redis_client.set(redis_key, command_prefix)
+        await self.redis_client.set(redis_key, command_prefix)

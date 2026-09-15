@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -12,7 +14,7 @@ from ..cache_keys import RedisKeys
 from ..models import TodoItem, TodoStatus, UserConfiguration
 
 
-class _UserTodoMixin:
+class _UserTodoMixin(DatabaseMixin):
     """User timezone operations."""
 
     redis_client: Redis

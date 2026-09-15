@@ -94,10 +94,10 @@ class Telephone(commands.Cog):
             )
             return
 
-        caller_blocked = await self.bot.database.telephone_config_get_blocked_servers(
+        caller_blocked = await self.bot.database.get_telephone_blocked_servers(
             guild_id=caller_id,
         )
-        target_blocked = await self.bot.database.telephone_config_get_blocked_servers(
+        target_blocked = await self.bot.database.get_telephone_blocked_servers(
             guild_id=target_id,
         )
 
@@ -250,7 +250,7 @@ class Telephone(commands.Cog):
             )
             return
 
-        await self.bot.database.telephone_config_add_blocked_server(
+        await self.bot.database.add_telephone_blocked_server(
             guild_id=ctx.guild.id,
             server_id=target_guild.id,
         )
@@ -273,7 +273,7 @@ class Telephone(commands.Cog):
             )
             return
 
-        await self.bot.database.telephone_config_remove_blocked_server(
+        await self.bot.database.remove_telephone_blocked_server(
             guild_id=ctx.guild.id,
             server_id=target_guild.id,
         )

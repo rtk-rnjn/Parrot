@@ -3,10 +3,11 @@ from __future__ import annotations
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
+from ..mixin import DatabaseMixin
 from ..models import UserConfiguration
 
 
-class _UserBirthdayMixin:
+class _UserBirthdayMixin(DatabaseMixin):
     redis_client: Redis
     users_collection: AsyncCollection[UserConfiguration]
 
@@ -14,7 +15,7 @@ class _UserBirthdayMixin:
         await self.users_collection.update_one({"_id": user_id}, {"$set": {"birthday": birthday}}, upsert=True)
 
     async def clear_user_birthday(self, user_id: int, /) -> None:
-        await self.users_collection.update_one({"_id": user_id}, {"$unset": {"birthday": ""}})
+        await self.users_collection.update_one({"_id": user_id}, {"$set": {"birthday": None}}, upsert=True)
 
     async def get_user_birthday(self, user_id: int, /) -> str | None:
         user = await self.users_collection.find_one({"_id": user_id, "birthday": {"$exists": True}}, {"birthday": 1})

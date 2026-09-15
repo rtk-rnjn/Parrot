@@ -8,10 +8,11 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration, LevelingConfig
 
 
-class _GuildLevelingMixin:
+class _GuildLevelingMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
@@ -82,7 +83,7 @@ class _GuildLevelingMixin:
     async def remove_level_role(self, *, guild_id: int, level: int) -> None:
         await self.guilds_collection.update_one(
             {"_id": guild_id},
-            {"$unset": {f"leveling_config.level_roles.{level}": ""}},
+            {"$set": {f"leveling_config.level_roles.{level}": None}},
         )
         roles_key = RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id)
         await self.redis_client.hdel(roles_key, str(level))
@@ -94,7 +95,7 @@ class _GuildLevelingMixin:
             return int(role_id)
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, f"leveling_config.level_roles.{level}": {"$exists": True}},
+            {"_id": guild_id, f"leveling_config.level_roles.{level}": {"$exists": True, "$ne": None}},
             {f"leveling_config.level_roles.{level}": 1},
         )
         if guild_config is None or "leveling_config" not in guild_config:

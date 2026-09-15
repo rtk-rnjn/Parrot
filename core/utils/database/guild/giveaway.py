@@ -11,10 +11,11 @@ from pymongo.results import InsertOneResult
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import Giveaway, GiveawayConfig, GuildConfiguration
 
 
-class _GuildGiveawayMixin:
+class _GuildGiveawayMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
     giveaways_collection: AsyncCollection[Giveaway]
@@ -65,11 +66,6 @@ class _GuildGiveawayMixin:
 
         await self._invalidate_giveaway_config_cache(guild_id=guild_id)
         return True
-
-    async def delete_giveaway_config(self, *, guild_id: int) -> bool:
-        result = await self.guilds_collection.update_one({"_id": guild_id, "giveaway_config": {"$exists": True}}, {"$unset": {"giveaway_config": ""}})
-        await self._invalidate_giveaway_config_cache(guild_id=guild_id)
-        return result.modified_count > 0
 
     async def is_giveaway_config_enabled(self, guild_id: int, /) -> bool:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_ENABLED.format(guild_id=guild_id)

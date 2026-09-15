@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
@@ -7,7 +9,7 @@ from ..cache_keys import RedisKeys
 from ..models import UserConfiguration
 
 
-class _UserHighlightsMixin:
+class _UserHighlightsMixin(DatabaseMixin):
     """User timezone operations."""
 
     redis_client: Redis

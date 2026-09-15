@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..mixin import DatabaseMixin
+
 from collections.abc import Mapping
 from datetime import datetime
 from typing import cast
@@ -12,7 +14,7 @@ from ..cache_keys import RedisKeys
 from ..models import GuildConfiguration, Tag, TagUserUsage, TopTagUsage, _TagUserUsageRow, _TopTagUsageRow
 
 
-class _GuildTagsMixin:
+class _GuildTagsMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..mixin import DatabaseMixin
 from .birthday import _UserBirthdayMixin  # noqa
 from .highlights import _UserHighlightsMixin  # noqa
 from .timezone import _UserTimezoneMixin  # noqa
@@ -18,8 +19,9 @@ class _UserMixin(
     _UserHighlightsMixin,
     _UserTodoMixin,
     _UserBirthdayMixin,
+    DatabaseMixin,
 ):
-    def empty_user_config(self, user_id: int) -> UserConfiguration:
+    def create_user_configuration(self, user_id: int) -> UserConfiguration:
         return {
             "_id": user_id,
             "birthday": "",
@@ -28,3 +30,7 @@ class _UserMixin(
             "highlights": [],
             "highlight_ignored_users": [],
         }
+
+    def empty_user_config(self, user_id: int) -> UserConfiguration:
+        """Compatibility alias for :meth:`create_user_configuration`."""
+        return self.create_user_configuration(user_id)

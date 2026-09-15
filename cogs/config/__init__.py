@@ -59,14 +59,13 @@ class Config(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None, "This command can only be used in a server (guild)."
 
-        config = await self.bot.database.get_guild_config(ctx.guild.id)
+        config = await self.bot.database.get_guild_configuration(ctx.guild.id)
         if config is None:
             await self.bot.database.register_guild(ctx.guild.id)
-            config = await self.bot.database.get_guild_config(ctx.guild.id)
+            config = await self.bot.database.get_guild_configuration(ctx.guild.id)
 
         assert config is not None, "Guild configuration should not be None after registration."
         return await ctx.reply(str(config))
-
 
 
 async def setup(bot: Parrot) -> None:

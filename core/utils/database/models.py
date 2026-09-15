@@ -7,6 +7,9 @@ from typing import Literal, TypedDict
 from bson import ObjectId
 
 __all__ = (
+    "DiscordId",
+    "JsonValue",
+    "JsonObject",
     # Guild Configuration
     "Rule",
     "AutomodConfig",
@@ -32,14 +35,19 @@ __all__ = (
     "Giveaway",
 )
 
+type DiscordId = int
+type JsonPrimitive = str | int | float | bool | None
+type JsonValue = JsonPrimitive | list[JsonValue] | dict[str, JsonValue]
+type JsonObject = dict[str, JsonValue]
+
 
 class Rule(TypedDict):
     enabled: bool
     name: str
 
-    trigger: dict
-    conditions: list[dict]
-    effects: list[dict]
+    trigger: JsonObject
+    conditions: list[JsonObject]
+    effects: list[JsonObject]
 
 
 class AutomodConfig(TypedDict):
@@ -153,6 +161,7 @@ class EventsConfig(TypedDict):
     enabled: bool
     webhook_uri: str | None
 
+
 class Events(TypedDict):
     # Members
     on_member_join: EventsConfig
@@ -190,7 +199,7 @@ class Events(TypedDict):
 
 
 class GuildConfiguration(TypedDict):
-    _id: int
+    _id: DiscordId
     command_prefix: str
     mute_role_id: int | None
     hub_channel_id: int | None
@@ -243,7 +252,7 @@ class Highlight(TypedDict):
 
 
 class UserConfiguration(TypedDict):
-    _id: int
+    _id: DiscordId
     birthday: str
     timezone: str
     todo_items: list[TodoItem]

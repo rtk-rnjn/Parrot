@@ -87,12 +87,12 @@ class TopTagUsage(TypedDict):
     count: int
 
 
-class _TagUserUsageRow(TypedDict):
+class TagUserUsageRow(TypedDict):
     _id: str
     count: int
 
 
-class _TopTagUsageRow(TypedDict):
+class TopTagUsageRow(TypedDict):
     _id: str
     count: int
 

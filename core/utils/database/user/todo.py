@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -11,6 +9,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import TodoItem, TodoStatus, UserConfiguration
 
 
@@ -20,7 +19,7 @@ class _UserTodoMixin(DatabaseMixin):
     redis_client: Redis
     users_collection: AsyncCollection[UserConfiguration]
 
-    async def _cache_user_todo_item(
+    async def __cache_user_todo_item(
         self,
         *,
         user_id: int,
@@ -32,7 +31,7 @@ class _UserTodoMixin(DatabaseMixin):
         redis_todo_item_ids_cache_key = RedisKeys.USER_TODO_ITEM_IDS.format(user_id=user_id)
         await self.redis_client.sadd(redis_todo_item_ids_cache_key, str(todo_item["id"]))
 
-    async def _invalidate_user_todo_item_cache(
+    async def __invalidate_user_todo_item_cache(
         self,
         *,
         user_id: int,
@@ -44,7 +43,7 @@ class _UserTodoMixin(DatabaseMixin):
         redis_todo_item_ids_cache_key = RedisKeys.USER_TODO_ITEM_IDS.format(user_id=user_id)
         await self.redis_client.srem(redis_todo_item_ids_cache_key, str(todo_item_id))
 
-    def _sort_todo_items(self, todo_items: list[TodoItem]) -> list[TodoItem]:
+    def __sort_todo_items(self, todo_items: list[TodoItem]) -> list[TodoItem]:
         def sort_key(todo_item: TodoItem) -> tuple[int, datetime | None]:
             status_order = {
                 "pending": 0,
@@ -89,9 +88,9 @@ class _UserTodoMixin(DatabaseMixin):
             return []
 
         for todo_item in user_config["todo_items"]:
-            await self._cache_user_todo_item(user_id=user_id, todo_item=todo_item)
+            await self.__cache_user_todo_item(user_id=user_id, todo_item=todo_item)
 
-        items = self._sort_todo_items(user_config["todo_items"])
+        items = self.__sort_todo_items(user_config["todo_items"])
         return items
 
     async def get_user_todo_item(self, *, user_id: int, todo_item_id: ObjectId) -> TodoItem | None:
@@ -115,7 +114,7 @@ class _UserTodoMixin(DatabaseMixin):
             return None
 
         todo_item = user_config["todo_items"][0]
-        await self._cache_user_todo_item(user_id=user_id, todo_item=todo_item)
+        await self.__cache_user_todo_item(user_id=user_id, todo_item=todo_item)
         return todo_item
 
     async def delete_user_todo_item(self, *, user_id: int, todo_item_id: ObjectId) -> bool:
@@ -124,7 +123,7 @@ class _UserTodoMixin(DatabaseMixin):
             {"$pull": {"todo_items": {"id": todo_item_id}}},
         )
         if result.modified_count > 0:
-            await self._invalidate_user_todo_item_cache(user_id=user_id, todo_item_id=todo_item_id)
+            await self.__invalidate_user_todo_item_cache(user_id=user_id, todo_item_id=todo_item_id)
             return True
         return False
 
@@ -158,6 +157,6 @@ class _UserTodoMixin(DatabaseMixin):
         if result.modified_count > 0:
             updated_todo_item = await self.get_user_todo_item(user_id=user_id, todo_item_id=todo_item_id)
             if updated_todo_item:
-                await self._cache_user_todo_item(user_id=user_id, todo_item=updated_todo_item)
+                await self.__cache_user_todo_item(user_id=user_id, todo_item=updated_todo_item)
             return updated_todo_item
         return None

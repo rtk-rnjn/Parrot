@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
 from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import CustomCommand, GuildConfiguration
 
 
@@ -16,22 +15,22 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
-    def _custom_command_names_key(self, guild_id: int) -> str:
+    def __custom_command_names_key(self, guild_id: int) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_NAMES.format(guild_id=guild_id)
 
-    def _custom_command_response_key(self, guild_id: int, name: str) -> str:
+    def __custom_command_response_key(self, guild_id: int, name: str) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_RESPONSE.format(guild_id=guild_id, command_name=name)
 
-    def _custom_command_ignored_roles_key(self, guild_id: int, name: str) -> str:
+    def __custom_command_ignored_roles_key(self, guild_id: int, name: str) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_IGNORED_ROLES.format(guild_id=guild_id, command_name=name)
 
-    def _custom_command_ignored_channels_key(self, guild_id: int, name: str) -> str:
+    def __custom_command_ignored_channels_key(self, guild_id: int, name: str) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_IGNORED_CHANNELS.format(guild_id=guild_id, command_name=name)
 
-    def _custom_command_enabled_key(self, guild_id: int, name: str) -> str:
+    def __custom_command_enabled_key(self, guild_id: int, name: str) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_ENABLED.format(guild_id=guild_id, command_name=name)
 
-    async def _cache_custom_command(  # noqa: PLR0913
+    async def __cache_custom_command(  # noqa: PLR0913
         self,
         *,
         guild_id: int,
@@ -41,26 +40,27 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         ignored_channels: list[int] | None = None,
         enabled: bool = True,
     ) -> None:
-        names_key = self._custom_command_names_key(guild_id)
+        names_key = self.__custom_command_names_key(guild_id)
 
         await self.redis_client.sadd(names_key, name)
 
         if ignored_roles:
-            await self.redis_client.sadd(self._custom_command_ignored_roles_key(guild_id, name), *ignored_roles)
+            await self.redis_client.sadd(self.__custom_command_ignored_roles_key(guild_id, name), *ignored_roles)
 
         if ignored_channels:
-            await self.redis_client.sadd(self._custom_command_ignored_channels_key(guild_id, name), *ignored_channels or [])
+            await self.redis_client.sadd(self.__custom_command_ignored_channels_key(guild_id, name), *ignored_channels or [])
 
-        await self.redis_client.set(self._custom_command_enabled_key(guild_id, name), int(enabled))
+        await self.redis_client.set(self.__custom_command_enabled_key(guild_id, name), int(enabled))
+        await self.redis_client.set(self.__custom_command_response_key(guild_id, name), response)
 
-    async def _invalidate_custom_command_cache(self, *, guild_id: int, name: str) -> None:
-        names_key = self._custom_command_names_key(guild_id)
+    async def __invalidate_custom_command_cache(self, *, guild_id: int, name: str) -> None:
+        names_key = self.__custom_command_names_key(guild_id)
 
         await self.redis_client.srem(names_key, name)
-        await self.redis_client.delete(self._custom_command_response_key(guild_id, name))
-        await self.redis_client.delete(self._custom_command_ignored_roles_key(guild_id, name))
-        await self.redis_client.delete(self._custom_command_ignored_channels_key(guild_id, name))
-        await self.redis_client.delete(self._custom_command_enabled_key(guild_id, name))
+        await self.redis_client.delete(self.__custom_command_response_key(guild_id, name))
+        await self.redis_client.delete(self.__custom_command_ignored_roles_key(guild_id, name))
+        await self.redis_client.delete(self.__custom_command_ignored_channels_key(guild_id, name))
+        await self.redis_client.delete(self.__custom_command_enabled_key(guild_id, name))
 
     async def get_custom_command_response(
         self,
@@ -69,7 +69,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         name: str,
     ) -> str | None:
         """Return one custom command response, or ``None`` when it does not exist."""
-        response_key = self._custom_command_response_key(guild_id, name)
+        response_key = self.__custom_command_response_key(guild_id, name)
         cached_response = await self.redis_client.get(response_key)
 
         if isinstance(cached_response, str):
@@ -97,7 +97,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         command = results[0]
 
         response = command["response"]
-        await self._cache_custom_command(guild_id=guild_id, **command)
+        await self.__cache_custom_command(guild_id=guild_id, **command)
 
         return response
 
@@ -130,7 +130,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         if result.matched_count == 0 and result.upserted_id is None:
             return False
 
-        await self._cache_custom_command(
+        await self.__cache_custom_command(
             guild_id=guild_id,
             name=name,
             response=response,
@@ -171,7 +171,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         if result.matched_count == 0:
             return False
 
-        await self._invalidate_custom_command_cache(guild_id=guild_id, name=name)
+        await self.__invalidate_custom_command_cache(guild_id=guild_id, name=name)
         return True
 
     async def delete_custom_command(
@@ -187,7 +187,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         )
         if result.matched_count == 0:
             return False
-        await self._invalidate_custom_command_cache(guild_id=guild_id, name=name)
+        await self.__invalidate_custom_command_cache(guild_id=guild_id, name=name)
         return True
 
     async def get_custom_commands(self, guild_id: int, /) -> list[CustomCommand]:
@@ -221,7 +221,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         if result.matched_count == 0:
             return False
 
-        await self._invalidate_custom_command_cache(guild_id=guild_id, name=old_name)
+        await self.__invalidate_custom_command_cache(guild_id=guild_id, name=old_name)
         return True
 
     async def disable_custom_command(
@@ -256,7 +256,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
             return None
 
         command_data = results[0]
-        await self._cache_custom_command(guild_id=guild_id, **command_data)
+        await self.__cache_custom_command(guild_id=guild_id, **command_data)
 
         return command_data
 

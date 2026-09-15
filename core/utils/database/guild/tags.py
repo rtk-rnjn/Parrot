@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
 from collections.abc import Mapping
 from datetime import datetime
 from typing import cast
@@ -11,14 +9,15 @@ from pymongo.asynchronous.collection import AsyncCollection
 from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
-from ..models import GuildConfiguration, Tag, TagUserUsage, TopTagUsage, _TagUserUsageRow, _TopTagUsageRow
+from ..mixin import DatabaseMixin
+from ..models import GuildConfiguration, Tag, TagUserUsage, TagUserUsageRow, TopTagUsage, TopTagUsageRow
 
 
 class _GuildTagsMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
-    async def _cache_tag(  # noqa: PLR0913
+    async def __cache_tag(  # noqa: PLR0913
         self,
         *,
         guild_id: int,
@@ -43,7 +42,7 @@ class _GuildTagsMixin(DatabaseMixin):
         if used_count is not None:
             await self.redis_client.hset(RedisKeys.GUILD_TAG_USED_COUNT.format(guild_id=guild_id, tag_name=name), mapping=used_count)  # pyright: ignore[reportArgumentType]
 
-    async def _invalidate_tag_cache(self, *, guild_id: int, name: str):
+    async def __invalidate_tag_cache(self, *, guild_id: int, name: str):
         """Invalidate a tag's cache in Redis."""
         await self.redis_client.srem(RedisKeys.GUILD_TAG_NAMES.format(guild_id=guild_id), name)
         await self.redis_client.delete(
@@ -86,7 +85,7 @@ class _GuildTagsMixin(DatabaseMixin):
             },
             upsert=True,
         )
-        await self._cache_tag(
+        await self.__cache_tag(
             guild_id=guild_id,
             name=name,
             content=content,
@@ -108,7 +107,7 @@ class _GuildTagsMixin(DatabaseMixin):
             },
         )
         if updated.modified_count > 0:
-            await self._invalidate_tag_cache(guild_id=guild_id, name=name)
+            await self.__invalidate_tag_cache(guild_id=guild_id, name=name)
         return updated.modified_count > 0
 
     async def get_tag_name(self, *, guild_id: int, name_or_alias: str) -> str | None:
@@ -186,7 +185,7 @@ class _GuildTagsMixin(DatabaseMixin):
             return False
 
         tag = guild["tags"][0]
-        await self._cache_tag(
+        await self.__cache_tag(
             guild_id=guild_id,
             name=tag["name"],
             content=tag["content"],
@@ -253,7 +252,7 @@ class _GuildTagsMixin(DatabaseMixin):
                 {"$limit": limit},
             ],
         )
-        rows = cast(list[_TagUserUsageRow], [row async for row in cursor])
+        rows = cast(list[TagUserUsageRow], [row async for row in cursor])
         return [{"user_id": int(row["_id"]), "count": int(row["count"])} for row in rows]
 
     async def get_top_used_tags(self, *, guild_id: int, limit: int = 10) -> list[TopTagUsage]:
@@ -269,7 +268,7 @@ class _GuildTagsMixin(DatabaseMixin):
                 {"$limit": limit},
             ],
         )
-        rows = cast(list[_TopTagUsageRow], [row async for row in cursor])
+        rows = cast(list[TopTagUsageRow], [row async for row in cursor])
         return [{"name": row["_id"], "count": int(row["count"])} for row in rows]
 
     async def edit_tag_content(
@@ -367,7 +366,7 @@ class _GuildTagsMixin(DatabaseMixin):
 
         tag = guild["tags"][0]
 
-        await self._cache_tag(
+        await self.__cache_tag(
             guild_id=guild_id,
             name=tag["name"],
             content=tag["content"],
@@ -411,7 +410,7 @@ class _GuildTagsMixin(DatabaseMixin):
 
         tag = guild["tags"][0]
 
-        await self._cache_tag(
+        await self.__cache_tag(
             guild_id=guild_id,
             name=tag["name"],
             content=tag["content"],
@@ -435,7 +434,7 @@ class _GuildTagsMixin(DatabaseMixin):
 
         tags = guild["tags"]
         for tag in tags:
-            await self._cache_tag(
+            await self.__cache_tag(
                 guild_id=guild_id,
                 name=tag["name"],
                 content=tag["content"],

@@ -16,7 +16,7 @@ class _GuildStarboardMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
-    async def _invalidate_starboard_cache(self, guild_id: int, /) -> None:
+    async def __invalidate_starboard_cache(self, guild_id: int, /) -> None:
         await self.redis_client.delete(
             RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id),
             RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id),
@@ -51,7 +51,7 @@ class _GuildStarboardMixin(DatabaseMixin):
         if result.matched_count == 0 and result.upserted_id is None:
             return False
 
-        await self._invalidate_starboard_cache(guild_id)
+        await self.__invalidate_starboard_cache(guild_id)
         return True
 
     async def is_starboard_enabled(self, guild_id: int, /) -> bool:

@@ -16,7 +16,7 @@ class _GuildLevelingMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
 
-    async def _cache_leveling_config(self, *, guild_id: int, config: LevelingConfig) -> None:
+    async def __cache_leveling_config(self, *, guild_id: int, config: LevelingConfig) -> None:
         enabled_key = RedisKeys.GUILD_LEVELING_CONFIG_ENABLED.format(guild_id=guild_id)
         roles_key = RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id)
 
@@ -27,7 +27,7 @@ class _GuildLevelingMixin(DatabaseMixin):
         if level_roles:
             await self.redis_client.hset(roles_key, mapping={str(level): str(role_id) for level, role_id in level_roles.items()})
 
-    async def _invalidate_leveling_config_cache(self, *, guild_id: int) -> None:
+    async def __invalidate_leveling_config_cache(self, *, guild_id: int) -> None:
         await self.redis_client.delete(
             RedisKeys.GUILD_LEVELING_CONFIG_ENABLED.format(guild_id=guild_id),
             RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id),
@@ -51,7 +51,7 @@ class _GuildLevelingMixin(DatabaseMixin):
         if result.matched_count == 0:
             return False
 
-        await self._invalidate_leveling_config_cache(guild_id=guild_id)
+        await self.__invalidate_leveling_config_cache(guild_id=guild_id)
         return True
 
     async def is_leveling_enabled(self, guild_id: int, /) -> bool:

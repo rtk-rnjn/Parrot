@@ -20,7 +20,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
     guilds_collection: AsyncCollection[GuildConfiguration]
     giveaways_collection: AsyncCollection[Giveaway]
 
-    async def _cache_giveaway_config(self, *, guild_id: int, config: GiveawayConfig) -> None:
+    async def __cache_giveaway_config(self, *, guild_id: int, config: GiveawayConfig) -> None:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_ENABLED.format(guild_id=guild_id)
         await self.redis_client.set(key, int(config["enabled"]))
         for key, field in (
@@ -34,7 +34,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
             else:
                 await self.redis_client.set(redis_key, value)
 
-    async def _invalidate_giveaway_config_cache(self, *, guild_id: int) -> None:
+    async def __invalidate_giveaway_config_cache(self, *, guild_id: int) -> None:
         await self.redis_client.delete(
             RedisKeys.GUILD_GIVEAWAY_CONFIG_ENABLED.format(guild_id=guild_id),
             RedisKeys.GUILD_GIVEAWAY_CONFIG_CHANNEL_ID.format(guild_id=guild_id),
@@ -64,12 +64,12 @@ class _GuildGiveawayMixin(DatabaseMixin):
         if result.matched_count == 0:
             return False
 
-        await self._invalidate_giveaway_config_cache(guild_id=guild_id)
+        await self.__invalidate_giveaway_config_cache(guild_id=guild_id)
         return True
 
     async def is_giveaway_config_enabled(self, guild_id: int, /) -> bool:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_ENABLED.format(guild_id=guild_id)
-        value = await self._get_int(key)
+        value = await self.__get_int(key)
         if value is not None:
             return bool(value)
 
@@ -80,12 +80,12 @@ class _GuildGiveawayMixin(DatabaseMixin):
         if config is None:
             return False
 
-        await self._cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
+        await self.__cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
         return config["giveaway_config"]["enabled"]
 
     async def get_giveaway_channel_id(self, guild_id: int, /) -> int | None:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
-        value = await self._get_int(key)
+        value = await self.__get_int(key)
         if value is not None:
             return value
 
@@ -96,12 +96,12 @@ class _GuildGiveawayMixin(DatabaseMixin):
         if config is None:
             return None
 
-        await self._cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
+        await self.__cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
         return config["giveaway_config"]["giveaway_channel_id"]
 
     async def get_giveaway_role_id(self, guild_id: int, /) -> int | None:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_ROLE_ID.format(guild_id=guild_id)
-        value = await self._get_int(key)
+        value = await self.__get_int(key)
         if value is not None:
             return value
 
@@ -112,7 +112,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
         if config is None:
             return None
 
-        await self._cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
+        await self.__cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
         return config["giveaway_config"]["giveaway_role_id"]
 
     async def create_giveaway(  # noqa: PLR0913
@@ -167,6 +167,6 @@ class _GuildGiveawayMixin(DatabaseMixin):
             return_document=pymongo.ReturnDocument.AFTER,
         )
 
-    async def _get_int(self, key: str) -> int | None:
+    async def __get_int(self, key: str) -> int | None:
         value = await self.redis_client.get(key)
         return int(value) if value is not None else None

@@ -147,14 +147,14 @@ async def runner():
 def main():
     if os.name == "nt":
         # *kiss kiss* to Windows
-        asyncio.run(runner(), debug=True)
+        asyncio.run(runner())
     else:
         try:
             import uvloop  # noqa: PLC0415
 
-            uvloop.run(runner(), debug=True)
+            uvloop.run(runner())
         except ImportError:
-            asyncio.run(runner(), debug=True)
+            asyncio.run(runner())
 
 
 if __name__ == "__main__":

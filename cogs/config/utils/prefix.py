@@ -7,6 +7,8 @@ import discord
 if TYPE_CHECKING:
     from core import Parrot
 
+__all__ = ("ChangeBotPrefixButton",)
+
 
 class UpdateBotPrefixModal(discord.ui.Modal, title="Update Bot Prefix"):
     def __init__(self, *, bot_prefix: str) -> None:
@@ -44,7 +46,6 @@ class ChangeBotPrefixButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction[Parrot], /) -> None:
         assert self.view is not None
-        await interaction.response.defer(ephemeral=True)
 
         modal = UpdateBotPrefixModal(bot_prefix=self.bot_prefix)
         await interaction.response.send_modal(modal)
@@ -52,4 +53,4 @@ class ChangeBotPrefixButton(discord.ui.Button):
         await modal.wait()
         self.label = modal.prefix_input.value.strip()
         if interaction.message is not None:
-            await interaction.message.edit(view=self.view)
+            await interaction.message.edit(view=self.view, allowed_mentions=discord.AllowedMentions.none())

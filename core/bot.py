@@ -220,6 +220,7 @@ class Parrot(commands.Bot):
                     _log.info("Autoreloaded cog extension: %s", extension)
 
     async def on_ready(self) -> None:
+        _log.info("Logged in as %s (ID: %s)", self.user, self.user.id)
         if self._started_at is None:
             self._started_at = discord.utils.utcnow()
             try:
@@ -239,7 +240,6 @@ class Parrot(commands.Bot):
             except pomice.exceptions.NodeConnectionFailure:
                 pass
 
-        _log.info("Logged in as %s (ID: %s)", self.user, self.user.id)
 
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:

@@ -7,6 +7,18 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from .utils import (
+    BirthdayChannelSelect,
+    ChangeBotPrefixButton,
+    GiveawayEditButton,
+    HubChannelSelect,
+    MuteRoleSelect,
+    PaginationLayout,
+    StarboardEditButton,
+    TelephoneChannelSelect,
+    WelcomeEditButton,
+)
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -47,10 +59,7 @@ class Config(commands.Cog):
     @commands.group(name="config", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     @app_commands.checks.has_permissions(administrator=True)
-    async def config(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    async def config(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Base command for managing bot configuration.
 
         This command serves as a parent for various subcommands that allow
@@ -65,7 +74,55 @@ class Config(commands.Cog):
             config = await self.bot.database.get_guild_configuration(ctx.guild.id)
 
         assert config is not None, "Guild configuration should not be None after registration."
-        return await ctx.reply(str(config))
+
+        header = discord.ui.TextDisplay(
+            "# Bot Configuration\n-# Parrot Bot is highly customizable. Use the buttons below to navigate through the configuration options.",
+        )
+        footer = discord.ui.TextDisplay("-# Use buttons to navigate through the pages.")
+
+        view = PaginationLayout(
+            ctx.author,
+            header=header,
+            items=[
+                [
+                    discord.ui.Section(
+                        discord.ui.TextDisplay("## Command Prefix\nChange the bot's command prefix."),
+                        accessory=ChangeBotPrefixButton(bot_prefix=config.get("command_prefix", self.bot.DEFAULT_PREFIX)),
+                    ),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay("## Mute Role\nSelect a role to be used as the mute role for the server."),
+                    discord.ui.ActionRow(MuteRoleSelect(mute_role_id=config["mute_role_id"])),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay("## Hub Channel\nSelect a channel to be used as the hub (join to create)."),
+                    discord.ui.ActionRow(HubChannelSelect(hub_channel_id=config["hub_channel_id"])),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay("## Birthday Channel\nSelect a channel to be used for birthday announcements."),
+                    discord.ui.ActionRow(BirthdayChannelSelect(hub_channel_id=config["birthday_config"]["channel_id"])),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay("## Telephone Channel\nSelect a channel as the telephone channel."),
+                    discord.ui.ActionRow(TelephoneChannelSelect(hub_channel_id=config["telephone_config"]["channel_id"])),
+                ],
+                [
+                    discord.ui.Section(
+                        discord.ui.TextDisplay("## Welcome Configuration\nEdit the welcome configuration for the server."),
+                        accessory=WelcomeEditButton(**config),
+                    ),
+                    discord.ui.Separator(),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay("## Giveaway Configuration\nEdit the giveaway configuration for the server."),
+                        accessory=GiveawayEditButton(**config),
+                    ),
+                    discord.ui.Separator(),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay("## Starboard Configuration\nEdit the starboard configuration for the server."),
+                        accessory=StarboardEditButton(**config),
+                    ),
+                ],
+            ],
+            footer=footer,
+        )
+
+        return await ctx.reply(view=view, ephemeral=True)
 
 
 async def setup(bot: Parrot) -> None:

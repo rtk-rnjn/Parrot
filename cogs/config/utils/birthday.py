@@ -8,13 +8,13 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-class HubChannelSelect(discord.ui.ChannelSelect):
+class BirthdayChannelSelect(discord.ui.ChannelSelect):
     def __init__(self, hub_channel_id: int | None) -> None:
         super().__init__(
-            placeholder="Select a hub channel...",
+            placeholder="Select a birthday channel...",
             min_values=0,
             max_values=1,
-            channel_types=[discord.ChannelType.voice],
+            channel_types=[discord.ChannelType.text],
             default_values=[discord.Object(id=hub_channel_id)] if hub_channel_id is not None else [],
         )
         self.hub_channel_id = hub_channel_id
@@ -32,9 +32,9 @@ class HubChannelSelect(discord.ui.ChannelSelect):
         if selected_channel is not None:
             new_hub_channel_id = selected_channel.id
 
-            await interaction.client.database.edit_hub_config(guild_id=interaction.guild.id, hub_channel_id=new_hub_channel_id)
-            await interaction.followup.send(f"Hub channel updated to {selected_channel.mention}.", ephemeral=True)
+            await interaction.client.database.edit_birthday_config(guild_id=interaction.guild.id, enabled=True, channel_id=new_hub_channel_id)
+            await interaction.followup.send(f"Birthday channel updated to {selected_channel.mention}.", ephemeral=True)
 
         else:
-            await interaction.client.database.edit_hub_config(guild_id=interaction.guild.id, hub_channel_id=None)
-            await interaction.followup.send("Hub channel has been removed.", ephemeral=True)
+            await interaction.client.database.edit_birthday_config(guild_id=interaction.guild.id, enabled=True, channel_id=None)
+            await interaction.followup.send("Birthday channel has been removed.", ephemeral=True)

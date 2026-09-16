@@ -97,11 +97,9 @@ class Welcomer(commands.Cog):
         try:
             template = Template(message)
             return template.safe_substitute(
-                member=member.mention,
-                user=member.name,
-                username=member.name,
-                display_name=member.display_name,
-                server=member.guild.name,
+                member_mention=member.mention,
+                member_name=member.name,
+                member_display_name=member.display_name,
                 server_name=member.guild.name,
                 count=member.guild.member_count,
             )

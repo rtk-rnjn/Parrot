@@ -135,8 +135,8 @@ class WelcomeConfig(TypedDict):
 class StarboardConfig(TypedDict):
     enabled: bool
     channel_id: int | None
-    threshold: int
-    emoji: str
+    threshold: int | None
+    emoji: str | None
     board_messages: dict[str, int]
 
 

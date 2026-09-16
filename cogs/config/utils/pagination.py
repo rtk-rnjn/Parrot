@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Unpack
+from typing import TYPE_CHECKING
 
 import discord
 
 if TYPE_CHECKING:
     from core import Parrot
-    from core.utils.database.models import GuildConfiguration
+
+__all__ = ("GotoPageModal", "PaginationLayout")
 
 
 class GotoPageModal(discord.ui.Modal, title="Go to Page"):
@@ -17,7 +18,7 @@ class GotoPageModal(discord.ui.Modal, title="Go to Page"):
 
         self.page_input = discord.ui.TextInput(
             label="Page Number",
-            placeholder=f"Enter a page number between 1 and {self.max_page}",
+            placeholder=f"Enter a page number between 1 and {self.max_page} (inclusive)",
             required=True,
             default=str(current_page),
             max_length=len(str(self.max_page)),
@@ -26,35 +27,15 @@ class GotoPageModal(discord.ui.Modal, title="Go to Page"):
 
         self.add_item(self.page_input)
 
-    async def on_submit(self, interaction: discord.Interaction[Parrot], /) -> None:
-        try:
-            page_number = int(self.page_input.value.strip())
-        except ValueError:
-            await interaction.response.send_message(
-                "Invalid page number. Please enter a valid integer.",
-                ephemeral=True,
-            )
-            return
 
-        if not (1 <= page_number <= self.max_page):
-            await interaction.response.send_message(
-                f"Page number must be between 1 and {self.max_page}.",
-                ephemeral=True,
-            )
-            return
-
-        self.stop()
-
-
-class PaginationLayout[I: discord.ui.Item](discord.ui.LayoutView):
+class PaginationLayout(discord.ui.LayoutView):
     def __init__(
         self,
         author: discord.User | discord.Member,
         *,
-        header: I,
-        footer: I,
-        items: list[list[I]],
-        **kwargs: Unpack[GuildConfiguration],
+        header: discord.ui.Item,
+        footer: discord.ui.Item,
+        items: list[list[discord.ui.Item]],
     ) -> None:
         super().__init__()
         self.author = author
@@ -62,7 +43,6 @@ class PaginationLayout[I: discord.ui.Item](discord.ui.LayoutView):
         self.footer = footer
         self.items = items
         self.current_index = 0
-        self.kwargs = kwargs
 
         if not self.items:
             raise ValueError("Items list cannot be empty.")
@@ -71,11 +51,25 @@ class PaginationLayout[I: discord.ui.Item](discord.ui.LayoutView):
         next_disabled = len(self.items) <= 1
         style = discord.ButtonStyle.secondary
 
+        self.first_button = discord.ui.Button(emoji="\N{BLACK LEFT-POINTING DOUBLE TRIANGLE}", style=style, disabled=True)
         self.previous_button = discord.ui.Button(emoji="\N{BLACK LEFT-POINTING TRIANGLE}", style=style, disabled=True)
         self.next_button = discord.ui.Button(emoji="\N{BLACK RIGHT-POINTING TRIANGLE}", style=style, disabled=next_disabled)
+        self.last_button = discord.ui.Button(emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}", style=style, disabled=next_disabled)
         self.current_button = discord.ui.Button(label=f"{self.current_index + 1} / {len(self.items)}", style=style, disabled=next_disabled)
 
-        self._pagination_buttons = discord.ui.ActionRow(self.previous_button, self.current_button, self.next_button)
+        self.previous_button.callback = self.previous_page_callback
+        self.next_button.callback = self.next_page_callback
+        self.current_button.callback = self.goto_page_callback
+        self.first_button.callback = self.first_page_callback
+        self.last_button.callback = self.last_page_callback
+
+        self._pagination_buttons = discord.ui.ActionRow(
+            self.first_button,
+            self.previous_button,
+            self.current_button,
+            self.next_button,
+            self.last_button,
+        )
 
         self.container = discord.ui.Container(
             self.header,
@@ -93,7 +87,7 @@ class PaginationLayout[I: discord.ui.Item](discord.ui.LayoutView):
             return False
         return True
 
-    async def update_page(self, interaction: discord.Interaction[Parrot], /) -> None:
+    async def update_page(self, interaction: discord.Interaction[Parrot]) -> None:
         self.container.clear_items()
         self.container.add_item(self.header)
         self.container.add_item(discord.ui.Separator())
@@ -109,33 +103,51 @@ class PaginationLayout[I: discord.ui.Item](discord.ui.LayoutView):
 
         await interaction.response.edit_message(view=self)
 
-    async def previous_page_callback(self, interaction: discord.Interaction[Parrot], /) -> None:
+    async def previous_page_callback(self, interaction: discord.Interaction[Parrot]) -> None:
         if self.current_index > 0:
             self.current_index -= 1
             await self.update_page(interaction)
 
-    async def next_page_callback(self, interaction: discord.Interaction[Parrot], /) -> None:
+    async def next_page_callback(self, interaction: discord.Interaction[Parrot]) -> None:
         if self.current_index < len(self.items) - 1:
             self.current_index += 1
             await self.update_page(interaction)
 
-    async def goto_page_callback(self, interaction: discord.Interaction[Parrot], /) -> None:
+    async def first_page_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if self.current_index != 0:
+            self.current_index = 0
+            await self.update_page(interaction)
+
+    async def last_page_callback(self, interaction: discord.Interaction[Parrot]) -> None:
+        if self.current_index != len(self.items) - 1:
+            self.current_index = len(self.items) - 1
+            await self.update_page(interaction)
+
+    async def goto_page_callback(self, interaction: discord.Interaction[Parrot]) -> None:
         goto_page_modal = GotoPageModal(max_page=len(self.items), current_page=self.current_index + 1)
+        goto_page_modal.on_submit = self.goto_page_modal_callback(goto_page_modal)
         await interaction.response.send_modal(goto_page_modal)
         await goto_page_modal.wait()
 
-        if goto_page_modal.page_input.value is None:
-            return
+    def goto_page_modal_callback(self, modal: GotoPageModal):
+        async def callback(interaction: discord.Interaction[Parrot]) -> None:
+            if modal.page_input.value is None:
+                return
 
-        try:
-            page_number = int(goto_page_modal.page_input.value.strip())
-        except ValueError:
-            await interaction.followup.send("Invalid page number. Please enter a valid integer.", ephemeral=True)
-            return
+            try:
+                page_number = int(modal.page_input.value.strip())
+            except ValueError:
+                # A kindergarden student would be able to enter a valid integer, but just in case, we handle this gracefully.
+                await interaction.response.send_message("Invalid page number. Please enter a valid integer.", ephemeral=True)
+                return
 
-        if not (1 <= page_number <= len(self.items)):
-            await interaction.followup.send(f"Page number must be between 1 and {len(self.items)}.", ephemeral=True)
-            return
+            if not (1 <= page_number <= len(self.items)):
+                # People are not very good at following instructions,
+                # idk how they are allowed to vote.
+                await interaction.response.send_message(f"Page number must be between 1 and {len(self.items)}.", ephemeral=True)
+                return
 
-        self.current_index = page_number - 1
-        await self.update_page(interaction)
+            self.current_index = page_number - 1
+            await self.update_page(interaction)
+
+        return callback

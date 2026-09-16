@@ -8,9 +8,6 @@ from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
 from ..models import GuildConfiguration
 
-DEFAULT_STARBOARD_EMOJI = "\N{WHITE MEDIUM STAR}"
-DEFAULT_STARBOARD_THRESHOLD = 3
-
 
 class _GuildStarboardMixin(DatabaseMixin):
     redis_client: Redis
@@ -27,9 +24,9 @@ class _GuildStarboardMixin(DatabaseMixin):
         *,
         guild_id: int,
         enabled: bool = MISSING,
-        channel_id: int = MISSING,
-        threshold: int = MISSING,
-        emoji: str = MISSING,
+        channel_id: int | None = MISSING,
+        threshold: int | None = MISSING,
+        emoji: str | None = MISSING,
     ) -> bool:
         updates = {}
         for field, value in (
@@ -89,37 +86,37 @@ class _GuildStarboardMixin(DatabaseMixin):
             await self.redis_client.hset(config_key, "channel_id", channel_id)
         return channel_id
 
-    async def get_starboard_emoji(self, guild_id: int, /) -> str:
+    async def get_starboard_emoji(self, guild_id: int, /) -> str | None:
         config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
         cached = await self.redis_client.hget(config_key, "emoji")
         if cached is not None and isinstance(cached, str):
             return cached
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
+            {"_id": guild_id, "starboard_config.emoji": {"$exists": True}},
             {"starboard_config.emoji": 1},
         )
         if guild is None:
-            return DEFAULT_STARBOARD_EMOJI
+            return
 
-        emoji = guild.get("starboard_config", {}).get("emoji", DEFAULT_STARBOARD_EMOJI)
+        emoji = guild["starboard_config"]["emoji"]
         await self.redis_client.hset(config_key, "emoji", emoji)
         return emoji
 
-    async def get_starboard_threshold(self, guild_id: int, /) -> int:
+    async def get_starboard_threshold(self, guild_id: int, /) -> int | None:
         config_key = RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id)
         cached = await self.redis_client.hget(config_key, "threshold")
         if cached is not None:
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
+            {"_id": guild_id, "starboard_config.threshold": {"$exists": True}},
             {"starboard_config.threshold": 1},
         )
         if guild is None:
-            return DEFAULT_STARBOARD_THRESHOLD
+            return
 
-        threshold = guild.get("starboard_config", {}).get("threshold", DEFAULT_STARBOARD_THRESHOLD)
+        threshold = guild["starboard_config"]["threshold"]
         await self.redis_client.hset(config_key, "threshold", threshold)
         return threshold
 

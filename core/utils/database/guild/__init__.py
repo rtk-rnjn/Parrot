@@ -120,7 +120,6 @@ class _GuildMixin(
                 "on_thread_delete": {"enabled": False, "webhook_uri": None},
                 "on_thread_update": {"enabled": False, "webhook_uri": None},
                 "on_server_update": {"enabled": False, "webhook_uri": None},
-                "on_webhook_update": {"enabled": False, "webhook_uri": None},
                 "on_role_create": {"enabled": False, "webhook_uri": None},
                 "on_role_delete": {"enabled": False, "webhook_uri": None},
                 "on_role_update": {"enabled": False, "webhook_uri": None},

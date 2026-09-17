@@ -24,7 +24,6 @@ EVENT_NAME = Literal[
     "on_thread_delete",
     "on_thread_update",
     "on_server_update",
-    "on_webhook_update",
     "on_role_create",
     "on_role_delete",
     "on_role_update",

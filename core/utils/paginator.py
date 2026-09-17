@@ -27,10 +27,13 @@ class GotoPageModal(discord.ui.Modal, title="Go to Page"):
 class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
     """Shared pagination behaviour for pagination views."""
 
+    message: discord.Message | None = None
+    author: discord.User | discord.Member
+    hide_quit_button: bool
+    hide_skip_button: bool
+
     current_index: int
     items: list[PageT]
-    author: discord.User | discord.Member
-    message: discord.Message | None = None
 
     def _setup_pagination_buttons(self) -> None:
         muted = discord.ButtonStyle.secondary
@@ -48,11 +51,17 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
         self.first_button.callback = self.first_page_callback
         self.last_button.callback = self.last_page_callback
 
-        self.skip_button = discord.ui.Button(label="Go to Page", style=clickable, disabled=disabled)
-        self.quit_pagination_button = discord.ui.Button(label="Quit Pagination", style=discord.ButtonStyle.danger)
+        if not self.hide_quit_button:
+            self.skip_button = discord.ui.Button(label="Go to Page", style=clickable, disabled=disabled)
+            self.skip_button.callback = self.goto_page_callback
+        else:
+            self.skip_button = None
 
-        self.skip_button.callback = self.goto_page_callback
-        self.quit_pagination_button.callback = self.quit_pagination_callback
+        if not self.hide_quit_button:
+            self.quit_pagination_button = discord.ui.Button(label="Quit Pagination", style=discord.ButtonStyle.danger)
+            self.quit_pagination_button.callback = self.quit_pagination_callback
+        else:
+            self.quit_pagination_button = None
 
     @property
     def current_page_label(self) -> str:
@@ -196,12 +205,23 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
 
 
 class PaginationView(PaginationMixin[discord.Embed], discord.ui.View):
-    def __init__(self, *, author: discord.User | discord.Member, items: list[discord.Embed]) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        *,
+        author: discord.User | discord.Member,
+        items: list[discord.Embed],
+        hide_skip_button: bool = False,
+        hide_quit_button: bool = False,
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
 
         self.items = items
         self.author = author
         self.current_index = 0
+
+        self.hide_quit_button = hide_quit_button
+        self.hide_skip_button = hide_skip_button
 
         self._setup_pagination_buttons()
 
@@ -211,11 +231,14 @@ class PaginationView(PaginationMixin[discord.Embed], discord.ui.View):
             self.current_button,
             self.next_button,
             self.last_button,
-
-            self.skip_button,
-            self.quit_pagination_button,
         ):
             self.add_item(button)
+
+        if not self.hide_skip_button and self.skip_button is not None:
+            self.add_item(self.skip_button)
+
+        if not self.hide_quit_button and self.quit_pagination_button is not None:
+            self.add_item(self.quit_pagination_button)
 
     async def update_page(self, interaction: discord.Interaction[Parrot]) -> None:
         self._update_pagination_buttons()
@@ -224,20 +247,26 @@ class PaginationView(PaginationMixin[discord.Embed], discord.ui.View):
 
 
 class PaginationLayout(PaginationMixin[list[discord.ui.Item]], discord.ui.LayoutView):
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         author: discord.User | discord.Member,
         *,
         header: discord.ui.Item,
         footer: discord.ui.Item,
         items: list[list[discord.ui.Item]],
+        hide_skip_button: bool = False,
+        hide_quit_button: bool = False,
+        **kwargs,
     ) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
 
         if not items:
             raise ValueError("Items list cannot be empty.")
 
         self.author = author
+        self.hide_skip_button = hide_skip_button
+        self.hide_quit_button = hide_quit_button
+
         self.header = header
         self.footer = footer
         self.items = items
@@ -258,7 +287,14 @@ class PaginationLayout(PaginationMixin[list[discord.ui.Item]], discord.ui.Layout
 
         self.add_item(self.container)
         self.add_item(self._pagination_buttons)
-        self.add_item(discord.ui.ActionRow(self.skip_button, self.quit_pagination_button))
+
+        additional_buttons = []
+        if not self.hide_skip_button and self.skip_button is not None:
+            additional_buttons.append(self.skip_button)
+        if not self.hide_quit_button and self.quit_pagination_button is not None:
+            additional_buttons.append(self.quit_pagination_button)
+        if additional_buttons:
+            self.add_item(discord.ui.ActionRow(*additional_buttons))
 
     def _update_container(self) -> None:
         self.container.clear_items()

@@ -112,6 +112,7 @@ class WelcomeEditButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction[Parrot], /) -> None:
         assert self.view is not None
+        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # type: ignore
         modal = WelcomeConfigModal(**self.kwargs)
 
         await interaction.response.send_modal(modal)

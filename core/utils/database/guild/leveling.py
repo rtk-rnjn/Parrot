@@ -28,15 +28,12 @@ class _GuildLevelingMixin(DatabaseMixin):
         guild_id: int,
         enabled: bool = MISSING,
         channel_id: int | None = MISSING,
-        level_roles: Mapping[int, int] = MISSING,
     ) -> bool:
         updates = {}
         if enabled is not MISSING:
             updates["leveling_config.enabled"] = enabled
         if channel_id is not MISSING:
             updates["leveling_config.channel_id"] = channel_id
-        if level_roles is not MISSING:
-            updates["leveling_config.level_roles"] = dict(level_roles)
         if not updates:
             return False
         result = await self.guilds_collection.update_one({"_id": guild_id, "leveling_config": {"$exists": True}}, {"$set": updates})

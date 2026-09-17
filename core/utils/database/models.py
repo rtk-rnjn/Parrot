@@ -185,9 +185,6 @@ class Events(TypedDict):
     # Server itself
     on_server_update: EventsConfig
 
-    # Webhooks
-    on_webhook_update: EventsConfig
-
     # Roles
     on_role_create: EventsConfig
     on_role_delete: EventsConfig

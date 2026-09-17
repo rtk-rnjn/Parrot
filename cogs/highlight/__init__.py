@@ -194,8 +194,8 @@ class Highlights(commands.Cog):
         )
 
         def esc(string: str) -> str:
-            st = discord.utils.escape_markdown(string)
-            return string.replace(f"{highlight}", f"**{highlight}**")
+            st: str = discord.utils.escape_markdown(string)
+            return st.replace(f"{highlight}", f"**{highlight}**")
 
         content = esc(message.content)[:2000]
         relative_time = discord.utils.format_dt(message.created_at, style="R")

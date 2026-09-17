@@ -605,7 +605,7 @@ class Fun(commands.Cog, ColorHandler):
                 )
                 pages.append(embed)
 
-        view = PaginationView(pages, author=ctx.author)
+        view = PaginationView(author=ctx.author, items=pages)
         message = await view.start(ctx)
 
         return message

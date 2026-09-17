@@ -7,13 +7,15 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from core.utils import PaginationLayout
+
 from .utils import (
     BirthdayChannelSelect,
     ChangeBotPrefixButton,
     GiveawayEditButton,
     HubChannelSelect,
+    LevelingChannelSelect,
     MuteRoleSelect,
-    PaginationLayout,
     StarboardEditButton,
     TelephoneChannelSelect,
     WelcomeEditButton,
@@ -47,6 +49,52 @@ EVENTS_DESCRIPTIONS = {
     "on_member_leave_voice": "Triggered when a member leaves a voice channel.",
     "on_member_move_voice": "Triggered when a member moves between voice channels.",
 }
+
+
+COMMAND_PREFIX_DESCRIPTION = """
+## Command Prefix
+-# Change the bot's command prefix. The command prefix is used to invoke commands in the server. Prefix based command will be obsolete in the future, so it's recommended to use slash commands instead.
+"""
+
+MUTE_ROLE_DESCRIPTION = """
+## Mute Role
+-# Select a role to be used as the mute role for the server. This role should have the "Send Messages" and "Connect" permissions disabled in all channels where you want to mute members.
+"""
+
+HUB_CHANNEL_DESCRIPTION = """
+## Hub Channel
+-# Select a channel to be used as the hub channel for the server. Basically Join to create voice channel. If a user joins the hub channel, a new voice channel will be created for them. When they leave, the channel will be deleted.
+"""
+
+BIRTHDAY_CHANNEL_DESCRIPTION = """
+## Birthday Channel
+-# Select a channel to be used for birthday announcements. The bot will announce birthdays in this channel.
+"""
+
+TELEPHONE_CHANNEL_DESCRIPTION = """
+## Telephone Channel
+-# Select a channel to be used for the telephone feature. Server members can chat with other members of different servers. If no channel is selected other servers won't be able to chat with your server members.
+"""
+
+LEVELING_CHANNEL_DESCRIPTION = """
+## Leveling Channel
+-# Select a channel to be used for leveling announcements. The bot will announce when a member levels up in this channel.
+"""
+
+WELCOME_CONFIG_DESCRIPTION = """
+## Welcome Configuration
+-# Configure the welcome settings for the server. You can set a welcome message, a channel for welcome messages, and a role to be assigned to new members and even leave messages for when members leave the server.
+"""
+
+GIVEAWAY_CONFIG_DESCRIPTION = """
+## Giveaway Configuration
+-# Configure the giveaway settings for the server. You can set a channel for giveaways and a role to be mentioned when giveaways are announced.
+"""
+
+STARBOARD_CONFIG_DESCRIPTION = """
+## Starboard Configuration
+-# Configure the starboard settings for the server. You can set a channel for the starboard, the threshold for messages to be posted to the starboard, and the emoji used for starboard reactions.
+"""
 
 
 class Config(commands.Cog):
@@ -86,35 +134,38 @@ class Config(commands.Cog):
             items=[
                 [
                     discord.ui.Section(
-                        discord.ui.TextDisplay("## Command Prefix\nChange the bot's command prefix."),
+                        discord.ui.TextDisplay(COMMAND_PREFIX_DESCRIPTION),
                         accessory=ChangeBotPrefixButton(bot_prefix=config.get("command_prefix", self.bot.DEFAULT_PREFIX)),
                     ),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay("## Mute Role\nSelect a role to be used as the mute role for the server."),
+                    discord.ui.TextDisplay(MUTE_ROLE_DESCRIPTION),
                     discord.ui.ActionRow(MuteRoleSelect(mute_role_id=config["mute_role_id"])),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay("## Hub Channel\nSelect a channel to be used as the hub (join to create)."),
+                    discord.ui.TextDisplay(HUB_CHANNEL_DESCRIPTION),
                     discord.ui.ActionRow(HubChannelSelect(hub_channel_id=config["hub_channel_id"])),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay("## Birthday Channel\nSelect a channel to be used for birthday announcements."),
+                    discord.ui.TextDisplay(BIRTHDAY_CHANNEL_DESCRIPTION),
                     discord.ui.ActionRow(BirthdayChannelSelect(hub_channel_id=config["birthday_config"]["channel_id"])),
                     discord.ui.Separator(),
-                    discord.ui.TextDisplay("## Telephone Channel\nSelect a channel as the telephone channel."),
+                    discord.ui.TextDisplay(TELEPHONE_CHANNEL_DESCRIPTION),
                     discord.ui.ActionRow(TelephoneChannelSelect(hub_channel_id=config["telephone_config"]["channel_id"])),
+                    discord.ui.Separator(),
+                    discord.ui.TextDisplay(LEVELING_CHANNEL_DESCRIPTION),
+                    discord.ui.ActionRow(LevelingChannelSelect(leveling_channel_id=config["leveling_config"]["channel_id"])),
                 ],
                 [
                     discord.ui.Section(
-                        discord.ui.TextDisplay("## Welcome Configuration\nEdit the welcome configuration for the server."),
+                        discord.ui.TextDisplay(WELCOME_CONFIG_DESCRIPTION),
                         accessory=WelcomeEditButton(**config),
                     ),
                     discord.ui.Separator(),
                     discord.ui.Section(
-                        discord.ui.TextDisplay("## Giveaway Configuration\nEdit the giveaway configuration for the server."),
+                        discord.ui.TextDisplay(GIVEAWAY_CONFIG_DESCRIPTION),
                         accessory=GiveawayEditButton(**config),
                     ),
                     discord.ui.Separator(),
                     discord.ui.Section(
-                        discord.ui.TextDisplay("## Starboard Configuration\nEdit the starboard configuration for the server."),
+                        discord.ui.TextDisplay(STARBOARD_CONFIG_DESCRIPTION),
                         accessory=StarboardEditButton(**config),
                     ),
                 ],

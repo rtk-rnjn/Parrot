@@ -8,10 +8,10 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-class TelephoneChannelSelect(discord.ui.ChannelSelect):
+class LevelingChannelSelect(discord.ui.ChannelSelect):
     def __init__(self, channel_id: int | None) -> None:
         super().__init__(
-            placeholder="Select a Telephone channel...",
+            placeholder="Select a leveling channel...",
             min_values=0,
             max_values=1,
             channel_types=[discord.ChannelType.text],
@@ -32,9 +32,9 @@ class TelephoneChannelSelect(discord.ui.ChannelSelect):
         if selected_channel is not None:
             new_channel_id = selected_channel.id
 
-            await interaction.client.database.edit_telephone_config(guild_id=interaction.guild.id, enabled=True, channel_id=new_channel_id)
-            await interaction.followup.send(f"Telephone channel updated to {selected_channel.mention}.", ephemeral=True)
+            await interaction.client.database.edit_leveling_config(guild_id=interaction.guild.id, enabled=True, channel_id=new_channel_id)
+            await interaction.followup.send(f"Leveling channel updated to {selected_channel.mention}.", ephemeral=True)
 
         else:
-            await interaction.client.database.edit_telephone_config(guild_id=interaction.guild.id, enabled=False, channel_id=None)
-            await interaction.followup.send("Telephone channel has been removed.", ephemeral=True)
+            await interaction.client.database.edit_leveling_config(guild_id=interaction.guild.id, enabled=True, channel_id=None)
+            await interaction.followup.send("Leveling channel has been removed.", ephemeral=True)

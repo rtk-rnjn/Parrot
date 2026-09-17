@@ -485,7 +485,7 @@ class CustomCommandVariablesButton(discord.ui.Button):
         super().__init__(label="Variables", style=discord.ButtonStyle.gray)
 
     async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        view = PaginationView(CUSTOM_COMMAND_VARIABLES_PAGES, author=interaction.user)
+        view = PaginationView(author=interaction.user, items=CUSTOM_COMMAND_VARIABLES_PAGES)
         await interaction.response.send_message(embed=CUSTOM_COMMAND_VARIABLES_PAGES[0], view=view, ephemeral=True)
 
 
@@ -494,7 +494,7 @@ class CustomCommandExamplesButton(discord.ui.Button):
         super().__init__(label="Examples", style=discord.ButtonStyle.gray)
 
     async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        view = PaginationView(CUSTOM_COMMAND_EXAMPLES_PAGES, author=interaction.user)
+        view = PaginationView(author=interaction.user, items=CUSTOM_COMMAND_EXAMPLES_PAGES)
         await interaction.response.send_message(embed=CUSTOM_COMMAND_EXAMPLES_PAGES[0], view=view, ephemeral=True)
 
 

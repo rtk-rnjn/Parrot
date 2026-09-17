@@ -50,6 +50,7 @@ class RedisKeys(StrEnum):
     GUILD_AFK_USER_REASON = "guild:{guild_id}:afk_user:{user_id}:reason"
 
     GUILD_LEVELING_CONFIG_ENABLED = "guild:{guild_id}:leveling_config:enabled"
+    GUILD_LEVELING_CONFIG_CHANNEL_ID = "guild:{guild_id}:leveling_config:channel_id"
     GUILD_LEVELING_CONFIG_LEVEL_ROLES = "guild:{guild_id}:leveling_config:level_roles"
 
     GUILD_LEVELING_DATA = "guild:{guild_id}:leveling_data"

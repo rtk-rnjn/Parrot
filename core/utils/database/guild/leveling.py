@@ -9,23 +9,12 @@ from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration, LevelingConfig
+from ..models import GuildConfiguration
 
 
 class _GuildLevelingMixin(DatabaseMixin):
     redis_client: Redis
     guilds_collection: AsyncCollection[GuildConfiguration]
-
-    async def __cache_leveling_config(self, *, guild_id: int, config: LevelingConfig) -> None:
-        enabled_key = RedisKeys.GUILD_LEVELING_CONFIG_ENABLED.format(guild_id=guild_id)
-        roles_key = RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id)
-
-        await self.redis_client.set(enabled_key, int(config["enabled"]))
-
-        await self.redis_client.delete(roles_key)
-        level_roles = config.get("level_roles", {})
-        if level_roles:
-            await self.redis_client.hset(roles_key, mapping={str(level): str(role_id) for level, role_id in level_roles.items()})
 
     async def __invalidate_leveling_config_cache(self, *, guild_id: int) -> None:
         await self.redis_client.delete(
@@ -38,11 +27,14 @@ class _GuildLevelingMixin(DatabaseMixin):
         *,
         guild_id: int,
         enabled: bool = MISSING,
+        channel_id: int | None = MISSING,
         level_roles: Mapping[int, int] = MISSING,
     ) -> bool:
         updates = {}
         if enabled is not MISSING:
             updates["leveling_config.enabled"] = enabled
+        if channel_id is not MISSING:
+            updates["leveling_config.channel_id"] = channel_id
         if level_roles is not MISSING:
             updates["leveling_config.level_roles"] = dict(level_roles)
         if not updates:
@@ -70,6 +62,25 @@ class _GuildLevelingMixin(DatabaseMixin):
         enabled = guild_config["leveling_config"].get("enabled", False)
         await self.redis_client.set(enabled_key, int(enabled))
         return enabled
+
+    async def get_leveling_channel_id(self, guild_id: int, /) -> int | None:
+        key = RedisKeys.GUILD_LEVELING_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
+        cached_channel_id = await self.redis_client.get(key)
+        if cached_channel_id is not None:
+            return int(cached_channel_id)
+
+        guild_config = await self.guilds_collection.find_one(
+            {"_id": guild_id, "leveling_config.channel_id": {"$exists": True}},
+            {"leveling_config.channel_id": 1},
+        )
+        if guild_config is None or "leveling_config" not in guild_config:
+            return None
+
+        channel_id = guild_config["leveling_config"]["channel_id"]
+        if channel_id is not None:
+            await self.redis_client.set(key, str(channel_id))
+
+        return channel_id
 
     async def set_level_role(self, *, guild_id: int, level: int, role_id: int) -> None:
         await self.guilds_collection.update_one(
@@ -107,7 +118,7 @@ class _GuildLevelingMixin(DatabaseMixin):
             await self.redis_client.hset(roles_key, str(level), str(role_id))
         return role_id
 
-    async def incr_user_xp(self, *, guild_id: int, user_id: int, xp: int) -> None:
+    async def increase_user_xp(self, *, guild_id: int, user_id: int, xp: int):
         key = RedisKeys.GUILD_LEVELING_DATA.format(guild_id=guild_id)
         await self.redis_client.hincrby(key, str(user_id), xp)
 

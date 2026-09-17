@@ -23,8 +23,7 @@ class Leveling(commands.Cog):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self._enabled_guilds: dict[int, bool] = {}
-        self.cooldown = commands.CooldownMapping.from_cooldown(1, 60, commands.BucketType.user)
+        self.cooldown = commands.CooldownMapping.from_cooldown(1, 10, commands.BucketType.member)
         _log.info("Cog loaded: %s", type(self).__name__)
 
     async def cog_load(self) -> None:
@@ -63,19 +62,12 @@ class Leveling(commands.Cog):
         next_level_xp = self._calculate_xp_for_level(current_level + 1)
         return next_level_xp - xp
 
-    def set_enabled_cache(self, guild_id: int, enabled: bool) -> None:
-        self._enabled_guilds[guild_id] = enabled
-
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if message.guild is None or message.author.bot:
+        if message.guild is None or message.author.bot or not isinstance(message.author, discord.Member):
             return
 
-        enabled = self._enabled_guilds.get(message.guild.id)
-        if enabled is None:
-            enabled = await self.bot.database.is_leveling_enabled(message.guild.id)
-            self._enabled_guilds[message.guild.id] = enabled
-
+        enabled = await self.bot.database.is_leveling_enabled(message.guild.id)
         if not enabled:
             return
 
@@ -84,11 +76,28 @@ class Leveling(commands.Cog):
         if retry_after:
             return
 
-        await self.bot.database.incr_user_xp(
+        current_level = self._calculate_level_for_xp(await self.bot.database.get_user_xp(guild_id=message.guild.id, user_id=message.author.id) or 0)
+
+        await self.bot.database.increase_user_xp(
             guild_id=message.guild.id,
             user_id=message.author.id,
             xp=self._calculate_xp_for_message(message),
         )
+
+        new_level = self._calculate_level_for_xp(await self.bot.database.get_user_xp(guild_id=message.guild.id, user_id=message.author.id) or 0)
+        if new_level > current_level:
+            level_role = await self.bot.database.get_level_role(guild_id=message.guild.id, level=new_level)
+            role = message.guild.get_role(level_role) if level_role else None
+            if level_role and role:
+                await message.author.add_roles(role, reason="Automatic leveling role assignment")
+
+            channel_id = await self.bot.database.get_leveling_channel_id(message.guild.id)
+            if channel_id is None:
+                return
+
+            channel = message.guild.get_channel(channel_id)
+            if isinstance(channel, discord.TextChannel):
+                await channel.send(f"Congratulations {message.author.mention}, you've reached level {new_level}!")
 
     @tasks.loop(seconds=XP_FLUSH_INTERVAL_SECONDS)
     async def flush_xp(self) -> None:
@@ -121,7 +130,6 @@ class Leveling(commands.Cog):
             await ctx.reply("Leveling has not been configured for this server yet.")
             return
 
-        self._enabled_guilds[ctx.guild.id] = True
         await ctx.reply("Leveling enabled.")
 
     @leveling.command(name="disable")
@@ -136,7 +144,6 @@ class Leveling(commands.Cog):
             await ctx.reply("Leveling has not been configured for this server yet.")
             return
 
-        self._enabled_guilds[ctx.guild.id] = False
         await ctx.reply("Leveling disabled.")
 
     @leveling.command(name="role")

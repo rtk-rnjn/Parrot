@@ -51,7 +51,8 @@ class _GuildGlobalChatMixin(DatabaseMixin):
             if value is MISSING:
                 continue
             key = getattr(
-                RedisKeys, f"GUILD_GLOBAL_CHAT_CONFIG_{field.upper()}" if field != "webhook_uri" else "GUILD_GLOBAL_CHAT_CONFIG_WEBHOOK_URI"
+                RedisKeys,
+                f"GUILD_GLOBAL_CHAT_CONFIG_{field.upper()}" if field != "webhook_uri" else "GUILD_GLOBAL_CHAT_CONFIG_WEBHOOK_URI",
             )
             redis_key = key.format(guild_id=guild_id)
             if value is None:

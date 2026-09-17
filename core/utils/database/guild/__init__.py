@@ -76,6 +76,7 @@ class _GuildMixin(
             },
             "leveling_config": {
                 "enabled": False,
+                "channel_id": None,
                 "level_roles": {},
             },
             "giveaway_config": {

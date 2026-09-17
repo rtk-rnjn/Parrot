@@ -99,6 +99,7 @@ class TopTagUsageRow(TypedDict):
 
 class LevelingConfig(TypedDict):
     enabled: bool
+    channel_id: int | None
     level_roles: dict[str, int]  # level -> role_id
 
 

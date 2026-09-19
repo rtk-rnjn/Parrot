@@ -6,7 +6,6 @@ from typing import Literal
 from bson import ObjectId
 from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
@@ -16,7 +15,6 @@ from ..models import TodoItem, TodoStatus, UserConfiguration
 class _UserTodoMixin(DatabaseMixin):
     """User timezone operations."""
 
-    redis_client: Redis
     users_collection: AsyncCollection[UserConfiguration]
 
     async def __cache_user_todo_item(

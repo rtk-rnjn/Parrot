@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 from discord.utils import MISSING
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration, WelcomeConfig
+from ..models import WelcomeConfig
 
 
 class _GuildWelcomerMixin(DatabaseMixin):
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
-
     async def __cache_welcome_config(self, *, guild_id: int, config: WelcomeConfig) -> None:
         values = {
             RedisKeys.GUILD_WELCOME_CONFIG_ENABLED: int(config["enabled"]),

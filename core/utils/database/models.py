@@ -163,6 +163,15 @@ class EventsConfig(TypedDict):
     webhook_uri: str | None
 
 
+class TicketConfig(TypedDict):
+    enabled: bool
+    channel_id: int | None
+    use_thread: bool
+    category_id: int | None
+
+    bot_message_id: int | None
+    bot_channel_channel_id: int | None
+
 class Events(TypedDict):
     # Members
     on_member_join: EventsConfig
@@ -215,6 +224,7 @@ class GuildConfiguration(TypedDict):
     birthday_config: BirthdayConfig
     global_chat_config: GlobalChatConfig
     telephone_config: TelephoneConfig
+    ticket_config: TicketConfig
 
     custom_commands: list[CustomCommand]
     tags: list[Tag]

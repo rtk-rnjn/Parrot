@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from discord.utils import MISSING
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildTelephoneMixin(DatabaseMixin):
     """Guild telephone state, channel, and block-list operations."""
 
-    redis_client: Redis  # decode = True
-    guilds_collection: AsyncCollection[GuildConfiguration]
+    # decode = True
 
     async def is_telephone_enabled(self, *, guild_id: int) -> bool:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_ENABLED.format(guild_id=guild_id)

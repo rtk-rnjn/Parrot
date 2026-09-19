@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-
 from discord.utils import MISSING
 from pymongo import UpdateOne
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildLevelingMixin(DatabaseMixin):
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
-
     async def __invalidate_leveling_config_cache(self, *, guild_id: int) -> None:
         await self.redis_client.delete(
             RedisKeys.GUILD_LEVELING_CONFIG_ENABLED.format(guild_id=guild_id),

@@ -1,19 +1,14 @@
 from __future__ import annotations
 
 from discord.utils import MISSING
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import CustomCommand, GuildConfiguration
+from ..models import CustomCommand
 
 
 class _GuildCustomCommandsMixin(DatabaseMixin):
     """Persistence and cache operations for guild custom commands."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     def __custom_command_names_key(self, guild_id: int) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_NAMES.format(guild_id=guild_id)

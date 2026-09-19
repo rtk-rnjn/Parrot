@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
 from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
 from ..models import UserConfiguration
 
 
 class _UserHighlightsMixin(DatabaseMixin):
     """User timezone operations."""
 
-    redis_client: Redis
     users_collection: AsyncCollection[UserConfiguration]
 
     async def get_user_highlights(self, *, guild_id: int, user_id: int) -> set[str] | None:

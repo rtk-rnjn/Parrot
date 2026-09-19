@@ -1,18 +1,12 @@
 from __future__ import annotations
 
 from discord.utils import MISSING
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildStarboardMixin(DatabaseMixin):
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
-
     async def __invalidate_starboard_cache(self, guild_id: int, /) -> None:
         await self.redis_client.delete(
             RedisKeys.GUILD_STARBOARD_CONFIG.format(guild_id=guild_id),

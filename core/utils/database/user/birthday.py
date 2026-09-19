@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..mixin import DatabaseMixin
 from ..models import UserConfiguration
 
 
 class _UserBirthdayMixin(DatabaseMixin):
-    redis_client: Redis
     users_collection: AsyncCollection[UserConfiguration]
 
     async def set_user_birthday(self, *, user_id: int, birthday: str) -> None:

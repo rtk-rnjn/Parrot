@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
-
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildPrefixMixin(DatabaseMixin):
     """Guild command-prefix operations."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     async def get_command_prefix(self, *, guild_id: int) -> str | None:
         redis_key = RedisKeys.GUILD_COMMAND_PREFIX.format(guild_id=guild_id)

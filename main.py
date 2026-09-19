@@ -45,9 +45,7 @@ def setup_logging() -> None:
         markup=True,
         tracebacks_show_locals=False,
     )
-    console_handler.setFormatter(
-        logging.Formatter("%(message)s", DATE_FORMAT),
-    )
+    console_handler.setFormatter(logging.Formatter("%(message)s", DATE_FORMAT))
 
     # Application logs.
     file_handler = logging.handlers.RotatingFileHandler(
@@ -58,25 +56,12 @@ def setup_logging() -> None:
         encoding="utf-8",
     )
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(
-        logging.Formatter(
-            "[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s",
-            DATE_FORMAT,
-        ),
-    )
+    file_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s", DATE_FORMAT))
 
     root.addHandler(file_handler)
 
     # Separate files for third-party loggers.
-    separate_loggers = (
-        "bot",
-        # Discord
-        "discord",
-        "discord.http",
-        # Database / cache
-        "pymongo",
-        "redis",
-    )
+    separate_loggers = ("bot", "discord", "discord.http", "pymongo", "redis")
 
     for name in separate_loggers:
         logger = logging.getLogger(name)
@@ -97,12 +82,7 @@ def setup_logging() -> None:
         )
 
         handler.setLevel(logging.DEBUG)
-        handler.setFormatter(
-            logging.Formatter(
-                "[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s",
-                DATE_FORMAT,
-            ),
-        )
+        handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s", DATE_FORMAT))
 
         logger.addHandler(handler)
         logger.addHandler(console_handler)  # Also log to console for convenience.
@@ -126,10 +106,13 @@ async def start_bot() -> None:
                 bot._http_session = session
                 _log.info("Starting bot.")
                 await bot.start()
+
     except KeyboardInterrupt:
         _log.info("KeyboardInterrupt received. Shutting down.")
+
     finally:
         await bot.close()
+
         if lavalink_process is not None:
             lavalink_process.terminate()
             await lavalink_process.wait()

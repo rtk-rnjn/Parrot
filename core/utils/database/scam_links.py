@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from redis.asyncio import Redis
-
 from .cache_keys import RedisKeys
 from .mixin import DatabaseMixin
 
@@ -9,8 +7,6 @@ __all__ = ("_ScamLinksMixin",)
 
 
 class _ScamLinksMixin(DatabaseMixin):
-    redis_client: Redis
-
     async def add_scam_link(self, *links: str) -> None:
         """Add a scam link to the Redis cache."""
         await self.redis_client.sadd(RedisKeys.SCAM_LINKS_CACHE, *links)

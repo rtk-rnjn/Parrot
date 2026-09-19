@@ -3,12 +3,9 @@ from __future__ import annotations
 from typing import Literal
 
 from discord.utils import MISSING
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 EVENT_NAME = Literal[
     "on_member_join",
@@ -35,9 +32,6 @@ EVENT_NAME = Literal[
 
 class _GuildEventsMixin(DatabaseMixin):
     """Guild event enablement and webhook operations."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     async def is_event_enabled(self, guild_id: int, *, event_name: EVENT_NAME) -> bool:
         key = RedisKeys.GUILD_EVENT_ENABLED.format(guild_id=guild_id, event_name=event_name)

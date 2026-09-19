@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
-
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildAfkMixin(DatabaseMixin):
     """Guild AFK state and reason operations."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     async def set_user_as_afk(self, *, guild_id: int, user_id: int, reason: str) -> None:
         afk_users_key = RedisKeys.GUILD_AFK_USERS.format(guild_id=guild_id)

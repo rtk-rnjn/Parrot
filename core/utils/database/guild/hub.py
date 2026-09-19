@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
-
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildHubMixin(DatabaseMixin):
     """Guild hub channel and ownership operations."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     async def get_hub_channel_id(self, *, guild_id: int) -> int | None:
         redis_key = RedisKeys.GUILD_HUB_CHANNEL_ID.format(guild_id=guild_id)

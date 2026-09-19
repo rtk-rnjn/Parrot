@@ -20,6 +20,7 @@ from .prefix import _GuildPrefixMixin  # noqa
 from .starboard import _GuildStarboardMixin  # noqa
 from .tags import _GuildTagsMixin  # noqa
 from .telephone import _GuildTelephoneMixin  # noqa
+from .ticket import _GuildTicketMixin  # noqa
 from .violation import _GuildViolationMixin  # noqa
 from .welcomer import _GuildWelcomerMixin  # noqa
 
@@ -50,6 +51,7 @@ class _GuildMixin(
     _GuildGlobalChatMixin,
     _GuildTelephoneMixin,
     _GuildEventsMixin,
+    _GuildTicketMixin,
     DatabaseMixin,
 ):
     def create_guild_configuration(self, guild_id: int) -> GuildConfiguration:
@@ -102,6 +104,14 @@ class _GuildMixin(
             "birthday_config": {
                 "enabled": False,
                 "channel_id": None,
+            },
+            "ticket_config": {
+                "enabled": False,
+                "channel_id": None,
+                "use_thread": False,
+                "category_id": None,
+                "bot_message_id": None,
+                "bot_channel_channel_id": None,
             },
             "custom_commands": [],
             "tags": [],

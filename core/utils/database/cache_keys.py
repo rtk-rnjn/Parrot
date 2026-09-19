@@ -68,12 +68,21 @@ class RedisKeys(StrEnum):
 
     GUILD_STARBOARD_CONFIG = "guild:{guild_id}:starboard_config"
     GUILD_STARBOARD_BOARD_MESSAGES = "guild:{guild_id}:starboard_board_messages"
-    GUILD_BIRTHDAY_CONFIG = "guild:{guild_id}:birthday_config"
+
+    GUILD_BIRTHDAY_CONFIG_ENABLED = "guild:{guild_id}:birthday_config:enabled"
+    GUILD_BIRTHDAY_CONFIG_CHANNEL_ID = "guild:{guild_id}:birthday_config:channel_id"
 
     GUILD_TELEPHONE_CONFIG_ENABLED = "guild:{guild_id}:telephone_config:enabled"
     GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS = "guild:{guild_id}:telephone_config:blocked_servers"
     GUILD_TELEPHONE_LINE_BUSY = "guild:{guild_id}:telephone_line_busy"
     GUILD_TELEPHONE_CONFIG_CHANNEL_ID = "guild:{guild_id}:telephone_channel_id"
+
+    GUILD_TICKET_CONFIG_ENABLED = "guild:{guild_id}:ticket_config:enabled"
+    GUILD_TICKET_CONFIG_CHANNEL_ID = "guild:{guild_id}:ticket_config:channel_id"
+    GUILD_TICKET_CONFIG_USE_THREAD = "guild:{guild_id}:ticket_config:use_thread"
+    GUILD_TICKET_CONFIG_CATEGORY_ID = "guild:{guild_id}:ticket_config:category_id"
+    GUILD_TICKET_CONFIG_BOT_MESSAGE_ID = "guild:{guild_id}:ticket_config:bot_message_id"
+    GUILD_TICKET_CONFIG_BOT_CHANNEL_ID = "guild:{guild_id}:ticket_config:bot_channel_id"
 
     GUILD_EVENT_ENABLED = "guild:{guild_id}:event:{event_name}:enabled"
     GUILD_EVENT_WEBHOOK_URI = "guild:{guild_id}:event:{event_name}:webhook_uri"

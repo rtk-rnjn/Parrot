@@ -1,19 +1,11 @@
 from __future__ import annotations
 
-from ..mixin import DatabaseMixin
-
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
-
 from ..cache_keys import RedisKeys
-from ..models import GuildConfiguration
+from ..mixin import DatabaseMixin
 
 
 class _GuildViolationMixin(DatabaseMixin):
     """Guild violation counters, backed by MongoDB and Redis."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     async def increase_violation(self, *, guild_id: int, violation_name: str = "default", user_id: int) -> None:
         await self.guilds_collection.update_one(

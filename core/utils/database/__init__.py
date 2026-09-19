@@ -34,9 +34,8 @@ CACHE_TTL_SECONDS = 3600
 class _DatabaseInfraMixin(DatabaseMixin):
     """Shared database connections, lifecycle operations, and base lookups."""
 
-    redis_client: Redis
     mongo_client: AsyncMongoClient
-    guilds_collection: AsyncCollection[GuildConfiguration]
+
     users_collection: AsyncCollection[UserConfiguration]
 
     giveaways_collection: AsyncCollection[Giveaway]

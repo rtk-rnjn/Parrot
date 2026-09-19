@@ -8,16 +8,13 @@ from bson import ObjectId
 from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.results import InsertOneResult
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import Giveaway, GiveawayConfig, GuildConfiguration
+from ..models import Giveaway, GiveawayConfig
 
 
 class _GuildGiveawayMixin(DatabaseMixin):
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
     giveaways_collection: AsyncCollection[Giveaway]
 
     async def __cache_giveaway_config(self, *, guild_id: int, config: GiveawayConfig) -> None:

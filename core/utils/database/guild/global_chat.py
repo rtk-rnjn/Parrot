@@ -1,19 +1,13 @@
 from __future__ import annotations
 
 from discord.utils import MISSING
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration
 
 
 class _GuildGlobalChatMixin(DatabaseMixin):
     """Guild global-chat configuration and channel operations."""
-
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
 
     async def is_global_chat_enabled(self, guild_id: int) -> bool:
         """Check if global chat is enabled for a guild."""

@@ -5,18 +5,13 @@ from datetime import datetime
 from typing import cast
 
 import arrow
-from pymongo.asynchronous.collection import AsyncCollection
-from redis.asyncio import Redis
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import GuildConfiguration, Tag, TagUserUsage, TagUserUsageRow, TopTagUsage, TopTagUsageRow
+from ..models import Tag, TagUserUsage, TagUserUsageRow, TopTagUsage, TopTagUsageRow
 
 
 class _GuildTagsMixin(DatabaseMixin):
-    redis_client: Redis
-    guilds_collection: AsyncCollection[GuildConfiguration]
-
     async def __cache_tag(  # noqa: PLR0913
         self,
         *,

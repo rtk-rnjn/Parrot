@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 
 from discord.utils import MISSING
 from pymongo import UpdateOne

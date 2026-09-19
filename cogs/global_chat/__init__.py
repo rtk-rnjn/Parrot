@@ -14,6 +14,7 @@ loads = discord.utils._from_json
 
 _log = logging.getLogger("bot.cogs.global_chat")
 
+
 class ProfaneWord(TypedDict):
     word: str
     categories: list[str]

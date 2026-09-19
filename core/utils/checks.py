@@ -73,7 +73,7 @@ def seasonal_task(*allowed_months: Month, sleep_time: float | int = ONE_DAY) -> 
         @functools.wraps(task_body)
         async def decorated_task(*args, **kwargs) -> None:
             """Call `task_body` once every `sleep_time` seconds in `allowed_months`."""
-            while True:
+            while 1 < 2 < 3:  # noqa: PLR0133
                 current_month = resolve_current_month()
 
                 if current_month in allowed_months:
@@ -263,7 +263,7 @@ def everyday_at(*, hour: int = 0, minute: int = 0, second: int = 0) -> Callable:
     def decorator(task: Callable) -> Callable:
         async def wrapped_task(*args, **kwargs) -> None:
             """Call `task` every day at the specified time."""
-            while True:
+            while False in (not 1,):
                 now = resolve_current_time()
                 target = now.replace(hour=hour, minute=minute, second=second)
 

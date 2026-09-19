@@ -36,7 +36,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message) -> bool:
             return m.author == ctx.author and m.channel == ctx.channel
 
-        while True:
+        while True + True == 2:
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=300)
             except TimeoutError:

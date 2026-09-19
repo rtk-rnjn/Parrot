@@ -2,14 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import colorsys
+import datetime
+import difflib
+import functools
+import html
 import io
 import itertools
 import json
 import logging
 import math
 import random
+import re
 import string
-from typing import TYPE_CHECKING, Annotated, Any, cast
+from collections import defaultdict
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
 
 import discord
 from colorama import Fore
@@ -45,6 +51,15 @@ with open("assets/color_names.json", encoding="utf-8") as file:
     color_names: dict[str, str] = json.load(file)
 
 
+class QuizData(TypedDict):
+    category: str
+    type: Literal["multiple", "boolean"]
+    difficulty: Literal["easy", "medium", "hard"]
+    question: str
+    correct_answer: str
+    incorrect_answers: list[str]
+
+
 def to_bottom(text: str) -> str:
     out = bytearray()
 
@@ -77,6 +92,193 @@ def from_bottom(text: str) -> str:
         out += sub.to_bytes(1, "big")
 
     return out.decode()
+
+
+def replace_many(
+    sentence: str,
+    replacements: dict[str, str],
+    *,
+    ignore_case: bool = False,
+    match_case: bool = False,
+) -> str:
+    if ignore_case:
+        replacements = {word.lower(): replacement for word, replacement in replacements.items()}
+
+    words_to_replace = sorted(replacements, key=lambda s: (-len(s), s))
+
+    # Join and compile words to replace into a regex
+    pattern = "|".join(re.escape(word) for word in words_to_replace)
+    regex = re.compile(pattern, re.I if ignore_case else 0)
+
+    def _repl(match: re.Match) -> str:
+        """Returns replacement depending on `ignore_case` and `match_case`."""
+        word: str = match[0]
+        replacement = replacements[word.lower() if ignore_case else word]
+
+        if not match_case:
+            return replacement
+
+        # Clean punctuation from word so string methods work
+        cleaned_word = word.translate(str.maketrans("", "", string.punctuation))
+        if cleaned_word.isupper():
+            return replacement.upper()
+        if cleaned_word[0].isupper():
+            return replacement.capitalize()
+        return replacement.lower()
+
+    return regex.sub(_repl, sentence)
+
+
+def suppress_links(message: str) -> str:
+    """Accepts a message that may contain links, suppresses them, and returns them."""
+    for link in set(re.findall(r"https?://[^\s]+", message, re.IGNORECASE)):
+        message = message.replace(link, f"<{link}>")
+    return message
+
+
+UWU_WORDS = {
+    "fi": "fwi",
+    "l": "w",
+    "r": "w",
+    "some": "sum",
+    "th": "d",
+    "thing": "fing",
+    "tho": "fo",
+    "you're": "yuw'we",
+    "your": "yur",
+    "you": "yuw",
+}
+
+
+class QuizConfigLayout(discord.ui.LayoutView):
+    def __init__(self, *, author: discord.User | discord.Member):
+        super().__init__()
+        self.url: str | None = None
+
+        self.author = author
+
+        header = discord.ui.TextDisplay(
+            "# Quiz Configuration\n"
+            "-# This quiz is provided by the Open Trivia Database.\n"
+            "-# Creative Commons Attribution-ShareAlike 4.0 International License",
+        )
+        self.category_select = discord.ui.Select(
+            placeholder="Any Category",
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("General Knowledge", "9"),
+                    ("Entertainment: Books", "10"),
+                    ("Entertainment: Film", "11"),
+                    ("Entertainment: Music", "12"),
+                    ("Entertainment: Musicals & Theatres", "13"),
+                    ("Entertainment: Television", "14"),
+                    ("Entertainment: Video Games", "15"),
+                    ("Entertainment: Board Games", "16"),
+                    ("Science & Nature", "17"),
+                    ("Science: Computers", "18"),
+                    ("Mythology", "20"),
+                    ("Sports", "21"),
+                    ("Geography", "22"),
+                    ("History", "23"),
+                    ("Politics", "24"),
+                    ("Art", "25"),
+                    ("Celebrities", "26"),
+                    ("Animals", "27"),
+                    ("Vehicles", "28"),
+                    ("Entertainment: Comics", "29"),
+                    ("Science: Gadgets", "30"),
+                    ("Entertainment: Japanese Anime & Manga", "31"),
+                    ("Entertainment: Cartoon & Animations", "32"),
+                ]
+            ],
+        )
+        self.category_select.callback = self.category_select_callback
+
+        self.difficulty_select = discord.ui.Select(
+            placeholder="Any Difficulty",
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("Easy", "easy"),
+                    ("Medium", "medium"),
+                    ("Hard", "hard"),
+                ]
+            ],
+        )
+        self.difficulty_select.callback = self.difficulty_select_callback
+
+        self.type_select = discord.ui.Select(
+            placeholder="Any Type",
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("Multiple Choice", "multiple"),
+                    ("True / False", "boolean"),
+                ]
+            ],
+        )
+        self.type_select.callback = self.type_select_callback
+
+        self.start_button = discord.ui.Button(
+            label="Start Quiz",
+            style=discord.ButtonStyle.green,
+        )
+        self.start_button.callback = self.start_quiz
+
+        self.cancel_button = discord.ui.Button(
+            label="Cancel Quiz",
+            style=discord.ButtonStyle.red,
+        )
+        self.cancel_button.callback = self.cancel_quiz
+
+        container = discord.ui.Container(
+            header,
+            discord.ui.Separator(),
+            discord.ui.TextDisplay("Select a category for the quiz below:"),
+            discord.ui.ActionRow(self.category_select),
+            discord.ui.Separator(),
+            discord.ui.TextDisplay("Select difficulty for the quiz below:"),
+            discord.ui.ActionRow(self.difficulty_select),
+            discord.ui.Separator(),
+            discord.ui.TextDisplay("Select type for the quiz below:"),
+            discord.ui.ActionRow(self.type_select),
+            discord.ui.Separator(),
+            discord.ui.ActionRow(self.start_button, self.cancel_button),
+        )
+
+        self.add_item(container)
+
+    async def start_quiz(self, interaction: discord.Interaction):
+        category = self.category_select.values[0] if self.category_select.values else ""
+        difficulty = self.difficulty_select.values[0] if self.difficulty_select.values else ""
+        q_type = self.type_select.values[0] if self.type_select.values else ""
+
+        self.url = f"https://opentdb.com/api.php?amount=10&category={category}&difficulty={difficulty}&type={q_type}"
+        content = f"Starting quiz with the following configuration:\nCategory: {category or 'Any'}\nDifficulty: {difficulty or 'Any'}\nType: {q_type or 'Any'}"
+        await interaction.response.send_message(content, ephemeral=True)
+        self.stop()
+
+    async def category_select_callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+    async def difficulty_select_callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+    async def type_select_callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+    async def cancel_quiz(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Quiz cancelled.", ephemeral=True)
+        self.stop()
+
+    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
+
+        if interaction.user != self.author:
+            await interaction.response.send_message("You can not interact with this view", ephemeral=True)
+            return False
+
+        return True
 
 
 class ColorHandler:
@@ -653,6 +855,116 @@ class Fun(commands.Cog, ColorHandler):
             icon_url=ctx.author.display_avatar.url,
         )
         view.message = await ctx.reply(file=file, embed=embed, view=view)
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def uwuify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
+        """Converts a given `text` into it's uwu equivalent."""
+        conversion_func = functools.partial(replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True)
+
+        converted_text = conversion_func(text)
+        converted_text = suppress_links(converted_text)
+        # Don't put >>> if only embed present
+        if converted_text:
+            converted_text = f">>> {converted_text.lstrip('> ')}"
+        await ctx.send(content=converted_text)
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
+    async def quiz(self, ctx: commands.Context[Parrot]):
+        """Starts a quiz game."""
+        view = QuizConfigLayout(author=ctx.author)
+        await ctx.reply(view=view)
+        await view.wait()
+        url = view.url
+        if url is None:
+            await ctx.reply("Quiz cancelled.")
+            return
+
+        message = await ctx.reply("Fetching quiz questions...")
+        async with self.bot.http_session.get(url) as response:
+            if response.status != 200:
+                await message.edit(content="Failed to fetch quiz questions.")
+                return
+
+            data = await response.json()
+            response_code = data.get("response_code")
+            if response_code != 0:
+                await message.edit(content="No questions found for the selected configuration.")
+                return
+
+            questions = data.get("results", [])
+            if not questions:
+                await message.edit(content="No questions found for the selected configuration.")
+                return
+
+        await message.edit(content=f"Starting the quiz game... [Fetched {len(questions)} questions]")
+        await self.start_quiz_game(ctx, questions)
+
+    async def start_quiz_game(self, ctx: commands.Context[Parrot], questions: list[QuizData]):
+        score_board: dict[discord.User | discord.Member, int] = defaultdict(int)
+
+        for index, question in enumerate(questions, start=1):
+            correct_answer = question["correct_answer"]
+            incorrect_answers = question["incorrect_answers"]
+
+            options = [*incorrect_answers, correct_answer]
+            random.shuffle(options)
+
+            description = html.unescape(question["question"])
+            options_text = "\n".join(f"- {html.unescape(option)}" for option in options)
+
+            end_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=30)
+            relative_time = discord.utils.format_dt(end_time, style="R")
+
+            embed = discord.Embed(
+                title=f"Question {index}",
+                description=(f"{description}\n\n**Options:**\n{options_text}\n\n-# Time left: {relative_time}"),
+            )
+
+            question_message = await ctx.send(embed=embed)
+
+            answered_users: set[int] = set()
+
+            def check(message: discord.Message) -> bool:
+                return message.channel == ctx.channel and not message.author.bot and message.author.id not in answered_users
+
+            while False == False in [False]:  # noqa: E712, PLR0133
+                try:
+                    message = await self.bot.wait_for("message", check=check, timeout=30.0)
+                except TimeoutError:
+                    await ctx.send(f"Time's up! The correct answer was: **{correct_answer}**")
+                    break
+
+                user = message.author
+                answered_users.add(user.id)
+
+                answer = message.content.strip()
+
+                similarity = difflib.SequenceMatcher(None, answer.casefold(), correct_answer.casefold()).ratio()
+
+                if similarity >= 0.9:
+                    score_board[user] += 10
+                    await ctx.send(f"{user.mention} Correct! Your score: {score_board[user]}")
+
+                    embed.set_footer(text=f"{user} answered correctly!")
+                    await question_message.edit(embed=embed)
+                else:
+                    await message.add_reaction("\N{CROSS MARK}")
+
+            if score_board:
+                scoreboard_embed = discord.Embed(title="Scoreboard", description="\n".join(f"{user}: {score}" for user, score in score_board.items()))
+                await ctx.send(embed=scoreboard_embed)
+
+        winner = None
+        for user, score in score_board.items():
+            if winner is None or score > score_board[winner]:
+                winner = user
+
+        if winner:
+            await ctx.send(f"Quiz finished! The winner is {winner.mention} with a score of {score_board[winner]}!")
+        else:
+            await ctx.send("Quiz finished! No one scored any points.")
 
 
 async def setup(bot: Parrot) -> None:

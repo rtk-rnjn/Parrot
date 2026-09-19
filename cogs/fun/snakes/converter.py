@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import random
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
@@ -10,6 +9,7 @@ from discord.ext.commands import Converter
 from rapidfuzz import fuzz
 
 from .utils import SNAKE_RESOURCES
+from discord.utils import _from_json as loads
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -68,10 +68,10 @@ class Snake(Converter):
         """Build list of snakes from the static snake resources."""
         # Get all the snakes
         if cls.snakes is None:
-            cls.snakes = json.loads((SNAKE_RESOURCES / "snake_names.json").read_text("utf8"))
+            cls.snakes = loads((SNAKE_RESOURCES / "snake_names.json").read_text("utf8"))
         # Get the special cases
         if cls.special_cases is None:
-            special_cases = json.loads((SNAKE_RESOURCES / "special_snakes.json").read_text("utf8"))
+            special_cases = loads((SNAKE_RESOURCES / "special_snakes.json").read_text("utf8"))
             cls.special_cases = {snake["name"].lower(): snake for snake in special_cases}
 
     @classmethod

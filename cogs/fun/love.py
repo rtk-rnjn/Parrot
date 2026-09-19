@@ -4,7 +4,6 @@ import bisect
 import calendar
 import collections
 import hashlib
-import json
 import logging
 import random
 from datetime import datetime
@@ -18,6 +17,12 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from core import Parrot
+
+try:
+    from orjson import loads
+except ImportError:
+    from json import loads
+
 
 _log = logging.getLogger("bot.cogs.love")
 
@@ -109,7 +114,7 @@ class Love(commands.Cog):
             return self._pickup_lines
 
         with open("assets/valentine/pickup_lines.json", encoding="utf-8") as file:
-            pickup_lines = json.load(file)
+            pickup_lines = loads(file.read())
             self._pickup_lines = pickup_lines
             return pickup_lines
 
@@ -119,7 +124,7 @@ class Love(commands.Cog):
             return self._valenstates
 
         with open("assets/valentine/valenstates", encoding="utf-8") as file:
-            self._valenstates = json.load(file)
+            self._valenstates = loads(file.read())
             return self._valenstates
 
     @property
@@ -128,7 +133,7 @@ class Love(commands.Cog):
             return self._valentine_facts
 
         with open("assets/valentine/valentine_facts", encoding="utf-8") as file:
-            valentine_facts = json.load(file)
+            valentine_facts = loads(file.read())
             self._valentine_facts = valentine_facts
             return valentine_facts
 
@@ -138,7 +143,7 @@ class Love(commands.Cog):
             return self._valentines_date_ideas
 
         with open("assets/valentine/date_ideas", encoding="utf-8") as file:
-            data: ValentineDateIdeas = json.load(file)
+            data: ValentineDateIdeas = loads(file.read())
             self._valentines_date_ideas = data["ideas"]
             return self._valentines_date_ideas
 
@@ -148,7 +153,7 @@ class Love(commands.Cog):
             return self._love_matches
 
         with open("assets/valentine/love_matches.json", encoding="utf-8") as file:
-            self._love_matches = json.load(file)
+            self._love_matches = loads(file.read())
             return self._love_matches
 
     @property
@@ -157,7 +162,7 @@ class Love(commands.Cog):
             return self._zodiac_compatibility
 
         with open("assets/valentine/zodiac_compatibility.json", encoding="utf-8") as file:
-            self._zodiac_compatibility = json.load(file)
+            self._zodiac_compatibility = loads(file.read())
             return self._zodiac_compatibility
 
     @property
@@ -166,7 +171,7 @@ class Love(commands.Cog):
             return self._zodiac_explanation
 
         with open("assets/valentine/zodiac_explanation.json", encoding="utf-8") as file:
-            self._zodiac_explanation = json.load(file)
+            self._zodiac_explanation = loads(file.read())
             return self._zodiac_explanation
 
     def levenshtein(self, source: str, goal: str) -> int:

@@ -24,7 +24,7 @@ BUNNY_NAMES: dict = loads(Path(r"assets/easter/bunny_names.json").read_text("utf
 RIDDLE_QUESTIONS: dict = loads(Path(r"assets/easter/easter_riddle.json").read_text("utf8"))
 EGG_FACTS: dict = loads(Path(r"assets/easter/easter_egg_facts.json").read_text("utf8"))
 EGGHEAD_QUESTIONS: dict = loads(Path(r"assets/easter/egghead_questions.json").read_text("utf8"))
-traditions: dict = loads(Path(r"assets/easter/traditions.json").read_text("utf8"))
+TRADITIONS: dict = loads(Path(r"assets/easter/traditions.json").read_text("utf8"))
 
 TIMELIMIT = 10
 HTML_COLOURS: dict = loads(Path(r"assets/html_colours.json").read_text("utf8"))
@@ -447,9 +447,9 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
     @commands.command(aliases=("eastercustoms",))
     async def easter_tradition(self, ctx: Context) -> None:
         """Responds with a random tradition or custom."""
-        random_country = random.choice(list(traditions))
+        random_country = random.choice(list(TRADITIONS))
 
-        await ctx.send(f"{random_country}:\n{traditions[random_country]}")
+        await ctx.send(f"{random_country}:\n{TRADITIONS[random_country]}")
 
 
 async def setup(bot: Parrot) -> None:

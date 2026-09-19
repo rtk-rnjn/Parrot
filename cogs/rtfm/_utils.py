@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import importlib.metadata as pkg_resources
 import io
-import json
 import os
 import re
 import tempfile
@@ -189,7 +188,7 @@ class LintCode:
         await ctx.reply(f"```ansi\n{data['main']}```")
 
         if data.get("stdout"):
-            json_data = json.loads(data["stdout"])
+            json_data = discord.utils._from_json(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
             pages.add_line(f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{pyright.__version__}\n")
 
@@ -233,7 +232,7 @@ class LintCode:
         await ctx.reply(f"```ansi\n{data['main']}```")
 
         if data.get("stdout"):
-            json_data: dict = json.loads(data["stdout"])
+            json_data: dict = discord.utils._from_json(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
             pages.add_line(f"{Fore.WHITE}Flake8 Version - {Fore.WHITE}{flake8.__version__}\n")
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
@@ -263,7 +262,7 @@ class LintCode:
         await ctx.reply(f"```ansi\n{data['main']}```")
 
         if data.get("stdout"):
-            json_data = json.loads(data["stdout"])
+            json_data = discord.utils._from_json(data["stdout"])
 
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
 
@@ -313,7 +312,7 @@ class LintCode:
         await ctx.reply(f"```ansi\n{data['main']}```")
 
         if data.get("stdout"):
-            json_data = json.loads(data["stdout"])
+            json_data = discord.utils._from_json(data["stdout"])
 
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
 
@@ -337,7 +336,7 @@ class LintCode:
         await ctx.reply(f"```ansi\n{data['main']}```")
 
         if data.get("stdout"):
-            json_data = json.loads(data["stdout"])
+            json_data = discord.utils._from_json(data["stdout"])
             pages = commands.Paginator(prefix="```ansi", suffix="```", max_size=1980)
             pages.add_line(f"{Fore.MAGENTA}Bandit Version - {Fore.MAGENTA}{bandit.__version__}\n")
 

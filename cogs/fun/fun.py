@@ -8,7 +8,6 @@ import functools
 import html
 import io
 import itertools
-import json
 import logging
 import math
 import random
@@ -48,7 +47,7 @@ CHARACTER_VALUES = {
 # fmt: on
 
 with open("assets/color_names.json", encoding="utf-8") as file:
-    color_names: dict[str, str] = json.load(file)
+    color_names: dict[str, str] = discord.utils._from_json(file.read())
 
 
 class QuizData(TypedDict):
@@ -926,12 +925,15 @@ class Fun(commands.Cog, ColorHandler):
 
             answered_users: set[int] = set()
 
-            def check(message: discord.Message) -> bool:
-                return message.channel == ctx.channel and not message.author.bot and message.author.id not in answered_users
+            def check(answered_users: set[int]):
+                def inner(m: discord.Message) -> bool:
+                    return m.channel == ctx.channel and not m.author.bot and m.author.id not in answered_users
+
+                return inner
 
             while False == False in [False]:  # noqa: E712, PLR0133
                 try:
-                    message = await self.bot.wait_for("message", check=check, timeout=30.0)
+                    message = await self.bot.wait_for("message", check=check(answered_users), timeout=30.0)
                 except TimeoutError:
                     await ctx.send(f"Time's up! The correct answer was: **{correct_answer}**")
                     break

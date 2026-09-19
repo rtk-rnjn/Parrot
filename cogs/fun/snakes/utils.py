@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import json
 import logging
 import math
 import random
@@ -9,7 +8,7 @@ from itertools import product
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from discord import File, Member, Reaction, User
+import discord
 from discord.ext import commands
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
@@ -119,7 +118,7 @@ ANGLE_RANGE = math.pi * 2
 
 def get_resource(file: str) -> list[dict]:
     """Load Snake resources JSON."""
-    return json.loads((SNAKE_RESOURCES / f"{file}.json").read_text("utf-8"))
+    return discord.utils._from_json((SNAKE_RESOURCES / f"{file}.json").read_text("utf-8"))
 
 
 def smoothstep(t: float) -> float:
@@ -368,7 +367,7 @@ class SnakeAndLaddersGame:
         self.state = "booting"
         self.started = False
         self.author = self.ctx.author
-        self.players: list[Member | User] = []
+        self.players: list[discord.Member | discord.User] = []
         self.player_tiles = {}
         self.round_has_rolled = {}
         self.avatar_images = {}
@@ -381,13 +380,13 @@ class SnakeAndLaddersGame:
         Listen for reactions until players have joined, and the game has been started.
         """
 
-        def startup_event_check(reaction_: Reaction, user_: User | Member) -> bool:
+        def startup_event_check(reaction_: discord.Reaction, user_: discord.User | discord.Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             return all(
                 (
-                    reaction_.message.id == startup.id,  # Reaction is on startup message
-                    reaction_.emoji in STARTUP_SCREEN_EMOJI,  # Reaction is one of the startup emotes
-                    user_.id != self.ctx.bot.user.id,  # Reaction was not made by the bot
+                    reaction_.message.id == startup.id,  # discord.Reaction is on startup message
+                    reaction_.emoji in STARTUP_SCREEN_EMOJI,  # discord.Reaction is one of the startup emotes
+                    user_.id != self.ctx.bot.user.id,  # discord.Reaction was not made by the bot
                 ),
             )
 
@@ -398,7 +397,7 @@ class SnakeAndLaddersGame:
         await self._add_player(self.author)
         await self.channel.send(
             "**Snakes and Ladders**: A new game is about to start!",
-            file=File(
+            file=discord.File(
                 str(SNAKE_RESOURCES / "snakes_and_ladders" / "banner.jpg"),
                 filename="Snakes and Ladders.jpg",
             ),
@@ -434,7 +433,7 @@ class SnakeAndLaddersGame:
                 await self.cancel_game()
                 return  # We're done, no reactions for the last 5 minutes
 
-    async def _add_player(self, user: User | Member) -> None:
+    async def _add_player(self, user: discord.User | discord.Member) -> None:
         """Add player to game."""
         self.players.append(user)
         self.player_tiles[user.id] = 1
@@ -443,7 +442,7 @@ class SnakeAndLaddersGame:
         im = Image.open(io.BytesIO(avatar_bytes)).resize((BOARD_PLAYER_SIZE, BOARD_PLAYER_SIZE))
         self.avatar_images[user.id] = im
 
-    async def player_join(self, user: User | Member) -> None:
+    async def player_join(self, user: discord.User | discord.Member) -> None:
         """Handle players joining the game.
         Prevent player joining if they have already joined, if the game is full, or if the game is
         in a waiting state.
@@ -466,7 +465,7 @@ class SnakeAndLaddersGame:
             delete_after=10,
         )
 
-    async def player_leave(self, user: User | Member) -> bool:
+    async def player_leave(self, user: discord.User | discord.Member) -> bool:
         """Handle players leaving the game.
         Leaving is prevented if the user wasn't part of the game.
         If the number of players reaches 0, the game is terminated. In this case, a sentinel boolean
@@ -498,7 +497,7 @@ class SnakeAndLaddersGame:
         await self.channel.send("**Snakes and Ladders**: Game has been canceled.")
         self._destruct()
 
-    async def start_game(self, user: User | Member) -> None:
+    async def start_game(self, user: discord.User | discord.Member) -> None:
         """Allow the game author to begin the game.
         The game cannot be started if the game is in a waiting state.
         """
@@ -524,14 +523,14 @@ class SnakeAndLaddersGame:
     async def start_round(self) -> None:
         """Begin the round."""
 
-        def game_event_check(reaction_: Reaction, user_: User | Member) -> bool:
+        def game_event_check(reaction_: discord.Reaction, user_: discord.User | discord.Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             assert self.positions is not None, "Positions message is not set."
             return all(
                 (
-                    reaction_.message.id == self.positions.id,  # Reaction is on positions message
-                    reaction_.emoji in GAME_SCREEN_EMOJI,  # Reaction is one of the game emotes
-                    user_.id != self.ctx.bot.user.id,  # Reaction was not made by the bot
+                    reaction_.message.id == self.positions.id,  # discord.Reaction is on positions message
+                    reaction_.emoji in GAME_SCREEN_EMOJI,  # discord.Reaction is one of the game emotes
+                    user_.id != self.ctx.bot.user.id,  # discord.Reaction was not made by the bot
                 ),
             )
 
@@ -550,7 +549,7 @@ class SnakeAndLaddersGame:
             y_offset -= BOARD_PLAYER_SIZE * math.floor(i / player_row_size)
             board_img.paste(self.avatar_images[player.id], box=(x_offset, y_offset))
 
-        board_file = File(frame_to_png_bytes(board_img), filename="Board.jpg")
+        board_file = discord.File(frame_to_png_bytes(board_img), filename="Board.jpg")
         player_list = "\n".join(f"{user.mention}: Tile {str(self.player_tiles[user.id])}" for user in self.players)
 
         # Store and send new messages
@@ -609,7 +608,7 @@ class SnakeAndLaddersGame:
         if not is_surrendered:
             await self._complete_round()
 
-    async def player_roll(self, user: User | Member) -> None:
+    async def player_roll(self, user: discord.User | discord.Member) -> None:
         """Handle the player's roll."""
         if user.id not in self.player_tiles:
             await self.channel.send(f"{user.mention} You are not in the match.", delete_after=10)
@@ -653,7 +652,7 @@ class SnakeAndLaddersGame:
         await self.channel.send(f"**Snakes and Ladders**: {winner.mention} has won the game! :tada:")
         self._destruct()
 
-    def _check_winner(self) -> User | Member | None:
+    def _check_winner(self) -> discord.User | discord.Member | None:
         """Return a winning member if we're in the post-round state and there's a winner."""
         if self.state != "post_round":
             return None
@@ -680,9 +679,9 @@ class SnakeAndLaddersGame:
         return x_level, y_level
 
     @staticmethod
-    def _is_moderator(user: Member | User) -> bool:
+    def _is_moderator(user: discord.Member | discord.User) -> bool:
         """Return True if the user is a Moderator."""
-        if isinstance(user, User):
+        if isinstance(user, discord.User):
             return False
 
         return user.guild_permissions.administrator

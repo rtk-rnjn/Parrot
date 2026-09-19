@@ -11,7 +11,7 @@ from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING, Annotated, TypedDict, cast
 
-from discord import Embed, File, Member, Message, PartialEmoji, Reaction
+from discord import Embed, File, Member, Message, Reaction
 from discord.ext import commands
 from discord.ext.commands import BucketType, bot_has_permissions, group
 from PIL import Image, ImageDraw, ImageFont
@@ -184,7 +184,7 @@ class Snakes(commands.Cog):
         return int(hex_rgb, 16)
 
     @staticmethod
-    def _generate_card(buffer: BytesIO, content: dict) -> BytesIO:
+    def _generate_card(buffer: BytesIO, content: SnakeInfo) -> BytesIO:
         """Generate a card from snake information.
         Written by juan and Someone during the first code jam.
         """
@@ -217,7 +217,8 @@ class Snakes(commands.Cog):
 
         full_image.paste(foreground, (0, 0), foreground)
 
-        description = ".".join(content["info"].split(".")[:2]) + "."
+        info = content.get("info") or "No information available."
+        description = ".".join(info.split(".")[:2]) + "."
 
         margin = 36
         offset = CARD["top"].height + icon_height + margin
@@ -614,7 +615,7 @@ class Snakes(commands.Cog):
 
             emoji = "https://emojipedia-us.s3.amazonaws.com/thumbs/60/google/3/snake_1f40d.png"
 
-            _iter = (url for url in data["image_list"] if url.endswith(self.valid_image_extensions))
+            _iter = (url for url in data.get("image_list", []) if url.endswith(self.valid_image_extensions))
             image = next(_iter, emoji)
 
             embed.set_image(url=image)
@@ -637,8 +638,9 @@ class Snakes(commands.Cog):
                 answer = "abcd"[snakes.index(snake)]
 
                 data = await self._get_snek(snake)
-
-                _iter = (url for url in data["image_list"] if url.endswith(self.valid_image_extensions))
+                if not data:
+                    continue
+                _iter = (url for url in data.get("image_list", []) if url.endswith(self.valid_image_extensions))
                 image = next(_iter, None)
 
             embed = Embed(
@@ -785,16 +787,22 @@ class Snakes(commands.Cog):
             name = name_obj["scientific"]
             content = await self._get_snek(name)
 
-        elif isinstance(name, dict):
-            content = name
-
         else:
             content = await self._get_snek(name)
+
+        if not content:
+            await ctx.send("Could not find any information about that snake.")
+            return
 
         async with ctx.typing():
             stream = BytesIO()
             async with asyncio.timeout(10):
-                async with self.bot.http_session.get(content["image_list"][0]) as response:
+                image_url = content.get("image_list", [])[0] if content else None
+                if not image_url:
+                    await ctx.send("Could not find any images for that snake.")
+                    return
+
+                async with self.bot.http_session.get(image_url) as response:
                     stream.write(await response.read())
 
             stream.seek(0)
@@ -802,9 +810,10 @@ class Snakes(commands.Cog):
             func = partial(self._generate_card, stream, content)
             final_buffer = await self.bot.loop.run_in_executor(None, func)
 
+        name = content.get("name", content.get("title", "Unknown Snake"))
         await ctx.send(
-            f"A wild {content['name'].title()} appears!",
-            file=File(final_buffer, filename=content["name"].replace(" ", "") + ".png"),
+            f"A wild {name.title()} appears!",
+            file=File(final_buffer, filename=name.replace(" ", "") + ".png"),
         )
 
     @snakes_group.command(name="fact")

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import json
 import logging
@@ -5,11 +7,17 @@ import math
 import random
 from itertools import product
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from discord import File, Member, Reaction, User
 from discord.ext import commands
 from PIL import Image
 from PIL.ImageDraw import ImageDraw
+
+if TYPE_CHECKING:
+    from core import Parrot
+
+    from .snakes import Snakes
 
 SNAKE_RESOURCES = Path("assets/snakes").absolute()
 
@@ -268,7 +276,7 @@ def create_snek_frame(  # noqa: PLR0917
     image_margins: tuple[int, int] = DEFAULT_IMAGE_MARGINS,
     snake_length: int = DEFAULT_SNAKE_LENGTH,
     snake_color: int = DEFAULT_SNAKE_COLOR,
-    bg_color: int = DEFAULT_BACKGROUND_COLOR,
+    bg_color: int | tuple[int, ...] = DEFAULT_BACKGROUND_COLOR,
     segment_length_range: tuple[int, int] = DEFAULT_SEGMENT_LENGTH_RANGE,
     snake_width: int = DEFAULT_SNAKE_WIDTH,
     text: str = DEFAULT_TEXT,
@@ -353,7 +361,7 @@ GAME_SCREEN_EMOJI = [ROLL_EMOJI, CANCEL_EMOJI]
 class SnakeAndLaddersGame:
     """Snakes and Ladders game Cog."""
 
-    def __init__(self, snakes: commands.Cog, context: commands.Context[commands.Bot]) -> None:
+    def __init__(self, snakes: Snakes, context: commands.Context[Parrot]) -> None:
         self.snakes = snakes
         self.ctx = context
         self.channel = self.ctx.channel
@@ -383,7 +391,7 @@ class SnakeAndLaddersGame:
                 ),
             )
 
-        # Check to see if the bot can remove reactions
+        assert self.ctx.guild is not None, "This command can only be used in a guild."
         if not self.channel.permissions_for(self.ctx.guild.me).manage_messages:
             raise commands.BotMissingPermissions(["manage_messages"])
 
@@ -518,6 +526,7 @@ class SnakeAndLaddersGame:
 
         def game_event_check(reaction_: Reaction, user_: User | Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
+            assert self.positions is not None, "Positions message is not set."
             return all(
                 (
                     reaction_.message.id == self.positions.id,  # Reaction is on positions message
@@ -574,7 +583,7 @@ class SnakeAndLaddersGame:
         is_surrendered = False
         while True:
             try:
-                reaction, user = await self.ctx.wait_for("reaction_add", timeout=300, check=game_event_check)
+                reaction, user = await self.ctx.bot.wait_for("reaction_add", timeout=300, check=game_event_check)
 
                 if reaction.emoji == ROLL_EMOJI:
                     await self.player_roll(user)

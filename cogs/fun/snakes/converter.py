@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-import asyncio
 import json
 import random
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
-import discord
-from discord import Embed, Member, Reaction
-from discord.abc import User
-from discord.ext.commands import BadArgument, Converter, Paginator
 from discord.ext import commands
+from discord.ext.commands import Converter
 from rapidfuzz import fuzz
 
 from .utils import SNAKE_RESOURCES
@@ -25,6 +21,7 @@ LAST_EMOJI = "\u23ed"  # [:track_next:]
 DELETE_EMOJI = "\N{WASTEBASKET}"  # [:trashcan:]
 
 PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMOJI)
+
 
 class Snake(Converter):
     """Snake converter for the Snakes Cog."""
@@ -45,22 +42,22 @@ class Snake(Converter):
             potential = []
 
             for item in iterable:
-                original, item = item, item.lower()
+                original, current_item = item, item.lower()
 
-                if name == item:
+                if name == current_item:
                     return [original]
 
-                a, b = fuzz.ratio(name, item), fuzz.partial_ratio(name, item)
+                a, b = fuzz.ratio(name, current_item), fuzz.partial_ratio(name, current_item)
                 if a >= threshold or b >= threshold:
                     potential.append(original)
 
             return potential
 
         # Handle special cases
-        if name.lower() in self.special_cases:
+        if self.special_cases and name.lower() in self.special_cases:
             return self.special_cases.get(name.lower(), name.lower())
 
-        names = {snake["name"]: snake["scientific"] for snake in self.snakes}
+        names = {snake["name"]: snake["scientific"] for snake in self.snakes or []}
         all_names = names.keys() | names.values()
 
         name = await ctx.bot.disambiguate(ctx, matches=get_potential(all_names), ephemeral=True)

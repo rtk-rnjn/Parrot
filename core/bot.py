@@ -12,7 +12,7 @@ from collections.abc import Callable
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, overload, override
+from typing import TYPE_CHECKING, override
 
 import aiohttp
 import discord
@@ -20,11 +20,10 @@ import jishaku
 import pomice
 from discord.ext import commands
 from dotenv import load_dotenv
-from jishaku.paginators import PaginatorEmbedInterface, PaginatorInterface
 from watchfiles import awatch
 
 from .help import Help as BotHelp
-from .utils import DatabaseManager, TimersManager
+from .utils import ConfirmationLayout, DatabaseManager, DisambiguatorView, TimersManager
 
 if TYPE_CHECKING:
     from cogs.reminder import Reminder
@@ -240,7 +239,6 @@ class Parrot(commands.Bot):
             except pomice.exceptions.NodeConnectionFailure:
                 pass
 
-
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
         if message.guild is not None:
@@ -400,7 +398,7 @@ class Parrot(commands.Bot):
         /,
         *,
         matches: list[T],
-        entry: Callable[[T], str],
+        entry: Callable[[T], str] = str,
         ephemeral: bool = False,
     ) -> T:
         if len(matches) == 0:
@@ -413,8 +411,13 @@ class Parrot(commands.Bot):
             raise ValueError("Too many results... sorry.")
 
         view = DisambiguatorView(context, matches, entry)
+        embed = discord.Embed(
+            title="Found multiple choices. Please choose the correct one.",
+        )
+        embed.set_author(name=context.author.display_name, icon_url=context.author.display_avatar.url)
+
         view.message = await context.reply(
-            "There are too many matches... Which one did you mean?",
+            embed=embed,
             view=view,
             ephemeral=ephemeral,
         )
@@ -438,71 +441,6 @@ class Parrot(commands.Bot):
         await self.database.close()
         await self.lavalink_node_pool.disconnect()
 
-    @overload
-    @staticmethod
-    async def paginate(
-        ctx: commands.Context[Parrot],
-        *,
-        embed=True,
-        pages: list[str],
-        suffix: str = "",
-        prefix: str = "",
-        max_size: int = 1900,
-        linspec: str = "\n",
-        owner: discord.User | discord.Member | None = None,
-        timeout: float = 7200,
-        delete_message: bool = False,
-        additional_buttons: list[discord.ui.Button] | None = None,
-    ) -> PaginatorEmbedInterface: ...
-
-    @overload
-    @staticmethod
-    async def paginate(
-        ctx: commands.Context[Parrot],
-        *,
-        embed=False,
-        pages: list[str],
-        suffix: str = "",
-        prefix: str = "",
-        max_size: int = 1900,
-        linspec: str = "\n",
-        owner: discord.User | discord.Member | None = None,
-        timeout: float = 7200,
-        delete_message: bool = False,
-        additional_buttons: list[discord.ui.Button] | None = None,
-    ) -> PaginatorInterface: ...
-
-    @staticmethod
-    async def paginate(  # noqa: PLR0913
-        ctx: commands.Context[Parrot],
-        *,
-        embed: bool = True,
-        pages: list[str],
-        suffix: str = "",
-        prefix: str = "",
-        max_size: int = 1900,
-        linspec: str = "\n",
-        owner: discord.User | discord.Member | None = None,
-        timeout: float = 7200,
-        delete_message: bool = False,
-        additional_buttons: list[discord.ui.Button] | None = None,
-    ) -> PaginatorEmbedInterface | PaginatorInterface:
-        paginator = commands.Paginator(suffix=suffix, prefix=prefix, max_size=max_size, linesep=linspec)
-        for line in pages:
-            paginator.add_line(line)
-
-        args = [ctx.bot, paginator]
-        kwargs = {"owner": owner or ctx.author, "timeout": timeout, "delete_message": delete_message}
-        if additional_buttons is not None:
-            kwargs["additional_buttons"] = additional_buttons
-
-        if embed:
-            interface = PaginatorEmbedInterface(*args, **kwargs)
-        else:
-            interface = PaginatorInterface(*args, **kwargs)
-        await interface.send_to(ctx)
-        return interface
-
     async def __check_once(self, ctx: commands.Context[Parrot]) -> bool:
         if RESTRICTED_MODE:
             return await self.is_owner(ctx.author)
@@ -515,81 +453,3 @@ class Parrot(commands.Bot):
             message = await channel.fetch_message(message_id)
             self.message_cache[message_id] = message
             return message
-
-
-class ConfirmationLayout(discord.ui.LayoutView):
-    def __init__(self, author: discord.User | discord.Member, prompt: str, result: asyncio.Future[bool]) -> None:
-        super().__init__(timeout=None)
-        self.author = author
-        self.result = result
-        self.message: discord.Message
-
-        confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.success)
-        confirm_button.callback = self.confirm_callback
-        cancel_button = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.secondary)
-        cancel_button.callback = self.cancel_callback
-
-        self.add_item(
-            discord.ui.Container(
-                discord.ui.TextDisplay(prompt),
-                discord.ui.Separator(),
-                discord.ui.ActionRow(confirm_button, cancel_button),
-            ),
-        )
-
-    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
-
-    async def confirm_callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        if not self.result.done():
-            self.result.set_result(True)
-        await interaction.response.edit_message(content="Confirmed.", view=None)
-        self.stop()
-
-    async def cancel_callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        if not self.result.done():
-            self.result.set_result(False)
-        await interaction.response.edit_message(content="Cancelled.", view=None)
-        self.stop()
-
-
-class DisambiguatorView[T](discord.ui.View):
-    message: discord.Message
-    selected: T
-
-    def __init__(self, ctx: commands.Context[Parrot], data: list[T], entry: Callable[[T], str]):
-        super().__init__()
-        self.ctx = ctx
-        self.data: list[T] = data
-
-        options = []
-        for i, x in enumerate(data):
-            option = entry(x)
-            if not isinstance(option, discord.SelectOption):
-                option = discord.SelectOption(label=str(option))
-            option.value = str(i)
-            options.append(option)
-
-        select = discord.ui.Select(options=options)
-
-        select.callback = self.on_select_submit
-        self.select = select
-        self.add_item(select)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.ctx.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
-
-    async def on_select_submit(self, interaction: discord.Interaction):
-        index = int(self.select.values[0])
-        self.selected = self.data[index]
-        await interaction.response.defer()
-        if not self.message.flags.ephemeral:
-            await self.message.delete()
-
-        self.stop()

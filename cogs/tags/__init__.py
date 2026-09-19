@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Annotated
 import discord
 from discord.ext import commands
 
+from core.utils import PaginationView
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -32,7 +34,9 @@ class Tags(commands.Cog):
             page = f"{index}. `{tag['name']}`"
             pages.append(page)
 
-        await self.bot.paginate(ctx, embed=True, pages=pages)
+        embeds = [discord.Embed(title="Tags", description="\n".join(chunk)) for chunk in discord.utils.as_chunks(pages, 10)]
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
 
     @commands.group(name="tag")
     async def tag(self, ctx: commands.Context[Parrot], *, name: str) -> None:
@@ -161,7 +165,13 @@ class Tags(commands.Cog):
         if not matches:
             await ctx.reply(f"No tags found matching `{query}`.")
             return
-        await self.bot.paginate(ctx, embed=True, pages=[f"{index}. `{tag}`" for index, tag in enumerate(matches, start=1)])
+
+        embeds = [
+            discord.Embed(title="Tag Search Results", description="\n".join(chunk))
+            for chunk in discord.utils.as_chunks([f"{index}. `{tag}`" for index, tag in enumerate(matches, start=1)], 10)
+        ]
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
 
     @tag.command(name="count", aliases=["usage", "stats"])
     async def tag_usage(self, ctx: commands.Context[Parrot], *, name: str) -> None:

@@ -7,6 +7,7 @@ import discord
 import pomice
 from discord.ext import commands
 from discord.ext.commands import Context
+from core.utils import PaginationView
 
 from .player import Player
 
@@ -191,7 +192,17 @@ class Music(commands.Cog):
         for index, track in enumerate(ctx.voice_client.queue, start=1):
             pages.append(f"{index}. [{track.title}](<{track.uri}>) by {track.author}")
 
-        await self.bot.paginate(ctx, embed=True, pages=pages)
+        chunks = discord.utils.as_chunks(pages, 10)
+        embeds: list[discord.Embed] = []
+        for chunk in chunks:
+            embed = discord.Embed(
+                title="Current Queue",
+                description="\n".join(chunk),
+            )
+            embeds.append(embed)
+
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
 
     @commands.command(name="nowplaying", aliases=["np"])
     async def now_playing(self, ctx: Context[Parrot]) -> None:

@@ -10,6 +10,7 @@ from discord.ext import commands
 from rapidfuzz import fuzz, process
 
 from core.constants import INVITE_RE, LINKS_RE
+from core.utils import PaginationView
 
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
@@ -340,14 +341,23 @@ class Misc(commands.Cog):
         for message in cog.get_ghost_pings(ctx.author.id):
             relative_dt = discord.utils.format_dt(message.created_at, style="R")
             pages.append(
-                f"[{relative_dt}] {message.author} {self.sanitise(message.content)}",
+                f"[{relative_dt}] {message.author} - {self.sanitise(message.content)}",
             )
 
         if not pages:
             return await ctx.reply("You haven't been ghost pinged.")
 
-        interface = await self.bot.paginate(ctx, embed=True, pages=pages)
-        return interface.message
+        embeds: list[discord.Embed] = []
+        chunks = discord.utils.as_chunks(pages, 10)
+        for chunk in chunks:
+            embed = discord.Embed(
+                title="Ghost Pings",
+                description="\n".join(chunk),
+            )
+            embeds.append(embed)
+
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
 
     @commands.command(name="boxplot", aliases=("box", "boxwhisker", "numsetdata"))
     async def _boxplot(self, ctx: commands.Context[Parrot], *numbers: float) -> None:

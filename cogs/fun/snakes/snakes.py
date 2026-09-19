@@ -155,27 +155,18 @@ async def invoke_help_command(ctx: commands.Context[Parrot]) -> None:
 
 
 class Snakes(commands.Cog):
-    """Commands related to snakes, created by Python-Discord community during the first code jam.
-    More information can be found in the code-jam-1 repo.
-    https://github.com/python-discord/code-jam-1.
-    """
-
     wiki_brief = re.compile(r"(.*?)(=+ (.*?) =+)", flags=re.DOTALL)
     valid_image_extensions = ("gif", "png", "jpeg", "jpg", "webp")
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.ON_TESTING = False
+
         self.active_sal = {}
         self.snake_names = get_resource("snake_names")
         self.snake_idioms = get_resource("snake_idioms")
         self.snake_quizzes = get_resource("snake_quiz")
         self.snake_facts = get_resource("snake_facts")
         self.num_movie_pages = None
-
-    @property
-    def display_emoji(self) -> PartialEmoji:
-        return PartialEmoji(name="\N{SNAKE}")
 
     @staticmethod
     def _beautiful_pastel(hue: float) -> int:

@@ -22,6 +22,7 @@ from .games import (
     NumberMemory,
     NumberSlider,
     RockPaperScissors,
+    SokobanGameView,
     Tictactoe,
     Twenty48,
     TypingTest,
@@ -209,6 +210,11 @@ class Games(commands.Cog):
             del self.uno_games[ctx.channel.id]
         except KeyError:
             pass
+
+    @commands.command(name="sokoban", aliases=["sk", "soko", "sokobangame", "sokoban-game"])
+    async def sokoban(self, ctx: commands.Context[Parrot], level: int | None = 1) -> None:
+        """Push boxes onto the target locations in the warehouse maze; you can only push, not pull."""
+        await SokobanGameView().start(ctx, level=level)
 
 
 async def setup(bot: Parrot) -> None:

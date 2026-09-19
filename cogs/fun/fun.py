@@ -18,7 +18,9 @@ from discord.ext.commands import Context
 from PIL import Image, ImageColor
 from rapidfuzz.process import extractOne as rf_extract_one
 
-from core import PaginationView
+from core.utils import PaginationView
+
+from .pour_puzzle import PourView
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -627,6 +629,30 @@ class Fun(commands.Cog, ColorHandler):
             await ctx.reply(text[:2000])
         else:
             await ctx.reply(text)
+
+    @commands.command(name="pour", aliases=["pourpuzzle"])
+    @commands.bot_has_permissions(embed_links=True, attach_files=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def _pour(self, ctx: Context, *, level: int = 1):
+        """Pour puzzle."""
+        if level > 50:
+            return await ctx.reply("Level must be between 1 and 50")
+
+        view = PourView(ctx, level)
+        img_buf = await asyncio.to_thread(view.draw_image)
+        embed = discord.Embed(
+            title="Pour puzzle",
+            description=f"Level: {level}",
+        )
+
+        file = discord.File(img_buf, filename="pour_game.png")
+        embed.set_image(url="attachment://pour_game.png")
+
+        embed.set_footer(
+            text=f"Game played by: {ctx.author}",
+            icon_url=ctx.author.display_avatar.url,
+        )
+        view.message = await ctx.reply(file=file, embed=embed, view=view)
 
 
 async def setup(bot: Parrot) -> None:

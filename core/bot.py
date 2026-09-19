@@ -57,6 +57,7 @@ LOADABLE_COGS = [
     "cogs.fun.pride",
     "cogs.fun.love",
     "cogs.fun.fun",
+    "cogs.fun.snakes",
     "cogs.games",
     "cogs.giveaway",
     "cogs.global_chat",

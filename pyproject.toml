@@ -20,7 +20,7 @@ select = [
     'UP',
     'W',
 ]
-ignore = ['A003', 'ASYNC109', 'D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004", "EM101"]
+ignore = ['A003', 'ASYNC109', 'D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004", "EM101", "C901", "PLR0913", "PLR0912"]
 
 [tool.black]
 line-length = 125

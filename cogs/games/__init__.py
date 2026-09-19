@@ -9,7 +9,6 @@ from discord.ext import commands
 from .games import (
     UNO,
     Akinator,
-    BaccaratGame,
     BattleShip,
     Blackjack,
     Boggle,
@@ -22,15 +21,11 @@ from .games import (
     MemoryGame,
     NumberMemory,
     NumberSlider,
-    PokerGame,
     RockPaperScissors,
-    RouletteGame,
-    TeenPattiGame,
     Tictactoe,
     Twenty48,
     TypingTest,
     VerbalMemory,
-    WarGame,
     Wordle,
 )
 
@@ -196,60 +191,6 @@ class Games(commands.Cog):
         result display.
         """
         await Blackjack().start(ctx)
-
-    @commands.command(name="poker")
-    async def poker(self, ctx: commands.Context[Parrot]) -> None:
-        """Play five-card draw Poker against the dealer.
-
-        You receive five cards and the dealer receives five hidden cards.
-        Press Draw once to replace up to three low cards. The best five-card
-        hand wins: straight flush, four of a kind, full house, flush,
-        straight, three of a kind, two pair, pair, then high card. Equal
-        hands push. Suits do not break ties.
-        """
-        await PokerGame(ctx.author).start(ctx)
-
-    @commands.command(name="teen_patti", aliases=["teenpatti", "3patti", "three_patti"])
-    async def teen_patti(self, ctx: commands.Context[Parrot]) -> None:
-        """Play three-card Teen Patti against the dealer.
-
-        You and the dealer receive three cards. Press Show Cards to reveal
-        the dealer's hand. Hands rank as Trail, Pure Sequence, Sequence,
-        Color, Pair, then High Card. Equal hands push.
-        """
-        await TeenPattiGame(ctx.author).start(ctx)
-
-    @commands.command(name="baccarat", aliases=["bacc"])
-    async def baccarat(self, ctx: commands.Context[Parrot]) -> None:
-        """Play a quick Player-versus-Banker Baccarat round.
-
-        Both sides receive two cards. Card values are added and only the last
-        digit counts. Aces are 1, number cards keep their value, and face
-        cards and tens are 0. The higher total wins; equal totals are a tie.
-        """
-        await BaccaratGame(ctx.author).start(ctx)
-
-    @commands.command(name="war", aliases=["cardwar"])
-    async def war(self, ctx: commands.Context[Parrot]) -> None:
-        """Play one hand of War against the dealer.
-
-        You and the dealer receive one card. The higher rank wins; an equal
-        rank is shown as a tie. Aces are high, followed by kings, queens,
-        jacks, and the numbered cards.
-        """
-        await WarGame(ctx.author).start(ctx)
-
-    @commands.command(name="roulette", aliases=["rlt"])
-    async def roulette(self, ctx: commands.Context[Parrot]) -> None:
-        """Spin a single-zero Roulette wheel.
-
-        Choose Red, Black, or Green before the spin. Numbers 1-36 are split
-        between red and black; 0 is green. Red and black win even-money,
-        while green wins only when the wheel lands on 0. This command uses a
-        European-style single-zero wheel and currently does not accept number,
-        odd/even, dozen, column, split, street, corner, or six-line bets.
-        """
-        await RouletteGame(ctx.author).start(ctx)
 
     @commands.command("uno", aliases=["unogame"])
     @commands.max_concurrency(1, commands.BucketType.user)

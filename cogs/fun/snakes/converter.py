@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 from discord.ext import commands
 from discord.ext.commands import Converter
+from discord.utils import _from_json as loads
 from rapidfuzz import fuzz
 
 from .utils import SNAKE_RESOURCES
-from discord.utils import _from_json as loads
 
 if TYPE_CHECKING:
     from core import Parrot

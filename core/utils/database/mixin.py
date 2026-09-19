@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from .models import GuildConfiguration
-from redis.asyncio import Redis
 from pymongo.asynchronous.collection import AsyncCollection
+from redis.asyncio import Redis
+
+from .models import GuildConfiguration
+
 
 class DatabaseMixin:
     """Base contract for database mixins.

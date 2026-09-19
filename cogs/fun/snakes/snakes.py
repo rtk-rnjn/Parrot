@@ -16,8 +16,7 @@ from discord.ext import commands
 from discord.ext.commands import BucketType, bot_has_permissions, group
 from PIL import Image, ImageDraw, ImageFont
 
-from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS
-from core.constants import POSITIVE_REPLIES as CORRECT_GUESS
+from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS, POSITIVE_REPLIES as CORRECT_GUESS
 
 from .converter import Snake
 from .utils import (

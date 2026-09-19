@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import logging
 import unicodedata
 from typing import TYPE_CHECKING, TypedDict
 
 import discord
-import logging
 from discord.ext import commands
 
 if TYPE_CHECKING:

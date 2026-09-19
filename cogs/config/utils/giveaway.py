@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Unpack
 
 import discord
 
-
 if TYPE_CHECKING:
     from core import Parrot
     from core.utils.database.models import GuildConfiguration

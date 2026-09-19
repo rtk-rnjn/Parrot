@@ -19,6 +19,7 @@ from .utils import (
     MuteRoleSelect,
     StarboardEditButton,
     TelephoneChannelSelect,
+    TicketEditButton,
     WelcomeEditButton,
 )
 
@@ -101,6 +102,11 @@ LEVELING_REWARD_ROLES_DESCRIPTION = """
 -# Configure the reward roles for the server. You can set a role to be assigned to members when they reach a certain level.
 """
 
+TICKET_CONFIG_DESCRIPTION = """
+## Ticket Configuration
+-# Configure the ticket settings for the server. You can set a channel for tickets, a category for ticket channels, and whether to use threads for tickets instead of channels.
+"""
+
 
 class Config(commands.Cog):
     """Cog for managing bot configuration."""
@@ -177,6 +183,11 @@ class Config(commands.Cog):
                     discord.ui.Section(
                         discord.ui.TextDisplay(LEVELING_REWARD_ROLES_DESCRIPTION),
                         accessory=LevelingRewardRolesEditButton(**config),
+                    ),
+                    discord.ui.Separator(),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay(TICKET_CONFIG_DESCRIPTION),
+                        accessory=TicketEditButton(**config),
                     ),
                 ],
             ],

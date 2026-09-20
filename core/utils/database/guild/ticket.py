@@ -30,6 +30,22 @@ class _GuildTicketMixin(DatabaseMixin):
         await self.redis_client.set(key, int(enabled))
         return enabled
 
+    async def is_ticket_config_use_thread(self, guild_id: int, /) -> bool:
+        key = RedisKeys.GUILD_TICKET_CONFIG_USE_THREAD.format(guild_id=guild_id)
+        cached = await self.redis_client.get(key)
+        if cached is not None:
+            return bool(int(cached))
+
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id, "ticket_config.use_thread": {"$exists": True}},
+            {"ticket_config.use_thread": 1},
+        )
+        if guild is None:
+            return False
+        use_thread = bool(guild["ticket_config"]["use_thread"])
+        await self.redis_client.set(key, int(use_thread))
+        return use_thread
+
     async def get_ticket_config_channel_id(self, guild_id: int, /) -> int | None:
         key = RedisKeys.GUILD_TICKET_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
         cached = await self.redis_client.get(key)
@@ -127,3 +143,14 @@ class _GuildTicketMixin(DatabaseMixin):
         result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
         await self.__invalidate_ticket_config_cache(guild_id)
         return result.matched_count > 0 or result.upserted_id is not None
+
+    async def get_all_ticket_config_message_id(self):
+        cursor = self.guilds_collection.find(
+            {"ticket_config.bot_message_id": {"$exists": True, "$ne": None}},
+            {"ticket_config.bot_message_id": 1},
+        )
+
+        async for document in cursor:
+            message_id = document["ticket_config"]["bot_message_id"]
+            if message_id is not None:
+                yield message_id

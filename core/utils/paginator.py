@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
+from .views import BaseView, BaseLayoutView
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -92,13 +94,6 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
         self.previous_button.disabled = self._is_first_page
         self.next_button.disabled = self._is_last_page
         self.last_button.disabled = self._is_last_page
-
-    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
-        if interaction.user.id == self.author.id:
-            return True
-
-        await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-        return False
 
     async def _change_page(self, interaction: discord.Interaction[Parrot], index: int) -> None:
         if index == self.current_index:
@@ -204,7 +199,7 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
         return self.message
 
 
-class PaginationView(PaginationMixin[discord.Embed], discord.ui.View):
+class PaginationView(PaginationMixin[discord.Embed], BaseView):
     def __init__(
         self,
         *,
@@ -212,9 +207,9 @@ class PaginationView(PaginationMixin[discord.Embed], discord.ui.View):
         items: list[discord.Embed],
         hide_skip_button: bool = False,
         hide_quit_button: bool = False,
-        **kwargs,
+        timeout: float | None = None,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(author=author, timeout=timeout)
 
         self.items = items
         self.author = author
@@ -246,7 +241,7 @@ class PaginationView(PaginationMixin[discord.Embed], discord.ui.View):
         await interaction.response.edit_message(embed=self.items[self.current_index], view=self)
 
 
-class PaginationLayout(PaginationMixin[list[discord.ui.Item]], discord.ui.LayoutView):
+class PaginationLayout(PaginationMixin[list[discord.ui.Item]], BaseLayoutView):
     def __init__(  # noqa: PLR0913
         self,
         author: discord.User | discord.Member,
@@ -256,9 +251,9 @@ class PaginationLayout(PaginationMixin[list[discord.ui.Item]], discord.ui.Layout
         items: list[list[discord.ui.Item]],
         hide_skip_button: bool = False,
         hide_quit_button: bool = False,
-        **kwargs,
+        timeout: float | None = None,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(author=author, timeout=timeout)
 
         if not items:
             raise ValueError("Items list cannot be empty.")

@@ -23,7 +23,7 @@ from discord.ext.commands import Context
 from PIL import Image, ImageColor
 from rapidfuzz.process import extractOne as rf_extract_one
 
-from core.utils import PaginationView
+from core.utils import PaginationView, BaseLayoutView
 
 from .pour_puzzle import PourView
 
@@ -149,7 +149,7 @@ UWU_WORDS = {
 }
 
 
-class QuizConfigLayout(discord.ui.LayoutView):
+class QuizConfigLayout(BaseLayoutView):
     def __init__(self, *, author: discord.User | discord.Member):
         super().__init__()
         self.url: str | None = None
@@ -270,14 +270,6 @@ class QuizConfigLayout(discord.ui.LayoutView):
     async def cancel_quiz(self, interaction: discord.Interaction):
         await interaction.response.send_message("Quiz cancelled.", ephemeral=True)
         self.stop()
-
-    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
-
-        if interaction.user != self.author:
-            await interaction.response.send_message("You can not interact with this view", ephemeral=True)
-            return False
-
-        return True
 
 
 class ColorHandler:

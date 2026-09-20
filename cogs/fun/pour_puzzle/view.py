@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import asyncio
+from typing import TYPE_CHECKING
 from collections import namedtuple
 from io import BytesIO
 
 import discord
 from PIL import Image, ImageDraw, ImageFont
+from core.utils import BaseView
+from discord.ext import commands
 
 from .levels import levels
+
+if TYPE_CHECKING:
+    from core import Parrot
 
 Liquid = namedtuple("Liquid", "color")
 
@@ -110,11 +116,11 @@ class BottleButton(discord.ui.Button["PourView"]):
             await interaction.response.edit_message(embed=embed, attachments=[img_file], view=self.view)
 
 
-class PourView(discord.ui.View):
+class PourView(BaseView):
     font = ImageFont.truetype("assets/GothamMedium.ttf", 30)
 
-    def __init__(self, ctx, level: int) -> None:
-        super().__init__(timeout=None)
+    def __init__(self, ctx: commands.Context[Parrot], level: int) -> None:
+        super().__init__(author=ctx.author)
         self.ctx = ctx
         self.level = level
         self.state = 0
@@ -135,8 +141,8 @@ class PourView(discord.ui.View):
             )
 
     def draw_image(self):
-        n_bottle = len(levels[self.level])
-        img = Image.new("RGBA", (50 + 50 * n_bottle, 200), (255, 242, 161))
+        total_bottles = len(levels[self.level])
+        img = Image.new("RGBA", (50 + 50 * total_bottles, 200), (255, 242, 161))
         draw = ImageDraw.Draw(img)
 
         for btn in self.children:
@@ -179,12 +185,6 @@ class PourView(discord.ui.View):
                 checks.append(btn.bottle.is_completed() or btn.bottle.is_empty())
 
         return all(checks)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message("You can't use this button!", ephemeral=True)
-            return False
-        return True
 
     @discord.ui.button(label="Exit", style=discord.ButtonStyle.danger, custom_id="exit_btn", row=0)
     async def exit_button(self, interaction: discord.Interaction, button: discord.ui.Button):

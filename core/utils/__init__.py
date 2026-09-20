@@ -34,4 +34,4 @@ from .time import (  # noqa
     human_timedelta,
 )
 from .timers_manager import TimerData, TimersManager  # noqa
-from .views import DeleteMessageButtonView  # noqa
+from .views import DeleteMessageButtonView, BaseView, BaseLayoutView  # noqa

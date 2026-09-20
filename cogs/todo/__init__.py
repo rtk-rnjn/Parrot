@@ -11,6 +11,8 @@ from discord.ext import commands
 from core import FutureTime
 from core.utils.database.models import TodoItem
 
+from core.utils import BaseView, BaseLayoutView
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -92,17 +94,11 @@ class TodoEditModal(discord.ui.Modal, title="Edit To-Do Item"):
         )
 
 
-class TodoCreateView(discord.ui.View):
+class TodoCreateView(BaseView):
     def __init__(self, author: discord.User | discord.Member, todo_item: TodoItem):
         self.author = author
         self.todo_item = todo_item
-        super().__init__()
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
+        super().__init__(author=author)
 
     @discord.ui.button(label="Add due date", style=discord.ButtonStyle.primary)
     async def add_due_date(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button):
@@ -126,11 +122,11 @@ class TodoStatusButton(discord.ui.Button):
         await interaction.response.send_message(f"Updated to-do item (ID: `{self.todo_item['id']}`) to status: {self.status}", ephemeral=True)
 
 
-class TodoViewLayout(discord.ui.LayoutView):
+class TodoViewLayout(BaseLayoutView):
     def __init__(self, author: discord.User | discord.Member, todo_item: TodoItem):
         self.author = author
         self.todo_item = todo_item
-        super().__init__()
+        super().__init__(author=author)
 
         views = []
         notes = todo_item.get("notes")
@@ -169,14 +165,8 @@ class TodoViewLayout(discord.ui.LayoutView):
         self.add_item(container)
         self.add_item(discord.ui.ActionRow(edit_button))
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
 
-
-class TodoListLayout(discord.ui.LayoutView):
+class TodoListLayout(BaseLayoutView):
     ITEMS_PER_PAGE = 5
 
     def __init__(
@@ -184,7 +174,7 @@ class TodoListLayout(discord.ui.LayoutView):
         author: discord.User | discord.Member,
         todo_items: list[TodoItem],
     ):
-        super().__init__()
+        super().__init__(author=author)
 
         self.author = author
         self.todo_items = todo_items

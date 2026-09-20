@@ -5,13 +5,15 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from .views import BaseLayoutView
+
 if TYPE_CHECKING:
     from core import Parrot
 
 
-class ConfirmationLayout(discord.ui.LayoutView):
+class ConfirmationLayout(BaseLayoutView):
     def __init__(self, author: discord.User | discord.Member, prompt: str, result: asyncio.Future[bool]) -> None:
-        super().__init__(timeout=None)
+        super().__init__(author=author)
         self.author = author
         self.result = result
         self.message: discord.Message
@@ -28,12 +30,6 @@ class ConfirmationLayout(discord.ui.LayoutView):
                 discord.ui.ActionRow(confirm_button, cancel_button),
             ),
         )
-
-    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
 
     async def confirm_callback(self, interaction: discord.Interaction[Parrot]) -> None:
         if not self.result.done():

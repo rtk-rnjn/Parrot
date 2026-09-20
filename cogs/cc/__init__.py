@@ -11,7 +11,7 @@ import discord
 from colorama import Fore
 from discord.ext import commands
 
-from core import PaginationView
+from core import PaginationView, BaseView, BaseLayoutView
 from core.utils.database.models import CustomCommand as CustomCommandModel
 
 from .jinja import render_sandboxed
@@ -436,17 +436,10 @@ class CreateCustomCommandButton(discord.ui.Button):
         await interaction.response.send_modal(modal)
 
 
-class EditCustomCommandView(discord.ui.View):
+class EditCustomCommandView(BaseView):
     def __init__(self, *, author: discord.User | discord.Member, button: EditCustomCommandButton) -> None:
-        super().__init__()
-        self.author = author
+        super().__init__(author=author)
         self.add_item(button)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
 
 
 class EditCustomCommandButton(discord.ui.Button):
@@ -515,7 +508,7 @@ class CustomCommandSelect(discord.ui.Select):
         command = next((command for command in self.custom_commands if command["name"] == selected_command), None)
 
         embed = discord.Embed(title=f"Edit or Delete Custom Command: {selected_command}", description=command["response"] if command else "")
-        view = discord.ui.View()
+        view = BaseView(author=interaction.user)
         view.add_item(
             EditCustomCommandButton(
                 command_name=selected_command,
@@ -529,7 +522,7 @@ class CustomCommandSelect(discord.ui.Select):
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
-class CustomCommandLayout(discord.ui.LayoutView):
+class CustomCommandLayout(BaseLayoutView):
     def __init__(
         self,
         *,
@@ -537,10 +530,7 @@ class CustomCommandLayout(discord.ui.LayoutView):
         custom_commands: list[CustomCommandModel] | None = None,
         logs: list[str] | None = None,
     ):
-        super().__init__()
-
-        self.author = author
-
+        super().__init__(author=author)
         items = []
 
         if logs:
@@ -560,13 +550,6 @@ class CustomCommandLayout(discord.ui.LayoutView):
         container = discord.ui.Container(*items)
 
         self.add_item(container)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
-
 
 class CustomCommand(commands.Cog):
     def __init__(self, bot: Parrot) -> None:

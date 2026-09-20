@@ -10,8 +10,9 @@ from dateutil.zoneinfo import get_zonefile_instance
 from discord.ext import commands
 from lxml import etree
 from rapidfuzz import fuzz, process
+from core.utils import BaseView, BaseLayoutView
 
-from core import FriendlyTimeResult, FutureTime, TimerData as Timer, UserFriendlyTime
+from core.utils import FriendlyTimeResult, FutureTime, TimerData as Timer, UserFriendlyTime
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -27,9 +28,9 @@ class ReminderMetadata(TypedDict):
     reminder_text: str
 
 
-class ReminderLayout(discord.ui.LayoutView):
-    def __init__(self, *, reminders: list[Timer]) -> None:
-        super().__init__()
+class ReminderLayout(BaseLayoutView):
+    def __init__(self, *, author: discord.User | discord.Member, reminders: list[Timer]) -> None:
+        super().__init__(author=author)
         self.reminders = reminders
 
         self.number_of_reminders_to_display = min(len(reminders), 3)
@@ -110,21 +111,15 @@ class SnoozeButton(discord.ui.Button["ReminderView"]):
         await interaction.response.send_modal(SnoozeModal(self.view, self.cog, self.metadata))
 
 
-class ReminderView(discord.ui.View):
+class ReminderView(BaseView):
     message: discord.Message
 
     def __init__(self, *, url: str, metadata: ReminderMetadata, cog: Reminder, author_id: int) -> None:
-        super().__init__(timeout=300)
+        super().__init__(author=discord.Object(id=author_id))  # type: ignore
         self.author_id: int = author_id
         self.snooze = SnoozeButton(cog, metadata)
         self.add_item(discord.ui.Button(url=url, label="Go to original message"))
         self.add_item(self.snooze)
-
-    async def interaction_check(self, interaction: discord.Interaction[Parrot]) -> bool:
-        if interaction.user.id != self.author_id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
 
     async def on_timeout(self) -> None:
         self.snooze.disabled = True
@@ -439,7 +434,7 @@ class Reminder(commands.Cog):
         if not reminders:
             return await ctx.reply("You have no active reminders.")
 
-        return await ctx.reply(view=ReminderLayout(reminders=reminders))
+        return await ctx.reply(view=ReminderLayout(author=ctx.author, reminders=reminders))
 
 
 async def setup(bot: Parrot) -> None:

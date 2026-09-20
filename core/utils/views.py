@@ -2,27 +2,58 @@ from __future__ import annotations
 
 import discord
 
-__all__ = ("DeleteMessageButtonView",)
+__all__ = ("DeleteMessageButtonView", "BaseView", "BaseLayoutView")
 
 
-class DeleteMessageButtonView(discord.ui.View):
+class BaseView(discord.ui.View):
     message: discord.Message
 
+    def __init__(self, author: discord.Member | discord.User, *, timeout: float | None = None):
+        super().__init__(timeout=timeout)
+        self.author = author
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id == self.author.id:
+            return True
+
+        await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
+        return False
+
+    async def __disable_all_items(self) -> None:
+        for item in self.children:
+            if isinstance(item, discord.ui.Button) or isinstance(item, discord.ui.Select):
+                item.disabled = True
+
+    async def on_timeout(self) -> None:
+        await self.__disable_all_items()
+        if hasattr(self, "message"):
+            await self.message.edit(view=self)
+
+
+class BaseLayoutView(discord.ui.LayoutView):
+    message: discord.Message
+
+    def __init__(self, author: discord.Member | discord.User, *, timeout: float | None = None):
+        super().__init__(timeout=timeout)
+        self.author = author
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id == self.author.id:
+            return True
+
+        await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
+        return False
+
+
+class DeleteMessageButtonView(BaseView):
     def __init__(self, *, author: discord.User | discord.Member):
-        super().__init__(timeout=None)
+        super().__init__(author=author, timeout=None)
         self.author = author
 
         button = discord.ui.Button[DeleteMessageButtonView](emoji="\N{WASTEBASKET}", style=discord.ButtonStyle.red)
         button.callback = self.delete_message_callback
 
         self.add_item(button)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user == self.author:
-            return True
-
-        await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-        return False
 
     async def delete_message_callback(self, interaction: discord.Interaction) -> None:
         if interaction.user != self.author:

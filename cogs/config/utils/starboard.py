@@ -98,6 +98,11 @@ class StarboardEditButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction[Parrot], /) -> None:
         assert self.view is not None
+
+        if interaction.guild is None:
+            await interaction.followup.send("This command can only be used in a server (guild).", ephemeral=True)
+            return
+
         self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # type: ignore
         modal = StarboardConfigModal(**self.kwargs)
 

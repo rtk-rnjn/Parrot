@@ -74,8 +74,9 @@ LOADABLE_COGS = [
     "cogs.rtfm",
     "cogs.starboard",
     "cogs.tags",
-    "cogs.todo",
     "cogs.telephone",
+    "cogs.ticket",
+    "cogs.todo",
     "cogs.welcomer",
 ]
 

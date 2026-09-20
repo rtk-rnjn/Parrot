@@ -6,16 +6,18 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
+from .views import BaseView
+
 if TYPE_CHECKING:
     from core import Parrot
 
 
-class DisambiguatorView[T](discord.ui.View):
+class DisambiguatorView[T](BaseView):
     message: discord.Message
     selected: T
 
     def __init__(self, ctx: commands.Context[Parrot], data: list[T], entry: Callable[[T], str] = str):
-        super().__init__()
+        super().__init__(author=ctx.author)
         self.ctx = ctx
         self.data: list[T] = data
 
@@ -32,12 +34,6 @@ class DisambiguatorView[T](discord.ui.View):
         select.callback = self.on_select_submit
         self.select = select
         self.add_item(select)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.ctx.author.id:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-            return False
-        return True
 
     async def on_select_submit(self, interaction: discord.Interaction):
         index = int(self.select.values[0])

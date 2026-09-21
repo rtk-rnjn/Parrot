@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import discord
 
-__all__ = ("DeleteMessageButtonView", "BaseView", "BaseLayoutView")
+__all__ = ("DeleteMessageButtonView", "BaseView", "BaseLayoutView", "DisabledButtonView")
 
 
 class BaseView(discord.ui.View):
@@ -70,3 +70,18 @@ class DeleteMessageButtonView(BaseView):
                 await self.message.reference.resolved.delete(delay=0)
 
             self.stop()
+
+
+class DisabledButtonView(BaseView):
+    def __init__(
+        self,
+        *,
+        author: discord.User | discord.Member,
+        display_text: str,
+        button_style: discord.ButtonStyle = discord.ButtonStyle.secondary,
+    ):
+        super().__init__(author=author, timeout=None)
+        self.author = author
+
+        button = discord.ui.Button[DisabledButtonView](label=display_text, style=button_style, disabled=True)
+        self.add_item(button)

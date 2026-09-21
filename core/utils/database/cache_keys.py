@@ -11,6 +11,7 @@ class RedisKeys(StrEnum):
 
     GUILD_COMMAND_PREFIX = "guild:{guild_id}:command_prefix"
     GUILD_MUTE_ROLE_ID = "guild:{guild_id}:mute_role_id"
+    GUILD_SUGGESTION_CHANNEL_ID = "guild:{guild_id}:suggestion_channel_id"
     GUILD_MUTED_MEMBERS = "guild:{guild_id}:muted_members"
 
     GUILD_HUB_CHANNEL_ID = "guild:{guild_id}:hub_channel_id"
@@ -79,8 +80,6 @@ class RedisKeys(StrEnum):
 
     GUILD_TICKET_CONFIG_ENABLED = "guild:{guild_id}:ticket_config:enabled"
     GUILD_TICKET_CONFIG_CHANNEL_ID = "guild:{guild_id}:ticket_config:channel_id"
-    GUILD_TICKET_CONFIG_USE_THREAD = "guild:{guild_id}:ticket_config:use_thread"
-    GUILD_TICKET_CONFIG_CATEGORY_ID = "guild:{guild_id}:ticket_config:category_id"
     GUILD_TICKET_CONFIG_BOT_MESSAGE_ID = "guild:{guild_id}:ticket_config:bot_message_id"
     GUILD_TICKET_CONFIG_BOT_CHANNEL_ID = "guild:{guild_id}:ticket_config:bot_channel_id"
 

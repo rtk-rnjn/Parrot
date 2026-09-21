@@ -151,7 +151,7 @@ UWU_WORDS = {
 
 class QuizConfigLayout(BaseLayoutView):
     def __init__(self, *, author: discord.User | discord.Member):
-        super().__init__()
+        super().__init__(author=author)
         self.url: str | None = None
 
         self.author = author

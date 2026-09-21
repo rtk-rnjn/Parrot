@@ -312,17 +312,23 @@ class Music(commands.Cog):
         providers = await self.fetch_lavasrc_providers()
 
         await ctx.message.add_reaction("\N{HOURGLASS WITH FLOWING SAND}")
-        await ctx.reply(f"Loading **{len(providers)}** Lavalink nodes...")
+        contents = [
+            f"Loading **{len(providers)}** Lavalink nodes...",
+        ]
+        message = await ctx.reply("\n".join(contents))
         for host, port, password, identifier in providers:
+            status = f"Connecting to `{identifier}` at..."
             try:
                 await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=identifier)
+                status += " \N{WHITE HEAVY CHECK MARK}"
+                contents.append(status)
+                await message.edit(content="\n".join(contents))
             except Exception as e:
                 errors.append((identifier, str(e)))
+                status += " \N{CROSS MARK}"
+                contents.append(status)
+                await message.edit(content="\n".join(contents))
                 continue
-        if errors:
-            description = "\n".join(f"**{identifier}**: {error}" for identifier, error in errors)
-            embed = discord.Embed(title="Lavalink Node Load Errors", description=description, color=discord.Color.red())
-            await ctx.reply(embed=embed)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await ctx.reply(f"Finished loading Lavalink nodes. **{len(providers) - len(errors)}** connected successfully.")

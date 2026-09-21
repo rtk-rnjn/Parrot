@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-__all__ = ("TimersManager", "TimerData")
+__all__ = ("AsyncTimerDispatcher", "TimerData")
 
 VALID_EVENT_NAMES = Literal[
     "reminder",
@@ -54,7 +54,7 @@ class TimerData(TypedDict):
     metadata: Mapping[str, object]
 
 
-class TimersManager:
+class AsyncTimerDispatcher:
     """Manage persistent timers backed by MongoDB.
 
     The manager maintains one long-running asyncio task that watches the
@@ -228,7 +228,7 @@ class TimersManager:
             Timer data containing the expiration timestamp and event metadata.
         """
 
-        await discord.utils.sleep_until(data["expires_at"], result=None)
+        await discord.utils.sleep_until(data["expires_at"])
 
         await self.call_timer(**data)
 

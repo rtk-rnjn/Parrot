@@ -166,8 +166,6 @@ class EventsConfig(TypedDict):
 class TicketConfig(TypedDict):
     enabled: bool
     channel_id: int | None
-    use_thread: bool
-    category_id: int | None
 
     bot_message_id: int | None
     bot_channel_channel_id: int | None
@@ -210,6 +208,7 @@ class GuildConfiguration(TypedDict):
     command_prefix: str
     mute_role_id: int | None
     hub_channel_id: int | None
+    suggestion_channel_id: int | None
 
     hub_channel_owners: dict[str, int]  # channel_id -> owner_id
 

@@ -8,7 +8,7 @@ import re
 import shutil
 import subprocess
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 from watchfiles import awatch
 
 from .help import Help as BotHelp
-from .utils import ConfirmationLayout, DatabaseManager, DisambiguatorView, TimersManager
+from .utils import AsyncTimerDispatcher, ConfirmationLayout, DatabaseManager, DisambiguatorView
 
 if TYPE_CHECKING:
     from cogs.reminder import Reminder
@@ -73,6 +73,7 @@ LOADABLE_COGS = [
     "cogs.reminder",
     "cogs.rtfm",
     "cogs.starboard",
+    "cogs.suggestion",
     "cogs.tags",
     "cogs.telephone",
     "cogs.ticket",
@@ -124,7 +125,7 @@ class Parrot(commands.Bot):
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
 
         self.database = DatabaseManager(self)
-        self.event_scheduler = TimersManager(self)
+        self.event_scheduler = AsyncTimerDispatcher(self)
 
         self._started_at: datetime | None = None
 
@@ -239,7 +240,7 @@ class Parrot(commands.Bot):
 
                 self.default_lavalink_node = node
             except pomice.exceptions.NodeConnectionFailure:
-                pass
+                _log.exception("Failed to connect to Lavalink node.", exc_info=True)
 
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
@@ -455,3 +456,20 @@ class Parrot(commands.Bot):
             message = await channel.fetch_message(message_id)
             self.message_cache[message_id] = message
             return message
+
+    async def get_or_fetch[**P, T](
+        self,
+        sync_function: Callable[P, T | None],
+        async_function: Callable[P, Awaitable[T]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> T | None:
+        result = sync_function(*args, **kwargs)
+        if result is not None:
+            return result
+
+        try:
+            return await async_function(*args, **kwargs)
+        except Exception as e:
+            _log.exception("Error fetching data: %s", e)
+            return None

@@ -610,14 +610,6 @@ class CustomCommand(commands.Cog):
             await ctx.reply(error_msg)
             return None
 
-    @cc.command(name="test", hidden=True)
-    @commands.is_owner()
-    async def add_custom_command(self, ctx: commands.Context[Parrot], *, response: str) -> None:
-        response = response.strip("`")
-        rendered = await self._render_custom_command(ctx, response)
-        if rendered:
-            await ctx.reply(rendered)
-
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         if message.guild is None or message.author.bot:

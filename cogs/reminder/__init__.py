@@ -419,7 +419,7 @@ class Reminder(commands.Cog):
         )
 
         return await ctx.reply(
-            f"You will be reminded in {discord.utils.format_dt(when.dt, 'R')} ({discord.utils.format_dt(when.dt, 'F')})",
+            f"You will be reminded: {discord.utils.format_dt(when.dt, 'R')} ({discord.utils.format_dt(when.dt, 'F')})",
         )
 
     @commands.command(name="reminders")

@@ -503,7 +503,7 @@ class Mod(commands.Cog):
         await member.timeout(duration.dt, reason=reason)
 
         relative_duration = discord.utils.format_dt(duration.dt, style="R")
-        response = f"**{member}** (ID: {member.id}) has been timed out for {relative_duration}."
+        response = f"**{member}** (ID: {member.id}) has been timed out. Expires: {relative_duration}."
 
         return await ctx.reply(response)
 

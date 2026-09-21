@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
 from collections import namedtuple
 from io import BytesIO
+from typing import TYPE_CHECKING
 
 import discord
-from PIL import Image, ImageDraw, ImageFont
-from core.utils import BaseView
 from discord.ext import commands
+from PIL import Image, ImageDraw, ImageFont
+
+from core.utils import BaseView
 
 from .levels import levels
 

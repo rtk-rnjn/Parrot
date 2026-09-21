@@ -539,6 +539,20 @@ class Meta(commands.Cog):
             embed.set_thumbnail(url=ctx.guild.icon.url)
         return await ctx.reply(embed=embed)
 
+    @commands.command(name="invite")
+    async def invite(self, ctx: commands.Context[Parrot]) -> discord.Message:
+        """
+        Display an invite link for the bot.
+
+        The invite link allows users to add the bot to their own servers with
+        the necessary permissions. The response includes a clickable link that
+        opens the Discord authorization page for the bot.
+
+        This command has no cooldown.
+        """
+        invite_url = discord.utils.oauth_url(self.bot.user.id, scopes=("bot", "applications.commands"))
+        return await ctx.reply(f"Invite me to your server: [Click Here](<{invite_url}>)")
+
 
 async def setup(bot: Parrot) -> None:
     """Load the Meta cog."""

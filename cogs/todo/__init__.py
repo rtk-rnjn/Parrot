@@ -9,9 +9,8 @@ from bson import ObjectId
 from discord.ext import commands
 
 from core import FutureTime
+from core.utils import BaseLayoutView, BaseView
 from core.utils.database.models import TodoItem
-
-from core.utils import BaseView, BaseLayoutView
 
 if TYPE_CHECKING:
     from core import Parrot

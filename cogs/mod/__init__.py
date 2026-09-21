@@ -253,10 +253,12 @@ class Mod(commands.Cog):
             default=None,
         ),
     ) -> discord.Message:
-        """Ban one or more members from the server.
+        """Ban member from the server.
 
-        Members that can be banned are processed even if another target fails.
-        The response reports successful and failed targets separately.
+        A member that is not currently in the server can still be banned by
+        providing their Discord ID. This is known as a "hackban" and is useful
+        for banning users who have already left the server or who have been
+        banned from the server previously.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None

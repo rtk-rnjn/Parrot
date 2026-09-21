@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
-from .views import BaseView, BaseLayoutView
+from .views import BaseLayoutView, BaseView
 
 if TYPE_CHECKING:
     from core import Parrot

@@ -95,6 +95,7 @@ class SpamSeverity(Enum):
 
 
 class Parrot(commands.Bot):
+    VERSION = "1.0.0 (Rewrite)"
     DEFAULT_PREFIX = os.environ.get("DEFAULT_PREFIX", "$")
 
     if TYPE_CHECKING:

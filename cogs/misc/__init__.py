@@ -22,8 +22,8 @@ BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
 _log = logging.getLogger("bot.cogs.misc")
 
-with open("assets/dictionary.json", encoding="utf-8") as f:
-    DICTIONARY: dict[str, str] = discord.utils._from_json(f.read())
+with open("assets/dictionary.json", encoding="utf-8") as file:
+    DICTIONARY: dict[str, str] = discord.utils._from_json(file.read())
 
 
 class WrappedMessageConverter(commands.MessageConverter):  # pylint: disable=too-few-public-methods

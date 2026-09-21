@@ -11,7 +11,7 @@ import discord
 from colorama import Fore
 from discord.ext import commands
 
-from core import PaginationView, BaseView, BaseLayoutView
+from core import BaseLayoutView, BaseView, PaginationView
 from core.utils.database.models import CustomCommand as CustomCommandModel
 
 from .jinja import render_sandboxed

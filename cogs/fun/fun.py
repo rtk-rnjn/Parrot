@@ -23,7 +23,7 @@ from discord.ext.commands import Context
 from PIL import Image, ImageColor
 from rapidfuzz.process import extractOne as rf_extract_one
 
-from core.utils import PaginationView, BaseLayoutView
+from core.utils import BaseLayoutView, PaginationView
 
 from .pour_puzzle import PourView
 

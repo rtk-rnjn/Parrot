@@ -18,11 +18,11 @@ from .leveling import _GuildLevelingMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
 from .prefix import _GuildPrefixMixin  # noqa
 from .starboard import _GuildStarboardMixin  # noqa
+from .suggestion import _GuildSuggestionMixin  # noqa
 from .tags import _GuildTagsMixin  # noqa
 from .telephone import _GuildTelephoneMixin  # noqa
 from .ticket import _GuildTicketMixin  # noqa
 from .violation import _GuildViolationMixin  # noqa
-from .suggestion import _GuildSuggestionMixin  # noqa
 from .welcomer import _GuildWelcomerMixin  # noqa
 
 if TYPE_CHECKING:

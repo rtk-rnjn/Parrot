@@ -551,7 +551,7 @@ class Mod(commands.Cog):
             return await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
 
         await ctx.bot.database.remove_muted_member(guild_id=ctx.guild.id, member_id=member.id)
-        await ctx.bot.event_scheduler.delete_timer(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
+        await ctx.bot.event_scheduler.delete(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
         await member.remove_roles(mute_role, reason=reason)
 
         return await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
@@ -775,7 +775,7 @@ class Mod(commands.Cog):
 
         await mute_role.delete(reason=f"Mute role removed by {ctx.author} (ID: {ctx.author.id})")
         await ctx.bot.database.delete_mute_role(guild_id=ctx.guild.id)
-        await ctx.bot.event_scheduler.delete_timer(event_name="mute", metadata_filter={"guild_id": ctx.guild.id}, multiple=True)
+        await ctx.bot.event_scheduler.delete(event_name="mute", metadata_filter={"guild_id": ctx.guild.id}, multiple=True)
 
         return await ctx.reply(f"The mute role **{mute_role}** (ID: {mute_role.id}) has been removed from the server.")
 

@@ -11,7 +11,8 @@ from discord.ext import commands
 from lxml import etree
 from rapidfuzz import fuzz, process
 
-from core.utils import BaseLayoutView, BaseView, FriendlyTimeResult, FutureTime, TimerData as Timer, UserFriendlyTime
+from core.utils import BaseLayoutView, BaseView, FriendlyTimeResult, FutureTime, UserFriendlyTime
+from core.utils import TimerData as Timer
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -428,7 +429,7 @@ class Reminder(commands.Cog):
         This command will show you a list of all your active reminders, along with the time remaining until each reminder is triggered.
         """
 
-        reminders = await self.bot.event_scheduler.search_timers(event_name="reminder", metadata_filter={"user_id": ctx.author.id})
+        reminders = await self.bot.event_scheduler.search(event_name="reminder", metadata_filter={"user_id": ctx.author.id})
 
         if not reminders:
             return await ctx.reply("You have no active reminders.")

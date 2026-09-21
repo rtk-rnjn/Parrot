@@ -60,29 +60,11 @@ class AsyncTimerDispatcher:
     The manager maintains one long-running asyncio task that watches the
     earliest timer in MongoDB. Rather than polling the database at a fixed
     interval, the task sleeps until the current timer expires.
-
-    ``_have_data`` is an :class:`asyncio.Event` used to suspend the dispatcher
-    while the collection is empty. An Event represents shared state:
-
-    * ``set()`` means that timer data is known to exist.
-    * ``clear()`` means that the collection was observed to be empty.
-    * ``wait()`` suspends the current coroutine without blocking the event
-      loop until another coroutine calls ``set()``.
-
-    The manager also keeps a reference to the bot's event loop. Timer tasks
-    are explicitly created on that loop so that cancellation and recreation
-    happen in the same asyncio execution context as the bot.
     """
 
     def __init__(self, bot: Parrot, /) -> None:
-        """Initialize the timer manager using the bot's MongoDB and event loop.
+        """Initialize the timer manager using the bot's MongoDB and event loop."""
 
-        Parameters
-        ----------
-        bot:
-            Bot instance providing the MongoDB database, asyncio event loop,
-            event dispatcher, and shutdown state.
-        """
         self.timers_collection: AsyncCollection[TimerData] = bot.database.mongo_db["timers"]
 
         # Event used to put the dispatcher to sleep while there are no timers.
@@ -104,21 +86,14 @@ class AsyncTimerDispatcher:
         # context as the bot.
         self.bot = bot
 
-    async def get_active_timer(self) -> TimerData | None:
-        """Return the timer that expires first.
-
-        Returns
-        -------
-        TimerData | None
-            The earliest timer according to ``expires_at``, or ``None`` when
-            the collection contains no timers.
-        """
+    async def __get_active_timer(self) -> TimerData | None:
+        """Return the timer that expires first."""
         return await self.timers_collection.find_one(
             {},
             sort=[("expires_at", pymongo.ASCENDING)],
         )
 
-    async def wait_for_active_timer(self) -> TimerData | None:
+    async def __wait_for_active_timer(self) -> TimerData | None:
         """Wait until MongoDB contains a timer and return the earliest one.
 
         The dispatcher does not continuously query MongoDB when there are no
@@ -130,7 +105,7 @@ class AsyncTimerDispatcher:
         only signals that *some* timer may exist; it does not contain the
         timer itself.
         """
-        timer = await self.get_active_timer()
+        timer = await self.__get_active_timer()
 
         if timer:
             self._have_data.set()
@@ -144,9 +119,9 @@ class AsyncTimerDispatcher:
         # dispatcher waits for create_timer() to signal new data.
         await self._have_data.wait()
 
-        return await self.get_active_timer()
+        return await self.__get_active_timer()
 
-    async def dispatch_timers(self) -> None:
+    async def start(self) -> None:
         """Run the timer dispatcher until the bot shuts down.
 
         The dispatcher always works with the earliest timer in MongoDB.
@@ -161,7 +136,7 @@ class AsyncTimerDispatcher:
         """
         try:
             while not self.bot.is_closed():
-                timer = self._current_timer = await self.wait_for_active_timer()
+                timer = self._current_timer = await self.__wait_for_active_timer()
 
                 if timer is None:
                     error_message = (
@@ -171,34 +146,27 @@ class AsyncTimerDispatcher:
                     )
                     raise RuntimeError(error_message)
 
-                await self.short_time_dispatcher(**timer)
+                await self.__dispatch_timer(**timer)
 
                 # Now we need to ``asyncio.sleep(0)`` to yield control to the event loop so that other tasks
                 # can run before we check for the next timer. This prevents a tight loop that could starve other tasks.
                 await asyncio.sleep(0)
 
         except OSError, discord.ConnectionClosed, ConnectionFailure:
-            await self.restart_timer()
+            await self.restart()
 
         except asyncio.CancelledError:
             # Task cancellation is a control-flow mechanism in asyncio, not
             # an error that should trigger automatic dispatcher recreation.
             raise
 
-    async def call_timer(self, **data: Unpack[TimerData]) -> None:
+    async def __call_timer(self, **data: Unpack[TimerData]) -> None:
         """Atomically consume an expired timer and dispatch its completion event.
 
         The timer is deleted before the application event is dispatched.
         This prevents the same persistent timer from being processed again if
         the dispatcher subsequently restarts.
 
-        Parameters
-        ----------
-        **data:
-            Timer document returned from MongoDB.
-
-        Notes
-        -----
         The delete result is checked because another dispatcher/process may
         have already consumed the same timer. Only the coroutine that
         successfully deletes the document is allowed to dispatch the event.
@@ -215,22 +183,12 @@ class AsyncTimerDispatcher:
             metadata=data["metadata"],
         )
 
-    async def short_time_dispatcher(self, **data: Unpack[TimerData]) -> None:
-        """Dispatch a single timer without involving the main dispatcher loop.
-
-        This is useful for short-lived timers where creating a dedicated
-        coroutine is preferable to changing the manager's persistent
-        dispatcher state.
-
-        Parameters
-        ----------
-        **data:
-            Timer data containing the expiration timestamp and event metadata.
-        """
+    async def __dispatch_timer(self, **data: Unpack[TimerData]) -> None:
+        """Dispatch a single timer without involving the main dispatcher loop."""
 
         await discord.utils.sleep_until(data["expires_at"])
 
-        await self.call_timer(**data)
+        await self.__call_timer(**data)
 
     async def create_timer(
         self,
@@ -241,23 +199,6 @@ class AsyncTimerDispatcher:
     ) -> InsertOneResult:
         """Persist a timer and notify the dispatcher that timer data exists.
 
-        Parameters
-        ----------
-        event_name:
-            Base event name. The dispatcher appends
-            ``"_timer_complete"`` before dispatching it.
-        expires_at:
-            UTC datetime at which the timer should fire.
-        metadata:
-            Arbitrary data that will be supplied to the completion event.
-
-        Returns
-        -------
-        InsertOneResult
-            MongoDB's result for the insertion.
-
-        Notes
-        -----
         If the new timer expires before the timer currently being awaited,
         the existing dispatcher task is cancelled and restarted. This is
         necessary because ``asyncio.sleep()`` cannot automatically notice
@@ -283,46 +224,22 @@ class AsyncTimerDispatcher:
         if self._current_timer and self._current_timer["expires_at"] > expires_at:
             self._current_timer = post
 
-            await self.restart_timer()
+            await self.restart()
 
         return insert_data
 
-    async def get_timer(self, **filters: Unpack[TimerData]) -> TimerData | None:
-        """Return the first timer matching the supplied fields.
-
-        Parameters
-        ----------
-        **filters:
-            MongoDB equality filters corresponding to fields in
-            :class:`TimerData`.
-
-        Returns
-        -------
-        TimerData | None
-            The first matching timer, or ``None`` if no timer matches.
-        """
+    async def get(self, **filters: Unpack[TimerData]) -> TimerData | None:
+        """Return the first timer matching the supplied fields."""
         return await self.timers_collection.find_one(filters)
 
-    async def delete_timer(
+    async def delete(
         self,
         *,
         event_name: VALID_EVENT_NAMES,
         metadata_filter: Mapping[str, object],
         multiple: bool = False,
     ) -> DeleteResult:
-        """Delete a matching timer and restart the dispatcher if necessary.
-
-        Parameters
-        ----------
-        **filters:
-            MongoDB equality filters corresponding to fields in
-            :class:`TimerData`.
-
-        Returns
-        -------
-        DeleteResult
-            MongoDB's deletion result.
-        """
+        """Delete a matching timer and restart the dispatcher if necessary."""
         filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
         if multiple:
             data = await self.timers_collection.delete_many(filters)
@@ -332,11 +249,11 @@ class AsyncTimerDispatcher:
         if data.deleted_count == 0:
             return data
 
-        await self.restart_timer()
+        await self.restart()
 
         return data
 
-    async def restart_timer(self) -> None:
+    async def restart(self) -> None:
         """Cancel the current dispatcher and start it again.
 
         This forces the dispatcher to discard its cached scheduling state and
@@ -349,23 +266,10 @@ class AsyncTimerDispatcher:
 
         if self.timer_task is not None:
             self.timer_task.cancel()
-            self.timer_task = self.bot.loop.create_task(self.dispatch_timers())
+            self.timer_task = self.bot.loop.create_task(self.start())
 
-    async def search_timers(self, *, event_name: VALID_EVENT_NAMES, metadata_filter: Mapping[str, object]) -> list[TimerData]:
-        """Return all timers matching the supplied fields.
-
-        Parameters
-        ----------
-        event_name:
-            Base event name to filter by.
-        metadata_filter:
-            Arbitrary metadata fields to filter by.
-
-        Returns
-        -------
-        list[TimerData]
-            A list of timers matching the supplied filters.
-        """
+    async def search(self, *, event_name: VALID_EVENT_NAMES, metadata_filter: Mapping[str, object]) -> list[TimerData]:
+        """Return all timers matching the supplied fields."""
         filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
         cursor = self.timers_collection.find(filters, sort=[("expires_at", pymongo.ASCENDING)])
         return await cursor.to_list(length=None)

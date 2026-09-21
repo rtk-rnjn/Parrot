@@ -173,7 +173,7 @@ class Parrot(commands.Bot):
         for extention in LOADABLE_COGS:
             await self.load_extension(extention)
 
-        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.dispatch_timers())
+        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.start())
         self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs())
 
     @staticmethod

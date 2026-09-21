@@ -37,7 +37,7 @@ class GiveawayCog(commands.Cog):
                 self.bot.loop.create_task(self._recover_giveaway(giveaway["_id"]))
                 continue
 
-            timers = await self.bot.event_scheduler.search_timers(
+            timers = await self.bot.event_scheduler.search(
                 event_name="giveaway",
                 metadata_filter={"giveaway_id": str(giveaway["_id"])},
             )
@@ -194,7 +194,7 @@ class GiveawayCog(commands.Cog):
             await ctx.reply("That giveaway has already ended.")
             return
 
-        await self.bot.event_scheduler.delete_timer(event_name="giveaway", metadata_filter={"giveaway_id": giveaway_id})
+        await self.bot.event_scheduler.delete(event_name="giveaway", metadata_filter={"giveaway_id": giveaway_id})
         await self._finish_giveaway(giveaway)
         await ctx.reply("Giveaway ended.", delete_after=10)
 

@@ -50,7 +50,7 @@ flowchart TD
     O -- Yes --> Q[Cancel and restart dispatcher]
     Q --> B
 
-    R[delete_timer] --> S[Delete matching timer]
+    R[delete] --> S[Delete matching timer]
     S --> T{Something deleted?}
     T -- No --> U[Return]
     T -- Yes --> Q
@@ -167,7 +167,7 @@ await self._have_data.wait()
 
 Other bot tasks continue running normally.
 
-When a timer is created, `create_timer()` calls:
+When a timer is created, `create()` calls:
 
 ```python
 self._have_data.set()
@@ -258,7 +258,7 @@ event_name = "reminder"
 produces:
 
 ```text
-reminder_timer_complete
+on_reminder_timer_complete
 ```
 
 with the timer's metadata passed to the event.
@@ -285,7 +285,7 @@ return  dispatch event
 
 ## Creating timers
 
-Timers are created using `create_timer()`.
+Timers are created using `create()`.
 
 A timer document is constructed:
 
@@ -332,12 +332,12 @@ The dispatcher is already sleeping until `12:10`.
 
 It cannot automatically know that a new timer was inserted with an earlier expiration time.
 
-Therefore `create_timer()` checks:
+Therefore `create()` checks:
 
 ```python
 if self._current_timer and self._current_timer["expires_at"] > expires_at:
     self._current_timer = post
-    await self.restart_timer()
+    await self.restart()
 ```
 
 The old dispatcher is cancelled and a new dispatcher is created.
@@ -372,7 +372,7 @@ This avoids having to modify an already-running sleep operation.
 
 ## Deleting timers
 
-Timers can also be explicitly deleted with `delete_timer()`.
+Timers can also be explicitly deleted with `delete()`.
 
 The method constructs a MongoDB filter from the event name and metadata:
 
@@ -408,14 +408,14 @@ if data.deleted_count == 0:
 If one or more timers were deleted, the dispatcher is restarted:
 
 ```python
-await self.restart_timer()
+await self.restart()
 ```
 
 This is necessary because the deleted timer may have been the timer currently being awaited.
 
 ## Restarting the dispatcher
 
-`restart_timer()` discards the current scheduling state and creates a new dispatcher task:
+`restart()` discards the current scheduling state and creates a new dispatcher task:
 
 ```python
 self._current_timer = None
@@ -696,7 +696,7 @@ The responsibilities are:
 | `timer_task`      | Holds the active dispatcher task.                |
 | MongoDB           | Stores authoritative persistent timer state.     |
 | MongoDB deletion  | Atomically consumes a timer.                     |
-| `restart_timer()` | Discards stale scheduling state and rebuilds it. |
+| `restart()` | Discards stale scheduling state and rebuilds it. |
 
 The absence of a lock is therefore intentional.
 
@@ -719,7 +719,7 @@ while not self.bot.is_closed():
     if timer is None:
         raise RuntimeError(...)
 
-    await self.short_time_dispatcher(**timer)
+    await self.__dispatch_timer(**timer)
 
     await asyncio.sleep(0)
 ```
@@ -750,7 +750,7 @@ The dispatcher treats network/database connection failures as recoverable:
 
 ```python
 except OSError, discord.ConnectionClosed, ConnectionFailure:
-    await self.restart_timer()
+    await self.restart()
 ```
 
 The dispatcher is therefore recreated after a connection failure.
@@ -770,7 +770,7 @@ Cancellation should therefore not be treated as a connection failure.
 
 ### Searching timers
 
-`search_timers()` returns all timers matching an event name and metadata filter:
+`search()` returns all timers matching an event name and metadata filter:
 
 ```python
 filters = {
@@ -793,7 +793,7 @@ Results are ordered by `expires_at`, so the returned list is ordered from earlie
 
 ### Getting a specific timer
 
-`get_timer()` performs a normal MongoDB equality query:
+`get()` performs a normal MongoDB equality query:
 
 ```python
 return await self.timers_collection.find_one(filters)
@@ -801,9 +801,9 @@ return await self.timers_collection.find_one(filters)
 
 It returns the first matching timer or `None` if no timer matches.
 
-### `short_time_dispatcher()`
+### `__dispatch_timer()`
 
-`short_time_dispatcher()` handles the waiting and dispatching of a single timer:
+`__dispatch_timer()` handles the waiting and dispatching of a single timer:
 
 ```python
 await discord.utils.sleep_until(data["expires_at"])
@@ -859,7 +859,7 @@ sequenceDiagram
     A->>M: Insert timer at 12:05
     A->>D: _have_data.set()
 
-    A->>D: restart_timer()
+    A->>D: restart()
     D->>D: Cancel current task
 
     D->>M: Find earliest timer

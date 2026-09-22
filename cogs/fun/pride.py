@@ -95,7 +95,7 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
     @commands.command(name="dragname", aliases=("dragqueenname", "queenme"))
     async def dragname(self, ctx: commands.Context[Parrot]) -> None:
         """Sends a message with a drag queen name."""
-        await ctx.send(random.choice(NAMES))
+        await ctx.reply(random.choice(NAMES))
 
     def get_video(self, genre: str | None = None) -> dict:
         """Picks a random anthem from the list.

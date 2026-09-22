@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import discord
@@ -239,6 +240,33 @@ class PaginationView(PaginationMixin[discord.Embed], BaseView):
         self._update_pagination_buttons()
 
         await interaction.response.edit_message(embed=self.items[self.current_index], view=self)
+
+    @classmethod
+    async def paginate_string_list(
+        cls,
+        *,
+        author: discord.User | discord.Member,
+        items: list[str],
+        chunk_size: int = 10,
+        embed_callback: Callable[[discord.Embed], discord.Embed] | None = None,
+        **kwargs,
+    ) -> PaginationView:
+        if not items:
+            raise ValueError("Items list cannot be empty.")
+
+        embeds: list[discord.Embed] = []
+
+        for index, chunk in enumerate(discord.utils.as_chunks(items, chunk_size)):
+            description = ""
+            for i, item in enumerate(chunk, start=index * chunk_size + 1):
+                description += f"{i}. {item}\n"
+
+            embed = discord.Embed(description=description)
+            if embed_callback is not None:
+                embed = embed_callback(embed)
+            embeds.append(embed)
+
+        return cls(author=author, items=embeds, **kwargs)
 
 
 class PaginationLayout(PaginationMixin[list[discord.ui.Item]], BaseLayoutView):

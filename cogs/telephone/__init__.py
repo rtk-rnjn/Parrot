@@ -42,7 +42,8 @@ class Telephone(commands.Cog):
         target_channel: discord.TextChannel,
         target_guild: discord.Guild,
     ) -> None:
-        await ctx.send(
+        current_channel = ctx.channel
+        await current_channel.send(
             f"\N{TELEPHONE RECEIVER} **Connected. Say {random.choice(('hi', 'hello', 'heya'))}!**",
         )
         await target_channel.send(
@@ -59,7 +60,7 @@ class Telephone(commands.Cog):
                 message = await self.bot.wait_for("message", check=check, timeout=120)
 
                 if message.content.casefold() == "hangup":
-                    await ctx.send("\N{TELEPHONE RECEIVER} **Disconnected.**")
+                    await current_channel.send("\N{TELEPHONE RECEIVER} **Disconnected.**")
                     await target_channel.send("\N{TELEPHONE RECEIVER} **Disconnected.**")
                     return
 
@@ -69,7 +70,7 @@ class Telephone(commands.Cog):
 
         except TimeoutError:
             assert ctx.guild is not None
-            await ctx.send(
+            await current_channel.send(
                 f"\N{SLEEPING SYMBOL} Disconnected from **{target_guild.name}**. Reason: Line inactive for more than 120 seconds.",
             )
             await target_channel.send(
@@ -79,8 +80,10 @@ class Telephone(commands.Cog):
     async def _dial(self, ctx: commands.Context[Parrot], target_guild: discord.Guild) -> None:
         assert ctx.guild is not None
 
+        current_channel = ctx.channel
+
         if target_guild.id == ctx.guild.id:
-            await ctx.send("\N{CROSS MARK} **Can't make a self call.**")
+            await current_channel.send("\N{CROSS MARK} **Can't make a self call.**")
             return
 
         caller_id = ctx.guild.id
@@ -89,7 +92,7 @@ class Telephone(commands.Cog):
         if not await self.bot.database.is_telephone_enabled(guild_id=caller_id) or not await self.bot.database.is_telephone_enabled(
             guild_id=target_id,
         ):
-            await ctx.send(
+            await current_channel.send(
                 "\N{CROSS MARK} **Calling failed!** Telephone is disabled in one of these servers.",
             )
             return
@@ -102,13 +105,13 @@ class Telephone(commands.Cog):
         )
 
         if target_id in caller_blocked or caller_id in target_blocked:
-            await ctx.send(
+            await current_channel.send(
                 "\N{NO ENTRY SIGN} **Calling failed!** One of these servers has blocked the other.",
             )
             return
 
         if await self.bot.database.is_telephone_line_busy(guild_id=caller_id) or await self.bot.database.is_telephone_line_busy(guild_id=target_id):
-            await ctx.send(
+            await current_channel.send(
                 f"\N{TELEPHONE RECEIVER} Cannot connect to **{target_guild.name}**. **Line busy!**",
             )
             return
@@ -116,7 +119,7 @@ class Telephone(commands.Cog):
         target_channel = await self._find_line_channel(target_guild)
 
         if target_channel is None:
-            await ctx.send(
+            await current_channel.send(
                 "\N{CROSS MARK} **Calling failed!** The target server has no writable text channel.",
             )
             return
@@ -127,7 +130,7 @@ class Telephone(commands.Cog):
         )
 
         try:
-            await ctx.send(
+            await current_channel.send(
                 f"\N{TELEPHONE RECEIVER} Calling **{target_guild.name}** ... Waiting for the response ...",
             )
 
@@ -144,7 +147,7 @@ class Telephone(commands.Cog):
                     timeout=60,
                 )
             except TimeoutError:
-                await ctx.send(
+                await current_channel.send(
                     f"\N{SLEEPING SYMBOL} Line disconnected from **{target_guild.name}**. Reason: Line inactive for more than 60 seconds.",
                 )
                 await target_channel.send(
@@ -153,7 +156,7 @@ class Telephone(commands.Cog):
 
             if response is not None:
                 if response.content.casefold() == "hangup":
-                    await ctx.send(
+                    await current_channel.send(
                         f"\N{TELEPHONE RECEIVER} Disconnected. From **{response.author}**.",
                     )
                     await target_channel.send(
@@ -189,7 +192,7 @@ class Telephone(commands.Cog):
         target_guild = self._search_guild(server)
 
         if target_guild is None:
-            await ctx.send(
+            await ctx.reply(
                 f":mag: Bot couldn't find a server matching **{server}**.",
             )
             return
@@ -203,7 +206,7 @@ class Telephone(commands.Cog):
         assert ctx.guild is not None
 
         await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, enabled=True)
-        await ctx.send(":white_check_mark: **The telephone game has been enabled!**")
+        await ctx.reply(":white_check_mark: **The telephone game has been enabled!**")
 
     @telephone.command(name="disable", aliases=["off"])
     @commands.has_permissions(administrator=True)
@@ -212,7 +215,7 @@ class Telephone(commands.Cog):
         assert ctx.guild is not None
 
         await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, enabled=False)
-        await ctx.send(":white_check_mark: **The telephone game has been disabled!**")
+        await ctx.reply(":white_check_mark: **The telephone game has been disabled!**")
 
     @telephone.command(name="setchannel", aliases=["setchan", "channel"])
     @commands.has_permissions(administrator=True)
@@ -232,7 +235,7 @@ class Telephone(commands.Cog):
             guild_id=ctx.guild.id,
             channel_id=channel.id,
         )
-        await ctx.send(
+        await ctx.reply(
             f":white_check_mark: The telephone game channel has been set to {channel.mention}!",
         )
 
@@ -245,7 +248,7 @@ class Telephone(commands.Cog):
         target_guild = self._search_guild(server)
 
         if target_guild is None or target_guild.id == ctx.guild.id:
-            await ctx.send(
+            await ctx.reply(
                 f"\N{CROSS MARK} I couldn't find another server matching **{server}**.",
             )
             return
@@ -255,7 +258,7 @@ class Telephone(commands.Cog):
             server_id=target_guild.id,
         )
 
-        await ctx.send(
+        await ctx.reply(
             f"\N{NO ENTRY SIGN} The server **{target_guild.name}** has been blocked from calling the telephone game!",
         )
 
@@ -268,7 +271,7 @@ class Telephone(commands.Cog):
         target_guild = self._search_guild(server)
 
         if target_guild is None or target_guild.id == ctx.guild.id:
-            await ctx.send(
+            await ctx.reply(
                 f"\N{CROSS MARK} I couldn't find another server matching **{server}**.",
             )
             return
@@ -278,7 +281,7 @@ class Telephone(commands.Cog):
             server_id=target_guild.id,
         )
 
-        await ctx.send(
+        await ctx.reply(
             f":white_check_mark: The server **{target_guild.name}** has been unblocked!",
         )
 

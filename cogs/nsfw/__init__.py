@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Literal
 
+import arrow
+
 import discord
 from discord.ext import commands
 
@@ -42,9 +44,25 @@ class NSFW(commands.Cog):
 
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
-        self.url = "https://nekobot.xyz/api/image"
+        self.nekobot_image_url = "https://nekobot.xyz/api/image"
 
         _log.info("Cog loaded: %s", self.__class__.__name__)
+
+    async def is_user_allowed(self, ctx: commands.Context[Parrot]) -> bool:
+        if ctx.author.id in (self.bot.owner_ids or {}):
+            return True
+
+        if ctx.author.id == self.bot.owner_id:
+            return True
+
+        birthday = await self.bot.database.get_user_birthday(ctx.author.id)
+        if birthday is None:
+            return False
+
+        birthday_date = arrow.get(birthday)
+        today = arrow.utcnow()
+        age = today.year - birthday_date.year - ((today.month, today.day) < (birthday_date.month, birthday_date.day))
+        return age >= 18
 
     async def cog_load(self):
         self.command_loader()
@@ -62,7 +80,7 @@ class NSFW(commands.Cog):
         return True
 
     async def get_embed(self, type_str: str) -> discord.Embed:
-        response = await self.bot.http_session.get(self.url, params={"type": type_str})
+        response = await self.bot.http_session.get(self.nekobot_image_url, params={"type": type_str})
         if response.status != 200:
             msg = "Something went wrong with the API"
             raise commands.CommandError(msg)

@@ -112,18 +112,12 @@ class SnoozeButton(discord.ui.Button["ReminderView"]):
 
 
 class ReminderView(BaseView):
-    message: discord.Message
-
     def __init__(self, *, url: str, metadata: ReminderMetadata, cog: Reminder, author_id: int) -> None:
         super().__init__(author=discord.Object(id=author_id))  # type: ignore
         self.author_id: int = author_id
         self.snooze = SnoozeButton(cog, metadata)
         self.add_item(discord.ui.Button(url=url, label="Go to original message"))
         self.add_item(self.snooze)
-
-    async def on_timeout(self) -> None:
-        self.snooze.disabled = True
-        await self.message.edit(view=self)
 
 
 class TimeZone(NamedTuple):
@@ -207,6 +201,7 @@ class Reminder(commands.Cog):
             "CDT": "America/Chicago",
             "MDT": "America/Denver",
             "PDT": "America/Los_Angeles",
+            "IST": "Asia/Kolkata",
         }
 
         self.valid_timezones: set[str] = set(get_zonefile_instance().zones)
@@ -246,10 +241,10 @@ class Reminder(commands.Cog):
             return datetime.UTC
         return dateutil.tz.gettz(tz) or datetime.UTC
 
+    BCP47_TIMEZONE_DATA_URL = "https://raw.githubusercontent.com/unicode-org/cldr/master/common/bcp47/timezone.xml"
+
     async def parse_bcp47_timezones(self) -> None:
-        async with self.bot.http_session.get(
-            "https://raw.githubusercontent.com/unicode-org/cldr/main/common/bcp47/timezone.xml",
-        ) as resp:
+        async with self.bot.http_session.get(self.BCP47_TIMEZONE_DATA_URL) as resp:
             if resp.status != 200:
                 return
 
@@ -292,7 +287,12 @@ class Reminder(commands.Cog):
         return await ctx.send_help(ctx.command)
 
     @timezone.command(name="set", aliases=["change", "update"])
-    async def set_timezone(self, ctx: commands.Context[Parrot], *, timezone: TimeZone) -> discord.Message:
+    async def set_timezone(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        timezone: TimeZone = commands.parameter(description="The timezone to set for your account."),  # noqa: B008
+    ) -> discord.Message:
         """Set your timezone for use with the reminder command.
 
         This is used to convert times to your local timezone when
@@ -306,13 +306,18 @@ class Reminder(commands.Cog):
         return await ctx.reply(f"Your timezone has been set to {label} (IANA: {key}).")
 
     @timezone.command(name="info")
-    async def timezone_info(self, ctx: commands.Context[Parrot], *, tz: TimeZone):
+    async def timezone_info(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        timezone: TimeZone = commands.parameter(description="The timezone to get info about."),  # noqa: B008
+    ) -> discord.Message:
         """Retrieves info about a timezone."""
 
-        key = tz.key
-        label = tz.label
+        key = timezone.key
+        label = timezone.label
 
-        dt = discord.utils.utcnow().astimezone(dateutil.tz.gettz(tz.key))
+        dt = discord.utils.utcnow().astimezone(dateutil.tz.gettz(timezone.key))
         time = dt.strftime("%Y-%m-%d %I:%M %p")
 
         offset = dt.utcoffset()
@@ -379,12 +384,14 @@ class Reminder(commands.Cog):
             if message is not None:
                 view.message = message
 
-    @commands.group(name="remind", aliases=["reminder", "remindme", "remindin"], invoke_without_command=True)
+    @commands.command(name="remind", aliases=["reminder", "remindme", "remindin"])
     async def remind(
         self,
         ctx: commands.Context[Parrot],
         *,
-        when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")],
+        when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")] = commands.parameter(  # noqa: B008
+            description="The time to set the reminder for, in a human-readable format.",
+        ),
     ):
         """Reminds you of something after a certain amount of time.
 

@@ -31,7 +31,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @commands.is_owner()
     async def redis_repl(self, ctx: commands.Context[Parrot]) -> None:
         """Start a Redis REPL session."""
-        await ctx.send("Starting Redis REPL session. Type `exit` to quit.")
+        await ctx.reply("Starting Redis REPL session. Type `exit` to quit.")
 
         def check(m: discord.Message) -> bool:
             return m.author == ctx.author and m.channel == ctx.channel

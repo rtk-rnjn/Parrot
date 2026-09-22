@@ -166,7 +166,7 @@ class Suggestion(commands.Cog):
 
         msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
 
@@ -178,7 +178,7 @@ class Suggestion(commands.Cog):
         for reaction in msg.reactions:
             if str(reaction.emoji) not in REACTION_EMOJI:
                 await msg.clear_reaction(reaction.emoji)
-        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
+        await ctx.reply(f"{ctx.author.mention} Done", delete_after=5)
 
     async def suggest_flag(self, ctx: commands.Context[Parrot], message_id: int, flag: str, *, remark: str = ""):
         """To flag the suggestion.
@@ -196,24 +196,24 @@ class Suggestion(commands.Cog):
 
         message: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not message:
-            return await ctx.send(
+            return await ctx.reply(
                 f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
             )
 
         if message.author.id != self.bot.user.id:
-            return await ctx.send(f"{ctx.author.mention} Invalid `{message_id}`")
+            return await ctx.reply(f"{ctx.author.mention} Invalid `{message_id}`")
 
         flag = flag.upper()
         try:
             payload = OTHER_REACTION[flag]
         except KeyError:
-            return await ctx.send(f"{ctx.author.mention} Invalid Flag")
+            return await ctx.reply(f"{ctx.author.mention} Invalid Flag")
 
         embed: discord.Embed = message.embeds[0]
         embed.color = payload["color"]
 
         if embed.footer.text is None:
-            return await ctx.send(f"{ctx.author.mention} Invalid Suggestion Embed")
+            return await ctx.reply(f"{ctx.author.mention} Invalid Suggestion Embed")
 
         user_id = int(embed.footer.text.split(":")[1])
         if remark:
@@ -226,10 +226,10 @@ class Suggestion(commands.Cog):
         content = f"Flagged: {flag} | {payload['emoji']}"
         await message.edit(content=content, embed=embed)
 
-        await ctx.send(f"{ctx.author.mention} Done", delete_after=5)
+        await ctx.reply(f"{ctx.author.mention} Done", delete_after=5)
 
         if random() < 0.05:
-            await ctx.send(
+            await ctx.reply(
                 f"{ctx.author.mention} btw, you can also flag the suggestion by replying the message with the proper FLAG.\n"
                 f"Like: `INVALID > This is a remark`, `SPAM`",
             )

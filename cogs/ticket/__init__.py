@@ -88,12 +88,12 @@ class Ticket(commands.Cog):
         channel_id = await self.bot.database.get_ticket_config_channel_id(ctx.guild.id)
 
         if channel_id is None:
-            await ctx.send("Ticket system is not set up. Please contact a server administrator.")
+            await ctx.reply("Ticket system is not set up. Please contact a server administrator.")
             return
 
         channel = ctx.guild.get_channel(channel_id)
         if channel is None:
-            await ctx.send("Ticket system is not set up properly. Please contact a server administrator.")
+            await ctx.reply("Ticket system is not set up properly. Please contact a server administrator.")
             return
 
         if isinstance(channel, discord.TextChannel):
@@ -105,7 +105,7 @@ class Ticket(commands.Cog):
             )
             await thread.add_user(ctx.author)
             await thread.send(f"{ctx.author.mention} Your ticket has been created. A staff member will assist you shortly.")
-            await ctx.send(f"Your ticket has been created: {thread.mention}", ephemeral=True)
+            await ctx.reply(f"Your ticket has been created: {thread.mention}", ephemeral=True)
             return
 
 
@@ -115,15 +115,15 @@ class Ticket(commands.Cog):
     async def ticket_delete(self, ctx: commands.Context[Parrot]) -> None:
         """Close the ticket in the current channel."""
         if ctx.guild is None:
-            await ctx.send("This command can only be used in a server (guild).")
+            await ctx.reply("This command can only be used in a server (guild).")
             return
 
         if not isinstance(ctx.channel, discord.Thread):
-            await ctx.send("This command can only be used in a ticket thread.")
+            await ctx.reply("This command can only be used in a ticket thread.")
             return
 
         if not ctx.channel.name.startswith("ticket-"):
-            await ctx.send("This command can only be used in a ticket thread.")
+            await ctx.reply("This command can only be used in a ticket thread.")
             return
 
         await ctx.channel.delete()
@@ -132,20 +132,20 @@ class Ticket(commands.Cog):
     async def ticket_resolved(self, ctx: commands.Context[Parrot]) -> None:
         """Mark the ticket in the current channel as resolved."""
         if ctx.guild is None:
-            await ctx.send("This command can only be used in a server (guild).")
+            await ctx.reply("This command can only be used in a server (guild).")
             return
 
         if not isinstance(ctx.channel, discord.Thread):
-            await ctx.send("This command can only be used in a ticket thread.")
+            await ctx.reply("This command can only be used in a ticket thread.")
             return
 
         ticket_name = ctx.channel.name
         if not ticket_name.startswith("ticket-"):
-            await ctx.send("This command can only be used in a ticket thread.")
+            await ctx.reply("This command can only be used in a ticket thread.")
             return
 
         await ctx.channel.edit(archived=True, locked=True)
-        await ctx.send("This ticket has been marked as resolved and archived.")
+        await ctx.reply("This ticket has been marked as resolved and archived.")
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Ticket(bot))

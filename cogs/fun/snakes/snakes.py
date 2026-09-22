@@ -401,14 +401,14 @@ class Snakes(commands.Cog):
         try:
             reaction, _ = await ctx.bot.wait_for("reaction_add", timeout=45.0, check=predicate)
         except TimeoutError:
-            await ctx.send(f"You took too long. The correct answer was **{options[answer]}**.")
+            await ctx.reply(f"You took too long. The correct answer was **{options[answer]}**.")
             await message.clear_reactions()
             return
 
         if str(reaction.emoji) == ANSWERS_EMOJI[answer]:
-            await ctx.send(f"{random.choice(CORRECT_GUESS)} The correct answer was **{options[answer]}**.")
+            await ctx.reply(f"{random.choice(CORRECT_GUESS)} The correct answer was **{options[answer]}**.")
         else:
-            await ctx.send(f"{random.choice(INCORRECT_GUESS)} The correct answer was **{options[answer]}**.")
+            await ctx.reply(f"{random.choice(INCORRECT_GUESS)} The correct answer was **{options[answer]}**.")
 
         await message.clear_reactions()
 
@@ -467,7 +467,7 @@ class Snakes(commands.Cog):
             board.append(f"`{i + 1:02d}` {page_guess_list[i]} - {page_result_list[i]}")
             board.append(EMPTY_UNICODE)
         antidote_embed.add_field(name="10 guesses remaining", value="\n".join(board))
-        board_id = await ctx.send(embed=antidote_embed)
+        board_id = await ctx.reply(embed=antidote_embed)
 
         for emoji in ANTIDOTE_EMOJI:
             await board_id.add_reaction(emoji)
@@ -572,7 +572,7 @@ class Snakes(commands.Cog):
             )
             png_bytes = frame_to_png_bytes(image_frame)
             file = File(png_bytes, filename="snek.png")
-            await ctx.send(file=file)
+            await ctx.reply(file=file)
 
     @snakes_group.command(name="get")
     @bot_has_permissions(manage_messages=True)
@@ -587,11 +587,11 @@ class Snakes(commands.Cog):
 
             data = await self._get_snek(name)
             if data is None:
-                await ctx.send("Could not find any information about that snake.")
+                await ctx.reply("Could not find any information about that snake.")
                 return
 
             if data.get("error"):
-                await ctx.send("Could not fetch data from Wikipedia.")
+                await ctx.reply("Could not fetch data from Wikipedia.")
                 return
 
             description = data.get("info") or "No description available."
@@ -619,7 +619,7 @@ class Snakes(commands.Cog):
 
             embed.set_image(url=image)
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @snakes_group.command(name="guess", aliases=("identify",))
     @commands.max_concurrency(1, per=BucketType.channel)
@@ -649,7 +649,7 @@ class Snakes(commands.Cog):
             )
             embed.set_image(url=image)
 
-        guess = await ctx.send(embed=embed)
+        guess = await ctx.reply(embed=embed)
         options = {f"{'abcd'[snakes.index(snake)]}": snake for snake in snakes}
         await self._validate_answer(ctx, guess, answer, options)
 
@@ -662,7 +662,7 @@ class Snakes(commands.Cog):
         snake_name = random.choice(list(snakes.keys()))
         snake_image = snakes[snake_name]
 
-        message = await ctx.send(embed=Embed(description="Hatching your snake :snake:..."))
+        message = await ctx.reply(embed=Embed(description="Hatching your snake :snake:..."))
         await asyncio.sleep(1)
 
         for stage in stages:
@@ -676,7 +676,7 @@ class Snakes(commands.Cog):
         my_snake_embed.set_thumbnail(url=snake_image)
         my_snake_embed.set_footer(text=f" Owner: {ctx.author}")
 
-        await ctx.send(embed=my_snake_embed)
+        await ctx.reply(embed=my_snake_embed)
 
     @snakes_group.command(name="quiz")
     @commands.max_concurrency(1, per=BucketType.channel)
@@ -696,7 +696,7 @@ class Snakes(commands.Cog):
             description="\n".join([f"**{key.upper()}**: {answer}" for key, answer in options.items()]),
         )
 
-        quiz = await ctx.send(embed=embed)
+        quiz = await ctx.reply(embed=embed)
         await self._validate_answer(ctx, quiz, answer, options)
 
     @snakes_group.command(name="name", aliases=("name_gen",))
@@ -756,7 +756,7 @@ class Snakes(commands.Cog):
             color=SNAKE_COLOR,
         )
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @snakes_group.command(name="sal")
     @commands.max_concurrency(1, per=BucketType.channel)
@@ -767,7 +767,7 @@ class Snakes(commands.Cog):
         """
 
         if ctx.channel in self.active_sal:
-            await ctx.send(f"{ctx.author.mention} A game is already in progress in this channel.")
+            await ctx.reply(f"{ctx.author.mention} A game is already in progress in this channel.")
             return
 
         game = SnakeAndLaddersGame(snakes=self, context=ctx)
@@ -790,7 +790,7 @@ class Snakes(commands.Cog):
             content = await self._get_snek(name)
 
         if not content:
-            await ctx.send("Could not find any information about that snake.")
+            await ctx.reply("Could not find any information about that snake.")
             return
 
         async with ctx.typing():
@@ -798,7 +798,7 @@ class Snakes(commands.Cog):
             async with asyncio.timeout(10):
                 image_url = content.get("image_list", [])[0] if content else None
                 if not image_url:
-                    await ctx.send("Could not find any images for that snake.")
+                    await ctx.reply("Could not find any images for that snake.")
                     return
 
                 async with self.bot.http_session.get(image_url) as response:
@@ -810,7 +810,7 @@ class Snakes(commands.Cog):
             final_buffer = await self.bot.loop.run_in_executor(None, func)
 
         name = content.get("name", content.get("title", "Unknown Snake"))
-        await ctx.send(
+        await ctx.reply(
             f"A wild {name.title()} appears!",
             file=File(final_buffer, filename=name.replace(" ", "") + ".png"),
         )
@@ -823,7 +823,7 @@ class Snakes(commands.Cog):
         """
         question = random.choice(self.snake_facts)["fact"]
         embed = Embed(title="Snake fact", color=SNAKE_COLOR, description=question)
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @snakes_group.command(name="snakify")
     async def snakify_command(self, ctx: commands.Context[Parrot], *, message: str) -> None:
@@ -842,7 +842,7 @@ class Snakes(commands.Cog):
         )
         embed.description = f"*{self._snakify(message)}*"
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @snakes_group.command(name="zen")
     async def zen_command(self, ctx: commands.Context[Parrot]) -> None:
@@ -856,4 +856,4 @@ class Snakes(commands.Cog):
         zen_quote = self._snakify(zen_quote)
 
         embed.description = zen_quote
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)

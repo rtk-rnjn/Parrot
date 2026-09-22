@@ -113,7 +113,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         channel, url = video["channel"], video["url"]
 
-        await ctx.send(f"Check out this April Fools' video by {channel}.\n\n{url}")
+        await ctx.reply(f"Check out this April Fools' video by {channel}.\n\n{url}")
 
     @staticmethod
     def find_separators(displayname: str) -> list[str] | None:
@@ -151,7 +151,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
     @commands.command()
     async def bunnyname(self, ctx: Context) -> None:
         """Picks a random bunny name from a JSON file."""
-        await ctx.send(random.choice(BUNNY_NAMES["names"]))
+        await ctx.reply(random.choice(BUNNY_NAMES["names"]))
 
     @commands.command()
     async def bunnifyme(self, ctx: Context) -> None:
@@ -187,7 +187,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         elif unmatched_name:
             bunnified_name = unmatched_name
 
-        await ctx.send(bunnified_name)
+        await ctx.reply(bunnified_name)
 
     @commands.command(aliases=("riddlemethis", "riddleme"))
     async def riddle(self, ctx: Context) -> None:
@@ -195,7 +195,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         The duration of the hint interval can be configured by changing the TIMELIMIT constant in this file.
         """
         if self.current_channel:
-            await ctx.send(f"A riddle is already being solved in {self.current_channel.mention}!")
+            await ctx.reply(f"A riddle is already being solved in {self.current_channel.mention}!")
             return
 
         self.current_channel = ctx.channel
@@ -209,17 +209,17 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         riddle_embed = discord.Embed(title=question, description=description, colour=0xCF84E0)
 
-        await ctx.send(embed=riddle_embed)
+        await ctx.reply(embed=riddle_embed)
         await asyncio.sleep(TIMELIMIT)
 
         hint_embed = discord.Embed(title=f"Here's a hint: {hints[0]}!", colour=0xCF84E0)
 
-        await ctx.send(embed=hint_embed)
+        await ctx.reply(embed=hint_embed)
         await asyncio.sleep(TIMELIMIT)
 
         hint_embed = discord.Embed(title=f"Here's a hint: {hints[1]}!", colour=0xCF84E0)
 
-        await ctx.send(embed=hint_embed)
+        await ctx.reply(embed=hint_embed)
         await asyncio.sleep(TIMELIMIT)
 
         if self.winners:
@@ -230,7 +230,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         answer_embed = discord.Embed(title=f"The answer is: {self.correct}!", colour=0xCF84E0)
 
-        await ctx.send(content, embed=answer_embed)
+        await ctx.reply(content, embed=answer_embed)
 
         self.winners.clear()
         self.current_channel = None
@@ -259,7 +259,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
         """
         if len(colors) < 2:
-            await ctx.send("You must include at least 2 colours!")
+            await ctx.reply("You must include at least 2 colours!")
             return None
 
         invalid_colours = []
@@ -276,13 +276,13 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
                 invalid_colours.append(suppress_links(colour))
 
         if len(invalid_colours) > 1:
-            await ctx.send(
+            await ctx.reply(
                 f"Sorry, I don't know these colours: {' '.join(invalid_colours)}",
             )
             return None
 
         if len(invalid_colours) == 1:
-            await ctx.send(f"Sorry, I don't know the colour {invalid_colours[0]}!")
+            await ctx.reply(f"Sorry, I don't know the colour {invalid_colours[0]}!")
             return None
 
         async with ctx.typing():
@@ -334,14 +334,14 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
                 icon_url=ctx.author.display_avatar.url,
             )
 
-        await ctx.send(file=file, embed=embed)
+        await ctx.reply(file=file, embed=embed)
         return recoloured_image
 
     @commands.command(name="eggfact", aliases=("efact",))
     async def easter_facts(self, ctx: Context) -> None:
         """Get easter egg facts."""
         embed = self.make_embed()
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @staticmethod
     def make_embed() -> discord.Embed:
@@ -369,7 +369,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         q_embed = discord.Embed(title=question, description=description, colour=discord.Color.pink())
 
-        msg: discord.Message = await ctx.send(embed=q_embed)
+        msg: discord.Message = await ctx.reply(embed=q_embed)
         for emoji in valid_emojis:
             await msg.add_reaction(emoji)
 
@@ -421,7 +421,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             colour=discord.Color.pink(),
         )
 
-        await ctx.send(content, embed=a_embed)
+        await ctx.reply(content, embed=a_embed)
 
     @staticmethod
     async def already_reacted(message: discord.Message, user: discord.Member | discord.User) -> bool:
@@ -449,7 +449,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         """Responds with a random tradition or custom."""
         random_country = random.choice(list(TRADITIONS))
 
-        await ctx.send(f"{random_country}:\n{TRADITIONS[random_country]}")
+        await ctx.reply(f"{random_country}:\n{TRADITIONS[random_country]}")
 
 
 async def setup(bot: Parrot) -> None:

@@ -11,6 +11,8 @@ from PIL import Image
 
 from .card import birthday_card_file
 
+from core.utils import HumanDate
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -19,7 +21,7 @@ DATE_FORMAT = "MM-DD"
 
 
 def parse_birthday(value: str) -> str:
-    return arrow.get(f"2000-{value.strip()}", "YYYY-MM-DD").format(DATE_FORMAT)
+    return arrow.get(value).format(DATE_FORMAT)
 
 
 class Birthday(commands.Cog):
@@ -36,7 +38,7 @@ class Birthday(commands.Cog):
     async def cog_unload(self) -> None:
         self.check_birthdays.cancel()
 
-    @commands.group(name="birthday", invoke_without_command=True)
+    @commands.group(name="birthday", invoke_without_command=True, aliases=["bday", "dob"])
     async def birthday(self, ctx: commands.Context[Parrot]) -> None:
         """View birthday status or manage your birthday."""
         if ctx.guild is None:
@@ -50,13 +52,14 @@ class Birthday(commands.Cog):
         await ctx.reply(f"Your birthday is set to **{birthday}**.")
 
     @birthday.command(name="set")
-    async def set_birthday(self, ctx: commands.Context[Parrot], date: str) -> None:
-        """Set your birthday in MM-DD format."""
+    async def set_birthday(self, ctx: commands.Context[Parrot], *, date: str) -> None:
+        """Set your birthday."""
         try:
             birthday = parse_birthday(date)
         except ValueError:
-            await ctx.reply("Use a valid birthday in `MM-DD` format, for example `04-23`.")
-            return
+            human_readable_date = HumanDate(date)
+            datetime = human_readable_date.datetime
+            birthday = parse_birthday(datetime.isoformat())
 
         await self.bot.database.set_user_birthday(user_id=ctx.author.id, birthday=birthday)
         await ctx.reply(f"Your birthday is set to **{birthday}**.")

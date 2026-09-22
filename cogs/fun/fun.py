@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import colorsys
-import datetime
 import difflib
 import functools
 import html
@@ -12,10 +11,13 @@ import logging
 import math
 import random
 import re
+import secrets
 import string
+import uuid
 from collections import defaultdict
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
 
+import arrow
 import discord
 from colorama import Fore
 from discord.ext import commands
@@ -401,6 +403,116 @@ class Fun(commands.Cog, ColorHandler):
     def __init__(self, bot: Parrot):
         self.bot = bot
         _log.info("Cog loaded: %s", self.__class__.__name__)
+
+    @commands.group(name="random", invoke_without_command=True)
+    async def random_command(self, ctx: commands.Context[Parrot]):
+        """Some fun commands regarding RNG"""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @random_command.command(name="number", aliases=["num"])
+    async def random_number(
+        self,
+        ctx: commands.Context[Parrot],
+        minimum: int = commands.parameter(description="The minimum value for the random number.", default=1),
+        maximum: int = commands.parameter(description="The maximum value for the random number.", default=100),
+    ):
+        """Generate a random number between two values."""
+        if minimum > maximum:
+            minimum, maximum = maximum, minimum
+
+        await ctx.reply(f"\N{GAME DIE} **{random.randint(minimum, maximum)}**")
+
+    @random_command.command(name="coin", aliases=["flip"])
+    async def random_coin(self, ctx: commands.Context[Parrot]):
+        """Flip a coin."""
+        await ctx.reply(random.choice(["\N{COIN} **Heads!**", "\N{COIN} **Tails!**"]))
+
+    @random_command.command(name="choice", aliases=["choose", "pick"])
+    async def random_choice(self, ctx: commands.Context[Parrot], *options: str):
+        """Randomly choose between options separated by |."""
+        if len(options) < 2:
+            raise commands.BadArgument("Provide at least two choices separated by `|`.")
+
+        await ctx.reply(f"\N{DIRECT HIT} I choose **{random.choice(options)}**", allowed_mentions=discord.AllowedMentions.none())
+
+    @random_command.command(name="8ball", aliases=["eightball"])
+    async def random_8ball(self, ctx: commands.Context[Parrot], *, _: str):
+        """Ask the magic 8-ball a question."""
+        responses = [
+            "Yes.",
+            "No.",
+            "Definitely.",
+            "Absolutely not.",
+            "Maybe.",
+            "Probably.",
+            "Probably not.",
+            "Ask again later.",
+            "Without a doubt.",
+            "Very unlikely.",
+            "The signs point to yes.",
+            "The signs point to no.",
+            "I wouldn't count on it.",
+        ]
+
+        await ctx.reply(
+            f"\N{BILLIARDS} **Answer:** {random.choice(responses)}",
+        )
+
+    @random_command.command(name="chance")
+    async def random_chance(self, ctx: commands.Context[Parrot], *, thing: str):
+        """Generate a random chance for something."""
+        # need to make this deterministic based on the input, so that the same input always gives the same output
+        hash_value = hash(thing)
+        percent = abs(hash_value) % 101
+
+        await ctx.reply(f"\N{DIRECT HIT} The chance of **{thing}** happening is **{percent}%**.")
+
+    @random_command.command(name="rate")
+    async def random_rate(self, ctx: commands.Context[Parrot], *, thing: str):
+        """Give something a random rating out of 10."""
+        rating = random.randint(0, 100) / 10
+
+        await ctx.reply(f"\N{WHITE MEDIUM STAR} I rate **{thing}** **{rating:.1f}/10**.")
+
+    @random_command.command(name="member")
+    @commands.guild_only()
+    async def random_member(self, ctx: commands.Context[Parrot]):
+        """Pick a random member from the server."""
+        members = [member for member in ctx.guild.members if not member.bot]
+
+        random.shuffle(members)
+
+        member = random.choice(members)
+        await ctx.reply(f"\N{DIRECT HIT} Random member: {member.display_name} ({member.id})")
+
+    @random_command.command(name="password")
+    async def random_password(
+        self,
+        ctx: commands.Context[Parrot],
+        length: int = commands.parameter(description="The length of the password to generate.", default=8),
+    ):
+        """Generate a cryptographically secure random password."""
+        if not 8 <= length <= 128:
+            raise commands.BadArgument("Password length must be between 8 and 128.")
+
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        password = "".join(secrets.choice(alphabet) for _ in range(length))
+
+        await ctx.reply(f"\N{CLOSED LOCK WITH KEY} `{password}`")
+
+    @random_command.command(name="uuid")
+    async def random_uuid(self, ctx: commands.Context[Parrot]):
+        """Generate a random UUID."""
+
+        contents = [
+            "`UUID v1:` " + str(uuid.uuid1()),
+            "`UUID v4:` " + str(uuid.uuid4()),
+            "`UUID v6:` " + str(uuid.uuid6()),
+            "`UUID v7:` " + str(uuid.uuid7()),
+            "`UUID v8:` " + str(uuid.uuid8()),
+        ]
+        await ctx.reply("\n".join(contents))
 
     @commands.command(name="guess-the-number", aliases=["gtn"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -858,7 +970,7 @@ class Fun(commands.Cog, ColorHandler):
         # Don't put >>> if only embed present
         if converted_text:
             converted_text = f">>> {converted_text.lstrip('> ')}"
-        await ctx.send(content=converted_text)
+        await ctx.reply(content=converted_text)
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -905,15 +1017,15 @@ class Fun(commands.Cog, ColorHandler):
             description = html.unescape(question["question"])
             options_text = "\n".join(f"- {html.unescape(option)}" for option in options)
 
-            end_time = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=30)
-            relative_time = discord.utils.format_dt(end_time, style="R")
+            end_time = arrow.utcnow().shift(seconds=30)
+            relative_time = discord.utils.format_dt(end_time.datetime, style="R")
 
             embed = discord.Embed(
                 title=f"Question {index}",
                 description=(f"{description}\n\n**Options:**\n{options_text}\n\n-# Time left: {relative_time}"),
             )
 
-            question_message = await ctx.send(embed=embed)
+            question_message = await ctx.reply(embed=embed)
 
             answered_users: set[int] = set()
 
@@ -927,7 +1039,7 @@ class Fun(commands.Cog, ColorHandler):
                 try:
                     message = await self.bot.wait_for("message", check=check(answered_users), timeout=30.0)
                 except TimeoutError:
-                    await ctx.send(f"Time's up! The correct answer was: **{correct_answer}**")
+                    await ctx.reply(f"Time's up! The correct answer was: **{correct_answer}**")
                     break
 
                 user = message.author
@@ -939,7 +1051,7 @@ class Fun(commands.Cog, ColorHandler):
 
                 if similarity >= 0.9:
                     score_board[user] += 10
-                    await ctx.send(f"{user.mention} Correct! Your score: {score_board[user]}")
+                    await ctx.reply(f"{user.mention} Correct! Your score: {score_board[user]}")
 
                     embed.set_footer(text=f"{user} answered correctly!")
                     await question_message.edit(embed=embed)
@@ -948,7 +1060,7 @@ class Fun(commands.Cog, ColorHandler):
 
             if score_board:
                 scoreboard_embed = discord.Embed(title="Scoreboard", description="\n".join(f"{user}: {score}" for user, score in score_board.items()))
-                await ctx.send(embed=scoreboard_embed)
+                await ctx.reply(embed=scoreboard_embed)
 
         winner = None
         for user, score in score_board.items():
@@ -956,9 +1068,9 @@ class Fun(commands.Cog, ColorHandler):
                 winner = user
 
         if winner:
-            await ctx.send(f"Quiz finished! The winner is {winner.mention} with a score of {score_board[winner]}!")
+            await ctx.reply(f"Quiz finished! The winner is {winner.mention} with a score of {score_board[winner]}!")
         else:
-            await ctx.send("Quiz finished! No one scored any points.")
+            await ctx.reply("Quiz finished! No one scored any points.")
 
 
 async def setup(bot: Parrot) -> None:

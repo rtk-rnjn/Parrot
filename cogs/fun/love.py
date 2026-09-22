@@ -214,13 +214,12 @@ class Love(commands.Cog):
         zodiac = zodiac.capitalize()
         embed = discord.Embed(color=discord.Color.dark_magenta())
         if zodiac in self.zodiac_fact:
-            self._extracted_from_zodiac_build_embed_6(zodiac, embed)
+            self._build_zodiac_embed(zodiac, embed)
         else:
             embed = self.generate_invalidname_embed(zodiac)
         return embed
 
-    # TODO Rename this here and in `zodiac_build_embed`
-    def _extracted_from_zodiac_build_embed_6(self, zodiac: str, embed: discord.Embed):
+    def _build_zodiac_embed(self, zodiac: str, embed: discord.Embed):
         embed.title = f"__{zodiac}__"
         embed.description = self.zodiac_fact[zodiac]["About"]
         embed.add_field(name="__Motto__", value=self.zodiac_fact[zodiac]["Motto"], inline=False).add_field(

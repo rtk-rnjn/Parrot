@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import TYPE_CHECKING, Any, Self
-
+from typing import TYPE_CHECKING, Any
+import discord
 import arrow
 import dateparser
 from dateutil.relativedelta import relativedelta
@@ -57,7 +57,7 @@ def _parse_short(argument: str, now: arrow.Arrow) -> arrow.Arrow | None:
     data = {k: int(v or 0) for k, v in m.groupdict().items()}
     if not any(data.values()):
         return None
-    return now.shift(**data)
+    return now.shift(check_imaginary=True, **data)
 
 
 def _parse_discord_ts(argument: str, tzinfo: datetime.tzinfo) -> arrow.Arrow | None:
@@ -94,7 +94,7 @@ class ShortTime:
         self.dt = parsed.datetime
 
     @classmethod
-    async def convert(cls, ctx: commands.Context[Parrot], argument: str) -> Self:
+    async def convert(cls, ctx: commands.Context[Parrot], argument: str) -> ShortTime:
         tzinfo = datetime.UTC
         reminder = ctx.bot.reminder
         if reminder is not None:
@@ -134,7 +134,7 @@ class HumanTime:
         self._past = parsed <= base
 
     @classmethod
-    async def convert(cls, ctx: commands.Context[Parrot], argument: str) -> Self:
+    async def convert(cls, ctx: commands.Context[Parrot], argument: str) -> HumanTime:
         tzinfo = datetime.UTC
         reminder = ctx.bot.reminder
         if reminder is not None:
@@ -165,9 +165,9 @@ class BadTimeTransform(app_commands.AppCommandError):
 
 
 class TimeTransformer(app_commands.Transformer):
-    async def transform(self, interaction, value: str) -> datetime.datetime:
+    async def transform(self, interaction: discord.Interaction[Parrot], value: str) -> datetime.datetime:
         tzinfo = datetime.UTC
-        reminder = interaction.client.get_cog("Reminder")
+        reminder = interaction.client.reminder
         if reminder is not None:
             tzinfo = await reminder.get_tzinfo(interaction.user.id)
 
@@ -226,7 +226,7 @@ class UserFriendlyTime(commands.Converter):
         if m and m.group(0):
             data = {k: int(v or 0) for k, v in m.groupdict().items()}
             if any(data.values()):
-                dt = arrow.get(now).to(tzinfo).shift(**data).datetime
+                dt = arrow.get(now).to(tzinfo).shift(check_imaginary=True, **data).datetime
                 remaining = argument[m.end() :].strip()
                 r = FriendlyTimeResult(dt)
                 await r.ensure_constraints(ctx, self, now, remaining)

@@ -213,7 +213,7 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
     async def status_scam_links_command(self, ctx: commands.Context):
         """Check scam links detection status."""
         status = "stopped" if self.global_stop else "running"
-        await ctx.send(f"Scam links detection is currently **{status}**. Warned count: {self.warned_count}")
+        await ctx.reply(f"Scam links detection is currently **{status}**. Warned count: {self.warned_count}")
 
     @scam_links_command.command(name="check", hidden=True, aliases=["is_scam", "is_scam_link", "chk"])
     @commands.is_owner()

@@ -55,6 +55,8 @@ class AutomodConfig(TypedDict):
     word_allowlist: list[str]
     website_denylist: list[str]
     website_allowlist: list[str]
+
+    custom_lists: dict[str, list[str]]  # list_name -> list of items
     rules: list[Rule]
     logs: list[str]
 
@@ -170,6 +172,7 @@ class TicketConfig(TypedDict):
     bot_message_id: int | None
     bot_channel_channel_id: int | None
 
+
 class Events(TypedDict):
     # Members
     on_member_join: EventsConfig
@@ -203,6 +206,11 @@ class Events(TypedDict):
     on_member_move_voice: EventsConfig
 
 
+class ModeratorConfig(TypedDict):
+    moderator_role_ids: list[int]
+    moderator_logs_channel_id: int | None
+
+
 class GuildConfiguration(TypedDict):
     _id: DiscordId
     command_prefix: str
@@ -214,6 +222,9 @@ class GuildConfiguration(TypedDict):
 
     muted_members: list[int]
     violations: dict[str, dict[str, int]]  # violation_name -> {user_id -> count}
+    default_violation_expiration: int | None  # in seconds
+
+    moderator_config: ModeratorConfig
     automod: AutomodConfig
 
     leveling_config: LevelingConfig

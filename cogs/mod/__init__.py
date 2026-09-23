@@ -87,7 +87,7 @@ class ActionReason(commands.Converter):
 
     async def convert(self, ctx: commands.Context[Parrot], argument: str) -> str:
         """Build and validate an audit-log reason."""
-        ret = f"{ctx.author} (ID: {ctx.author.id}): {argument}"
+        ret = f"{ctx.author} ({ctx.author.id}): {argument}"
 
         if len(ret) > 512:
             reason_max = 512 - len(ret) + len(argument)
@@ -186,6 +186,17 @@ class MuteMetadata(TypedDict):
     reason: str | None
 
 
+_ACTION_META: dict[str, tuple[str, str, discord.Colour]] = {
+    "kick": ("\N{WOMANS BOOTS}", "Member Kicked", discord.Color.orange()),
+    "ban": ("\N{HAMMER}", "Member Banned", discord.Color.red()),
+    "unban": ("\N{DOVE OF PEACE}", "Member Unbanned", discord.Color.green()),
+    "mute": ("\N{SPEAKER WITH CANCELLATION STROKE}", "Member Muted", discord.Color.dark_orange()),
+    "unmute": ("\N{SPEAKER WITH THREE SOUND WAVES}", "Member Unmuted", discord.Color.green()),
+    "timeout": ("\N{HOURGLASS WITH FLOWING SAND}", "Member Timed Out", discord.Color.gold()),
+    "untimeout": ("\N{ALARM CLOCK}", "Timeout Removed", discord.Color.green()),
+}
+
+
 class Mod(commands.Cog):
     """Commands for moderators and administrators."""
 
@@ -218,6 +229,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
+        original_reason = reason
         if reason is None:
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
@@ -230,6 +242,14 @@ class Mod(commands.Cog):
             return await ctx.reply(error_message)
 
         await ctx.guild.kick(member, reason=reason)
+
+        await self.log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action="kick",
+            target=member,
+            reason=original_reason,
+        )
         return await ctx.reply(f"**{member}** (ID: {member.id}) has been kicked from the server.")
 
     @commands.command(name="ban", aliases=["hackban"])
@@ -263,6 +283,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
+        original_reason = reason
         if reason is None:
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
@@ -275,6 +296,15 @@ class Mod(commands.Cog):
             return await ctx.reply(error_message)
 
         await ctx.guild.ban(member, reason=reason)
+
+        await self.log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action="ban",
+            target=member,
+            reason=original_reason,
+        )
+
         if isinstance(member, discord.Object):
             return await ctx.reply(f"ID: {member.id} has been banned from the server.")
         else:
@@ -315,7 +345,10 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        reason = reason or f"{ctx.author} (ID: {ctx.author.id})"
+        original_reason = reason
+        if reason is None:
+            reason = f"{ctx.author} (ID: {ctx.author.id})"
+
         me = ctx.guild.me
 
         bannable, skipped = self._partition_bannable_members(members, me)
@@ -326,6 +359,14 @@ class Mod(commands.Cog):
             )
 
         result = await ctx.guild.bulk_ban(bannable, reason=reason)
+        await self.log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action="ban",
+            target=None,
+            targets=members,
+            reason=original_reason,
+        )
 
         success_count = len(result.banned)
         failure_count = len(result.failed)
@@ -445,10 +486,18 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
+        original_reason = reason
         if reason is None:
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
         await ctx.guild.unban(member.user, reason=reason)
+        await self.log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            target=member.user,
+            action="unban",
+            reason=original_reason,
+        )
         return await ctx.reply(f"**{member.user}** (ID: {member.user.id}) has been unbanned from the server.")
 
     @commands.command(name="timeout", aliases=["stfu"])
@@ -488,6 +537,7 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
+        original_reason = reason
         if reason is None:
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
@@ -500,14 +550,26 @@ class Mod(commands.Cog):
             return await ctx.reply(error_message)
 
         if duration is None or (duration and duration.dt > arrow.utcnow().shift(days=28)):
-            return await self.mute_using_role(ctx, member=member, duration=duration, reason=reason)
+            message = await self.mute_using_role(ctx, member=member, duration=duration, reason=reason)
+            action = "mute"
 
-        await member.timeout(duration.dt, reason=reason)
+        else:
+            await member.timeout(duration.dt, reason=reason)
+            relative_duration = discord.utils.format_dt(duration.dt, style="R")
+            response = f"**{member}** (ID: {member.id}) has been timed out. Expires: {relative_duration}."
+            message = await ctx.reply(response)
+            action = "timeout"
 
-        relative_duration = discord.utils.format_dt(duration.dt, style="R")
-        response = f"**{member}** (ID: {member.id}) has been timed out. Expires: {relative_duration}."
+        await self.log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action=action,
+            target=member,
+            reason=original_reason,
+            duration=duration.dt if duration else None,
+        )
 
-        return await ctx.reply(response)
+        return message
 
     @commands.command(name="unmute")
     @commands.has_permissions(moderate_members=True)
@@ -535,26 +597,38 @@ class Mod(commands.Cog):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
+        original_reason = reason
         if reason is None:
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
         if member.timed_out_until is not None:
             await member.timeout(None, reason=reason)
-            return await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
+            message = await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
+            action = "untimeout"
+        else:
+            mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
+            mute_role = ctx.guild.get_role(mute_role_id) if mute_role_id else None
 
-        mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
-        if mute_role_id is None:
-            return await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
+            if mute_role is None:
+                message = await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
+            else:
+                await ctx.bot.database.remove_muted_member(guild_id=ctx.guild.id, member_id=member.id)
+                await ctx.bot.event_scheduler.delete(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
+                await member.remove_roles(mute_role, reason=reason)
 
-        mute_role = ctx.guild.get_role(mute_role_id) if mute_role_id else None
-        if mute_role is None:
-            return await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
+                message = await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
 
-        await ctx.bot.database.remove_muted_member(guild_id=ctx.guild.id, member_id=member.id)
-        await ctx.bot.event_scheduler.delete(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
-        await member.remove_roles(mute_role, reason=reason)
+                action = "unmute"
 
-        return await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
+        await self.log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action=action,
+            target=member,
+            reason=original_reason,
+        )
+
+        return message
 
     async def mute_using_role(
         self,
@@ -1386,6 +1460,129 @@ class Mod(commands.Cog):
             return await ctx.reply(f"Failed to remove the role **{role}** (ID: {role.id}) from {member} due to insufficient permissions.")
         except discord.HTTPException as e:
             return await ctx.reply(f"Failed to remove the role **{role}** (ID: {role.id}) from {member} due to an error: {e}.")
+
+    @commands.group(name="mod", invoke_without_command=True)
+    async def mod(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
+        """Manage moderation settings in the server.
+
+        This command allows you to manage moderation settings in the server,
+        including automod rules, mute roles, and other moderation-related
+        configurations. You must have Manage Server permissions to use this
+        command.
+        """
+        if ctx.invoked_subcommand is None:
+            return await ctx.send_help(ctx.command)
+
+    @mod.command(name="set-logs", aliases=["set_logs", "setlog", "set_log"])
+    @commands.has_permissions(manage_guild=True)
+    async def set_mod_log(self, ctx: commands.Context[Parrot], *, channel: discord.TextChannel) -> discord.Message:
+        """Set the moderation log channel for the server.
+
+        This command sets the specified text channel as the moderation log
+        channel for the server. All moderation actions will be logged in this
+        channel.
+
+        You must have Manage Server permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        await self.bot.database.edit_moderator_config(guild_id=ctx.guild.id, moderator_logs_channel_id=channel.id)
+        return await ctx.reply(f"Successfully set the moderation log channel to {channel.mention} (ID: {channel.id}).")
+
+    @mod.command(name="unset-logs", aliases=["unset_logs", "unsetlog", "unset_log"])
+    @commands.has_permissions(manage_guild=True)
+    async def unset_mod_log(self, ctx: commands.Context[Parrot]) -> discord.Message:
+        """Unset the moderation log channel for the server.
+
+        This command unsets the moderation log channel for the server.
+
+        You must have Manage Server permissions to use this command.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        await self.bot.database.edit_moderator_config(guild_id=ctx.guild.id, moderator_logs_channel_id=None)
+        return await ctx.reply("Successfully unset the moderation log channel.")
+
+    async def log[T: discord.Member | discord.User | discord.Object](
+        self,
+        *,
+        guild: discord.Guild,
+        responsible_moderator: discord.Member | discord.User,
+        action: Literal["kick", "ban", "unban", "mute", "unmute", "timeout", "untimeout"],
+        target: T | None,
+        targets: list[T] | None = None,
+        reason: str | None = discord.utils.MISSING,
+        duration: datetime.datetime | None = discord.utils.MISSING,
+    ) -> None:
+        """Log a moderation action to the moderation log channel."""
+        moderator_logs_channel_id = await self.bot.database.get_moderator_logs_channel_id(guild_id=guild.id)
+        if moderator_logs_channel_id is None:
+            _log.warning("Moderation log channel not set for guild: %s", guild.id)
+            return
+
+        mod_log_channel = guild.get_channel(moderator_logs_channel_id)
+        if mod_log_channel is None or not isinstance(mod_log_channel, discord.TextChannel):
+            _log.warning("Moderation log channel not found or not a text channel for guild: %s", guild.id)
+            return
+
+        emoji, title, color = _ACTION_META.get(
+            action,
+            ("\N{SHIELD}", action.replace("_", " ").title(), discord.Color.blurple()),
+        )
+
+        has_profile = isinstance(target, (discord.Member, discord.User))
+        if has_profile:
+            target_line = f"{target.mention}\n`{target}` • ID: `{target.id}`"
+        elif target is not None:
+            target_line = f"<@{target.id}>\nID: `{target.id}`"
+        else:
+            target_line = "*Not applicable*"
+
+        if targets is not None:
+            target_lines = []
+            for t in targets:
+                if isinstance(t, (discord.Member, discord.User)):
+                    target_lines.append(f"{t.mention}\n`{t}` • ID: `{t.id}`")
+                else:
+                    target_lines.append(f"<@{t.id}>\nID: `{t.id}`")
+            target_line = "\n".join(target_lines)
+            if len(target_lines) > 5:
+                target_line = "\n".join(target_lines[:5]) + f"\n...and {len(target_lines) - 5} more."
+
+        embed = discord.Embed(
+            title=f"{emoji} - {title}",
+            color=color,
+            timestamp=discord.utils.utcnow(),
+        )
+        embed.set_author(name=str(responsible_moderator), icon_url=responsible_moderator.display_avatar.url)
+
+        if has_profile:
+            embed.set_thumbnail(url=target.display_avatar.url)
+
+        embed.add_field(name="Target", value=target_line, inline=True)
+        embed.add_field(
+            name="Moderator",
+            value=f"{responsible_moderator.mention}\nID: `{responsible_moderator.id}`",
+            inline=True,
+        )
+
+        if duration is not discord.utils.MISSING:
+            embed.add_field(
+                name="Expiration",
+                value=discord.utils.format_dt(duration, "R") if duration is not None else "*No duration specified.*",
+                inline=True,
+            )
+
+        embed.add_field(name="Reason", value=reason or "*No reason provided.*", inline=False)
+
+        embed.set_footer(
+            text=guild.name,
+            icon_url=guild.icon.url if guild.icon else None,
+        )
+
+        await mod_log_channel.send(embed=embed)
 
 
 async def setup(bot: Parrot) -> None:

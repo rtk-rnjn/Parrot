@@ -33,13 +33,30 @@ class BaseView(discord.ui.View):
 class BaseLayoutView(discord.ui.LayoutView):
     message: discord.Message
 
-    def __init__(self, author: discord.Member | discord.User, *, timeout: float | None = None):
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        timeout: float | None = None,
+        required_permission: discord.Permissions | None = None,
+    ):
         super().__init__(timeout=timeout)
         self.author = author
+        self.required_permission = required_permission
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id == self.author.id:
             return True
+
+        if isinstance(interaction.user, discord.Member) and self.required_permission:
+            if interaction.user.guild_permissions >= self.required_permission:
+                return True
+            else:
+                await interaction.response.send_message(
+                    "You do not have the required permissions to interact with this view.",
+                    ephemeral=True,
+                )
+                return False
 
         await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
         return False

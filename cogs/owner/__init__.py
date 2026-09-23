@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 import traceback
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
 import discord
 from colorama import Fore
@@ -16,6 +17,77 @@ if TYPE_CHECKING:
 
 
 _log = logging.getLogger("bot.cogs.owner")
+
+# Shared accent colors so every dashboard for a given backend looks the same.
+_REDIS_COLOR = discord.Color.red()
+_MONGO_COLOR = discord.Color.blurple()
+_ONLINE_COLOR = discord.Color.green()
+_OFFLINE_COLOR = discord.Color.red()
+
+
+def _dashboard(
+    *,
+    title: str,
+    accent_color: discord.Color,
+    blocks: Sequence[str],
+    footer: str | None = None,
+) -> discord.ui.LayoutView:
+    """Build a small, read-only Components V2 "dashboard" message.
+
+    This is the Components V2 replacement for the old ``discord.Embed`` +
+    ``add_field`` pattern: ``title`` becomes the header text, each entry in
+    ``blocks`` becomes its own markdown section separated by a divider, and
+    ``footer`` (if given) is rendered as small text at the bottom, mirroring
+    an embed's footer.
+    """
+    items: list[discord.ui.Item[Any]] = [discord.ui.TextDisplay(title)]
+
+    for index, block in enumerate(blocks):
+        spacing = discord.SeparatorSpacing.large if index == 0 else discord.SeparatorSpacing.small
+        items.append(discord.ui.Separator(spacing=spacing))
+        items.append(discord.ui.TextDisplay(block))
+
+    if footer:
+        items.append(discord.ui.Separator(spacing=discord.SeparatorSpacing.small))
+        items.append(discord.ui.TextDisplay(f"-# {footer}"))
+
+    view = discord.ui.LayoutView()
+    view.add_item(discord.ui.Container(*items, accent_color=accent_color))
+    return view
+
+
+def _error_dashboard(system: str, exc: Exception) -> discord.ui.LayoutView:
+    """Build a small red dashboard for a caught exception."""
+    return _dashboard(
+        title=f"## \N{CROSS MARK} {system} Error",
+        accent_color=_OFFLINE_COLOR,
+        blocks=[f"```py\n{type(exc).__name__}: {exc}\n```"],
+    )
+
+
+def _status_dashboard(*, online: bool, system: str, message: str) -> discord.ui.LayoutView:
+    """Build a small pass/fail dashboard, e.g. for a ping check."""
+    icon = "\N{LARGE GREEN CIRCLE}" if online else "\N{LARGE RED CIRCLE}"
+    return _dashboard(
+        title=f"## {icon} {system}",
+        accent_color=_ONLINE_COLOR if online else _OFFLINE_COLOR,
+        blocks=[message],
+    )
+
+
+def _field(emoji: str, name: str, value: str) -> str:
+    """Render a single markdown "field", the CV2 equivalent of an embed field."""
+    return f"### {emoji} {name}\n{value}"
+
+
+def _kv_lines(rows: Sequence[tuple[str, str]]) -> str:
+    """Render (label, value) pairs as a compact bullet list."""
+    return "\n".join(f"- **{label}:** {value}" for label, value in rows)
+
+
+def _footer(ctx: commands.Context) -> str:
+    ts = int(discord.utils.utcnow().timestamp())
+    return f"Requested by {ctx.author} \N{BULLET} <t:{ts}:R>"
 
 
 class Owner(commands.Cog, command_attrs={"hidden": True}):
@@ -39,7 +111,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @commands.is_owner()
     async def redis_repl(self, ctx: commands.Context[Parrot]) -> None:
         """Start a Redis REPL session."""
-        await ctx.reply("Starting Redis REPL session. Type `exit` to quit.")
+        await ctx.reply("\N{VIDEO GAME} Starting Redis REPL session. Type `exit` to quit.")
 
         def check(m: discord.Message) -> bool:
             return m.author == ctx.author and m.channel == ctx.channel
@@ -48,18 +120,18 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=300)
             except TimeoutError:
-                await ctx.reply("Redis REPL session timed out.")
+                await ctx.reply("\N{ALARM CLOCK} Redis REPL session timed out.")
                 break
 
             if msg.content.lower() == "exit":
-                await msg.reply("Exiting Redis REPL session.")
+                await msg.reply("\N{WAVING HAND SIGN} Exiting Redis REPL session.")
                 break
 
             codeblock = codeblock_converter(msg.content)
             try:
                 result = await self.bot.database.redis_client.execute_command(codeblock.content)
                 if len(str(result)) > 1980:
-                    await msg.reply("Result is too long to display.")
+                    await msg.reply("\N{WARNING SIGN} Result is too long to display.")
                 else:
                     await msg.reply(f"```py\n{result}```")
             except Exception as e:
@@ -87,13 +159,15 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             result = await self.bot.database.redis_client.ping()
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         await ctx.reply(
-            "Redis is online." if result else "Redis returned an unexpected response.",
+            view=_status_dashboard(
+                online=bool(result),
+                system="Redis",
+                message=("Redis is online and responding to `PING`." if result else "Redis responded, but not with the expected result."),
+            ),
         )
 
     @redis.command(name="status")
@@ -104,9 +178,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await redis.info()
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         server = info.get("Server", {})
@@ -114,52 +186,41 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         memory = info.get("Memory", {})
         stats = info.get("Stats", {})
 
-        embed = discord.Embed(
-            title="Redis Status",
-            color=discord.Color.red(),
-        )
-
-        embed.add_field(
-            name="Server",
-            value=(
-                f"Version: `{server.get('redis_version', 'unknown')}`\n"
-                f"Mode: `{server.get('redis_mode', 'unknown')}`\n"
-                f"OS: `{server.get('os', 'unknown')}`"
+        server_block = _field(
+            "\N{DESKTOP COMPUTER}",
+            "Server",
+            _kv_lines(
+                [
+                    ("Version", f"`{server.get('redis_version', 'unknown')}`"),
+                    ("Mode", f"`{server.get('redis_mode', 'unknown')}`"),
+                    ("OS", f"`{server.get('os', 'unknown')}`"),
+                ],
             ),
-            inline=False,
         )
 
-        embed.add_field(
-            name="Uptime",
-            value=(f"`{self._format_duration(server.get('uptime_in_seconds', 0))}`"),
+        stats_block = _field(
+            "\N{BAR CHART}",
+            "Live Stats",
+            _kv_lines(
+                [
+                    ("Uptime", f"`{self._format_duration(server.get('uptime_in_seconds', 0))}`"),
+                    ("Clients", f"`{clients.get('connected_clients', 0):,}`"),
+                    ("Memory", self._format_bytes(memory.get("used_memory", 0))),
+                    ("Peak Memory", self._format_bytes(memory.get("used_memory_peak", 0))),
+                    ("Commands", f"`{stats.get('total_commands_processed', 0):,}`"),
+                    ("Ops/sec", f"`{stats.get('instantaneous_ops_per_sec', 0):,}`"),
+                ],
+            ),
         )
 
-        embed.add_field(
-            name="Clients",
-            value=f"`{clients.get('connected_clients', 0):,}`",
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{ELECTRIC PLUG} Redis Status",
+                accent_color=_REDIS_COLOR,
+                blocks=[server_block, stats_block],
+                footer=_footer(ctx),
+            ),
         )
-
-        embed.add_field(
-            name="Memory",
-            value=self._format_bytes(memory.get("used_memory", 0)),
-        )
-
-        embed.add_field(
-            name="Peak Memory",
-            value=self._format_bytes(memory.get("used_memory_peak", 0)),
-        )
-
-        embed.add_field(
-            name="Commands",
-            value=f"`{stats.get('total_commands_processed', 0):,}`",
-        )
-
-        embed.add_field(
-            name="Ops/sec",
-            value=f"`{stats.get('instantaneous_ops_per_sec', 0):,}`",
-        )
-
-        await ctx.reply(embed=embed)
 
     @redis.command(name="memory")
     async def redis_memory(self, ctx: commands.Context) -> None:
@@ -167,19 +228,13 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await self.bot.database.redis_client.info("memory")
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         memory = info.get("Memory", info)
 
-        embed = discord.Embed(
-            title="Redis Memory",
-            color=discord.Color.red(),
-        )
-
-        fields = (
+        usage_rows: list[tuple[str, str]] = []
+        for name, key in (
             ("Used", "used_memory"),
             ("Peak", "used_memory_peak"),
             ("RSS", "used_memory_rss"),
@@ -187,31 +242,29 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             ("Functions", "used_memory_functions"),
             ("Dataset", "used_memory_dataset"),
             ("Overhead", "used_memory_overhead"),
-        )
-
-        for name, key in fields:
+        ):
             if key in memory:
-                embed.add_field(
-                    name=name,
-                    value=self._format_bytes(memory[key]),
-                    inline=True,
-                )
+                usage_rows.append((name, self._format_bytes(memory[key])))
 
+        blocks = [_field("\N{FLOPPY DISK}", "Usage", _kv_lines(usage_rows))]
+
+        limit_rows: list[tuple[str, str]] = []
         if "maxmemory" in memory:
-            embed.add_field(
-                name="Max Memory",
-                value=self._format_bytes(memory["maxmemory"]),
-                inline=True,
-            )
-
+            limit_rows.append(("Max Memory", self._format_bytes(memory["maxmemory"])))
         if "mem_fragmentation_ratio" in memory:
-            embed.add_field(
-                name="Fragmentation",
-                value=f"`{memory['mem_fragmentation_ratio']:.2f}`",
-                inline=True,
-            )
+            limit_rows.append(("Fragmentation", f"`{memory['mem_fragmentation_ratio']:.2f}`"))
 
-        await ctx.reply(embed=embed)
+        if limit_rows:
+            blocks.append(_field("\N{ROCKET}", "Limits", _kv_lines(limit_rows)))
+
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{FLOPPY DISK} Redis Memory",
+                accent_color=_REDIS_COLOR,
+                blocks=blocks,
+                footer=_footer(ctx),
+            ),
+        )
 
     @redis.command(name="clients")
     async def redis_clients(self, ctx: commands.Context) -> None:
@@ -219,41 +272,34 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await self.bot.database.redis_client.info("clients")
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         clients = info.get("Clients", info)
 
-        embed = discord.Embed(
-            title="Redis Clients",
-            color=discord.Color.red(),
-        )
-
-        fields = (
+        rows: list[tuple[str, str]] = []
+        for name, key in (
             ("Connected", "connected_clients"),
             ("Blocked", "blocked_clients"),
             ("Tracking", "tracking_clients"),
             ("Watching", "watched_clients"),
             ("Max Input Buffer", "client_recent_max_input_buffer"),
             ("Max Output Buffer", "client_recent_max_output_buffer"),
-        )
-
-        for name, key in fields:
+        ):
             value = clients.get(key)
+            if value is None:
+                continue
+            value = self._format_bytes(value) if "Buffer" in name else f"`{value}`"
+            rows.append((name, value))
 
-            if value is not None:
-                if "Buffer" in name:
-                    value = self._format_bytes(value)
-
-                embed.add_field(
-                    name=name,
-                    value=f"`{value}`",
-                    inline=True,
-                )
-
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{BUSTS IN SILHOUETTE} Redis Clients",
+                accent_color=_REDIS_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
+        )
 
     @redis.command(name="stats")
     async def redis_stats(self, ctx: commands.Context) -> None:
@@ -261,19 +307,13 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await self.bot.database.redis_client.info("stats")
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         stats = info.get("Stats", info)
 
-        embed = discord.Embed(
-            title="Redis Statistics",
-            color=discord.Color.red(),
-        )
-
-        fields = (
+        rows: list[tuple[str, str]] = []
+        for name, key in (
             ("Commands Processed", "total_commands_processed"),
             ("Ops/sec", "instantaneous_ops_per_sec"),
             ("Connections Received", "total_connections_received"),
@@ -284,15 +324,9 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             ("Keyspace Misses", "keyspace_misses"),
             ("Pub/Sub Channels", "pubsub_channels"),
             ("Pub/Sub Patterns", "pubsub_patterns"),
-        )
-
-        for name, key in fields:
+        ):
             if key in stats:
-                embed.add_field(
-                    name=name,
-                    value=f"`{stats[key]:,}`",
-                    inline=True,
-                )
+                rows.append((name, f"`{stats[key]:,}`"))
 
         hits = stats.get("keyspace_hits", 0)
         misses = stats.get("keyspace_misses", 0)
@@ -300,14 +334,16 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         if total:
             hit_rate = hits / total * 100
+            rows.append(("Cache Hit Rate", f"`{hit_rate:.2f}%`"))
 
-            embed.add_field(
-                name="Cache Hit Rate",
-                value=f"`{hit_rate:.2f}%`",
-                inline=True,
-            )
-
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{BAR CHART} Redis Statistics",
+                accent_color=_REDIS_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
+        )
 
     @redis.command(name="keyspace")
     async def redis_keyspace(self, ctx: commands.Context) -> None:
@@ -315,41 +351,47 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await self.bot.database.redis_client.info("keyspace")
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         keyspace = info.get("Keyspace", info)
 
-        embed = discord.Embed(
-            title="Redis Keyspace",
-            color=discord.Color.red(),
-        )
-
         if not keyspace:
-            embed.description = "No databases contain keys."
-            await ctx.reply(embed=embed)
-            return
+            blocks = ["No databases currently contain keys."]
+        else:
+            blocks = []
+            for database, data in keyspace.items():
+                if isinstance(data, dict):
+                    keys = data.get("keys", 0)
+                    expires = data.get("expires", 0)
+                    avg_ttl = data.get("avg_ttl", 0)
+                else:
+                    # Compatibility with clients that expose the raw
+                    # `db0:keys=10,expires=2,avg_ttl=...` representation.
+                    keys = expires = avg_ttl = 0
 
-        for database, data in keyspace.items():
-            if isinstance(data, dict):
-                keys = data.get("keys", 0)
-                expires = data.get("expires", 0)
-                avg_ttl = data.get("avg_ttl", 0)
+                blocks.append(
+                    _field(
+                        "\N{FILE CABINET}",
+                        database,
+                        _kv_lines(
+                            [
+                                ("Keys", f"`{keys:,}`"),
+                                ("Expires", f"`{expires:,}`"),
+                                ("Avg TTL", f"`{avg_ttl:,} ms`"),
+                            ],
+                        ),
+                    ),
+                )
 
-            else:
-                # Compatibility with clients that expose the raw
-                # `db0:keys=10,expires=2,avg_ttl=...` representation.
-                keys = expires = avg_ttl = 0
-
-            embed.add_field(
-                name=database,
-                value=(f"Keys: `{keys:,}`\nExpires: `{expires:,}`\nAvg TTL: `{avg_ttl:,} ms`"),
-                inline=True,
-            )
-
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{OLD KEY} Redis Keyspace",
+                accent_color=_REDIS_COLOR,
+                blocks=blocks,
+                footer=_footer(ctx),
+            ),
+        )
 
     @redis.command(name="persistence")
     async def redis_persistence(self, ctx: commands.Context) -> None:
@@ -357,37 +399,44 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await self.bot.database.redis_client.info("persistence")
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         persistence = info.get("Persistence", info)
 
-        embed = discord.Embed(
-            title="Redis Persistence",
-            color=discord.Color.red(),
+        rdb_block = _field(
+            "\N{FLOPPY DISK}",
+            "RDB",
+            _kv_lines(
+                [
+                    ("Last save", f"`{persistence.get('rdb_last_save_time', 0)}`"),
+                    ("Changes since save", f"`{persistence.get('rdb_changes_since_last_save', 0):,}`"),
+                    ("Last save status", f"`{persistence.get('rdb_last_bgsave_status', 'unknown')}`"),
+                    ("Save in progress", f"`{bool(persistence.get('rdb_bgsave_in_progress', 0))}`"),
+                ],
+            ),
         )
 
-        rdb = (
-            f"Last save: `{persistence.get('rdb_last_save_time', 0)}`\n"
-            f"Changes since save: `{persistence.get('rdb_changes_since_last_save', 0):,}`\n"
-            f"Last save status: `{persistence.get('rdb_last_bgsave_status', 'unknown')}`\n"
-            f"Save in progress: `{bool(persistence.get('rdb_bgsave_in_progress', 0))}`"
+        aof_block = _field(
+            "\N{SCROLL}",
+            "AOF",
+            _kv_lines(
+                [
+                    ("Enabled", f"`{bool(persistence.get('aof_enabled', 0))}`"),
+                    ("Rewrite in progress", f"`{bool(persistence.get('aof_rewrite_in_progress', 0))}`"),
+                    ("Pending rewrite", f"`{bool(persistence.get('aof_rewrite_scheduled', 0))}`"),
+                ],
+            ),
         )
 
-        aof = (
-            f"Enabled: `{bool(persistence.get('aof_enabled', 0))}`\n"
-            f"Rewrite in progress: "
-            f"`{bool(persistence.get('aof_rewrite_in_progress', 0))}`\n"
-            f"Pending rewrite: "
-            f"`{bool(persistence.get('aof_rewrite_scheduled', 0))}`"
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{PACKAGE} Redis Persistence",
+                accent_color=_REDIS_COLOR,
+                blocks=[rdb_block, aof_block],
+                footer=_footer(ctx),
+            ),
         )
-
-        embed.add_field(name="RDB", value=rdb, inline=False)
-        embed.add_field(name="AOF", value=aof, inline=False)
-
-        await ctx.reply(embed=embed)
 
     @redis.command(name="replication")
     async def redis_replication(self, ctx: commands.Context) -> None:
@@ -395,9 +444,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             info = await self.bot.database.redis_client.info("replication")
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         replication = info.get("Replication", info)
@@ -405,49 +452,68 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         role = replication.get("role", "unknown")
         connected_slaves = replication.get("connected_slaves", 0)
 
-        embed = discord.Embed(
-            title="Redis Replication",
-            color=discord.Color.red(),
+        summary_block = _field(
+            "\N{CROWN}" if role == "master" else "\N{LINK SYMBOL}",
+            "Replication",
+            _kv_lines(
+                [
+                    ("Role", f"`{role}`"),
+                    ("Connected Replicas", f"`{connected_slaves}`"),
+                ],
+            ),
         )
-
-        embed.add_field(
-            name="Role",
-            value=f"`{role}`",
-        )
-
-        embed.add_field(
-            name="Connected Replicas",
-            value=f"`{connected_slaves}`",
-        )
+        blocks = [summary_block]
 
         if role == "master":
+            replica_entries: list[str] = []
             for index in range(connected_slaves):
                 replica = replication.get(f"slave{index}")
 
-                if replica:
-                    embed.add_field(
-                        name=f"Replica {index}",
-                        value=(
-                            f"Host: `{replica.get('ip', 'unknown')}`\n"
-                            f"Port: `{replica.get('port', 'unknown')}`\n"
-                            f"State: `{replica.get('state', 'unknown')}`\n"
-                            f"Offset: `{replica.get('offset', 0):,}`"
-                        ),
-                        inline=False,
-                    )
+                if not replica:
+                    continue
 
+                replica_entries.append(
+                    f"**Replica {index}**\n"
+                    + _kv_lines(
+                        [
+                            ("Host", f"`{replica.get('ip', 'unknown')}`"),
+                            ("Port", f"`{replica.get('port', 'unknown')}`"),
+                            ("State", f"`{replica.get('state', 'unknown')}`"),
+                            ("Offset", f"`{replica.get('offset', 0):,}`"),
+                        ],
+                    ),
+                )
+
+            blocks.append(
+                _field(
+                    "\N{ANTENNA WITH BARS}",
+                    "Replicas",
+                    "\n\n".join(replica_entries) if replica_entries else "No replicas currently connected.",
+                ),
+            )
         else:
-            master_host = replication.get("master_host", "unknown")
-            master_port = replication.get("master_port", "unknown")
-            master_link = replication.get("master_link_status", "unknown")
-
-            embed.add_field(
-                name="Master",
-                value=(f"Host: `{master_host}`\nPort: `{master_port}`\nLink: `{master_link}`"),
-                inline=False,
+            blocks.append(
+                _field(
+                    "\N{LINK SYMBOL}",
+                    "Master",
+                    _kv_lines(
+                        [
+                            ("Host", f"`{replication.get('master_host', 'unknown')}`"),
+                            ("Port", f"`{replication.get('master_port', 'unknown')}`"),
+                            ("Link", f"`{replication.get('master_link_status', 'unknown')}`"),
+                        ],
+                    ),
+                ),
             )
 
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{TWISTED RIGHTWARDS ARROWS} Redis Replication",
+                accent_color=_REDIS_COLOR,
+                blocks=blocks,
+                footer=_footer(ctx),
+            ),
+        )
 
     @redis.command(name="config")
     async def redis_config(
@@ -458,7 +524,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         """Show a Redis configuration value."""
         if not parameter:
             await ctx.reply(
-                "Specify a configuration parameter, e.g. `redis config maxmemory`.",
+                "\N{INFORMATION SOURCE} Specify a configuration parameter, e.g. `redis config maxmemory`.",
             )
             return
 
@@ -467,18 +533,23 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 parameter,
             )
         except Exception as exc:
-            await ctx.reply(
-                f"Redis error: `{type(exc).__name__}: {exc}`",
-            )
+            await ctx.reply(view=_error_dashboard("Redis", exc))
             return
 
         if not result:
-            await ctx.reply(f"No configuration value found for `{parameter}`.")
+            await ctx.reply(f"\N{CROSS MARK} No configuration value found for `{parameter}`.")
             return
 
-        lines = [f"`{key}` = `{value}`" for key, value in result.items()]
+        rows = [(key, f"`{value}`") for key, value in result.items()]
 
-        await ctx.reply("\n".join(lines))
+        await ctx.reply(
+            view=_dashboard(
+                title=f"## \N{GEAR} Redis Config \N{EM DASH} `{parameter}`",
+                accent_color=_REDIS_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
+        )
 
     @staticmethod
     def _format_duration(seconds: int | float) -> str:
@@ -516,11 +587,16 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             result = await self.bot.database.mongo_client.admin.command("ping")
         except Exception as exc:
-            await ctx.reply(f"MongoDB error: `{type(exc).__name__}: {exc}`")
+            await ctx.reply(view=_error_dashboard("MongoDB", exc))
             return
 
+        ok_value = result.get("ok", 0)
         await ctx.reply(
-            f"MongoDB is online. `ok={result.get('ok', 0)}`",
+            view=_status_dashboard(
+                online=bool(ok_value),
+                system="MongoDB",
+                message=f"MongoDB is online. `ok={ok_value}`",
+            ),
         )
 
     @mongodb.command(name="status")
@@ -533,49 +609,73 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         network = status.get("network", {})
         operations = status.get("opcounters", {})
 
-        embed = {
-            "title": "MongoDB Server Status",
-            "description": (
-                f"**Host:** `{status.get('host', 'unknown')}`\n"
-                f"**Version:** `{status.get('version', 'unknown')}`\n"
-                f"**Process:** `{status.get('process', 'unknown')}`\n"
-                f"**Uptime:** `{status.get('uptime', 0):,.0f}s`"
+        instance_block = _field(
+            "\N{DESKTOP COMPUTER}",
+            "Instance",
+            _kv_lines(
+                [
+                    ("Host", f"`{status.get('host', 'unknown')}`"),
+                    ("Version", f"`{status.get('version', 'unknown')}`"),
+                    ("Process", f"`{status.get('process', 'unknown')}`"),
+                    ("Uptime", f"`{status.get('uptime', 0):,.0f}s`"),
+                ],
             ),
-            "fields": [
-                (
-                    "Connections",
-                    (f"Current: `{connections.get('current', 0):,}`\nAvailable: `{connections.get('available', 0):,}`"),
-                ),
-                (
-                    "Memory",
-                    (f"Resident: `{memory.get('resident', 0):,} MB`\nVirtual: `{memory.get('virtual', 0):,} MB`"),
-                ),
-                (
-                    "Network",
-                    (f"In: `{network.get('bytesIn', 0):,}` bytes\nOut: `{network.get('bytesOut', 0):,}` bytes"),
-                ),
-                (
-                    "Operations",
-                    (
-                        f"Queries: `{operations.get('query', 0):,}`\n"
-                        f"Inserts: `{operations.get('insert', 0):,}`\n"
-                        f"Updates: `{operations.get('update', 0):,}`\n"
-                        f"Deletes: `{operations.get('delete', 0):,}`"
-                    ),
-                ),
-            ],
-        }
-
-        message = discord.Embed(
-            title=embed["title"],
-            description=embed["description"],
-            color=discord.Color.blurple(),
         )
 
-        for name, value in embed["fields"]:
-            message.add_field(name=name, value=value)
+        connections_block = _field(
+            "\N{ELECTRIC PLUG}",
+            "Connections",
+            _kv_lines(
+                [
+                    ("Current", f"`{connections.get('current', 0):,}`"),
+                    ("Available", f"`{connections.get('available', 0):,}`"),
+                ],
+            ),
+        )
 
-        await ctx.reply(embed=message)
+        memory_block = _field(
+            "\N{FLOPPY DISK}",
+            "Memory",
+            _kv_lines(
+                [
+                    ("Resident", f"`{memory.get('resident', 0):,} MB`"),
+                    ("Virtual", f"`{memory.get('virtual', 0):,} MB`"),
+                ],
+            ),
+        )
+
+        network_block = _field(
+            "\N{GLOBE WITH MERIDIANS}",
+            "Network",
+            _kv_lines(
+                [
+                    ("In", f"`{network.get('bytesIn', 0):,}` bytes"),
+                    ("Out", f"`{network.get('bytesOut', 0):,}` bytes"),
+                ],
+            ),
+        )
+
+        operations_block = _field(
+            "\N{GEAR}",
+            "Operations",
+            _kv_lines(
+                [
+                    ("Queries", f"`{operations.get('query', 0):,}`"),
+                    ("Inserts", f"`{operations.get('insert', 0):,}`"),
+                    ("Updates", f"`{operations.get('update', 0):,}`"),
+                    ("Deletes", f"`{operations.get('delete', 0):,}`"),
+                ],
+            ),
+        )
+
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{LEAF FLUTTERING IN WIND} MongoDB Server Status",
+                accent_color=_MONGO_COLOR,
+                blocks=[instance_block, connections_block, memory_block, network_block, operations_block],
+                footer=_footer(ctx),
+            ),
+        )
 
     @mongodb.command(name="connections")
     async def mongodb_connections(self, ctx: commands.Context) -> None:
@@ -584,25 +684,25 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         connections = status.get("connections", {})
 
-        embed = discord.Embed(
-            title="MongoDB Connections",
-            color=discord.Color.blurple(),
-        )
-
-        for name, key in (
-            ("Current", "current"),
-            ("Available", "available"),
-            ("Total Created", "totalCreated"),
-            ("Active", "active"),
-            ("Rejected", "rejected"),
-        ):
-            embed.add_field(
-                name=name,
-                value=f"`{connections.get(key, 0):,}`",
-                inline=True,
+        rows = [
+            (name, f"`{connections.get(key, 0):,}`")
+            for name, key in (
+                ("Current", "current"),
+                ("Available", "available"),
+                ("Total Created", "totalCreated"),
+                ("Active", "active"),
+                ("Rejected", "rejected"),
             )
+        ]
 
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{ELECTRIC PLUG} MongoDB Connections",
+                accent_color=_MONGO_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
+        )
 
     @mongodb.command(name="operations")
     async def mongodb_operations(self, ctx: commands.Context) -> None:
@@ -611,26 +711,16 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         operations = status.get("opcounters", {})
 
-        embed = discord.Embed(
-            title="MongoDB Operations",
-            color=discord.Color.blurple(),
+        rows = [(name.capitalize(), f"`{operations.get(name, 0):,}`") for name in ("insert", "query", "update", "delete", "getmore", "command")]
+
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{GEAR} MongoDB Operations",
+                accent_color=_MONGO_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
         )
-
-        for name in (
-            "insert",
-            "query",
-            "update",
-            "delete",
-            "getmore",
-            "command",
-        ):
-            embed.add_field(
-                name=name.capitalize(),
-                value=f"`{operations.get(name, 0):,}`",
-                inline=True,
-            )
-
-        await ctx.reply(embed=embed)
 
     @mongodb.command(name="network")
     async def mongodb_network(self, ctx: commands.Context) -> None:
@@ -639,25 +729,20 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         network = status.get("network", {})
 
-        embed = discord.Embed(
-            title="MongoDB Network",
-            color=discord.Color.blurple(),
-        )
+        rows = [
+            ("Bytes In", f"`{network.get('bytesIn', 0):,}`"),
+            ("Bytes Out", f"`{network.get('bytesOut', 0):,}`"),
+            ("Requests", f"`{network.get('numRequests', 0):,}`"),
+        ]
 
-        embed.add_field(
-            name="Bytes In",
-            value=f"`{network.get('bytesIn', 0):,}`",
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{GLOBE WITH MERIDIANS} MongoDB Network",
+                accent_color=_MONGO_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
         )
-        embed.add_field(
-            name="Bytes Out",
-            value=f"`{network.get('bytesOut', 0):,}`",
-        )
-        embed.add_field(
-            name="Requests",
-            value=f"`{network.get('numRequests', 0):,}`",
-        )
-
-        await ctx.reply(embed=embed)
 
     @mongodb.command(name="memory")
     async def mongodb_memory(self, ctx: commands.Context) -> None:
@@ -666,25 +751,20 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         memory = status.get("mem", {})
 
-        embed = discord.Embed(
-            title="MongoDB Memory",
-            color=discord.Color.blurple(),
-        )
+        rows = [
+            ("Resident", f"`{memory.get('resident', 0):,} MB`"),
+            ("Virtual", f"`{memory.get('virtual', 0):,} MB`"),
+            ("Mapped", f"`{memory.get('mapped', 0):,} MB`"),
+        ]
 
-        embed.add_field(
-            name="Resident",
-            value=f"`{memory.get('resident', 0):,} MB",
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{FLOPPY DISK} MongoDB Memory",
+                accent_color=_MONGO_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
         )
-        embed.add_field(
-            name="Virtual",
-            value=f"`{memory.get('virtual', 0):,} MB",
-        )
-        embed.add_field(
-            name="Mapped",
-            value=f"`{memory.get('mapped', 0):,} MB",
-        )
-
-        await ctx.reply(embed=embed)
 
     @mongodb.command(name="databases")
     async def mongodb_databases(self, ctx: commands.Context) -> None:
@@ -693,26 +773,22 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             databases = await self.bot.database.mongo_client.list_databases()
             databases = [database async for database in databases]
         except Exception as exc:
-            await ctx.reply(f"MongoDB error: `{type(exc).__name__}: {exc}`")
+            await ctx.reply(view=_error_dashboard("MongoDB", exc))
             return
 
-        lines = []
+        if not databases:
+            block = "No databases found."
+        else:
+            block = "\n".join(f"- `{database['name']}` \N{EM DASH} {self._format_bytes(database.get('sizeOnDisk', 0))}" for database in databases)
 
-        for database in databases:
-            name = database["name"]
-            size = database.get("sizeOnDisk", 0)
-
-            lines.append(
-                f"`{name}` — {self._format_bytes(size)}",
-            )
-
-        embed = discord.Embed(
-            title="MongoDB Databases",
-            description="\n".join(lines) or "No databases found.",
-            color=discord.Color.blurple(),
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{FILE CABINET} MongoDB Databases",
+                accent_color=_MONGO_COLOR,
+                blocks=[block],
+                footer=_footer(ctx),
+            ),
         )
-
-        await ctx.reply(embed=embed)
 
     @mongodb.command(name="collections")
     async def mongodb_collections(
@@ -726,16 +802,19 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             names = await self.bot.database.mongo_client[database_name].list_collection_names()
         except Exception as exc:
-            await ctx.reply(f"MongoDB error: `{type(exc).__name__}: {exc}`")
+            await ctx.reply(view=_error_dashboard("MongoDB", exc))
             return
 
-        embed = discord.Embed(
-            title=f"Collections — {database_name}",
-            description="\n".join(f"`{name}`" for name in names) or "No collections found.",
-            color=discord.Color.blurple(),
-        )
+        block = "\n".join(f"- `{name}`" for name in names) or "No collections found."
 
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title=f"## \N{OPEN FILE FOLDER} MongoDB Collections \N{EM DASH} `{database_name}`",
+                accent_color=_MONGO_COLOR,
+                blocks=[block],
+                footer=_footer(ctx),
+            ),
+        )
 
     @mongodb.command(name="storage")
     async def mongodb_storage(
@@ -750,41 +829,26 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         try:
             stats = await db.command("dbStats")
         except Exception as exc:
-            await ctx.reply(f"MongoDB error: `{type(exc).__name__}: {exc}`")
+            await ctx.reply(view=_error_dashboard("MongoDB", exc))
             return
 
-        embed = (
-            discord.Embed(
-                title=f"MongoDB Storage — {database_name}",
-                color=discord.Color.blurple(),
-            )
-            .add_field(
-                name="Data Size",
-                value=self._format_bytes(stats.get("dataSize", 0)),
-            )
-            .add_field(
-                name="Storage Size",
-                value=self._format_bytes(stats.get("storageSize", 0)),
-            )
-            .add_field(
-                name="Indexes",
-                value=f"`{stats.get('indexes', 0):,}`",
-            )
-            .add_field(
-                name="Index Size",
-                value=self._format_bytes(stats.get("indexSize", 0)),
-            )
-            .add_field(
-                name="Collections",
-                value=f"`{stats.get('collections', 0):,}`",
-            )
-            .add_field(
-                name="Objects",
-                value=f"`{stats.get('objects', 0):,}`",
-            )
-        )
+        rows = [
+            ("Data Size", self._format_bytes(stats.get("dataSize", 0))),
+            ("Storage Size", self._format_bytes(stats.get("storageSize", 0))),
+            ("Indexes", f"`{stats.get('indexes', 0):,}`"),
+            ("Index Size", self._format_bytes(stats.get("indexSize", 0))),
+            ("Collections", f"`{stats.get('collections', 0):,}`"),
+            ("Objects", f"`{stats.get('objects', 0):,}`"),
+        ]
 
-        await ctx.reply(embed=embed)
+        await ctx.reply(
+            view=_dashboard(
+                title=f"## \N{PACKAGE} MongoDB Storage \N{EM DASH} `{database_name}`",
+                accent_color=_MONGO_COLOR,
+                blocks=[_kv_lines(rows)],
+                footer=_footer(ctx),
+            ),
+        )
 
     @staticmethod
     def _format_bytes(value: int | float) -> str:

@@ -13,6 +13,7 @@ from .custom_commands import _GuildCustomCommandsMixin  # noqa
 from .events import _GuildEventsMixin  # noqa
 from .giveaway import _GuildGiveawayMixin  # noqa
 from .global_chat import _GuildGlobalChatMixin  # noqa
+from .mod import _GuildModeratorMixin  # noqa
 from .hub import _GuildHubMixin  # noqa
 from .leveling import _GuildLevelingMixin  # noqa
 from .mute import _GuildMuteRoleMixin  # noqa
@@ -54,6 +55,7 @@ class _GuildMixin(
     _GuildTelephoneMixin,
     _GuildEventsMixin,
     _GuildTicketMixin,
+    _GuildModeratorMixin,
     DatabaseMixin,
 ):
     def create_guild_configuration(self, guild_id: int) -> GuildConfiguration:
@@ -64,20 +66,28 @@ class _GuildMixin(
             "hub_channel_id": None,
             "suggestion_channel_id": None,
             "hub_channel_owners": {},
+            "muted_members": [],
+            "violations": {
+                "default": {},
+            },
+            "default_violation_expiration": None,
             "global_chat_config": {
                 "enabled": False,
                 "channel_id": None,
                 "webhook_uri": None,
             },
-            "muted_members": [],
-            "violations": {},
             "automod": {
                 "word_allowlist": [],
                 "word_denylist": [],
                 "website_allowlist": [],
                 "website_denylist": [],
+                "custom_lists": {},
                 "rules": [],
                 "logs": [],
+            },
+            "moderator_config": {
+                "moderator_role_ids": [],
+                "moderator_logs_channel_id": None,
             },
             "leveling_config": {
                 "enabled": False,

@@ -404,6 +404,7 @@ class Parrot(commands.Bot):
         matches: list[T],
         entry: Callable[[T], str] = str,
         ephemeral: bool = False,
+        embed: discord.Embed | None = None,
     ) -> T:
         if len(matches) == 0:
             raise ValueError("No results found.")
@@ -415,10 +416,11 @@ class Parrot(commands.Bot):
             raise ValueError("Too many results... sorry.")
 
         view = DisambiguatorView(context, matches, entry)
-        embed = discord.Embed(
-            title="Found multiple choices. Please choose the correct one.",
+        embed = embed or (
+            discord.Embed(
+                description="Found multiple choices. Please choose the correct one.",
+            ).set_author(name=context.author.display_name, icon_url=context.author.display_avatar.url)
         )
-        embed.set_author(name=context.author.display_name, icon_url=context.author.display_avatar.url)
 
         view.message = await context.reply(
             embed=embed,

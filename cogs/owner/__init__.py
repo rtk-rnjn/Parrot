@@ -136,12 +136,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     async def _info(self, section: str | None = None) -> dict[str, str]:
         """Get parsed Redis INFO output."""
-        info = await self.bot.database.redis_client.info(section)
+        return await self.bot.database.redis_client.info(section)
 
         # redis-py normally returns section dictionaries.
         # Flattening isn't necessary; this helper simply gives us a
         # predictable return type for the commands below.
-        return info
 
     @redis.command(name="ping")
     async def redis_ping(self, ctx: commands.Context) -> None:

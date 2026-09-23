@@ -133,7 +133,8 @@ def _parse_slowmode(data: Mapping[str, Any]) -> EffectConfig:
 def _parse_send_message(data: Mapping[str, Any]) -> EffectConfig:
     message = data.get("message")
     if not isinstance(message, str):
-        raise EffectParseError("'message' must be a string")
+        msg = "'message' must be a string"
+        raise EffectParseError(msg)
 
     return SendMessageConfig(
         message=message,
@@ -146,7 +147,8 @@ def _parse_send_message(data: Mapping[str, Any]) -> EffectConfig:
 def _parse_alert(data: Mapping[str, Any]) -> EffectConfig:
     message = data.get("message")
     if not isinstance(message, str):
-        raise EffectParseError("'message' must be a string")
+        msg = "'message' must be a string"
+        raise EffectParseError(msg)
 
     return AlertConfig(message=message, channel_id=_optional_int_or_none(data, "channel_id", minimum=0))
 
@@ -198,7 +200,8 @@ class Effect:
 
         raw_type = data.get("type")
         if not isinstance(raw_type, str):
-            raise EffectParseError("'type' must be a string")
+            msg = "'type' must be a string"
+            raise EffectParseError(msg)
 
         try:
             effect_type = EffectType(raw_type)

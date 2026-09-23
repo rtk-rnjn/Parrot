@@ -47,6 +47,7 @@ class AtCoder:
         else:
             async with http_session.get(API) as response:
                 return BeautifulSoup(await response.text(), "html.parser")
+        return None
 
     def _get_contest_table(self, soup):
         if div := soup.find("div", id="contest-table-upcoming"):
@@ -83,6 +84,7 @@ class AtCoder:
             assert table is not None
 
             self._parse_contest_table(table)
+        return None
 
     async def get_contests(self, session: aiohttp.ClientSession | None = None):
         if not self.__contests:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import itertools
 import random
 from io import BytesIO
@@ -225,10 +226,8 @@ class Twenty48:
             move()
 
         if remove_reaction_after and self.message is not None:
-            try:
+            with contextlib.suppress(discord.DiscordException):
                 await self.message.remove_reaction(emoji, user)
-            except discord.DiscordException:
-                pass
         return False
 
     async def _update_message(self) -> None:

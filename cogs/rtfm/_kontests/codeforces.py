@@ -50,6 +50,7 @@ class CodeForcesContestData:
         start_time = self.__data.get("startTimeSeconds")
         if start_time is not None:
             return datetime.datetime.fromtimestamp(start_time)
+        return None
 
     @property
     def relative_time(self) -> int | None:

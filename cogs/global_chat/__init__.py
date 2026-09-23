@@ -96,9 +96,8 @@ class GlobalChat(commands.Cog):
                 content = content.replace(word, "*" * len(word))
 
         content = discord.utils.escape_markdown(content)
-        content = discord.utils.escape_mentions(content)
+        return discord.utils.escape_mentions(content)
 
-        return content
 
 
 async def setup(bot: Parrot) -> None:

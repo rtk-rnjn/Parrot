@@ -57,10 +57,12 @@ class Wordle:
 
         if word:
             if len(word) != 5:
-                raise ValueError("Word must be of length 5")
+                msg = "Word must be of length 5"
+                raise ValueError(msg)
 
             if not word.isalpha():
-                raise ValueError("Word must be an alphabetical string")
+                msg = "Word must be an alphabetical string"
+                raise ValueError(msg)
 
             self.word = word
         else:

@@ -26,10 +26,7 @@ class BoggleButton(discord.ui.Button["BoggleView"]):
         game = self.view.game
 
         if self.style == game.button_style:
-            if game.indices:
-                beside_current = game.beside_current(*game.indices[-1])
-            else:
-                beside_current = [(self.row, self.col)]
+            beside_current = game.beside_current(*game.indices[-1]) if game.indices else [(self.row, self.col)]
 
             if (self.row, self.col) in beside_current:
                 game.current_word += self.label

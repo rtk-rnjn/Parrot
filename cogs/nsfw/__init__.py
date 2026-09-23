@@ -85,8 +85,7 @@ class NSFW(commands.Cog):
             raise commands.CommandError(msg)
         url = (await response.json())["message"]
 
-        embed = discord.Embed().set_image(url=url)
-        return embed
+        return discord.Embed().set_image(url=url)
 
     async def command_endpoint_method(self, ctx: commands.Context[Parrot]) -> None:
         assert ctx.command is not None

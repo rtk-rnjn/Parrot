@@ -73,7 +73,7 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
     @in_month(Month.JUNE)
     @commands.command(name="pridefact", aliases=("pridefacts",))
-    async def pridefact(self, ctx: commands.Context[Parrot], option: str = None) -> None:
+    async def pridefact(self, ctx: commands.Context[Parrot], option: str | None = None) -> None:
         """Sends a message with a pride fact of the day.
         If "random" is given as an argument, a random previous fact will be provided.
         If a date is given as an argument, and the date is in the past, the fact from that day
@@ -113,7 +113,7 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
     @in_month(Month.JUNE)
     @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
-    async def prideanthem(self, ctx: commands.Context[Parrot], genre: str = None) -> None:
+    async def prideanthem(self, ctx: commands.Context[Parrot], genre: str | None = None) -> None:
         """Sends a message with a video of a random pride anthem.
         If `genre` is supplied, it will select from that genre only.
         """
@@ -150,7 +150,7 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
     def embed_builder(self, pride_leader: dict) -> discord.Embed:
         """Generate an Embed with information about a pride leader."""
-        name = [name for name, info in PRIDE_RESOURCE.items() if info == pride_leader][0]
+        name = next(name for name, info in PRIDE_RESOURCE.items() if info == pride_leader)
 
         embed = discord.Embed(title=name, description=pride_leader["About"], color=discord.Color.blue())
         embed.add_field(name="Known for", value=pride_leader["Known for"], inline=False)

@@ -347,7 +347,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         results = ["**VOTES:**"]
         for emoji, _ in answers:
-            num = [r.count for r in msg.reactions if str(r.emoji) == emoji][0] - 1
+            num = next(r.count for r in msg.reactions if str(r.emoji) == emoji) - 1
             percent = round(100 * num / total_no)
             s = "" if num == 1 else "s"
             string = f"{emoji} - {num} vote{s} ({percent}%)"
@@ -377,6 +377,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         a_embed = discord.Embed(title=f"The correct answer was {correct}!", description="\n".join(results), colour=discord.Color.pink())
 
         await ctx.reply(content, embed=a_embed)
+        return None
 
     @staticmethod
     async def already_reacted(message: discord.Message, user: discord.Member | discord.User) -> bool:
@@ -398,6 +399,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             return await reaction.message.remove_reaction(reaction, user)
         if await self.already_reacted(reaction.message, user):
             return await reaction.message.remove_reaction(reaction, user)
+        return None
 
     @commands.command(aliases=("eastercustoms",))
     async def easter_tradition(self, ctx: Context) -> None:

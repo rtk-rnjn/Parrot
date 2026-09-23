@@ -106,4 +106,3 @@ class ServerStatus(TypedDict, total=False):
     flowControl: dict[str, Any]
     sharding: dict[str, Any]
     writeBacksQueued: int
-    uptimeEstimate: int

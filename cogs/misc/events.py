@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 from collections import deque
 from typing import TYPE_CHECKING
@@ -95,16 +96,12 @@ class SnipeMessageListener(Cog):
             raise commands.BadArgument(err) from e
 
     def delete_snipe(self, channel: discord.abc.MessageableChannel, *, index: int) -> None:
-        try:
+        with contextlib.suppress(Exception):
             self.snipes[channel.id].remove(self.snipes[channel.id][index - 1])
-        except Exception:
-            pass
 
     def delete_edit_snipe(self, channel: discord.abc.MessageableChannel, *, index: int) -> None:
-        try:
+        with contextlib.suppress(Exception):
             self.edit_snipes[channel.id].remove(self.edit_snipes[channel.id][index - 1])
-        except Exception:
-            pass
 
 
 class PingMessageListner(Cog):

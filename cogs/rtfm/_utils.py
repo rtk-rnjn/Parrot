@@ -75,10 +75,7 @@ async def lint(cmd: str, filename: str) -> dict[str, str]:
 
     rest = []
     for argument in arguments[1:]:
-        if argument.startswith("-") or argument.startswith("--"):
-            arg = f"{Fore.BLUE}{argument}"
-        else:
-            arg = f"{Fore.YELLOW}{argument}"
+        arg = f"{Fore.BLUE}{argument}" if argument.startswith(("-", "--")) else f"{Fore.YELLOW}{argument}"
         rest.append(arg)
 
     filename = f"{Fore.CYAN}{filename}"

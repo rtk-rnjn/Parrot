@@ -334,12 +334,9 @@ class Love(commands.Cog):
     async def myvalenstate(self, ctx: commands.Context[Parrot], *, name: str | None = None) -> None:
         """Find the vacation spot(s) with the most matching characters to the invoking user."""
         eq_chars = collections.defaultdict(int)
-        if name is None:
-            author = ctx.author.name.lower().replace(" ", "")
-        else:
-            author = name.lower().replace(" ", "")
+        author = ctx.author.name.lower().replace(" ", "") if name is None else name.lower().replace(" ", "")
 
-        for state in self.valenstates.keys():
+        for state in self.valenstates:
             lower_state = state.lower().replace(" ", "")
             eq_chars[state] = self.levenshtein(author, lower_state)
 

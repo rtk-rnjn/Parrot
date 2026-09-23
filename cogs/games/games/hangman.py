@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import random
 import string
 from typing import TYPE_CHECKING, Final
@@ -114,7 +115,8 @@ class Hangman:
 
         if word:
             if not word.isalpha():
-                raise ValueError("Word must be an alphabetical string")
+                msg = "Word must be an alphabetical string"
+                raise ValueError(msg)
 
             self.word = word
         else:
@@ -226,10 +228,8 @@ class Hangman:
                 break
 
             if delete_after_guess:
-                try:
+                with contextlib.suppress(discord.DiscordException):
                     await message.delete()
-                except discord.DiscordException:
-                    pass
         return self.message
 
 

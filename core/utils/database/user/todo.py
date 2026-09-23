@@ -60,8 +60,7 @@ class _UserTodoMixin(DatabaseMixin):
         for todo_item in user_config["todo_items"]:
             await self.__cache_user_todo_item(user_id=user_id, todo_item=todo_item)
 
-        items = self.__sort_todo_items(user_config["todo_items"])
-        return items
+        return self.__sort_todo_items(user_config["todo_items"])
 
     async def get_user_todo_item(self, *, user_id: int, todo_item_id: ObjectId) -> TodoItem | None:
         redis_key = RedisKeys.USER_TODO_ITEM.format(user_id=user_id, todo_id=str(todo_item_id))

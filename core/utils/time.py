@@ -91,7 +91,8 @@ class ShortTime:
         base = _as_arrow_now(now, tzinfo)
         parsed = _parse_short(argument, base) or _parse_discord_ts(argument, tzinfo)
         if parsed is None:
-            raise commands.BadArgument("invalid time provided")
+            msg = "invalid time provided"
+            raise commands.BadArgument(msg)
         self.dt = parsed.datetime
 
     @classmethod
@@ -108,7 +109,8 @@ class RelativeDelta(app_commands.Transformer, commands.Converter):
     def __do_conversion(cls, argument: str) -> relativedelta:
         m = ShortTime.compiled.fullmatch(argument.strip())
         if m is None or not m.group(0):
-            raise ValueError("invalid time provided")
+            msg = "invalid time provided"
+            raise ValueError(msg)
         data = {k: int(v or 0) for k, v in m.groupdict().items()}
         return relativedelta(**data)
 
@@ -130,7 +132,8 @@ class HumanTime:
         base = _as_arrow_now(now, tzinfo)
         parsed = _parse_human(argument, base, tzinfo)
         if parsed is None:
-            raise commands.BadArgument('invalid time provided, try e.g. "tomorrow" or "3 days"')
+            msg = 'invalid time provided, try e.g. "tomorrow" or "3 days"'
+            raise commands.BadArgument(msg)
         self.dt = parsed.datetime
         self._past = parsed <= base
 
@@ -158,7 +161,8 @@ class FutureTime(Time):
     def __init__(self, argument: str, *, now: datetime.datetime | None = None, tzinfo: datetime.tzinfo = datetime.UTC):
         super().__init__(argument, now=now, tzinfo=tzinfo)
         if self._past:
-            raise commands.BadArgument("this time is in the past")
+            msg = "this time is in the past"
+            raise commands.BadArgument(msg)
 
 
 class BadTimeTransform(app_commands.AppCommandError):
@@ -195,10 +199,12 @@ class FriendlyTimeResult:
 
     async def ensure_constraints(self, ctx: commands.Context[Parrot], uft: UserFriendlyTime, now: datetime.datetime, remaining: str) -> None:
         if self.dt < now:
-            raise commands.BadArgument("This time is in the past.")
+            msg = "This time is in the past."
+            raise commands.BadArgument(msg)
         if not remaining:
             if uft.default is None:
-                raise commands.BadArgument("Missing argument after the time.")
+                msg = "Missing argument after the time."
+                raise commands.BadArgument(msg)
             remaining = uft.default
         if uft.converter is not None:
             self.arg = await uft.converter.convert(ctx, remaining)
@@ -211,7 +217,8 @@ class UserFriendlyTime(commands.Converter):
         if isinstance(converter, type) and issubclass(converter, commands.Converter):
             converter = converter()
         if converter is not None and not isinstance(converter, commands.Converter):
-            raise TypeError("commands.Converter subclass necessary.")
+            msg = "commands.Converter subclass necessary."
+            raise TypeError(msg)
         self.converter: commands.Converter = converter  # type: ignore
         self.default: Any = default
 
@@ -245,7 +252,8 @@ class UserFriendlyTime(commands.Converter):
         # 3) fallback natural language (whole argument as time)
         parsed = _parse_human(argument, arrow.get(now).to(tzinfo), tzinfo)
         if parsed is None:
-            raise commands.BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days".')
+            msg = 'Invalid time provided, try e.g. "tomorrow" or "3 days".'
+            raise commands.BadArgument(msg)
 
         r = FriendlyTimeResult(parsed.datetime)
         await r.ensure_constraints(ctx, self, now, self.default if self.default is not None else "")

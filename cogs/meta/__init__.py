@@ -229,10 +229,7 @@ class Meta(commands.Cog):
             .set_footer(text=f"ID: {target.id}")
         )
 
-        if target != ctx.author:
-            content = f"Requested by: {ctx.author.mention}"
-        else:
-            content = None
+        content = f"Requested by: {ctx.author.mention}" if target != ctx.author else None
 
         delete_view = DeleteMessageButtonView(author=ctx.author)
         message = await ctx.reply(content, embed=embed, view=delete_view, file=file, mention_author=False)
@@ -398,7 +395,7 @@ class Meta(commands.Cog):
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
             embed.set_thumbnail(
-                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png"
+                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(next(iter(role.unicode_emoji))):x}.png"
             )
         if role.icon:
             embed.set_thumbnail(url=role.icon.url)

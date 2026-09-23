@@ -26,7 +26,8 @@ class Music(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context[Parrot]) -> bool:
         if self.bot.lavalink_node_pool.node_count == 0:
-            raise commands.CommandError("No Lavalink nodes are connected. This feature is not available at the moment.")
+            msg = "No Lavalink nodes are connected. This feature is not available at the moment."
+            raise commands.CommandError(msg)
 
         return True
 
@@ -34,7 +35,8 @@ class Music(commands.Cog):
         assert isinstance(ctx.author, discord.Member)
 
         if ctx.author.voice is None or ctx.author.voice.channel is None:
-            raise commands.CommandError("You are not connected to a voice channel.")
+            msg = "You are not connected to a voice channel."
+            raise commands.CommandError(msg)
 
         voice_client = await ctx.author.voice.channel.connect(cls=Player)
         if hasattr(voice_client, "ctx"):
@@ -339,7 +341,7 @@ class Music(commands.Cog):
             return
 
         description = ""
-        for _, node in nodes.items():
+        for node in nodes.values():
             description += f"**Host:** {node._host}:{node._port}\n**Players:** {len(node.players)}\n\n"
 
         embed = discord.Embed(title="Connected Lavalink Nodes", description=description, color=discord.Color.blurple())

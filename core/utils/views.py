@@ -21,7 +21,7 @@ class BaseView(discord.ui.View):
 
     async def __disable_all_items(self) -> None:
         for item in self.children:
-            if isinstance(item, discord.ui.Button) or isinstance(item, discord.ui.Select):
+            if isinstance(item, (discord.ui.Button, discord.ui.Select)):
                 item.disabled = True
 
     async def on_timeout(self) -> None:

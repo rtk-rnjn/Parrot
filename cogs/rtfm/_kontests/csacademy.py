@@ -72,6 +72,7 @@ class CSAcademy:
         else:
             async with http_session.get(API, headers={"x-requested-with": "XMLHttpRequest"}) as response:
                 return await response.json()
+        return None
 
     async def get_contests(self, http_session: aiohttp.ClientSession | None = None):
         if http_session is None:
@@ -87,6 +88,7 @@ class CSAcademy:
                     continue
 
                 self.__contests.append(CSAcademyContestData(contest))
+        return None
 
     @property
     def contests(self) -> list[CSAcademyContestData]:

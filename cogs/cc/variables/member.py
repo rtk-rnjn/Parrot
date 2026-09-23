@@ -47,35 +47,35 @@ class JinjaMember:
         permissions = discord.Permissions(**perms)
         return self.__member.guild.me.guild_permissions >= permissions and self.__member.guild.me.top_role > self.__member.top_role
 
-    async def kick(self, *, reason: str = None):
+    async def kick(self, *, reason: str | None = None):
         """Kick member from guild."""
         if not await self._check_perms(kick_members=True):
             return
 
         await self.__member.kick(reason=reason)
 
-    async def ban(self, *, reason: str = None, delete_message_days: int = discord.utils.MISSING):
+    async def ban(self, *, reason: str | None = None, delete_message_days: int = discord.utils.MISSING):
         """Ban member from guild."""
         if not await self._check_perms(ban_members=True):
             return
 
         await self.__member.ban(reason=reason, delete_message_days=delete_message_days)
 
-    async def unban(self, *, reason: str = None):
+    async def unban(self, *, reason: str | None = None):
         """Unban member from guild."""
         if not await self._check_perms(ban_members=True):
             return
 
         await self.__member.unban(reason=reason)
 
-    async def add_role(self, *, role: discord.Object, reason: str = None):
+    async def add_role(self, *, role: discord.Object, reason: str | None = None):
         """Add role to member."""
         if not await self._check_perms(manage_roles=True):
             return
 
         await self.__member.add_roles(role, reason=reason)
 
-    async def remove_role(self, *, role: discord.Object, reason: str = None):
+    async def remove_role(self, *, role: discord.Object, reason: str | None = None):
         """Remove role from member."""
         if not await self._check_perms(manage_roles=True):
             return

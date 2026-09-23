@@ -79,8 +79,7 @@ def _clean_implicit_mul(equation: str) -> str:
 
     equation = re.sub(r"\s+", "", equation)
     equation = re.sub(r"(?<=[0-9x)])x", _sub_mul, equation)
-    equation = equation.replace(")(", ")*(")
-    return equation
+    return equation.replace(")(", ")*(")
 
 
 @executor_function

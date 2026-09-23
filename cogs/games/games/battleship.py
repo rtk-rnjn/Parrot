@@ -70,10 +70,7 @@ class Board:
         if ship.end[0] > 10 or ship.end[1] > 10:
             return False
 
-        for existing in self.ships:
-            if any(c in existing.span for c in ship.span):
-                return False
-        return True
+        return all(not any(c in existing.span for c in ship.span) for existing in self.ships)
 
     def _place_ships(self) -> None:
         def place_ship(ship: str, size: int, color: tuple[int, int, int]) -> None:
@@ -152,9 +149,8 @@ class Board:
 
                     else:
                         ship = self.get_ship(coord)
-                        if ship is not None:
-                            if not hide:
-                                self.draw_sq(cur, x, y, coord=coord, ship=ship)
+                        if ship is not None and not hide:
+                            self.draw_sq(cur, x, y, coord=coord, ship=ship)
             buffer = BytesIO()
             img.save(buffer, "PNG")
 
@@ -621,6 +617,7 @@ class SetupInput(discord.ui.Modal):
                 return self.button.view.stop()
         else:
             await interaction.response.send_message("Ship placement was detected to be invalid, please try again.", ephemeral=True)
+        return None
 
 
 class SetupButton(discord.ui.Button["SetupView"]):

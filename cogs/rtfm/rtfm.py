@@ -499,6 +499,7 @@ class RTFM(commands.Cog):
         """Commands for finding information related to GitHub."""
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
+        return None
 
     @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
     async def github_user_info(
@@ -643,10 +644,7 @@ class RTFM(commands.Cog):
             no_articles = discord.Embed(title=f"No articles found for '{query}'", color=ctx.author.color)
             return await ctx.reply(embed=no_articles)
 
-        if len(articles) == 1:
-            article_description = "Here is the result:"
-        else:
-            article_description = f"Here are the top {len(articles)} results:"
+        article_description = "Here is the result:" if len(articles) == 1 else f"Here are the top {len(articles)} results:"
 
         article_embed = discord.Embed(
             title="Search results - Real Python",

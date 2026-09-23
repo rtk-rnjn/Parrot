@@ -278,10 +278,7 @@ class ColorHandler:
             input_colour = tuple(ctx.args[2:])
 
         if colour_mode is not None:
-            if colour_mode not in ("name", "hex", "random", "color", "colour"):
-                colour_mode = colour_mode.upper()
-            else:
-                colour_mode = colour_mode.title()
+            colour_mode = colour_mode.upper() if colour_mode not in ("name", "hex", "random", "color", "colour") else colour_mode.title()
 
         colour_embed = discord.Embed(
             title=f"{name or input_colour}",
@@ -357,7 +354,7 @@ class ColorHandler:
             if maybe_none is None:
                 raise TypeError
             match, _, _ = maybe_none
-            colour_name = [name for name, hex_code in color_names.items() if hex_code == match][0]
+            colour_name = next(name for name, hex_code in color_names.items() if hex_code == match)
         except TypeError:
             colour_name = None
         return colour_name
@@ -409,7 +406,8 @@ class Fun(commands.Cog, ColorHandler):
     async def random_choice(self, ctx: commands.Context[Parrot], *options: str):
         """Randomly choose between options separated by |."""
         if len(options) < 2:
-            raise commands.BadArgument("Provide at least two choices separated by `|`.")
+            msg = "Provide at least two choices separated by `|`."
+            raise commands.BadArgument(msg)
 
         await ctx.reply(f"\N{DIRECT HIT} I choose **{random.choice(options)}**", allowed_mentions=discord.AllowedMentions.none())
 
@@ -469,7 +467,8 @@ class Fun(commands.Cog, ColorHandler):
     ):
         """Generate a cryptographically secure random password."""
         if not 8 <= length <= 128:
-            raise commands.BadArgument("Password length must be between 8 and 128.")
+            msg = "Password length must be between 8 and 128."
+            raise commands.BadArgument(msg)
 
         alphabet = string.ascii_letters + string.digits + string.punctuation
         password = "".join(secrets.choice(alphabet) for _ in range(length))
@@ -531,6 +530,7 @@ class Fun(commands.Cog, ColorHandler):
 
         if count >= number_of_chances:
             await ctx.reply(f"{ctx.author.mention} The number is **{number}**. Better luck next time")
+        return None
 
     @commands.command(name="cathi")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
@@ -554,17 +554,17 @@ class Fun(commands.Cog, ColorHandler):
 
         FACE = "\N{ACUTE ACCENT}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GREEK SMALL LETTER OMEGA}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GRAVE ACCENT}"
         ls = [
-            f". {IGS}{IGS}{IGS}{FWLL}{FWLL}{LL}{FWLL}{FWLL}\n"
+            (f". {IGS}{IGS}{IGS}{FWLL}{FWLL}{LL}{FWLL}{FWLL}\n"
             f"{IGS}{IGS}{FWS}{IGS}{FWS}{IGS}  {FWS}|\n"
             f"{IGS}{IGS}|{FM}{FM}{FM}{FM}|{IGS}|\n"
             f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
-            f"{IGS}{IGS}{FM}{FM}{FM}{FM}",
-            f". {IGS}{IGS}{IGS}{text}\n"
+            f"{IGS}{IGS}{FM}{FM}{FM}{FM}"),
+            (f". {IGS}{IGS}{IGS}{text}\n"
             f"{IGS}   {IGS} {LA}{FWLL}{LA}{FWLL}_\n"
             f"{IGS}{IGS}{FWS}({FACE})  {FWS}{FWRS}\n"
             f"{IGS}{FWS}|{FM}{FM}{FM}{FM}|{FWRS}{FWS}\n"
             f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
-            f"{IGS}{IGS}{FM}{FM}{FM}{FM}",
+            f"{IGS}{IGS}{FM}{FM}{FM}{FM}"),
         ]
         for _, cat in itertools.product(range(3), ls):
             await m.edit(content=cat)
@@ -885,9 +885,8 @@ class Fun(commands.Cog, ColorHandler):
                 pages.append(embed)
 
         view = PaginationView(author=ctx.author, items=pages)
-        message = await view.start(ctx)
+        return await view.start(ctx)
 
-        return message
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
@@ -924,6 +923,7 @@ class Fun(commands.Cog, ColorHandler):
 
         embed.set_footer(text=f"Game played by: {ctx.author}", icon_url=ctx.author.display_avatar.url)
         view.message = await ctx.reply(file=file, embed=embed, view=view)
+        return None
 
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)

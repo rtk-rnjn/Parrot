@@ -173,10 +173,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             language = ""
 
         # Adds a label showing the file path to the snippet
-        if start_line == end_line:
-            ret = f"`{file_path}` line {start_line}\n"
-        else:
-            ret = f"`{file_path}` lines {start_line} to {end_line}\n"
+        ret = f"`{file_path}` line {start_line}\n" if start_line == end_line else f"`{file_path}` lines {start_line} to {end_line}\n"
 
         if len(required) != 0:
             return f"{ret}```{language}\n{required}```"
@@ -192,9 +189,8 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
                 try:
                     snippet = await handler(**match.groupdict())
                     all_snippets.append((match.start(), snippet))
-                except ClientResponseError as error:
-                    error_message = error.message
-                    print(error_message)
+                except ClientResponseError:
+                    pass
 
         # Sorts the list of snippets by their match index and joins them into a single message
         return "\n".join(x[1] for x in sorted(all_snippets))

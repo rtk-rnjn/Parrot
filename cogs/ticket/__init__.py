@@ -79,7 +79,8 @@ class Ticket(commands.Cog):
     @commands.bot_has_guild_permissions(create_private_threads=True)
     async def ticket_open(self, ctx: commands.Context[Parrot]) -> None:
         """Open a new ticket; without using the buttons"""
-        assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
+        assert ctx.guild is not None
+        assert isinstance(ctx.author, discord.Member)
 
         channel_id = await self.bot.database.get_ticket_config_channel_id(ctx.guild.id)
 

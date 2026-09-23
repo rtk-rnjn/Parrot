@@ -87,7 +87,8 @@ class RPSButton(discord.ui.Button["RPSView"]):
 
         if not game.player2:
             bot_choice = random.choice(game.OPTIONS)
-            assert self.emoji is not None and self.emoji.name is not None
+            assert self.emoji is not None
+            assert self.emoji.name is not None
             user_choice = self.emoji.name
 
             if user_choice == bot_choice:
@@ -107,7 +108,8 @@ class RPSButton(discord.ui.Button["RPSView"]):
 
             other_player_choice = self.get_choice(interaction.user, other=True)
 
-            assert self.emoji is not None and self.emoji.name is not None
+            assert self.emoji is not None
+            assert self.emoji.name is not None
             if interaction.user == game.player1:
                 game.player1_choice = self.emoji.name
 

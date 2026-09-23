@@ -42,7 +42,7 @@ def resolve_current_day() -> Day:
     return Day(discord.utils.utcnow().day)
 
 
-def resolve_current_time(*, _time: datetime = None) -> datetime:
+def resolve_current_time(*, _time: datetime | None = None) -> datetime:
     return _time or discord.utils.utcnow()
 
 
@@ -100,6 +100,7 @@ def in_month_listener(*allowed_months: Month) -> Callable:
             if current_month in allowed_months:
                 # Propagate return value although it should always be None
                 return await listener(*args, **kwargs)
+            return None
 
         return guarded_listener
 
@@ -120,6 +121,7 @@ def in_day_listener(*allowed_day: Day) -> Callable:
             if current_day in allowed_day:
                 # Propagate return value although it should always be None
                 return await listener(*args, **kwargs)
+            return None
 
         return guarded_listener
 
@@ -139,6 +141,7 @@ def in_time_listener(*, past: datetime, future: datetime) -> Callable:
             if past < current_time < future:
                 # Propagate return value although it should always be None
                 return await listener(*args, **kwargs)
+            return None
 
         return guarded_listener
 

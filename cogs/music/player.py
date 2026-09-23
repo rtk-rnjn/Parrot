@@ -36,22 +36,24 @@ class Player(pomice.Player):
     @property
     def dj(self) -> discord.Member:
         if self.ctx is None:
-            raise ValueError("Context is not set for this player.")
+            msg = "Context is not set for this player."
+            raise ValueError(msg)
 
         voice_channel = self.channel
         if voice_channel is None:
-            raise ValueError("Player is not connected to a voice channel.")
+            msg = "Player is not connected to a voice channel."
+            raise ValueError(msg)
 
         members = [member for member in voice_channel.members if not member.bot]
         if not members:
-            raise ValueError("No non-bot members in the voice channel.")
+            msg = "No non-bot members in the voice channel."
+            raise ValueError(msg)
 
         possible_dj_members = self.__find_possible_djs(members)
         if not possible_dj_members:
             return cast(discord.Member, self.ctx.author)
 
-        dj = min(possible_dj_members, key=lambda m: m.joined_at or discord.utils.snowflake_time(m.id))
-        return dj
+        return min(possible_dj_members, key=lambda m: m.joined_at or discord.utils.snowflake_time(m.id))
 
     def __find_possible_djs(self, members: list[discord.Member]) -> list[discord.Member]:
         possible_djs = []

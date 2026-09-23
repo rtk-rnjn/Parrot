@@ -76,10 +76,7 @@ class SlideView(BaseView):
         else:
             for i, row in enumerate(self.game.numbers):
                 for j, number in enumerate(row):
-                    if number == self.game.completed[i][j]:
-                        style = self.game.correct_style
-                    else:
-                        style = self.game.wrong_style
+                    style = self.game.correct_style if number == self.game.completed[i][j] else self.game.wrong_style
 
                     button = SlideButton(label=str(number) if number else "\N{ZERO WIDTH SPACE}", style=style, row=i)
                     self.add_item(button)
@@ -94,7 +91,8 @@ class NumberSlider:
 
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
         if count not in range(1, 6):
-            raise ValueError("Count must be an integer between 1 and 5")
+            msg = "Count must be an integer between 1 and 5"
+            raise ValueError(msg)
 
         self.all_numbers = list(range(1, count**2))
 
@@ -119,8 +117,7 @@ class NumberSlider:
 
         beside_item = [(nx - 1, ny), (nx, ny - 1), (nx + 1, ny), (nx, ny + 1)]
 
-        data = [self.numbers[i][j] for i, j in beside_item if i in range(self.count) and j in range(self.count)]
-        return data
+        return [self.numbers[i][j] for i, j in beside_item if i in range(self.count) and j in range(self.count)]
 
     def swap(self, pressed: tuple[int, int], blank: tuple[int, int]) -> None:
         ix, iy = pressed
@@ -156,7 +153,7 @@ class NumberSlider:
         self.wrong_style = wrong_style
         self.correct_style = correct_style
 
-        self.completed = chunk(self.all_numbers + [None], count=self.count)
+        self.completed = chunk([*self.all_numbers, None], count=self.count)
 
         self.numbers = deepcopy(self.completed)
         self.shuffle(self.count**6)

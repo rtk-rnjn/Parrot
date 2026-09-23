@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import math
 import random
 from collections import defaultdict
@@ -346,7 +347,8 @@ class VoteKickSelect(discord.ui.Select["VoteKickView"]):
         self.game: UNO = game
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        assert self.view is not None and interaction.data is not None
+        assert self.view is not None
+        assert interaction.data is not None
 
         value = int(interaction.data["values"][0])
         target = discord.utils.get(self.game.hands, player__id=value).player
@@ -625,6 +627,7 @@ class UNO:
         hand = discord.utils.find(lambda hand: len(hand) <= 0, self.hands)
         if hand is not None:
             return hand.player
+        return None
 
     @property
     def vote_kick_threshold(self) -> int:
@@ -634,7 +637,7 @@ class UNO:
     def get_hand(self, user: discord.Member, /) -> Hand | None:
         return discord.utils.get(self.hands, player=user)
 
-    async def _send(self, content: str = None, **kwargs) -> discord.Message:
+    async def _send(self, content: str | None = None, **kwargs) -> discord.Message:
         self._previous_content = content
 
         async def fallback() -> discord.Message:
@@ -651,7 +654,7 @@ class UNO:
 
         return self._message
 
-    async def _resend(self, content: str = None, **kwargs) -> discord.Message:
+    async def _resend(self, content: str | None = None, **kwargs) -> discord.Message:
         if self._message is not None:
             await self._message.delete()
         return await self._send(content, **kwargs)
@@ -697,7 +700,7 @@ class UNO:
 
         return self._internal_view.wait()
 
-    async def _update(self, content: str = None, **kwargs) -> None:
+    async def _update(self, content: str | None = None, **kwargs) -> None:
         if len(self.deck) <= 1:
             self.deck._internal_deck += self._discard_pile[:-1]
             self._discard_pile = [self._discard_pile[-1]]
@@ -713,7 +716,8 @@ class UNO:
 
     def can_play(self, card: Card, /) -> bool:
         if self.current is None:
-            raise RuntimeError("Cannot check if a card can be played when there is no current card.")
+            msg = "Cannot check if a card can be played when there is no current card."
+            raise RuntimeError(msg)
 
         if not self.current.match(card) and self.current.color is not Color.wild:
             return False
@@ -738,7 +742,8 @@ class UNO:
 
     def build_embed(self) -> discord.Embed:
         if self.current is None:
-            raise RuntimeError("Cannot check if a card can be played when there is no current card.")
+            msg = "Cannot check if a card can be played when there is no current card."
+            raise RuntimeError(msg)
 
         if self.current.color is not Color.wild or self._wild_card_color_store is None:
             color = COLORS[self.current.color]
@@ -753,10 +758,7 @@ class UNO:
         embed.set_author(name=f"{self.current_player.name}'s turn!", icon_url=self.current_player.display_avatar.url)
 
         if self.draw_queue > 0:
-            if self.rule_set.progressive:
-                content = f"Stack on or draw {self.draw_queue}"
-            else:
-                content = f"Draw {self.draw_queue}!"
+            content = f"Stack on or draw {self.draw_queue}" if self.rule_set.progressive else f"Draw {self.draw_queue}!"
             embed.set_footer(text=content)
 
         return embed
@@ -827,10 +829,9 @@ class UNO:
             except discord.InteractionResponded, discord.NotFound:
                 await interaction.followup.send(**kwargs)
 
-        try:
+        with contextlib.suppress(discord.InteractionResponded):
             await interaction.response.defer()
-        except discord.InteractionResponded:
-            pass
+        return None
 
     # list to take care of stacks
     async def handle_play(self, cards: list[Card]) -> None:

@@ -64,7 +64,8 @@ class ConnectFour:
     def place_move(self, column: str | int, user) -> list[list[str]]:
         if isinstance(column, str):
             if column not in self._controls:
-                raise KeyError("Provided emoji is not one of the valid controls")
+                msg = "Provided emoji is not one of the valid controls"
+                raise KeyError(msg)
 
             column = self._conversion[column]
 

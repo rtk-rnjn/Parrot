@@ -132,7 +132,8 @@ class Misc(commands.Cog):
             msg = "Couldn't find that message."
             raise commands.BadArgument(msg)
 
-        assert isinstance(target_message, discord.Message) and isinstance(ctx.author, discord.Member)
+        assert isinstance(target_message, discord.Message)
+        assert isinstance(ctx.author, discord.Member)
 
         # Prevent users from bookmarking a message in a channel they don't have access to
         permissions = target_message.channel.permissions_for(ctx.author)
@@ -206,7 +207,8 @@ class Misc(commands.Cog):
 
     async def _bookmark_context_menu_callback(self, interaction: discord.Interaction[Parrot], message: discord.Message, /) -> None:
         """The callback that will be invoked upon using the bookmark's context menu command."""
-        assert isinstance(interaction.user, discord.Member) and isinstance(interaction.channel, discord.abc.GuildChannel)
+        assert isinstance(interaction.user, discord.Member)
+        assert isinstance(interaction.channel, discord.abc.GuildChannel)
         permissions = interaction.channel.permissions_for(interaction.user)
         if not permissions.read_messages:
             embed = self.build_error_embed("You don't have permission to view this channel.")
@@ -347,6 +349,7 @@ class Misc(commands.Cog):
 
         view = PaginationView(author=ctx.author, items=embeds)
         await view.start(ctx)
+        return None
 
     @commands.command(name="boxplot", aliases=("box", "boxwhisker", "numsetdata"))
     async def _boxplot(self, ctx: commands.Context[Parrot], *numbers: float) -> None:

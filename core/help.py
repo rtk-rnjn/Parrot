@@ -105,7 +105,7 @@ class Help(commands.HelpCommand):
         context: commands.Context[Parrot] = self.context  # pyright: ignore[reportAssignmentType]
         prefix = context.clean_prefix
 
-        owner = await context.bot.fetch_user(int(BOT_OWNER_ID))
+        await context.bot.fetch_user(int(BOT_OWNER_ID))
         revision = self.get_last_commits()
 
         process = psutil.Process()

@@ -58,7 +58,8 @@ def _parse_no_config(_: Mapping[str, Any]) -> TriggerConfig:
 def _parse_all_caps(data: Mapping[str, Any]) -> TriggerConfig:
     percentage = _require_int(data, "percentage", minimum=0)
     if percentage > 100:
-        raise TriggerParseError("'percentage' must be <= 100")
+        msg = "'percentage' must be <= 100"
+        raise TriggerParseError(msg)
 
     return AllCapsConfig(min_count=_require_int(data, "min_count"), percentage=percentage)
 
@@ -74,7 +75,8 @@ def _parse_list(data: Mapping[str, Any]) -> TriggerConfig:
 def _parse_regex(data: Mapping[str, Any]) -> TriggerConfig:
     regex = data.get("regex")
     if not isinstance(regex, str):
-        raise TriggerParseError("'regex' must be a string")
+        msg = "'regex' must be a string"
+        raise TriggerParseError(msg)
 
     return RegexConfig(regex=regex)
 
@@ -86,7 +88,8 @@ def _parse_time_window(data: Mapping[str, Any]) -> TriggerConfig:
 def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:
     violation_name = data.get("violation_name")
     if not isinstance(violation_name, str):
-        raise TriggerParseError("'violation_name' must be a string")
+        msg = "'violation_name' must be a string"
+        raise TriggerParseError(msg)
 
     return ViolationConfig(
         violation_name=violation_name,
@@ -183,7 +186,8 @@ class Trigger:
         raw_type = data.get("type")
 
         if not isinstance(raw_type, str):
-            raise TriggerParseError("'type' must be a string")
+            msg = "'type' must be a string"
+            raise TriggerParseError(msg)
 
         try:
             trigger_type = TriggerType(raw_type)

@@ -84,7 +84,8 @@ class LightsOut:
 
     def __init__(self, count: Literal[1, 2, 3, 4, 5] = 4) -> None:
         if count not in range(1, 6):
-            raise ValueError("Count must be an integer between 1 and 5")
+            msg = "Count must be an integer between 1 and 5"
+            raise ValueError(msg)
 
         self.moves: int = 0
         self.count = count
@@ -104,8 +105,7 @@ class LightsOut:
     def beside_item(self, row: int, col: int) -> list[tuple[int, int]]:
         beside = [(row - 1, col), (row, col - 1), (row + 1, col), (row, col + 1)]
 
-        data = [(i, j) for i, j in beside if i in range(self.count) and j in range(self.count)]
-        return data
+        return [(i, j) for i, j in beside if i in range(self.count) and j in range(self.count)]
 
     async def start(
         self,

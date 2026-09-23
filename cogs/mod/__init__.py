@@ -112,7 +112,8 @@ class MemberID(commands.Converter):
     async def convert(self, ctx: commands.Context[Parrot], argument: str) -> discord.Member:
         """Convert a command argument into a target member."""
         if TYPE_CHECKING:
-            assert ctx.guild is not None and isinstance(ctx.author, discord.Member)
+            assert ctx.guild is not None
+            assert isinstance(ctx.author, discord.Member)
 
         try:
             member = await commands.MemberConverter().convert(ctx, argument)
@@ -624,8 +625,8 @@ class Mod(commands.Cog):
             return await ctx.reply("The configured mute role does not exist in this server. Please set a valid mute role using `mute role <role>`.")
 
         message_contents = [
-            f"Synchronizing the permissions of the mute role **{mute_role}** (ID: {mute_role.id}) with all channels."
-            f"This may take a moment... [0/{len(ctx.guild.channels)}]"
+            (f"Synchronizing the permissions of the mute role **{mute_role}** (ID: {mute_role.id}) with all channels."
+            f"This may take a moment... [0/{len(ctx.guild.channels)}]")
         ]
         message = await ctx.reply("\n".join(message_contents))
         for index, channel in enumerate(ctx.guild.channels, start=1):
@@ -832,7 +833,8 @@ class Mod(commands.Cog):
     async def mimic_mute_command(self, before: discord.Member, after: discord.Member) -> None:
         """If someone mutes by adding role then sync them to the database."""
         if TYPE_CHECKING:
-            assert before.guild is not None and after.guild is not None
+            assert before.guild is not None
+            assert after.guild is not None
 
         before_roles = set(before.roles)
         after_roles = set(after.roles)
@@ -931,22 +933,17 @@ class Mod(commands.Cog):
         Members without can search up to 25 messages.
         """
 
-        assert isinstance(ctx.me, discord.Member) and isinstance(ctx.author, discord.Member)
+        assert isinstance(ctx.me, discord.Member)
+        assert isinstance(ctx.author, discord.Member)
 
         search = search or 25
 
         strategy = self._basic_cleanup_strategy
         is_mod = ctx.channel.permissions_for(ctx.author).manage_messages
         if ctx.channel.permissions_for(ctx.me).manage_messages:
-            if is_mod:
-                strategy = self._complex_cleanup_strategy
-            else:
-                strategy = self._regular_user_cleanup_strategy
+            strategy = self._complex_cleanup_strategy if is_mod else self._regular_user_cleanup_strategy
 
-        if is_mod:
-            search = min(max(2, search), 1000)
-        else:
-            search = min(max(2, search), 25)
+        search = min(max(2, search), 1000) if is_mod else min(max(2, search), 25)
 
         spammers = await strategy(ctx, search)
         deleted = sum(spammers.values())
@@ -1053,8 +1050,7 @@ class Mod(commands.Cog):
         op = all if flags.require == "all" else any
 
         def predicate(m: discord.Message) -> bool:
-            r = op(p(m) for p in predicates)
-            return r
+            return op(p(m) for p in predicates)
 
         before = discord.Object(id=flags.before) if flags.before else None
         after = discord.Object(id=flags.after) if flags.after else None
@@ -1099,6 +1095,7 @@ class Mod(commands.Cog):
             await ctx.send(f"Successfully removed {deleted} messages.", delete_after=10)
         else:
             await ctx.send(to_send, delete_after=10)
+        return None
 
     @commands.command(name="clear_reactions", aliases=["clear-reactions"])
     @commands.has_permissions(manage_messages=True)
@@ -1127,6 +1124,7 @@ class Mod(commands.Cog):
         """
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
+        return None
 
     @role.command(name="bot", aliases=["bots"])
     @commands.has_permissions(manage_roles=True)
@@ -1320,6 +1318,7 @@ class Mod(commands.Cog):
         """
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
+        return None
 
     @mod.command(name="set-logs", aliases=["set_logs", "setlog", "set_log"])
     @commands.has_permissions(manage_guild=True)
@@ -1374,7 +1373,7 @@ class Mod(commands.Cog):
             _log.warning("Moderation log channel not found or is not a text channel for guild: %s", guild.id)
             return
 
-        emoji, title, color = _ACTION_META.get(action, ("\N{SHIELD}", action.replace("_", " ").title(), discord.Colour.default()))
+        emoji, title, _color = _ACTION_META.get(action, ("\N{SHIELD}", action.replace("_", " ").title(), discord.Colour.default()))
 
         target_list = list(targets)
         target_lines = [self._format_target(target) for target in target_list]

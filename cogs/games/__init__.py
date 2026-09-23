@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -83,7 +84,8 @@ class Games(commands.Cog):
         timed_out = await view.wait()
 
         if view.player is None or timed_out:
-            raise commands.CommandError("No player joined the game.")
+            msg = "No player joined the game."
+            raise commands.CommandError(msg)
 
         return view.player
 
@@ -206,10 +208,8 @@ class Games(commands.Cog):
         await game.start()
         await game.wait()
 
-        try:
+        with contextlib.suppress(KeyError):
             del self.uno_games[ctx.channel.id]
-        except KeyError:
-            pass
 
     @commands.command(name="sokoban", aliases=["sk", "soko", "sokobangame", "sokoban-game"])
     async def sokoban(self, ctx: commands.Context[Parrot], level: int | None = 1) -> None:

@@ -58,7 +58,7 @@ class CountryGuesser:
             rgb = Image.merge("RGB", (r, g, b))
             rgb = ImageOps.invert(rgb)
             rgb = rgb.split()
-            img = Image.merge("RGBA", rgb + (a,))
+            img = Image.merge("RGBA", (*rgb, a))
 
             buf = BytesIO()
             img.save(buf, "PNG")
@@ -126,9 +126,8 @@ class CountryGuesser:
         message: discord.Message = await ctx.bot.wait_for("message", timeout=self.timeout, check=check)
         content = message.content.strip().lower()
 
-        if options:
-            if content not in options:
-                return None
+        if options and content not in options:
+            return None
 
         return message, content
 

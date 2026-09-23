@@ -172,7 +172,8 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
             index = self.current_index
 
         if not 0 <= index < len(self.items):
-            raise IndexError("Page index out of range.")
+            msg = "Page index out of range."
+            raise IndexError(msg)
 
         self.items.pop(index)
 
@@ -252,7 +253,8 @@ class PaginationView(PaginationMixin[discord.Embed], BaseView):
         **kwargs,
     ) -> PaginationView:
         if not items:
-            raise ValueError("Items list cannot be empty.")
+            msg = "Items list cannot be empty."
+            raise ValueError(msg)
 
         embeds: list[discord.Embed] = []
 
@@ -284,7 +286,8 @@ class PaginationLayout(PaginationMixin[list[discord.ui.Item]], BaseLayoutView):
         super().__init__(author=author, timeout=timeout)
 
         if not items:
-            raise ValueError("Items list cannot be empty.")
+            msg = "Items list cannot be empty."
+            raise ValueError(msg)
 
         self.author = author
         self.hide_skip_button = hide_skip_button

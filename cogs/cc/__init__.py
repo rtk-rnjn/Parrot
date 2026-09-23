@@ -343,7 +343,8 @@ class CreateEditCustomCommandModal(CustomCommandModal):
         elif self.custom_command_name is not None:
             name = str(self.custom_command_name).strip().lower()
         else:
-            raise RuntimeError("No command name available")
+            msg = "No command name available"
+            raise RuntimeError(msg)
         return name
 
     async def _validate_and_execute(self, interaction: discord.Interaction[Parrot], name: str) -> bool:
@@ -587,7 +588,8 @@ class CustomCommand(commands.Cog):
 
     def prepare_context(self, ctx: commands.Context[Parrot]) -> dict[str, object]:
         """Prepare a context for a custom command."""
-        assert ctx.guild is not None and isinstance(ctx.channel, discord.abc.GuildChannel)
+        assert ctx.guild is not None
+        assert isinstance(ctx.channel, discord.abc.GuildChannel)
         return {
             "channel": JinjaChannel(channel=ctx.channel),
             "guild": JinjaGuild(guild=ctx.guild),

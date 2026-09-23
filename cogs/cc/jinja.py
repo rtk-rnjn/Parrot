@@ -78,21 +78,29 @@ class SandboxConfig:
 
     def validate(self) -> None:
         if self.max_output_bytes <= 0:
-            raise ValueError("max_output_bytes must be > 0")
+            msg = "max_output_bytes must be > 0"
+            raise ValueError(msg)
         if self.max_sequence_repeat <= 0:
-            raise ValueError("max_sequence_repeat must be > 0")
+            msg = "max_sequence_repeat must be > 0"
+            raise ValueError(msg)
         if self.max_combined_sequence_length <= 0:
-            raise ValueError("max_combined_sequence_length must be > 0")
+            msg = "max_combined_sequence_length must be > 0"
+            raise ValueError(msg)
         if self.max_exponent <= 0:
-            raise ValueError("max_exponent must be > 0")
+            msg = "max_exponent must be > 0"
+            raise ValueError(msg)
         if self.max_power_base_abs <= 0:
-            raise ValueError("max_power_base_abs must be > 0")
+            msg = "max_power_base_abs must be > 0"
+            raise ValueError(msg)
         if self.wall_timeout_seconds <= 0:
-            raise ValueError("wall_timeout_seconds must be > 0")
+            msg = "wall_timeout_seconds must be > 0"
+            raise ValueError(msg)
         if self.max_template_chars <= 0:
-            raise ValueError("max_template_chars must be > 0")
+            msg = "max_template_chars must be > 0"
+            raise ValueError(msg)
         if self.max_memory_bytes <= 0:
-            raise ValueError("max_memory_bytes must be > 0")
+            msg = "max_memory_bytes must be > 0"
+            raise ValueError(msg)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -149,26 +157,33 @@ class HardenedSandboxedEnvironment(ImmutableSandboxedEnvironment):
         if repeat < 0:
             return
         if repeat > self._cfg.max_sequence_repeat:
-            raise SandboxOperatorLimitExceeded("sequence repeat exceeds configured limit")
+            msg = "sequence repeat exceeds configured limit"
+            raise SandboxOperatorLimitExceeded(msg)
         if unit_len * repeat > self._cfg.max_combined_sequence_length:
-            raise SandboxOperatorLimitExceeded("sequence result length exceeds configured limit")
+            msg = "sequence result length exceeds configured limit"
+            raise SandboxOperatorLimitExceeded(msg)
 
     def _safe_pow(self, left: Any, right: Any) -> Any:
         if not self._cfg.allow_power_operator:
-            raise SandboxOperatorLimitExceeded("power operator is disabled")
+            msg = "power operator is disabled"
+            raise SandboxOperatorLimitExceeded(msg)
         if not isinstance(left, int) or not isinstance(right, int):
-            raise SandboxOperatorLimitExceeded("power only allowed for integers")
+            msg = "power only allowed for integers"
+            raise SandboxOperatorLimitExceeded(msg)
         if abs(right) > self._cfg.max_exponent:
-            raise SandboxOperatorLimitExceeded("exponent exceeds configured limit")
+            msg = "exponent exceeds configured limit"
+            raise SandboxOperatorLimitExceeded(msg)
         if abs(left) > self._cfg.max_power_base_abs:
-            raise SandboxOperatorLimitExceeded("base exceeds configured limit")
+            msg = "base exceeds configured limit"
+            raise SandboxOperatorLimitExceeded(msg)
         return left**right
 
     def _safe_add(self, left: Any, right: Any) -> Any:
         sequence_types = (str, bytes, tuple, list)
         if isinstance(left, sequence_types) and isinstance(right, sequence_types) and type(left) is type(right):
             if len(left) + len(right) > self._cfg.max_combined_sequence_length:
-                raise SandboxOperatorLimitExceeded("concatenation result exceeds configured limit")
+                msg = "concatenation result exceeds configured limit"
+                raise SandboxOperatorLimitExceeded(msg)
         return left + right  # type: ignore[operator]
 
 
@@ -180,6 +195,5 @@ env = HardenedSandboxedEnvironment(config, loader=None, autoescape=False, extens
 async def render_sandboxed(code: str, **context: Any) -> str:
     config.validate()
     template = env.from_string(code)
-    result = await template.render_async(context)
+    return await template.render_async(context)
 
-    return result

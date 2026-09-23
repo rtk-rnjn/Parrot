@@ -102,14 +102,16 @@ class BlackjackDeck:
 
     def __init__(self, decks: int = 6) -> None:
         if decks < 1:
-            raise ValueError("decks must be at least 1")
+            msg = "decks must be at least 1"
+            raise ValueError(msg)
 
         self.cards = [f"{rank}{suit}" for _ in range(decks) for suit in self.SUITS for rank in self.RANKS]
         random.shuffle(self.cards)
 
     def draw(self) -> str:
         if not self.cards:
-            raise RuntimeError("Blackjack shoe is empty.")
+            msg = "Blackjack shoe is empty."
+            raise RuntimeError(msg)
 
         return self.cards.pop()
 
@@ -138,7 +140,8 @@ class Blackjack:
 
     def __init__(self, *, wager: int = BASE_WAGER, decks: int = 6, embed_color: DiscordColor = DEFAULT_COLOR) -> None:
         if wager <= 0:
-            raise ValueError("wager must be greater than zero")
+            msg = "wager must be greater than zero"
+            raise ValueError(msg)
 
         self.wager = wager
         self.embed_color = embed_color
@@ -274,7 +277,8 @@ class Blackjack:
 
     def hit(self, hand: BlackjackHand) -> None:
         if not hand.can_hit:
-            raise ValueError("This hand cannot hit.")
+            msg = "This hand cannot hit."
+            raise ValueError(msg)
 
         self.draw(hand)
 
@@ -283,13 +287,15 @@ class Blackjack:
 
     def stand(self, hand: BlackjackHand) -> None:
         if hand.status is not HandStatus.ACTIVE:
-            raise ValueError("This hand is already finished.")
+            msg = "This hand is already finished."
+            raise ValueError(msg)
 
         hand.status = HandStatus.STAND
 
     def double(self, hand: BlackjackHand) -> None:
         if not self.can_double(hand):
-            raise ValueError("This hand cannot be doubled.")
+            msg = "This hand cannot be doubled."
+            raise ValueError(msg)
 
         hand.bet *= 2
         hand.doubled = True
@@ -303,10 +309,12 @@ class Blackjack:
 
     def split(self, hand: BlackjackHand) -> None:
         if not self.can_split(hand):
-            raise ValueError("This hand cannot be split.")
+            msg = "This hand cannot be split."
+            raise ValueError(msg)
 
         if len(self.hands) >= 4:
-            raise ValueError("Maximum number of hands reached.")
+            msg = "Maximum number of hands reached."
+            raise ValueError(msg)
 
         first_card, second_card = hand.cards
 
@@ -329,17 +337,20 @@ class Blackjack:
 
     def insure(self, hand: BlackjackHand) -> None:
         if not self.insurance_available:
-            raise ValueError("Insurance is not available.")
+            msg = "Insurance is not available."
+            raise ValueError(msg)
 
         if hand.insurance:
-            raise ValueError("Insurance has already been taken.")
+            msg = "Insurance has already been taken."
+            raise ValueError(msg)
 
         hand.insurance = hand.bet // 2
         self.insurance_available = False
 
     def surrender(self, hand: BlackjackHand) -> None:
         if not self.can_surrender(hand):
-            raise ValueError("This hand cannot be surrendered.")
+            msg = "This hand cannot be surrendered."
+            raise ValueError(msg)
 
         hand.status = HandStatus.SURRENDERED
 
@@ -609,12 +620,10 @@ class BlackjackView(BaseView):
 
         # Insurance itself doesn't end the hand.
         # Splitting creates a new current hand, so keep the player there.
-        if action != "split":
-            if hand.status is not HandStatus.ACTIVE:
-                if not game.advance_hand():
-                    await interaction.response.edit_message(embed=game.make_embed(), view=self)
-                    await game.finish()
-                    return
+        if action != "split" and hand.status is not HandStatus.ACTIVE and not game.advance_hand():
+            await interaction.response.edit_message(embed=game.make_embed(), view=self)
+            await game.finish()
+            return
 
         self.update_buttons()
 

@@ -287,14 +287,17 @@ class GiveawayView(discord.ui.View):
     @staticmethod
     def _giveaway_id(data: object) -> ObjectId:
         if not isinstance(data, dict):
-            raise ValueError("Missing giveaway interaction data")
+            msg = "Missing giveaway interaction data"
+            raise ValueError(msg)
         custom_id = data.get("custom_id")
         if not isinstance(custom_id, str):
-            raise ValueError("Missing giveaway interaction ID")
+            msg = "Missing giveaway interaction ID"
+            raise ValueError(msg)
         object_id = custom_id.rsplit(":", 1)[-1]
         parsed = GiveawayCog._object_id(object_id)
         if parsed is None:
-            raise ValueError("Invalid giveaway interaction ID")
+            msg = "Invalid giveaway interaction ID"
+            raise ValueError(msg)
         return parsed
 
 

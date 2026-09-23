@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from collections.abc import Coroutine
 from typing import TYPE_CHECKING, Any, Final
 
@@ -41,10 +42,8 @@ async def wait_for_delete(
 ) -> bool:
     if not user:
         user = ctx.author
-    try:
+    with contextlib.suppress(discord.DiscordException):
         await message.add_reaction(emoji)
-    except discord.DiscordException:
-        pass
 
     def check(reaction: discord.Reaction, _user: discord.User) -> bool:
         if reaction.emoji == emoji and reaction.message.id == message.id:
@@ -86,8 +85,6 @@ class BaseView(discord.ui.View):
     async def on_timeout(self) -> None:
         self.disable_all()
         if self.message is not None:
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
-            except discord.HTTPException:
-                pass
         self.stop()

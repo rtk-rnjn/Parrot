@@ -642,7 +642,7 @@ class Snakes(commands.Cog):
         await self._validate_answer(ctx, quiz, answer, options)
 
     @snakes_group.command(name="name", aliases=("name_gen",))
-    async def name_command(self, ctx: commands.Context[Parrot], *, name: str = None) -> None:
+    async def name_command(self, ctx: commands.Context[Parrot], *, name: str | None = None) -> None:
         """Snakifies a username.
         Slices the users name at the last vowel (or second last if the name
         ends with a vowel), and then combines it with a random snake name,

@@ -139,7 +139,8 @@ class Condition:
 
         raw_type = data.get("type")
         if not isinstance(raw_type, str):
-            raise ConditionParseError("'type' must be a string")
+            msg = "'type' must be a string"
+            raise ConditionParseError(msg)
 
         try:
             condition_type = ConditionType(raw_type)

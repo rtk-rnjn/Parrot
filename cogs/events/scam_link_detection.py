@@ -174,10 +174,7 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
 
     async def warned_already(self, *, channel: discord.abc.MessageableChannel, link: str) -> bool:
         exists = await self.bot.database.check_if_link_warned(link=link, channel_id=channel.id)
-        if isinstance(exists, int) and bool(exists):
-            return True
-
-        return False
+        return bool(isinstance(exists, int) and bool(exists))
 
     async def mark_warned(self, *, channel: discord.abc.MessageableChannel, link: str) -> None:
         await self.bot.database.flag_link_as_warned(link=link, channel_id=channel.id)

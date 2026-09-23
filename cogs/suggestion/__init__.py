@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import io
 from random import random
 from typing import Annotated
@@ -94,10 +95,8 @@ class Suggestion(commands.Cog):
 
         jump_url: str = message.jump_url
         content = f"{ctx.author.mention} your suggestion being posted.\n> {jump_url}"
-        try:
+        with contextlib.suppress(discord.Forbidden):
             await ctx.author.send(content, view=DisabledButtonView(author=ctx.author, display_text=ctx.guild.name))
-        except discord.Forbidden:
-            pass
 
     async def __notify_user(
         self,
@@ -118,10 +117,8 @@ class Suggestion(commands.Cog):
             f"Remark: {remark}\n"
             f"> {message.jump_url}"
         )
-        try:
+        with contextlib.suppress(discord.Forbidden):
             await user.send(content, view=DisabledButtonView(author=user, display_text=ctx.guild.name))
-        except discord.Forbidden:
-            pass
 
     @commands.group(aliases=["suggestion"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
@@ -168,6 +165,7 @@ class Suggestion(commands.Cog):
             if str(reaction.emoji) not in REACTION_EMOJI:
                 await msg.clear_reaction(reaction.emoji)
         await ctx.reply(f"{ctx.author.mention} Done", delete_after=5)
+        return None
 
     async def suggest_flag(self, ctx: commands.Context[Parrot], message_id: int, flag: str, *, remark: str = ""):
         """To flag the suggestion.
@@ -222,6 +220,7 @@ class Suggestion(commands.Cog):
                 f"{ctx.author.mention} btw, you can also flag the suggestion by replying the message with the proper FLAG.\n"
                 f"Like: `INVALID > This is a remark`, `SPAM`"
             )
+        return None
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -276,6 +275,7 @@ class Suggestion(commands.Cog):
 
             await self.suggest_flag(context, msg.id, command, remark=remark)
             return True
+        return None
 
     def __is_mod(self, member: discord.Member) -> bool:
         return member.guild_permissions.manage_channels and member.guild_permissions.manage_threads and member.guild_permissions.manage_messages

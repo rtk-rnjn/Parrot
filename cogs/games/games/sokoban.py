@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import pathlib
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -82,7 +83,8 @@ class SokobanGame:
 
     def __post_init__(self) -> None:
         if not self.level:
-            raise ValueError("Sokoban level is empty.")
+            msg = "Sokoban level is empty."
+            raise ValueError(msg)
 
         self.rows = len(self.level)
         self.cols = max(len(row) for row in self.level)
@@ -107,7 +109,8 @@ class SokobanGame:
 
                     case "@":
                         if found_player is not None:
-                            raise ValueError("Level contains more than one player.")
+                            msg = "Level contains more than one player."
+                            raise ValueError(msg)
 
                         found_player = position
 
@@ -123,7 +126,8 @@ class SokobanGame:
                         raise ValueError(message)
 
         if found_player is None:
-            raise ValueError("Level does not contain a player.")
+            msg = "Level does not contain a player."
+            raise ValueError(msg)
 
         if len(self.blocks) != len(self.targets):
             message = f"Level has {len(self.blocks)} blocks but {len(self.targets)} targets."
@@ -154,10 +158,7 @@ class SokobanGame:
                     emoji = EMOTES["player"]
 
                 elif position in self.blocks:
-                    if position in self.targets:
-                        emoji = EMOTES["box_on_target"]
-                    else:
-                        emoji = EMOTES["box"]
+                    emoji = EMOTES["box_on_target"] if position in self.targets else EMOTES["box"]
 
                 elif position in self.targets:
                     emoji = EMOTES["target"]
@@ -305,7 +306,7 @@ class SokobanGameView(discord.ui.View):
         return False
 
     def make_embed(self) -> discord.Embed:
-        embed = (
+        return (
             discord.Embed(
                 title=f"Sokoban — Level {self.level}",
                 description=self.game.display_board(),
@@ -316,7 +317,6 @@ class SokobanGameView(discord.ui.View):
             .set_footer(text=f"Moves: {self.game.moves}")
         )
 
-        return embed
 
     def make_win_embed(self) -> discord.Embed:
         embed = discord.Embed(
@@ -376,10 +376,8 @@ class SokobanGameView(discord.ui.View):
         if self.message is None:
             return
 
-        try:
+        with contextlib.suppress(discord.HTTPException):
             await self.message.edit(view=None)
-        except discord.HTTPException:
-            pass
 
     async def start(self, ctx: commands.Context, level: int | None = 1) -> None:
         self.ctx = ctx

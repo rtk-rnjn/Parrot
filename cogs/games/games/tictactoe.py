@@ -86,7 +86,8 @@ class Tictactoe:
 
     def make_move(self, emoji: str, user: Player) -> list:
         if emoji not in self._controls:
-            raise KeyError("Provided emoji is not one of the valid controls")
+            msg = "Provided emoji is not one of the valid controls"
+            raise KeyError(msg)
         x, y = self._conversion[emoji]
         piece = self.player_to_emoji[user]
         self.board[x][y] = piece
@@ -105,10 +106,7 @@ class Tictactoe:
                 self.winning_indexes = possibility
                 return True
 
-        if not self._controls or tie:
-            return True
-
-        return False
+        return bool(not self._controls or tie)
 
     async def start(
         self,

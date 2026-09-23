@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, Literal
 
@@ -115,10 +116,8 @@ class Akinator:
         self, ctx: commands.Context[Parrot], reaction: discord.Reaction, user: discord.User, remove_reaction_after: bool
     ) -> bool:
         if remove_reaction_after and self.message is not None:
-            try:
+            with contextlib.suppress(discord.DiscordException):
                 await self.message.remove_reaction(reaction, user)
-            except discord.DiscordException:
-                pass
 
         emoji = str(reaction.emoji)
         if emoji == STOP:
@@ -260,10 +259,8 @@ class AkiView(BaseView):
                 self.stop()
             else:
                 embed = game.build_embed(instructions=False)
-        try:
+        with contextlib.suppress(discord.NotFound):
             await interaction.edit_original_response(embed=embed, view=self)
-        except discord.NotFound:
-            pass
 
 
 class BetaAkinator(Akinator):

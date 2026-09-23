@@ -196,7 +196,8 @@ class HumanDate:
         argument = argument.strip()
         m = _match_date(argument)
         if m is None:
-            raise commands.BadArgument("Couldn't find a date in that. Try something like `23 March 2004`, `May 13 '12` or `2004-03-23`.")
+            msg = "Couldn't find a date in that. Try something like `23 March 2004`, `May 13 '12` or `2004-03-23`."
+            raise commands.BadArgument(msg)
 
         data = m.groupdict()
         month, day = _resolve_month_day(data, dayfirst=dayfirst)

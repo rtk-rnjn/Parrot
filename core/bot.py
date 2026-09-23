@@ -105,15 +105,15 @@ class Parrot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
-        # intents.presences = True
+        # intents.presences = True - Fuck you discord
 
         super().__init__(
             command_prefix=self.get_prefix,  # type: ignore
             intents=intents,
             chunk_guilds_at_startup=False,
             case_insensitive=True,
-            activity=discord.Activity(type=discord.ActivityType.listening),
-            status=discord.Status.idle,
+            activity=discord.Activity(type=discord.ActivityType.playing, name="Imagine having bugs!"),
+            status=discord.Status.do_not_disturb,
             allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False, roles=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             strip_after_prefix=True,

@@ -20,15 +20,7 @@ from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS
 from core.constants import POSITIVE_REPLIES as CORRECT_GUESS
 
 from .converter import Snake
-from .utils import (
-    PerlinNoiseFactory,
-    SnakeAndLaddersGame,
-    create_snek_frame,
-    frame_to_png_bytes,
-    get_resource,
-    snakes,
-    stages,
-)
+from .utils import PerlinNoiseFactory, SnakeAndLaddersGame, create_snek_frame, frame_to_png_bytes, get_resource, snakes, stages
 
 if TYPE_CHECKING:
     from core import Parrot

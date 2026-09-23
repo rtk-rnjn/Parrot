@@ -1,13 +1,4 @@
-from .configs import (
-    AllCapsConfig,
-    CountConfig,
-    LengthConfig,
-    ListConfig,
-    NoConfig,
-    RegexConfig,
-    TimeWindowConfig,
-    ViolationConfig,
-)
+from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, NoConfig, RegexConfig, TimeWindowConfig, ViolationConfig
 from .enum import TriggerType
 
 type TriggerConfig = NoConfig | CountConfig | TimeWindowConfig | ListConfig | RegexConfig | LengthConfig | ViolationConfig | AllCapsConfig

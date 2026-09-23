@@ -4,16 +4,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from .configs import (
-    AllCapsConfig,
-    CountConfig,
-    LengthConfig,
-    ListConfig,
-    NoConfig,
-    RegexConfig,
-    TimeWindowConfig,
-    ViolationConfig,
-)
+from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, NoConfig, RegexConfig, TimeWindowConfig, ViolationConfig
 from .mapping import _CONFIG_TYPES, TriggerConfig, TriggerType
 
 

@@ -4,15 +4,7 @@ from typing import TYPE_CHECKING
 
 from discord.ext import commands
 
-from ._utils import (
-    BanditConverter,
-    Flake8Converter,
-    LintCode,
-    MypyConverter,
-    PyLintConverter,
-    PyrightConverter,
-    RuffConverter,
-)
+from ._utils import BanditConverter, Flake8Converter, LintCode, MypyConverter, PyLintConverter, PyrightConverter, RuffConverter
 
 if TYPE_CHECKING:
     from core import Parrot

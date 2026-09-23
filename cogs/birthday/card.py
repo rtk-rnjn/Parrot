@@ -39,7 +39,12 @@ def render_birthday_card(name: str, birthday: str, avatar: Image.Image | None = 
 
     draw.ellipse((740, -130, 1110, 240), fill=(40, 61, 100))
     draw.ellipse((810, 245, 1080, 520), fill=(37, 48, 78))
-    for x, y, radius, color in ((70, 54, 7, ACCENT), (140, 120, 4, (245, 111, 125)), (900, 70, 5, (118, 220, 180)), (930, 190, 3, ACCENT)):
+    for x, y, radius, color in (
+        (70, 54, 7, ACCENT),
+        (140, 120, 4, (245, 111, 125)),
+        (900, 70, 5, (118, 220, 180)),
+        (930, 190, 3, ACCENT),
+    ):
         draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=color)
 
     if avatar is not None:

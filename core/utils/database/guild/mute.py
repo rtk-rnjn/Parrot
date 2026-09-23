@@ -8,11 +8,7 @@ class _GuildMuteRoleMixin(DatabaseMixin):
     """Guild mute-role operations."""
 
     async def edit_mute_config(self, *, guild_id: int, mute_role_id: int | None) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"mute_role_id": mute_role_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"mute_role_id": mute_role_id}}, upsert=True)
 
         redis_key = RedisKeys.GUILD_MUTE_ROLE_ID.format(guild_id=guild_id)
         await self.redis_client.set(redis_key, mute_role_id)
@@ -59,31 +55,19 @@ class _GuildMuteRoleMixin(DatabaseMixin):
         return muted_members
 
     async def add_muted_member(self, *, guild_id: int, member_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$addToSet": {"muted_members": member_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$addToSet": {"muted_members": member_id}}, upsert=True)
 
         redis_key = RedisKeys.GUILD_MUTED_MEMBERS.format(guild_id=guild_id)
         await self.redis_client.sadd(redis_key, member_id)
 
     async def remove_muted_member(self, *, guild_id: int, member_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$pull": {"muted_members": member_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$pull": {"muted_members": member_id}}, upsert=True)
 
         redis_key = RedisKeys.GUILD_MUTED_MEMBERS.format(guild_id=guild_id)
         await self.redis_client.srem(redis_key, member_id)
 
     async def remove_all_muted_members(self, *, guild_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"muted_members": []}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"muted_members": []}}, upsert=True)
 
         redis_key = RedisKeys.GUILD_MUTED_MEMBERS.format(guild_id=guild_id)
         await self.redis_client.delete(redis_key)
@@ -95,11 +79,7 @@ class _GuildMuteRoleMixin(DatabaseMixin):
 
     async def delete_mute_role(self, *, guild_id: int) -> None:
         """Delete mute role and clear muted-member list for the guild."""
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"mute_role_id": None}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"mute_role_id": None}}, upsert=True)
 
         redis_key = RedisKeys.GUILD_MUTE_ROLE_ID.format(guild_id=guild_id)
         await self.redis_client.delete(redis_key)

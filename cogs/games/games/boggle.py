@@ -15,11 +15,7 @@ if TYPE_CHECKING:
 
 class BoggleButton(discord.ui.Button["BoggleView"]):
     def __init__(self, label: str, style: discord.ButtonStyle, *, row: int, col: int) -> None:
-        super().__init__(
-            style=style,
-            label=label,
-            row=row,
-        )
+        super().__init__(style=style, label=label, row=row)
 
         self.col = col
 
@@ -64,12 +60,7 @@ class BoggleView(BaseView):
 
         for i, row in enumerate(self.game.board):
             for j, letter in enumerate(row):
-                button = BoggleButton(
-                    label=letter,
-                    style=self.game.button_style,
-                    row=i,
-                    col=j,
-                )
+                button = BoggleButton(label=letter, style=self.game.button_style, row=i, col=j)
                 self.add_item(button)
 
         clean_children = [item for item in self.children if item.row != 4]
@@ -151,11 +142,7 @@ class Boggle:
     )
 
     def __init__(self) -> None:
-        self.words: set[str] = get_english_words_set(
-            ["web2"],
-            alpha=True,
-            lower=True,
-        )
+        self.words: set[str] = get_english_words_set(["web2"], alpha=True, lower=True)
         self.board = self.generate_board()
 
         self.button_style: discord.ButtonStyle = discord.ButtonStyle.gray
@@ -198,14 +185,8 @@ class Boggle:
 
         embed = discord.Embed(title="Boggle!", color=self.embed_color)
         embed.description = f"```yml\nCurrent-word: {self.current_word}\n```"
-        embed.add_field(
-            name="Correct Guesses",
-            value=f"```yml\n- {correct_guesses}\n```",
-        )
-        embed.add_field(
-            name="Wrong Guesses",
-            value=f"```yml\n- {wrong_guesses}\n```",
-        )
+        embed.add_field(name="Correct Guesses", value=f"```yml\n- {correct_guesses}\n```")
+        embed.add_field(name="Wrong Guesses", value=f"```yml\n- {wrong_guesses}\n```")
         return embed
 
     def win(self) -> discord.Embed:

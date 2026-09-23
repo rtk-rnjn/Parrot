@@ -64,7 +64,7 @@ class AtCoder:
                 "duration": cells[2].text.strip(),
                 "rated_range": cells[3].text.strip(),
                 "url": cells[1].find("a")["href"],
-            },
+            }
         )
 
     def _parse_contest_table(self, table: BeautifulSoup | Tag):

@@ -1,10 +1,4 @@
-from .configs import (
-    CategoriesConfig,
-    ChannelsConfig,
-    DurationConfig,
-    NoConfig,
-    RolesConfig,
-)
+from .configs import CategoriesConfig, ChannelsConfig, DurationConfig, NoConfig, RolesConfig
 from .enum import ConditionType
 
 type ConditionConfig = NoConfig | RolesConfig | ChannelsConfig | CategoriesConfig | DurationConfig

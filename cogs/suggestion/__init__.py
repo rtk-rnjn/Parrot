@@ -51,12 +51,7 @@ class Suggestion(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
 
-    async def get_or_fetch_message(
-        self,
-        thread_id: int,
-        *,
-        guild: discord.Guild,
-    ):
+    async def get_or_fetch_message(self, thread_id: int, *, guild: discord.Guild):
         thread = guild.get_channel(thread_id)
         if not isinstance(thread, discord.Thread):
             try:
@@ -100,10 +95,7 @@ class Suggestion(commands.Cog):
         jump_url: str = message.jump_url
         content = f"{ctx.author.mention} your suggestion being posted.\n> {jump_url}"
         try:
-            await ctx.author.send(
-                content,
-                view=DisabledButtonView(author=ctx.author, display_text=ctx.guild.name),
-            )
+            await ctx.author.send(content, view=DisabledButtonView(author=ctx.author, display_text=ctx.guild.name))
         except discord.Forbidden:
             pass
 
@@ -127,10 +119,7 @@ class Suggestion(commands.Cog):
             f"> {message.jump_url}"
         )
         try:
-            await user.send(
-                content,
-                view=DisabledButtonView(author=user, display_text=ctx.guild.name),
-            )
+            await user.send(content, view=DisabledButtonView(author=user, display_text=ctx.guild.name))
         except discord.Forbidden:
             pass
 
@@ -167,7 +156,7 @@ class Suggestion(commands.Cog):
         msg: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not msg:
             return await ctx.reply(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
 
         embed: discord.Embed = msg.embeds[0]
@@ -197,7 +186,7 @@ class Suggestion(commands.Cog):
         message: discord.Message | None = await self.get_or_fetch_message(message_id, guild=ctx.guild)
         if not message:
             return await ctx.reply(
-                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid",
+                f"{ctx.author.mention} Can not find message of ID `{message_id}`. Probably already deleted, or `{message_id}` is invalid"
             )
 
         if message.author.id != self.bot.user.id:
@@ -231,7 +220,7 @@ class Suggestion(commands.Cog):
         if random() < 0.05:
             await ctx.reply(
                 f"{ctx.author.mention} btw, you can also flag the suggestion by replying the message with the proper FLAG.\n"
-                f"Like: `INVALID > This is a remark`, `SPAM`",
+                f"Like: `INVALID > This is a remark`, `SPAM`"
             )
 
     @commands.Cog.listener()
@@ -258,10 +247,10 @@ class Suggestion(commands.Cog):
         assert isinstance(message.author, discord.Member)
 
         if not self.__is_mod(message.author):
-            return
+            return None
 
         if ">" not in message.content:
-            return
+            return None
 
         command, remark = message.content.split(">", 1)
         command = command.strip(" ").upper()
@@ -276,10 +265,10 @@ class Suggestion(commands.Cog):
                 msg: discord.Message | discord.DeletedReferencedMessage | None = message.reference.resolved
 
             if not isinstance(msg, discord.Message):
-                return
+                return None
 
             if msg.author.id != self.bot.user.id:
-                return
+                return None
 
             if command in ["CLS", "CLEAR"]:
                 await self.clear_suggestion_embed(context, msg.id)

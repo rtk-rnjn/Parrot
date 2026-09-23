@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import discord
 
-__all__ = ("DeleteMessageButtonView", "BaseView", "BaseLayoutView", "DisabledButtonView")
+__all__ = ("BaseLayoutView", "BaseView", "DeleteMessageButtonView", "DisabledButtonView")
 
 
 class BaseView(discord.ui.View):
@@ -51,12 +51,8 @@ class BaseLayoutView(discord.ui.LayoutView):
         if isinstance(interaction.user, discord.Member) and self.required_permission:
             if interaction.user.guild_permissions >= self.required_permission:
                 return True
-            else:
-                await interaction.response.send_message(
-                    "You do not have the required permissions to interact with this view.",
-                    ephemeral=True,
-                )
-                return False
+            await interaction.response.send_message("You do not have the required permissions to interact with this view.", ephemeral=True)
+            return False
 
         await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
         return False

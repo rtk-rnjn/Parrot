@@ -3,9 +3,10 @@ from __future__ import annotations
 import datetime
 import re
 from typing import TYPE_CHECKING, Any
-import discord
+
 import arrow
 import dateparser
+import discord
 from dateutil.relativedelta import relativedelta
 from discord import app_commands
 from discord.ext import commands
@@ -16,12 +17,12 @@ if TYPE_CHECKING:
     from core import Parrot
 
 __all__ = (
-    "ShortTime",
-    "RelativeDelta",
-    "HumanTime",
-    "Time",
-    "FutureTime",
     "FriendlyTimeResult",
+    "FutureTime",
+    "HumanTime",
+    "RelativeDelta",
+    "ShortTime",
+    "Time",
     "UserFriendlyTime",
     "human_timedelta",
 )
@@ -186,7 +187,7 @@ class TimeTransformer(app_commands.Transformer):
 class FriendlyTimeResult:
     dt: datetime.datetime
     arg: str
-    __slots__ = ("dt", "arg")
+    __slots__ = ("arg", "dt")
 
     def __init__(self, dt: datetime.datetime):
         self.dt = dt

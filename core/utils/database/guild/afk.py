@@ -14,11 +14,7 @@ class _GuildAfkMixin(DatabaseMixin):
         await self.redis_client.sadd(afk_users_key, user_id)
         await self.redis_client.set(afk_user_reason_key, reason)
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"afk_users.{user_id}": reason}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"afk_users.{user_id}": reason}}, upsert=True)
 
     async def remove_user_from_afk(self, *, guild_id: int, user_id: int) -> None:
         afk_users_key = RedisKeys.GUILD_AFK_USERS.format(guild_id=guild_id)
@@ -27,11 +23,7 @@ class _GuildAfkMixin(DatabaseMixin):
         await self.redis_client.srem(afk_users_key, user_id)
         await self.redis_client.delete(afk_user_reason_key)
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"afk_users.{user_id}": None}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"afk_users.{user_id}": None}}, upsert=True)
 
     async def is_user_afk(self, *, guild_id: int, user_id: int) -> bool:
         afk_users_key = RedisKeys.GUILD_AFK_USERS.format(guild_id=guild_id)
@@ -57,9 +49,7 @@ class _GuildAfkMixin(DatabaseMixin):
         if afk_user_ids:
             afk_users = {}
             for user_id in afk_user_ids:
-                reason = await self.redis_client.get(
-                    RedisKeys.GUILD_AFK_USER_REASON.format(guild_id=guild_id, user_id=user_id),
-                )
+                reason = await self.redis_client.get(RedisKeys.GUILD_AFK_USER_REASON.format(guild_id=guild_id, user_id=user_id))
                 if reason is not None:
                     afk_users[int(user_id)] = reason
             return afk_users
@@ -70,10 +60,7 @@ class _GuildAfkMixin(DatabaseMixin):
                 if reason is None:
                     continue
                 await self.redis_client.sadd(afk_users_key, user_id)
-                await self.redis_client.set(
-                    RedisKeys.GUILD_AFK_USER_REASON.format(guild_id=guild_id, user_id=user_id),
-                    reason,
-                )
+                await self.redis_client.set(RedisKeys.GUILD_AFK_USER_REASON.format(guild_id=guild_id, user_id=user_id), reason)
             return {int(user_id): reason for user_id, reason in data["afk_users"].items() if reason is not None}
 
         return {}
@@ -85,8 +72,7 @@ class _GuildAfkMixin(DatabaseMixin):
             return reason
 
         data = await self.guilds_collection.find_one(
-            {"_id": guild_id, f"afk_users.{user_id}": {"$exists": True, "$ne": None}},
-            {f"afk_users.{user_id}": 1},
+            {"_id": guild_id, f"afk_users.{user_id}": {"$exists": True, "$ne": None}}, {f"afk_users.{user_id}": 1}
         )
         if data is not None:
             reason = data["afk_users"][str(user_id)]

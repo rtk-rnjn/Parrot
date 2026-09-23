@@ -46,19 +46,9 @@ class Meta(commands.Cog):
             names.append("Mention Everyone")
         return ", ".join(names) if names else "None"
 
-    @commands.command(
-        name="ping",
-        aliases=("latency",),
-    )
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.user,
-    )
-    async def ping(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    @commands.command(name="ping", aliases=("latency",))
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
+    async def ping(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """
         Display the bot's current latency.
 
@@ -99,19 +89,9 @@ class Meta(commands.Cog):
 
         return await message.edit(content=content)
 
-    @commands.command(
-        name="uptime",
-        aliases=("up",),
-    )
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.user,
-    )
-    async def uptime(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    @commands.command(name="uptime", aliases=("up",))
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
+    async def uptime(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Display how long the bot has been online.
 
         The uptime is calculated based on the time the bot finished starting
@@ -127,34 +107,18 @@ class Meta(commands.Cog):
         if started_at is None:
             return await ctx.reply("The bot has not finished starting up yet.")
 
-        uptime = discord.utils.format_dt(
-            started_at,
-            style="R",
-        )
+        uptime = discord.utils.format_dt(started_at, style="R")
 
-        started = discord.utils.format_dt(
-            started_at,
-            style="F",
-        )
+        started = discord.utils.format_dt(started_at, style="F")
 
         UPTIME_EMOJI = "\N{ALARM CLOCK}"
         STARTED_EMOJI = "\N{ROCKET}"
 
         return await ctx.reply(f"{UPTIME_EMOJI} **Uptime:** {uptime}\n{STARTED_EMOJI} **Started:** {started}")
 
-    @commands.command(
-        name="member_count",
-        aliases=("member-count", "mc"),
-    )
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.user,
-    )
-    async def member_count(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message:
+    @commands.command(name="member_count", aliases=("member-count", "mc"))
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
+    async def member_count(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """
         Display the member count of the current server.
 
@@ -175,25 +139,17 @@ class Meta(commands.Cog):
         BOT_EMOJI = "\N{ROBOT FACE}"
 
         return await ctx.reply(
-            f"{MEMBER_EMOJI} **Members:** `{ctx.guild.member_count:,}`\n{HUMAN_EMOJI} **Humans:** `{humans:,}`\n{BOT_EMOJI} **Bots:** `{bots:,}`",
+            f"{MEMBER_EMOJI} **Members:** `{ctx.guild.member_count:,}`\n{HUMAN_EMOJI} **Humans:** `{humans:,}`\n{BOT_EMOJI} **Bots:** `{bots:,}`"
         )
 
-    @commands.command(
-        name="userinfo",
-        aliases=("memberinfo", "ui", "mi"),
-    )
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.member,
-    )
+    @commands.command(name="userinfo", aliases=("memberinfo", "ui", "mi"))
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.member)
     async def user_info(
         self,
         ctx: commands.Context[Parrot],
         *,
         member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to display information about.",
-            default=lambda ctx: ctx.author,
+            description="The member to display information about.", default=lambda ctx: ctx.author
         ),
     ) -> discord.Message:
         """
@@ -225,61 +181,31 @@ class Meta(commands.Cog):
                 description=f"**Permissions:** {permissions}",
             )
             .set_thumbnail(url=target.display_avatar.url)
-            .add_field(
-                name="Name",
-                value=target,
-                inline=True,
-            )
-            .add_field(
-                name="Display Name",
-                value=target.display_name,
-                inline=True,
-            )
-            .add_field(
-                name="Nickname",
-                value=target.nick or "N/A",
-                inline=True,
-            )
-            .add_field(
-                name="Created At",
-                value=(discord.utils.format_dt(target.created_at, style="R")),
-                inline=True,
-            )
+            .add_field(name="Name", value=target, inline=True)
+            .add_field(name="Display Name", value=target.display_name, inline=True)
+            .add_field(name="Nickname", value=target.nick or "N/A", inline=True)
+            .add_field(name="Created At", value=(discord.utils.format_dt(target.created_at, style="R")), inline=True)
             .add_field(
                 name="Joined At",
                 value=(discord.utils.format_dt(target.joined_at, style="R") if target.joined_at else "N/A"),
                 inline=True,
             )
-            .add_field(
-                name="Roles",
-                value=len(roles) - 1 if len(roles) > 1 else 0,
-                inline=True,
-            )
+            .add_field(name="Roles", value=len(roles) - 1 if len(roles) > 1 else 0, inline=True)
             .set_footer(text=f"ID: {target.id}")
         )
 
         if target.banner:
             embed.set_image(url=target.banner.url)
 
-        return await ctx.reply(
-            embed=embed,
-            mention_author=False,
-        )
+        return await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="avatar", aliases=["pfp", "av"])
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.member,
-    )
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.member)
     async def avatar(
         self,
         ctx: commands.Context[Parrot],
         *,
-        member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to display the avatar of.",
-            default=lambda ctx: ctx.author,
-        ),
+        member: discord.Member = commands.parameter(description="The member to display the avatar of.", default=lambda ctx: ctx.author),
     ) -> discord.Message:
         """
         Display a server member's avatar.
@@ -298,11 +224,7 @@ class Meta(commands.Cog):
         file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.gif")
 
         embed = (
-            discord.Embed(
-                title=f"{target}'s Avatar",
-                colour=target.colour,
-                timestamp=discord.utils.utcnow(),
-            )
+            discord.Embed(title=f"{target}'s Avatar", colour=target.colour, timestamp=discord.utils.utcnow())
             .set_image(url="attachment://avatar.gif")
             .set_footer(text=f"ID: {target.id}")
         )
@@ -329,8 +251,16 @@ class Meta(commands.Cog):
                 f"Members: {len(guild.members)}\nHumans: {len([member for member in guild.members if not member.bot])}\nBots: {len([member for member in guild.members if member.bot])}",
                 True,
             ),
-            ("Total channels", f"Categories: {len(guild.categories)}\nText: {len(guild.text_channels)}\nVoice:{len(guild.voice_channels)}", True),
-            ("General", f"Roles: {len(guild.roles)}\nEmojis: {len(guild.emojis)}\nBoost Level: {guild.premium_tier}", True),
+            (
+                "Total channels",
+                f"Categories: {len(guild.categories)}\nText: {len(guild.text_channels)}\nVoice:{len(guild.voice_channels)}",
+                True,
+            ),
+            (
+                "General",
+                f"Roles: {len(guild.roles)}\nEmojis: {len(guild.emojis)}\nBoost Level: {guild.premium_tier}",
+                True,
+            ),
             (
                 "Statuses",
                 f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]",
@@ -387,11 +317,7 @@ class Meta(commands.Cog):
             embed.set_image(url=guild.banner.url)
 
     @commands.command(name="serverinfo", aliases=["guildinfo", "si", "gi"])
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.member,
-    )
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.member)
     async def server_info(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """
         Display detailed information about the current server.
@@ -429,18 +355,12 @@ class Meta(commands.Cog):
         return await ctx.reply(embed=embed)
 
     @commands.command()
-    @commands.cooldown(
-        rate=1,
-        per=5.0,
-        type=commands.BucketType.member,
-    )
+    @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.member)
     async def roleinfo(
         self,
         ctx: commands.Context[Parrot],
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to display information about.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to display information about."),  # noqa: B008
     ) -> discord.Message:
         """
         Display detailed information about a server role.
@@ -478,7 +398,7 @@ class Meta(commands.Cog):
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
             embed.set_thumbnail(
-                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png",
+                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(list(role.unicode_emoji)[0]):x}.png"
             )
         if role.icon:
             embed.set_thumbnail(url=role.icon.url)
@@ -490,8 +410,7 @@ class Meta(commands.Cog):
         ctx: commands.Context[Parrot],
         *,
         channel: discord.abc.GuildChannel = commands.parameter(  # noqa: B008
-            description="The channel to display information about.",
-            default=lambda ctx: ctx.channel,
+            description="The channel to display information about.", default=lambda ctx: ctx.channel
         ),
     ) -> discord.Message:
         """
@@ -512,21 +431,14 @@ class Meta(commands.Cog):
         channel = channel or ctx.channel
         channel_id = channel.id
 
-        assert isinstance(
-            channel,
-            discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel,
-        )
+        assert isinstance(channel, discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel)
 
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
         channel_type = str(channel.type).capitalize()
         embed = (
-            discord.Embed(
-                title="Channel Info",
-                color=ctx.author.color,
-                timestamp=discord.utils.utcnow(),
-            )
+            discord.Embed(title="Channel Info", color=ctx.author.color, timestamp=discord.utils.utcnow())
             .add_field(name="Name", value=channel.name)
             .add_field(name="ID", value=f"{channel_id}")
             .add_field(name="Created At", value=created_at)

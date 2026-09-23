@@ -4,7 +4,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, ClassVar, Literal
 
 import discord
-from akinator import AsyncAkinator as AkinatorGame, CantGoBackAnyFurther
+from akinator import AsyncAkinator as AkinatorGame
+from akinator import CantGoBackAnyFurther
 from discord.ext import commands
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, double_wait
@@ -90,11 +91,7 @@ class Akinator:
 
         return embed
 
-    async def _wait_for_reaction(
-        self,
-        ctx: commands.Context[Parrot],
-        timeout: float | None,
-    ) -> tuple[discord.Reaction, discord.User] | None:
+    async def _wait_for_reaction(self, ctx: commands.Context[Parrot], timeout: float | None) -> tuple[discord.Reaction, discord.User] | None:
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
             emoji = str(reaction.emoji)
             if self.message is None or reaction.message.id != self.message.id or user != ctx.author:
@@ -115,11 +112,7 @@ class Akinator:
         return done.pop().result()
 
     async def _process_reaction(
-        self,
-        ctx: commands.Context[Parrot],
-        reaction: discord.Reaction,
-        user: discord.User,
-        remove_reaction_after: bool,
+        self, ctx: commands.Context[Parrot], reaction: discord.Reaction, user: discord.User, remove_reaction_after: bool
     ) -> bool:
         if remove_reaction_after and self.message is not None:
             try:
@@ -144,7 +137,7 @@ class Akinator:
             await self.aki.answer(Options(emoji).name)
         return False
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -171,11 +164,7 @@ class Akinator:
         if self.delete_button:
             self.instructions += f"{STOP} \N{RIGHTWARDS ARROW WITH SMALL EQUILATERAL ARROWHEAD} `cancel`\n"
 
-        await self.aki.start_game(
-            language=aki_language,
-            child_mode=child_mode,
-            theme=aki_theme,
-        )
+        await self.aki.start_game(language=aki_language, child_mode=child_mode, theme=aki_theme)
 
         embed = self.build_embed()
         self.message = await ctx.reply(embed=embed)
@@ -192,11 +181,11 @@ class Akinator:
         while (self.aki.progression or 0) <= self.win_at:
             reaction_result = await self._wait_for_reaction(ctx, timeout)
             if reaction_result is None:
-                return
+                return None
             reaction, user = reaction_result
 
             if await self._process_reaction(ctx, reaction, user, remove_reaction_after):
-                return
+                return None
 
             embed = self.build_embed()
             await self.message.edit(embed=embed)
@@ -284,7 +273,7 @@ class BetaAkinator(Akinator):
     instead of reactions.
     """
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -305,11 +294,7 @@ class BetaAkinator(Akinator):
         self.win_at = win_at
         self.view = AkiView(self, timeout=timeout)
 
-        await self.aki.start_game(
-            language=aki_language,
-            child_mode=child_mode,
-            theme=aki_theme,
-        )
+        await self.aki.start_game(language=aki_language, child_mode=child_mode, theme=aki_theme)
 
         embed = self.build_embed(instructions=False)
         self.message = await ctx.reply(embed=embed, view=self.view)

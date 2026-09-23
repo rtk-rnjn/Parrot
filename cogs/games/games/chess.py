@@ -19,12 +19,7 @@ class Chess:
 
     BASE_URL: ClassVar[str] = "http://www.fen-to-image.com/image/64/double/coords/"
 
-    def __init__(
-        self,
-        *,
-        white: Player,
-        black: Player,
-    ) -> None:
+    def __init__(self, *, white: Player, black: Player) -> None:
         self.white = white
         self.black = black
         self.turn = self.white
@@ -97,19 +92,14 @@ class Chess:
                 try:
                     if self.board.parse_uci(m.content.lower()):
                         return m.author == self.turn and m.channel == ctx.channel
-                    else:
-                        return False
+                    return False
                 except ValueError:
                     return False
 
             try:
-                message: discord.Message = await ctx.bot.wait_for(
-                    "message",
-                    timeout=timeout,
-                    check=check,
-                )
+                message: discord.Message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
             except TimeoutError:
-                return
+                return None
 
             await self.place_move(message.content.lower())
             embed = await self.make_embed()
@@ -134,21 +124,9 @@ class ChessInput(discord.ui.Modal, title="Make your move"):
         super().__init__()
         self.view = view
 
-        self.move_from = discord.ui.TextInput(
-            label="from coordinate",
-            style=discord.TextStyle.short,
-            required=True,
-            min_length=2,
-            max_length=2,
-        )
+        self.move_from = discord.ui.TextInput(label="from coordinate", style=discord.TextStyle.short, required=True, min_length=2, max_length=2)
 
-        self.move_to = discord.ui.TextInput(
-            label="to coordinate",
-            style=discord.TextStyle.short,
-            required=True,
-            min_length=2,
-            max_length=2,
-        )
+        self.move_to = discord.ui.TextInput(label="to coordinate", style=discord.TextStyle.short, required=True, min_length=2, max_length=2)
 
         self.add_item(self.move_from)
         self.add_item(self.move_to)
@@ -167,22 +145,18 @@ class ChessInput(discord.ui.Modal, title="Make your move"):
             is_valid_uci = False
 
         if not is_valid_uci:
-            await interaction.response.send_message(
-                f"Invalid coordinates for move: `{from_coord} -> {to_coord}`",
-                ephemeral=True,
-            )
+            await interaction.response.send_message(f"Invalid coordinates for move: `{from_coord} -> {to_coord}`", ephemeral=True)
             return
+        await game.place_move(uci)
+
+        if game.board.is_game_over():
+            self.view.disable_all()
+            embed = await game.fetch_results()
+            self.view.stop()
         else:
-            await game.place_move(uci)
+            embed = await game.make_embed()
 
-            if game.board.is_game_over():
-                self.view.disable_all()
-                embed = await game.fetch_results()
-                self.view.stop()
-            else:
-                embed = await game.make_embed()
-
-            await interaction.response.edit_message(embed=embed, view=self.view)
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
 
 class ChessButton(WordInputButton):
@@ -192,26 +166,19 @@ class ChessButton(WordInputButton):
         assert self.view is not None
         game = self.view.game
         if interaction.user not in (game.black, game.white):
-            await interaction.response.send_message(
-                "You are not part of this game!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("You are not part of this game!", ephemeral=True)
             return
-        elif self.label == "Cancel":
+        if self.label == "Cancel":
             self.view.disable_all()
             assert interaction.message is not None
             await interaction.message.edit(view=self.view)
             await interaction.response.send_message("**Game Over!** Cancelled")
             self.view.stop()
             return
-        elif interaction.user != game.turn:
-            await interaction.response.send_message(
-                "It is not your turn yet!",
-                ephemeral=True,
-            )
+        if interaction.user != game.turn:
+            await interaction.response.send_message("It is not your turn yet!", ephemeral=True)
             return
-        else:
-            await interaction.response.send_modal(ChessInput(self.view))
+        await interaction.response.send_modal(ChessInput(self.view))
 
 
 class ChessView(BaseView):

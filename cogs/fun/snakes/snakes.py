@@ -16,7 +16,8 @@ from discord.ext import commands
 from discord.ext.commands import BucketType, bot_has_permissions, group
 from PIL import Image, ImageDraw, ImageFont
 
-from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS, POSITIVE_REPLIES as CORRECT_GUESS
+from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS
+from core.constants import POSITIVE_REPLIES as CORRECT_GUESS
 
 from .converter import Snake
 from .utils import (
@@ -46,28 +47,12 @@ BLANK_EMOJI = "\u26aa"
 HOLE_EMOJI = "\u2b1c"
 EMPTY_UNICODE = "\u200b"
 
-ANTIDOTE_EMOJI = (
-    SYRINGE_EMOJI,
-    PILL_EMOJI,
-    HOURGLASS_EMOJI,
-    CROSSBONES_EMOJI,
-    ALEMBIC_EMOJI,
-)
+ANTIDOTE_EMOJI = (SYRINGE_EMOJI, PILL_EMOJI, HOURGLASS_EMOJI, CROSSBONES_EMOJI, ALEMBIC_EMOJI)
 
 
-ANSWERS_EMOJI = {
-    "a": "\U0001f1e6",
-    "b": "\U0001f1e7",
-    "c": "\U0001f1e8",
-    "d": "\U0001f1e9",
-}
+ANSWERS_EMOJI = {"a": "\U0001f1e6", "b": "\U0001f1e7", "c": "\U0001f1e8", "d": "\U0001f1e9"}
 
-ANSWERS_EMOJI_REVERSE = {
-    "\U0001f1e6": "A",
-    "\U0001f1e7": "B",
-    "\U0001f1e8": "C",
-    "\U0001f1e9": "D",
-}
+ANSWERS_EMOJI_REVERSE = {"\U0001f1e6": "A", "\U0001f1e7": "B", "\U0001f1e8": "C", "\U0001f1e9": "D"}
 
 
 class ImageInfo(TypedDict):
@@ -225,10 +210,7 @@ class Snakes(commands.Cog):
         rectangle = Image.new("RGBA", (main_width, main_height), (0, 0, 0, 0))
 
         rect = ImageDraw.Draw(rectangle)
-        rect.rectangle(
-            (margin, offset, main_width - margin, main_height - margin),
-            fill=(63, 63, 63, 128),
-        )
+        rect.rectangle((margin, offset, main_width - margin, main_height - margin), fill=(63, 63, 63, 128))
 
         full_image.paste(rectangle, (0, 0), mask=rectangle)
 
@@ -247,16 +229,7 @@ class Snakes(commands.Cog):
     def _snakify(message: str) -> str:
         """Sssnakifffiesss a sstring."""
 
-        simple_fricatives = [
-            "f",
-            "s",
-            "z",
-            "h",
-            "F",
-            "S",
-            "Z",
-            "H",
-        ]
+        simple_fricatives = ["f", "s", "z", "h", "F", "S", "Z", "H"]
         complex_fricatives = ["th", "sh", "Th", "Sh"]
 
         for letter in simple_fricatives:
@@ -291,21 +264,9 @@ class Snakes(commands.Cog):
 
     async def _get_snek(self, name: str) -> SnakeInfo | None:
         """Fetch all available data from a Wikipedia article about a snake."""
-        snake_info: SnakeInfo = {
-            "image_list": [],
-            "map_list": [],
-            "thumb_list": [],
-            "name": name,
-        }
+        snake_info: SnakeInfo = {"image_list": [], "map_list": [], "thumb_list": [], "name": name}
 
-        params = {
-            "format": "json",
-            "action": "query",
-            "list": "search",
-            "srsearch": name,
-            "utf8": "",
-            "srlimit": "1",
-        }
+        params = {"format": "json", "action": "query", "list": "search", "srsearch": name, "utf8": "", "srlimit": "1"}
 
         data = await self._fetch(WIKI_API_ENDPOINT, params=params)
         search_data = cast(SearchResponse, data)
@@ -340,7 +301,7 @@ class Snakes(commands.Cog):
                     "images": page["images"],
                     "fullurl": page["fullurl"],
                     "pageid": page["pageid"],
-                },
+                }
             )
         except KeyError:
             snake_info["error"] = True
@@ -442,7 +403,7 @@ class Snakes(commands.Cog):
                     reaction_.emoji in ANTIDOTE_EMOJI,
                     user_.id != self.bot.user.id,
                     user_.id == ctx.author.id,
-                ),
+                )
             )
 
         antidote_tries = 0
@@ -513,10 +474,7 @@ class Snakes(commands.Cog):
                     antidote_guess_list = []
 
                     antidote_embed.clear_fields()
-                    antidote_embed.add_field(
-                        name=f"{10 - antidote_tries} guesses remaining",
-                        value="\n".join(board),
-                    )
+                    antidote_embed.add_field(name=f"{10 - antidote_tries} guesses remaining", value="\n".join(board))
 
                     await board_id.edit(embed=antidote_embed)
 
@@ -553,11 +511,7 @@ class Snakes(commands.Cog):
             random_hue = random.random()
             snek_color = self._beautiful_pastel(random_hue)
             text_color = self._beautiful_pastel((random_hue + 0.5) % 1)
-            bg_color = (
-                random.randint(32, 50),
-                random.randint(32, 50),
-                random.randint(50, 70),
-            )
+            bg_color = (random.randint(32, 50), random.randint(32, 50), random.randint(50, 70))
 
             text = random.choice(self.snake_idioms)["idiom"]
             factory = PerlinNoiseFactory(dimension=1, octaves=2)
@@ -606,11 +560,7 @@ class Snakes(commands.Cog):
                 description = description.strip("\n")
                 description += f"\n\nRead more on [Wikipedia]({data['fullurl']})"
 
-            embed = Embed(
-                title=data.get("title", data.get("name")),
-                description=description,
-                colour=0x59982F,
-            )
+            embed = Embed(title=data.get("title", data.get("name")), description=description, colour=0x59982F)
 
             emoji = "https://emojipedia-us.s3.amazonaws.com/thumbs/60/google/3/snake_1f40d.png"
 
@@ -750,11 +700,7 @@ class Snakes(commands.Cog):
         result = f"{snake_prefix} {user_name}{snake_name}"
         result = string.capwords(result)
 
-        embed = Embed(
-            title="Snake name",
-            description=f"Your snake-name is **{result}**",
-            color=SNAKE_COLOR,
-        )
+        embed = Embed(title="Snake name", description=f"Your snake-name is **{result}**", color=SNAKE_COLOR)
 
         await ctx.reply(embed=embed)
 
@@ -810,10 +756,7 @@ class Snakes(commands.Cog):
             final_buffer = await self.bot.loop.run_in_executor(None, func)
 
         name = content.get("name", content.get("title", "Unknown Snake"))
-        await ctx.reply(
-            f"A wild {name.title()} appears!",
-            file=File(final_buffer, filename=name.replace(" ", "") + ".png"),
-        )
+        await ctx.reply(f"A wild {name.title()} appears!", file=File(final_buffer, filename=name.replace(" ", "") + ".png"))
 
     @snakes_group.command(name="fact")
     async def fact_command(self, ctx: commands.Context[Parrot]) -> None:
@@ -836,10 +779,7 @@ class Snakes(commands.Cog):
         embed = Embed()
         user = ctx.author
 
-        embed.set_author(
-            name=f"{user}",
-            icon_url=user.display_avatar.url,
-        )
+        embed.set_author(name=f"{user}", icon_url=user.display_avatar.url)
         embed.description = f"*{self._snakify(message)}*"
 
         await ctx.reply(embed=embed)

@@ -15,8 +15,7 @@ class _GuildHubMixin(DatabaseMixin):
             return cached
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "hub_channel_id": {"$exists": True, "$ne": None}},
-            {"hub_channel_id": 1},
+            {"_id": guild_id, "hub_channel_id": {"$exists": True, "$ne": None}}, {"hub_channel_id": 1}
         )
         if guild_config is None:
             return None
@@ -62,9 +61,5 @@ class _GuildHubMixin(DatabaseMixin):
 
     async def remove_hub_channel_owner_id(self, *, guild_id: int, channel_id: int) -> None:
         redis_key = RedisKeys.GUILD_HUB_CHANNEL_OWNER.format(guild_id=guild_id, channel_id=channel_id)
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"hub_channel_owners.{channel_id}": None}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"hub_channel_owners.{channel_id}": None}}, upsert=True)
         await self.redis_client.delete(redis_key)

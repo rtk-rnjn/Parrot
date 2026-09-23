@@ -106,11 +106,7 @@ class CountryGuesser:
         return round(difflib.SequenceMatcher(None, guess, self.country).ratio() * 100)
 
     def get_embed(self) -> discord.Embed:
-        embed = discord.Embed(
-            title="Guess that country!",
-            description=f"```fix\n{self.get_blanks()}\n```",
-            color=self.embed_color,
-        )
+        embed = discord.Embed(title="Guess that country!", description=f"```fix\n{self.get_blanks()}\n```", color=self.embed_color)
         embed.add_field(
             name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nblurred: {str(self.hard_mode).lower()}\nflag-mode: {str(self.is_flags).lower()}\n```",
@@ -120,43 +116,27 @@ class CountryGuesser:
         return embed
 
     async def wait_for_response(
-        self,
-        ctx: commands.Context[commands.Bot],
-        *,
-        options: tuple[str, ...] = (),
-        length: int | None = None,
+        self, ctx: commands.Context[commands.Bot], *, options: tuple[str, ...] = (), length: int | None = None
     ) -> tuple[discord.Message, str] | None:
         def check(m: discord.Message) -> bool:
             if length:
                 return m.channel == ctx.channel and m.author == ctx.author and len(m.content) == length
-            else:
-                return m.channel == ctx.channel and m.author == ctx.author
+            return m.channel == ctx.channel and m.author == ctx.author
 
-        message: discord.Message = await ctx.bot.wait_for(
-            "message",
-            timeout=self.timeout,
-            check=check,
-        )
+        message: discord.Message = await ctx.bot.wait_for("message", timeout=self.timeout, check=check)
         content = message.content.strip().lower()
 
         if options:
             if content not in options:
-                return
+                return None
 
         return message, content
 
-    async def _handle_incorrect_guess(
-        self,
-        ctx: commands.Context[Parrot],
-        msg: discord.Message,
-        response: str,
-    ) -> bool:
+    async def _handle_incorrect_guess(self, ctx: commands.Context[Parrot], msg: discord.Message, response: str) -> bool:
         self.guesses -= 1
 
         if not self.guesses:
-            await msg.reply(
-                f"Game Over! you lost, The country was `{self.country.title()}`",
-            )
+            await msg.reply(f"Game Over! you lost, The country was `{self.country.title()}`")
             return False
 
         acc = self.get_accuracy(response)
@@ -174,10 +154,7 @@ class CountryGuesser:
         )
 
         try:
-            hint_result = await self.wait_for_response(
-                ctx,
-                options=("y", "n"),
-            )
+            hint_result = await self.wait_for_response(ctx, options=("y", "n"))
         except TimeoutError:
             return False
 
@@ -188,19 +165,13 @@ class CountryGuesser:
         if resp == "y":
             hint = self.get_hint()
             self.hints -= 1
-            await hint_msg.reply(
-                f"Here is your hint: `{hint}`",
-                mention_author=False,
-            )
+            await hint_msg.reply(f"Here is your hint: `{hint}`", mention_author=False)
         else:
-            await hint_msg.reply(
-                f"Okay continue guessing! You have **{self.guesses}** guesses left.",
-                mention_author=False,
-            )
+            await hint_msg.reply(f"Okay continue guessing! You have **{self.guesses}** guesses left.", mention_author=False)
 
         return True
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -230,11 +201,9 @@ class CountryGuesser:
             msg, response = result
 
             if response == self.country:
-                await msg.reply(
-                    f"That is correct! The country was `{self.country.title()}`",
-                )
+                await msg.reply(f"That is correct! The country was `{self.country.title()}`")
                 break
-            elif not await self._handle_incorrect_guess(ctx, msg, response):
+            if not await self._handle_incorrect_guess(ctx, msg, response):
                 break
 
         return self.message
@@ -261,9 +230,7 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
 
         if guess == game.country:
             game.update_guesslog("+ GAME OVER, you won! +")
-            await interaction.response.send_message(
-                f"That is correct! The country was `{game.country.title()}`",
-            )
+            await interaction.response.send_message(f"That is correct! The country was `{game.country.title()}`")
 
             self.view.disable_all()
             game.embed.description = f"```fix\n{game.country.title()}\n```"
@@ -271,37 +238,25 @@ class CountryInput(discord.ui.Modal, title="Input your guess!"):
             await interaction.message.edit(view=self.view, embed=game.embed)
             self.view.stop()
             return
-        else:
-            game.guesses -= 1
+        game.guesses -= 1
 
-            if not game.guesses:
-                self.view.disable_all()
-                game.update_guesslog("- GAME OVER, you lost -")
+        if not game.guesses:
+            self.view.disable_all()
+            game.update_guesslog("- GAME OVER, you lost -")
 
-                assert interaction.message is not None
-                await interaction.message.edit(embed=game.embed, view=self.view)
-                await interaction.response.send_message(
-                    f"Game Over! you lost, The country was `{game.country.title()}`",
-                )
-                self.view.stop()
-                return
-            else:
-                acc = game.get_accuracy(guess)
-                game.update_guesslog(
-                    f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n+ You have {game.guesses} guesses left.\n",
-                )
+            assert interaction.message is not None
+            await interaction.message.edit(embed=game.embed, view=self.view)
+            await interaction.response.send_message(f"Game Over! you lost, The country was `{game.country.title()}`")
+            self.view.stop()
+            return
+        acc = game.get_accuracy(guess)
+        game.update_guesslog(f"- [{guess}] was incorrect! but you are ({acc}%) of the way there!\n+ You have {game.guesses} guesses left.\n")
 
-                await interaction.response.edit_message(embed=game.embed)
+        await interaction.response.edit_message(embed=game.embed)
 
 
 class CountryView(BaseView):
-    def __init__(
-        self,
-        game: BetaCountryGuesser,
-        *,
-        user: Player,
-        timeout: float | None,
-    ) -> None:
+    def __init__(self, game: BetaCountryGuesser, *, user: Player, timeout: float | None) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game
@@ -309,30 +264,19 @@ class CountryView(BaseView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.user:
-            await interaction.response.send_message(
-                "You cannot interact with this view.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
             return False
-        else:
-            return True
+        return True
 
     @discord.ui.button(label="Make a guess!", style=discord.ButtonStyle.blurple)
     async def guess_button(self, interaction: discord.Interaction, _) -> None:
         await interaction.response.send_modal(CountryInput(self))
 
     @discord.ui.button(label="hint", style=discord.ButtonStyle.green)
-    async def hint_button(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
-    ) -> None:
+    async def hint_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         hint = self.game.get_hint()
         self.game.hints -= 1
-        await interaction.response.send_message(
-            f"Here is your hint: `{hint}`",
-            ephemeral=True,
-        )
+        await interaction.response.send_message(f"Here is your hint: `{hint}`", ephemeral=True)
 
         if not self.game.hints:
             button.disabled = True
@@ -346,9 +290,7 @@ class CountryView(BaseView):
         self.game.embed.description = f"```fix\n{self.game.country.title()}\n```"
         self.game.update_guesslog("- GAME OVER, CANCELLED -")
 
-        await interaction.response.send_message(
-            f"Game Over! The country was `{self.game.country.title()}`",
-        )
+        await interaction.response.send_message(f"Game Over! The country was `{self.game.country.title()}`")
         assert interaction.message is not None
         await interaction.message.edit(view=self, embed=self.game.embed)
         self.stop()
@@ -364,11 +306,7 @@ class BetaCountryGuesser(CountryGuesser):
 
     def update_guesslog(self, entry: str) -> None:
         self.guesslog += entry + "\n"
-        self.embed.set_field_at(
-            1,
-            name="Guess Log",
-            value=f"```diff\n{self.guesslog}\n```",
-        )
+        self.embed.set_field_at(1, name="Guess Log", value=f"```diff\n{self.guesslog}\n```")
 
     async def start(
         self,
@@ -384,11 +322,7 @@ class BetaCountryGuesser(CountryGuesser):
 
         self.embed_color = embed_color
         self.embed = self.get_embed()
-        self.embed.add_field(
-            name="Guess Log",
-            value="```diff\n\N{ZERO WIDTH SPACE}\n```",
-            inline=False,
-        )
+        self.embed.add_field(name="Guess Log", value="```diff\n\N{ZERO WIDTH SPACE}\n```", inline=False)
 
         self.view = CountryView(self, user=ctx.author, timeout=timeout)
         self.message = await ctx.reply(embed=self.embed, file=file, view=self.view)

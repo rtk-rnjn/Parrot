@@ -4,13 +4,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from .configs import (
-    CategoriesConfig,
-    ChannelsConfig,
-    DurationConfig,
-    NoConfig,
-    RolesConfig,
-)
+from .configs import CategoriesConfig, ChannelsConfig, DurationConfig, NoConfig, RolesConfig
 from .mapping import _CONFIG_TYPES, ConditionConfig, ConditionType
 
 
@@ -24,12 +18,7 @@ def _require_dict(value: object, name: str) -> Mapping[str, Any]:
     return value
 
 
-def _require_int(
-    data: Mapping[str, Any],
-    key: str,
-    *,
-    minimum: int = 0,
-) -> int:
+def _require_int(data: Mapping[str, Any], key: str, *, minimum: int = 0) -> int:
     value = data.get(key)
 
     if not isinstance(value, int) or isinstance(value, bool):
@@ -41,11 +30,7 @@ def _require_int(
     return value
 
 
-def _optional_bool(
-    data: Mapping[str, Any],
-    key: str,
-    default: bool = False,
-) -> bool:
+def _optional_bool(data: Mapping[str, Any], key: str, default: bool = False) -> bool:
     value = data.get(key, default)
 
     if not isinstance(value, bool):
@@ -54,10 +39,7 @@ def _optional_bool(
     return value
 
 
-def _require_int_tuple(
-    data: Mapping[str, Any],
-    key: str,
-) -> tuple[int, ...]:
+def _require_int_tuple(data: Mapping[str, Any], key: str) -> tuple[int, ...]:
     value = data.get(key)
 
     if not isinstance(value, list):
@@ -80,28 +62,19 @@ def _parse_no_config(_: Mapping[str, Any]) -> ConditionConfig:
 
 
 def _parse_roles(data: Mapping[str, Any]) -> ConditionConfig:
-    return RolesConfig(
-        roles=_require_int_tuple(data, "roles"),
-        require_all=_optional_bool(data, "require_all", default=False),
-    )
+    return RolesConfig(roles=_require_int_tuple(data, "roles"), require_all=_optional_bool(data, "require_all", default=False))
 
 
 def _parse_channels(data: Mapping[str, Any]) -> ConditionConfig:
-    return ChannelsConfig(
-        channels=_require_int_tuple(data, "channels"),
-    )
+    return ChannelsConfig(channels=_require_int_tuple(data, "channels"))
 
 
 def _parse_categories(data: Mapping[str, Any]) -> ConditionConfig:
-    return CategoriesConfig(
-        categories=_require_int_tuple(data, "categories"),
-    )
+    return CategoriesConfig(categories=_require_int_tuple(data, "categories"))
 
 
 def _parse_duration(data: Mapping[str, Any]) -> ConditionConfig:
-    return DurationConfig(
-        minutes=_require_int(data, "minutes", minimum=0),
-    )
+    return DurationConfig(minutes=_require_int(data, "minutes", minimum=0))
 
 
 Parser = Callable[[Mapping[str, Any]], ConditionConfig]
@@ -116,18 +89,9 @@ _NO_CONFIG_TYPES = {
     ConditionType.IGNORE_FORWARDS,
     ConditionType.ONLY_FORWARDS,
 }
-_ROLE_TYPES = {
-    ConditionType.IGNORED_ROLES,
-    ConditionType.REQUIRED_ROLES,
-}
-_CHANNEL_TYPES = {
-    ConditionType.IGNORED_CHANNELS,
-    ConditionType.ACTIVE_CHANNELS,
-}
-_CATEGORY_TYPES = {
-    ConditionType.IGNORED_CATEGORIES,
-    ConditionType.ACTIVE_CATEGORIES,
-}
+_ROLE_TYPES = {ConditionType.IGNORED_ROLES, ConditionType.REQUIRED_ROLES}
+_CHANNEL_TYPES = {ConditionType.IGNORED_CHANNELS, ConditionType.ACTIVE_CHANNELS}
+_CATEGORY_TYPES = {ConditionType.IGNORED_CATEGORIES, ConditionType.ACTIVE_CATEGORIES}
 _DURATION_TYPES = {
     ConditionType.ACCOUNT_AGE_ABOVE,
     ConditionType.ACCOUNT_AGE_BELOW,
@@ -149,10 +113,7 @@ for t in _DURATION_TYPES:
     _PARSERS[t] = _parse_duration
 
 
-def _parse_config(
-    condition_type: ConditionType,
-    data: Mapping[str, Any],
-) -> ConditionConfig:
+def _parse_config(condition_type: ConditionType, data: Mapping[str, Any]) -> ConditionConfig:
     parser = _PARSERS.get(condition_type)
 
     if parser is None:

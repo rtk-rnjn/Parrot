@@ -25,12 +25,18 @@ from discord.ext import commands
 from jishaku.paginators import PaginatorInterface
 from yapf.yapflib.yapf_api import FormatCode as yapf_format
 
-from ._bandit import BanditConverter, validate_flag as bandit_validate_flag
-from ._flake8 import Flake8Converter, validate_flag as flake8_validate_flag
-from ._mypy import MypyConverter, validate_flag as mypy_validate_flag
-from ._pylint import PyLintConverter, validate_flag as pylint_validate_flag
-from ._pyright import PyrightConverter, validate_flag as pyright_validate_flag
-from ._ruff import RuffConverter, validate_flag as ruff_validate_flag
+from ._bandit import BanditConverter
+from ._bandit import validate_flag as bandit_validate_flag
+from ._flake8 import Flake8Converter
+from ._flake8 import validate_flag as flake8_validate_flag
+from ._mypy import MypyConverter
+from ._mypy import validate_flag as mypy_validate_flag
+from ._pylint import PyLintConverter
+from ._pylint import validate_flag as pylint_validate_flag
+from ._pyright import PyrightConverter
+from ._pyright import validate_flag as pyright_validate_flag
+from ._ruff import RuffConverter
+from ._ruff import validate_flag as ruff_validate_flag
 
 GITHUB_API_URL = "https://api.github.com"
 
@@ -94,11 +100,7 @@ FlagT = TypeVar("FlagT", Flake8Converter, MypyConverter, PyLintConverter, Bandit
 
 async def code_to_file(code: str) -> str:
     def create_file() -> str:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            delete=False,
-        ) as file:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", delete=False) as file:
             file.write(code)
             return file.name
 
@@ -193,7 +195,7 @@ class LintCode:
             pages.add_line(f"{Fore.WHITE}Pyright Version - {Fore.WHITE}{pyright.__version__}\n")
 
             pages.add_line(
-                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information",
+                f"{Fore.RED}{json_data['summary']['errorCount']} errors - {Fore.YELLOW}{json_data['summary']['warningCount']} warnings - {Fore.BLUE}{json_data['summary']['informationCount']} information"
             )
             interface = PaginatorInterface(ctx.bot, pages, owner=ctx.author)
             await interface.send_to(ctx)
@@ -287,7 +289,7 @@ class LintCode:
                 end_location_col = f"{Fore.YELLOW}{result['end_location']['column']}"
 
                 await interface.add_line(
-                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}:{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}",
+                    f"{Fore.WHITE}{filename}:{location_row}:{location_col}{Fore.WHITE}-{end_location_row}:{end_location_col} {Fore.WHITE}- {code} {Fore.WHITE}- {message}"
                 )
                 if result["fix"]:
                     applicability = f"{Fore.CYAN}{result['fix']['applicability']}"
@@ -358,7 +360,7 @@ class LintCode:
             confidence_undefined = json_data["metrics"]["_totals"]["CONFIDENCE.UNDEFINED"]
 
             await interface.add_line(
-                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High {Fore.WHITE}- {Fore.YELLOW}{confidence_medium} Medium {Fore.WHITE}- {Fore.GREEN}{confidence_low} Low {Fore.WHITE}- {Fore.CYAN}{confidence_undefined} Undefined",
+                f"{Fore.WHITE}Confidence: {Fore.RED}{confidence_high} High {Fore.WHITE}- {Fore.YELLOW}{confidence_medium} Medium {Fore.WHITE}- {Fore.GREEN}{confidence_low} Low {Fore.WHITE}- {Fore.CYAN}{confidence_undefined} Undefined"
             )
 
             severity_high = json_data["metrics"]["_totals"]["SEVERITY.HIGH"]
@@ -367,7 +369,7 @@ class LintCode:
             severity_undefined = json_data["metrics"]["_totals"]["SEVERITY.UNDEFINED"]
 
             await interface.add_line(
-                f"{Fore.WHITE}Severity  : {Fore.RED}{severity_high} High {Fore.WHITE}- {Fore.YELLOW}{severity_medium} Medium {Fore.WHITE}- {Fore.GREEN}{severity_low} Low {Fore.WHITE}- {Fore.CYAN}{severity_undefined} Undefined",
+                f"{Fore.WHITE}Severity  : {Fore.RED}{severity_high} High {Fore.WHITE}- {Fore.YELLOW}{severity_medium} Medium {Fore.WHITE}- {Fore.GREEN}{severity_low} Low {Fore.WHITE}- {Fore.CYAN}{severity_undefined} Undefined"
             )
 
             loc = json_data["metrics"]["_totals"]["loc"]
@@ -375,7 +377,7 @@ class LintCode:
             skipped_tests = json_data["metrics"]["_totals"]["skipped_tests"]
 
             await interface.add_line(
-                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}Lines of Code (#NoSec) {nosec} {Fore.WHITE}- {Fore.YELLOW}Skipped Tests {skipped_tests}\n",
+                f"\n{Fore.WHITE}Lines of Code {Fore.WHITE}{loc} - {Fore.RED}Lines of Code (#NoSec) {nosec} {Fore.WHITE}- {Fore.YELLOW}Skipped Tests {skipped_tests}\n"
             )
 
             for result in json_data["results"]:
@@ -404,7 +406,7 @@ class LintCode:
                     f"{Fore.WHITE}   More Info: {more_info}\n"
                     f"{Fore.WHITE}   Location : {filename}{line_number:>2}:{col_offset:<2}\n"
                     f"{Fore.WHITE}   Code     :\n{code}\n"
-                    f"{Fore.WHITE}{'-' * 50}\n",
+                    f"{Fore.WHITE}{'-' * 50}\n"
                 )
 
     async def run_black(self, ctx: commands.Context) -> None:

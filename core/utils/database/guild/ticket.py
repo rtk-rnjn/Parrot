@@ -35,8 +35,7 @@ class _GuildTicketMixin(DatabaseMixin):
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "ticket_config.channel_id": {"$exists": True}},
-            {"ticket_config.channel_id": 1},
+            {"_id": guild_id, "ticket_config.channel_id": {"$exists": True}}, {"ticket_config.channel_id": 1}
         )
         if guild is None:
             return None
@@ -45,7 +44,6 @@ class _GuildTicketMixin(DatabaseMixin):
             await self.redis_client.set(key, channel_id)
         return channel_id
 
-
     async def get_ticket_config_bot_message_id(self, guild_id: int, /) -> int | None:
         key = RedisKeys.GUILD_TICKET_CONFIG_BOT_MESSAGE_ID.format(guild_id=guild_id)
         cached = await self.redis_client.get(key)
@@ -53,8 +51,7 @@ class _GuildTicketMixin(DatabaseMixin):
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "ticket_config.bot_message_id": {"$exists": True}},
-            {"ticket_config.bot_message_id": 1},
+            {"_id": guild_id, "ticket_config.bot_message_id": {"$exists": True}}, {"ticket_config.bot_message_id": 1}
         )
         if guild is None:
             return None
@@ -85,9 +82,9 @@ class _GuildTicketMixin(DatabaseMixin):
         *,
         guild_id: int,
         enabled: bool | object = MISSING,
-        channel_id: int | None | object = MISSING,
-        bot_message_id: int | None | object = MISSING,
-        bot_channel_channel_id: int | None | object = MISSING,
+        channel_id: int | object | None = MISSING,
+        bot_message_id: int | object | None = MISSING,
+        bot_channel_channel_id: int | object | None = MISSING,
     ) -> bool:
         updates = {
             f"ticket_config.{field}": value
@@ -107,10 +104,7 @@ class _GuildTicketMixin(DatabaseMixin):
         return result.matched_count > 0 or result.upserted_id is not None
 
     async def get_all_ticket_config_message_id(self):
-        cursor = self.guilds_collection.find(
-            {"ticket_config.bot_message_id": {"$exists": True, "$ne": None}},
-            {"ticket_config.bot_message_id": 1},
-        )
+        cursor = self.guilds_collection.find({"ticket_config.bot_message_id": {"$exists": True, "$ne": None}}, {"ticket_config.bot_message_id": 1})
 
         async for document in cursor:
             message_id = document["ticket_config"]["bot_message_id"]

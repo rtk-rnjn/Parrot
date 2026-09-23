@@ -60,10 +60,7 @@ class ReminderLayout(BaseLayoutView):
 
         return discord.ui.Section(
             discord.ui.TextDisplay(f"[{index}. **{relative_time_fmt}**]({jump_url})\n-# {parsed_text}"),
-            accessory=discord.ui.Button(
-                emoji="\N{WASTEBASKET}",
-                style=discord.ButtonStyle.red,
-            ),
+            accessory=discord.ui.Button(emoji="\N{WASTEBASKET}", style=discord.ButtonStyle.red),
         )
 
 
@@ -86,11 +83,7 @@ class SnoozeModal(discord.ui.Modal, title="Snooze"):
         self.parent.snooze.disabled = True
         await interaction.response.edit_message(view=self.parent)
 
-        await interaction.client.event_scheduler.create_timer(
-            event_name="reminder",
-            expires_at=when,
-            metadata=self.metadata,
-        )
+        await interaction.client.event_scheduler.create_timer(event_name="reminder", expires_at=when, metadata=self.metadata)
         author_id = self.metadata["user_id"]
         message = self.metadata["reminder_text"]
 
@@ -214,22 +207,10 @@ class Reminder(commands.Cog):
         # A bit hacky, but if '/' is in the query then it's looking for a raw identifier;
         # otherwise it's looking for a CLDR alias.
         if "/" in query:
-            matches = process.extract(
-                query,
-                self.valid_timezones,
-                scorer=fuzz.WRatio,
-                score_cutoff=50,
-                limit=10,
-            )
+            matches = process.extract(query, self.valid_timezones, scorer=fuzz.WRatio, score_cutoff=50, limit=10)
             return [TimeZone(key=match[0], label=match[0]) for match in matches]
 
-        matches = process.extract(
-            query,
-            self._timezone_aliases.keys(),
-            scorer=fuzz.WRatio,
-            score_cutoff=50,
-            limit=10,
-        )
+        matches = process.extract(query, self._timezone_aliases.keys(), scorer=fuzz.WRatio, score_cutoff=50, limit=10)
         return [TimeZone(label=match[0], key=self._timezone_aliases[match[0]]) for match in matches]
 
     async def get_timezone(self, user_id: int, /) -> str | None:
@@ -356,12 +337,7 @@ class Reminder(commands.Cog):
         message_url = f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
         response = f"<@{user_id}>, this is your reminder: {metadata['reminder_text']}"
 
-        view = ReminderView(
-            url=message_url,
-            metadata=metadata,
-            cog=self,
-            author_id=user_id,
-        )
+        view = ReminderView(url=message_url, metadata=metadata, cog=self, author_id=user_id)
 
         # Try sending in the original channel first.
         if guild is not None and isinstance(channel, discord.abc.Messageable):
@@ -390,7 +366,7 @@ class Reminder(commands.Cog):
         ctx: commands.Context[Parrot],
         *,
         when: Annotated[FriendlyTimeResult, UserFriendlyTime(commands.clean_content, default="...")] = commands.parameter(  # noqa: B008
-            description="The time to set the reminder for, in a human-readable format.",
+            description="The time to set the reminder for, in a human-readable format."
         ),
     ):
         """Reminds you of something after a certain amount of time.
@@ -419,15 +395,9 @@ class Reminder(commands.Cog):
             reminder_text=when.arg,
         )
 
-        await self.bot.event_scheduler.create_timer(
-            event_name="reminder",
-            expires_at=when.dt,
-            metadata=metadata,
-        )
+        await self.bot.event_scheduler.create_timer(event_name="reminder", expires_at=when.dt, metadata=metadata)
 
-        return await ctx.reply(
-            f"You will be reminded: {discord.utils.format_dt(when.dt, 'R')} ({discord.utils.format_dt(when.dt, 'F')})",
-        )
+        return await ctx.reply(f"You will be reminded: {discord.utils.format_dt(when.dt, 'R')} ({discord.utils.format_dt(when.dt, 'F')})")
 
     @commands.command(name="reminders")
     async def reminders(self, ctx: commands.Context[Parrot]) -> discord.Message:

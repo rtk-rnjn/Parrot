@@ -12,12 +12,7 @@ if TYPE_CHECKING:
 
     from core import Parrot
 
-__all__ = (
-    "MONTHS",
-    "HumanDate",
-    "DateTransformer",
-    "BadDateTransform",
-)
+__all__ = ("MONTHS", "BadDateTransform", "DateTransformer", "HumanDate")
 
 Prefer = Literal["current", "future", "past"]
 
@@ -187,7 +182,7 @@ class HumanDate:
         Whatever followed the date, for commands like ``!remind 23 March 2004 ...``.
     """
 
-    __slots__ = ("date", "datetime", "has_year", "has_time", "remaining")
+    __slots__ = ("date", "datetime", "has_time", "has_year", "remaining")
 
     def __init__(
         self,
@@ -201,9 +196,7 @@ class HumanDate:
         argument = argument.strip()
         m = _match_date(argument)
         if m is None:
-            raise commands.BadArgument(
-                "Couldn't find a date in that. Try something like `23 March 2004`, `May 13 '12` or `2004-03-23`.",
-            )
+            raise commands.BadArgument("Couldn't find a date in that. Try something like `23 March 2004`, `May 13 '12` or `2004-03-23`.")
 
         data = m.groupdict()
         month, day = _resolve_month_day(data, dayfirst=dayfirst)

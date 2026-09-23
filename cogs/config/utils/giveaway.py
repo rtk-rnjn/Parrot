@@ -22,7 +22,7 @@ class GiveawayConfigModal(discord.ui.Modal, title="Edit Giveaway Configuration")
         self._giveaway_channel_input = discord.ui.ChannelSelect(
             placeholder="Select a channel for giveaways...",
             channel_types=[discord.ChannelType.text],
-            default_values=[discord.Object(id=self.giveaway_channel_id)] if self.giveaway_channel_id is not None else [],
+            default_values=([discord.Object(id=self.giveaway_channel_id)] if self.giveaway_channel_id is not None else []),
             min_values=0,
             max_values=1,
         )
@@ -54,14 +54,10 @@ class GiveawayConfigModal(discord.ui.Modal, title="Edit Giveaway Configuration")
 
         guild_id = interaction.guild.id
         new_config = {
-            "giveaway_channel_id": self._giveaway_channel_input.values[0].id if self._giveaway_channel_input.values else None,
+            "giveaway_channel_id": (self._giveaway_channel_input.values[0].id if self._giveaway_channel_input.values else None),
             "giveaway_role_id": self._giveaway_role_input.values[0].id if self._giveaway_role_input.values else None,
         }
-        await interaction.client.database.edit_giveaway_config(
-            guild_id=guild_id,
-            enabled=True,
-            **new_config,
-        )
+        await interaction.client.database.edit_giveaway_config(guild_id=guild_id, enabled=True, **new_config)
 
         await interaction.response.send_message("Updated giveaway configuration.", ephemeral=True)
 

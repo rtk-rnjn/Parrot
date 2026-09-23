@@ -28,7 +28,7 @@ class ConfirmationLayout(BaseLayoutView):
                 discord.ui.TextDisplay(prompt),
                 discord.ui.Separator(),
                 discord.ui.ActionRow(confirm_button, cancel_button),
-            ),
+            )
         )
 
     async def confirm_callback(self, interaction: discord.Interaction[Parrot]) -> None:

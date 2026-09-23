@@ -118,7 +118,12 @@ class Linter(commands.Cog):
 
     @lintcode.command(name="black", aliases=["fmt"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def black(self, ctx: commands.Context[Parrot], *, code: str = commands.parameter(description="The code to format with black.")):
+    async def black(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: str = commands.parameter(description="The code to format with black."),
+    ):
         """Format code with black."""
         linter = LintCode(code)
         await linter.run_black(ctx)
@@ -137,14 +142,24 @@ class Linter(commands.Cog):
 
     @lintcode.command(name="isort", aliases=["is"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def isort(self, ctx: commands.Context[Parrot], *, code: str = commands.parameter(description="The code to format with isort.")):
+    async def isort(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: str = commands.parameter(description="The code to format with isort."),
+    ):
         """Format code with isort."""
         linter = LintCode(code)
         await linter.run_isort(ctx)
 
     @lintcode.command(name="yapf", aliases=["yf"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def yapf(self, ctx: commands.Context[Parrot], *, code: str = commands.parameter(description="The code to format with yapf.")):
+    async def yapf(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: str = commands.parameter(description="The code to format with yapf."),
+    ):
         """Format code with yapf."""
         linter = LintCode(code)
         await linter.run_yapf(ctx)
@@ -175,7 +190,12 @@ class Linter(commands.Cog):
 
     @commands.command(name="pyright", aliases=["pyr"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def pyright_shortcut(self, ctx: commands.Context[Parrot], *, code: str = commands.parameter(description="The code to lint with pyright.")):
+    async def pyright_shortcut(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: str = commands.parameter(description="The code to lint with pyright."),
+    ):
         """Shortcut for `lintcode pyright` with no flags, just the code."""
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint_with_pyright(ctx)
@@ -194,7 +214,12 @@ class Linter(commands.Cog):
 
     @commands.command(name="ruff", aliases=["rf"])
     @commands.max_concurrency(1, commands.BucketType.user)
-    async def ruff_shortcut(self, ctx: commands.Context[Parrot], *, code: str = commands.parameter(description="The code to lint with ruff.")):
+    async def ruff_shortcut(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: str = commands.parameter(description="The code to lint with ruff."),
+    ):
         """Shortcut for `lintcode ruff` with no flags, just the code."""
         linter = LintCode(code).set_linttype("ruff")
         await linter.lint_with_ruff(ctx)

@@ -30,12 +30,7 @@ class TypingTest:
         self.sentence = random.choice(random_sentences)
 
     async def wait_for_message(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        start_time: float,
-        completed: set[int],
-        required_accuracy: float = 50.0,
+        self, ctx: commands.Context[Parrot], *, start_time: float, completed: set[int], required_accuracy: float = 50.0
     ) -> tuple[Player, float, float]:
 
         def check(message: discord.Message) -> bool:
@@ -46,10 +41,7 @@ class TypingTest:
                 and fuzz.ratio(self.sentence, message.content) >= required_accuracy
             )
 
-        message = await ctx.bot.wait_for(
-            "message",
-            check=check,
-        )
+        message = await ctx.bot.wait_for("message", check=check)
 
         elapsed = time.perf_counter() - start_time
         accuracy = fuzz.ratio(self.sentence, message.content)
@@ -79,11 +71,7 @@ class TypingTest:
         return "".join(result)
 
     async def start(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        timeout: float | None = 60.0,
-        embed_color: DiscordColor = DEFAULT_COLOR,
+        self, ctx: commands.Context[Parrot], *, timeout: float | None = 60.0, embed_color: DiscordColor = DEFAULT_COLOR
     ) -> discord.Message:
         embed = discord.Embed(
             title="Typing Test",
@@ -100,11 +88,7 @@ class TypingTest:
         try:
             async with asyncio.timeout(timeout):
                 while not ctx.bot.is_closed():
-                    user, elapsed, accuracy = await self.wait_for_message(
-                        ctx,
-                        start_time=start_time,
-                        completed=completed,
-                    )
+                    user, elapsed, accuracy = await self.wait_for_message(ctx, start_time=start_time, completed=completed)
 
                     completed.add(user.id)
 
@@ -113,7 +97,7 @@ class TypingTest:
 
                     place = len(results) + 1
                     results.append(
-                        f"**{place}.** {user.mention} \N{EM DASH} `{elapsed:.2f}s` \N{MIDDLE DOT} `{accuracy:.1f}%` \N{MIDDLE DOT} `{cpm:.0f} CPM`",
+                        f"**{place}.** {user.mention} \N{EM DASH} `{elapsed:.2f}s` \N{MIDDLE DOT} `{accuracy:.1f}%` \N{MIDDLE DOT} `{cpm:.0f} CPM`"
                     )
 
                     embed.description = embed.description + "\n" + "\n".join(results)  # type: ignore[operator]

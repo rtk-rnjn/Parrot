@@ -41,12 +41,11 @@ class Leveling(commands.Cog):
         message_length = len(message.content)
         if message_length < 10:
             return random.randint(1, 3)
-        elif message_length < 50:
+        if message_length < 50:
             return random.randint(3, 5)
-        elif message_length < 100:
+        if message_length < 100:
             return random.randint(5, 10)
-        else:
-            return random.randint(10, 15)
+        return random.randint(10, 15)
 
     def _calculate_level_for_xp(self, xp: int) -> int:
         """Calculate the level based on XP."""
@@ -78,11 +77,7 @@ class Leveling(commands.Cog):
 
         current_level = self._calculate_level_for_xp(await self.bot.database.get_user_xp(guild_id=message.guild.id, user_id=message.author.id) or 0)
 
-        await self.bot.database.increase_user_xp(
-            guild_id=message.guild.id,
-            user_id=message.author.id,
-            xp=self._calculate_xp_for_message(message),
-        )
+        await self.bot.database.increase_user_xp(guild_id=message.guild.id, user_id=message.author.id, xp=self._calculate_xp_for_message(message))
 
         new_level = self._calculate_level_for_xp(await self.bot.database.get_user_xp(guild_id=message.guild.id, user_id=message.author.id) or 0)
         if new_level > current_level:

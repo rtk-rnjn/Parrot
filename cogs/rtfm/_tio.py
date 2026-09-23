@@ -22,9 +22,16 @@ class Tio:
     def __init__(self, language: str, code: str) -> None:
         self.backend = "https://tio.run/cgi-bin/run/api/"
 
-        strings = {"lang": [language], ".code.tio": code, ".input.tio": "", "TIO_CFLAGS": [], "TIO_OPTIONS": [], "args": []}
+        strings = {
+            "lang": [language],
+            ".code.tio": code,
+            ".input.tio": "",
+            "TIO_CFLAGS": [],
+            "TIO_OPTIONS": [],
+            "args": [],
+        }
 
-        bytes_ = b"".join(map(_to_tio_string, zip(strings.keys(), strings.values(), strict=False))) + b"R"
+        bytes_ = b"".join(map(_to_tio_string, strings.items())) + b"R"
 
         # This returns a DEFLATE-compressed bytestring, which is what the API requires
         self.request = zlib.compress(bytes_, 9)[2:-4]

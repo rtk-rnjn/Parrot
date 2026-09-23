@@ -11,11 +11,11 @@ if TYPE_CHECKING:
     from core import Parrot
 
 __all__: tuple[str, ...] = (
+    "DEFAULT_COLOR",
+    "BaseView",
     "DiscordColor",
     "Player",
-    "DEFAULT_COLOR",
     "chunk",
-    "BaseView",
     "double_wait",
     "wait_for_delete",
 )
@@ -30,7 +30,7 @@ def chunk[T](iterable: list[T], *, count: int) -> list[list[T]]:
     return [iterable[i : i + count] for i in range(0, len(iterable), count)]
 
 
-async def wait_for_delete(  # noqa: PLR0913
+async def wait_for_delete(
     ctx: commands.Context[Parrot],
     message: discord.Message,
     *,
@@ -50,8 +50,7 @@ async def wait_for_delete(  # noqa: PLR0913
         if reaction.emoji == emoji and reaction.message.id == message.id:
             if isinstance(user, tuple):
                 return _user in user
-            else:
-                return _user == user
+            return _user == user
         return False
 
     resolved_bot: discord.Client = bot or ctx.bot
@@ -65,25 +64,12 @@ async def wait_for_delete(  # noqa: PLR0913
 
 
 async def double_wait[A: bool, B: bool](
-    task1: Coroutine[Any, Any, A],
-    task2: Coroutine[Any, Any, B],
-    /,
-    *,
-    loop: asyncio.AbstractEventLoop | None = None,
-) -> tuple[
-    set[asyncio.Task[A] | asyncio.Task[B]],
-    set[asyncio.Task[A] | asyncio.Task[B]],
-]:
+    task1: Coroutine[Any, Any, A], task2: Coroutine[Any, Any, B], /, *, loop: asyncio.AbstractEventLoop | None = None
+) -> tuple[set[asyncio.Task[A] | asyncio.Task[B]], set[asyncio.Task[A] | asyncio.Task[B]]]:
     if not loop:
         loop = asyncio.get_running_loop()
 
-    done, pending = await asyncio.wait(
-        [
-            loop.create_task(task1),
-            loop.create_task(task2),
-        ],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
+    done, pending = await asyncio.wait([loop.create_task(task1), loop.create_task(task2)], return_when=asyncio.FIRST_COMPLETED)
     for task in pending:
         task.cancel()
     return done, pending

@@ -30,10 +30,6 @@ class _UserTimezoneMixin(DatabaseMixin):
     async def set_user_timezone(self, *, user_id: int, timezone: str) -> None:
         redis_key = RedisKeys.USER_TIMEZONE.format(user_id=user_id)
 
-        await self.users_collection.update_one(
-            {"_id": user_id},
-            {"$set": {"timezone": timezone}},
-            upsert=True,
-        )
+        await self.users_collection.update_one({"_id": user_id}, {"$set": {"timezone": timezone}}, upsert=True)
 
         await self.redis_client.set(redis_key, timezone)

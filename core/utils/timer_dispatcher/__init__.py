@@ -18,12 +18,7 @@ if TYPE_CHECKING:
 
 __all__ = ("AsyncTimerDispatcher", "TimerData")
 
-VALID_EVENT_NAMES = Literal[
-    "reminder",
-    "mute",
-    "todo_due",
-    "giveaway",
-]
+VALID_EVENT_NAMES = Literal["reminder", "mute", "todo_due", "giveaway"]
 
 
 class TimerData(TypedDict):
@@ -88,10 +83,7 @@ class AsyncTimerDispatcher:
 
     async def __get_active_timer(self) -> TimerData | None:
         """Return the timer that expires first."""
-        return await self.timers_collection.find_one(
-            {},
-            sort=[("expires_at", pymongo.ASCENDING)],
-        )
+        return await self.timers_collection.find_one({}, sort=[("expires_at", pymongo.ASCENDING)])
 
     async def __wait_for_active_timer(self) -> TimerData | None:
         """Wait until MongoDB contains a timer and return the earliest one.
@@ -171,17 +163,12 @@ class AsyncTimerDispatcher:
         have already consumed the same timer. Only the coroutine that
         successfully deletes the document is allowed to dispatch the event.
         """
-        deleted: DeleteResult = await self.timers_collection.delete_one(
-            {"_id": data.get("_id")},
-        )
+        deleted: DeleteResult = await self.timers_collection.delete_one({"_id": data.get("_id")})
 
         if deleted.deleted_count == 0:
             return
 
-        self.bot.dispatch(
-            f"{data['event_name']}_timer_complete".lower(),
-            metadata=data["metadata"],
-        )
+        self.bot.dispatch(f"{data['event_name']}_timer_complete".lower(), metadata=data["metadata"])
 
     async def __dispatch_timer(self, **data: Unpack[TimerData]) -> None:
         """Dispatch a single timer without involving the main dispatcher loop."""
@@ -190,13 +177,7 @@ class AsyncTimerDispatcher:
 
         await self.__call_timer(**data)
 
-    async def create_timer(
-        self,
-        *,
-        event_name: VALID_EVENT_NAMES,
-        expires_at: datetime,
-        metadata: Mapping[str, object],
-    ) -> InsertOneResult:
+    async def create_timer(self, *, event_name: VALID_EVENT_NAMES, expires_at: datetime, metadata: Mapping[str, object]) -> InsertOneResult:
         """Persist a timer and notify the dispatcher that timer data exists.
 
         If the new timer expires before the timer currently being awaited,
@@ -232,13 +213,7 @@ class AsyncTimerDispatcher:
         """Return the first timer matching the supplied fields."""
         return await self.timers_collection.find_one(filters)
 
-    async def delete(
-        self,
-        *,
-        event_name: VALID_EVENT_NAMES,
-        metadata_filter: Mapping[str, object],
-        multiple: bool = False,
-    ) -> DeleteResult:
+    async def delete(self, *, event_name: VALID_EVENT_NAMES, metadata_filter: Mapping[str, object], multiple: bool = False) -> DeleteResult:
         """Delete a matching timer and restart the dispatcher if necessary."""
         filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
         if multiple:

@@ -34,7 +34,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
             RedisKeys.GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID.format(guild_id=guild_id),
         )
 
-    async def edit_welcome_config(  # noqa: PLR0913
+    async def edit_welcome_config(
         self,
         *,
         guild_id: int,
@@ -60,10 +60,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
         if not updates:
             return False
 
-        result = await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": updates},
-        )
+        result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates})
         if result.matched_count == 0:
             return False
 
@@ -71,10 +68,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
         return True
 
     async def delete_welcome_config(self, *, guild_id: int) -> bool:
-        result = await self.guilds_collection.update_one(
-            {"_id": guild_id, "welcome_config": {"$exists": True}},
-            {"$set": {"welcome_config": None}},
-        )
+        result = await self.guilds_collection.update_one({"_id": guild_id, "welcome_config": {"$exists": True}}, {"$set": {"welcome_config": None}})
         await self.__invalidate_welcome_config_cache(guild_id=guild_id)
         return result.modified_count > 0
 
@@ -84,10 +78,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
         if value is not None:
             return bool(int(value))
 
-        config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "welcome_config.enabled": {"$exists": True}},
-            {"welcome_config": 1},
-        )
+        config = await self.guilds_collection.find_one({"_id": guild_id, "welcome_config.enabled": {"$exists": True}}, {"welcome_config": 1})
         if config is None:
             return False
 
@@ -102,9 +93,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
             return value if isinstance(value, str) else value.decode()
 
         return await self.__get_welcome_config_value(
-            guild_id=guild_id,
-            field="on_member_join_message",
-            query_field="welcome_config.on_member_join_message",
+            guild_id=guild_id, field="on_member_join_message", query_field="welcome_config.on_member_join_message"
         )
 
     async def get_welcome_join_channel_id(self, guild_id: int, /) -> int | None:
@@ -114,9 +103,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
             return int(value)
 
         return await self.__get_welcome_config_value(
-            guild_id=guild_id,
-            field="on_member_join_channel_id",
-            query_field="welcome_config.on_member_join_channel_id",
+            guild_id=guild_id, field="on_member_join_channel_id", query_field="welcome_config.on_member_join_channel_id"
         )
 
     async def get_welcome_leave_message(self, guild_id: int, /) -> str | None:
@@ -126,9 +113,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
             return value if isinstance(value, str) else value.decode()
 
         return await self.__get_welcome_config_value(
-            guild_id=guild_id,
-            field="on_member_leave_message",
-            query_field="welcome_config.on_member_leave_message",
+            guild_id=guild_id, field="on_member_leave_message", query_field="welcome_config.on_member_leave_message"
         )
 
     async def get_welcome_leave_channel_id(self, guild_id: int, /) -> int | None:
@@ -144,10 +129,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
         )
 
     async def __get_welcome_config_value(self, *, guild_id: int, field: str, query_field: str):
-        config = await self.guilds_collection.find_one(
-            {"_id": guild_id, query_field: {"$exists": True}},
-            {"welcome_config": 1},
-        )
+        config = await self.guilds_collection.find_one({"_id": guild_id, query_field: {"$exists": True}}, {"welcome_config": 1})
         if config is None:
             return None
 
@@ -162,9 +144,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
             return int(value)
 
         return await self.__get_welcome_config_value(
-            guild_id=guild_id,
-            field="on_member_join_role_id",
-            query_field="welcome_config.on_member_join_role_id",
+            guild_id=guild_id, field="on_member_join_role_id", query_field="welcome_config.on_member_join_role_id"
         )
 
     async def set_welcome_join_role_id(self, guild_id: int, role_id: int | None, /) -> bool:

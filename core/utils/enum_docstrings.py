@@ -25,6 +25,7 @@ def enum_docstrings[E: Enum](enum: type[E]) -> type[E]:
         foo_member = "foo_value"
         """Docstring for the foo_member enum member"""
 
+
     SomeEnum.foo_member.__doc__  # 'Docstring for the foo_member enum member'
     ```
 

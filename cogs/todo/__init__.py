@@ -24,11 +24,7 @@ class TodoItemMetadata(TypedDict):
 
 
 class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
-    due_date = discord.ui.TextInput(
-        label="Due Date",
-        placeholder="Eg. 5m, tomorrow, 3 days, etc.",
-        required=True,
-    )
+    due_date = discord.ui.TextInput(label="Due Date", placeholder="Eg. 5m, tomorrow, 3 days, etc.", required=True)
 
     def __init__(self, todo_item: TodoItem):
         self.todo_item = todo_item
@@ -37,11 +33,7 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
     async def on_submit(self, interaction: discord.Interaction[Parrot]):
         future_time = FutureTime(self.due_date.value)
         datetime = future_time.dt
-        await interaction.client.database.edit_user_todo_item(
-            user_id=interaction.user.id,
-            todo_item_id=self.todo_item["id"],
-            due=datetime,
-        )
+        await interaction.client.database.edit_user_todo_item(user_id=interaction.user.id, todo_item_id=self.todo_item["id"], due=datetime)
         self.todo_item["due"] = datetime
 
         relative_time = discord.utils.format_dt(datetime, style="R")
@@ -54,17 +46,9 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
 
 
 class TodoEditModal(discord.ui.Modal, title="Edit To-Do Item"):
-    title_input = discord.ui.TextInput(
-        label="Title",
-        placeholder="Enter the new title for the to-do item",
-        required=True,
-    )
+    title_input = discord.ui.TextInput(label="Title", placeholder="Enter the new title for the to-do item", required=True)
 
-    due_date_input = discord.ui.TextInput(
-        label="Due Date",
-        placeholder="Enter the new due date for the to-do item (optional)",
-        required=False,
-    )
+    due_date_input = discord.ui.TextInput(label="Due Date", placeholder="Enter the new due date for the to-do item (optional)", required=False)
 
     notes_input = discord.ui.TextInput(
         label="Notes",
@@ -87,10 +71,7 @@ class TodoEditModal(discord.ui.Modal, title="Edit To-Do Item"):
             notes=self.notes_input.value,
             due=datetime,
         )
-        await interaction.response.send_message(
-            f"Updated to-do item (ID: `{self.todo_item['id']}`)",
-            ephemeral=True,
-        )
+        await interaction.response.send_message(f"Updated to-do item (ID: `{self.todo_item['id']}`)", ephemeral=True)
 
 
 class TodoCreateView(BaseView):
@@ -113,11 +94,7 @@ class TodoStatusButton(discord.ui.Button):
         self.todo_item = todo_item
 
     async def callback(self, interaction: discord.Interaction[Parrot]):
-        await interaction.client.database.edit_user_todo_item(
-            user_id=interaction.user.id,
-            todo_item_id=self.todo_item["id"],
-            status=self.status,
-        )
+        await interaction.client.database.edit_user_todo_item(user_id=interaction.user.id, todo_item_id=self.todo_item["id"], status=self.status)
         await interaction.response.send_message(f"Updated to-do item (ID: `{self.todo_item['id']}`) to status: {self.status}", ephemeral=True)
 
 
@@ -168,11 +145,7 @@ class TodoViewLayout(BaseLayoutView):
 class TodoListLayout(BaseLayoutView):
     ITEMS_PER_PAGE = 5
 
-    def __init__(
-        self,
-        author: discord.User | discord.Member,
-        todo_items: list[TodoItem],
-    ):
+    def __init__(self, author: discord.User | discord.Member, todo_items: list[TodoItem]):
         super().__init__(author=author)
 
         self.author = author
@@ -279,10 +252,7 @@ class Todo(commands.Cog):
     async def add_todo(self, ctx: commands.Context[Parrot], *, title: str) -> None:
         """Add a new to-do item."""
         todo_item = await self.bot.database.create_user_todo_item(user_id=ctx.author.id, title=title)
-        embed = discord.Embed(
-            title=f"ID: {todo_item['id']}",
-            description=todo_item["title"],
-        )
+        embed = discord.Embed(title=f"ID: {todo_item['id']}", description=todo_item["title"])
         view = TodoCreateView(author=ctx.author, todo_item=todo_item)
         await ctx.reply(embed=embed, view=view)
 

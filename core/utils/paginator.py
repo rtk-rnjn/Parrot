@@ -270,7 +270,7 @@ class PaginationView(PaginationMixin[discord.Embed], BaseView):
 
 
 class PaginationLayout(PaginationMixin[list[discord.ui.Item]], BaseLayoutView):
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         author: discord.User | discord.Member,
         *,
@@ -298,11 +298,7 @@ class PaginationLayout(PaginationMixin[list[discord.ui.Item]], BaseLayoutView):
         self._setup_pagination_buttons()
 
         self._pagination_buttons = discord.ui.ActionRow(
-            self.first_button,
-            self.previous_button,
-            self.current_button,
-            self.next_button,
-            self.last_button,
+            self.first_button, self.previous_button, self.current_button, self.next_button, self.last_button
         )
 
         self.container = discord.ui.Container()

@@ -33,8 +33,7 @@ class TicketCreateView(discord.ui.View):
             await interaction.followup.send(f"Your ticket has been created: {thread.mention}", ephemeral=True)
             return
 
-        else:
-            await interaction.followup.send("Ticket creation is not configured properly. Please contact a server administrator.", ephemeral=True)
+        await interaction.followup.send("Ticket creation is not configured properly. Please contact a server administrator.", ephemeral=True)
 
 
 class Ticket(commands.Cog):
@@ -73,10 +72,7 @@ class Ticket(commands.Cog):
         msg = await channel.send(embed=embed, view=TicketCreateView())
 
         await self.bot.database.edit_ticket_config(
-            guild_id=ctx.guild.id,
-            bot_message_id=msg.id,
-            bot_channel_channel_id=channel.id,
-            channel_id=channel.id,
+            guild_id=ctx.guild.id, bot_message_id=msg.id, bot_channel_channel_id=channel.id, channel_id=channel.id
         )
 
     @ticket.command(name="open", aliases=["create"])
@@ -107,7 +103,6 @@ class Ticket(commands.Cog):
             await thread.send(f"{ctx.author.mention} Your ticket has been created. A staff member will assist you shortly.")
             await ctx.reply(f"Your ticket has been created: {thread.mention}", ephemeral=True)
             return
-
 
     @ticket.command(name="delete")
     @commands.has_permissions(manage_threads=True)
@@ -146,6 +141,7 @@ class Ticket(commands.Cog):
 
         await ctx.channel.edit(archived=True, locked=True)
         await ctx.reply("This ticket has been marked as resolved and archived.")
+
 
 async def setup(bot: Parrot) -> None:
     await bot.add_cog(Ticket(bot))

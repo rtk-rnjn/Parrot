@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib.util
 import logging
 import os
@@ -108,7 +109,7 @@ class Parrot(commands.Bot):
         # intents.presences = True - Fuck you discord
 
         super().__init__(
-            command_prefix=self.get_prefix,  # type: ignore
+            command_prefix=self.get_prefix,  # pyright: ignore[reportArgumentType]
             intents=intents,
             chunk_guilds_at_startup=False,
             case_insensitive=True,
@@ -150,19 +151,14 @@ class Parrot(commands.Bot):
         java = shutil.which("java")
         if java is None:
             _log.warning("Java executable not found in PATH. Lavalink will not be started.")
-            return
+            return None
 
         if not await asyncio.to_thread(lavalink_jar.exists):
             _log.warning("Lavalink.jar not found. Lavalink will not be started.")
-            return
+            return None
 
         try:
-            process = await asyncio.create_subprocess_shell(
-                " ".join([java, "-jar", str(lavalink_jar)]),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            return process
+            return await asyncio.create_subprocess_shell(" ".join([java, "-jar", str(lavalink_jar)]), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except Exception:
             _log.exception("Failed to start Lavalink process.")
 
@@ -210,7 +206,9 @@ class Parrot(commands.Bot):
                 if path.suffix != ".py":
                     continue
 
-                matches = [(root, extension) for root, extension in extension_paths.items() if path == root or root.is_dir() and root in path.parents]
+                matches = [
+                    (root, extension) for root, extension in extension_paths.items() if path == root or (root.is_dir() and root in path.parents)
+                ]
                 if matches:
                     extensions.add(max(matches, key=lambda match: len(match[0].parts))[1])
 
@@ -265,10 +263,7 @@ class Parrot(commands.Bot):
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             if message.channel.permissions_for(message.guild.me).send_messages:
                 prefix = await self.database.get_command_prefix(guild_id=message.guild.id) or Parrot.DEFAULT_PREFIX
-                await message.channel.send(
-                    f"Prefix: `{prefix}`",
-                    reference=message,
-                )
+                await message.channel.send(f"Prefix: `{prefix}`", reference=message)
 
             return
 
@@ -360,13 +355,7 @@ class Parrot(commands.Bot):
         except discord.NotFound:
             return None
 
-    async def confirm(
-        self,
-        ctx: commands.Context[Parrot],
-        prompt: str = "Are you sure?",
-        *,
-        timeout: float = 30,
-    ) -> bool:
+    async def confirm(self, ctx: commands.Context[Parrot], prompt: str = "Are you sure?", *, timeout: float = 30) -> bool:
         """Ask the command author to confirm an action in the current channel."""
         result = asyncio.get_running_loop().create_future()
         view = ConfirmationLayout(ctx.author, prompt, result)
@@ -382,7 +371,8 @@ class Parrot(commands.Bot):
     @property
     def started_at(self) -> datetime:
         if self._started_at is None:
-            raise RuntimeError("Bot has not started yet.")
+            message = "Bot has not started yet."
+            raise RuntimeError(message)
         return self._started_at
 
     @property
@@ -392,7 +382,8 @@ class Parrot(commands.Bot):
     @property
     def http_session(self) -> aiohttp.ClientSession:
         if self._http_session is None:
-            raise RuntimeError("HTTP session is not initialized")
+            message = "HTTP session is not initialized. Ensure that the bot is started and the HTTP session is set up."
+            raise RuntimeError(message)
 
         return self._http_session
 
@@ -407,36 +398,32 @@ class Parrot(commands.Bot):
         embed: discord.Embed | None = None,
     ) -> T:
         if len(matches) == 0:
-            raise ValueError("No results found.")
+            message = "No results found."
+            raise ValueError(message)
 
         if len(matches) == 1:
             return matches[0]
 
         if len(matches) > 25:
-            raise ValueError("Too many results... sorry.")
+            message = "Too many results found. Please refine your search."
+            raise ValueError(message)
 
         view = DisambiguatorView(context, matches, entry)
         embed = embed or (
-            discord.Embed(
-                description="Found multiple choices. Please choose the correct one.",
-            ).set_author(name=context.author.display_name, icon_url=context.author.display_avatar.url)
+            discord.Embed(description="Found multiple choices. Please choose the correct one.").set_author(
+                name=context.author.display_name, icon_url=context.author.display_avatar.url
+            )
         )
 
-        view.message = await context.reply(
-            embed=embed,
-            view=view,
-            ephemeral=ephemeral,
-        )
+        view.message = await context.reply(embed=embed, view=view, ephemeral=ephemeral)
         await view.wait()
         return view.selected
 
     async def close(self) -> None:
         if self._cog_autoreload_task is not None:
             self._cog_autoreload_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._cog_autoreload_task
-            except asyncio.CancelledError:
-                pass
 
         await super().close()
 

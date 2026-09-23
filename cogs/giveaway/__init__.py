@@ -37,10 +37,7 @@ class GiveawayCog(commands.Cog):
                 self.bot.loop.create_task(self._recover_giveaway(giveaway["_id"]))
                 continue
 
-            timers = await self.bot.event_scheduler.search(
-                event_name="giveaway",
-                metadata_filter={"giveaway_id": str(giveaway["_id"])},
-            )
+            timers = await self.bot.event_scheduler.search(event_name="giveaway", metadata_filter={"giveaway_id": str(giveaway["_id"])})
             if not timers:
                 await self.bot.event_scheduler.create_timer(
                     event_name="giveaway",
@@ -82,14 +79,7 @@ class GiveawayCog(commands.Cog):
 
     @giveaway.command(name="start")
     @commands.has_guild_permissions(manage_guild=True)
-    async def start_giveaway(
-        self,
-        ctx: commands.Context[Parrot],
-        duration: FutureTime,
-        winners: commands.Range[int, 1, 20],
-        *,
-        prize: str,
-    ) -> None:
+    async def start_giveaway(self, ctx: commands.Context[Parrot], duration: FutureTime, winners: commands.Range[int, 1, 20], *, prize: str) -> None:
         """Start a giveaway: giveaway start <duration> <winners> <prize>."""
         if ctx.guild is None:
             return
@@ -131,11 +121,7 @@ class GiveawayCog(commands.Cog):
         await message.edit(embed=self._embed(giveaway), view=view)
         self.bot.add_view(view, message_id=message.id)
 
-        await self.bot.event_scheduler.create_timer(
-            event_name="giveaway",
-            expires_at=ends_at,
-            metadata={"giveaway_id": str(giveaway_id)},
-        )
+        await self.bot.event_scheduler.create_timer(event_name="giveaway", expires_at=ends_at, metadata={"giveaway_id": str(giveaway_id)})
         await ctx.reply(f"Giveaway started and ends {discord.utils.format_dt(ends_at, 'R')}.", delete_after=10)
 
     @giveaway.command(name="from-message", aliases=["message"])
@@ -166,11 +152,7 @@ class GiveawayCog(commands.Cog):
             entry_mode="reaction",
         )
         await message.add_reaction(GIVEAWAY_EMOJI)
-        await self.bot.event_scheduler.create_timer(
-            event_name="giveaway",
-            expires_at=duration.dt,
-            metadata={"giveaway_id": str(result.inserted_id)},
-        )
+        await self.bot.event_scheduler.create_timer(event_name="giveaway", expires_at=duration.dt, metadata={"giveaway_id": str(result.inserted_id)})
         await ctx.reply(f"Your message is now a giveaway and ends {discord.utils.format_dt(duration.dt, 'R')}.", delete_after=10)
 
     @giveaway.command(name="end")
@@ -203,10 +185,7 @@ class GiveawayCog(commands.Cog):
         if payload.guild_id is None or (self.bot.user is not None and payload.user_id == self.bot.user.id) or str(payload.emoji) != GIVEAWAY_EMOJI:
             return
 
-        giveaway = await self.bot.database.get_giveaway_by_message(
-            guild_id=payload.guild_id,
-            message_id=payload.message_id,
-        )
+        giveaway = await self.bot.database.get_giveaway_by_message(guild_id=payload.guild_id, message_id=payload.message_id)
         if giveaway is not None and giveaway.get("entry_mode", "reaction") == "reaction" and not giveaway["ended"]:
             await self.bot.database.add_giveaway_entrant(giveaway_id=giveaway["_id"], user_id=payload.user_id)
 
@@ -289,10 +268,7 @@ class GiveawayView(discord.ui.View):
             await interaction.response.send_message("This giveaway has ended.", ephemeral=True)
             return
 
-        added = await self.cog.bot.database.add_giveaway_entrant(
-            giveaway_id=giveaway["_id"],
-            user_id=interaction.user.id,
-        )
+        added = await self.cog.bot.database.add_giveaway_entrant(giveaway_id=giveaway["_id"], user_id=interaction.user.id)
         await interaction.response.send_message("You are entered!" if added else "You are already entered.", ephemeral=True)
 
     async def reroll_callback(self, interaction: discord.Interaction[Parrot]) -> None:

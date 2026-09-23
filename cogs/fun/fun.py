@@ -95,13 +95,7 @@ def from_bottom(text: str) -> str:
     return out.decode()
 
 
-def replace_many(
-    sentence: str,
-    replacements: dict[str, str],
-    *,
-    ignore_case: bool = False,
-    match_case: bool = False,
-) -> str:
+def replace_many(sentence: str, replacements: dict[str, str], *, ignore_case: bool = False, match_case: bool = False) -> str:
     if ignore_case:
         replacements = {word.lower(): replacement for word, replacement in replacements.items()}
 
@@ -161,7 +155,7 @@ class QuizConfigLayout(BaseLayoutView):
         header = discord.ui.TextDisplay(
             "# Quiz Configuration\n"
             "-# This quiz is provided by the Open Trivia Database.\n"
-            "-# Creative Commons Attribution-ShareAlike 4.0 International License",
+            "-# Creative Commons Attribution-ShareAlike 4.0 International License"
         )
         self.category_select = discord.ui.Select(
             placeholder="Any Category",
@@ -198,39 +192,22 @@ class QuizConfigLayout(BaseLayoutView):
 
         self.difficulty_select = discord.ui.Select(
             placeholder="Any Difficulty",
-            options=[
-                discord.SelectOption(label=label, value=value)
-                for label, value in [
-                    ("Easy", "easy"),
-                    ("Medium", "medium"),
-                    ("Hard", "hard"),
-                ]
-            ],
+            options=[discord.SelectOption(label=label, value=value) for label, value in [("Easy", "easy"), ("Medium", "medium"), ("Hard", "hard")]],
         )
         self.difficulty_select.callback = self.difficulty_select_callback
 
         self.type_select = discord.ui.Select(
             placeholder="Any Type",
             options=[
-                discord.SelectOption(label=label, value=value)
-                for label, value in [
-                    ("Multiple Choice", "multiple"),
-                    ("True / False", "boolean"),
-                ]
+                discord.SelectOption(label=label, value=value) for label, value in [("Multiple Choice", "multiple"), ("True / False", "boolean")]
             ],
         )
         self.type_select.callback = self.type_select_callback
 
-        self.start_button = discord.ui.Button(
-            label="Start Quiz",
-            style=discord.ButtonStyle.green,
-        )
+        self.start_button = discord.ui.Button(label="Start Quiz", style=discord.ButtonStyle.green)
         self.start_button.callback = self.start_quiz
 
-        self.cancel_button = discord.ui.Button(
-            label="Cancel Quiz",
-            style=discord.ButtonStyle.red,
-        )
+        self.cancel_button = discord.ui.Button(label="Cancel Quiz", style=discord.ButtonStyle.red)
         self.cancel_button.callback = self.cancel_quiz
 
         container = discord.ui.Container(
@@ -455,9 +432,7 @@ class Fun(commands.Cog, ColorHandler):
             "I wouldn't count on it.",
         ]
 
-        await ctx.reply(
-            f"\N{BILLIARDS} **Answer:** {random.choice(responses)}",
-        )
+        await ctx.reply(f"\N{BILLIARDS} **Answer:** {random.choice(responses)}")
 
     @random_command.command(name="chance")
     async def random_chance(self, ctx: commands.Context[Parrot], *, thing: str):
@@ -546,7 +521,7 @@ class Fun(commands.Cog, ColorHandler):
 
             if guess == number:
                 await ctx.reply(f"{ctx.author.mention} Congratulation, you guessed the number in **{count}** attempts :tada:.")
-                return
+                return None
 
             if guess < number:
                 await ctx.reply(f"{ctx.author.mention} Your guess is **too low**. Try again", delete_after=4)
@@ -635,7 +610,7 @@ class Fun(commands.Cog, ColorHandler):
     async def fun_animation_virus(
         self,
         ctx: Context[Parrot],
-        user: discord.Member = commands.parameter(description="The user to infect.", default=commands.parameters.Author),  # noqa: B008
+        user: discord.Member = commands.parameter(description="The user to infect.", default=commands.parameters.Author),
         virus: str = commands.parameter(description="The name of the virus to insert.", default="trojan"),
     ):
         """Insert a virus to yourself or someone else."""
@@ -661,7 +636,7 @@ class Fun(commands.Cog, ColorHandler):
         ls.append(f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
         for _ in range(3):
             ls.append(
-                f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe",
+                f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
             )
         ls.append(f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}")
         for i in ls:
@@ -798,7 +773,7 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed from an HSV input."""
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
             raise commands.BadArgument(
-                message=f"Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. User input was: `{hue, saturation, value}`.",
+                message=f"Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. User input was: `{hue, saturation, value}`."
             )
         hsv_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
         await self.send_colour_response(ctx, hsv_tuple)
@@ -814,7 +789,7 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed from an HSL input."""
         if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
             raise commands.BadArgument(
-                message=f"Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. User input was: `{hue, saturation, lightness}`.",
+                message=f"Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. User input was: `{hue, saturation, lightness}`."
             )
         hsl_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
         await self.send_colour_response(ctx, hsl_tuple)
@@ -848,7 +823,7 @@ class Fun(commands.Cog, ColorHandler):
 
         if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
             raise commands.BadArgument(
-                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*.",
+                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
             )
 
         hex_tuple = ImageColor.getrgb(hex_code)
@@ -906,10 +881,7 @@ class Fun(commands.Cog, ColorHandler):
                 definition = result["definition"]
                 example = result["example"]
 
-                embed = discord.Embed(
-                    title=f"Definition of {term}",
-                    description=f"{definition}\n\n**Example:**\n{example}",
-                )
+                embed = discord.Embed(title=f"Definition of {term}", description=f"{definition}\n\n**Example:**\n{example}")
                 pages.append(embed)
 
         view = PaginationView(author=ctx.author, items=pages)
@@ -945,18 +917,12 @@ class Fun(commands.Cog, ColorHandler):
 
         view = PourView(ctx, level)
         img_buf = await asyncio.to_thread(view.draw_image)
-        embed = discord.Embed(
-            title="Pour puzzle",
-            description=f"Level: {level}",
-        )
+        embed = discord.Embed(title="Pour puzzle", description=f"Level: {level}")
 
         file = discord.File(img_buf, filename="pour_game.png")
         embed.set_image(url="attachment://pour_game.png")
 
-        embed.set_footer(
-            text=f"Game played by: {ctx.author}",
-            icon_url=ctx.author.display_avatar.url,
-        )
+        embed.set_footer(text=f"Game played by: {ctx.author}", icon_url=ctx.author.display_avatar.url)
         view.message = await ctx.reply(file=file, embed=embed, view=view)
 
     @commands.command()

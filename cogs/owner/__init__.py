@@ -25,13 +25,7 @@ _ONLINE_COLOR = discord.Color.green()
 _OFFLINE_COLOR = discord.Color.red()
 
 
-def _dashboard(
-    *,
-    title: str,
-    accent_color: discord.Color,
-    blocks: Sequence[str],
-    footer: str | None = None,
-) -> discord.ui.LayoutView:
+def _dashboard(*, title: str, accent_color: discord.Color, blocks: Sequence[str], footer: str | None = None) -> discord.ui.LayoutView:
     """Build a small, read-only Components V2 "dashboard" message.
 
     This is the Components V2 replacement for the old ``discord.Embed`` +
@@ -68,11 +62,7 @@ def _error_dashboard(system: str, exc: Exception) -> discord.ui.LayoutView:
 def _status_dashboard(*, online: bool, system: str, message: str) -> discord.ui.LayoutView:
     """Build a small pass/fail dashboard, e.g. for a ping check."""
     icon = "\N{LARGE GREEN CIRCLE}" if online else "\N{LARGE RED CIRCLE}"
-    return _dashboard(
-        title=f"## {icon} {system}",
-        accent_color=_ONLINE_COLOR if online else _OFFLINE_COLOR,
-        blocks=[message],
-    )
+    return _dashboard(title=f"## {icon} {system}", accent_color=_ONLINE_COLOR if online else _OFFLINE_COLOR, blocks=[message])
 
 
 def _field(emoji: str, name: str, value: str) -> str:
@@ -167,7 +157,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 online=bool(result),
                 system="Redis",
                 message=("Redis is online and responding to `PING`." if result else "Redis responded, but not with the expected result."),
-            ),
+            )
         )
 
     @redis.command(name="status")
@@ -194,7 +184,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     ("Version", f"`{server.get('redis_version', 'unknown')}`"),
                     ("Mode", f"`{server.get('redis_mode', 'unknown')}`"),
                     ("OS", f"`{server.get('os', 'unknown')}`"),
-                ],
+                ]
             ),
         )
 
@@ -209,7 +199,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     ("Peak Memory", self._format_bytes(memory.get("used_memory_peak", 0))),
                     ("Commands", f"`{stats.get('total_commands_processed', 0):,}`"),
                     ("Ops/sec", f"`{stats.get('instantaneous_ops_per_sec', 0):,}`"),
-                ],
+                ]
             ),
         )
 
@@ -219,7 +209,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_REDIS_COLOR,
                 blocks=[server_block, stats_block],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @redis.command(name="memory")
@@ -257,14 +247,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         if limit_rows:
             blocks.append(_field("\N{ROCKET}", "Limits", _kv_lines(limit_rows)))
 
-        await ctx.reply(
-            view=_dashboard(
-                title="## \N{FLOPPY DISK} Redis Memory",
-                accent_color=_REDIS_COLOR,
-                blocks=blocks,
-                footer=_footer(ctx),
-            ),
-        )
+        await ctx.reply(view=_dashboard(title="## \N{FLOPPY DISK} Redis Memory", accent_color=_REDIS_COLOR, blocks=blocks, footer=_footer(ctx)))
 
     @redis.command(name="clients")
     async def redis_clients(self, ctx: commands.Context) -> None:
@@ -298,7 +281,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_REDIS_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @redis.command(name="stats")
@@ -342,7 +325,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_REDIS_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @redis.command(name="keyspace")
@@ -374,24 +357,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     _field(
                         "\N{FILE CABINET}",
                         database,
-                        _kv_lines(
-                            [
-                                ("Keys", f"`{keys:,}`"),
-                                ("Expires", f"`{expires:,}`"),
-                                ("Avg TTL", f"`{avg_ttl:,} ms`"),
-                            ],
-                        ),
-                    ),
+                        _kv_lines([("Keys", f"`{keys:,}`"), ("Expires", f"`{expires:,}`"), ("Avg TTL", f"`{avg_ttl:,} ms`")]),
+                    )
                 )
 
-        await ctx.reply(
-            view=_dashboard(
-                title="## \N{OLD KEY} Redis Keyspace",
-                accent_color=_REDIS_COLOR,
-                blocks=blocks,
-                footer=_footer(ctx),
-            ),
-        )
+        await ctx.reply(view=_dashboard(title="## \N{OLD KEY} Redis Keyspace", accent_color=_REDIS_COLOR, blocks=blocks, footer=_footer(ctx)))
 
     @redis.command(name="persistence")
     async def redis_persistence(self, ctx: commands.Context) -> None:
@@ -413,7 +383,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     ("Changes since save", f"`{persistence.get('rdb_changes_since_last_save', 0):,}`"),
                     ("Last save status", f"`{persistence.get('rdb_last_bgsave_status', 'unknown')}`"),
                     ("Save in progress", f"`{bool(persistence.get('rdb_bgsave_in_progress', 0))}`"),
-                ],
+                ]
             ),
         )
 
@@ -425,7 +395,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     ("Enabled", f"`{bool(persistence.get('aof_enabled', 0))}`"),
                     ("Rewrite in progress", f"`{bool(persistence.get('aof_rewrite_in_progress', 0))}`"),
                     ("Pending rewrite", f"`{bool(persistence.get('aof_rewrite_scheduled', 0))}`"),
-                ],
+                ]
             ),
         )
 
@@ -435,7 +405,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_REDIS_COLOR,
                 blocks=[rdb_block, aof_block],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @redis.command(name="replication")
@@ -455,12 +425,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         summary_block = _field(
             "\N{CROWN}" if role == "master" else "\N{LINK SYMBOL}",
             "Replication",
-            _kv_lines(
-                [
-                    ("Role", f"`{role}`"),
-                    ("Connected Replicas", f"`{connected_slaves}`"),
-                ],
-            ),
+            _kv_lines([("Role", f"`{role}`"), ("Connected Replicas", f"`{connected_slaves}`")]),
         )
         blocks = [summary_block]
 
@@ -480,8 +445,8 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                             ("Port", f"`{replica.get('port', 'unknown')}`"),
                             ("State", f"`{replica.get('state', 'unknown')}`"),
                             ("Offset", f"`{replica.get('offset', 0):,}`"),
-                        ],
-                    ),
+                        ]
+                    )
                 )
 
             blocks.append(
@@ -489,7 +454,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     "\N{ANTENNA WITH BARS}",
                     "Replicas",
                     "\n\n".join(replica_entries) if replica_entries else "No replicas currently connected.",
-                ),
+                )
             )
         else:
             blocks.append(
@@ -501,9 +466,9 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                             ("Host", f"`{replication.get('master_host', 'unknown')}`"),
                             ("Port", f"`{replication.get('master_port', 'unknown')}`"),
                             ("Link", f"`{replication.get('master_link_status', 'unknown')}`"),
-                        ],
+                        ]
                     ),
-                ),
+                )
             )
 
         await ctx.reply(
@@ -512,26 +477,18 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_REDIS_COLOR,
                 blocks=blocks,
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @redis.command(name="config")
-    async def redis_config(
-        self,
-        ctx: commands.Context,
-        parameter: str | None = None,
-    ) -> None:
+    async def redis_config(self, ctx: commands.Context, parameter: str | None = None) -> None:
         """Show a Redis configuration value."""
         if not parameter:
-            await ctx.reply(
-                "\N{INFORMATION SOURCE} Specify a configuration parameter, e.g. `redis config maxmemory`.",
-            )
+            await ctx.reply("\N{INFORMATION SOURCE} Specify a configuration parameter, e.g. `redis config maxmemory`.")
             return
 
         try:
-            result = await self.bot.database.redis_client.config_get(
-                parameter,
-            )
+            result = await self.bot.database.redis_client.config_get(parameter)
         except Exception as exc:
             await ctx.reply(view=_error_dashboard("Redis", exc))
             return
@@ -548,7 +505,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_REDIS_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @staticmethod
@@ -591,13 +548,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             return
 
         ok_value = result.get("ok", 0)
-        await ctx.reply(
-            view=_status_dashboard(
-                online=bool(ok_value),
-                system="MongoDB",
-                message=f"MongoDB is online. `ok={ok_value}`",
-            ),
-        )
+        await ctx.reply(view=_status_dashboard(online=bool(ok_value), system="MongoDB", message=f"MongoDB is online. `ok={ok_value}`"))
 
     @mongodb.command(name="status")
     async def mongodb_status(self, ctx: commands.Context) -> None:
@@ -618,7 +569,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     ("Version", f"`{status.get('version', 'unknown')}`"),
                     ("Process", f"`{status.get('process', 'unknown')}`"),
                     ("Uptime", f"`{status.get('uptime', 0):,.0f}s`"),
-                ],
+                ]
             ),
         )
 
@@ -629,30 +580,20 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 [
                     ("Current", f"`{connections.get('current', 0):,}`"),
                     ("Available", f"`{connections.get('available', 0):,}`"),
-                ],
+                ]
             ),
         )
 
         memory_block = _field(
             "\N{FLOPPY DISK}",
             "Memory",
-            _kv_lines(
-                [
-                    ("Resident", f"`{memory.get('resident', 0):,} MB`"),
-                    ("Virtual", f"`{memory.get('virtual', 0):,} MB`"),
-                ],
-            ),
+            _kv_lines([("Resident", f"`{memory.get('resident', 0):,} MB`"), ("Virtual", f"`{memory.get('virtual', 0):,} MB`")]),
         )
 
         network_block = _field(
             "\N{GLOBE WITH MERIDIANS}",
             "Network",
-            _kv_lines(
-                [
-                    ("In", f"`{network.get('bytesIn', 0):,}` bytes"),
-                    ("Out", f"`{network.get('bytesOut', 0):,}` bytes"),
-                ],
-            ),
+            _kv_lines([("In", f"`{network.get('bytesIn', 0):,}` bytes"), ("Out", f"`{network.get('bytesOut', 0):,}` bytes")]),
         )
 
         operations_block = _field(
@@ -664,7 +605,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     ("Inserts", f"`{operations.get('insert', 0):,}`"),
                     ("Updates", f"`{operations.get('update', 0):,}`"),
                     ("Deletes", f"`{operations.get('delete', 0):,}`"),
-                ],
+                ]
             ),
         )
 
@@ -674,7 +615,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[instance_block, connections_block, memory_block, network_block, operations_block],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="connections")
@@ -701,7 +642,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="operations")
@@ -719,7 +660,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="network")
@@ -741,7 +682,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="memory")
@@ -763,7 +704,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="databases")
@@ -787,15 +728,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[block],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="collections")
-    async def mongodb_collections(
-        self,
-        ctx: commands.Context,
-        database: str | None = None,
-    ) -> None:
+    async def mongodb_collections(self, ctx: commands.Context, database: str | None = None) -> None:
         """List collections in a database."""
         database_name = database or self.bot.database.mongo_client.get_default_database().name
 
@@ -813,15 +750,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[block],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @mongodb.command(name="storage")
-    async def mongodb_storage(
-        self,
-        ctx: commands.Context,
-        database: str | None = None,
-    ) -> None:
+    async def mongodb_storage(self, ctx: commands.Context, database: str | None = None) -> None:
         """Show database storage statistics."""
         database_name = database or self.bot.database.mongo_client.get_default_database().name
         db = self.bot.database.mongo_client[database_name]
@@ -847,7 +780,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
                 footer=_footer(ctx),
-            ),
+            )
         )
 
     @staticmethod

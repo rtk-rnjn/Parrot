@@ -43,10 +43,7 @@ class Position:
     def moved(self, direction: Direction) -> Position:
         row_delta, col_delta = DIRECTION_DELTAS[direction]
 
-        return Position(
-            self.row + row_delta,
-            self.col + col_delta,
-        )
+        return Position(self.row + row_delta, self.col + col_delta)
 
 
 @dataclass(frozen=True)
@@ -110,9 +107,7 @@ class SokobanGame:
 
                     case "@":
                         if found_player is not None:
-                            raise ValueError(
-                                "Level contains more than one player.",
-                            )
+                            raise ValueError("Level contains more than one player.")
 
                         found_player = position
 
@@ -186,13 +181,7 @@ class SokobanGame:
         return position in self.blocks
 
     def save_state(self) -> None:
-        self.history.append(
-            GameState(
-                player=self.player,
-                blocks=frozenset(self.blocks),
-                moves=self.moves,
-            ),
-        )
+        self.history.append(GameState(player=self.player, blocks=frozenset(self.blocks), moves=self.moves))
 
     def move(self, direction: Direction) -> bool:  # noqa: PLR0911
         """

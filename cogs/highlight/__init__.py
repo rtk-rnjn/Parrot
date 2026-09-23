@@ -46,11 +46,7 @@ class Highlights(commands.Cog):
         """
         assert ctx.guild is not None
 
-        await self.bot.database.add_user_highlight(
-            guild_id=ctx.guild.id,
-            user_id=ctx.author.id,
-            words=[trigger],
-        )
+        await self.bot.database.add_user_highlight(guild_id=ctx.guild.id, user_id=ctx.author.id, words=[trigger])
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @highlight.command(name="remove", aliases=["delete", "del", "rm"])
@@ -63,21 +59,14 @@ class Highlights(commands.Cog):
         """Remove an existing highlight."""
         assert ctx.guild is not None
 
-        await self.bot.database.remove_user_highlight(
-            guild_id=ctx.guild.id,
-            user_id=ctx.author.id,
-            words=[trigger],
-        )
+        await self.bot.database.remove_user_highlight(guild_id=ctx.guild.id, user_id=ctx.author.id, words=[trigger])
 
     @highlight.command(name="list", aliases=["ls"])
     async def list_highlights(self, ctx: commands.Context[Parrot]) -> None:
         """List all highlights."""
         assert ctx.guild is not None
 
-        highlights = await self.bot.database.get_user_highlights(
-            guild_id=ctx.guild.id,
-            user_id=ctx.author.id,
-        )
+        highlights = await self.bot.database.get_user_highlights(guild_id=ctx.guild.id, user_id=ctx.author.id)
 
         embed = discord.Embed(
             title=f"{ctx.author.display_name}'s Highlights",
@@ -95,13 +84,10 @@ class Highlights(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
+        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),
     ) -> None:
         """Block a user from triggering your highlights."""
-        await self.bot.database.add_user_highlight_ignored_user(
-            user_id=ctx.author.id,
-            ignored_user_id=user.id,
-        )
+        await self.bot.database.add_user_highlight_ignored_user(user_id=ctx.author.id, ignored_user_id=user.id)
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @highlight.command(name="unblock", aliases=["unignore"])
@@ -109,35 +95,28 @@ class Highlights(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
+        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),
     ) -> None:
         """Unblock a user from triggering your highlights."""
-        await self.bot.database.remove_user_highlight_ignored_user(
-            user_id=ctx.author.id,
-            ignored_user_id=user.id,
-        )
+        await self.bot.database.remove_user_highlight_ignored_user(user_id=ctx.author.id, ignored_user_id=user.id)
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     def _view_highlights_callback(self, author: discord.User | discord.Member, highlights: set[str] | None):
         async def callback(interaction: discord.Interaction[Parrot]):
             if interaction.user != author:
                 await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-                return
+                return None
 
             if not highlights:
                 await interaction.response.send_message("You have no highlights.", ephemeral=True)
-                return
+                return None
 
             pages = []
             for index, highlight in enumerate(highlights, start=1):
                 pages.append(f"{index}. {highlight}")
 
             ctx = await commands.Context.from_interaction(interaction)
-            await interaction.client.paginate(
-                ctx,
-                embed=True,
-                pages=pages,
-            )
+            await interaction.client.paginate(ctx, embed=True, pages=pages)
 
             return interaction
 
@@ -149,12 +128,7 @@ class Highlights(commands.Cog):
         self.bot.dispatch("user_activity", message.channel, message.author)
 
     @commands.Cog.listener()
-    async def on_typing(
-        self,
-        channel: discord.abc.Messageable,
-        user: discord.User,
-        _: datetime.datetime,
-    ):
+    async def on_typing(self, channel: discord.abc.Messageable, user: discord.User, _: datetime.datetime):
         self.bot.dispatch("user_activity", channel, user)
 
     @commands.Cog.listener()
@@ -199,13 +173,13 @@ class Highlights(commands.Cog):
 
         content = esc(message.content)[:2000]
         relative_time = discord.utils.format_dt(message.created_at, style="R")
-        em.description = f"{relative_time} `@{str(message.author)}`: {content}"
+        em.description = f"{relative_time} `@{message.author!s}`: {content}"
 
         try:
             async for ms in message.channel.history(limit=3, before=message):
                 content = esc(ms.content)
                 relative_time = discord.utils.format_dt(ms.created_at, style="R")
-                text = f"{relative_time} `@{str(ms.author)}`: {esc(content)}\n"
+                text = f"{relative_time} `@{ms.author!s}`: {esc(content)}\n"
                 if len(initial_description + em.description + text) <= 4096:
                     em.description = text + em.description
         except discord.HTTPException:
@@ -220,11 +194,7 @@ class Highlights(commands.Cog):
     @commands.Cog.listener("on_highlight")
     async def on_highlight_notify(self, message: discord.Message, member: discord.Member, *, highlight: str) -> None:
         try:
-            await self.bot.wait_for(
-                "user_activity",
-                check=lambda channel, user: message.channel == channel and user == member,
-                timeout=30,
-            )
+            await self.bot.wait_for("user_activity", check=lambda channel, user: message.channel == channel and user == member, timeout=30)
             return
         except TimeoutError:
             pass

@@ -11,10 +11,7 @@ from .utils import DEFAULT_COLOR, BaseView, DiscordColor
 
 class VerbalButton(discord.ui.Button["VerbalView"]):
     def __init__(self, label: str, style: discord.ButtonStyle) -> None:
-        super().__init__(
-            label=label,
-            style=style,
-        )
+        super().__init__(label=label, style=style)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view
@@ -29,7 +26,7 @@ class VerbalButton(discord.ui.Button["VerbalView"]):
             self.view.stop()
             return
 
-        if self.label == "Seen" and game.word in game.seen or self.label == "New" and game.word not in game.seen:
+        if (self.label == "Seen" and game.word in game.seen) or (self.label == "New" and game.word not in game.seen):
             game.score += 1
             score_incr = True
         else:
@@ -40,10 +37,7 @@ class VerbalButton(discord.ui.Button["VerbalView"]):
             if game.lives == 0:
                 game.embed.title = "You Lost!"
                 self.view.disable_all()
-                await interaction.response.edit_message(
-                    embed=game.embed,
-                    view=self.view,
-                )
+                await interaction.response.edit_message(embed=game.embed, view=self.view)
                 self.view.stop()
                 return
 
@@ -81,27 +75,14 @@ class VerbalMemory:
     each word is new or was already seen.
     """
 
-    def __init__(
-        self,
-        word_set: list[str] | None = None,
-        sample_size: int | None = 300,
-    ) -> None:
+    def __init__(self, word_set: list[str] | None = None, sample_size: int | None = 300) -> None:
         self.lives: int = 0
         self.embed: discord.Embed | None = None
 
-        english_words = list(
-            get_english_words_set(
-                ["web2"],
-                alpha=True,
-                lower=True,
-            ),
-        )
+        english_words = list(get_english_words_set(["web2"], alpha=True, lower=True))
 
         if sample_size:
-            self.word_set = word_set or random.choices(
-                english_words,
-                k=sample_size,
-            )
+            self.word_set = word_set or random.choices(english_words, k=sample_size)
         else:
             self.word_set = word_set or english_words
 
@@ -122,17 +103,13 @@ class VerbalMemory:
             self.word_set.remove(word)
         return word
 
-    def update_description(
-        self,
-        score_incr: bool = False,
-        lives_decr: bool = False,
-    ) -> None:
+    def update_description(self, score_incr: bool = False, lives_decr: bool = False) -> None:
         assert self.embed
         s = "+" if score_incr else "\N{BULLET}"
         label = "-" if lives_decr else "\N{BULLET}"
         self.embed.description = f"```diff\n{s} Score | {self.score}\n{label} Lives | {self.lives}\n```"
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[commands.Bot],
         *,
@@ -144,16 +121,9 @@ class VerbalMemory:
     ) -> discord.Message:
         self.weights = weights
         self.lives = lives
-        self.embed = discord.Embed(
-            title=self.word,
-            color=embed_color,
-        )
+        self.embed = discord.Embed(title=self.word, color=embed_color)
         self.update_description()
-        self.view = VerbalView(
-            game=self,
-            button_style=button_style,
-            timeout=timeout,
-        )
+        self.view = VerbalView(game=self, button_style=button_style, timeout=timeout)
         self.message = await ctx.reply(embed=self.embed, view=self.view)
         self.view.message = self.message
 

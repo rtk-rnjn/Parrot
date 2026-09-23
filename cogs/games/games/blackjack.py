@@ -96,21 +96,7 @@ class BlackjackHand:
 class BlackjackDeck:
     """Standard one-deck blackjack shoe."""
 
-    RANKS: ClassVar[tuple[str, ...]] = (
-        "A",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "0",
-        "J",
-        "Q",
-        "K",
-    )
+    RANKS: ClassVar[tuple[str, ...]] = ("A", "2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K")
 
     SUITS: ClassVar[tuple[str, ...]] = ("C", "D", "H", "S")
 
@@ -150,13 +136,7 @@ class Blackjack:
     INSURANCE_PAYOUT = 2.0
     DEALER_STANDS_ON_SOFT_17 = True
 
-    def __init__(
-        self,
-        *,
-        wager: int = BASE_WAGER,
-        decks: int = 6,
-        embed_color: DiscordColor = DEFAULT_COLOR,
-    ) -> None:
+    def __init__(self, *, wager: int = BASE_WAGER, decks: int = 6, embed_color: DiscordColor = DEFAULT_COLOR) -> None:
         if wager <= 0:
             raise ValueError("wager must be greater than zero")
 
@@ -212,12 +192,7 @@ class Blackjack:
             raise KeyError(error_message)
         return str(emoji)
 
-    def render_cards(
-        self,
-        cards: list[str],
-        *,
-        hide_first: bool = False,
-    ) -> str:
+    def render_cards(self, cards: list[str], *, hide_first: bool = False) -> str:
         rendered: list[str] = []
 
         for index, card in enumerate(cards):
@@ -239,23 +214,13 @@ class Blackjack:
         return str(visible.value)
 
     def make_embed(self) -> discord.Embed:
-        embed = discord.Embed(
-            title="Blackjack",
-            color=self.embed_color,
-        )
+        embed = discord.Embed(title="Blackjack", color=self.embed_color)
 
-        dealer_cards = self.render_cards(
-            self.dealer.cards,
-            hide_first=not self.finished,
-        )
+        dealer_cards = self.render_cards(self.dealer.cards, hide_first=not self.finished)
 
         dealer_value = str(self.dealer.value) if self.finished else self.dealer_visible_value()
 
-        embed.add_field(
-            name=f"Dealer \N{EM DASH} {dealer_value}",
-            value=dealer_cards or "-",
-            inline=False,
-        )
+        embed.add_field(name=f"Dealer \N{EM DASH} {dealer_value}", value=dealer_cards or "-", inline=False)
 
         for index, hand in enumerate(self.hands):
             marker = (
@@ -345,19 +310,9 @@ class Blackjack:
 
         first_card, second_card = hand.cards
 
-        first = BlackjackHand(
-            cards=[first_card],
-            bet=hand.bet,
-            is_split=True,
-            split_aces=first_card[0] == "A",
-        )
+        first = BlackjackHand(cards=[first_card], bet=hand.bet, is_split=True, split_aces=first_card[0] == "A")
 
-        second = BlackjackHand(
-            cards=[second_card],
-            bet=hand.bet,
-            is_split=True,
-            split_aces=second_card[0] == "A",
-        )
+        second = BlackjackHand(cards=[second_card], bet=hand.bet, is_split=True, split_aces=second_card[0] == "A")
 
         first.cards.append(self.deck.draw())
         second.cards.append(self.deck.draw())
@@ -482,18 +437,11 @@ class Blackjack:
     def result_embed(self) -> discord.Embed:
         results = self.resolve()
 
-        embed = discord.Embed(
-            title="Blackjack \N{EM DASH} Game Over",
-            color=self.embed_color,
-        )
+        embed = discord.Embed(title="Blackjack \N{EM DASH} Game Over", color=self.embed_color)
 
         dealer_cards = self.render_cards(self.dealer.cards)
 
-        embed.add_field(
-            name=f"Dealer \N{EM DASH} {self.dealer.value}",
-            value=dealer_cards,
-            inline=False,
-        )
+        embed.add_field(name=f"Dealer \N{EM DASH} {self.dealer.value}", value=dealer_cards, inline=False)
 
         embed.description = "\n".join(results)
 
@@ -509,38 +457,22 @@ class Blackjack:
             self.view.disable_all()
 
         if self.message is not None:
-            await self.message.edit(
-                embed=self.result_embed(),
-                view=self.view,
-            )
+            await self.message.edit(embed=self.result_embed(), view=self.view)
 
         if self.view is not None:
             self.view.stop()
 
     async def refresh(self) -> None:
         if self.message is not None:
-            await self.message.edit(
-                embed=self.make_embed(),
-                view=self.view,
-            )
+            await self.message.edit(embed=self.make_embed(), view=self.view)
 
-    async def start(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        timeout: float | None = None,
-        **kwargs,
-    ) -> discord.Message | None:
+    async def start(self, ctx: commands.Context[Parrot], *, timeout: float | None = None, **kwargs) -> discord.Message | None:
         self.deal_initial()
         self.player = ctx.author
 
         self.view = BlackjackView(self, timeout=timeout)
 
-        self.message = await ctx.reply(
-            embed=self.make_embed(),
-            view=self.view,
-            **kwargs,
-        )
+        self.message = await ctx.reply(embed=self.make_embed(), view=self.view, **kwargs)
 
         self.view.message = self.message
 
@@ -579,67 +511,39 @@ class BlackjackButton(WordInputButton):
         game = self.view.game
 
         if interaction.user.id != game.player.id:
-            await interaction.response.send_message(
-                "This is not your game.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("This is not your game.", ephemeral=True)
             return
 
         if self.action == "cancel":
             game.finished = True
             self.view.disable_all()
 
-            await interaction.response.edit_message(
-                content="**Blackjack \N{EM DASH} Cancelled**",
-                view=self.view,
-            )
+            await interaction.response.edit_message(content="**Blackjack \N{EM DASH} Cancelled**", view=self.view)
 
             self.view.stop()
             return
 
         if game.finished:
-            await interaction.response.send_message(
-                "This game has already ended.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("This game has already ended.", ephemeral=True)
             return
 
         try:
-            await self.view.handle_action(
-                interaction,
-                self.action,
-            )
+            await self.view.handle_action(interaction, self.action)
         except ValueError as exc:
-            await interaction.response.send_message(
-                str(exc),
-                ephemeral=True,
-            )
+            await interaction.response.send_message(str(exc), ephemeral=True)
 
 
 class BlackjackView(BaseView):
     """Interactive blackjack controls."""
 
-    def __init__(
-        self,
-        game: Blackjack,
-        *,
-        timeout: float | None,
-    ) -> None:
+    def __init__(self, game: Blackjack, *, timeout: float | None) -> None:
         super().__init__(timeout=timeout)
 
         self.game = game
 
-        self.hit_button = BlackjackButton(
-            action="hit",
-            label="Hit",
-            emoji="\N{FISTED HAND SIGN}",
-        )
+        self.hit_button = BlackjackButton(action="hit", label="Hit", emoji="\N{FISTED HAND SIGN}")
 
-        self.stand_button = BlackjackButton(
-            action="stand",
-            label="Stand",
-            emoji="\N{OCTAGONAL SIGN}",
-        )
+        self.stand_button = BlackjackButton(action="stand", label="Stand", emoji="\N{OCTAGONAL SIGN}")
 
         self.double_button = BlackjackButton(
             action="double",
@@ -647,23 +551,11 @@ class BlackjackView(BaseView):
             emoji="\N{DIGIT TWO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}",
         )
 
-        self.split_button = BlackjackButton(
-            action="split",
-            label="Split",
-            emoji="\N{BLACK SCISSORS}\N{VARIATION SELECTOR-16}",
-        )
+        self.split_button = BlackjackButton(action="split", label="Split", emoji="\N{BLACK SCISSORS}\N{VARIATION SELECTOR-16}")
 
-        self.insurance_button = BlackjackButton(
-            action="insurance",
-            label="Insurance",
-            emoji="\N{SHIELD}\N{VARIATION SELECTOR-16}",
-        )
+        self.insurance_button = BlackjackButton(action="insurance", label="Insurance", emoji="\N{SHIELD}\N{VARIATION SELECTOR-16}")
 
-        self.surrender_button = BlackjackButton(
-            action="surrender",
-            label="Surrender",
-            emoji="\N{WAVING WHITE FLAG}\N{VARIATION SELECTOR-16}",
-        )
+        self.surrender_button = BlackjackButton(action="surrender", label="Surrender", emoji="\N{WAVING WHITE FLAG}\N{VARIATION SELECTOR-16}")
 
         self.add_item(self.hit_button)
         self.add_item(self.stand_button)
@@ -671,13 +563,7 @@ class BlackjackView(BaseView):
         self.add_item(self.split_button)
         self.add_item(self.insurance_button)
         self.add_item(self.surrender_button)
-        self.add_item(
-            BlackjackButton(
-                action="cancel",
-                label="Cancel",
-                cancel_button=True,
-            ),
-        )
+        self.add_item(BlackjackButton(action="cancel", label="Cancel", cancel_button=True))
 
         self.update_buttons()
 
@@ -695,11 +581,7 @@ class BlackjackView(BaseView):
         self.insurance_button.disabled = not self.game.insurance_available
         self.surrender_button.disabled = not self.game.can_surrender(hand)
 
-    async def handle_action(
-        self,
-        interaction: discord.Interaction,
-        action: str,
-    ) -> None:
+    async def handle_action(self, interaction: discord.Interaction, action: str) -> None:
         game = self.game
         hand = game.current_hand
 
@@ -730,19 +612,13 @@ class BlackjackView(BaseView):
         if action != "split":
             if hand.status is not HandStatus.ACTIVE:
                 if not game.advance_hand():
-                    await interaction.response.edit_message(
-                        embed=game.make_embed(),
-                        view=self,
-                    )
+                    await interaction.response.edit_message(embed=game.make_embed(), view=self)
                     await game.finish()
                     return
 
         self.update_buttons()
 
-        await interaction.response.edit_message(
-            embed=game.make_embed(),
-            view=self,
-        )
+        await interaction.response.edit_message(embed=game.make_embed(), view=self)
 
     async def on_timeout(self) -> None:
         if self.game.finished:
@@ -753,8 +629,4 @@ class BlackjackView(BaseView):
         if self.message is not None:
             self.disable_all()
 
-            await self.message.edit(
-                content="**Blackjack \N{EM DASH} Timed Out**",
-                embed=self.game.make_embed(),
-                view=self,
-            )
+            await self.message.edit(content="**Blackjack \N{EM DASH} Timed Out**", embed=self.game.make_embed(), view=self)

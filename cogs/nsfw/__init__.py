@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Literal
 
 import arrow
-
 import discord
 from discord.ext import commands
 
@@ -84,8 +83,7 @@ class NSFW(commands.Cog):
         if response.status != 200:
             msg = "Something went wrong with the API"
             raise commands.CommandError(msg)
-        else:
-            url = (await response.json())["message"]
+        url = (await response.json())["message"]
 
         embed = discord.Embed().set_image(url=url)
         return embed
@@ -98,23 +96,14 @@ class NSFW(commands.Cog):
 
     def command_loader(self) -> None:
         for end_point in ENDPOINTS:
-            command = commands.Command(
-                NSFW.command_endpoint_method,
-                enabled=True,
-                name=end_point,
-            )
+            command = commands.Command(NSFW.command_endpoint_method, enabled=True, name=end_point)
             command.cog = self
 
             self.bot.add_command(command)
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def n(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
-    ) -> None:
+    async def n(self, ctx: commands.Context[Parrot], *, endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif") -> None:
         """Mature Content. 18+ only Please."""
         await ctx.typing()
         r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")

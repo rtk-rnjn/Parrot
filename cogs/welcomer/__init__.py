@@ -138,12 +138,7 @@ class Welcomer(commands.Cog):
 
     @welcome.command(name="join-message", aliases=["welcome-message", "join_message", "welcome_message"])
     @commands.has_guild_permissions(manage_guild=True)
-    async def set_join_message(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        message: Annotated[str, commands.clean_content],
-    ) -> None:
+    async def set_join_message(self, ctx: commands.Context[Parrot], *, message: Annotated[str, commands.clean_content]) -> None:
         """Set the member join message."""
         if ctx.guild is None:
             return
@@ -163,12 +158,7 @@ class Welcomer(commands.Cog):
 
     @welcome.command(name="leave-message", aliases=["goodbye-message", "leave_message", "goodbye_message"])
     @commands.has_guild_permissions(manage_guild=True)
-    async def set_leave_message(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        message: Annotated[str, commands.clean_content],
-    ) -> None:
+    async def set_leave_message(self, ctx: commands.Context[Parrot], *, message: Annotated[str, commands.clean_content]) -> None:
         """Set the member leave message."""
         if ctx.guild is None:
             return

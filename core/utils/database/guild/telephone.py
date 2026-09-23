@@ -19,8 +19,7 @@ class _GuildTelephoneMixin(DatabaseMixin):
             return bool(int(cached))
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "telephone_config.enabled": {"$exists": True}},
-            {"telephone_config.enabled": 1},
+            {"_id": guild_id, "telephone_config.enabled": {"$exists": True}}, {"telephone_config.enabled": 1}
         )
         if guild_config is None:
             return False
@@ -29,13 +28,7 @@ class _GuildTelephoneMixin(DatabaseMixin):
         await self.redis_client.set(redis_key, enabled)
         return enabled
 
-    async def edit_telephone_config(
-        self,
-        *,
-        guild_id: int,
-        enabled: bool = MISSING,
-        channel_id: int | None = MISSING,
-    ) -> bool:
+    async def edit_telephone_config(self, *, guild_id: int, enabled: bool = MISSING, channel_id: int | None = MISSING) -> bool:
         updates = {f"telephone_config.{field}": value for field, value in (("enabled", enabled), ("channel_id", channel_id)) if value is not MISSING}
         if not updates:
             return False
@@ -70,22 +63,14 @@ class _GuildTelephoneMixin(DatabaseMixin):
     async def add_telephone_blocked_server(self, *, guild_id: int, server_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS.format(guild_id=guild_id)
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$addToSet": {"telephone_config.blocked_servers": server_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$addToSet": {"telephone_config.blocked_servers": server_id}}, upsert=True)
 
         await self.redis_client.sadd(redis_key, server_id)
 
     async def remove_telephone_blocked_server(self, *, guild_id: int, server_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_BLOCKED_SERVERS.format(guild_id=guild_id)
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$pull": {"telephone_config.blocked_servers": server_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$pull": {"telephone_config.blocked_servers": server_id}}, upsert=True)
 
         await self.redis_client.srem(redis_key, server_id)
 
@@ -111,8 +96,7 @@ class _GuildTelephoneMixin(DatabaseMixin):
             return int(cached)
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "telephone_config.channel_id": {"$exists": True}},
-            {"telephone_config.channel_id": 1},
+            {"_id": guild_id, "telephone_config.channel_id": {"$exists": True}}, {"telephone_config.channel_id": 1}
         )
         if guild_config is None:
             return None
@@ -125,10 +109,6 @@ class _GuildTelephoneMixin(DatabaseMixin):
     async def clear_telephone_channel_id(self, *, guild_id: int) -> None:
         redis_key = RedisKeys.GUILD_TELEPHONE_CONFIG_CHANNEL_ID.format(guild_id=guild_id)
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"telephone_config.channel_id": None}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"telephone_config.channel_id": None}}, upsert=True)
 
         await self.redis_client.delete(redis_key)

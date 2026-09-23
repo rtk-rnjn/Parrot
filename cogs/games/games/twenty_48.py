@@ -27,12 +27,7 @@ class Twenty48:
 
     player: Player
 
-    def __init__(
-        self,
-        number_to_display_mapping: dict[str, str] | None = None,
-        *,
-        render_image: bool = True,
-    ) -> None:
+    def __init__(self, number_to_display_mapping: dict[str, str] | None = None, *, render_image: bool = True) -> None:
         self.embed_color: DiscordColor | None = None
         self.embed: discord.Embed | None = None
 
@@ -141,10 +136,9 @@ class Twenty48:
 
         if not zeroes:
             return True
-        else:
-            i, j = random.choice(zeroes)
-            board[i][j] = 2
-            return False
+        i, j = random.choice(zeroes)
+        board[i][j] = 2
+        return False
 
     def number_to_emoji(self) -> str:
         board = self.board
@@ -187,13 +181,7 @@ class Twenty48:
 
                     if t != "0":
                         text_fill = self.DARK_CLR if t in ("2", "4") else self.LIGHT_CLR
-                        cursor.text(
-                            (x + SQ / 2, y + SQ / 2),
-                            t,
-                            font=font,
-                            anchor="mm",
-                            fill=text_fill,
-                        )
+                        cursor.text((x + SQ / 2, y + SQ / 2), t, font=font, anchor="mm", fill=text_fill)
 
                     x += SQ + self.SPACE_W
                 x = self.BORDER_W
@@ -204,11 +192,7 @@ class Twenty48:
         buf.seek(0)
         return discord.File(buf, "2048.png")
 
-    async def _wait_for_reaction(
-        self,
-        ctx: commands.Context[Parrot],
-        timeout: float | None,
-    ) -> tuple[discord.Reaction, discord.User] | None:
+    async def _wait_for_reaction(self, ctx: commands.Context[Parrot], timeout: float | None) -> tuple[discord.Reaction, discord.User] | None:
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
             return (
                 str(reaction.emoji) in self._controls and user == self.player and self.message is not None and reaction.message.id == self.message.id
@@ -223,13 +207,7 @@ class Twenty48:
             return None
         return done.pop().result()
 
-    async def _process_reaction(
-        self,
-        emoji: str,
-        user: discord.User,
-        delete_button: bool,
-        remove_reaction_after: bool,
-    ) -> bool:
+    async def _process_reaction(self, emoji: str, user: discord.User, delete_button: bool, remove_reaction_after: bool) -> bool:
         stop = "\N{BLACK SQUARE FOR STOP}"
         if delete_button and emoji == stop:
             if self.message is not None:
@@ -262,7 +240,7 @@ class Twenty48:
         else:
             await self.message.edit(content=self.number_to_emoji(), embed=self.embed)
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -307,10 +285,7 @@ class Twenty48:
             won = self.check_win()
 
             if lost:
-                self.embed = discord.Embed(
-                    description="Game Over! You lost.",
-                    color=self.embed_color,
-                )
+                self.embed = discord.Embed(description="Game Over! You lost.", color=self.embed_color)
 
             await self._update_message()
 
@@ -342,7 +317,7 @@ class Twenty48_Button(discord.ui.Button["BaseView"]):
             await interaction.message.delete()
             return
 
-        elif emoji == "\N{BLACK RIGHTWARDS ARROW}":
+        if emoji == "\N{BLACK RIGHTWARDS ARROW}":
             self.game.move_right()
 
         elif emoji == "\N{LEFTWARDS BLACK ARROW}":
@@ -362,10 +337,7 @@ class Twenty48_Button(discord.ui.Button["BaseView"]):
             self.view.stop()
 
         if lost:
-            self.game.embed = discord.Embed(
-                description="Game Over! You lost.",
-                color=self.game.embed_color,
-            )
+            self.game.embed = discord.Embed(description="Game Over! You lost.", color=self.game.embed_color)
 
         if self.game._render_image:
             image = await self.game.render_image()

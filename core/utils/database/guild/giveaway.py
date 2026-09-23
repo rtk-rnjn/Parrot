@@ -70,10 +70,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
         if value is not None:
             return bool(value)
 
-        config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "giveaway_config.enabled": {"$exists": True}},
-            {"giveaway_config": 1},
-        )
+        config = await self.guilds_collection.find_one({"_id": guild_id, "giveaway_config.enabled": {"$exists": True}}, {"giveaway_config": 1})
         if config is None:
             return False
 
@@ -87,8 +84,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
             return value
 
         config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "giveaway_config.giveaway_channel_id": {"$exists": True}},
-            {"giveaway_config": 1},
+            {"_id": guild_id, "giveaway_config.giveaway_channel_id": {"$exists": True}}, {"giveaway_config": 1}
         )
         if config is None:
             return None
@@ -103,8 +99,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
             return value
 
         config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "giveaway_config.giveaway_role_id": {"$exists": True}},
-            {"giveaway_config": 1},
+            {"_id": guild_id, "giveaway_config.giveaway_role_id": {"$exists": True}}, {"giveaway_config": 1}
         )
         if config is None:
             return None
@@ -112,7 +107,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
         await self.__cache_giveaway_config(guild_id=guild_id, config=config["giveaway_config"])
         return config["giveaway_config"]["giveaway_role_id"]
 
-    async def create_giveaway(  # noqa: PLR0913
+    async def create_giveaway(
         self,
         *,
         guild_id: int,
@@ -151,10 +146,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
         return await self.giveaways_collection.find(query).to_list(length=None)
 
     async def add_giveaway_entrant(self, *, giveaway_id: ObjectId, user_id: int) -> bool:
-        result = await self.giveaways_collection.update_one(
-            {"_id": giveaway_id, "ended": False},
-            {"$addToSet": {"entrants": user_id}},
-        )
+        result = await self.giveaways_collection.update_one({"_id": giveaway_id, "ended": False}, {"$addToSet": {"entrants": user_id}})
         return result.modified_count > 0
 
     async def end_giveaway(self, giveaway_id: ObjectId, /) -> Giveaway | None:

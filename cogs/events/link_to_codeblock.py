@@ -90,19 +90,12 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         ref, file_path = self._find_ref(path, refs)
 
         file_contents = await self._fetch_response(
-            f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={ref}",
-            "text",
-            headers=GITHUB_HEADERS,
+            f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={ref}", "text", headers=GITHUB_HEADERS
         )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
     async def _fetch_github_gist_snippet(
-        self,
-        gist_id: str,
-        revision: str,
-        file_path: str,
-        start_line: str | int | None,
-        end_line: str | int | None,
+        self, gist_id: str, revision: str, file_path: str, start_line: str | int | None, end_line: str | int | None
     ) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json: dict | None = await self._fetch_response(
@@ -134,8 +127,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         enc_file_path = quote_plus(file_path)
 
         file_contents = await self._fetch_response(
-            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}",
-            "text",
+            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}", "text"
         )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 

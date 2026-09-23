@@ -27,12 +27,7 @@ def _require_dict(value: object, name: str) -> Mapping[str, Any]:
     return value
 
 
-def _require_int(
-    data: Mapping[str, Any],
-    key: str,
-    *,
-    minimum: int = 0,
-) -> int:
+def _require_int(data: Mapping[str, Any], key: str, *, minimum: int = 0) -> int:
     value = data.get(key)
 
     if not isinstance(value, int) or isinstance(value, bool):
@@ -44,11 +39,7 @@ def _require_int(
     return value
 
 
-def _optional_bool(
-    data: Mapping[str, Any],
-    key: str,
-    default: bool = False,
-) -> bool:
+def _optional_bool(data: Mapping[str, Any], key: str, default: bool = False) -> bool:
     value = data.get(key, default)
 
     if not isinstance(value, bool):
@@ -57,10 +48,7 @@ def _optional_bool(
     return value
 
 
-def _optional_string(
-    data: Mapping[str, Any],
-    key: str,
-) -> str | None:
+def _optional_string(data: Mapping[str, Any], key: str) -> str | None:
     value = data.get(key)
 
     if value is None:
@@ -81,10 +69,7 @@ def _parse_all_caps(data: Mapping[str, Any]) -> TriggerConfig:
     if percentage > 100:
         raise TriggerParseError("'percentage' must be <= 100")
 
-    return AllCapsConfig(
-        min_count=_require_int(data, "min_count"),
-        percentage=percentage,
-    )
+    return AllCapsConfig(min_count=_require_int(data, "min_count"), percentage=percentage)
 
 
 def _parse_message_mentions(data: Mapping[str, Any]) -> TriggerConfig:
@@ -92,9 +77,7 @@ def _parse_message_mentions(data: Mapping[str, Any]) -> TriggerConfig:
 
 
 def _parse_list(data: Mapping[str, Any]) -> TriggerConfig:
-    return ListConfig(
-        list_name=_optional_string(data, "list"),
-    )
+    return ListConfig(list_name=_optional_string(data, "list"))
 
 
 def _parse_regex(data: Mapping[str, Any]) -> TriggerConfig:
@@ -102,16 +85,11 @@ def _parse_regex(data: Mapping[str, Any]) -> TriggerConfig:
     if not isinstance(regex, str):
         raise TriggerParseError("'regex' must be a string")
 
-    return RegexConfig(
-        regex=regex,
-    )
+    return RegexConfig(regex=regex)
 
 
 def _parse_time_window(data: Mapping[str, Any]) -> TriggerConfig:
-    return TimeWindowConfig(
-        count=_require_int(data, "count", minimum=1),
-        within_minutes=_require_int(data, "within_minutes", minimum=1),
-    )
+    return TimeWindowConfig(count=_require_int(data, "count", minimum=1), within_minutes=_require_int(data, "within_minutes", minimum=1))
 
 
 def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:
@@ -190,10 +168,7 @@ for t in _TIME_WINDOW_TYPES:
     _PARSERS[t] = _parse_time_window
 
 
-def _parse_config(
-    trigger_type: TriggerType,
-    data: Mapping[str, Any],
-) -> TriggerConfig:
+def _parse_config(trigger_type: TriggerType, data: Mapping[str, Any]) -> TriggerConfig:
     parser = _PARSERS.get(trigger_type)
     if parser is None:
         raise TriggerParseError("No parser registered for trigger type " + repr(trigger_type.value))

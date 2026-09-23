@@ -23,12 +23,7 @@ class ConnectFour:
     connect four in a row in any direction.
     """
 
-    def __init__(
-        self,
-        *,
-        red: Player,
-        blue: Player,
-    ) -> None:
+    def __init__(self, *, red: Player, blue: Player) -> None:
         self.red_player = red
         self.blue_player = blue
 
@@ -48,10 +43,7 @@ class ConnectFour:
         self.winner: Player | None = None
 
         self._conversion: dict[str, int] = {emoji: i for i, emoji in enumerate(self._controls)}
-        self.player_to_emoji: dict[Player, str] = {
-            self.red_player: RED,
-            self.blue_player: BLUE,
-        }
+        self.player_to_emoji: dict[Player, str] = {self.red_player: RED, self.blue_player: BLUE}
         self.emoji_to_player: dict[str, Player] = {v: k for k, v in self.player_to_emoji.items()}
 
     def board_string(self) -> str:
@@ -171,34 +163,22 @@ class ConnectFourButton(discord.ui.Button["ConnectFourView"]):
     def __init__(self, number: int, style: discord.ButtonStyle) -> None:
         self.number = number
 
-        super().__init__(
-            label=str(self.number),
-            style=style,
-        )
+        super().__init__(label=str(self.number), style=style)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None
         game = self.view.game
 
         if interaction.user not in (game.red_player, game.blue_player):
-            await interaction.response.send_message(
-                "You are not part of this game!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("You are not part of this game!", ephemeral=True)
             return
 
         if interaction.user != game.turn:
-            await interaction.response.send_message(
-                "It is not your turn yet!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("It is not your turn yet!", ephemeral=True)
             return
 
         if game.board[0][self.number - 1] != BLANK:
-            await interaction.response.send_message(
-                "Selected column is full!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("Selected column is full!", ephemeral=True)
             return
 
         game.place_move(self.number - 1, interaction.user)
@@ -211,11 +191,7 @@ class ConnectFourButton(discord.ui.Button["ConnectFourView"]):
             self.view.disable_all()
             self.view.stop()
 
-        await interaction.response.edit_message(
-            view=self.view,
-            embed=embed,
-            content=game.board_string(),
-        )
+        await interaction.response.edit_message(view=self.view, embed=embed, content=game.board_string())
 
 
 class ConnectFourView(BaseView):
@@ -251,11 +227,7 @@ class BetaConnectFour(ConnectFour):
         self.view = ConnectFourView(self, timeout=timeout)
 
         embed = self.make_embed(status=False)
-        self.message = await ctx.reply(
-            content=self.board_string(),
-            view=self.view,
-            embed=embed,
-        )
+        self.message = await ctx.reply(content=self.board_string(), view=self.view, embed=embed)
         self.view.message = self.message
 
         await self.view.wait()

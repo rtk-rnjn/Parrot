@@ -82,8 +82,7 @@ class Misc(commands.Cog):
         # await interaction.response.defer(thinking=False)
         if message.guild is None:
             await interaction.response.send_message(
-                f"{interaction.user.mention} interpreting as command is only available in guilds.",
-                ephemeral=True,
+                f"{interaction.user.mention} interpreting as command is only available in guilds.", ephemeral=True
             )
             return
 
@@ -91,14 +90,12 @@ class Misc(commands.Cog):
         prefixes = await self.bot.get_prefix(message)
         if message.content.startswith(tuple(prefixes)):
             await interaction.edit_original_response(
-                content=f"{interaction.user.mention} the command is already interpreted as command. Do you think it's an error? Please report it.",
+                content=f"{interaction.user.mention} the command is already interpreted as command. Do you think it's an error? Please report it."
             )
             return
 
         if message.author.bot:
-            await interaction.edit_original_response(
-                content=f"{interaction.user.mention} the message is from a bot. Can't interpret it as command.",
-            )
+            await interaction.edit_original_response(content=f"{interaction.user.mention} the message is from a bot. Can't interpret it as command.")
             return
         ini = time.perf_counter()
 
@@ -109,7 +106,7 @@ class Misc(commands.Cog):
 
         end = time.perf_counter()
         await interaction.edit_original_response(
-            content=f"{interaction.user.mention} completed command interpretation. It took {end - ini:.2f} seconds.",
+            content=f"{interaction.user.mention} completed command interpretation. It took {end - ini:.2f} seconds."
         )
 
     @commands.command(name="bookmark", aliases=("bm", "pin"))
@@ -117,8 +114,7 @@ class Misc(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         target_message: Annotated[discord.Message | None, WrappedMessageConverter] = commands.parameter(  # noqa: B008
-            description="The message to bookmark.",
-            default=None,
+            description="The message to bookmark.", default=None
         ),
         *,
         title: str = commands.parameter(description="The title of the bookmark.", default="Bookmark"),
@@ -141,7 +137,11 @@ class Misc(commands.Cog):
         # Prevent users from bookmarking a message in a channel they don't have access to
         permissions = target_message.channel.permissions_for(ctx.author)
         if not permissions.read_messages:
-            embed = discord.Embed(title="Permission", color=ctx.author.color, description="You don't have permission to view this channel.")
+            embed = discord.Embed(
+                title="Permission",
+                color=ctx.author.color,
+                description="You don't have permission to view this channel.",
+            )
             return await ctx.reply(embed=embed)
 
         bookmarked_users = [ctx.author.id]
@@ -162,7 +162,7 @@ class Misc(commands.Cog):
                         str(reaction.emoji) == BOOKMARK_EMOJI,
                         # Reaction was not made by the Bot
                         user.id != self.bot.user.id,
-                    ),
+                    )
                 )
             )
 
@@ -222,7 +222,10 @@ class Misc(commands.Cog):
         if isinstance(user, str):
             return discord.Embed(title="You DM(s) are closed!", description=user)
 
-        return discord.Embed(title="You DM(s) are closed!", description=f"{user.mention}, please enable your DMs to receive the bookmark.")
+        return discord.Embed(
+            title="You DM(s) are closed!",
+            description=f"{user.mention}, please enable your DMs to receive the bookmark.",
+        )
 
     async def action_bookmark(
         self,
@@ -245,8 +248,8 @@ class Misc(commands.Cog):
         """Sends an embed, with a reaction, so users can react to bookmark the message too."""
         message = await channel.send(
             embed=discord.Embed(
-                description=(f"React with {BOOKMARK_EMOJI} to be sent your very own bookmark to [this message]({target_message.jump_url})."),
-            ),
+                description=(f"React with {BOOKMARK_EMOJI} to be sent your very own bookmark to [this message]({target_message.jump_url}).")
+            )
         )
 
         await message.add_reaction(BOOKMARK_EMOJI)
@@ -271,10 +274,7 @@ class Misc(commands.Cog):
         emb = (
             discord.Embed(color=snipe.author.color, timestamp=snipe.created_at)
             .set_author(name=snipe.author, icon_url=snipe.author.display_avatar.url)
-            .set_footer(
-                text=f"Message sniped by {str(ctx.author)}",
-                icon_url=ctx.author.display_avatar.url,
-            )
+            .set_footer(text=f"Message sniped by {ctx.author!s}", icon_url=ctx.author.display_avatar.url)
         )
         if snipe.attachments:
             url = snipe.attachments[0].proxy_url
@@ -310,10 +310,7 @@ class Misc(commands.Cog):
         emb = (
             discord.Embed(color=snipe[0].author.color, timestamp=snipe[0].created_at)
             .set_author(name=snipe[0].author, icon_url=snipe[0].author.display_avatar.url)
-            .set_footer(
-                text=f"Message sniped by {str(ctx.author)}",
-                icon_url=ctx.author.display_avatar.url,
-            )
+            .set_footer(text=f"Message sniped by {ctx.author!s}", icon_url=ctx.author.display_avatar.url)
         )
         if snipe[0].content and snipe[1].content:
             emb.description = f"**Before:**\n{self.sanitise(snipe[0].content)}\n\n**After:**\n{self.sanitise(snipe[1].content)}"
@@ -331,18 +328,13 @@ class Misc(commands.Cog):
         return await ctx.reply(f"**{closest_match[0]}**: {DICTIONARY[closest_match[0]]}")
 
     @commands.command(name="ghostping", aliases=["gp", "ghost-ping"])
-    async def ghost_ping(
-        self,
-        ctx: commands.Context[Parrot],
-    ) -> discord.Message | None:
+    async def ghost_ping(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
         """Check if someone ghost pinged you."""
         cog: PingMessageListner = self.bot.get_cog("PingMessageListner")  # type: ignore
         pages = []
         for message in cog.get_ghost_pings(ctx.author.id):
             relative_dt = discord.utils.format_dt(message.created_at, style="R")
-            pages.append(
-                f"[{relative_dt}] {message.author} - {self.sanitise(message.content)}",
-            )
+            pages.append(f"[{relative_dt}] {message.author} - {self.sanitise(message.content)}")
 
         if not pages:
             return await ctx.reply("You haven't been ghost pinged.")
@@ -350,10 +342,7 @@ class Misc(commands.Cog):
         embeds: list[discord.Embed] = []
         chunks = discord.utils.as_chunks(pages, 10)
         for chunk in chunks:
-            embed = discord.Embed(
-                title="Ghost Pings",
-                description="\n".join(chunk),
-            )
+            embed = discord.Embed(title="Ghost Pings", description="\n".join(chunk))
             embeds.append(embed)
 
         view = PaginationView(author=ctx.author, items=embeds)

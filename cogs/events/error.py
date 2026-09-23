@@ -97,11 +97,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
         )
         return isinstance(error, ignore)
 
-    async def _permission_error_response(
-        self,
-        ctx: commands.Context[Parrot],
-        error: commands.CommandError,
-    ) -> ErrorResponse | None:
+    async def _permission_error_response(self, ctx: commands.Context[Parrot], error: commands.CommandError) -> ErrorResponse | None:
         if isinstance(error, commands.BotMissingPermissions):
             fmt = self._format_permissions(error.missing_permissions)
             return ErrorResponse(
@@ -214,11 +210,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             description="Unexpected quote mark. Did you forget to close the quotation mark?",
         )
 
-    async def _build_error_response(
-        self,
-        ctx: commands.Context[Parrot],
-        error: commands.CommandError,
-    ) -> ErrorResponse:
+    async def _build_error_response(self, ctx: commands.Context[Parrot], error: commands.CommandError) -> ErrorResponse:
         response = await self._permission_error_response(ctx, error)
         if response is not None:
             return response
@@ -275,11 +267,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             description = f"Value you provided is out of range. Expected a value between {error.minimum} and {error.maximum}"
             title = self._title("Value Out Of Range")
 
-        return ErrorResponse(
-            title=title,
-            description=self._add_fuzzy_hint(error, objects, description),
-            reset_cooldown=True,
-        )
+        return ErrorResponse(title=title, description=self._add_fuzzy_hint(error, objects, description), reset_cooldown=True)
 
     async def _send_error_reply(self, ctx: commands.Context[Parrot], response: ErrorResponse) -> discord.Message | None:
         # sentinel path when owner reinvoke happens
@@ -289,12 +277,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
         random_quote = random.choice(RANDOM_QUOTES)
         return await ctx.reply(content=f"-# _{random_quote}_", embed=embed)
 
-    async def _handle_message_cleanup(
-        self,
-        ctx: commands.Context[Parrot],
-        msg: discord.Message | None,
-        delete_after: float | None,
-    ) -> None:
+    async def _handle_message_cleanup(self, ctx: commands.Context[Parrot], msg: discord.Message | None, delete_after: float | None) -> None:
         if msg is None:
             return
 

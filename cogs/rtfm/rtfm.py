@@ -165,9 +165,7 @@ class RTFM(commands.Cog):
 
     @commands.command(aliases=["pypi"])
     async def pypisearch(
-        self,
-        ctx: commands.Context[Parrot],
-        package: str = commands.parameter(description="The package to search for."),
+        self, ctx: commands.Context[Parrot], package: str = commands.parameter(description="The package to search for.")
     ) -> discord.Message:
         """Get info about a Python package directly from PyPi."""
         res_raw = await self.get_pypi_package(f"https://pypi.org/pypi/{package}/json")
@@ -175,7 +173,7 @@ class RTFM(commands.Cog):
         try:
             res_json: dict = await res_raw.json()
         except aiohttp.ContentTypeError as e:
-            error_message = f"An error occurred while fetching package data: {str(e)}"
+            error_message = f"An error occurred while fetching package data: {e!s}"
             raise commands.CommandError(error_message) from e
 
         res = res_json.get("info", "Unknown")
@@ -209,9 +207,7 @@ class RTFM(commands.Cog):
 
     @commands.command(aliases=["npm"])
     async def npmsearch(
-        self,
-        ctx: commands.Context[Parrot],
-        package: str = commands.parameter(description="The package to search for."),
+        self, ctx: commands.Context[Parrot], package: str = commands.parameter(description="The package to search for.")
     ) -> discord.Message:
         """Get info about a NPM package directly from the NPM Registry."""
         res_raw = await self.get_pypi_package(f"https://registry.npmjs.org/{package}/")
@@ -265,9 +261,7 @@ class RTFM(commands.Cog):
 
     @commands.command(aliases=["crates"])
     async def crate(
-        self,
-        ctx: commands.Context[Parrot],
-        package: str = commands.parameter(description="The package to search for."),
+        self, ctx: commands.Context[Parrot], package: str = commands.parameter(description="The package to search for.")
     ) -> discord.Message:
         """Get info about a Rust package directly from the Crates.IO Registry."""
         res_raw = await self.get_pypi_package(f"https://crates.io/api/v1/crates/{package}")
@@ -319,7 +313,7 @@ class RTFM(commands.Cog):
             .add_field(name="Repository", value=repository, inline=False)
             .add_field(name="Homepage", value=homepage, inline=True)
             .set_thumbnail(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png",
+                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
             )
         )
 
@@ -403,10 +397,7 @@ class RTFM(commands.Cog):
 
     @commands.command()
     async def unascii(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        text: str = commands.parameter(description="The char codes to convert."),
+        self, ctx: commands.Context[Parrot], *, text: str = commands.parameter(description="The char codes to convert.")
     ) -> discord.Message:
         """Reforms string from char codes."""
         try:
@@ -423,8 +414,7 @@ class RTFM(commands.Cog):
         ctx: commands.Context[Parrot],
         value: int = commands.parameter(description="The value to convert."),
         unit: Literal["o", "kio", "mio", "gio", "tio", "pio", "eio", "zio", "yio"] = commands.parameter(
-            description="The unit of the given value.",
-            default="mio",
+            description="The unit of the given value.", default="mio"
         ),
     ) -> discord.Message:
         """Shows byte conversions of given value."""
@@ -472,7 +462,7 @@ class RTFM(commands.Cog):
             # Available
             hash_object = hashlib.new(algo, text.encode("utf-8"))
 
-        emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest()).set_footer(text=f"Invoked by {str(ctx.message.author)}")
+        emb = discord.Embed(title=f"{algorithm} hash", description=hash_object.hexdigest()).set_footer(text=f"Invoked by {ctx.message.author!s}")
 
         return await ctx.reply(embed=emb)
 
@@ -546,14 +536,16 @@ class RTFM(commands.Cog):
                 )
                 .set_thumbnail(url=user_data["avatar_url"])
                 .set_footer(text="Account created at")
-                .add_field(name="Public repos", value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)")
+                .add_field(
+                    name="Public repos",
+                    value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
+                )
                 .add_field(name="Website", value=blog)
             )
 
             if user_data["type"] == "User":
                 embed.add_field(name="Followers", value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)").add_field(
-                    name="Following",
-                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
+                    name="Following", value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)"
                 )
 
             if user_data["type"] == "User":
@@ -613,7 +605,7 @@ class RTFM(commands.Cog):
                 f"\N{BULLET} {repo_data['stargazers_count']} \N{WHITE MEDIUM STAR} "
                 f"\N{BULLET} Created At {repo_created_at} "
                 f"\N{BULLET} Last Commit {last_pushed}"
-            ),
+            )
         )
 
         return await ctx.reply(embed=embed)
@@ -623,7 +615,7 @@ class RTFM(commands.Cog):
     async def realpython(
         self,
         ctx: commands.Context[Parrot],
-        amount: commands.Range[int, 1, 5] = commands.parameter(description="The amount of articles to fetch (1-5).", default=5),  # noqa: B008
+        amount: commands.Range[int, 1, 5] = commands.parameter(description="The amount of articles to fetch (1-5).", default=5),
         *,
         query: str = commands.parameter(description="The search terms to look for."),
     ) -> discord.Message:
@@ -640,7 +632,7 @@ class RTFM(commands.Cog):
                         title="Error while searching Real Python",
                         description="There was an error while trying to reach Real Python. Please try again shortly.",
                         color=ctx.author.color,
-                    ),
+                    )
                 )
 
             data = await response.json()
@@ -694,7 +686,7 @@ class RTFM(commands.Cog):
                             "Sorry, there was en error while trying to fetch data from the Stackoverflow website. Please try again in some time"
                         ),
                         color=ctx.author.color,
-                    ),
+                    )
                 )
 
         if not data["items"]:
@@ -726,8 +718,7 @@ class RTFM(commands.Cog):
             return await ctx.reply(embed=embed)
         except discord.HTTPException:
             search_query_too_long = discord.Embed(
-                title="Your search query is too long, please try shortening your search query",
-                color=ctx.author.color,
+                title="Your search query is too long, please try shortening your search query", color=ctx.author.color
             )
             return await ctx.reply(embed=search_query_too_long)
 
@@ -803,7 +794,7 @@ class RTFM(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         platform: Literal["hackerearth", "hackerrank", "codeforces", "atcoder", "csacademy"] = commands.parameter(
-            description="The competitive programming platform to get upcoming contests for.",
+            description="The competitive programming platform to get upcoming contests for."
         ),
     ) -> discord.Message:
         """Get the upcoming contests on various competitive programming platforms."""
@@ -856,12 +847,10 @@ class RTFM(commands.Cog):
         contests = [c for c in contests if not c.ended]
 
         return [
-            inspect.cleandoc(
-                f"""ID: *{contest.id}* | **[{contest.name}]({contest.url})** | {"ENDED" if contest.ended else "UPCOMING/ONGOING"}
+            inspect.cleandoc(f"""ID: *{contest.id}* | **[{contest.name}]({contest.url})** | {"ENDED" if contest.ended else "UPCOMING/ONGOING"}
                 {contest.description}
                 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
-                `End  :` {discord.utils.format_dt(contest.end_time, "R")}""",
-            )
+                `End  :` {discord.utils.format_dt(contest.end_time, "R")}""")
             for contest in contests
         ]
 

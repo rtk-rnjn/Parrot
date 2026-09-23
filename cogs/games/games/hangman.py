@@ -110,13 +110,7 @@ class Hangman:
 
     def __init__(self, word: str | None = None) -> None:
         self._alpha: list[str] = list(string.ascii_lowercase)
-        self._all_words = tuple(
-            get_english_words_set(
-                ["web2"],
-                alpha=True,
-                lower=True,
-            ),
-        )
+        self._all_words = tuple(get_english_words_set(["web2"], alpha=True, lower=True))
 
         if word:
             if not word.isalpha():
@@ -169,17 +163,8 @@ class Hangman:
 
             self._counter -= 1
 
-            self.embed.set_field_at(
-                1,
-                name="Wrong letters",
-                value=f"{', '.join(self.wrong_letters) or BLANK}",
-            )
-            self.embed.set_field_at(
-                2,
-                name="Lives left",
-                value=self.lives(),
-                inline=False,
-            )
+            self.embed.set_field_at(1, name="Wrong letters", value=f"{', '.join(self.wrong_letters) or BLANK}")
+            self.embed.set_field_at(2, name="Lives left", value=self.lives(), inline=False)
             self.embed.description = f"```\n{STAGES[self._counter]}\n```"
             await self.message.edit(embed=self.embed)
 
@@ -230,11 +215,7 @@ class Hangman:
                 return False
 
             try:
-                message: discord.Message = await ctx.bot.wait_for(
-                    "message",
-                    timeout=timeout,
-                    check=check,
-                )
+                message: discord.Message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
             except TimeoutError:
                 break
 
@@ -273,28 +254,21 @@ class HangmanInput(discord.ui.Modal, title="Make a guess!"):
         game = self.view.game
 
         if len(content) == 1 and content not in game._alpha:
-            await interaction.response.send_message(
-                "This is not a valid letter to guess (or you've guessed it before)",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("This is not a valid letter to guess (or you've guessed it before)", ephemeral=True)
             return
 
-        elif len(content) > 1 and content not in game._all_words:
-            await interaction.response.send_message(
-                "This is not a valid word!",
-                ephemeral=True,
-            )
+        if len(content) > 1 and content not in game._all_words:
+            await interaction.response.send_message("This is not a valid word!", ephemeral=True)
             return
 
+        await game.make_guess(content)
+
+        if await game.check_win():
+            self.view.disable_all()
+            await interaction.response.edit_message(view=self.view)
+            self.view.stop()
         else:
-            await game.make_guess(content)
-
-            if await game.check_win():
-                self.view.disable_all()
-                await interaction.response.edit_message(view=self.view)
-                self.view.stop()
-            else:
-                await interaction.response.defer()
+            await interaction.response.defer()
 
 
 class HangmanButton(WordInputButton):
@@ -304,15 +278,10 @@ class HangmanButton(WordInputButton):
         assert self.view is not None
         game = self.view.game
         if interaction.user != game.player:
-            await interaction.response.send_message(
-                "This isn't your game!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("This isn't your game!", ephemeral=True)
             return
-        elif self.label == "Cancel":
-            await interaction.response.send_message(
-                f"Game Over! the word was: **{game.word}**",
-            )
+        if self.label == "Cancel":
+            await interaction.response.send_message(f"Game Over! the word was: **{game.word}**")
             assert interaction.message is not None
             await interaction.message.delete()
             self.view.stop()

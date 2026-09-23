@@ -17,24 +17,14 @@ class _UserTodoMixin(DatabaseMixin):
 
     users_collection: AsyncCollection[UserConfiguration]
 
-    async def __cache_user_todo_item(
-        self,
-        *,
-        user_id: int,
-        todo_item: TodoItem,
-    ):
+    async def __cache_user_todo_item(self, *, user_id: int, todo_item: TodoItem):
         user_todo_item_cache_key = RedisKeys.USER_TODO_ITEM.format(user_id=user_id, todo_id=str(todo_item["id"]))
         await self.redis_client.hset(user_todo_item_cache_key, mapping={str(k): str(v) for k, v in todo_item.items()})
 
         redis_todo_item_ids_cache_key = RedisKeys.USER_TODO_ITEM_IDS.format(user_id=user_id)
         await self.redis_client.sadd(redis_todo_item_ids_cache_key, str(todo_item["id"]))
 
-    async def __invalidate_user_todo_item_cache(
-        self,
-        *,
-        user_id: int,
-        todo_item_id: ObjectId,
-    ):
+    async def __invalidate_user_todo_item_cache(self, *, user_id: int, todo_item_id: ObjectId):
         redis_key = RedisKeys.USER_TODO_ITEM.format(user_id=user_id, todo_id=str(todo_item_id))
         await self.redis_client.delete(redis_key)
 
@@ -43,16 +33,12 @@ class _UserTodoMixin(DatabaseMixin):
 
     def __sort_todo_items(self, todo_items: list[TodoItem]) -> list[TodoItem]:
         def sort_key(todo_item: TodoItem) -> tuple[int, datetime | None]:
-            status_order = {
-                "pending": 0,
-                "in_progress": 1,
-                "completed": 2,
-            }
+            status_order = {"pending": 0, "in_progress": 1, "completed": 2}
             return (status_order[todo_item["status"]], todo_item["due"])
 
         return sorted(todo_items, key=sort_key)
 
-    async def create_user_todo_item(  # noqa: PLR0913
+    async def create_user_todo_item(
         self,
         *,
         user_id: int,
@@ -61,27 +47,13 @@ class _UserTodoMixin(DatabaseMixin):
         due: datetime | None = None,
         status: Literal["pending", "in_progress", "completed"] = "pending",
     ):
-        todo_item: TodoItem = TodoItem(
-            id=ObjectId(),
-            title=title,
-            notes=notes,
-            due=due,
-            created_at=datetime.now(UTC),
-            status=TodoStatus(status),
-        )
+        todo_item: TodoItem = TodoItem(id=ObjectId(), title=title, notes=notes, due=due, created_at=datetime.now(UTC), status=TodoStatus(status))
 
-        await self.users_collection.update_one(
-            {"_id": user_id},
-            {"$push": {"todo_items": todo_item}},
-            upsert=True,
-        )
+        await self.users_collection.update_one({"_id": user_id}, {"$push": {"todo_items": todo_item}}, upsert=True)
         return todo_item
 
     async def get_user_todo_items(self, *, user_id: int) -> list[TodoItem]:
-        user_config = await self.users_collection.find_one(
-            {"_id": user_id, "todo_items": {"$exists": True}},
-            {"todo_items": 1},
-        )
+        user_config = await self.users_collection.find_one({"_id": user_id, "todo_items": {"$exists": True}}, {"todo_items": 1})
         if not user_config:
             return []
 
@@ -104,10 +76,7 @@ class _UserTodoMixin(DatabaseMixin):
                 status=TodoStatus(cached_todo_item["status"]),
             )
 
-        user_config = await self.users_collection.find_one(
-            {"_id": user_id, "todo_items.id": todo_item_id},
-            {"todo_items.$": 1},
-        )
+        user_config = await self.users_collection.find_one({"_id": user_id, "todo_items.id": todo_item_id}, {"todo_items.$": 1})
         if not user_config or not user_config.get("todo_items"):
             return None
 
@@ -116,16 +85,13 @@ class _UserTodoMixin(DatabaseMixin):
         return todo_item
 
     async def delete_user_todo_item(self, *, user_id: int, todo_item_id: ObjectId) -> bool:
-        result = await self.users_collection.update_one(
-            {"_id": user_id},
-            {"$pull": {"todo_items": {"id": todo_item_id}}},
-        )
+        result = await self.users_collection.update_one({"_id": user_id}, {"$pull": {"todo_items": {"id": todo_item_id}}})
         if result.modified_count > 0:
             await self.__invalidate_user_todo_item_cache(user_id=user_id, todo_item_id=todo_item_id)
             return True
         return False
 
-    async def edit_user_todo_item(  # noqa: PLR0913
+    async def edit_user_todo_item(
         self,
         *,
         user_id: int,
@@ -148,10 +114,7 @@ class _UserTodoMixin(DatabaseMixin):
         if not update_fields:
             return None  # No fields to update
 
-        result = await self.users_collection.update_one(
-            {"_id": user_id, "todo_items.id": todo_item_id},
-            {"$set": update_fields},
-        )
+        result = await self.users_collection.update_one({"_id": user_id, "todo_items.id": todo_item_id}, {"$set": update_fields})
         if result.modified_count > 0:
             updated_todo_item = await self.get_user_todo_item(user_id=user_id, todo_item_id=todo_item_id)
             if updated_todo_item:

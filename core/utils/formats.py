@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-__all__ = ("plural", "human_join")
+__all__ = ("human_join", "plural")
 
 
 class plural:
@@ -20,8 +20,8 @@ class plural:
 
     Appending ``!`` suppresses the numeric value::
 
-        f"{plural(1):apple!}"   # "apple"
-        f"{plural(2):apple!}"   # "apples"
+        f"{plural(1):apple!}"  # "apple"
+        f"{plural(2):apple!}"  # "apples"
     """
 
     def __init__(self, value: int):
@@ -60,11 +60,7 @@ class plural:
         return f"{v} {singular}"
 
 
-def human_join(
-    seq: Sequence,
-    delim: str = ", ",
-    final: str = "or",
-) -> str:
+def human_join(seq: Sequence, delim: str = ", ", final: str = "or") -> str:
     """Join strings into natural-language list formatting.
 
     Examples

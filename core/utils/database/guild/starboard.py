@@ -34,11 +34,7 @@ class _GuildStarboardMixin(DatabaseMixin):
         if not updates:
             return False
 
-        result = await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": updates},
-            upsert=True,
-        )
+        result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
         if result.matched_count == 0 and result.upserted_id is None:
             return False
 
@@ -51,10 +47,7 @@ class _GuildStarboardMixin(DatabaseMixin):
         if cached is not None:
             return bool(int(cached))
 
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {"starboard_config.enabled": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id}, {"starboard_config.enabled": 1})
         if guild is None:
             return False
 
@@ -68,10 +61,7 @@ class _GuildStarboardMixin(DatabaseMixin):
         if cached is not None:
             return int(cached)
 
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {"starboard_config.channel_id": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id}, {"starboard_config.channel_id": 1})
         if guild is None:
             return None
 
@@ -86,12 +76,9 @@ class _GuildStarboardMixin(DatabaseMixin):
         if cached is not None and isinstance(cached, str):
             return cached
 
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "starboard_config.emoji": {"$exists": True}},
-            {"starboard_config.emoji": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id, "starboard_config.emoji": {"$exists": True}}, {"starboard_config.emoji": 1})
         if guild is None:
-            return
+            return None
 
         emoji = guild["starboard_config"]["emoji"]
         await self.redis_client.hset(config_key, "emoji", emoji)
@@ -104,11 +91,10 @@ class _GuildStarboardMixin(DatabaseMixin):
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "starboard_config.threshold": {"$exists": True}},
-            {"starboard_config.threshold": 1},
+            {"_id": guild_id, "starboard_config.threshold": {"$exists": True}}, {"starboard_config.threshold": 1}
         )
         if guild is None:
-            return
+            return None
 
         threshold = guild["starboard_config"]["threshold"]
         await self.redis_client.hset(config_key, "threshold", threshold)
@@ -141,9 +127,6 @@ class _GuildStarboardMixin(DatabaseMixin):
         await self.redis_client.hset(messages_key, str(source_message_id), board_message_id)
 
     async def delete_starboard_board_message(self, *, guild_id: int, source_message_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"starboard_config.board_messages.{source_message_id}": None}},
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"starboard_config.board_messages.{source_message_id}": None}})
         messages_key = RedisKeys.GUILD_STARBOARD_BOARD_MESSAGES.format(guild_id=guild_id)
         await self.redis_client.hdel(messages_key, str(source_message_id))

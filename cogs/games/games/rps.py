@@ -18,21 +18,12 @@ class RockPaperScissors:
     message: discord.Message
 
     OPTIONS: ClassVar[tuple[str, str, str]] = ("\N{ROCK}", "\N{BLACK SCISSORS}", "\N{NEWSPAPER}")
-    BEATS: ClassVar[dict[str, str]] = {
-        OPTIONS[0]: OPTIONS[1],
-        OPTIONS[1]: OPTIONS[2],
-        OPTIONS[2]: OPTIONS[0],
-    }
+    BEATS: ClassVar[dict[str, str]] = {OPTIONS[0]: OPTIONS[1], OPTIONS[1]: OPTIONS[2], OPTIONS[2]: OPTIONS[0]}
 
     def check_win(self, bot_choice: str, user_choice: str) -> bool:
         return self.BEATS[user_choice] == bot_choice
 
-    async def wait_for_choice(
-        self,
-        ctx: commands.Context[commands.Bot],
-        *,
-        timeout: float | None,
-    ) -> str:
+    async def wait_for_choice(self, ctx: commands.Context[commands.Bot], *, timeout: float | None) -> str:
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
             return str(reaction.emoji) in self.OPTIONS and user == ctx.author and reaction.message.id == self.message.id
 
@@ -50,11 +41,7 @@ class RockPaperScissors:
         timeout: float | None = None,
         embed_color: DiscordColor = DEFAULT_COLOR,
     ) -> discord.Message:
-        embed = discord.Embed(
-            title="Rock Paper Scissors",
-            description="React to play!",
-            color=embed_color,
-        )
+        embed = discord.Embed(title="Rock Paper Scissors", description="React to play!", color=embed_color)
         self.message = await ctx.reply(embed=embed)
 
         for option in self.OPTIONS:
@@ -80,22 +67,14 @@ class RockPaperScissors:
 
 class RPSButton(discord.ui.Button["RPSView"]):
     def __init__(self, emoji: str, *, style: discord.ButtonStyle) -> None:
-        super().__init__(
-            emoji=emoji,
-            style=style,
-        )
+        super().__init__(emoji=emoji, style=style)
 
-    def get_choice(
-        self,
-        user: Player,
-        other: bool = False,
-    ) -> str | None:
+    def get_choice(self, user: Player, other: bool = False) -> str | None:
         assert self.view is not None
         game = self.view.game
         if other:
             return game.player2_choice if user == game.player1 else game.player1_choice
-        else:
-            return game.player1_choice if user == game.player1 else game.player2_choice
+        return game.player1_choice if user == game.player1 else game.player2_choice
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None
@@ -103,10 +82,7 @@ class RPSButton(discord.ui.Button["RPSView"]):
         players = (game.player1, game.player2) if game.player2 else (game.player1,)
 
         if interaction.user not in players:
-            await interaction.response.send_message(
-                "This is not your game!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("This is not your game!", ephemeral=True)
             return
 
         if not game.player2:
@@ -126,10 +102,7 @@ class RPSButton(discord.ui.Button["RPSView"]):
 
         else:
             if self.get_choice(interaction.user):
-                await interaction.response.send_message(
-                    "You have chosen already!",
-                    ephemeral=True,
-                )
+                await interaction.response.send_message("You have chosen already!", ephemeral=True)
                 return
 
             other_player_choice = self.get_choice(interaction.user, other=True)
@@ -165,13 +138,7 @@ class RPSButton(discord.ui.Button["RPSView"]):
 class RPSView(BaseView):
     game: BetaRockPaperScissors
 
-    def __init__(
-        self,
-        game: BetaRockPaperScissors,
-        *,
-        button_style: discord.ButtonStyle,
-        timeout: float | None,
-    ) -> None:
+    def __init__(self, game: BetaRockPaperScissors, *, button_style: discord.ButtonStyle, timeout: float | None) -> None:
         super().__init__(timeout=timeout)
 
         self.button_style = button_style
@@ -191,10 +158,7 @@ class BetaRockPaperScissors(RockPaperScissors):
     player1: Player
     embed: discord.Embed
 
-    def __init__(
-        self,
-        other_player: Player | None = None,
-    ) -> None:
+    def __init__(self, other_player: Player | None = None) -> None:
         self.player2: Player | None = other_player
 
         if self.player2:
@@ -216,11 +180,7 @@ class BetaRockPaperScissors(RockPaperScissors):
     ) -> discord.Message:
         self.player1 = ctx.author
 
-        self.embed = discord.Embed(
-            title="Rock Paper Scissors",
-            description="Select a button to play!",
-            color=embed_color,
-        )
+        self.embed = discord.Embed(title="Rock Paper Scissors", description="Select a button to play!", color=embed_color)
 
         self.view = RPSView(self, button_style=button_style, timeout=timeout)
         self.message = await ctx.reply(embed=self.embed, view=self.view)

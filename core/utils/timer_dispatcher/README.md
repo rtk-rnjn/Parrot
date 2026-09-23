@@ -128,10 +128,7 @@ The dispatcher always works with the timer that expires first.
 It queries MongoDB using:
 
 ```python
-return await self.timers_collection.find_one(
-    {},
-    sort=[("expires_at", pymongo.ASCENDING)],
-)
+return await self.timers_collection.find_one({}, sort=[("expires_at", pymongo.ASCENDING)])
 ```
 
 If MongoDB contains:
@@ -226,9 +223,7 @@ After the timer expires, it is passed to `call_timer()`.
 The dispatcher first deletes the timer from MongoDB:
 
 ```python
-deleted = await self.timers_collection.delete_one(
-    {"_id": data.get("_id")},
-)
+deleted = await self.timers_collection.delete_one({"_id": data.get("_id")})
 ```
 
 The deletion result is checked:
@@ -243,10 +238,7 @@ Only the coroutine that successfully deletes the timer is allowed to dispatch it
 After successful deletion:
 
 ```python
-self.bot.dispatch(
-    f"{data['event_name']}_timer_complete".lower(),
-    metadata=data["metadata"],
-)
+self.bot.dispatch(f"{data['event_name']}_timer_complete".lower(), metadata=data["metadata"])
 ```
 
 For example:
@@ -290,12 +282,7 @@ Timers are created using `create()`.
 A timer document is constructed:
 
 ```python
-post = {
-    "expires_at": expires_at,
-    "created_at": discord.utils.utcnow(),
-    "event_name": event_name,
-    "metadata": metadata,
-}
+post = {"expires_at": expires_at, "created_at": discord.utils.utcnow(), "event_name": event_name, "metadata": metadata}
 ```
 
 It is then inserted into MongoDB:
@@ -377,13 +364,7 @@ Timers can also be explicitly deleted with `delete()`.
 The method constructs a MongoDB filter from the event name and metadata:
 
 ```python
-filters = {
-    "event_name": event_name,
-    **{
-        f"metadata.{k}": v
-        for k, v in metadata_filter.items()
-    },
-}
+filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
 ```
 
 It can delete either one matching timer:
@@ -422,9 +403,7 @@ self._current_timer = None
 
 if self.timer_task is not None:
     self.timer_task.cancel()
-    self.timer_task = self.bot.loop.create_task(
-        self.dispatch_timers()
-    )
+    self.timer_task = self.bot.loop.create_task(self.dispatch_timers())
 ```
 
 The important property is that the new dispatcher does not trust the old cached state.
@@ -502,9 +481,7 @@ This does mean asyncio programs can have race conditions. It simply means that a
 The most important operation is:
 
 ```python
-deleted = await self.timers_collection.delete_one(
-    {"_id": data.get("_id")},
-)
+deleted = await self.timers_collection.delete_one({"_id": data.get("_id")})
 ```
 
 followed by:
@@ -773,18 +750,9 @@ Cancellation should therefore not be treated as a connection failure.
 `search()` returns all timers matching an event name and metadata filter:
 
 ```python
-filters = {
-    "event_name": event_name,
-    **{
-        f"metadata.{k}": v
-        for k, v in metadata_filter.items()
-    },
-}
+filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
 
-cursor = self.timers_collection.find(
-    filters,
-    sort=[("expires_at", pymongo.ASCENDING)],
-)
+cursor = self.timers_collection.find(filters, sort=[("expires_at", pymongo.ASCENDING)])
 
 return await cursor.to_list(length=None)
 ```

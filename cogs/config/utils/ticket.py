@@ -39,12 +39,8 @@ class TicketConfigModal(discord.ui.Modal, title="Edit Ticket Configuration"):
             await interaction.response.send_message("This command can only be used in a server (guild).", ephemeral=True)
             return
 
-        await interaction.client.database.edit_ticket_config(
-            guild_id=interaction.guild.id,
-            channel_id=self.channel_id,
-        )
+        await interaction.client.database.edit_ticket_config(guild_id=interaction.guild.id, channel_id=self.channel_id)
         await interaction.response.send_message("Updated ticket configuration.", ephemeral=True)
-
 
 
 class TicketEditButton(discord.ui.Button):
@@ -63,4 +59,3 @@ class TicketEditButton(discord.ui.Button):
         modal = TicketConfigModal(**self.kwargs)
         await interaction.response.send_modal(modal)
         await modal.wait()
-

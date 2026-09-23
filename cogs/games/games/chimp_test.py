@@ -17,10 +17,7 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
     def __init__(self, num: int, *, style: discord.ButtonStyle) -> None:
         self.value = num
 
-        super().__init__(
-            label=str(self.value or "\N{ZERO WIDTH SPACE}"),
-            style=style,
-        )
+        super().__init__(label=str(self.value or "\N{ZERO WIDTH SPACE}"), style=style)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None
@@ -28,10 +25,7 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
 
         if not game.first_clicked:
             game.first_clicked = True
-            self.view.update_view(
-                style=self.view.button_style,
-                highlight=game.highlight_tiles,
-            )
+            self.view.update_view(style=self.view.button_style, highlight=game.highlight_tiles)
 
         idx = self.view.children.index(self)
         if idx == game.coordinates[game.step]:
@@ -45,40 +39,24 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
             if game.step == len(game.coordinates):
                 self.view.disable_all()
                 self.view.stop()
-                await interaction.response.edit_message(
-                    content="Congratulations, you won!",
-                    view=self.view,
-                )
+                await interaction.response.edit_message(content="Congratulations, you won!", view=self.view)
                 return
-            else:
-                await interaction.response.edit_message(
-                    content=f"Click the buttons in order! **[Lives: {game.lives}]**",
-                    view=self.view,
-                )
+            await interaction.response.edit_message(content=f"Click the buttons in order! **[Lives: {game.lives}]**", view=self.view)
         else:
             game.lives -= 1
 
             if game.lives == 0:
-                self.view.update_view(
-                    style=self.view.button_style,
-                    show=True,
-                )
+                self.view.update_view(style=self.view.button_style, show=True)
                 self.view.disable_all()
                 self.style = discord.ButtonStyle.red
 
-                await interaction.response.edit_message(
-                    content="You Lose!",
-                    view=self.view,
-                )
+                await interaction.response.edit_message(content="You Lose!", view=self.view)
                 self.view.stop()
             else:
                 self.style = discord.ButtonStyle.red
 
                 game.wrong_guesses.append(self)
-                await interaction.response.edit_message(
-                    content=f"Click the buttons in order! **[Lives: `{game.lives}`]**",
-                    view=self.view,
-                )
+                await interaction.response.edit_message(content=f"Click the buttons in order! **[Lives: `{game.lives}`]**", view=self.view)
 
 
 class ChimpView(BaseView):
@@ -99,13 +77,7 @@ class ChimpView(BaseView):
                 button.disabled = not item
                 self.add_item(button)
 
-    def update_view(
-        self,
-        style: discord.ButtonStyle,
-        *,
-        show: bool = False,
-        highlight: bool = True,
-    ) -> None:
+    def update_view(self, style: discord.ButtonStyle, *, show: bool = False, highlight: bool = True) -> None:
         for num, button in zip(self.game.grid, self.children, strict=True):
             if isinstance(button, ChimpButton):
                 if num and highlight and button.style != discord.ButtonStyle.green:
@@ -146,7 +118,7 @@ class ChimpTest:
         self.view: ChimpView
         self.message: discord.Message
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -159,15 +131,8 @@ class ChimpTest:
         self.lives = lives
         self.initial_sleep = initial_sleep
         self.highlight_tiles = highlight_tiles
-        self.view = ChimpView(
-            game=self,
-            button_style=button_style,
-            timeout=timeout,
-        )
-        self.message = await ctx.reply(
-            content="Click the buttons in order!",
-            view=self.view,
-        )
+        self.view = ChimpView(game=self, button_style=button_style, timeout=timeout)
+        self.message = await ctx.reply(content="Click the buttons in order!", view=self.view)
         self.view.message = self.message
 
         if self.initial_sleep is not None:
@@ -175,17 +140,8 @@ class ChimpTest:
             self.first_clicked = True
 
             if not self.view.is_finished():
-                self.view.update_view(
-                    style=self.view.button_style,
-                    highlight=self.highlight_tiles,
-                )
-                await self.message.edit(
-                    content=f"Click the buttons in order! **[Lives: {self.lives}]**",
-                    view=self.view,
-                )
+                self.view.update_view(style=self.view.button_style, highlight=self.highlight_tiles)
+                await self.message.edit(content=f"Click the buttons in order! **[Lives: {self.lives}]**", view=self.view)
 
-        await double_wait(
-            wait_for_delete(ctx, self.message),
-            self.view.wait(),
-        )
+        await double_wait(wait_for_delete(ctx, self.message), self.view.wait())
         return self.message

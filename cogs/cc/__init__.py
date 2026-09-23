@@ -272,7 +272,7 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
 class CustomCommandModal(discord.ui.Modal):
     """Shared modal fields for custom-command operations."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         title: str,
         *,
@@ -293,28 +293,20 @@ class CustomCommandModal(discord.ui.Modal):
 
         if include_name_input:
             self.name_input = discord.ui.TextInput(
-                label="Command name",
-                placeholder="welcome",
-                max_length=32,
-                default=custom_command_name,
-                required=True,
+                label="Command name", placeholder="welcome", max_length=32, default=custom_command_name, required=True
             )
             self.add_item(self.name_input)
 
         self.ignored_roles_select = discord.ui.Label(
             text="Ignored Roles",
             description="Commands wont invoke for members with these roles.",
-            component=discord.ui.RoleSelect(
-                default_values=[discord.Object(id=role_id) for role_id in self.custom_command_ignored_roles],
-            ),
+            component=discord.ui.RoleSelect(default_values=[discord.Object(id=role_id) for role_id in self.custom_command_ignored_roles]),
         )
 
         self.ignored_channels_select = discord.ui.Label(
             text="Ignored Channels",
             description="Commands wont invoke in these channels.",
-            component=discord.ui.ChannelSelect(
-                default_values=[discord.Object(id=channel_id) for channel_id in self.custom_command_ignored_channels],
-            ),
+            component=discord.ui.ChannelSelect(default_values=[discord.Object(id=channel_id) for channel_id in self.custom_command_ignored_channels]),
         )
         self.add_item(self.ignored_roles_select)
         self.add_item(self.ignored_channels_select)
@@ -357,7 +349,10 @@ class CreateEditCustomCommandModal(CustomCommandModal):
     async def _validate_and_execute(self, interaction: discord.Interaction[Parrot], name: str) -> bool:
         """Validate name and execute database operation. Returns True if successful."""
         if not VALID_COMMAND_NAME.match(name):
-            await self.send_result(interaction, f"`{name}` is not a valid command name. Use only letters, numbers, underscores, and hyphens.")
+            await self.send_result(
+                interaction,
+                f"`{name}` is not a valid command name. Use only letters, numbers, underscores, and hyphens.",
+            )
             return False
 
         if interaction.guild_id is None:
@@ -507,7 +502,10 @@ class CustomCommandSelect(discord.ui.Select):
         selected_command = self.values[0]
         command = next((command for command in self.custom_commands if command["name"] == selected_command), None)
 
-        embed = discord.Embed(title=f"Edit or Delete Custom Command: {selected_command}", description=command["response"] if command else "")
+        embed = discord.Embed(
+            title=f"Edit or Delete Custom Command: {selected_command}",
+            description=command["response"] if command else "",
+        )
         view = BaseView(author=interaction.user)
         view.add_item(
             EditCustomCommandButton(
@@ -515,7 +513,7 @@ class CustomCommandSelect(discord.ui.Select):
                 command_response=command["response"] if command else "",
                 custom_command_ignored_roles=command["ignored_roles"] if command else [],
                 custom_command_ignored_channels=command["ignored_channels"] if command else [],
-            ),
+            )
         )
         view.add_item(DeleteCustomCommandButton(command_name=selected_command))
 
@@ -551,6 +549,7 @@ class CustomCommandLayout(BaseLayoutView):
 
         self.add_item(container)
 
+
 class CustomCommand(commands.Cog):
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
@@ -563,12 +562,7 @@ class CustomCommand(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    async def _build_and_send_panel(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        logs: list[str],
-    ) -> None:
+    async def _build_and_send_panel(self, ctx: commands.Context[Parrot], *, logs: list[str]) -> None:
         """Build and send the management panel with appropriate pagination."""
 
         custom_commands = await ctx.bot.database.get_custom_commands(ctx.guild.id) if ctx.guild else []

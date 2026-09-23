@@ -5,15 +5,15 @@ from typing import Final
 import discord
 
 __all__ = (
-    "ERROR_REPLIES",
-    "NEGATIVE_REPLIES",
-    "POSITIVE_REPLIES",
-    "LINKS_RE",
-    "INVITE_RE",
-    "Month",
-    "Day",
     "CARDS_EMOJIS_MAP",
     "CARD_BACK_EMOJI",
+    "ERROR_REPLIES",
+    "INVITE_RE",
+    "LINKS_RE",
+    "NEGATIVE_REPLIES",
+    "POSITIVE_REPLIES",
+    "Day",
+    "Month",
 )
 
 ERROR_REPLIES: Final[list[str]] = [
@@ -76,10 +76,7 @@ LINKS_RE: Final[re.Pattern[str]] = re.compile(
     flags=re.IGNORECASE,
 )
 
-INVITE_RE: Final[re.Pattern[str]] = re.compile(
-    r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?",
-    flags=re.IGNORECASE,
-)
+INVITE_RE: Final[re.Pattern[str]] = re.compile(r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", flags=re.IGNORECASE)
 
 
 # fmt: off

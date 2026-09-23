@@ -14,13 +14,7 @@ class _GuildLevelingMixin(DatabaseMixin):
             RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id),
         )
 
-    async def edit_leveling_config(  # noqa: PLR0913
-        self,
-        *,
-        guild_id: int,
-        enabled: bool = MISSING,
-        channel_id: int | None = MISSING,
-    ) -> bool:
+    async def edit_leveling_config(self, *, guild_id: int, enabled: bool = MISSING, channel_id: int | None = MISSING) -> bool:
         updates = {}
         if enabled is not MISSING:
             updates["leveling_config.enabled"] = enabled
@@ -42,8 +36,7 @@ class _GuildLevelingMixin(DatabaseMixin):
             return bool(int(enabled_value))
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "leveling_config.enabled": {"$exists": True}},
-            {"leveling_config.enabled": 1},
+            {"_id": guild_id, "leveling_config.enabled": {"$exists": True}}, {"leveling_config.enabled": 1}
         )
         if guild_config is None or "leveling_config" not in guild_config:
             return False
@@ -59,8 +52,7 @@ class _GuildLevelingMixin(DatabaseMixin):
             return int(cached_channel_id)
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "leveling_config.channel_id": {"$exists": True}},
-            {"leveling_config.channel_id": 1},
+            {"_id": guild_id, "leveling_config.channel_id": {"$exists": True}}, {"leveling_config.channel_id": 1}
         )
         if guild_config is None or "leveling_config" not in guild_config:
             return None
@@ -72,19 +64,12 @@ class _GuildLevelingMixin(DatabaseMixin):
         return channel_id
 
     async def set_level_role(self, *, guild_id: int, level: int, role_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"leveling_config.level_roles.{level}": role_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"leveling_config.level_roles.{level}": role_id}}, upsert=True)
         roles_key = RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id)
         await self.redis_client.hset(roles_key, str(level), str(role_id))
 
     async def remove_level_role(self, *, guild_id: int, level: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"leveling_config.level_roles.{level}": None}},
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"leveling_config.level_roles.{level}": None}})
         roles_key = RedisKeys.GUILD_LEVELING_CONFIG_LEVEL_ROLES.format(guild_id=guild_id)
         await self.redis_client.hdel(roles_key, str(level))
 
@@ -126,14 +111,7 @@ class _GuildLevelingMixin(DatabaseMixin):
             await self.redis_client.delete(pending_key)
             return 0
 
-        operations = [
-            UpdateOne(
-                {"_id": guild_id},
-                {"$inc": {f"leveling_data.{user_id}": int(xp)}},
-                upsert=True,
-            )
-            for user_id, xp in data.items()
-        ]
+        operations = [UpdateOne({"_id": guild_id}, {"$inc": {f"leveling_data.{user_id}": int(xp)}}, upsert=True) for user_id, xp in data.items()]
         await self.guilds_collection.bulk_write(operations, ordered=False)
         await self.redis_client.delete(pending_key)
         return len(operations)
@@ -155,10 +133,7 @@ class _GuildLevelingMixin(DatabaseMixin):
         key = RedisKeys.GUILD_LEVELING_DATA.format(guild_id=guild_id)
         pending_key = f"{key}:pending"
 
-        guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {f"leveling_data.{user_id}": 1},
-        )
+        guild_config = await self.guilds_collection.find_one({"_id": guild_id}, {f"leveling_data.{user_id}": 1})
         user_xp = (guild_config or {}).get("leveling_data", {}).get(str(user_id), 0)
         active_delta = await self.redis_client.hget(key, str(user_id))
         pending_delta = await self.redis_client.hget(pending_key, str(user_id))
@@ -177,10 +152,7 @@ class _GuildLevelingMixin(DatabaseMixin):
         pending_key = f"{key}:pending"
 
         # Get all users' XP from MongoDB
-        guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "leveling_data": {"$exists": True}},
-            {"leveling_data": 1},
-        )
+        guild_config = await self.guilds_collection.find_one({"_id": guild_id, "leveling_data": {"$exists": True}}, {"leveling_data": 1})
         leveling_data = guild_config.get("leveling_data", {}) if guild_config else {}
 
         # Include Redis data

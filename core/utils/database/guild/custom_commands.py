@@ -25,7 +25,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     def __custom_command_enabled_key(self, guild_id: int, name: str) -> str:
         return RedisKeys.GUILD_CUSTOM_COMMAND_ENABLED.format(guild_id=guild_id, command_name=name)
 
-    async def __cache_custom_command(  # noqa: PLR0913
+    async def __cache_custom_command(
         self,
         *,
         guild_id: int,
@@ -57,12 +57,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         await self.redis_client.delete(self.__custom_command_ignored_channels_key(guild_id, name))
         await self.redis_client.delete(self.__custom_command_enabled_key(guild_id, name))
 
-    async def get_custom_command_response(
-        self,
-        *,
-        guild_id: int,
-        name: str,
-    ) -> str | None:
+    async def get_custom_command_response(self, *, guild_id: int, name: str) -> str | None:
         """Return one custom command response, or ``None`` when it does not exist."""
         response_key = self.__custom_command_response_key(guild_id, name)
         cached_response = await self.redis_client.get(response_key)
@@ -71,15 +66,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
             return cached_response
 
         guild = await self.guilds_collection.find_one(
-            {
-                "_id": guild_id,
-                "custom_commands.name": name,
-            },
-            {
-                "custom_commands": {
-                    "$elemMatch": {"name": name},
-                },
-            },
+            {"_id": guild_id, "custom_commands.name": name}, {"custom_commands": {"$elemMatch": {"name": name}}}
         )
 
         if guild is None:
@@ -116,8 +103,8 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
                         "ignored_roles": ignored_roles or [],
                         "ignored_channels": ignored_channels or [],
                         "enabled": True,
-                    },
-                },
+                    }
+                }
             },
             upsert=True,
         )
@@ -135,7 +122,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         )
         return True
 
-    async def edit_custom_command(  # noqa: PLR0913
+    async def edit_custom_command(
         self,
         *,
         guild_id: int,
@@ -156,12 +143,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         if enabled is not MISSING:
             payload["custom_commands.$.enabled"] = enabled
 
-        result = await self.guilds_collection.update_one(
-            {"_id": guild_id, "custom_commands.name": name},
-            {
-                "$set": payload,
-            },
-        )
+        result = await self.guilds_collection.update_one({"_id": guild_id, "custom_commands.name": name}, {"$set": payload})
 
         if result.matched_count == 0:
             return False
@@ -169,17 +151,9 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         await self.__invalidate_custom_command_cache(guild_id=guild_id, name=name)
         return True
 
-    async def delete_custom_command(
-        self,
-        *,
-        guild_id: int,
-        name: str,
-    ) -> bool:
+    async def delete_custom_command(self, *, guild_id: int, name: str) -> bool:
         """Delete an existing command."""
-        result = await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$pull": {"custom_commands": {"name": name}}},
-        )
+        result = await self.guilds_collection.update_one({"_id": guild_id}, {"$pull": {"custom_commands": {"name": name}}})
         if result.matched_count == 0:
             return False
         await self.__invalidate_custom_command_cache(guild_id=guild_id, name=name)
@@ -187,30 +161,16 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
 
     async def get_custom_commands(self, guild_id: int, /) -> list[CustomCommand]:
         """Return all custom commands for a guild."""
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {"custom_commands": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id}, {"custom_commands": 1})
         if guild is None:
             return []
 
         return guild.get("custom_commands", [])
 
-    async def rename_custom_command(
-        self,
-        *,
-        guild_id: int,
-        old_name: str,
-        new_name: str,
-    ) -> bool:
+    async def rename_custom_command(self, *, guild_id: int, old_name: str, new_name: str) -> bool:
         """Rename an existing command."""
         result = await self.guilds_collection.update_one(
-            {"_id": guild_id, "custom_commands.name": old_name},
-            {
-                "$set": {
-                    "custom_commands.$.name": new_name,
-                },
-            },
+            {"_id": guild_id, "custom_commands.name": old_name}, {"$set": {"custom_commands.$.name": new_name}}
         )
 
         if result.matched_count == 0:
@@ -222,8 +182,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     async def get_custom_command(self, *, guild_id: int, name: str) -> CustomCommand | None:
         """Return a custom command object for a guild."""
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "custom_commands.name": name},
-            {"custom_commands": {"$elemMatch": {"name": name}}},
+            {"_id": guild_id, "custom_commands.name": name}, {"custom_commands": {"$elemMatch": {"name": name}}}
         )
         if guild is None:
             return None
@@ -240,24 +199,12 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     async def push_custom_command_log(self, *, guild_id: int, log_entry: str) -> None:
         """Push a log entry for a custom command."""
         await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {
-                "$push": {
-                    "custom_commands_logs": {
-                        "$each": [log_entry],
-                        "$slice": -100,
-                    },
-                },
-            },
-            upsert=True,
+            {"_id": guild_id}, {"$push": {"custom_commands_logs": {"$each": [log_entry], "$slice": -100}}}, upsert=True
         )
 
     async def get_custom_command_logs(self, *, guild_id: int) -> list[str]:
         """Return all custom command logs for a guild."""
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {"custom_commands_logs": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id}, {"custom_commands_logs": 1})
         if guild is None:
             return []
 
@@ -265,18 +212,11 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
 
     async def clear_custom_command_logs(self, *, guild_id: int) -> None:
         """Clear all custom command logs for a guild."""
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {"custom_commands_logs": []}},
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"custom_commands_logs": []}})
 
     async def set_custom_command_db(self, *, guild_id: int, key: str, value: str) -> None:
         """Set a key-value pair in the custom command database for a guild."""
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$set": {f"custom_commands_db.{key}": value}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"custom_commands_db.{key}": value}}, upsert=True)
 
         key = RedisKeys.GUILD_CUSTOM_COMMAND_DB.format(guild_id=guild_id)
         await self.redis_client.hset(key, key, value)
@@ -288,10 +228,7 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
         if cached_value is not None and isinstance(cached_value, str):
             return cached_value
 
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {f"custom_commands_db.{key}": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id}, {f"custom_commands_db.{key}": 1})
         if guild is None:
             return None
 

@@ -196,10 +196,7 @@ class Music(commands.Cog):
         chunks = discord.utils.as_chunks(pages, 10)
         embeds: list[discord.Embed] = []
         for chunk in chunks:
-            embed = discord.Embed(
-                title="Current Queue",
-                description="\n".join(chunk),
-            )
+            embed = discord.Embed(title="Current Queue", description="\n".join(chunk))
             embeds.append(embed)
 
         view = PaginationView(author=ctx.author, items=embeds)
@@ -312,9 +309,7 @@ class Music(commands.Cog):
         providers = await self.fetch_lavasrc_providers()
 
         await ctx.message.add_reaction("\N{HOURGLASS WITH FLOWING SAND}")
-        contents = [
-            f"Loading **{len(providers)}** Lavalink nodes...",
-        ]
+        contents = [f"Loading **{len(providers)}** Lavalink nodes..."]
         message = await ctx.reply("\n".join(contents))
         for host, port, password, identifier in providers:
             status = f"Connecting to `{identifier}` at..."

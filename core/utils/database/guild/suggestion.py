@@ -15,8 +15,7 @@ class _GuildSuggestionMixin(DatabaseMixin):
             return cached
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "suggestion_channel_id": {"$exists": True, "$ne": None}},
-            {"suggestion_channel_id": 1},
+            {"_id": guild_id, "suggestion_channel_id": {"$exists": True, "$ne": None}}, {"suggestion_channel_id": 1}
         )
         if guild_config is None:
             return None

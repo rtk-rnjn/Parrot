@@ -51,11 +51,7 @@ class Tags(commands.Cog):
         if await self.bot.database.is_tag_nsfw(guild_id=ctx.guild.id, name_or_alias=name) and not channel_is_nsfw:
             raise commands.NSFWChannelRequired(ctx.channel)  # type: ignore[arg-type]
 
-        await self.bot.database.increment_tag_used_count(
-            guild_id=ctx.guild.id,
-            name_or_alias=name,
-            author_id=ctx.author.id,
-        )
+        await self.bot.database.increment_tag_used_count(guild_id=ctx.guild.id, name_or_alias=name, author_id=ctx.author.id)
         await ctx.reply(content, allowed_mentions=discord.AllowedMentions.none())
 
     @tag.command(name="all", aliases=["list", "ls"])
@@ -74,13 +70,7 @@ class Tags(commands.Cog):
             return
 
         channel_is_nsfw = getattr(ctx.channel, "is_nsfw", lambda: False)()
-        await self.bot.database.create_tag(
-            guild_id=ctx.guild.id,
-            name=name,
-            content=content,
-            creator_id=ctx.author.id,
-            nsfw=channel_is_nsfw,
-        )
+        await self.bot.database.create_tag(guild_id=ctx.guild.id, name=name, content=content, creator_id=ctx.author.id, nsfw=channel_is_nsfw)
         await ctx.reply(f"Tag `{name}` created successfully.")
 
     @tag.command(name="delete", aliases=["remove", "rm", "del"])
@@ -101,12 +91,7 @@ class Tags(commands.Cog):
         if not await self.bot.confirm(ctx, f"Are you sure you want to delete tag `{tag_name}`?"):
             return
 
-        deleted = await self.bot.database.delete_tag(
-            guild_id=ctx.guild.id,
-            name=tag_name,
-            creator_id=ctx.author.id,
-            is_admin=is_admin,
-        )
+        deleted = await self.bot.database.delete_tag(guild_id=ctx.guild.id, name=tag_name, creator_id=ctx.author.id, is_admin=is_admin)
         if deleted:
             await ctx.reply(f"Tag `{tag_name}` deleted successfully.")
         else:
@@ -124,11 +109,7 @@ class Tags(commands.Cog):
         if await self.bot.database.is_tag_nsfw(guild_id=ctx.guild.id, name_or_alias=name) and not getattr(ctx.channel, "is_nsfw", lambda: False)():
             raise commands.NSFWChannelRequired(ctx.channel)  # type: ignore[arg-type]
 
-        await self.bot.database.increment_tag_used_count(
-            guild_id=ctx.guild.id,
-            name_or_alias=name,
-            author_id=ctx.author.id,
-        )
+        await self.bot.database.increment_tag_used_count(guild_id=ctx.guild.id, name_or_alias=name, author_id=ctx.author.id)
         await ctx.reply(discord.utils.escape_mentions(content), allowed_mentions=discord.AllowedMentions.none())
 
     @tag.command(name="transfer")
@@ -149,11 +130,7 @@ class Tags(commands.Cog):
         if not await self.bot.confirm(ctx, f"Transfer `{tag_name}` to {member.mention}?"):
             return
 
-        transferred = await self.bot.database.transfer_tag_ownership(
-            guild_id=ctx.guild.id,
-            name=tag_name,
-            new_creator_id=member.id,
-        )
+        transferred = await self.bot.database.transfer_tag_ownership(guild_id=ctx.guild.id, name=tag_name, new_creator_id=member.id)
         await ctx.reply(f"Tag `{tag_name}` transferred to {member.mention}." if transferred else f"No tag found with the name: `{name}`")
 
     @tag.command(name="search")

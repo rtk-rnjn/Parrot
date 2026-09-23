@@ -23,10 +23,7 @@ __all__ = ("DatabaseManager",)
 
 load_dotenv()
 
-MONGO_URI = os.environ.get(
-    "MONGO_URI",
-    "mongodb://admin:password@localhost:27017/",
-)
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://admin:password@localhost:27017/")
 
 CACHE_TTL_SECONDS = 3600
 
@@ -56,13 +53,7 @@ class _DatabaseInfraMixin(DatabaseMixin):
         return await self.users_collection.find_one({"_id": user_id})
 
 
-class DatabaseManager(
-    _DatabaseInfraMixin,
-    _GuildMixin,
-    _UserMixin,
-    _ScamLinksMixin,
-    _BotMixin,
-):
+class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMixin, _BotMixin):
     """Database facade composed from guild, user, bot, and infrastructure mixins.
 
     Domain methods use ``get_*``, ``set_*``, ``add_*``, ``remove_*``, and
@@ -73,12 +64,7 @@ class DatabaseManager(
     def __init__(self, bot: Parrot, /) -> None:
         self.bot = bot
 
-        self.__redis_client: Redis = Redis(
-            db=0,
-            password="password",
-            decode_responses=True,
-            protocol=3,
-        )
+        self.__redis_client: Redis = Redis(db=0, password="password", decode_responses=True, protocol=3)
 
         # tz_aware=True returns timezone-aware datetimes.
         self.__mongo_client = AsyncMongoClient(MONGO_URI, tz_aware=True)

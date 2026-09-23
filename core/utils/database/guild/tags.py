@@ -12,7 +12,7 @@ from ..models import Tag, TagUserUsage, TagUserUsageRow, TopTagUsage, TopTagUsag
 
 
 class _GuildTagsMixin(DatabaseMixin):
-    async def __cache_tag(  # noqa: PLR0913
+    async def __cache_tag(
         self,
         *,
         guild_id: int,
@@ -50,7 +50,7 @@ class _GuildTagsMixin(DatabaseMixin):
             RedisKeys.GUILD_TAG_USED_COUNT.format(guild_id=guild_id, tag_name=name),
         )
 
-    async def create_tag(  # noqa: PLR0913
+    async def create_tag(
         self,
         *,
         guild_id: int,
@@ -75,8 +75,8 @@ class _GuildTagsMixin(DatabaseMixin):
                         "aliases": aliases or [],
                         "created_at": arrow.utcnow().datetime,
                         "used_count": {},
-                    },
-                },
+                    }
+                }
             },
             upsert=True,
         )
@@ -95,12 +95,7 @@ class _GuildTagsMixin(DatabaseMixin):
         """Delete a tag from the database and invalidate its cache."""
         # Delete the tag from the database
         tag_filter = {"name": name} if is_admin else {"name": name, "creator_id": creator_id}
-        updated = await self.guilds_collection.update_one(
-            {"_id": guild_id, "tags": {"$elemMatch": tag_filter}},
-            {
-                "$pull": {"tags": tag_filter},
-            },
-        )
+        updated = await self.guilds_collection.update_one({"_id": guild_id, "tags": {"$elemMatch": tag_filter}}, {"$pull": {"tags": tag_filter}})
         if updated.modified_count > 0:
             await self.__invalidate_tag_cache(guild_id=guild_id, name=name)
         return updated.modified_count > 0
@@ -113,14 +108,7 @@ class _GuildTagsMixin(DatabaseMixin):
             return tag_name.decode() if isinstance(tag_name, bytes) else tag_name
 
         guild = await self.guilds_collection.find_one(
-            {
-                "_id": guild_id,
-                "tags": {
-                    "$elemMatch": {
-                        "$or": [{"name": name_or_alias}, {"aliases": name_or_alias}],
-                    },
-                },
-            },
+            {"_id": guild_id, "tags": {"$elemMatch": {"$or": [{"name": name_or_alias}, {"aliases": name_or_alias}]}}},
             {"tags.$": 1},
         )
         if guild is None:
@@ -142,10 +130,7 @@ class _GuildTagsMixin(DatabaseMixin):
         if cached is not None:
             return int(cached)
 
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "tags.name": tag_name},
-            {"tags.$": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id, "tags.name": tag_name}, {"tags.$": 1})
         if guild is None:
             return None
 
@@ -166,14 +151,7 @@ class _GuildTagsMixin(DatabaseMixin):
             return cached in {"1", b"1", True}
 
         guild = await self.guilds_collection.find_one(
-            {
-                "_id": guild_id,
-                "tags": {
-                    "$elemMatch": {
-                        "$or": [{"name": name_or_alias}, {"aliases": name_or_alias}],
-                    },
-                },
-            },
+            {"_id": guild_id, "tags": {"$elemMatch": {"$or": [{"name": name_or_alias}, {"aliases": name_or_alias}]}}},
             {"tags.$": 1},
         )
         if guild is None:
@@ -195,20 +173,14 @@ class _GuildTagsMixin(DatabaseMixin):
     async def mark_tag_nsfw(self, *, guild_id: int, name: str, creator_id: int, is_admin: bool = False) -> bool:
         """Mark a tag as NSFW when requested by its owner or a server admin."""
         tag_filter = {"name": name} if is_admin else {"name": name, "creator_id": creator_id}
-        updated = await self.guilds_collection.update_one(
-            {"_id": guild_id, "tags": {"$elemMatch": tag_filter}},
-            {"$set": {"tags.$.nsfw": True}},
-        )
+        updated = await self.guilds_collection.update_one({"_id": guild_id, "tags": {"$elemMatch": tag_filter}}, {"$set": {"tags.$.nsfw": True}})
         if updated.modified_count > 0:
             await self.redis_client.set(RedisKeys.GUILD_TAG_NSFW.format(guild_id=guild_id, tag_name=name), 1)
         return updated.modified_count > 0
 
     async def search_tags(self, *, guild_id: int, query: str) -> list[str]:
         """Find tag names and aliases matching a case-insensitive query."""
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id},
-            {"tags.name": 1, "tags.aliases": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id}, {"tags.name": 1, "tags.aliases": 1})
         if guild is None:
             return []
 
@@ -226,10 +198,7 @@ class _GuildTagsMixin(DatabaseMixin):
         if tag_name is None:
             return None
 
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "tags.name": tag_name},
-            {"tags.$.used_count": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id, "tags.name": tag_name}, {"tags.$.used_count": 1})
         if guild is None:
             return None
         return guild["tags"][0].get("used_count", {})
@@ -245,7 +214,7 @@ class _GuildTagsMixin(DatabaseMixin):
                 {"$group": {"_id": "$counts.k", "count": {"$sum": "$counts.v"}}},
                 {"$sort": {"count": -1}},
                 {"$limit": limit},
-            ],
+            ]
         )
         rows = cast(list[TagUserUsageRow], [row async for row in cursor])
         return [{"user_id": int(row["_id"]), "count": int(row["count"])} for row in rows]
@@ -256,53 +225,38 @@ class _GuildTagsMixin(DatabaseMixin):
             [
                 {"$match": {"_id": guild_id}},
                 {"$unwind": "$tags"},
-                {"$project": {"name": "$tags.name", "counts": {"$objectToArray": {"$ifNull": ["$tags.used_count", {}]}}}},
+                {
+                    "$project": {
+                        "name": "$tags.name",
+                        "counts": {"$objectToArray": {"$ifNull": ["$tags.used_count", {}]}},
+                    }
+                },
                 {"$unwind": {"path": "$counts", "preserveNullAndEmptyArrays": True}},
                 {"$group": {"_id": "$name", "count": {"$sum": {"$ifNull": ["$counts.v", 0]}}}},
                 {"$sort": {"count": -1}},
                 {"$limit": limit},
-            ],
+            ]
         )
         rows = cast(list[TopTagUsageRow], [row async for row in cursor])
         return [{"name": row["_id"], "count": int(row["count"])} for row in rows]
 
-    async def edit_tag_content(
-        self,
-        *,
-        guild_id: int,
-        creator_id: int,
-        name: str,
-        content: str,
-    ):
+    async def edit_tag_content(self, *, guild_id: int, creator_id: int, name: str, content: str):
         """Edit a tag's content in the database and update its cache."""
         # Update the tag in the database
         update_fields = {}
         update_fields["tags.$.content"] = content
 
         if update_fields:
-            await self.guilds_collection.update_one(
-                {"_id": guild_id, "tags.name": name, "tags.creator_id": creator_id},
-                {"$set": update_fields},
-            )
+            await self.guilds_collection.update_one({"_id": guild_id, "tags.name": name, "tags.creator_id": creator_id}, {"$set": update_fields})
 
-            await self.redis_client.set(
-                RedisKeys.GUILD_TAG_CONTENT.format(guild_id=guild_id, tag_name=name),
-                content,
-            )
+            await self.redis_client.set(RedisKeys.GUILD_TAG_CONTENT.format(guild_id=guild_id, tag_name=name), content)
 
     async def increment_tag_used_count(self, *, guild_id: int, name_or_alias: str, author_id: int):
         """Increment a tag's used count in the database and update its cache."""
         # Increment the used count in the database
         await self.guilds_collection.update_one(
-            {
-                "_id": guild_id,
-                "tags": {
-                    "$elemMatch": {
-                        "$or": [{"name": name_or_alias}, {"aliases": name_or_alias}],
-                    },
-                },
-            },
-            {"$inc": {f"tags.$.used_count.{str(author_id)}": 1}},
+            {"_id": guild_id, "tags": {"$elemMatch": {"$or": [{"name": name_or_alias}, {"aliases": name_or_alias}]}}},
+            {"$inc": {f"tags.$.used_count.{author_id!s}": 1}},
         )
 
         tag_name = await self.redis_client.hget(RedisKeys.GUILD_TAG_ALIAS_MAP.format(guild_id=guild_id), name_or_alias)
@@ -312,23 +266,14 @@ class _GuildTagsMixin(DatabaseMixin):
             tag_name = tag_name.decode()
 
         # Increment the used count in the cache
-        await self.redis_client.hincrby(
-            RedisKeys.GUILD_TAG_USED_COUNT.format(guild_id=guild_id, tag_name=tag_name),
-            str(author_id),
-        )
+        await self.redis_client.hincrby(RedisKeys.GUILD_TAG_USED_COUNT.format(guild_id=guild_id, tag_name=tag_name), str(author_id))
 
     async def transfer_tag_ownership(self, *, guild_id: int, name: str, new_creator_id: int):
         """Transfer ownership of a tag in the database and update its cache."""
         # Update the creator_id in the database
-        updated = await self.guilds_collection.update_one(
-            {"_id": guild_id, "tags.name": name},
-            {"$set": {"tags.$.creator_id": new_creator_id}},
-        )
+        updated = await self.guilds_collection.update_one({"_id": guild_id, "tags.name": name}, {"$set": {"tags.$.creator_id": new_creator_id}})
         # Update the cache
-        await self.redis_client.set(
-            RedisKeys.GUILD_TAG_CREATOR_ID.format(guild_id=guild_id, tag_name=name),
-            new_creator_id,
-        )
+        await self.redis_client.set(RedisKeys.GUILD_TAG_CREATOR_ID.format(guild_id=guild_id, tag_name=name), new_creator_id)
         return updated.modified_count > 0
 
     async def get_tag_content(self, *, guild_id: int, name_or_alias: str) -> str | None:
@@ -343,17 +288,7 @@ class _GuildTagsMixin(DatabaseMixin):
             return content
 
         guild = await self.guilds_collection.find_one(
-            {
-                "_id": guild_id,
-                "tags": {
-                    "$elemMatch": {
-                        "$or": [
-                            {"name": name_or_alias},
-                            {"aliases": name_or_alias},
-                        ],
-                    },
-                },
-            },
+            {"_id": guild_id, "tags": {"$elemMatch": {"$or": [{"name": name_or_alias}, {"aliases": name_or_alias}]}}},
             {"tags.$": 1},
         )
         if guild is None:
@@ -387,17 +322,7 @@ class _GuildTagsMixin(DatabaseMixin):
             return True
 
         guild = await self.guilds_collection.find_one(
-            {
-                "_id": guild_id,
-                "tags": {
-                    "$elemMatch": {
-                        "$or": [
-                            {"name": name_or_alias},
-                            {"aliases": name_or_alias},
-                        ],
-                    },
-                },
-            },
+            {"_id": guild_id, "tags": {"$elemMatch": {"$or": [{"name": name_or_alias}, {"aliases": name_or_alias}]}}},
             {"tags.$": 1},
         )
         if guild is None:
@@ -420,10 +345,7 @@ class _GuildTagsMixin(DatabaseMixin):
 
     async def get_all_tags(self, *, guild_id: int) -> list[Tag]:
         """Get all tags in a guild."""
-        guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "tags": {"$exists": True}},
-            {"tags": 1},
-        )
+        guild = await self.guilds_collection.find_one({"_id": guild_id, "tags": {"$exists": True}}, {"tags": 1})
         if not guild or "tags" not in guild:
             return []
 
@@ -445,10 +367,7 @@ class _GuildTagsMixin(DatabaseMixin):
     async def add_tag_alias(self, *, guild_id: int, name: str, alias: str):
         """Add an alias to a tag in the database and update its cache."""
         # Update the tag in the database
-        updated = await self.guilds_collection.update_one(
-            {"_id": guild_id, "tags.name": name},
-            {"$addToSet": {"tags.$.aliases": alias}},
-        )
+        updated = await self.guilds_collection.update_one({"_id": guild_id, "tags.name": name}, {"$addToSet": {"tags.$.aliases": alias}})
 
         if updated.modified_count > 0:
             # Update the cache
@@ -459,10 +378,7 @@ class _GuildTagsMixin(DatabaseMixin):
         """Remove an alias from a tag in the database and update its cache."""
         # Update the tag in the database
         tag_filter = {"name": name} if is_admin else {"name": name, "creator_id": creator_id}
-        updated = await self.guilds_collection.update_one(
-            {"_id": guild_id, "tags": {"$elemMatch": tag_filter}},
-            {"$pull": {"tags.$.aliases": alias}},
-        )
+        updated = await self.guilds_collection.update_one({"_id": guild_id, "tags": {"$elemMatch": tag_filter}}, {"$pull": {"tags.$.aliases": alias}})
 
         if updated.modified_count > 0:
             # Update the cache

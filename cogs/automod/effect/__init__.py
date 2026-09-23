@@ -32,12 +32,7 @@ def _require_dict(value: object, name: str) -> Mapping[str, Any]:
     return value
 
 
-def _require_int(
-    data: Mapping[str, Any],
-    key: str,
-    *,
-    minimum: int = 0,
-) -> int:
+def _require_int(data: Mapping[str, Any], key: str, *, minimum: int = 0) -> int:
     value = data.get(key)
 
     if not isinstance(value, int) or isinstance(value, bool):
@@ -49,11 +44,7 @@ def _require_int(
     return value
 
 
-def _optional_bool(
-    data: Mapping[str, Any],
-    key: str,
-    default: bool = False,
-) -> bool:
+def _optional_bool(data: Mapping[str, Any], key: str, default: bool = False) -> bool:
     value = data.get(key, default)
 
     if not isinstance(value, bool):
@@ -62,10 +53,7 @@ def _optional_bool(
     return value
 
 
-def _optional_string(
-    data: Mapping[str, Any],
-    key: str,
-) -> str | None:
+def _optional_string(data: Mapping[str, Any], key: str) -> str | None:
     value = data.get(key)
 
     if value is None:
@@ -77,12 +65,7 @@ def _optional_string(
     return value
 
 
-def _optional_int_or_none(
-    data: Mapping[str, Any],
-    key: str,
-    *,
-    minimum: int = 0,
-) -> int | None:
+def _optional_int_or_none(data: Mapping[str, Any], key: str, *, minimum: int = 0) -> int | None:
     value = data.get(key)
 
     if value is None:
@@ -118,17 +101,11 @@ def _parse_ban(data: Mapping[str, Any]) -> EffectConfig:
 
 
 def _parse_mute(data: Mapping[str, Any]) -> EffectConfig:
-    return MuteConfig(
-        duration_minutes=_require_int(data, "duration_minutes", minimum=0),
-        message=_optional_string(data, "message"),
-    )
+    return MuteConfig(duration_minutes=_require_int(data, "duration_minutes", minimum=0), message=_optional_string(data, "message"))
 
 
 def _parse_timeout(data: Mapping[str, Any]) -> EffectConfig:
-    return TimeoutConfig(
-        duration_minutes=_require_int(data, "duration_minutes", minimum=0),
-        message=_optional_string(data, "message"),
-    )
+    return TimeoutConfig(duration_minutes=_require_int(data, "duration_minutes", minimum=0), message=_optional_string(data, "message"))
 
 
 def _parse_nickname(data: Mapping[str, Any]) -> EffectConfig:
@@ -136,10 +113,7 @@ def _parse_nickname(data: Mapping[str, Any]) -> EffectConfig:
 
 
 def _parse_delete_messages(data: Mapping[str, Any]) -> EffectConfig:
-    return DeleteMessagesConfig(
-        count=_require_int(data, "count", minimum=1),
-        max_age_seconds=_require_int(data, "max_age_seconds", minimum=0),
-    )
+    return DeleteMessagesConfig(count=_require_int(data, "count", minimum=1), max_age_seconds=_require_int(data, "max_age_seconds", minimum=0))
 
 
 def _parse_role(data: Mapping[str, Any]) -> EffectConfig:
@@ -174,10 +148,7 @@ def _parse_alert(data: Mapping[str, Any]) -> EffectConfig:
     if not isinstance(message, str):
         raise EffectParseError("'message' must be a string")
 
-    return AlertConfig(
-        message=message,
-        channel_id=_optional_int_or_none(data, "channel_id", minimum=0),
-    )
+    return AlertConfig(message=message, channel_id=_optional_int_or_none(data, "channel_id", minimum=0))
 
 
 Parser = Callable[[Mapping[str, Any]], EffectConfig]

@@ -1,39 +1,65 @@
+[project]
+name = "parrot"
+requires-python = ">=3.14"
+
 [tool.ruff]
 line-length = 150
 target-version = "py314"
 
 [tool.ruff.lint]
 select = [
-    'A',
-    'ASYNC',
-    'B',
-    'C',
-    'COM',
-    'E',
-    'EM',
-    'F',
-    'FA',
-    'G',
-    'PL',
-    'Q',
-    'T10',
-    'UP',
-    'W',
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "A",
+    "C4",
+    "UP",
+    "SIM",
+    "RET",
+    "RUF",
+    "ASYNC",
+    "DTZ",
+    "FA",
+    "ISC",
+    "PIE",
+    "PGH",
+    "PT",
+    "T10",
+    "T20",
+    "EM",
+    "G",
+    "LOG",
+    "PTH",
+    "PERF",
+    "PL",
 ]
-ignore = ['A003', 'ASYNC109', 'D105', 'D107', 'D401', "F403", "F405", "E501", "PLR2004", "EM101", "C901", "PLR0913", "PLR0912"]
 
-[tool.black]
-line-length = 125
-skip-string-normalization = true
+ignore = [
+    "PLR0913",
+    "PLR0912",
+    "PLR2004",
+]
 
-[tool.isort]
-profile = "black"
-combine_as_imports = true
-combine_star = true
-line_length = 125
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",
+    "PLR2004",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+skip-magic-trailing-comma = false
+docstring-code-format = true
 
 [tool.pyright]
-reportUnnecessaryTypeIgnoreComment = "warning"
-pythonVersion = "3.14"
+include = ["src", "tests"]
 typeCheckingMode = "basic"
-strictParameterNoneValue = false
+pythonVersion = "3.14"
+reportUnnecessaryTypeIgnoreComment = "warning"

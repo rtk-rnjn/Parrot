@@ -41,10 +41,7 @@ COLOURS = [
     (128, 0, 128, 255),
 ]  # Colours to be replaced - Red, Orange, Yellow, Green, Light Blue, Dark Blue, Pink, Purple
 
-IRREPLACEABLE = [
-    (0, 0, 0, 0),
-    (0, 0, 0, 255),
-]  # Colours that are meant to stay the same - Transparent and Black
+IRREPLACEABLE = [(0, 0, 0, 0), (0, 0, 0, 255)]  # Colours that are meant to stay the same - Transparent and Black
 
 EMOJIS = [
     "\N{REGIONAL INDICATOR SYMBOL LETTER A}",
@@ -127,13 +124,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         If the Discord name contains a vowel and the letter y, it will match one or more of these patterns.
         Only the most recently matched pattern will apply the changes.
         """
-        expressions = [
-            ("a.+y", "patchy"),
-            ("e.+y", "ears"),
-            ("i.+y", "ditsy"),
-            ("o.+y", "oofy"),
-            ("u.+y", "uffy"),
-        ]
+        expressions = [("a.+y", "patchy"), ("e.+y", "ears"), ("i.+y", "ditsy"), ("o.+y", "oofy"), ("u.+y", "uffy")]
 
         for exp, vowel_sub in expressions:
             new_name = re.sub(exp, vowel_sub, displayname)
@@ -169,16 +160,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         unmatched_name = self.append_name(username)
 
         if spaces_in_name is not None:
-            replacements = [
-                "Cotton",
-                "Fluff",
-                "FloofBounce",
-                "Snuffle",
-                "Nibble",
-                "Cuddle",
-                "Velvetpaw",
-                "Carrot",
-            ]
+            replacements = ["Cotton", "Fluff", "FloofBounce", "Snuffle", "Nibble", "Cuddle", "Velvetpaw", "Carrot"]
             word_to_replace = random.choice(spaces_in_name)
             substitute = random.choice(replacements)
             bunnified_name = username.replace(word_to_replace, substitute)
@@ -249,11 +231,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             self.winners.add(message.author.mention)
 
     @commands.command(aliases=("decorateegg",))
-    async def eggdecorate(
-        self,
-        ctx: Context,
-        *colors: discord.Colour | str,
-    ) -> Image.Image | None:
+    async def eggdecorate(self, ctx: Context, *colors: discord.Colour | str) -> Image.Image | None:
         """Picks a random egg design and decorates it using the given colours.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
@@ -276,9 +254,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
                 invalid_colours.append(suppress_links(colour))
 
         if len(invalid_colours) > 1:
-            await ctx.reply(
-                f"Sorry, I don't know these colours: {' '.join(invalid_colours)}",
-            )
+            await ctx.reply(f"Sorry, I don't know these colours: {' '.join(invalid_colours)}")
             return None
 
         if len(invalid_colours) == 1:
@@ -293,25 +269,18 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
                 colours = colours * repeat_count + colours[:remainder]
 
             design_number = random.randint(1, 6)
-            image = Image.open(
-                Path(f"assets/easter/easter_eggs/design{design_number}.png"),
-            )
+            image = Image.open(Path(f"assets/easter/easter_eggs/design{design_number}.png"))
             pixel_data = list(image.getdata())
 
             replaceable_colours = {pixel for pixel in pixel_data if pixel not in IRREPLACEABLE}
-            replaceable_colours = sorted(
-                replaceable_colours,
-                key=COLOURS.index,
-            )
+            replaceable_colours = sorted(replaceable_colours, key=COLOURS.index)
 
             colour_replacements = {colour: colours[colour_index] for colour_index, colour in enumerate(replaceable_colours)}
 
             recoloured_data = []
             for pixel in pixel_data:
                 if pixel in colour_replacements:
-                    recoloured_data.append(
-                        (*colour_replacements[pixel].to_rgb(), 255),
-                    )
+                    recoloured_data.append((*colour_replacements[pixel].to_rgb(), 255))
                     # Also ensures that the alpha channel has a value
                 else:
                     recoloured_data.append(pixel)
@@ -324,15 +293,9 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             image_buffer.seek(0)
 
             file = discord.File(image_buffer, filename="egg.png")
-            embed = discord.Embed(
-                title="Your Colourful Easter Egg",
-                description="Here is your pretty little egg. Hope you like it!",
-            )
+            embed = discord.Embed(title="Your Colourful Easter Egg", description="Here is your pretty little egg. Hope you like it!")
             embed.set_image(url="attachment://egg.png")
-            embed.set_footer(
-                text=f"Made by {ctx.author.display_name}",
-                icon_url=ctx.author.display_avatar.url,
-            )
+            embed.set_footer(text=f"Made by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
 
         await ctx.reply(file=file, embed=embed)
         return recoloured_image
@@ -346,11 +309,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
     @staticmethod
     def make_embed() -> discord.Embed:
         """Makes a nice embed for the message to be sent."""
-        return discord.Embed(
-            colour=discord.Color.red(),
-            title="Easter Egg Fact",
-            description=random.choice(EGG_FACTS),
-        )
+        return discord.Embed(colour=discord.Color.red(), title="Easter Egg Fact", description=random.choice(EGG_FACTS))
 
     @commands.command(aliases=("eggheadquiz", "easterquiz"))
     async def eggquiz(self, ctx: Context) -> None:
@@ -415,11 +374,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         content = f"Well done {mentions} for getting it correct!" if mentions else "Nobody got it right..."
 
-        a_embed = discord.Embed(
-            title=f"The correct answer was {correct}!",
-            description="\n".join(results),
-            colour=discord.Color.pink(),
-        )
+        a_embed = discord.Embed(title=f"The correct answer was {correct}!", description="\n".join(results), colour=discord.Color.pink())
 
         await ctx.reply(content, embed=a_embed)
 
@@ -438,7 +393,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member | discord.User) -> None:
         """Listener to listen specifically for reactions of quiz messages."""
         if user.bot or reaction.message.id not in self.quiz_messages:
-            return
+            return None
         if str(reaction.emoji) not in self.quiz_messages[reaction.message.id]:
             return await reaction.message.remove_reaction(reaction, user)
         if await self.already_reacted(reaction.message, user):

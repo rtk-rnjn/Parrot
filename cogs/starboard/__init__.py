@@ -62,11 +62,7 @@ class Starboard(commands.Cog):
 
     @starboard.command(name="threshold", aliases=["limit"])
     @commands.has_guild_permissions(manage_guild=True)
-    async def set_threshold(
-        self,
-        ctx: commands.Context[Parrot],
-        threshold: commands.Range[int, 1, 20],
-    ) -> None:
+    async def set_threshold(self, ctx: commands.Context[Parrot], threshold: commands.Range[int, 1, 20]) -> None:
         """Set how many stars a message needs to reach the starboard."""
         if ctx.guild is None:
             return
@@ -128,12 +124,7 @@ class Starboard(commands.Cog):
         emoji = await self.bot.database.get_starboard_emoji(payload.guild_id)
         threshold = await self.bot.database.get_starboard_threshold(payload.guild_id)
         channel_id = await self.bot.database.get_starboard_board_channel_id(payload.guild_id)
-        config = {
-            "enabled": is_starboard_enabled,
-            "emoji": emoji,
-            "threshold": threshold,
-            "channel_id": channel_id,
-        }
+        config = {"enabled": is_starboard_enabled, "emoji": emoji, "threshold": threshold, "channel_id": channel_id}
 
         if config is None or not config["enabled"] or str(payload.emoji) != config["emoji"]:
             return
@@ -158,12 +149,7 @@ class Starboard(commands.Cog):
                 await self._delete_board_message(board_channel, payload.guild_id, source_message.id, board_message_id)
             return
 
-        await self._upsert_board_message(
-            board_channel,
-            source_message,
-            board_message_id,
-            f"{config['emoji']} **{count}**",
-        )
+        await self._upsert_board_message(board_channel, source_message, board_message_id, f"{config['emoji']} **{count}**")
 
     @staticmethod
     async def _fetch_source_message(channel: discord.TextChannel, message_id: int) -> discord.Message | None:
@@ -173,11 +159,7 @@ class Starboard(commands.Cog):
             return None
 
     async def _upsert_board_message(
-        self,
-        channel: discord.TextChannel,
-        source_message: discord.Message,
-        board_message_id: int | None,
-        content: str,
+        self, channel: discord.TextChannel, source_message: discord.Message, board_message_id: int | None, content: str
     ) -> None:
         assert source_message.guild is not None
         embed = self._build_embed(source_message)
@@ -187,25 +169,16 @@ class Starboard(commands.Cog):
                 await board_message.edit(content=content, embed=embed)
                 return
             except discord.Forbidden, discord.NotFound:
-                await self.bot.database.delete_starboard_board_message(
-                    guild_id=source_message.guild.id,
-                    source_message_id=source_message.id,
-                )
+                await self.bot.database.delete_starboard_board_message(guild_id=source_message.guild.id, source_message_id=source_message.id)
 
         try:
-            board_message = await channel.send(
-                content=content,
-                embed=embed,
-                allowed_mentions=discord.AllowedMentions.none(),
-            )
+            board_message = await channel.send(content=content, embed=embed, allowed_mentions=discord.AllowedMentions.none())
         except discord.Forbidden:
             _log.warning("Cannot post to starboard channel %s", channel.id)
             return
 
         await self.bot.database.set_starboard_board_message(
-            guild_id=source_message.guild.id,
-            source_message_id=source_message.id,
-            board_message_id=board_message.id,
+            guild_id=source_message.guild.id, source_message_id=source_message.id, board_message_id=board_message.id
         )
 
     async def _delete_board_message(self, channel: discord.TextChannel, guild_id: int, source_id: int, board_id: int) -> None:
@@ -215,10 +188,7 @@ class Starboard(commands.Cog):
         except discord.Forbidden, discord.NotFound:
             pass
         finally:
-            await self.bot.database.delete_starboard_board_message(
-                guild_id=guild_id,
-                source_message_id=source_id,
-            )
+            await self.bot.database.delete_starboard_board_message(guild_id=guild_id, source_message_id=source_id)
 
     @staticmethod
     def _build_embed(message: discord.Message) -> discord.Embed:

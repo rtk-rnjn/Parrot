@@ -31,12 +31,7 @@ def boxplot(data: Sequence[float], *, fill_boxes: bool = True) -> discord.File:
     ax: Axes = fig.add_subplot()
     ax.set_title("Box & Whisker Plot", pad=15)
 
-    out = ax.boxplot(
-        x=data,
-        vert=False,
-        showmeans=True,
-        patch_artist=fill_boxes,
-    )
+    out = ax.boxplot(x=data, vert=False, showmeans=True, patch_artist=fill_boxes)
 
     for cap in out.get("caps", ()):
         cap.set(color="#8B008B", linewidth=2)

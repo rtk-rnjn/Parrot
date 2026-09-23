@@ -223,13 +223,9 @@ class Love(commands.Cog):
         embed.title = f"__{zodiac}__"
         embed.description = self.zodiac_fact[zodiac]["About"]
         embed.add_field(name="__Motto__", value=self.zodiac_fact[zodiac]["Motto"], inline=False).add_field(
-            name="__Strengths__",
-            value=self.zodiac_fact[zodiac]["Strengths"],
-            inline=False,
+            name="__Strengths__", value=self.zodiac_fact[zodiac]["Strengths"], inline=False
         ).add_field(name="__Weaknesses__", value=self.zodiac_fact[zodiac]["Weaknesses"], inline=False).add_field(
-            name="__Full form__",
-            value=self.zodiac_fact[zodiac]["full_form"],
-            inline=False,
+            name="__Full form__", value=self.zodiac_fact[zodiac]["full_form"], inline=False
         ).set_thumbnail(url=self.zodiac_fact[zodiac]["url"])
 
     def zodiac_date_verifier(self, query_date: datetime) -> str:
@@ -248,7 +244,7 @@ class Love(commands.Cog):
         """Displays info about Saint Valentine."""
         embed = discord.Embed(title="Who is Saint Valentine?", description=self.valentine_facts["whois"], color=ctx.author.color)
         embed.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg",
+            url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg"
         )
 
         await ctx.reply(embed=embed)

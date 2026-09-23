@@ -48,17 +48,10 @@ class LevelingRoleAddModal(discord.ui.Modal, title="Add Leveling Role"):
         super().__init__()
 
         self.level_input = discord.ui.TextInput(
-            label="Level",
-            placeholder="Enter the level for this role...",
-            style=discord.TextStyle.short,
-            required=True,
+            label="Level", placeholder="Enter the level for this role...", style=discord.TextStyle.short, required=True
         )
 
-        self._role_input = discord.ui.RoleSelect(
-            placeholder="Select a role to assign at this level...",
-            min_values=1,
-            max_values=1,
-        )
+        self._role_input = discord.ui.RoleSelect(placeholder="Select a role to assign at this level...", min_values=1, max_values=1)
         self.role_input = discord.ui.Label(
             text="Role",
             component=self._role_input,
@@ -77,7 +70,7 @@ class LevelingRoleRemoveModal(discord.ui.Modal, title="Select Roles to remove"):
             options=[
                 discord.CheckboxGroupOption(label=f"Level {level}", value=str(level), description=f"Role: @{role_name}")
                 for level, role_name in level_role_mapping.items()
-            ],
+            ]
         )
         self.input = discord.ui.Label(
             text="Select Levels",
@@ -108,10 +101,7 @@ class LevelingRolesConfig(PaginationView):
             pages.append(embed)
 
         if not pages:
-            embed = discord.Embed(
-                title="Leveling Roles Configuration",
-                description="No leveling roles configured.",
-            )
+            embed = discord.Embed(title="Leveling Roles Configuration", description="No leveling roles configured.")
             pages.append(embed)
 
         super().__init__(author=author, items=pages, hide_skip_button=True, hide_quit_button=True)
@@ -208,10 +198,7 @@ class LevelingRolesConfig(PaginationView):
             pages.append(embed)
 
         if not pages:
-            embed = discord.Embed(
-                title="Leveling Roles Configuration",
-                description="No leveling roles configured.",
-            )
+            embed = discord.Embed(title="Leveling Roles Configuration", description="No leveling roles configured.")
             pages.append(embed)
 
         self.items = pages

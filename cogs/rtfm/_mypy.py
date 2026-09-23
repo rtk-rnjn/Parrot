@@ -22,8 +22,7 @@ class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" "
     code: str = commands.flag(description="The code to lint with mypy.")
     # Import Discovery
     no_namespace_packages: Annotated[bool | None, convert_bool] = commands.flag(
-        description="Do not consider namespace packages when searching for imports.",
-        default=None,
+        description="Do not consider namespace packages when searching for imports.", default=None
     )
     ignore_missing_imports: Annotated[bool | None, convert_bool] = commands.flag(description="Ignore missing imports.", default=None)
     follow_imports: Literal["skip", "silent", "error", "normal"] = commands.flag(description="How to handle imports.", default="normal")

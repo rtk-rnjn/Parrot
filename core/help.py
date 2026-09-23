@@ -43,7 +43,7 @@ class Help(commands.HelpCommand):
                 "help": "Shows this message.",
                 "description": "Shows this message.",
                 "aliases": ["h", "welp", "commands"],
-            },
+            }
         )
 
     def format_commit(self, commit: pygit2.Commit) -> str:
@@ -80,11 +80,7 @@ class Help(commands.HelpCommand):
             colour=discord.Colour.blurple(),
         )
 
-        embed.add_field(
-            name="Usage",
-            value=f"```text\n{signature}\n```",
-            inline=False,
-        )
+        embed.add_field(name="Usage", value=f"```text\n{signature}\n```", inline=False)
 
         if command.aliases:
             embed.add_field(
@@ -138,46 +134,36 @@ class Help(commands.HelpCommand):
         embed = (
             discord.Embed(
                 title=f"{context.bot.user.name} Help",
-                description=inspect.cleandoc(
-                    f"""
+                description=inspect.cleandoc(f"""
                 Use `{prefix}help <command>` for more information on a command.
                 Use `{prefix}help <category>` for more information on a category.
-                """,
-                ),
+                """),
                 colour=discord.Colour.blurple(),
             )
             .add_field(name="Bot Version", value=context.bot.VERSION)
             .add_field(name="Uptime", value=discord.utils.format_dt(context.bot.started_at, "R"))
             .add_field(name="Members", value=f"{total_members:,} total\n{len(context.bot.users):,} cached")
-            .add_field(name="Channels", value=(f"{text_channels + voice_channels:,} total\n{text_channels:,} text\n{voice_channels:,} voice"))
+            .add_field(
+                name="Channels",
+                value=(f"{text_channels + voice_channels:,} total\n{text_channels:,} text\n{voice_channels:,} voice"),
+            )
             .add_field(name="Guilds", value=f"{guilds:,}")
             .add_field(name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
         )
 
         if revision:
-            embed.add_field(
-                name="Recent Commits",
-                value=revision,
-                inline=False,
-            )
+            embed.add_field(name="Recent Commits", value=revision, inline=False)
 
         await context.reply(embed=embed)
 
-    async def send_command_help(
-        self,
-        command: commands.Command,
-    ) -> None:
+    async def send_command_help(self, command: commands.Command) -> None:
         embed = discord.Embed(
             title=f"{self.clean_prefix}{command.qualified_name}",
             description=self.command_description(command),
             colour=discord.Colour.blurple(),
         )
 
-        embed.add_field(
-            name="Usage",
-            value=f"```text\n{self.get_command_signature(command)}\n```",
-            inline=False,
-        )
+        embed.add_field(name="Usage", value=f"```text\n{self.get_command_signature(command)}\n```", inline=False)
 
         if command.aliases:
             embed.add_field(
@@ -200,26 +186,16 @@ class Help(commands.HelpCommand):
 
         await self.context.reply(embed=embed)
 
-    async def send_group_help(
-        self,
-        group: commands.Group,
-    ) -> None:
+    async def send_group_help(self, group: commands.Group) -> None:
         embed = discord.Embed(
             title=f"{self.clean_prefix}{group.qualified_name}",
             description=self.command_description(group),
             colour=discord.Colour.blurple(),
         )
 
-        embed.add_field(
-            name="Usage",
-            value=f"```text\n{self.get_command_signature(group)}\n```",
-            inline=False,
-        )
+        embed.add_field(name="Usage", value=f"```text\n{self.get_command_signature(group)}\n```", inline=False)
 
-        commands_list = await self.filter_commands(
-            group.commands,
-            sort=True,
-        )
+        commands_list = await self.filter_commands(group.commands, sort=True)
 
         if commands_list:
             embed.add_field(
@@ -237,14 +213,8 @@ class Help(commands.HelpCommand):
 
         await self.context.reply(embed=embed)
 
-    async def send_cog_help(
-        self,
-        cog: commands.Cog,
-    ) -> None:
-        commands_list = await self.filter_commands(
-            cog.get_commands(),
-            sort=True,
-        )
+    async def send_cog_help(self, cog: commands.Cog) -> None:
+        commands_list = await self.filter_commands(cog.get_commands(), sort=True)
 
         embed = discord.Embed(
             title=cog.qualified_name,
@@ -262,11 +232,7 @@ class Help(commands.HelpCommand):
         await self.context.reply(embed=embed)
 
     async def send_error(self, error: str) -> None:
-        embed = discord.Embed(
-            title="Help",
-            description=error,
-            colour=discord.Colour.red(),
-        )
+        embed = discord.Embed(title="Help", description=error, colour=discord.Colour.red())
 
         await self.context.reply(embed=embed)
 

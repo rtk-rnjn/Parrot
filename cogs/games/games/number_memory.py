@@ -20,12 +20,7 @@ if TYPE_CHECKING:
 
 
 class NumModal(discord.ui.Modal, title="Answer"):
-    word = discord.ui.TextInput(
-        label="number",
-        style=discord.TextStyle.short,
-        required=True,
-        min_length=1,
-    )
+    word = discord.ui.TextInput(label="number", style=discord.TextStyle.short, required=True, min_length=1)
 
     def __init__(self, view: NumView) -> None:
         super().__init__()
@@ -38,10 +33,7 @@ class NumModal(discord.ui.Modal, title="Answer"):
         assert game.embed
 
         if not value.isdigit():
-            await interaction.response.send_message(
-                f"`{value}` is not a valid number!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message(f"`{value}` is not a valid number!", ephemeral=True)
             return
 
         if value == game.number:
@@ -52,38 +44,23 @@ class NumModal(discord.ui.Modal, title="Answer"):
             self.view.answer.disabled = True
 
             files = [game.file] if game.file else discord.utils.MISSING
-            await interaction.response.edit_message(
-                attachments=files,
-                embed=game.embed,
-                view=self.view,
-            )
+            await interaction.response.edit_message(attachments=files, embed=game.embed, view=self.view)
 
             await asyncio.sleep(game.pause_time)
             await game.update_embed(hide=True)
 
             if interaction.message:
-                await interaction.message.edit(
-                    attachments=[],
-                    embed=game.embed,
-                    view=self.view,
-                )
+                await interaction.message.edit(attachments=[], embed=game.embed, view=self.view)
         else:
             game.embed.description = f"You Lost!\n\n```diff\nCorrect Number:\n+ {game.number}\nYour Guess:\n- {value}\n```"
             self.view.disable_all()
-            await interaction.response.edit_message(
-                attachments=[],
-                embed=game.embed,
-                view=self.view,
-            )
+            await interaction.response.edit_message(attachments=[], embed=game.embed, view=self.view)
             self.view.stop()
 
 
 class NumButton(discord.ui.Button["NumView"]):
     def __init__(self, label: str, style: discord.ButtonStyle) -> None:
-        super().__init__(
-            label=label,
-            style=style,
-        )
+        super().__init__(label=label, style=style)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view
@@ -134,10 +111,7 @@ class NumberMemory:
         self.pause_incr: float
         self.pause_time: float
         parent = pathlib.Path(__file__).parent.parent
-        self._font = ImageFont.truetype(
-            str(parent / "assets/ClearSans-Bold.ttf"),
-            self._text_size,
-        )
+        self._font = ImageFont.truetype(str(parent / "assets/ClearSans-Bold.ttf"), self._text_size)
 
     @executor
     def generate_image(self) -> BytesIO:
@@ -150,12 +124,7 @@ class NumberMemory:
 
         with Image.new("RGBA", (int(w) + MARGIN * 2, int(h) + MARGIN * 2), 0) as img:
             draw = ImageDraw.Draw(img)
-            draw.text(
-                (MARGIN, MARGIN),
-                self.number,
-                font=self._font,
-                color=(255, 255, 255),
-            )
+            draw.text((MARGIN, MARGIN), self.number, font=self._font, color=(255, 255, 255))
             buf = BytesIO()
             img.save(buf, "PNG")
         buf.seek(0)
@@ -170,9 +139,7 @@ class NumberMemory:
             self.embed.description = "```yml\nGuess!\n```"
             self.file = None
         else:
-            time = discord.utils.utcnow() + datetime.timedelta(
-                seconds=self.pause_time + 1,
-            )
+            time = discord.utils.utcnow() + datetime.timedelta(seconds=self.pause_time + 1)
             pause = discord.utils.format_dt(time, style="R")
             file = await self.generate_image()
             file = discord.File(file, "number.png")
@@ -188,7 +155,7 @@ class NumberMemory:
         first = random.choice(non_zero)
         return first + "".join(random.choices(string.digits, k=self.level - 1))
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -204,11 +171,7 @@ class NumberMemory:
         self.embed = discord.Embed(color=embed_color)
         await self.update_embed()
 
-        self.view = NumView(
-            game=self,
-            button_style=button_style,
-            timeout=timeout,
-        )
+        self.view = NumView(game=self, button_style=button_style, timeout=timeout)
         assert self.file is not None
         self.message = await ctx.reply(file=self.file, embed=self.embed, view=self.view)
         self.view.message = self.message

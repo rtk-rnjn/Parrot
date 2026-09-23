@@ -43,11 +43,7 @@ class Tictactoe:
         ((0, 2), (1, 1), (2, 0)),
     )
 
-    def __init__(
-        self,
-        cross: Player,
-        circle: Player,
-    ) -> None:
+    def __init__(self, cross: Player, circle: Player) -> None:
         self.cross = cross
         self.circle = circle
 
@@ -70,10 +66,7 @@ class Tictactoe:
             "\N{DIGIT NINE}",
         ]
 
-        self.emoji_to_player: dict[str, Player] = {
-            self.CIRCLE: self.circle,
-            self.CROSS: self.cross,
-        }
+        self.emoji_to_player: dict[str, Player] = {self.CIRCLE: self.circle, self.CROSS: self.cross}
         self.player_to_emoji: dict[Player, str] = {v: k for k, v in self.emoji_to_player.items()}
 
     def board_string(self) -> str:
@@ -94,15 +87,14 @@ class Tictactoe:
     def make_move(self, emoji: str, user: Player) -> list:
         if emoji not in self._controls:
             raise KeyError("Provided emoji is not one of the valid controls")
-        else:
-            x, y = self._conversion[emoji]
-            piece = self.player_to_emoji[user]
-            self.board[x][y] = piece
+        x, y = self._conversion[emoji]
+        piece = self.player_to_emoji[user]
+        self.board[x][y] = piece
 
-            self.turn = self.circle if user == self.cross else self.cross
-            self._conversion.pop(emoji)
-            self._controls.remove(emoji)
-            return self.board
+        self.turn = self.circle if user == self.cross else self.cross
+        self._conversion.pop(emoji)
+        self._controls.remove(emoji)
+        return self.board
 
     def is_game_over(self, *, tie: bool = False) -> bool:
         for possibility in self._WINNERS:
@@ -174,11 +166,7 @@ class Tictactoe:
 
 class TTTButton(discord.ui.Button["TTTView"]):
     def __init__(self, label: str, style: discord.ButtonStyle, *, row: int, col: int):
-        super().__init__(
-            label=label,
-            style=style,
-            row=row,
-        )
+        super().__init__(label=label, style=style, row=row)
 
         self.col = col
 
@@ -188,17 +176,11 @@ class TTTButton(discord.ui.Button["TTTView"]):
         game = self.view.game
 
         if user not in (game.cross, game.circle):
-            await interaction.response.send_message(
-                "You are not part of this game!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("You are not part of this game!", ephemeral=True)
             return
 
         if user != game.turn:
-            await interaction.response.send_message(
-                "it is not your turn!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("it is not your turn!", ephemeral=True)
             return
 
         self.label = game.player_to_emoji[user]
@@ -229,12 +211,7 @@ class TTTView(BaseView):
 
         for x, row in enumerate(game.board):
             for y, square in enumerate(row):
-                button = TTTButton(
-                    label=square,
-                    style=self.game.button_style,
-                    row=x,
-                    col=y,
-                )
+                button = TTTButton(label=square, style=self.game.button_style, row=x, col=y)
                 self.add_item(button)
 
 
@@ -268,9 +245,6 @@ class BetaTictactoe(Tictactoe):
         self.message = await ctx.reply(embed=self.make_embed(), view=self.view)
         self.view.message = self.message
 
-        await double_wait(
-            wait_for_delete(ctx, self.message, user=(self.cross, self.circle)),
-            self.view.wait(),
-        )
+        await double_wait(wait_for_delete(ctx, self.message, user=(self.cross, self.circle)), self.view.wait())
 
         return self.message

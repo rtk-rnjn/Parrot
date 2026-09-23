@@ -16,8 +16,7 @@ class _GuildModeratorMixin(DatabaseMixin):
             return [int(role_id) for role_id in role_ids]
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "moderator_config": {"$exists": True}},
-            {"moderator_config.moderator_role_ids": 1},
+            {"_id": guild_id, "moderator_config": {"$exists": True}}, {"moderator_config.moderator_role_ids": 1}
         )
         if guild_config is None:
             return []
@@ -35,8 +34,7 @@ class _GuildModeratorMixin(DatabaseMixin):
             return int(channel_id)
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "moderator_config": {"$exists": True}},
-            {"moderator_config.moderator_logs_channel_id": 1},
+            {"_id": guild_id, "moderator_config": {"$exists": True}}, {"moderator_config.moderator_logs_channel_id": 1}
         )
         if guild_config is None:
             return None
@@ -69,21 +67,13 @@ class _GuildModeratorMixin(DatabaseMixin):
             await self.guilds_collection.update_one({"_id": guild_id}, {"$set": update_data}, upsert=True)
 
     async def add_moderator_role(self, *, guild_id: int, role_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$addToSet": {"moderator_config.moderator_role_ids": role_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$addToSet": {"moderator_config.moderator_role_ids": role_id}}, upsert=True)
 
         key = RedisKeys.GUILD_MODERATOR_CONFIG_MODERATOR_ROLE_IDS.format(guild_id=guild_id)
         await self.redis_client.sadd(key, role_id)
 
     async def remove_moderator_role(self, *, guild_id: int, role_id: int) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$pull": {"moderator_config.moderator_role_ids": role_id}},
-            upsert=True,
-        )
+        await self.guilds_collection.update_one({"_id": guild_id}, {"$pull": {"moderator_config.moderator_role_ids": role_id}}, upsert=True)
 
         key = RedisKeys.GUILD_MODERATOR_CONFIG_MODERATOR_ROLE_IDS.format(guild_id=guild_id)
         await self.redis_client.srem(key, role_id)

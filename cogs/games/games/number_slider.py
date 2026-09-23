@@ -7,15 +7,7 @@ from typing import TYPE_CHECKING, Literal
 import discord
 from discord.ext import commands
 
-from .utils import (
-    DEFAULT_COLOR,
-    BaseView,
-    DiscordColor,
-    Player,
-    chunk,
-    double_wait,
-    wait_for_delete,
-)
+from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -25,11 +17,7 @@ Board = list[list[int | None]]
 
 class SlideButton(discord.ui.Button["SlideView"]):
     def __init__(self, label: str, *, style: discord.ButtonStyle, row: int) -> None:
-        super().__init__(
-            label=label,
-            style=style,
-            row=row,
-        )
+        super().__init__(label=label, style=style, row=row)
 
         if label == "\N{ZERO WIDTH SPACE}":
             self.disabled = True
@@ -40,41 +28,29 @@ class SlideButton(discord.ui.Button["SlideView"]):
         game = self.view.game
 
         if interaction.user != game.player:
-            await interaction.response.send_message(
-                "This is not your game!",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("This is not your game!", ephemeral=True)
             return
-        else:
-            num = int(self.label)
+        num = int(self.label)
 
-            if num not in game.beside_blank():
-                await interaction.response.defer()
-                return
-            else:
-                pressed = game.get_item(num)
-                blank = game.get_item()
+        if num not in game.beside_blank():
+            await interaction.response.defer()
+            return
+        pressed = game.get_item(num)
+        blank = game.get_item()
 
-                game.swap(pressed, blank)
+        game.swap(pressed, blank)
 
-                self.view.update_board(clear=True)
+        self.view.update_board(clear=True)
 
-                game.moves += 1
-                game.embed.set_field_at(
-                    0,
-                    name="\N{ZERO WIDTH SPACE}",
-                    value=f"Moves: `{game.moves}`",
-                )
+        game.moves += 1
+        game.embed.set_field_at(0, name="\N{ZERO WIDTH SPACE}", value=f"Moves: `{game.moves}`")
 
-                if game.numbers == game.completed:
-                    self.view.disable_all()
-                    self.view.stop()
-                    game.embed.description = "**Congrats! You won!**"
+        if game.numbers == game.completed:
+            self.view.disable_all()
+            self.view.stop()
+            game.embed.description = "**Congrats! You won!**"
 
-                await interaction.response.edit_message(
-                    embed=game.embed,
-                    view=self.view,
-                )
+        await interaction.response.edit_message(embed=game.embed, view=self.view)
 
 
 class SlideView(BaseView):
@@ -105,11 +81,7 @@ class SlideView(BaseView):
                     else:
                         style = self.game.wrong_style
 
-                    button = SlideButton(
-                        label=str(number) if number else "\N{ZERO WIDTH SPACE}",
-                        style=style,
-                        row=i,
-                    )
+                    button = SlideButton(label=str(number) if number else "\N{ZERO WIDTH SPACE}", style=style, row=i)
                     self.add_item(button)
 
 
@@ -145,12 +117,7 @@ class NumberSlider:
     def beside_blank(self) -> list[int | None]:
         nx, ny = self.get_item()
 
-        beside_item = [
-            (nx - 1, ny),
-            (nx, ny - 1),
-            (nx + 1, ny),
-            (nx, ny + 1),
-        ]
+        beside_item = [(nx - 1, ny), (nx, ny - 1), (nx + 1, ny), (nx, ny + 1)]
 
         data = [self.numbers[i][j] for i, j in beside_item if i in range(self.count) and j in range(self.count)]
         return data
@@ -159,10 +126,7 @@ class NumberSlider:
         ix, iy = pressed
         nx, ny = blank
 
-        self.numbers[nx][ny], self.numbers[ix][iy] = (
-            self.numbers[ix][iy],
-            self.numbers[nx][ny],
-        )
+        self.numbers[nx][ny], self.numbers[ix][iy] = (self.numbers[ix][iy], self.numbers[nx][ny])
 
     def shuffle(self, count: int) -> None:
         blank = self.get_item()
@@ -198,17 +162,11 @@ class NumberSlider:
         self.shuffle(self.count**6)
 
         self.view = SlideView(self, timeout=timeout)
-        self.embed = discord.Embed(
-            description="Slide the tiles back in ascending order!",
-            color=embed_color,
-        )
+        self.embed = discord.Embed(description="Slide the tiles back in ascending order!", color=embed_color)
         self.embed.add_field(name="\N{ZERO WIDTH SPACE}", value="Moves: `0`")
 
         self.message = await ctx.reply(embed=self.embed, view=self.view)
         self.view.message = self.message
 
-        await double_wait(
-            wait_for_delete(ctx, self.message),
-            self.view.wait(),
-        )
+        await double_wait(wait_for_delete(ctx, self.message), self.view.wait())
         return self.message

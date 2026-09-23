@@ -4,7 +4,7 @@ import datetime
 import logging
 import re
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
 
 import arrow
@@ -129,10 +129,7 @@ class MemberID(commands.Converter):
                     # Some moderation actions only require an ID. Keeping an
                     # ID-only object allows commands such as hackban to target
                     # users who are no longer members of the guild.
-                    return cast(
-                        discord.Member,
-                        discord.Object(id=member_id),
-                    )
+                    return cast(discord.Member, discord.Object(id=member_id))
 
         if not can_execute_action(ctx, ctx.author, member):
             error_message = f"{ctx.author} does not have sufficient authority to act on {member}."
@@ -149,11 +146,7 @@ class BannedMember(commands.Converter):
     string representation of users in the guild's ban list.
     """
 
-    async def convert(
-        self,
-        ctx: commands.Context[Parrot],
-        argument: str,
-    ) -> discord.BanEntry:
+    async def convert(self, ctx: commands.Context[Parrot], argument: str) -> discord.BanEntry:
         """Find a banned user from a command argument."""
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -167,10 +160,7 @@ class BannedMember(commands.Converter):
                 error_message = f"User ID {member_id} has not been banned before."
                 raise commands.BadArgument(error_message) from None
 
-        entity = await discord.utils.find(
-            lambda u: str(u.user) == argument,
-            ctx.guild.bans(limit=None),
-        )
+        entity = await discord.utils.find(lambda u: str(u.user) == argument, ctx.guild.bans(limit=None))
 
         if entity is None:
             error_message = f"{argument} has not been banned before."
@@ -186,7 +176,7 @@ class MuteMetadata(TypedDict):
     reason: str | None
 
 
-_ACTION_META: dict[str, tuple[str, str, discord.Colour]] = {
+_ACTION_META = {
     "kick": ("\N{WOMANS BOOTS}", "Member Kicked", discord.Color.orange()),
     "ban": ("\N{HAMMER}", "Member Banned", discord.Color.red()),
     "unban": ("\N{DOVE OF PEACE}", "Member Unbanned", discord.Color.green()),
@@ -210,20 +200,9 @@ class Mod(commands.Cog):
     async def kick_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[
-            discord.Member,
-            MemberID,
-        ] = commands.parameter(  # noqa: B008
-            description="The member to kick from the server.",
-        ),
+        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member to kick from the server."),
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for kicking the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for kicking the member(s).", default=None),
     ) -> discord.Message:
         """Kick member from the server."""
         if TYPE_CHECKING:
@@ -243,13 +222,7 @@ class Mod(commands.Cog):
 
         await ctx.guild.kick(member, reason=reason)
 
-        await self.log(
-            guild=ctx.guild,
-            responsible_moderator=ctx.author,
-            action="kick",
-            target=member,
-            reason=original_reason,
-        )
+        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action="kick", targets=[member], reason=original_reason)
         return await ctx.reply(f"**{member}** (ID: {member.id}) has been kicked from the server.")
 
     @commands.command(name="ban", aliases=["hackban"])
@@ -258,20 +231,9 @@ class Mod(commands.Cog):
     async def ban_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[
-            discord.Member,
-            MemberID,
-        ] = commands.parameter(  # noqa: B008
-            description="The member(s) to ban from the server.",
-        ),
+        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member(s) to ban from the server."),
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for banning the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for banning the member(s).", default=None),
     ) -> discord.Message:
         """Ban member from the server.
 
@@ -297,18 +259,11 @@ class Mod(commands.Cog):
 
         await ctx.guild.ban(member, reason=reason)
 
-        await self.log(
-            guild=ctx.guild,
-            responsible_moderator=ctx.author,
-            action="ban",
-            target=member,
-            reason=original_reason,
-        )
+        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=[member], reason=original_reason)
 
         if isinstance(member, discord.Object):
             return await ctx.reply(f"ID: {member.id} has been banned from the server.")
-        else:
-            return await ctx.reply(f"**{member}** (ID: {member.id}) has been banned from the server.")
+        return await ctx.reply(f"**{member}** (ID: {member.id}) has been banned from the server.")
 
     @commands.command(name="massban", aliases=["mass-ban", "multiban", "multi-ban"])
     @commands.has_permissions(ban_members=True)
@@ -316,21 +271,11 @@ class Mod(commands.Cog):
     async def mass_ban_members(
         self,
         ctx: commands.Context[Parrot],
-        members: Annotated[
-            list[discord.Member],
-            commands.Greedy[MemberID],
-        ] = commands.parameter(  # noqa: B008
-            description="The members to ban from the server.",
-            default=None,
+        members: Annotated[list[discord.Member], commands.Greedy[MemberID]] = commands.parameter(  # noqa: B008
+            description="The members to ban from the server.", default=None
         ),
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for banning the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for banning the member(s).", default=None),
     ) -> discord.Message:
         """Ban one or more members from the server.
 
@@ -355,26 +300,17 @@ class Mod(commands.Cog):
 
         if not bannable:
             return await ctx.reply(
-                f"No members could be banned. {len(skipped)} member(s) could not be banned.{self._format_skipped_members(skipped)}",
+                f"No members could be banned. {len(skipped)} member(s) could not be banned.{self._format_skipped_members(skipped)}"
             )
 
         result = await ctx.guild.bulk_ban(bannable, reason=reason)
-        await self.log(
-            guild=ctx.guild,
-            responsible_moderator=ctx.author,
-            action="ban",
-            target=None,
-            targets=members,
-            reason=original_reason,
-        )
+        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=members, reason=original_reason)
 
         success_count = len(result.banned)
         failure_count = len(result.failed)
 
         if not success_count and not failure_count:
-            return await ctx.reply(
-                "No members were banned. Please check the provided member(s) and try again.",
-            )
+            return await ctx.reply("No members were banned. Please check the provided member(s) and try again.")
 
         if not success_count:
             message = f"Failed to ban any members. {failure_count} member(s) could not be banned."
@@ -384,9 +320,7 @@ class Mod(commands.Cog):
             if failure_count:
                 message += f" Failed to ban {failure_count} member(s)."
 
-        return await ctx.reply(
-            message + self._format_skipped_members(skipped),
-        )
+        return await ctx.reply(message + self._format_skipped_members(skipped))
 
     @staticmethod
     def _partition_bannable_members(members: list[discord.Member], me: discord.Member) -> tuple[list[discord.Member], list[discord.Member]]:
@@ -421,20 +355,9 @@ class Mod(commands.Cog):
     async def soft_ban_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[
-            discord.Member,
-            MemberID,
-        ] = commands.parameter(  # noqa: B008
-            description="The member to softban from the server.",
-        ),
+        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member to softban from the server."),
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for softbanning the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for softbanning the member(s).", default=None),
     ) -> discord.Message:
         """Softban a member from the server.
 
@@ -467,20 +390,9 @@ class Mod(commands.Cog):
     async def unban_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[
-            discord.BanEntry,
-            BannedMember,
-        ] = commands.parameter(  # noqa: B008
-            description="The member to unban from the server.",
-        ),
+        member: Annotated[discord.BanEntry, BannedMember] = commands.parameter(description="The member to unban from the server."),
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for unbanning the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for unbanning the member(s).", default=None),
     ) -> discord.Message:
         """Unban a member from the server."""
         if TYPE_CHECKING:
@@ -494,7 +406,7 @@ class Mod(commands.Cog):
         await self.log(
             guild=ctx.guild,
             responsible_moderator=ctx.author,
-            target=member.user,
+            targets=[member.user],
             action="unban",
             reason=original_reason,
         )
@@ -506,21 +418,10 @@ class Mod(commands.Cog):
     async def timeout_member(
         self,
         ctx: commands.Context[Parrot],
-        member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to timeout.",
-        ),
-        duration: FutureTime | None = commands.parameter(  # noqa: B008
-            description="The duration of the timeout.",
-            default=None,
-        ),
+        member: discord.Member = commands.parameter(description="The member to timeout."),  # noqa: B008
+        duration: FutureTime | None = commands.parameter(description="The duration of the timeout.", default=None),  # noqa: B008
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for timing out the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for timing out the member(s).", default=None),
     ) -> discord.Message:
         """Timeout a member from the server.
 
@@ -564,7 +465,7 @@ class Mod(commands.Cog):
             guild=ctx.guild,
             responsible_moderator=ctx.author,
             action=action,
-            target=member,
+            targets=[member],
             reason=original_reason,
             duration=duration.dt if duration else None,
         )
@@ -577,17 +478,9 @@ class Mod(commands.Cog):
     async def unmute_member(
         self,
         ctx: commands.Context[Parrot],
-        member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to unmute.",
-        ),
+        member: discord.Member = commands.parameter(description="The member to unmute."),  # noqa: B008
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for unmuting the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for unmuting the member(s).", default=None),
     ) -> discord.Message:
         """Unmute a member from the server.
 
@@ -620,13 +513,7 @@ class Mod(commands.Cog):
 
                 action = "unmute"
 
-        await self.log(
-            guild=ctx.guild,
-            responsible_moderator=ctx.author,
-            action=action,
-            target=member,
-            reason=original_reason,
-        )
+        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action=action, targets=[member], reason=original_reason)
 
         return message
 
@@ -650,7 +537,7 @@ class Mod(commands.Cog):
         if mute_role is None:
             return await ctx.reply(
                 "The configured mute role does not exist in this server. Please set a valid mute role using `mute role <role>` "
-                "or create a new mute role using `mute create`.",
+                "or create a new mute role using `mute create`."
             )
 
         if reason is None:
@@ -660,12 +547,7 @@ class Mod(commands.Cog):
             await ctx.bot.event_scheduler.create_timer(
                 event_name="mute",
                 expires_at=duration.dt,
-                metadata=MuteMetadata(
-                    guild_id=ctx.guild.id,
-                    member_id=member.id,
-                    moderator_id=ctx.author.id,
-                    reason=reason,
-                ),
+                metadata=MuteMetadata(guild_id=ctx.guild.id, member_id=member.id, moderator_id=ctx.author.id, reason=reason),
             )
 
         await member.add_roles(mute_role, reason=reason)
@@ -674,29 +556,17 @@ class Mod(commands.Cog):
         if duration is not None:
             relative_duration = discord.utils.format_dt(duration.dt, style="R")
             return await ctx.reply(f"**{member}** (ID: {member.id}) has been muted for {relative_duration}.")
-        else:
-            return await ctx.reply(f"**{member}** (ID: {member.id}) has been muted indefinitely.")
+        return await ctx.reply(f"**{member}** (ID: {member.id}) has been muted indefinitely.")
 
     @commands.group(name="mute", invoke_without_command=True)
     @commands.has_permissions(moderate_members=True)
     async def mute(
         self,
         ctx: commands.Context[Parrot],
-        member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to timeout.",
-        ),
-        duration: FutureTime | None = commands.parameter(  # noqa: B008
-            description="The duration of the timeout.",
-            default=None,
-        ),
+        member: discord.Member = commands.parameter(description="The member to timeout."),  # noqa: B008
+        duration: FutureTime | None = commands.parameter(description="The duration of the timeout.", default=None),  # noqa: B008
         *,
-        reason: Annotated[
-            str | None,
-            ActionReason,
-        ] = commands.parameter(
-            description="The reason for timing out the member(s).",
-            default=None,
-        ),
+        reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for timing out the member(s).", default=None),
     ) -> discord.Message:
         """Manage the mute role for the server."""
         if ctx.invoked_subcommand is None:
@@ -710,9 +580,7 @@ class Mod(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to assign to muted members.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to assign to muted members."),  # noqa: B008
     ) -> discord.Message:
         """Set the mute role for the server.
 
@@ -757,7 +625,7 @@ class Mod(commands.Cog):
 
         message_contents = [
             f"Synchronizing the permissions of the mute role **{mute_role}** (ID: {mute_role.id}) with all channels."
-            f"This may take a moment... [0/{len(ctx.guild.channels)}]",
+            f"This may take a moment... [0/{len(ctx.guild.channels)}]"
         ]
         message = await ctx.reply("\n".join(message_contents))
         for index, channel in enumerate(ctx.guild.channels, start=1):
@@ -780,10 +648,7 @@ class Mod(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        role_name: str = commands.parameter(  # noqa: B008
-            description="The name of the mute role to create.",
-            default="Muted",
-        ),
+        role_name: str = commands.parameter(description="The name of the mute role to create.", default="Muted"),
     ) -> discord.Message:
         """Create a new mute role for the server.
 
@@ -801,7 +666,7 @@ class Mod(commands.Cog):
         if existing_role is not None:
             return await ctx.reply(
                 f"A mute role already exists ({existing_role} - {existing_role_id}) for this server. "
-                "Use `mute role <role>` to change the mute role or `mute sync` to synchronize its permissions.",
+                "Use `mute role <role>` to change the mute role or `mute sync` to synchronize its permissions."
             )
 
         mute_role = await ctx.guild.create_role(name=role_name, reason=f"Mute role created by {ctx.author} (ID: {ctx.author.id})")
@@ -1049,8 +914,7 @@ class Mod(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         search: commands.Range[int, 2, 1000] | None = commands.parameter(  # noqa: B008
-            description="The number of messages to search through.",
-            default=25,
+            description="The number of messages to search through.", default=25
         ),
     ):
         """Cleans up the bot's messages from the channel.
@@ -1094,7 +958,7 @@ class Mod(commands.Cog):
 
         await ctx.send("\n".join(messages), delete_after=10)
 
-    def _prepare_purge_predicates(self, flags: PurgeFlags) -> list[Callable[[discord.Message], Any]]:  # noqa: C901
+    def _prepare_purge_predicates(self, flags: PurgeFlags) -> list[Callable[[discord.Message], Any]]:
         predicates: list[Callable[[discord.Message], Any]] = []
         if flags.bot:
             if flags.webhooks:
@@ -1134,12 +998,11 @@ class Mod(commands.Cog):
     @commands.command(aliases=["remove"])
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge(  # noqa: C901
+    async def purge(
         self,
         ctx: commands.Context[Parrot],
         limit: commands.Range[int, 1, 2000] | None = commands.parameter(  # noqa: B008
-            description="The number of messages to search through.",
-            default=100,
+            description="The number of messages to search through.", default=100
         ),
         *,
         flags: PurgeFlags,
@@ -1214,7 +1077,9 @@ class Mod(commands.Cog):
 
         for chunk in discord.utils.as_chunks(deleted, 100):
             try:
-                await ctx.channel.delete_messages(chunk, reason=f"Action done by {ctx.author} (ID: {ctx.author.id}): Purge")  # pyright: ignore[reportAttributeAccessIssue]
+                await ctx.channel.delete_messages(  # pyright: ignore[reportAttributeAccessIssue]
+                    chunk, reason=f"Action done by {ctx.author} (ID: {ctx.author.id}): Purge"
+                )
             except discord.Forbidden:
                 return await ctx.reply("I do not have permissions to delete messages.")
             except discord.HTTPException as e:
@@ -1271,9 +1136,7 @@ class Mod(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to assign to bots.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to assign to bots."),  # noqa: B008
     ) -> discord.Message:
         """Assign a role to all bots in the server.
 
@@ -1302,10 +1165,9 @@ class Mod(commands.Cog):
 
         if error:
             return await ctx.reply(
-                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} bots, but failed to assign it to {error} bots.",
+                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} bots, but failed to assign it to {error} bots."
             )
-        else:
-            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} bots in the server.")
+        return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} bots in the server.")
 
     @role.command(name="human", aliases=["humans"])
     @commands.has_permissions(manage_roles=True)
@@ -1315,9 +1177,7 @@ class Mod(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to assign to humans.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to assign to humans."),  # noqa: B008
     ) -> discord.Message:
         """Assign a role to all humans in the server.
 
@@ -1346,10 +1206,9 @@ class Mod(commands.Cog):
 
         if error:
             return await ctx.reply(
-                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} humans, but failed to assign it to {error} humans.",
+                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} humans, but failed to assign it to {error} humans."
             )
-        else:
-            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} humans in the server.")
+        return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} humans in the server.")
 
     @role.command(name="everyone", aliases=["all"])
     @commands.has_permissions(manage_roles=True)
@@ -1359,9 +1218,7 @@ class Mod(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to assign to everyone.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to assign to everyone."),  # noqa: B008
     ) -> discord.Message:
         """Assign a role to everyone in the server.
 
@@ -1390,10 +1247,9 @@ class Mod(commands.Cog):
 
         if error:
             return await ctx.reply(
-                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} members, but failed to assign it to {error} members.",
+                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} members, but failed to assign it to {error} members."
             )
-        else:
-            return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} members in the server.")
+        return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} members in the server.")
 
     @role.command(name="add", aliases=["assign", "give", "+=", "+"])
     @commands.has_permissions(manage_roles=True)
@@ -1401,13 +1257,9 @@ class Mod(commands.Cog):
     async def role_add(
         self,
         ctx: commands.Context[Parrot],
-        member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to assign the role to.",
-        ),
+        member: discord.Member = commands.parameter(description="The member to assign the role to."),  # noqa: B008
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to assign to the member.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to assign to the member."),  # noqa: B008
     ) -> discord.Message:
         """Assign a role to a member in the server.
 
@@ -1434,13 +1286,9 @@ class Mod(commands.Cog):
     async def role_remove(
         self,
         ctx: commands.Context[Parrot],
-        member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to remove the role from.",
-        ),
+        member: discord.Member = commands.parameter(description="The member to remove the role from."),  # noqa: B008
         *,
-        role: discord.Role = commands.parameter(  # noqa: B008
-            description="The role to remove from the member.",
-        ),
+        role: discord.Role = commands.parameter(description="The role to remove from the member."),  # noqa: B008
     ) -> discord.Message:
         """Remove a role from a member in the server.
 
@@ -1511,78 +1359,84 @@ class Mod(commands.Cog):
         guild: discord.Guild,
         responsible_moderator: discord.Member | discord.User,
         action: Literal["kick", "ban", "unban", "mute", "unmute", "timeout", "untimeout"],
-        target: T | None,
-        targets: list[T] | None = None,
+        targets: Sequence[T] = (),
         reason: str | None = discord.utils.MISSING,
         duration: datetime.datetime | None = discord.utils.MISSING,
     ) -> None:
         """Log a moderation action to the moderation log channel."""
-        moderator_logs_channel_id = await self.bot.database.get_moderator_logs_channel_id(guild_id=guild.id)
-        if moderator_logs_channel_id is None:
+        channel_id = await self.bot.database.get_moderator_logs_channel_id(guild_id=guild.id)
+        if channel_id is None:
             _log.warning("Moderation log channel not set for guild: %s", guild.id)
             return
 
-        mod_log_channel = guild.get_channel(moderator_logs_channel_id)
-        if mod_log_channel is None or not isinstance(mod_log_channel, discord.TextChannel):
-            _log.warning("Moderation log channel not found or not a text channel for guild: %s", guild.id)
+        channel = guild.get_channel(channel_id)
+        if not isinstance(channel, discord.TextChannel):
+            _log.warning("Moderation log channel not found or is not a text channel for guild: %s", guild.id)
             return
 
-        emoji, title, color = _ACTION_META.get(
-            action,
-            ("\N{SHIELD}", action.replace("_", " ").title(), discord.Color.blurple()),
+        emoji, title, color = _ACTION_META.get(action, ("\N{SHIELD}", action.replace("_", " ").title(), discord.Colour.default()))
+
+        target_list = list(targets)
+        target_lines = [self._format_target(target) for target in target_list]
+
+        if len(target_lines) > 5:
+            target_lines = [*target_lines[:5], f"...and {len(target_lines) - 5} more."]
+
+        target_text = "\n".join(target_lines) or "*Not applicable*"
+
+        container = discord.ui.Container()
+
+        container.add_item(
+            discord.ui.Section(
+                discord.ui.TextDisplay(
+                    f"## {emoji} {title}\n**Moderator**:\n{responsible_moderator.mention} • `{responsible_moderator.name}`\nID: `{responsible_moderator.id}`"
+                ),
+                accessory=discord.ui.Thumbnail(media=responsible_moderator.display_avatar.url),
+            )
         )
 
-        has_profile = isinstance(target, (discord.Member, discord.User))
-        if has_profile:
-            target_line = f"{target.mention}\n`{target}` • ID: `{target.id}`"
-        elif target is not None:
-            target_line = f"<@{target.id}>\nID: `{target.id}`"
+        container.add_item(discord.ui.Separator())
+
+        if len(targets) > 1:
+            container.add_item(discord.ui.TextDisplay(f"**Targets**:\n{target_text}"))
         else:
-            target_line = "*Not applicable*"
-
-        if targets is not None:
-            target_lines = []
-            for t in targets:
-                if isinstance(t, (discord.Member, discord.User)):
-                    target_lines.append(f"{t.mention}\n`{t}` • ID: `{t.id}`")
-                else:
-                    target_lines.append(f"<@{t.id}>\nID: `{t.id}`")
-            target_line = "\n".join(target_lines)
-            if len(target_lines) > 5:
-                target_line = "\n".join(target_lines[:5]) + f"\n...and {len(target_lines) - 5} more."
-
-        embed = discord.Embed(
-            title=f"{emoji} - {title}",
-            color=color,
-            timestamp=discord.utils.utcnow(),
-        )
-        embed.set_author(name=str(responsible_moderator), icon_url=responsible_moderator.display_avatar.url)
-
-        if has_profile:
-            embed.set_thumbnail(url=target.display_avatar.url)
-
-        embed.add_field(name="Target", value=target_line, inline=True)
-        embed.add_field(
-            name="Moderator",
-            value=f"{responsible_moderator.mention}\nID: `{responsible_moderator.id}`",
-            inline=True,
-        )
+            target = targets[0]
+            if isinstance(target, (discord.Member, discord.User)):
+                container.add_item(
+                    discord.ui.Section(
+                        discord.ui.TextDisplay(f"**Target**:\n{target_text}"),
+                        accessory=discord.ui.Thumbnail(media=target.display_avatar.url),
+                    )
+                )
 
         if duration is not discord.utils.MISSING:
-            embed.add_field(
-                name="Expiration",
-                value=discord.utils.format_dt(duration, "R") if duration is not None else "*No duration specified.*",
-                inline=True,
+            expiration = discord.utils.format_dt(duration, "R") if duration is not None else "*No duration specified.*"
+
+            container.add_item(discord.ui.Separator())
+            container.add_item(discord.ui.TextDisplay(f"**Expiration**\n{expiration}"))
+
+        container.add_item(discord.ui.Separator())
+
+        container.add_item(discord.ui.TextDisplay(f"**Reason**\n{reason or '*No reason provided.*'}"))
+
+        container.add_item(discord.ui.Separator())
+
+        container.add_item(
+            discord.ui.TextDisplay(
+                f"-# Happened {discord.utils.format_dt(discord.utils.utcnow(), 'R')} - {discord.utils.format_dt(discord.utils.utcnow(), 'F')}"
             )
-
-        embed.add_field(name="Reason", value=reason or "*No reason provided.*", inline=False)
-
-        embed.set_footer(
-            text=guild.name,
-            icon_url=guild.icon.url if guild.icon else None,
         )
+        view = discord.ui.LayoutView()
+        view.add_item(container)
 
-        await mod_log_channel.send(embed=embed)
+        await channel.send(view=view, allowed_mentions=discord.AllowedMentions.none())
+
+    @staticmethod
+    def _format_target(target: discord.Member | discord.User | discord.Object) -> str:
+        if isinstance(target, (discord.Member, discord.User)):
+            return f"{target.mention} • `{target}`\nID: `{target.id}`"
+
+        return f"<@{target.id}>ID: `{target.id}`"
 
 
 async def setup(bot: Parrot) -> None:

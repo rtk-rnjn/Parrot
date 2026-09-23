@@ -76,7 +76,7 @@ class AutomodLayoutView(BaseLayoutView):
                 "## Automod Rule Management\n"
                 "An advanced automoderation system designed to support complex, highly configurable rules beyond the capabilities of a basic automoderator.\n"
                 "It provides greater flexibility and supports more complex configurations, at the cost of requiring some initial setup."
-                "The Advanced Automoderator is driven by user-defined rules, where specific actions and conditions act as triggers to execute the configured effects.",
+                "The Advanced Automoderator is driven by user-defined rules, where specific actions and conditions act as triggers to execute the configured effects."
             ),
             discord.ui.Separator(),
             discord.ui.Section(
@@ -84,12 +84,9 @@ class AutomodLayoutView(BaseLayoutView):
                     "### Lists\n"
                     "Lists store words or domains that can be referenced as blacklist or whitelist triggers in your rules.\n"
                     "For word lists, entries must be single words with no spaces. Multiple entries can be separated by newlines or spaces. To match complete phrases, use a regex trigger instead.\n"
-                    "For website/link lists, provide only the domain name without the protocol or URL path. Subdomains are matched automatically. If you want to restrict matching to a specific subdomain and its nested subdomains, specify that subdomain directly.",
+                    "For website/link lists, provide only the domain name without the protocol or URL path. Subdomains are matched automatically. If you want to restrict matching to a specific subdomain and its nested subdomains, specify that subdomain directly."
                 ),
-                accessory=discord.ui.Button(
-                    emoji="\N{PENCIL}",
-                    style=discord.ButtonStyle.secondary,
-                ),
+                accessory=discord.ui.Button(emoji="\N{PENCIL}", style=discord.ButtonStyle.secondary),
             ),
             discord.ui.Separator(),
             discord.ui.Section(
@@ -97,12 +94,9 @@ class AutomodLayoutView(BaseLayoutView):
                     "### Rules\n"
                     "Rules are the core building blocks of your automoderator configuration. Each rule is composed of triggers, conditions, and effects, collectively referred to as rule parts."
                     "A rule can contain multiple triggers, conditions, and effects. Each component is optional, but a rule without at least one trigger and effect has nothing to execute."
-                    "When evaluating a rule, triggers use OR logic, while conditions and effects use AND logic. In other words, a rule is considered applicable when at least one trigger matches and all conditions are satisfied. Once matched, all effects defined by the rule are executed.",
+                    "When evaluating a rule, triggers use OR logic, while conditions and effects use AND logic. In other words, a rule is considered applicable when at least one trigger matches and all conditions are satisfied. Once matched, all effects defined by the rule are executed."
                 ),
-                accessory=discord.ui.Button(
-                    emoji="\N{PENCIL}",
-                    style=discord.ButtonStyle.secondary,
-                ),
+                accessory=discord.ui.Button(emoji="\N{PENCIL}", style=discord.ButtonStyle.secondary),
             ),
         )
         self.add_item(container)

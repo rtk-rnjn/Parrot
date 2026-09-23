@@ -7,14 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 import discord
 from discord.ext import commands
 
-from .utils import (
-    DEFAULT_COLOR,
-    BaseView,
-    DiscordColor,
-    chunk,
-    double_wait,
-    wait_for_delete,
-)
+from .utils import DEFAULT_COLOR, BaseView, DiscordColor, chunk, double_wait, wait_for_delete
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -24,10 +17,7 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
     def __init__(self, emoji: str, *, style: discord.ButtonStyle, row: int = 0) -> None:
         self.value = emoji
 
-        super().__init__(
-            style=style,
-            row=row,
-        )
+        super().__init__(style=style, row=row)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None
@@ -56,10 +46,7 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
 
                 if all(button.disabled for button in self.view.children if isinstance(button, discord.ui.Button)):
                     if interaction.message:
-                        await interaction.message.edit(
-                            content="Game Over, Congrats!",
-                            view=self.view,
-                        )
+                        await interaction.message.edit(content="Game Over, Congrats!", view=self.view)
                     self.view.stop()
                     return
 
@@ -140,7 +127,7 @@ class MemoryGame:
         self.view: MemoryView
         self.message: discord.Message
 
-    async def start(  # noqa: PLR0913
+    async def start(
         self,
         ctx: commands.Context[Parrot],
         *,
@@ -151,24 +138,12 @@ class MemoryGame:
         timeout: float | None = None,
     ) -> discord.Message:
         self.embed_color = embed_color
-        self.embed = discord.Embed(
-            description="**Memory Game**",
-            color=self.embed_color,
-        )
+        self.embed = discord.Embed(description="**Memory Game**", color=self.embed_color)
         self.embed.add_field(name="\N{ZERO WIDTH SPACE}", value="Moves: `0`")
 
-        self.view = MemoryView(
-            game=self,
-            items=items,
-            button_style=button_style,
-            pause_time=pause_time,
-            timeout=timeout,
-        )
+        self.view = MemoryView(game=self, items=items, button_style=button_style, pause_time=pause_time, timeout=timeout)
         self.message = await ctx.reply(embed=self.embed, view=self.view)
         self.view.message = self.message
 
-        await double_wait(
-            wait_for_delete(ctx, self.message),
-            self.view.wait(),
-        )
+        await double_wait(wait_for_delete(ctx, self.message), self.view.wait())
         return self.message

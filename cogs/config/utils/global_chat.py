@@ -34,15 +34,9 @@ class GlobalChatChannelSelect(discord.ui.ChannelSelect):
             channel = interaction.guild.get_channel(new_channel_id)
             assert isinstance(channel, discord.TextChannel), "Selected channel must be a text channel."
 
-            webhook = await channel.create_webhook(
-                name="Global Chat Webhook",
-                reason="Global chat webhook created.",
-            )
+            webhook = await channel.create_webhook(name="Global Chat Webhook", reason="Global chat webhook created.")
 
             await interaction.client.database.edit_global_chat_config(
-                guild_id=interaction.guild.id,
-                enabled=True,
-                webhook_uri=webhook.url,
-                channel_id=new_channel_id,
+                guild_id=interaction.guild.id, enabled=True, webhook_uri=webhook.url, channel_id=new_channel_id
             )
             await interaction.followup.send(f"Global chat channel updated to {selected_channel.mention}.", ephemeral=True)

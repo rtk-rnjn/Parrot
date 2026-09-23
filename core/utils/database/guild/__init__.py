@@ -6,25 +6,25 @@ from typing import TYPE_CHECKING
 from dotenv import load_dotenv
 
 from ..mixin import DatabaseMixin
-from .afk import _GuildAfkMixin  # noqa
-from .automod import _GuildAutomodMixin  # noqa
-from .birthday import _GuildBirthdayMixin  # noqa
-from .custom_commands import _GuildCustomCommandsMixin  # noqa
-from .events import _GuildEventsMixin  # noqa
-from .giveaway import _GuildGiveawayMixin  # noqa
-from .global_chat import _GuildGlobalChatMixin  # noqa
-from .mod import _GuildModeratorMixin  # noqa
-from .hub import _GuildHubMixin  # noqa
-from .leveling import _GuildLevelingMixin  # noqa
-from .mute import _GuildMuteRoleMixin  # noqa
-from .prefix import _GuildPrefixMixin  # noqa
-from .starboard import _GuildStarboardMixin  # noqa
-from .suggestion import _GuildSuggestionMixin  # noqa
-from .tags import _GuildTagsMixin  # noqa
-from .telephone import _GuildTelephoneMixin  # noqa
-from .ticket import _GuildTicketMixin  # noqa
-from .violation import _GuildViolationMixin  # noqa
-from .welcomer import _GuildWelcomerMixin  # noqa
+from .afk import _GuildAfkMixin
+from .automod import _GuildAutomodMixin
+from .birthday import _GuildBirthdayMixin
+from .custom_commands import _GuildCustomCommandsMixin
+from .events import _GuildEventsMixin
+from .giveaway import _GuildGiveawayMixin
+from .global_chat import _GuildGlobalChatMixin
+from .hub import _GuildHubMixin
+from .leveling import _GuildLevelingMixin
+from .mod import _GuildModeratorMixin
+from .mute import _GuildMuteRoleMixin
+from .prefix import _GuildPrefixMixin
+from .starboard import _GuildStarboardMixin
+from .suggestion import _GuildSuggestionMixin
+from .tags import _GuildTagsMixin
+from .telephone import _GuildTelephoneMixin
+from .ticket import _GuildTicketMixin
+from .violation import _GuildViolationMixin
+from .welcomer import _GuildWelcomerMixin
 
 if TYPE_CHECKING:
     from ..models import GuildConfiguration
@@ -67,15 +67,9 @@ class _GuildMixin(
             "suggestion_channel_id": None,
             "hub_channel_owners": {},
             "muted_members": [],
-            "violations": {
-                "default": {},
-            },
+            "violations": {"default": {}},
             "default_violation_expiration": None,
-            "global_chat_config": {
-                "enabled": False,
-                "channel_id": None,
-                "webhook_uri": None,
-            },
+            "global_chat_config": {"enabled": False, "channel_id": None, "webhook_uri": None},
             "automod": {
                 "word_allowlist": [],
                 "word_denylist": [],
@@ -85,20 +79,9 @@ class _GuildMixin(
                 "rules": [],
                 "logs": [],
             },
-            "moderator_config": {
-                "moderator_role_ids": [],
-                "moderator_logs_channel_id": None,
-            },
-            "leveling_config": {
-                "enabled": False,
-                "channel_id": None,
-                "level_roles": {},
-            },
-            "giveaway_config": {
-                "enabled": False,
-                "giveaway_channel_id": None,
-                "giveaway_role_id": None,
-            },
+            "moderator_config": {"moderator_role_ids": [], "moderator_logs_channel_id": None},
+            "leveling_config": {"enabled": False, "channel_id": None, "level_roles": {}},
+            "giveaway_config": {"enabled": False, "giveaway_channel_id": None, "giveaway_role_id": None},
             "welcome_config": {
                 "enabled": False,
                 "on_member_join_message": None,
@@ -114,10 +97,7 @@ class _GuildMixin(
                 "emoji": "",
                 "board_messages": {},
             },
-            "birthday_config": {
-                "enabled": False,
-                "channel_id": None,
-            },
+            "birthday_config": {"enabled": False, "channel_id": None},
             "ticket_config": {
                 "enabled": False,
                 "channel_id": None,
@@ -149,11 +129,7 @@ class _GuildMixin(
                 "on_member_move_voice": {"enabled": False, "webhook_uri": None},
             },
             "leveling_data": {},
-            "telephone_config": {
-                "enabled": False,
-                "channel_id": None,
-                "blocked_servers": [],
-            },
+            "telephone_config": {"enabled": False, "channel_id": None, "blocked_servers": []},
             "custom_commands_db": {},
             "custom_commands_logs": [],
         }

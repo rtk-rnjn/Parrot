@@ -9,15 +9,15 @@ from jinja2.visitor import NodeVisitor
 
 __all__ = [
     "SandboxConfig",
-    "SandboxRenderError",
-    "SandboxTemplateSyntaxError",
-    "SandboxSecurityViolation",
-    "SandboxOutputLimitExceeded",
-    "SandboxOperatorLimitExceeded",
-    "SandboxTimeoutExceeded",
-    "SandboxMemoryExceeded",
-    "SandboxInternalError",
     "SandboxForbiddenSyntax",
+    "SandboxInternalError",
+    "SandboxMemoryExceeded",
+    "SandboxOperatorLimitExceeded",
+    "SandboxOutputLimitExceeded",
+    "SandboxRenderError",
+    "SandboxSecurityViolation",
+    "SandboxTemplateSyntaxError",
+    "SandboxTimeoutExceeded",
     "render_sandboxed",
 ]
 
@@ -110,12 +110,7 @@ class RestrictedNodeVisitor(NodeVisitor):
         nodes.FromImport: "from import",
     }
 
-    def generic_visit(
-        self,
-        node: nodes.Node,
-        *args: Any,
-        **kwargs: Any,
-    ):
+    def generic_visit(self, node: nodes.Node, *args: Any, **kwargs: Any):
         forbidden = self.FORBIDDEN_NODES.get(type(node))
         if forbidden is not None:
             error = f"{forbidden!r} is disabled"

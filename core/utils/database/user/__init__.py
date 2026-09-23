@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..mixin import DatabaseMixin
-from .birthday import _UserBirthdayMixin  # noqa
-from .highlights import _UserHighlightsMixin  # noqa
-from .timezone import _UserTimezoneMixin  # noqa
-from .todo import _UserTodoMixin  # noqa
+from .birthday import _UserBirthdayMixin
+from .highlights import _UserHighlightsMixin
+from .timezone import _UserTimezoneMixin
+from .todo import _UserTodoMixin
 
 if TYPE_CHECKING:
     from ..models import UserConfiguration
@@ -14,13 +14,7 @@ if TYPE_CHECKING:
 __all__ = ("_UserMixin",)
 
 
-class _UserMixin(
-    _UserTimezoneMixin,
-    _UserHighlightsMixin,
-    _UserTodoMixin,
-    _UserBirthdayMixin,
-    DatabaseMixin,
-):
+class _UserMixin(_UserTimezoneMixin, _UserHighlightsMixin, _UserTodoMixin, _UserBirthdayMixin, DatabaseMixin):
     def create_user_configuration(self, user_id: int) -> UserConfiguration:
         return {
             "_id": user_id,

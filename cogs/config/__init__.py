@@ -135,7 +135,7 @@ class Config(commands.Cog):
         assert config is not None, "Guild configuration should not be None after registration."
 
         header = discord.ui.TextDisplay(
-            "# Bot Configuration\n-# Parrot Bot is highly customizable. Use the buttons below to navigate through the configuration options.",
+            "# Bot Configuration\n-# Parrot Bot is highly customizable. Use the buttons below to navigate through the configuration options."
         )
         footer = discord.ui.TextDisplay("-# Use buttons to navigate through the pages.")
 
@@ -165,30 +165,18 @@ class Config(commands.Cog):
                     discord.ui.ActionRow(LevelingChannelSelect(channel_id=config["leveling_config"]["channel_id"])),
                 ],
                 [
-                    discord.ui.Section(
-                        discord.ui.TextDisplay(WELCOME_CONFIG_DESCRIPTION),
-                        accessory=WelcomeEditButton(**config),
-                    ),
+                    discord.ui.Section(discord.ui.TextDisplay(WELCOME_CONFIG_DESCRIPTION), accessory=WelcomeEditButton(**config)),
                     discord.ui.Separator(),
-                    discord.ui.Section(
-                        discord.ui.TextDisplay(GIVEAWAY_CONFIG_DESCRIPTION),
-                        accessory=GiveawayEditButton(**config),
-                    ),
+                    discord.ui.Section(discord.ui.TextDisplay(GIVEAWAY_CONFIG_DESCRIPTION), accessory=GiveawayEditButton(**config)),
                     discord.ui.Separator(),
-                    discord.ui.Section(
-                        discord.ui.TextDisplay(STARBOARD_CONFIG_DESCRIPTION),
-                        accessory=StarboardEditButton(**config),
-                    ),
+                    discord.ui.Section(discord.ui.TextDisplay(STARBOARD_CONFIG_DESCRIPTION), accessory=StarboardEditButton(**config)),
                     discord.ui.Separator(),
                     discord.ui.Section(
                         discord.ui.TextDisplay(LEVELING_REWARD_ROLES_DESCRIPTION),
                         accessory=LevelingRewardRolesEditButton(**config),
                     ),
                     discord.ui.Separator(),
-                    discord.ui.Section(
-                        discord.ui.TextDisplay(TICKET_CONFIG_DESCRIPTION),
-                        accessory=TicketEditButton(**config),
-                    ),
+                    discord.ui.Section(discord.ui.TextDisplay(TICKET_CONFIG_DESCRIPTION), accessory=TicketEditButton(**config)),
                 ],
             ],
             footer=footer,

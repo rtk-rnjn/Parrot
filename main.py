@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import logging.handlers
 import os
@@ -25,10 +26,8 @@ load_dotenv()
 
 def setup_logging() -> None:
     for file in LOG_DIR.glob("*.*"):
-        try:
+        with contextlib.suppress(Exception):
             file.unlink()
-        except Exception as e:
-            print(f"Failed to delete {file}: {e}")
 
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
@@ -48,13 +47,7 @@ def setup_logging() -> None:
     console_handler.setFormatter(logging.Formatter("%(message)s", DATE_FORMAT))
 
     # Application logs.
-    file_handler = logging.handlers.RotatingFileHandler(
-        LOG_DIR / "bot.log",
-        mode="w+",
-        maxBytes=8 * 1024 * 1024,
-        backupCount=5,
-        encoding="utf-8",
-    )
+    file_handler = logging.handlers.RotatingFileHandler(LOG_DIR / "bot.log", mode="w+", maxBytes=8 * 1024 * 1024, backupCount=5, encoding="utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s", DATE_FORMAT))
 
@@ -73,13 +66,7 @@ def setup_logging() -> None:
         logger.propagate = False
 
         # Separate file: DEBUG+
-        handler = logging.handlers.RotatingFileHandler(
-            LOG_DIR / f"{name}.log",
-            mode="w+",
-            maxBytes=32 * 1024 * 1024,
-            backupCount=5,
-            encoding="utf-8",
-        )
+        handler = logging.handlers.RotatingFileHandler(LOG_DIR / f"{name}.log", mode="w+", maxBytes=32 * 1024 * 1024, backupCount=5, encoding="utf-8")
 
         handler.setLevel(logging.DEBUG)
         handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s", DATE_FORMAT))
@@ -95,17 +82,17 @@ async def start_bot() -> None:
     if lavalink_process is not None:
         _log.info("Lavalink process started.")
     else:
-        raise SystemExit("Failed to start Lavalink process. Ensure Java is installed and Lavalink.jar is present.")
+        message = "Failed to start Lavalink process. Ensure Java is installed and Lavalink.jar is present."
+        raise SystemExit(message)
 
     bot = Parrot()
 
     try:
         await bot.database.invalidate_redis()
-        async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as session:
-            async with bot:
-                bot._http_session = session
-                _log.info("Starting bot.")
-                await bot.start()
+        async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as session, bot:
+            bot._http_session = session
+            _log.info("Starting bot.")
+            await bot.start()
 
     except KeyboardInterrupt:
         _log.info("KeyboardInterrupt received. Shutting down.")
@@ -122,9 +109,7 @@ async def start_bot() -> None:
 async def runner():
     setup_logging()
 
-    await asyncio.gather(
-        start_bot(),
-    )
+    await asyncio.gather(start_bot())
 
 
 def main():

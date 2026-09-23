@@ -9,9 +9,9 @@ import discord
 from discord.ext import commands, tasks
 from PIL import Image
 
-from .card import birthday_card_file
-
 from core.utils import HumanDate
+
+from .card import birthday_card_file
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -131,7 +131,10 @@ class Birthday(commands.Cog):
             _log.debug("Could not download avatar for %s", member.id, exc_info=True)
 
         try:
-            await channel.send(content=f"Happy birthday, {member.mention}!", file=birthday_card_file(member.display_name, birthday, avatar))
+            await channel.send(
+                content=f"Happy birthday, {member.mention}!",
+                file=birthday_card_file(member.display_name, birthday, avatar),
+            )
         except discord.HTTPException:
             _log.exception("Could not send birthday wish for %s in guild %s", member.id, channel.guild.id)
 

@@ -360,13 +360,16 @@ class CreateEditCustomCommandModal(CustomCommandModal):
             await self.send_result(interaction, "This command can only be used in a guild.")
             return False
 
-        assert isinstance(self.ignored_roles_select.component, discord.ui.RoleSelect)
-        assert isinstance(self.ignored_channels_select.component, discord.ui.ChannelSelect)
+        if TYPE_CHECKING:
+            assert isinstance(self.ignored_roles_select.component, discord.ui.RoleSelect)
+            assert isinstance(self.ignored_channels_select.component, discord.ui.ChannelSelect)
 
         ignored_roles = self.ignored_roles_select.component.values
         ignored_channels = self.ignored_channels_select.component.values
 
-        assert self.response_input is not None
+        if TYPE_CHECKING:
+            assert self.response_input is not None
+
         func = (
             interaction.client.database.edit_custom_command if self.modal_type == ModalType.EDIT else interaction.client.database.add_custom_command
         )

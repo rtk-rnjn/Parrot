@@ -201,7 +201,7 @@ class Mod(commands.Cog):
     async def kick_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member to kick from the server."),
+        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member to kick from the server."),  # noqa: B008
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for kicking the member(s).", default=None),
     ) -> discord.Message:
@@ -232,7 +232,7 @@ class Mod(commands.Cog):
     async def ban_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member(s) to ban from the server."),
+        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member(s) to ban from the server."),  # noqa: B008
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for banning the member(s).", default=None),
     ) -> discord.Message:
@@ -356,7 +356,7 @@ class Mod(commands.Cog):
     async def soft_ban_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member to softban from the server."),
+        member: Annotated[discord.Member, MemberID] = commands.parameter(description="The member to softban from the server."),  # noqa: B008
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for softbanning the member(s).", default=None),
     ) -> discord.Message:
@@ -391,7 +391,7 @@ class Mod(commands.Cog):
     async def unban_member(
         self,
         ctx: commands.Context[Parrot],
-        member: Annotated[discord.BanEntry, BannedMember] = commands.parameter(description="The member to unban from the server."),
+        member: Annotated[discord.BanEntry, BannedMember] = commands.parameter(description="The member to unban from the server."),  # noqa: B008
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for unbanning the member(s).", default=None),
     ) -> discord.Message:
@@ -625,8 +625,10 @@ class Mod(commands.Cog):
             return await ctx.reply("The configured mute role does not exist in this server. Please set a valid mute role using `mute role <role>`.")
 
         message_contents = [
-            (f"Synchronizing the permissions of the mute role **{mute_role}** (ID: {mute_role.id}) with all channels."
-            f"This may take a moment... [0/{len(ctx.guild.channels)}]")
+            (
+                f"Synchronizing the permissions of the mute role **{mute_role}** (ID: {mute_role.id}) with all channels."
+                f"This may take a moment... [0/{len(ctx.guild.channels)}]"
+            )
         ]
         message = await ctx.reply("\n".join(message_contents))
         for index, channel in enumerate(ctx.guild.channels, start=1):
@@ -739,9 +741,7 @@ class Mod(commands.Cog):
                 member_mentions.append(f"Unknown Member (ID: {member_id})")
 
         timed_out_members = [member for member in ctx.guild.members if member.timed_out_until is not None]
-        for member in timed_out_members:
-            if member.id not in muted_members:
-                member_mentions.append(f"{member} (ID: {member.id}) - Timed Out")
+        member_mentions.extend(f"{member} (ID: {member.id}) - Timed Out" for member in timed_out_members if member.id not in muted_members)
 
         member_mentions.sort(key=lambda m: m.lower())
 
@@ -982,13 +982,13 @@ class Mod(commands.Cog):
             predicates.append(lambda m: m.author == flags.user)
 
         if flags.contains:
-            predicates.append(lambda m: flags.contains in m.content)  # type: ignore
+            predicates.append(lambda m: flags.contains in m.content)  # pyright: ignore[reportOperatorIssue]
 
         if flags.prefix:
-            predicates.append(lambda m: m.content.startswith(flags.prefix))  # type: ignore
+            predicates.append(lambda m: m.content.startswith(flags.prefix))  # pyright: ignore[reportArgumentType]
 
         if flags.suffix:
-            predicates.append(lambda m: m.content.endswith(flags.suffix))  # type: ignore
+            predicates.append(lambda m: m.content.endswith(flags.suffix))  # pyright: ignore[reportArgumentType]
 
         return predicates
 
@@ -1388,7 +1388,9 @@ class Mod(commands.Cog):
         container.add_item(
             discord.ui.Section(
                 discord.ui.TextDisplay(
-                    f"## {emoji} {title}\n**Moderator**:\n{responsible_moderator.mention} • `{responsible_moderator.name}`\nID: `{responsible_moderator.id}`"
+                    f"### {emoji} {title}\n**Moderator**:\n"
+                    f"{responsible_moderator.mention} • `{responsible_moderator.name}`\n"
+                    f"ID: `{responsible_moderator.id}`"
                 ),
                 accessory=discord.ui.Thumbnail(media=responsible_moderator.display_avatar.url),
             )

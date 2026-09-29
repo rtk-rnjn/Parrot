@@ -26,5 +26,5 @@ class _GuildPrefixMixin(DatabaseMixin):
         redis_key = RedisKeys.GUILD_COMMAND_PREFIX.format(guild_id=guild_id)
 
         await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"command_prefix": command_prefix}}, upsert=True)
-
         await self.redis_client.set(redis_key, command_prefix)
+

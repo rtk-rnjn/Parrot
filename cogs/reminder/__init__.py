@@ -106,7 +106,7 @@ class SnoozeButton(discord.ui.Button["ReminderView"]):
 
 class ReminderView(BaseView):
     def __init__(self, *, url: str, metadata: ReminderMetadata, cog: Reminder, author_id: int) -> None:
-        super().__init__(author=discord.Object(id=author_id))  # type: ignore
+        super().__init__(author=discord.Object(id=author_id))  # pyright: ignore[reportArgumentType] we are checking against the .id attribute of the object, so this is fine
         self.author_id: int = author_id
         self.snooze = SnoozeButton(cog, metadata)
         self.add_item(discord.ui.Button(url=url, label="Go to original message"))

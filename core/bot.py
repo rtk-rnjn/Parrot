@@ -172,6 +172,8 @@ class Parrot(commands.Bot):
         self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.start())
         self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs())
 
+        await self._start_database_listeners()
+
     @staticmethod
     def _cog_extension_paths() -> dict[Path, str]:
         paths: dict[Path, str] = {}
@@ -222,24 +224,33 @@ class Parrot(commands.Bot):
 
     async def on_ready(self) -> None:
         _log.info("Logged in as %s (ID: %s)", self.user, self.user.id)
-        if self._started_at is None:
-            self._started_at = discord.utils.utcnow()
-            try:
-                node = await self.lavalink_node_pool.create_node(
-                    bot=self,
-                    host="localhost",
-                    port=2333,
-                    password=LAVALINK_PASSWORD,
-                    identifier="MAIN",
-                    loop=self.loop,
-                    spotify_client_id=SPOTIFY_CLIENT_ID,
-                    spotify_client_secret=SPOTIFY_CLIENT_SECRET,
-                    session=self.http_session,
-                )
+        if self._started_at is not None:
+            return
 
-                self.default_lavalink_node = node
+        self._started_at = discord.utils.utcnow()
+        for _ in range(5):
+            try:
+                await self.__create_lavalink_node()
+                break
+
             except pomice.exceptions.NodeConnectionFailure:
                 _log.exception("Failed to connect to Lavalink node.", exc_info=True)
+                await asyncio.sleep(5)
+
+    async def __create_lavalink_node(self) -> None:
+        node = await self.lavalink_node_pool.create_node(
+            bot=self,
+            host="localhost",
+            port=2333,
+            password=LAVALINK_PASSWORD,
+            identifier="MAIN",
+            loop=self.loop,
+            spotify_client_id=SPOTIFY_CLIENT_ID,
+            spotify_client_secret=SPOTIFY_CLIENT_SECRET,
+            session=self.http_session,
+        )
+
+        self.default_lavalink_node = node
 
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
@@ -324,6 +335,9 @@ class Parrot(commands.Bot):
         if after.guild is None or after.author.bot:
             return
 
+        with contextlib.suppress(KeyError):
+            self.message_cache[after.id] = after
+
         if before.content != after.content and await self.is_owner(after.author):
             await self.process_commands(after)
 
@@ -346,6 +360,7 @@ class Parrot(commands.Bot):
         return members[0]
 
     async def get_or_fetch_user(self, user_id: int) -> discord.User | None:
+        """Return a cached user or fetch and cache it if unavailable."""
         user = self.get_user(user_id)
         if user is not None:
             return user
@@ -355,7 +370,7 @@ class Parrot(commands.Bot):
         except discord.NotFound:
             return None
 
-    async def confirm(self, ctx: commands.Context[Parrot], prompt: str = "Are you sure?", *, timeout: float = 30) -> bool:
+    async def confirm(self, ctx: commands.Context[Parrot], prompt: str = "Are you sure?", *, timeout: float = 30) -> bool:  # noqa: ASYNC109
         """Ask the command author to confirm an action in the current channel."""
         result = asyncio.get_running_loop().create_future()
         view = ConfirmationLayout(ctx.author, prompt, result)
@@ -370,6 +385,7 @@ class Parrot(commands.Bot):
 
     @property
     def started_at(self) -> datetime:
+        """Return the datetime when the bot was started."""
         if self._started_at is None:
             message = "Bot has not started yet."
             raise RuntimeError(message)
@@ -377,10 +393,12 @@ class Parrot(commands.Bot):
 
     @property
     def reminder(self) -> Reminder:
+        """Return the Reminder cog instance."""
         return self.get_cog("Reminder")  # type: ignore[return-value]
 
     @property
     def http_session(self) -> aiohttp.ClientSession:
+        """Return the aiohttp ClientSession used by the bot."""
         if self._http_session is None:
             message = "HTTP session is not initialized. Ensure that the bot is started and the HTTP session is set up."
             raise RuntimeError(message)
@@ -397,6 +415,7 @@ class Parrot(commands.Bot):
         ephemeral: bool = False,
         embed: discord.Embed | None = None,
     ) -> T:
+        """Disambiguate between multiple matches and return the selected one."""
         if len(matches) == 0:
             message = "No results found."
             raise ValueError(message)
@@ -440,6 +459,12 @@ class Parrot(commands.Bot):
         return True
 
     async def get_or_fetch_message(self, channel: discord.abc.Messageable, message_id: int) -> discord.Message:
+        """Return a cached message or fetch and cache it if unavailable."""
+
+        for message in self.cached_messages:
+            if message.id == message_id:
+                return message
+
         try:
             return self.message_cache[message_id]
         except KeyError:
@@ -463,3 +488,76 @@ class Parrot(commands.Bot):
         except Exception as e:
             _log.exception("Error fetching data: %s", e)
             return None
+
+    # fuck off guyz;
+
+    async def __start_mongodb_listener(self) -> None:
+        collection = self.database.guilds_collection
+
+        # Change streams require MongoDB to run as a replica set or sharded cluster.
+        # They do not work against a standalone MongoDB server.
+        #
+        # MongoDB drivers discover replica-set members from the replica-set
+        # configuration. The hostnames in `members[n].host` must therefore be
+        # reachable and resolvable from the client.
+        #
+        # When MongoDB runs inside Docker while the bot runs on the host, this can
+        # cause a common connectivity problem: MongoDB may advertise its Docker
+        # hostname (for example, `mongodb:27017`), which is not resolvable from
+        # the host.
+        #
+        # For a local Docker setup, the advertised replica-set address can be
+        # changed from inside the container:
+        #
+        #   docker exec -it mongodb mongosh
+        #   cfg = rs.conf()
+        #   cfg.members[0].host = "localhost:27017"
+        #   rs.reconfig(cfg, { force: true })
+        #
+        # In production, prefer configuring a hostname that is reachable from
+        # every MongoDB client rather than using `localhost`.
+
+        watcher = await collection.watch()
+
+        async for change in watcher:
+            self.dispatch("mongodb_change", change)
+
+
+    async def __start_redis_listener(self) -> None:
+        pub_sub_client = self.database.pub_sub_client
+
+        # Subscribe to all Pub/Sub channels. This is useful when keyspace
+        # notifications are enabled and you want to observe Redis key events.
+        #
+        # For a local Docker Redis instance, keyspace notifications can be enabled
+        # with:
+        #
+        #   docker exec redis redis-cli CONFIG SET notify-keyspace-events KEA
+        #
+        # `K` enables keyspace notifications, `E` enables keyevent notifications,
+        # and `A` enables all supported event classes.
+
+        await pub_sub_client.psubscribe("*")
+
+        try:
+            async for message in pub_sub_client.listen():
+                if message is None or message["type"] != "pmessage":
+                    continue
+
+                channel = message["channel"]
+                data = message["data"]
+
+                if isinstance(channel, bytes):
+                    channel = channel.decode("utf-8")
+
+                if isinstance(data, bytes):
+                    data = data.decode("utf-8")
+
+                self.dispatch("redis_message", channel, data)
+
+        finally:
+            await pub_sub_client.close()
+
+    async def _start_database_listeners(self) -> None:
+        self.loop.create_task(self.__start_mongodb_listener())
+        self.loop.create_task(self.__start_redis_listener())

@@ -78,8 +78,8 @@ class Starboard(commands.Cog):
             return
 
         emote = discord.PartialEmoji.from_str(emoji)
-        if emote.is_custom_emoji() and ctx.guild.get_emoji(emote.id) is None:  # pyright: ignore[reportArgumentType]
-            await ctx.reply("That custom emoji is not available in this server.")
+        if emote.is_custom_emoji():
+            await ctx.reply("Custom emojis are not supported for starboard reactions. Please use a native emoji.")
             return
 
         await self.bot.database.edit_starboard_config(guild_id=ctx.guild.id, emoji=emoji)
@@ -113,7 +113,7 @@ class Starboard(commands.Cog):
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
         await self._update_board(payload)
 
-    async def _update_board(self, payload: discord.RawReactionActionEvent) -> None:  # noqa: PLR0911
+    async def _update_board(self, payload: discord.RawReactionActionEvent) -> None:
         if payload.guild_id is None or (self.bot.user is not None and payload.user_id == self.bot.user.id):
             return
 
@@ -126,9 +126,7 @@ class Starboard(commands.Cog):
         channel_id = await self.bot.database.get_starboard_board_channel_id(payload.guild_id)
         config = {"enabled": is_starboard_enabled, "emoji": emoji, "threshold": threshold, "channel_id": channel_id}
 
-        if config is None or not config["enabled"] or str(payload.emoji) != config["emoji"]:
-            return
-        if payload.channel_id == config["channel_id"]:
+        if config is None or not config["enabled"] or str(payload.emoji) != config["emoji"] or payload.channel_id == config["channel_id"]:
             return
 
         source_channel = self.bot.get_channel(payload.channel_id)
@@ -192,10 +190,13 @@ class Starboard(commands.Cog):
 
     @staticmethod
     def _build_embed(message: discord.Message) -> discord.Embed:
-        embed = discord.Embed(description=message.content[:4096], colour=discord.Colour.gold(), timestamp=message.created_at)
-        embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
-        embed.set_footer(text=f"Source message: {message.id}")
-        embed.add_field(name="Jump to message", value=f"[Open message]({message.jump_url})")
+        embed = (
+            discord.Embed(description=message.content[:4096], colour=discord.Colour.gold(), timestamp=message.created_at)
+            .set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+            .set_footer(text=f"Source message: {message.id}")
+            .add_field(name="Jump to message", value=f"[Open message]({message.jump_url})")
+        )
+
         if message.attachments:
             embed.set_image(url=message.attachments[0].url)
         return embed

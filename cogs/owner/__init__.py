@@ -70,7 +70,7 @@ def _field(emoji: str, name: str, value: str) -> str:
     return f"### {emoji} {name}\n{value}"
 
 
-def _kv_lines(rows: Sequence[tuple[str, str]]) -> str:
+def _kv_lines(rows: Sequence[tuple[str | None, str]]) -> str:
     """Render (label, value) pairs as a compact bullet list."""
     return "\n".join(f"- **{label}:** {value}" for label, value in rows)
 
@@ -552,7 +552,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @mongodb.command(name="status")
     async def mongodb_status(self, ctx: commands.Context) -> None:
         """Show MongoDB server status."""
-        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # type: ignore
+        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         connections = status.get("connections", {})
         memory = status.get("mem", {})
@@ -620,7 +620,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @mongodb.command(name="connections")
     async def mongodb_connections(self, ctx: commands.Context) -> None:
         """Show MongoDB connection statistics."""
-        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # type: ignore
+        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         connections = status.get("connections", {})
 
@@ -647,7 +647,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @mongodb.command(name="operations")
     async def mongodb_operations(self, ctx: commands.Context) -> None:
         """Show MongoDB operation counters."""
-        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # type: ignore
+        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         operations = status.get("opcounters", {})
 
@@ -665,7 +665,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @mongodb.command(name="network")
     async def mongodb_network(self, ctx: commands.Context) -> None:
         """Show MongoDB network statistics."""
-        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # type: ignore
+        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         network = status.get("network", {})
 
@@ -687,7 +687,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @mongodb.command(name="memory")
     async def mongodb_memory(self, ctx: commands.Context) -> None:
         """Show MongoDB memory usage."""
-        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # type: ignore
+        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus") # pyright: ignore[reportAssignmentType]
 
         memory = status.get("mem", {})
 
@@ -792,6 +792,18 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             value /= 1024
 
         return f"{value:.2f} EB"
+
+
+    @commands.Cog.listener()
+    async def on_redis_message(self, channel: str, message: str) -> None:
+        """Log Redis pub/sub messages to the console."""
+        print(f"[Redis Pub/Sub] Channel: {channel} | Message: {message}")
+
+
+    @commands.Cog.listener()
+    async def on_mongodb_change(self, change) -> None:
+        """Log MongoDB change events to the console."""
+        print(f"[MongoDB] Change: {change}")
 
 
 async def setup(bot: Parrot) -> None:

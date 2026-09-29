@@ -219,7 +219,7 @@ class UserFriendlyTime(commands.Converter):
         if converter is not None and not isinstance(converter, commands.Converter):
             msg = "commands.Converter subclass necessary."
             raise TypeError(msg)
-        self.converter: commands.Converter = converter  # type: ignore
+        self.converter: commands.Converter = converter  # pyright: ignore[reportAttributeAccessIssue]
         self.default: Any = default
 
     async def convert(self, ctx: commands.Context[Parrot], argument: str) -> FriendlyTimeResult:

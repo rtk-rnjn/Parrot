@@ -1,0 +1,59 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: mongodb
+    command:
+      - mongod
+      - --replSet
+      - rs0
+      - --bind_ip_all
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "db.adminCommand('ping').ok"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongodb-init:
+    image: mongo:8
+    container_name: mongodb-init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["/bin/bash", "-c"]
+    command: >
+      "mongosh --host mongodb:27017 --quiet --eval
+      'try {
+        rs.status();
+        print(\"Replica set already initialized\");
+      } catch (e) {
+        rs.initiate({
+          _id: \"rs0\",
+          members: [
+            { _id: 0, host: \"mongodb:27017\" }
+          ]
+        });
+      }'"
+
+  redis:
+    image: redis:8
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongodb_data:
+  redis_data:

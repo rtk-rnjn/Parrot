@@ -8,6 +8,8 @@ import discord
 import re2 as re
 from discord.ext import commands
 
+from core.utils import PaginationView
+
 if TYPE_CHECKING:
     from core import Parrot
 
@@ -28,7 +30,8 @@ class Highlights(commands.Cog):
     async def highlight(self, ctx: commands.Context[Parrot]) -> None:
         """Highlight a message based on a trigger word.
 
-        This command group allows users to manage their message highlights. Users can add, remove, and list their highlight trigger words, as well as block or unblock users from triggering their highlights.
+        This command group allows users to manage their message highlights.
+        Users can add, remove, and list their highlight trigger words, as well as block or unblock users from triggering their highlights.
         """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
@@ -42,7 +45,8 @@ class Highlights(commands.Cog):
     ) -> None:
         """Add a new highlight.
 
-        This command allows users to add a new highlight trigger word. When a message containing this trigger word is sent in a channel, the user will receive a notification.
+        This command allows users to add a new highlight trigger word.
+        When a message containing this trigger word is sent in a channel, the user will receive a notification.
         """
         assert ctx.guild is not None
 
@@ -84,7 +88,7 @@ class Highlights(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),
+        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
     ) -> None:
         """Block a user from triggering your highlights."""
         await self.bot.database.add_user_highlight_ignored_user(user_id=ctx.author.id, ignored_user_id=user.id)
@@ -95,7 +99,7 @@ class Highlights(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),
+        user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
     ) -> None:
         """Unblock a user from triggering your highlights."""
         await self.bot.database.remove_user_highlight_ignored_user(user_id=ctx.author.id, ignored_user_id=user.id)
@@ -116,7 +120,11 @@ class Highlights(commands.Cog):
                 pages.append(f"{index}. {highlight}")
 
             ctx = await commands.Context.from_interaction(interaction)
-            await interaction.client.paginate(ctx, embed=True, pages=pages)
+            view = PaginationView.from_string_list(
+                author=ctx.author,
+                items=pages,
+            )
+            await view.start(ctx, ephemeral=True)
 
             return interaction
 
@@ -159,6 +167,10 @@ class Highlights(commands.Cog):
 
     @commands.Cog.listener("on_highlight")
     async def _send_highlight_notification(self, message: discord.Message, member: discord.Member, highlight: str) -> None:
+        if TYPE_CHECKING:
+            assert isinstance(message.channel, discord.abc.GuildChannel)
+            assert message.guild is not None
+
         initial_description = f"In {message.channel.mention} for `{(message.guild.name)}`you were highlighted with the word **{highlight}**\n\n"
 
         em = (

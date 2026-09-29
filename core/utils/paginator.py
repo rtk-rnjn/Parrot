@@ -243,7 +243,7 @@ class PaginationView(PaginationMixin[discord.Embed], BaseView):
         await interaction.response.edit_message(embed=self.items[self.current_index], view=self)
 
     @classmethod
-    async def paginate_string_list(
+    def from_string_list(
         cls,
         *,
         author: discord.User | discord.Member,

@@ -89,6 +89,9 @@ async def start_bot() -> None:
 
     try:
         await bot.database.invalidate_redis()
+        await bot.database.ping_mongo_server()
+        await bot.database.ping_redis_server()
+
         async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as session, bot:
             bot._http_session = session
             _log.info("Starting bot.")

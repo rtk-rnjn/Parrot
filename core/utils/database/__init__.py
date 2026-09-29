@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
+from redis.asyncio.client import PubSub
 
 from .bot import _BotMixin
 from .cache_keys import RedisKeys
@@ -65,6 +66,7 @@ class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMi
         self.bot = bot
 
         self.__redis_client: Redis = Redis(db=0, password="password", decode_responses=True, protocol=3)
+        self.__pub_sub_client: PubSub = self.redis_client.pubsub()
 
         # tz_aware=True returns timezone-aware datetimes.
         self.__mongo_client = AsyncMongoClient(MONGO_URI, tz_aware=True)
@@ -77,6 +79,10 @@ class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMi
     @property
     def redis_client(self) -> Redis:
         return self.__redis_client
+
+    @property
+    def pub_sub_client(self) -> PubSub:
+        return self.__pub_sub_client
 
     @property
     def mongo_client(self) -> AsyncMongoClient:

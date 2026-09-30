@@ -7,6 +7,7 @@ import hashlib
 import logging
 import random
 from datetime import datetime
+from pathlib import Path
 from random import choice
 from typing import TYPE_CHECKING, TypedDict
 
@@ -89,7 +90,7 @@ HEART_EMOJIS = [
 ]
 
 
-class Love(commands.Cog):
+class Love(commands.Cog, command_attrs={"hidden": True}):
     """Love, Love, Love, what is Love? I love you?."""
 
     def __init__(self, bot: Parrot) -> None:
@@ -113,7 +114,7 @@ class Love(commands.Cog):
         if self._pickup_lines:
             return self._pickup_lines
 
-        with open("assets/valentine/pickup_lines.json", encoding="utf-8") as file:
+        with Path("assets/valentine/pickup_lines.json").open(encoding="utf-8") as file:
             pickup_lines = loads(file.read())
             self._pickup_lines = pickup_lines
             return pickup_lines
@@ -123,7 +124,7 @@ class Love(commands.Cog):
         if self._valenstates:
             return self._valenstates
 
-        with open("assets/valentine/valenstates", encoding="utf-8") as file:
+        with Path("assets/valentine/valenstates").open(encoding="utf-8") as file:
             self._valenstates = loads(file.read())
             return self._valenstates
 
@@ -132,7 +133,7 @@ class Love(commands.Cog):
         if self._valentine_facts:
             return self._valentine_facts
 
-        with open("assets/valentine/valentine_facts", encoding="utf-8") as file:
+        with Path("assets/valentine/valentine_facts").open(encoding="utf-8") as file:
             valentine_facts = loads(file.read())
             self._valentine_facts = valentine_facts
             return valentine_facts
@@ -142,7 +143,7 @@ class Love(commands.Cog):
         if self._valentines_date_ideas:
             return self._valentines_date_ideas
 
-        with open("assets/valentine/date_ideas", encoding="utf-8") as file:
+        with Path("assets/valentine/date_ideas").open(encoding="utf-8") as file:
             data: ValentineDateIdeas = loads(file.read())
             self._valentines_date_ideas = data["ideas"]
             return self._valentines_date_ideas
@@ -152,7 +153,7 @@ class Love(commands.Cog):
         if self._love_matches:
             return self._love_matches
 
-        with open("assets/valentine/love_matches.json", encoding="utf-8") as file:
+        with Path("assets/valentine/love_matches.json").open(encoding="utf-8") as file:
             self._love_matches = loads(file.read())
             return self._love_matches
 
@@ -161,7 +162,7 @@ class Love(commands.Cog):
         if self._zodiac_compatibility:
             return self._zodiac_compatibility
 
-        with open("assets/valentine/zodiac_compatibility.json", encoding="utf-8") as file:
+        with Path("assets/valentine/zodiac_compatibility.json").open(encoding="utf-8") as file:
             self._zodiac_compatibility = loads(file.read())
             return self._zodiac_compatibility
 
@@ -170,7 +171,7 @@ class Love(commands.Cog):
         if self._zodiac_explanation:
             return self._zodiac_explanation
 
-        with open("assets/valentine/zodiac_explanation.json", encoding="utf-8") as file:
+        with Path("assets/valentine/zodiac_explanation.json").open(encoding="utf-8") as file:
             self._zodiac_explanation = loads(file.read())
             return self._zodiac_explanation
 
@@ -293,7 +294,7 @@ class Love(commands.Cog):
             final_embed = self.zodiac_build_embed(zodiac)
         else:
             try:
-                zodiac_sign_based_on_date = self.zodiac_date_verifier(datetime(2020, month, date))
+                zodiac_sign_based_on_date = self.zodiac_date_verifier(datetime(2026, month, date, tzinfo=arrow.now().tzinfo))
 
             except ValueError as e:
                 final_embed = discord.Embed(color=discord.Color.dark_magenta())

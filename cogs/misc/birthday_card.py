@@ -4,6 +4,7 @@ from io import BytesIO
 from pathlib import Path
 
 import discord
+from jishaku.functools import executor_function
 from PIL import Image, ImageDraw, ImageFont
 
 CARD_SIZE = (1000, 420)
@@ -33,6 +34,7 @@ def _fit_name(
     return f"{shortened}..."
 
 
+@executor_function
 def render_birthday_card(name: str, birthday: str, avatar: Image.Image | None = None) -> BytesIO:
     image = Image.new("RGB", CARD_SIZE, BACKGROUND)
     draw = ImageDraw.Draw(image)
@@ -76,5 +78,5 @@ def render_birthday_card(name: str, birthday: str, avatar: Image.Image | None = 
     return output
 
 
-def birthday_card_file(name: str, birthday: str, avatar: Image.Image | None = None) -> discord.File:
-    return discord.File(render_birthday_card(name, birthday, avatar), filename="birthday.png")
+async def birthday_card_file(name: str, birthday: str, avatar: Image.Image | None = None) -> discord.File:
+    return discord.File(await render_birthday_card(name, birthday, avatar), filename="birthday.png")

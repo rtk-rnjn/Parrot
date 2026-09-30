@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Context
+from discord.ext.commands import Cog
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -30,7 +30,7 @@ class SnipeMessageListener(Cog):
         if not message.guild:
             return
 
-        ctx: Context = await self.bot.get_context(message, cls=Context)
+        ctx = await self.bot.get_context(message)
         if ctx.valid:
             return
 

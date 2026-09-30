@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import colorsys
-import os
+import pathlib
 import random
 import re
 import string
@@ -136,7 +136,7 @@ CARD = {
     "top": Image.open("assets/snakes/snake_cards/card_top.png"),
     "frame": Image.open("assets/snakes/snake_cards/card_frame.png"),
     "bottom": Image.open("assets/snakes/snake_cards/card_bottom.png"),
-    "backs": [Image.open(f"assets/snakes/snake_cards/backs/{file}") for file in os.listdir("assets/snakes/snake_cards/backs")],
+    "backs": [Image.open(f"assets/snakes/snake_cards/backs/{file}") for file in pathlib.Path("assets/snakes/snake_cards/backs").iterdir()],
     "font": ImageFont.truetype("assets/snakes/snake_cards/expressway.ttf", 20),
 }
 
@@ -146,7 +146,7 @@ async def invoke_help_command(ctx: commands.Context[Parrot]) -> None:
     await ctx.send_help(ctx.command)
 
 
-class Snakes(commands.Cog):
+class Snakes(commands.Cog, command_attrs={"hidden": True}):
     wiki_brief = re.compile(r"(.*?)(=+ (.*?) =+)", flags=re.DOTALL)
     valid_image_extensions = ("gif", "png", "jpeg", "jpg", "webp")
 

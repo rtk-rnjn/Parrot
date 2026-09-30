@@ -110,7 +110,7 @@ class ParsedTemplateMeta:
 
 
 class RestrictedNodeVisitor(NodeVisitor):
-    FORBIDDEN_NODES = {
+    FORBIDDEN_NODES = {  # noqa: RUF012
         # Keep loader-related features disabled.
         nodes.Extends: "extends",
         nodes.Include: "include",
@@ -180,10 +180,14 @@ class HardenedSandboxedEnvironment(ImmutableSandboxedEnvironment):
 
     def _safe_add(self, left: Any, right: Any) -> Any:
         sequence_types = (str, bytes, tuple, list)
-        if isinstance(left, sequence_types) and isinstance(right, sequence_types) and type(left) is type(right):
-            if len(left) + len(right) > self._cfg.max_combined_sequence_length:
-                msg = "concatenation result exceeds configured limit"
-                raise SandboxOperatorLimitExceeded(msg)
+        if (
+            isinstance(left, sequence_types)
+            and isinstance(right, sequence_types)
+            and type(left) is type(right)
+            and (len(left) + len(right) > self._cfg.max_combined_sequence_length)
+        ):
+            msg = "concatenation result exceeds configured limit"
+            raise SandboxOperatorLimitExceeded(msg)
         return left + right  # type: ignore[operator]
 
 

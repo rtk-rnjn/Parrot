@@ -567,7 +567,8 @@ class CustomCommandLayout(BaseLayoutView):
         self.add_item(container)
 
 
-class CustomCommand(commands.Cog):
+class CC(commands.Cog):
+    """Manage custom commands."""
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
         _log.info("Cog loaded: %s", self.__class__.__name__)
@@ -733,4 +734,4 @@ class CustomCommand(commands.Cog):
 
 
 async def setup(bot: Parrot) -> None:
-    await bot.add_cog(CustomCommand(bot))
+    await bot.add_cog(CC(bot))

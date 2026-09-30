@@ -9,16 +9,18 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, BinaryIO
 
+import arrow
 import discord
 import sympy
-from discord.ext import commands
+from discord.ext import commands, tasks
 from jishaku.codeblocks import Codeblock, codeblock_converter
 from PIL import Image
 from rapidfuzz import fuzz, process
 
 from core.constants import INVITE_RE, LINKS_RE
-from core.utils import PaginationView
+from core.utils import HumanDate, PaginationView
 
+from .birthday_card import birthday_card_file
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
 from .logo import LogoInterpreter, LogoParser, build_logo_guide
@@ -28,13 +30,16 @@ if TYPE_CHECKING:
     from core import Parrot
 
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
+DEFAULT_AFK_REASON = "AFK"
+
+BIRTHDAY_DATE_FORMAT = "MM-DD"
 
 LATEX_API_URL = "https://rtex.probablyaweb.site/api/v2"
 
 THIS_DIR = Path(__file__).parent
-CACHE_DIRECTORY = THIS_DIR / "_latex_cache"
-CACHE_DIRECTORY.mkdir(exist_ok=True)
-TEMPLATE = string.Template(r"""
+LATEX_CACHE_DIRECTORY = THIS_DIR / "_latex_cache"
+LATEX_CACHE_DIRECTORY.mkdir(exist_ok=True)
+LATEX_DOCUMENT_TEMPLATE = string.Template(r"""
 \documentclass{article}
 \begin{document}
     \pagenumbering{gobble}
@@ -48,6 +53,10 @@ _log = logging.getLogger("bot.cogs.misc")
 
 with Path("assets/dictionary.json").open(encoding="utf-8") as file:
     DICTIONARY: dict[str, str] = discord.utils._from_json(file.read())
+
+
+def parse_birthday(value: str) -> str:
+    return arrow.get(value).format(BIRTHDAY_DATE_FORMAT)
 
 
 class InvalidLatexError(Exception):
@@ -119,6 +128,8 @@ def _process_image(data: bytes, out_file: BinaryIO) -> None:
 class Misc(commands.Cog):
     def __init__(self, bot: Parrot):
         self.bot = bot
+
+        self._announced: set[tuple[int, str, int]] = set()
 
         self.__bookmark_context_menu = discord.app_commands.ContextMenu(name="Bookmark", callback=self._bookmark_context_menu_callback)
         self.__interpret_as_command = discord.app_commands.ContextMenu(name="Interpret as command", callback=self._interpret_as_command)
@@ -528,11 +539,11 @@ class Misc(commands.Cog):
         """Renders the text in latex and sends the image."""
         query = code.content
         query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec
-        image_path = CACHE_DIRECTORY / f"{query_hash}.png"
+        image_path = LATEX_CACHE_DIRECTORY / f"{query_hash}.png"
         if not image_path.exists():
             try:
                 with image_path.open("wb") as out_file:
-                    await self._generate_image(TEMPLATE.substitute(text=query), out_file)
+                    await self._generate_image(LATEX_DOCUMENT_TEMPLATE.substitute(text=query), out_file)
             except InvalidLatexError as err:
                 embed = discord.Embed(title="Failed to render input.")
                 if err.logs is None:
@@ -542,6 +553,156 @@ class Misc(commands.Cog):
                 image_path.unlink()
                 return
         await ctx.send(file=discord.File(image_path, "latex.png"))
+
+    @commands.command(name="afk")
+    async def afk(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        reason: Annotated[str, commands.clean_content] = commands.parameter(description="Reason for going AFK", default=DEFAULT_AFK_REASON),
+    ) -> None:
+        """Set your AFK status."""
+
+        if ctx.guild is None or not isinstance(ctx.author, discord.Member):
+            return
+
+        reason = reason.strip() or DEFAULT_AFK_REASON
+
+        await self.bot.database.set_user_as_afk(guild_id=ctx.guild.id, user_id=ctx.author.id, reason=reason)
+
+        await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+        me = ctx.guild.me
+
+        if me is not None and me.guild_permissions.manage_nicknames and me.top_role > ctx.author.top_role:
+            nickname = f"[AFK] {ctx.author.display_name}"[:32]
+
+            try:
+                await ctx.author.edit(nick=nickname, reason="User marked themselves as AFK")
+            except discord.HTTPException:
+                _log.warning(
+                    "Failed to update AFK nickname for %s (%s)",
+                    ctx.author,
+                    ctx.author.id,
+                    exc_info=True,
+                )
+
+    @commands.Cog.listener("on_message")
+    async def on_afk_message(self, message: discord.Message) -> None:
+        """Handle AFK notifications and automatically remove AFK status."""
+
+        if message.guild is None or message.author.bot:
+            return
+
+        afk_reason = await self.bot.database.get_afk_reason(guild_id=message.guild.id, user_id=message.author.id)
+
+        mentioned_ids = {member.id for member in message.mentions if not member.bot}
+
+        if mentioned_ids:
+            afk_users = await self.bot.database.get_afk_users(guild_id=message.guild.id)
+
+            for user_id, afk_reason in afk_users.items():
+                member = message.guild.get_member(user_id)
+
+                if member is None:
+                    continue
+
+                await message.reply(
+                    f"{member.mention} is currently AFK: {afk_reason}",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
+
+        if afk_reason is None:
+            return
+
+        await self.bot.database.remove_user_from_afk(guild_id=message.guild.id, user_id=message.author.id)
+        await message.reply(
+            f"Welcome back, {message.author.mention}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @commands.group(name="birthday", invoke_without_command=True, aliases=["bday", "dob"])
+    async def birthday(self, ctx: commands.Context[Parrot]) -> None:
+        """View birthday status or manage your birthday."""
+        if ctx.guild is None:
+            return
+
+        birthday = await self.bot.database.get_user_birthday(ctx.author.id)
+        if birthday is None:
+            await ctx.send_help(ctx.command)
+            return
+
+        await ctx.reply(f"Your birthday is set to **{birthday}**.")
+
+    @birthday.command(name="set")
+    async def set_birthday(self, ctx: commands.Context[Parrot], *, date: str) -> None:
+        """Set your birthday."""
+        try:
+            birthday = parse_birthday(date)
+        except ValueError:
+            human_readable_date = HumanDate(date)
+            datetime = human_readable_date.datetime
+            birthday = parse_birthday(datetime.isoformat())
+
+        await self.bot.database.set_user_birthday(user_id=ctx.author.id, birthday=birthday)
+        await ctx.reply(f"Your birthday is set to **{birthday}**.")
+
+    @birthday.command(name="clear")
+    async def clear_birthday(self, ctx: commands.Context[Parrot]) -> None:
+        """Remove your saved birthday."""
+        await self.bot.database.clear_user_birthday(ctx.author.id)
+        await ctx.reply("Your birthday has been cleared.")
+
+    @tasks.loop(minutes=30)
+    async def check_birthdays(self) -> None:
+        today = arrow.utcnow().format(BIRTHDAY_DATE_FORMAT)
+        users = await self.bot.database.get_users_with_birthdays()
+        birthday_users = {user["_id"]: user for user in users if user.get("birthday") == today}
+
+        for guild in self.bot.guilds:
+            enabled = await self.bot.database.is_birthday_config_enabled(guild.id)
+            if not enabled:
+                continue
+
+            channel_id = await self.bot.database.get_birthday_config_channel_id(guild.id)
+            config = {"enabled": enabled, "channel_id": channel_id}
+
+            if not config or not config["enabled"] or config["channel_id"] is None:
+                continue
+
+            channel = guild.get_channel(config["channel_id"])
+            if not isinstance(channel, discord.TextChannel):
+                continue
+
+            for member in guild.members:
+                announcement_key = (guild.id, today, member.id)
+                if member.bot or member.id not in birthday_users or announcement_key in self._announced:
+                    continue
+                await self._send_wish(channel, member, today)
+                self._announced.add(announcement_key)
+
+    @check_birthdays.before_loop
+    async def before_check_birthdays(self) -> None:
+        await self.bot.wait_until_ready()
+
+    async def _send_wish(self, channel: discord.TextChannel, member: discord.Member, birthday: str) -> None:
+        avatar = None
+        try:
+            avatar = Image.open(io.BytesIO(await member.display_avatar.read()))
+        except discord.HTTPException, OSError:
+            _log.debug("Could not download avatar for %s", member.id, exc_info=True)
+
+        try:
+            await channel.send(
+                content=f"Happy birthday, {member.mention}!",
+                file=await birthday_card_file(member.display_name, birthday, avatar),
+            )
+        except discord.HTTPException:
+            _log.exception(
+                "Could not send birthday wish for %s in guild %s",
+                member.id,
+                channel.guild.id,
+            )
 
 
 async def setup(bot: Parrot) -> None:

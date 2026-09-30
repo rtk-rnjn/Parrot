@@ -9,7 +9,7 @@ from bson import ObjectId
 from discord.ext import commands
 
 from core import FutureTime
-from core.utils.database.models import Giveaway
+from core.utils.database.models import Giveaway as GiveawayModel
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -18,7 +18,7 @@ _log = logging.getLogger("bot.cogs.giveaway")
 GIVEAWAY_EMOJI = "\N{PARTY POPPER}"
 
 
-class GiveawayCog(commands.Cog):
+class Giveaway(commands.Cog):
     """Create persistent reaction-based giveaways."""
 
     def __init__(self, bot: Parrot) -> None:
@@ -49,7 +49,7 @@ class GiveawayCog(commands.Cog):
                 )
 
     @staticmethod
-    def _embed(giveaway: Giveaway, *, winners: list[int] | None = None) -> discord.Embed:
+    def _embed(giveaway: GiveawayModel, *, winners: list[int] | None = None) -> discord.Embed:
         embed = discord.Embed(title=f"{GIVEAWAY_EMOJI} Giveaway", colour=discord.Colour.blurple())
         entry_mode = giveaway.get("entry_mode", "reaction")
         entry_hint = "React with \N{PARTY POPPER} to enter!" if entry_mode == "reaction" else "Click **Enter giveaway** to enter!"
@@ -98,7 +98,7 @@ class GiveawayCog(commands.Cog):
             return
 
         ends_at = duration.dt
-        draft: Giveaway = {
+        draft: GiveawayModel = {
             "_id": ObjectId(),
             "guild_id": ctx.guild.id,
             "channel_id": ctx.channel.id,
@@ -231,7 +231,7 @@ class GiveawayCog(commands.Cog):
         if giveaway is not None:
             await self._finish_giveaway(giveaway)
 
-    async def _reroll_giveaway(self, giveaway: Giveaway) -> None:
+    async def _reroll_giveaway(self, giveaway: GiveawayModel) -> None:
         winners = random.sample(giveaway["entrants"], min(giveaway["winners"], len(giveaway["entrants"])))
         channel = self.bot.get_channel(giveaway["channel_id"])
         if not isinstance(channel, discord.TextChannel):
@@ -255,7 +255,7 @@ class GiveawayCog(commands.Cog):
         else:
             await channel.send(f"The giveaway for **{giveaway['prize']}** still has no eligible entrants.")
 
-    async def _finish_giveaway(self, giveaway: Giveaway) -> None:
+    async def _finish_giveaway(self, giveaway: GiveawayModel) -> None:
         winners = random.sample(giveaway["entrants"], min(giveaway["winners"], len(giveaway["entrants"])))
         channel = self.bot.get_channel(giveaway["channel_id"])
         if not isinstance(channel, discord.TextChannel):
@@ -284,7 +284,7 @@ class GiveawayCog(commands.Cog):
 
 
 class GiveawayView(discord.ui.View):
-    def __init__(self, cog: GiveawayCog, giveaway: Giveaway) -> None:
+    def __init__(self, cog: Giveaway, giveaway: GiveawayModel) -> None:
         super().__init__(timeout=None)
         self.cog = cog
         giveaway_id = str(giveaway["_id"])
@@ -334,7 +334,7 @@ class GiveawayView(discord.ui.View):
             msg = "Missing giveaway interaction ID"
             raise ValueError(msg)
         object_id = custom_id.rsplit(":", 1)[-1]
-        parsed = GiveawayCog._object_id(object_id)
+        parsed = Giveaway._object_id(object_id)
         if parsed is None:
             msg = "Invalid giveaway interaction ID"
             raise ValueError(msg)
@@ -342,4 +342,4 @@ class GiveawayView(discord.ui.View):
 
 
 async def setup(bot: Parrot) -> None:
-    await bot.add_cog(GiveawayCog(bot))
+    await bot.add_cog(Giveaway(bot))

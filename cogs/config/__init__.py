@@ -115,7 +115,7 @@ class Config(commands.Cog):
         self.bot = bot
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
-    @commands.group(name="config", invoke_without_command=True)
+    @commands.group(name="config", invoke_without_command=True, hidden=True)
     @commands.has_permissions(administrator=True)
     @app_commands.checks.has_permissions(administrator=True)
     async def config(self, ctx: commands.Context[Parrot]) -> discord.Message:

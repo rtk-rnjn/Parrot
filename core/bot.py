@@ -51,8 +51,6 @@ os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
 LOADABLE_COGS = [
-    "cogs.afk",
-    "cogs.birthday",
     "cogs.automod",
     "cogs.cc",
     "cogs.config",
@@ -179,8 +177,8 @@ class Parrot(commands.Bot):
         for extention in LOADABLE_COGS:
             await self.load_extension(extention)
 
-        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.start(), name="Event Scheduler")
-        self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs(), name="Cog Autoreloader")
+        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.start())
+        self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs())
 
         self._start_database_listeners()
 
@@ -360,7 +358,7 @@ class Parrot(commands.Bot):
     async def __before_invoke(self, ctx: commands.Context[Parrot]) -> None:
         if ctx.guild is not None and not ctx.guild.chunked:
             await ctx.bot.wait_until_ready()
-            self.loop.create_task(ctx.guild.chunk(), name=f"Chunking Guild: {ctx.guild} ({ctx.guild.id})")
+            self.loop.create_task(ctx.guild.chunk())
 
             await self.database.register_guild(ctx.guild.id)
             await self.database.register_user(ctx.author.id)
@@ -583,5 +581,5 @@ class Parrot(commands.Bot):
             await pub_sub_client.close()
 
     def _start_database_listeners(self) -> None:
-        self.loop.create_task(self.__start_mongodb_listener(), name="MongoDB Change Stream Listener")
-        self.loop.create_task(self.__start_redis_listener(), name="Redis Pub/Sub Listener")
+        self.loop.create_task(self.__start_mongodb_listener())
+        self.loop.create_task(self.__start_redis_listener())

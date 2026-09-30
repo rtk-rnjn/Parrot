@@ -1,255 +1,293 @@
 from __future__ import annotations
 
-import inspect
 import itertools
 import os
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import arrow
 import discord
-import psutil
 import pygit2
 from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
 
-if TYPE_CHECKING:
-    from .bot import Parrot
-
-
 __all__ = ("Help",)
 
-BASIC_USAGE = """
-1. <foo> - This argument is mandatory
-2. <foos...> - This argument is mandatory and can take multiple values
-3. [foo] - This argument is optional
-4. [foos...] - This argument is optional and can take multiple values
-5. [foo=bar] - This argument is optional and has a default value of `bar`
-6. [foo|bar] - This argument is optional so you can either use foo or bar, or don't specify it at all
-
-Additionally, the bot uses converters which makes specifying roles, members, channels etc, easy and fool-proof. When asked to specify a member, you can provide it a mention, an id, a name or a nickname.
-
-Note: Do not literally type out `<` `>` `[` `]` `|` etc.
-"""
-
 BOT_OWNER_ID = os.environ["OWNER_ID"]
+COMMANDS_PER_PAGE = 10
+
+
+class HelpView(discord.ui.LayoutView):
+    def __init__(
+        self, help_command: Help, mapping: dict[commands.Cog | None, list[commands.Command]], command: commands.Command | None = None
+    ) -> None:
+        super().__init__(timeout=180)
+        self.help_command = help_command
+        self.ctx = help_command.context
+        self.mapping = mapping
+        self.category: str | None = None
+        self.page = 0
+        self.command = command
+        self.refresh()
+
+    @property
+    def prefix(self) -> str:
+        return self.ctx.clean_prefix
+
+    @property
+    def categories(self) -> list[tuple[commands.Cog, list[commands.Command]]]:
+        return [
+            (
+                cog,
+                sorted((command for command in commands_list if not command.hidden), key=lambda command: command.qualified_name.lower()),
+            )
+            for cog, commands_list in self.mapping.items()
+            if any(not command.hidden for command in commands_list) and cog is not None
+        ]
+
+    @property
+    def selected_commands(self) -> list[commands.Command]:
+        if self.category == "__all__":
+            return sorted(
+                (command for commands_list in self.mapping.values() for command in commands_list if not command.hidden),
+                key=lambda command: command.qualified_name.lower(),
+            )
+        return next((commands_list for name, commands_list in self.categories if name == self.category), [])
+
+    @property
+    def page_count(self) -> int:
+        return max(1, (len(self.selected_commands) + COMMANDS_PER_PAGE - 1) // COMMANDS_PER_PAGE)
+
+    @property
+    def page_commands(self) -> list[commands.Command]:
+        start = self.page * COMMANDS_PER_PAGE
+        return self.selected_commands[start : start + COMMANDS_PER_PAGE]
+
+    def command_count(self, command: commands.Command) -> int:
+        if not isinstance(command, commands.Group):
+            return 1
+        return 1 + sum(self.command_count(child) for child in command.commands if not child.hidden)
+
+    def refresh(self) -> None:
+        self.clear_items()
+        if self.command is None:
+            self.build_index()
+        else:
+            self.build_command()
+
+    def build_index(self) -> None:
+        categories = self.categories
+        container = discord.ui.Container(accent_colour=discord.Colour.blurple())
+        container.add_item(
+            discord.ui.TextDisplay(f"## {self.ctx.bot.user.name} Help\nUse `{self.prefix}help <command>` for detailed information about a command.")
+        )
+
+        options = [
+            discord.SelectOption(
+                label=cog.qualified_name[:100],
+                value=cog.qualified_name,
+                description=(cog.description or "No description provided.")[:100],
+                default=cog.qualified_name == self.category,
+            )
+            for cog, commands_list in categories[:25]
+        ]
+        if options:
+            select = discord.ui.Select(placeholder="Select a category...", options=options)
+
+            async def select_callback(interaction: discord.Interaction) -> None:
+                self.category = select.values[0]
+                self.page = 0
+                self.command = None
+                self.refresh()
+                await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
+
+            select.callback = select_callback
+            container.add_item(discord.ui.ActionRow(select))
+
+        if self.category is None:
+            paginator = commands.Paginator(prefix="", suffix="", max_size=3900)
+            paginator.add_line("### Categories")
+            for name, commands_list in categories:
+                paginator.add_line(f"**{name}** · `{sum(self.command_count(command) for command in commands_list)}` commands")
+            for page in paginator.pages:
+                container.add_item(discord.ui.TextDisplay(page))
+                break
+        else:
+            paginator = commands.Paginator(prefix="", suffix="", max_size=3900)
+            paginator.add_line(f"### {self.category}")
+            for command in self.page_commands:
+                description = command.short_doc or "No description provided."
+                paginator.add_line(f"`{self.prefix}{command.qualified_name}` — {description}")
+            page = paginator.pages[0] if paginator.pages else "No commands available."
+            container.add_item(discord.ui.TextDisplay(page))
+
+            command_options = [
+                discord.SelectOption(
+                    label=command.qualified_name[:100], value=str(index), description=(command.short_doc or "No description provided.")[:100]
+                )
+                for index, command in enumerate(self.page_commands)
+            ]
+            if command_options:
+                command_select = discord.ui.Select(placeholder="Select a command...", options=command_options)
+
+                async def command_callback(interaction: discord.Interaction) -> None:
+                    self.command = self.page_commands[int(command_select.values[0])]
+                    self.refresh()
+                    await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
+
+                command_select.callback = command_callback
+                container.add_item(discord.ui.ActionRow(command_select))
+
+        previous = discord.ui.Button(
+            label="Previous", emoji="◀️", style=discord.ButtonStyle.secondary, disabled=self.category is None or self.page <= 0
+        )
+        next_button = discord.ui.Button(
+            label="Next", emoji="▶️", style=discord.ButtonStyle.secondary, disabled=self.category is None or self.page >= self.page_count - 1
+        )
+        home = discord.ui.Button(label="Home", emoji="🏠", style=discord.ButtonStyle.primary, disabled=self.category is None)
+
+        async def previous_callback(interaction: discord.Interaction) -> None:
+            self.page -= 1
+            self.refresh()
+            await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
+
+        async def next_callback(interaction: discord.Interaction) -> None:
+            self.page += 1
+            self.refresh()
+            await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
+
+        async def home_callback(interaction: discord.Interaction) -> None:
+            self.category = None
+            self.page = 0
+            self.command = None
+            self.refresh()
+            await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
+
+        previous.callback = previous_callback
+        next_button.callback = next_callback
+        home.callback = home_callback
+
+        container.add_item(discord.ui.ActionRow(previous, next_button, home))
+
+        if self.category is not None:
+            container.add_item(discord.ui.TextDisplay(f"*Page {self.page + 1}/{self.page_count} · {len(self.selected_commands)} commands*"))
+
+        self.add_item(container)
+
+    def build_command(self) -> None:
+        command = self.command
+        if command is None:
+            return
+
+        container = discord.ui.Container(accent_colour=discord.Colour.blurple())
+        description = command.help or command.short_doc or "No description provided."
+        text = f"## `{self.prefix}{command.qualified_name}`\n{description}\n\n### Usage\n```text\n{self.help_command.get_command_signature(command)}\n```"
+
+        if command.aliases:
+            text += f"\n### Aliases\n{', '.join(f'`{self.prefix}{alias}`' for alias in command.aliases)}"
+
+        examples = command.extras.get("examples")
+        if isinstance(examples, (list, tuple)) and examples:
+            text += f"\n### Examples\n{chr(10).join(f'`{self.prefix}{example}`' for example in examples)}"
+
+        if isinstance(command, commands.Group):
+            subcommands = sorted((child for child in command.commands if not child.hidden), key=lambda child: child.name.lower())
+            if subcommands:
+                text += (
+                    f"\n### Subcommands\n{chr(10).join(f'`{child.name}` — {child.short_doc or "No description provided."}' for child in subcommands)}"
+                )
+
+        paginator = commands.Paginator(prefix="", suffix="", max_size=3900)
+        for line in text.splitlines():
+            paginator.add_line(line)
+
+        for page in paginator.pages:
+            container.add_item(discord.ui.TextDisplay(page))
+
+        usage_demo = command.extras.get("usage_demo")
+        if isinstance(usage_demo, str) and usage_demo:
+            container.add_item(
+                discord.ui.MediaGallery(discord.MediaGalleryItem(usage_demo, description=f"{command.qualified_name} usage demonstration"))
+            )
+
+        back = discord.ui.Button(label="Back", emoji="◀️", style=discord.ButtonStyle.secondary)
+
+        async def back_callback(interaction: discord.Interaction) -> None:
+            self.command = None
+            self.refresh()
+            await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
+
+        back.callback = back_callback
+        container.add_item(discord.ui.ActionRow(back))
+        self.add_item(container)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.ctx.author.id:
+            await interaction.response.send_message("This help menu belongs to the user who invoked it.", ephemeral=True)
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        for item in self.walk_children():
+            if isinstance(item, (discord.ui.Button, discord.ui.Select)):
+                item.disabled = True
 
 
 class Help(commands.HelpCommand):
     def __init__(self) -> None:
         super().__init__(
             command_attrs={
-                "help": "Shows this message.",
-                "description": "Shows this message.",
+                "help": "Shows the bot's interactive help menu.",
+                "description": "Shows the bot's interactive help menu.",
                 "aliases": ["h", "welp", "commands"],
+                "hidden": True,
             }
         )
 
     def format_commit(self, commit: pygit2.Commit) -> str:
         short, _, _ = commit.message.partition("\n")
         short_sha = str(commit.id)[:6]
-
-        commit_tz = arrow.now().to("local").tzinfo
-        commit_time = arrow.Arrow.fromtimestamp(commit.commit_time).to("local").astimezone(commit_tz)
-
-        offset = discord.utils.format_dt(commit_time, "R")
-
-        capped_short = short[:50] + "..." if len(short) > 50 else short
-
-        return f"[`{short_sha}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.id}) {capped_short} ({offset})"
+        commit_time = arrow.Arrow.fromtimestamp(commit.commit_time)
+        short = short[:50] + "..." if len(short) > 50 else short
+        return f"[`{short_sha}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.id}) {short} ({discord.utils.format_dt(commit_time, 'R')})"
 
     def get_last_commits(self, count: int = 3) -> str | None:
-        if not os.path.isdir(".git"):
+        if not Path(".git").is_dir():
             return None
-
         repo = pygit2.Repository(".git")
-        commits = itertools.islice(repo.walk(repo.head.target), count)
-
-        return "\n".join(self.format_commit(commit) for commit in commits)
+        return "\n".join(self.format_commit(commit) for commit in itertools.islice(repo.walk(repo.head.target), count)) or None
 
     def get_command_signature(self, command: commands.Command) -> str:
         return f"{self.clean_prefix}{command.qualified_name} {command.signature}".strip()
 
-    def make_command_embed(self, command: commands.Command) -> discord.Embed:
-        signature = self.get_command_signature(command)
-
-        embed = discord.Embed(
-            title=f"{self.clean_prefix}{command.qualified_name}",
-            description=self.command_description(command),
-            colour=discord.Colour.blurple(),
-        )
-
-        embed.add_field(name="Usage", value=f"```text\n{signature}\n```", inline=False)
-
-        if command.aliases:
-            embed.add_field(
-                name="Aliases",
-                value=", ".join(f"`{self.clean_prefix}{alias}`" for alias in command.aliases),
-                inline=False,
-            )
-
-        if isinstance(command, commands.Group):
-            subcommands = [child for child in command.commands if not child.hidden]
-
-            if subcommands:
-                embed.add_field(
-                    name="Subcommands",
-                    value="\n".join(f"`{child.name}` — {self.command_description(child)}" for child in subcommands),
-                    inline=False,
-                )
-
-        return embed
-
     async def send_bot_help(self, mapping: dict[commands.Cog | None, list[commands.Command]]) -> None:
-        context: commands.Context[Parrot] = self.context  # pyright: ignore[reportAssignmentType]
-        prefix = context.clean_prefix
-
-        await context.bot.fetch_user(int(BOT_OWNER_ID))
-        revision = self.get_last_commits()
-
-        process = psutil.Process()
-        memory_usage = process.memory_full_info().uss / 1024**2
-        cpu_usage = process.cpu_percent() / (psutil.cpu_count() or 1)
-
-        text_channels = 0
-        voice_channels = 0
-        guilds = 0
-        total_members = 0
-
-        for guild in context.bot.guilds:
-            guilds += 1
-
-            if guild.unavailable:
-                continue
-
-            total_members += guild.member_count or 0
-
-            for channel in guild.channels:
-                if isinstance(channel, discord.TextChannel):
-                    text_channels += 1
-                elif isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
-                    voice_channels += 1
-
-        embed = (
-            discord.Embed(
-                title=f"{context.bot.user.name} Help",
-                description=inspect.cleandoc(f"""
-                Use `{prefix}help <command>` for more information on a command.
-                Use `{prefix}help <category>` for more information on a category.
-                """),
-                colour=discord.Colour.blurple(),
-            )
-            .add_field(name="Bot Version", value=context.bot.VERSION)
-            .add_field(
-                name="Uptime",
-                value=discord.utils.format_dt(context.bot.started_at, "R"),
-            )
-            .add_field(
-                name="Members",
-                value=f"{total_members:,} total\n{len(context.bot.users):,} cached",
-            )
-            .add_field(
-                name="Channels",
-                value=(f"{text_channels + voice_channels:,} total\n{text_channels:,} text\n{voice_channels:,} voice"),
-            )
-            .add_field(name="Guilds", value=f"{guilds:,}")
-            .add_field(name="Process", value=f"{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
-        )
-
-        if revision:
-            embed.add_field(name="Recent Commits", value=revision, inline=False)
-
-        await context.reply(embed=embed)
+        filtered = {cog: await self.filter_commands(commands_list, sort=True) for cog, commands_list in mapping.items()}
+        filtered = {cog: commands_list for cog, commands_list in filtered.items() if commands_list}
+        await self.context.reply(view=HelpView(self, filtered))
 
     async def send_command_help(self, command: commands.Command) -> None:
-        embed = discord.Embed(
-            title=f"{self.clean_prefix}{command.qualified_name}",
-            description=self.command_description(command),
-            colour=discord.Colour.blurple(),
-        )
-
-        embed.add_field(
-            name="Usage",
-            value=f"```text\n{self.get_command_signature(command)}\n```",
-            inline=False,
-        )
-
-        if command.aliases:
-            embed.add_field(
-                name="Aliases",
-                value=", ".join(f"`{self.clean_prefix}{alias}`" for alias in command.aliases),
-                inline=False,
-            )
-
-        examples = command.extras.get("examples")
-        if examples is not None and isinstance(examples, list) and examples:
-            embed.add_field(
-                name="Examples",
-                value="\n".join(f"`{self.clean_prefix}{example}`" for example in examples),
-                inline=False,
-            )
-
-        usage_demo_gif = command.extras.get("usage_demo")
-        if usage_demo_gif is not None and isinstance(usage_demo_gif, str) and usage_demo_gif:
-            embed.set_image(url=usage_demo_gif)
-
-        await self.context.reply(embed=embed)
+        await self.context.reply(view=HelpView(self, {command.cog: [command]}, command))
 
     async def send_group_help(self, group: commands.Group) -> None:
-        embed = discord.Embed(
-            title=f"{self.clean_prefix}{group.qualified_name}",
-            description=self.command_description(group),
-            colour=discord.Colour.blurple(),
-        )
-
-        embed.add_field(
-            name="Usage",
-            value=f"```text\n{self.get_command_signature(group)}\n```",
-            inline=False,
-        )
-
         commands_list = await self.filter_commands(group.commands, sort=True)
-
-        if commands_list:
-            embed.add_field(
-                name="Subcommands",
-                value="\n".join(f"`{command.name}` — {self.command_description(command)}" for command in commands_list if not command.hidden),
-                inline=False,
-            )
-
-        if group.aliases:
-            embed.add_field(
-                name="Aliases",
-                value=", ".join(f"`{self.clean_prefix}{alias}`" for alias in group.aliases),
-                inline=False,
-            )
-
-        await self.context.reply(embed=embed)
+        view = HelpView(self, {group.cog: commands_list})
+        view.category = group.cog.qualified_name if group.cog else None
+        view.refresh()
+        await self.context.reply(view=view)
 
     async def send_cog_help(self, cog: commands.Cog) -> None:
         commands_list = await self.filter_commands(cog.get_commands(), sort=True)
-
-        embed = discord.Embed(
-            title=cog.qualified_name,
-            description=cog.description or "No description provided.",
-            colour=discord.Colour.blurple(),
-        )
-
-        if commands_list:
-            embed.add_field(
-                name="Commands",
-                value="\n".join(f"`{command.name}` — {self.command_description(command)}" for command in commands_list if not command.hidden),
-                inline=False,
-            )
-
-        await self.context.reply(embed=embed)
+        view = HelpView(self, {cog: commands_list})
+        view.category = cog.qualified_name
+        view.refresh()
+        await self.context.reply(view=view)
 
     async def send_error(self, error: str) -> None:
-        embed = discord.Embed(title="Help", description=error, colour=discord.Colour.red())
-
-        await self.context.reply(embed=embed)
+        view = discord.ui.LayoutView()
+        view.add_item(discord.ui.Container(discord.ui.TextDisplay(f"## Help\n{error}"), accent_colour=discord.Colour.red()))
+        await self.context.reply(view=view)
 
     @property
     def clean_prefix(self) -> str:
-        return self.context.clean_prefix if self.context else self.clean_prefix
+        return self.context.clean_prefix if self.context else ""

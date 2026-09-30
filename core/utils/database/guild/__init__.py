@@ -69,7 +69,11 @@ class _GuildMixin(
             "muted_members": [],
             "violations": {"default": {}},
             "default_violation_expiration": None,
-            "global_chat_config": {"enabled": False, "channel_id": None, "webhook_uri": None},
+            "global_chat_config": {
+                "enabled": False,
+                "channel_id": None,
+                "webhook_uri": None,
+            },
             "automod": {
                 "word_allowlist": [],
                 "word_denylist": [],
@@ -79,9 +83,20 @@ class _GuildMixin(
                 "rules": [],
                 "logs": [],
             },
-            "moderator_config": {"moderator_role_ids": [], "moderator_logs_channel_id": None},
-            "leveling_config": {"enabled": False, "channel_id": None, "level_roles": {}},
-            "giveaway_config": {"enabled": False, "giveaway_channel_id": None, "giveaway_role_id": None},
+            "moderator_config": {
+                "moderator_role_ids": [],
+                "moderator_logs_channel_id": None,
+            },
+            "leveling_config": {
+                "enabled": False,
+                "channel_id": None,
+                "level_roles": {},
+            },
+            "giveaway_config": {
+                "enabled": False,
+                "giveaway_channel_id": None,
+                "giveaway_role_id": None,
+            },
             "welcome_config": {
                 "enabled": False,
                 "on_member_join_message": None,
@@ -129,7 +144,11 @@ class _GuildMixin(
                 "on_member_move_voice": {"enabled": False, "webhook_uri": None},
             },
             "leveling_data": {},
-            "telephone_config": {"enabled": False, "channel_id": None, "blocked_servers": []},
+            "telephone_config": {
+                "enabled": False,
+                "channel_id": None,
+                "blocked_servers": [],
+            },
             "custom_commands_db": {},
             "custom_commands_logs": [],
         }

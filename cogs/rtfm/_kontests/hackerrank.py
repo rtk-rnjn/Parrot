@@ -73,7 +73,10 @@ class HackerRank:
         self.bot = bot
 
     async def fetch(self) -> None:
-        async with self.bot.http_session.get(f"{API}{UPCOMING}", headers={"User-Agent": choice(self.bot.assets.user_agents)}) as response:
+        async with self.bot.http_session.get(
+            f"{API}{UPCOMING}",
+            headers={"User-Agent": choice(self.bot.assets.user_agents)},
+        ) as response:
             data = await response.json()
             self.__contests = [HackerRankContest(c) for c in data["models"]]
 

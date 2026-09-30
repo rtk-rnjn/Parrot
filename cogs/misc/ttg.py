@@ -39,9 +39,31 @@ def string_to_bool(string: str):
     otherwise returns it unchanged.
     """
     string = str(string).lower()
-    if string in {"true", "t", "1", "yes", "y", "on", "enable", "enabled", "not none", "not null"}:
+    if string in {
+        "true",
+        "t",
+        "1",
+        "yes",
+        "y",
+        "on",
+        "enable",
+        "enabled",
+        "not none",
+        "not null",
+    }:
         return True
-    if string in {"false", "f", "0", "no", "n", "off", "disable", "disabled", "none", "null"}:
+    if string in {
+        "false",
+        "f",
+        "0",
+        "no",
+        "n",
+        "off",
+        "disable",
+        "disabled",
+        "none",
+        "null",
+    }:
         return False
     return string
 
@@ -186,11 +208,20 @@ class Truths:
 
 
 class TTFlag(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
-    var: str = commands.flag(description="The variable to evaluate.", default="p, q", aliases=["variables", "v", "vars", "variable"])
-    con: str = commands.flag(
-        description="The logical expression to evaluate.", default="p and q", aliases=["cons", "condition", "conditions", "expr", "expression"]
+    var: str = commands.flag(
+        description="The variable to evaluate.",
+        default="p, q",
+        aliases=["variables", "v", "vars", "variable"],
     )
-    ascending: bool = commands.flag(description="Whether to sort the base conditions in ascending order.", default=True)
+    con: str = commands.flag(
+        description="The logical expression to evaluate.",
+        default="p and q",
+        aliases=["cons", "condition", "conditions", "expr", "expression"],
+    )
+    ascending: bool = commands.flag(
+        description="Whether to sort the base conditions in ascending order.",
+        default=True,
+    )
     table_format: str = commands.flag(description="The format of the table.", default="psql")
     align: str = commands.flag(description="The alignment of the table.", default="center")
     valuation: bool = commands.flag(description="Whether to show the valuation of the table.", default=False)

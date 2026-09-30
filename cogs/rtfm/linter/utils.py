@@ -40,7 +40,11 @@ from .ruff import validate_flag as ruff_validate_flag
 
 
 async def lint(cmd: str, filename: str) -> dict[str, str]:
-    proc = await asyncio.create_subprocess_shell(f"{cmd} {filename}", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_shell(
+        f"{cmd} {filename}",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
 
     stdout, stderr = await proc.communicate()
 
@@ -71,7 +75,16 @@ async def lint(cmd: str, filename: str) -> dict[str, str]:
     return payload
 
 
-FlagT = TypeVar("FlagT", Flake8Converter, MypyConverter, PyLintConverter, BanditConverter, PyrightConverter, RuffConverter, str)
+FlagT = TypeVar(
+    "FlagT",
+    Flake8Converter,
+    MypyConverter,
+    PyLintConverter,
+    BanditConverter,
+    PyrightConverter,
+    RuffConverter,
+    str,
+)
 
 
 async def code_to_file(code: str) -> str:

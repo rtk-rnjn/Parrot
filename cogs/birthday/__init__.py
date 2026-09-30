@@ -136,7 +136,11 @@ class Birthday(commands.Cog):
                 file=birthday_card_file(member.display_name, birthday, avatar),
             )
         except discord.HTTPException:
-            _log.exception("Could not send birthday wish for %s in guild %s", member.id, channel.guild.id)
+            _log.exception(
+                "Could not send birthday wish for %s in guild %s",
+                member.id,
+                channel.guild.id,
+            )
 
 
 async def setup(bot: Parrot) -> None:

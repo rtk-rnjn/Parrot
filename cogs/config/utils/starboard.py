@@ -53,7 +53,7 @@ class StarboardConfigModal(discord.ui.Modal, title="Edit Starboard Configuration
         self.starboard_threshold_input = discord.ui.TextInput(
             label="Starboard Threshold",
             placeholder="Enter the number of stars required to create a starboard...",
-            default=str(self.starboard_threshold) if self.starboard_threshold is not None else None,
+            default=(str(self.starboard_threshold) if self.starboard_threshold is not None else None),
             required=False,
         )
         self.starboard_emoji_input = discord.ui.TextInput(
@@ -75,7 +75,7 @@ class StarboardConfigModal(discord.ui.Modal, title="Edit Starboard Configuration
 
         guild_id = interaction.guild.id
         new_config = {
-            "channel_id": self._starboard_channel_input.values[0].id if self._starboard_channel_input.values else None,
+            "channel_id": (self._starboard_channel_input.values[0].id if self._starboard_channel_input.values else None),
             "threshold": (_parse_positive_int(self.starboard_threshold_input.value) if self.starboard_threshold_input.value else None),
             "emoji": (
                 self.starboard_emoji_input.value if self.starboard_emoji_input.value and _is_valid_emoji(self.starboard_emoji_input.value) else None

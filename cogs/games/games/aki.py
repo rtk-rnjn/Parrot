@@ -113,7 +113,11 @@ class Akinator:
         return done.pop().result()
 
     async def _process_reaction(
-        self, ctx: commands.Context[Parrot], reaction: discord.Reaction, user: discord.User, remove_reaction_after: bool
+        self,
+        ctx: commands.Context[Parrot],
+        reaction: discord.Reaction,
+        user: discord.User,
+        remove_reaction_after: bool,
     ) -> bool:
         if remove_reaction_after and self.message is not None:
             with contextlib.suppress(discord.DiscordException):

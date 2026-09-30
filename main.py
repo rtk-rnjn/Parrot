@@ -47,7 +47,13 @@ def setup_logging() -> None:
     console_handler.setFormatter(logging.Formatter("%(message)s", DATE_FORMAT))
 
     # Application logs.
-    file_handler = logging.handlers.RotatingFileHandler(LOG_DIR / "bot.log", mode="w+", maxBytes=8 * 1024 * 1024, backupCount=5, encoding="utf-8")
+    file_handler = logging.handlers.RotatingFileHandler(
+        LOG_DIR / "bot.log",
+        mode="w+",
+        maxBytes=8 * 1024 * 1024,
+        backupCount=5,
+        encoding="utf-8",
+    )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s", DATE_FORMAT))
 
@@ -66,7 +72,13 @@ def setup_logging() -> None:
         logger.propagate = False
 
         # Separate file: DEBUG+
-        handler = logging.handlers.RotatingFileHandler(LOG_DIR / f"{name}.log", mode="w+", maxBytes=32 * 1024 * 1024, backupCount=5, encoding="utf-8")
+        handler = logging.handlers.RotatingFileHandler(
+            LOG_DIR / f"{name}.log",
+            mode="w+",
+            maxBytes=32 * 1024 * 1024,
+            backupCount=5,
+            encoding="utf-8",
+        )
 
         handler.setLevel(logging.DEBUG)
         handler.setFormatter(logging.Formatter("[%(asctime)s] [%(levelname)-8s] [%(name)s] - %(message)s", DATE_FORMAT))

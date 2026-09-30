@@ -87,7 +87,13 @@ class ShortTime:
     discord_fmt = DISCORD_TS_RE
     dt: datetime.datetime
 
-    def __init__(self, argument: str, *, now: datetime.datetime | None = None, tzinfo: datetime.tzinfo = datetime.UTC):
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
         base = _as_arrow_now(now, tzinfo)
         parsed = _parse_short(argument, base) or _parse_discord_ts(argument, tzinfo)
         if parsed is None:
@@ -128,7 +134,13 @@ class RelativeDelta(app_commands.Transformer, commands.Converter):
 
 
 class HumanTime:
-    def __init__(self, argument: str, *, now: datetime.datetime | None = None, tzinfo: datetime.tzinfo = datetime.UTC):
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
         base = _as_arrow_now(now, tzinfo)
         parsed = _parse_human(argument, base, tzinfo)
         if parsed is None:
@@ -147,7 +159,13 @@ class HumanTime:
 
 
 class Time(HumanTime):
-    def __init__(self, argument: str, *, now: datetime.datetime | None = None, tzinfo: datetime.tzinfo = datetime.UTC):
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
         try:
             s = ShortTime(argument, now=now, tzinfo=tzinfo)
         except commands.BadArgument:
@@ -158,7 +176,13 @@ class Time(HumanTime):
 
 
 class FutureTime(Time):
-    def __init__(self, argument: str, *, now: datetime.datetime | None = None, tzinfo: datetime.tzinfo = datetime.UTC):
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
         super().__init__(argument, now=now, tzinfo=tzinfo)
         if self._past:
             msg = "this time is in the past"
@@ -197,7 +221,13 @@ class FriendlyTimeResult:
         self.dt = dt
         self.arg = ""
 
-    async def ensure_constraints(self, ctx: commands.Context[Parrot], uft: UserFriendlyTime, now: datetime.datetime, remaining: str) -> None:
+    async def ensure_constraints(
+        self,
+        ctx: commands.Context[Parrot],
+        uft: UserFriendlyTime,
+        now: datetime.datetime,
+        remaining: str,
+    ) -> None:
         if self.dt < now:
             msg = "This time is in the past."
             raise commands.BadArgument(msg)
@@ -213,7 +243,12 @@ class FriendlyTimeResult:
 
 
 class UserFriendlyTime(commands.Converter):
-    def __init__(self, converter: type[commands.Converter] | commands.Converter | None = None, *, default: Any = None):
+    def __init__(
+        self,
+        converter: type[commands.Converter] | commands.Converter | None = None,
+        *,
+        default: Any = None,
+    ):
         if isinstance(converter, type) and issubclass(converter, commands.Converter):
             converter = converter()
         if converter is not None and not isinstance(converter, commands.Converter):
@@ -272,7 +307,14 @@ def human_timedelta(
     target = arrow.get(dt if dt.tzinfo else dt.replace(tzinfo=datetime.UTC))
     rel = relativedelta(target.datetime, now.datetime) if target >= now else relativedelta(now.datetime, target.datetime)
 
-    attrs = [("year", "y"), ("month", "mo"), ("day", "d"), ("hour", "h"), ("minute", "m"), ("second", "s")]
+    attrs = [
+        ("year", "y"),
+        ("month", "mo"),
+        ("day", "d"),
+        ("hour", "h"),
+        ("minute", "m"),
+        ("second", "s"),
+    ]
     out: list[str] = []
     for attr, short in attrs:
         n = getattr(rel, f"{attr}s")

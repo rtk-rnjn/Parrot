@@ -60,7 +60,13 @@ class Tags(commands.Cog):
         await ctx.invoke(self.tags)
 
     @tag.command(name="create", aliases=["add", "new", "+"])
-    async def create_tag(self, ctx: commands.Context[Parrot], name: str, *, content: Annotated[str, commands.clean_content]) -> None:
+    async def create_tag(
+        self,
+        ctx: commands.Context[Parrot],
+        name: str,
+        *,
+        content: Annotated[str, commands.clean_content],
+    ) -> None:
         """Create a new tag."""
         assert ctx.guild is not None
 
@@ -70,7 +76,13 @@ class Tags(commands.Cog):
             return
 
         channel_is_nsfw = getattr(ctx.channel, "is_nsfw", lambda: False)()
-        await self.bot.database.create_tag(guild_id=ctx.guild.id, name=name, content=content, creator_id=ctx.author.id, nsfw=channel_is_nsfw)
+        await self.bot.database.create_tag(
+            guild_id=ctx.guild.id,
+            name=name,
+            content=content,
+            creator_id=ctx.author.id,
+            nsfw=channel_is_nsfw,
+        )
         await ctx.reply(f"Tag `{name}` created successfully.")
 
     @tag.command(name="delete", aliases=["remove", "rm", "del"])
@@ -91,7 +103,12 @@ class Tags(commands.Cog):
         if not await self.bot.confirm(ctx, f"Are you sure you want to delete tag `{tag_name}`?"):
             return
 
-        deleted = await self.bot.database.delete_tag(guild_id=ctx.guild.id, name=tag_name, creator_id=ctx.author.id, is_admin=is_admin)
+        deleted = await self.bot.database.delete_tag(
+            guild_id=ctx.guild.id,
+            name=tag_name,
+            creator_id=ctx.author.id,
+            is_admin=is_admin,
+        )
         if deleted:
             await ctx.reply(f"Tag `{tag_name}` deleted successfully.")
         else:
@@ -110,7 +127,10 @@ class Tags(commands.Cog):
             raise commands.NSFWChannelRequired(ctx.channel)  # type: ignore[arg-type]
 
         await self.bot.database.increment_tag_used_count(guild_id=ctx.guild.id, name_or_alias=name, author_id=ctx.author.id)
-        await ctx.reply(discord.utils.escape_mentions(content), allowed_mentions=discord.AllowedMentions.none())
+        await ctx.reply(
+            discord.utils.escape_mentions(content),
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @tag.command(name="transfer")
     async def transfer_tag(self, ctx: commands.Context[Parrot], name: str, member: discord.Member) -> None:
@@ -213,7 +233,13 @@ class Tags(commands.Cog):
             await ctx.reply("Only the tag owner or a server administrator can mark this tag as NSFW.")
 
     @tag.command(name="edit", aliases=["update"])
-    async def edit_tag(self, ctx: commands.Context[Parrot], name: str, *, new_content: Annotated[str, commands.clean_content]) -> None:
+    async def edit_tag(
+        self,
+        ctx: commands.Context[Parrot],
+        name: str,
+        *,
+        new_content: Annotated[str, commands.clean_content],
+    ) -> None:
         """Edit a tag's content."""
         assert ctx.guild is not None
 
@@ -222,7 +248,12 @@ class Tags(commands.Cog):
             await ctx.reply(f"No tag found with the name: `{name}`")
             return
 
-        await self.bot.database.edit_tag_content(guild_id=ctx.guild.id, creator_id=ctx.author.id, name=name, content=new_content)
+        await self.bot.database.edit_tag_content(
+            guild_id=ctx.guild.id,
+            creator_id=ctx.author.id,
+            name=name,
+            content=new_content,
+        )
         await ctx.reply(f"Tag `{name}` updated successfully.")
 
     @tag.group(name="alias", invoke_without_command=True)

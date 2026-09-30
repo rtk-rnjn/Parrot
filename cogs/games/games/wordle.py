@@ -121,7 +121,11 @@ class Wordle:
         return buf
 
     async def start(
-        self, ctx: commands.Context[Parrot], *, timeout: float | None = None, embed_color: DiscordColor = DEFAULT_COLOR
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        timeout: float | None = None,
+        embed_color: DiscordColor = DEFAULT_COLOR,
     ) -> discord.Message:
         self.embed_color = embed_color
 
@@ -173,7 +177,13 @@ class Wordle:
 
 
 class WordInput(discord.ui.Modal, title="Word Input"):
-    word = discord.ui.TextInput(label="Input your guess", style=discord.TextStyle.short, required=True, min_length=5, max_length=5)
+    word = discord.ui.TextInput(
+        label="Input your guess",
+        style=discord.TextStyle.short,
+        required=True,
+        min_length=5,
+        max_length=5,
+    )
 
     def __init__(self, view: WordleView) -> None:
         super().__init__()
@@ -199,7 +209,10 @@ class WordInput(discord.ui.Modal, title="Word Input"):
             await interaction.message.reply("Game Over! You won!", mention_author=True)
         elif lost := len(game.guesses) >= 6:
             assert interaction.message is not None
-            await interaction.message.reply(f"Game Over! You lose, the word was: **{game.word}**", mention_author=True)
+            await interaction.message.reply(
+                f"Game Over! You lose, the word was: **{game.word}**",
+                mention_author=True,
+            )
 
         if won or lost:
             self.wordle_view.disable_all()
@@ -212,7 +225,7 @@ class WordInputButton(discord.ui.Button["WordleView"]):
     def __init__(self, *, cancel_button: bool = False):
         super().__init__(
             label="Cancel" if cancel_button else "Make a guess!",
-            style=discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple,
+            style=(discord.ButtonStyle.red if cancel_button else discord.ButtonStyle.blurple),
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -249,7 +262,11 @@ class BetaWordle(Wordle):
     player: Player
 
     async def start(
-        self, ctx: commands.Context[Parrot], *, embed_color: DiscordColor = DEFAULT_COLOR, timeout: float | None = None
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        embed_color: DiscordColor = DEFAULT_COLOR,
+        timeout: float | None = None,
     ) -> discord.Message:
         self.embed_color = embed_color
         self.player = ctx.author

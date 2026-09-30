@@ -55,17 +55,39 @@ def _draw_progress_bar(draw: ImageDraw.ImageDraw, progress: float, progress_colo
     bar_width = PROGRESS_BAR_WIDTH
     bar_height = PROGRESS_BAR_HEIGHT
 
-    _draw_rounded_bar(draw=draw, x=bar_x, y=bar_y, width=bar_width, height=bar_height, color=PROGRESS_BAR_BACKGROUND)
+    _draw_rounded_bar(
+        draw=draw,
+        x=bar_x,
+        y=bar_y,
+        width=bar_width,
+        height=bar_height,
+        color=PROGRESS_BAR_BACKGROUND,
+    )
 
     progress_width = bar_width * progress
 
     if progress_width <= 0:
         return
 
-    _draw_rounded_bar(draw=draw, x=bar_x, y=bar_y, width=progress_width, height=bar_height, color=progress_color)
+    _draw_rounded_bar(
+        draw=draw,
+        x=bar_x,
+        y=bar_y,
+        width=progress_width,
+        height=bar_height,
+        color=progress_color,
+    )
 
 
-def _draw_rounded_bar(draw: ImageDraw.ImageDraw, *, x: float, y: float, width: float, height: float, color: str) -> None:
+def _draw_rounded_bar(
+    draw: ImageDraw.ImageDraw,
+    *,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    color: str,
+) -> None:
     radius = height / 2
 
     draw.ellipse((x, y, x + height, y + height), fill=color)
@@ -74,7 +96,10 @@ def _draw_rounded_bar(draw: ImageDraw.ImageDraw, *, x: float, y: float, width: f
 
 
 def _load_fonts() -> tuple[ImageFont.FreeTypeFont, ImageFont.FreeTypeFont]:
-    return (ImageFont.truetype(FONT_PATH, size=40), ImageFont.truetype(FONT_PATH, size=25))
+    return (
+        ImageFont.truetype(FONT_PATH, size=40),
+        ImageFont.truetype(FONT_PATH, size=25),
+    )
 
 
 @executor_function
@@ -92,7 +117,12 @@ def _draw_card_text(
 
     draw.text((260, 100), member_name, fill=TEXT_COLOR, font=title_font)
 
-    draw.text((740, 130), f"{current_level_xp}/{xp_required_for_next_level} XP", fill=TEXT_COLOR, font=subtitle_font)
+    draw.text(
+        (740, 130),
+        f"{current_level_xp}/{xp_required_for_next_level} XP",
+        fill=TEXT_COLOR,
+        font=subtitle_font,
+    )
 
     draw.text((650, 50), f"LEVEL {level}", fill=progress_color, font=title_font)
 

@@ -78,7 +78,10 @@ class Games(commands.Cog):
         """Wait for a player to join the game."""
         view = JoinGameView(ctx)
 
-        message = await ctx.reply("Waiting for a player to join... Click the button below to join the game.", view=view)
+        message = await ctx.reply(
+            "Waiting for a player to join... Click the button below to join the game.",
+            view=view,
+        )
         view.message = message
 
         timed_out = await view.wait()
@@ -152,7 +155,10 @@ class Games(commands.Cog):
         """Arrange the numbered tiles into order by sliding them through the empty space."""
         await NumberSlider().start(ctx)
 
-    @commands.command(name="rock_paper_scissors", aliases=["rps", "rockpaperscissors", "rock-paper-scissors"])
+    @commands.command(
+        name="rock_paper_scissors",
+        aliases=["rps", "rockpaperscissors", "rock-paper-scissors"],
+    )
     async def rock_paper_scissors(self, ctx: commands.Context[Parrot]) -> None:
         """Choose rock, paper, or scissors against the bot: rock beats scissors, scissors beats paper, and paper beats rock."""
         await RockPaperScissors().start(ctx)

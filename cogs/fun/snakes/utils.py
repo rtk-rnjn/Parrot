@@ -139,7 +139,13 @@ class PerlinNoiseFactory:
     Licensed under ISC.
     """
 
-    def __init__(self, dimension: int, octaves: int = 1, tile: tuple[int, ...] = (), unbias: bool = False) -> None:
+    def __init__(
+        self,
+        dimension: int,
+        octaves: int = 1,
+        tile: tuple[int, ...] = (),
+        unbias: bool = False,
+    ) -> None:
         """Create a new Perlin noise factory in the given number of dimensions.
         dimension should be an integer and at least 1.
         More octaves create a foggier and more-detailed noise pattern.  More than 4 octaves is rather excessive.
@@ -288,7 +294,12 @@ def create_snek_frame(  # noqa: PLR0917
         angle = perlin_factory.get_plain_noise(((1 / (snake_length + 1)) * (index + 1)) + perlin_lookup_vertical_shift) * ANGLE_RANGE
         current_point = points[index]
         segment_length = random.randint(segment_length_range[0], segment_length_range[1])
-        points.append((current_point[X] + segment_length * math.cos(angle), current_point[Y] + segment_length * math.sin(angle)))
+        points.append(
+            (
+                current_point[X] + segment_length * math.cos(angle),
+                current_point[Y] + segment_length * math.sin(angle),
+            )
+        )
 
     # normalize bounds
     min_dimensions: list[float] = [start_x, start_y]
@@ -300,7 +311,10 @@ def create_snek_frame(  # noqa: PLR0917
         max_dimensions[Y] = max(point[Y], max_dimensions[Y])
 
     # shift towards middle
-    dimension_range = (max_dimensions[X] - min_dimensions[X], max_dimensions[Y] - min_dimensions[Y])
+    dimension_range = (
+        max_dimensions[X] - min_dimensions[X],
+        max_dimensions[Y] - min_dimensions[Y],
+    )
     shift = (
         image_dimensions[X] / 2 - (dimension_range[X] / 2 + min_dimensions[X]),
         image_dimensions[Y] / 2 - (dimension_range[Y] / 2 + min_dimensions[Y]),
@@ -312,7 +326,12 @@ def create_snek_frame(  # noqa: PLR0917
         point = points[index]
         previous = points[index - 1]
         draw.line(
-            (shift[X] + previous[X], shift[Y] + previous[Y], shift[X] + point[X], shift[Y] + point[Y]),
+            (
+                shift[X] + previous[X],
+                shift[Y] + previous[Y],
+                shift[X] + point[X],
+                shift[Y] + point[Y],
+            ),
             width=snake_width,
             fill=snake_color,
         )
@@ -378,7 +397,10 @@ class SnakeAndLaddersGame:
         await self._add_player(self.author)
         await self.channel.send(
             "**Snakes and Ladders**: A new game is about to start!",
-            file=discord.File(str(SNAKE_RESOURCES / "snakes_and_ladders" / "banner.jpg"), filename="Snakes and Ladders.jpg"),
+            file=discord.File(
+                str(SNAKE_RESOURCES / "snakes_and_ladders" / "banner.jpg"),
+                filename="Snakes and Ladders.jpg",
+            ),
         )
         startup = await self.channel.send(f"Press {JOIN_EMOJI} to participate, and press {START_EMOJI} to start the game")
         for emoji in STARTUP_SCREEN_EMOJI:
@@ -453,7 +475,10 @@ class SnakeAndLaddersGame:
                 self.players.remove(p)
                 self.player_tiles.pop(p.id, None)
                 self.round_has_rolled.pop(p.id, None)
-                await self.channel.send(f"**Snakes and Ladders**: {user.mention} has left the game.", delete_after=10)
+                await self.channel.send(
+                    f"**Snakes and Ladders**: {user.mention} has left the game.",
+                    delete_after=10,
+                )
 
                 if self.state != "waiting" and len(self.players) == 0:
                     await self.channel.send("**Snakes and Ladders**: The game has been surrendered!")
@@ -475,11 +500,17 @@ class SnakeAndLaddersGame:
         The game cannot be started if the game is in a waiting state.
         """
         if user != self.author:
-            await self.channel.send(f"{user.mention} Only the author of the game can start it.", delete_after=10)
+            await self.channel.send(
+                f"{user.mention} Only the author of the game can start it.",
+                delete_after=10,
+            )
             return
 
         if self.state != "waiting":
-            await self.channel.send(f"{user.mention} The game cannot be started at this time.", delete_after=10)
+            await self.channel.send(
+                f"{user.mention} The game cannot be started at this time.",
+                delete_after=10,
+            )
             return
 
         self.state = "starting"
@@ -520,7 +551,10 @@ class SnakeAndLaddersGame:
         player_list = "\n".join(f"{user.mention}: Tile {self.player_tiles[user.id]!s}" for user in self.players)
 
         # Store and send new messages
-        temp_board = await self.channel.send("**Snakes and Ladders**: A new round has started! Current board:", file=board_file)
+        temp_board = await self.channel.send(
+            "**Snakes and Ladders**: A new round has started! Current board:",
+            file=board_file,
+        )
         temp_positions = await self.channel.send(f"**Current positions**:\n{player_list}\n\nUse {ROLL_EMOJI} to roll the dice!")
 
         # Delete the previous messages
@@ -588,7 +622,10 @@ class SnakeAndLaddersGame:
         if next_tile in BOARD:
             target = BOARD[next_tile]
             if target < next_tile:
-                await self.channel.send(f"{user.mention} slips on a snake and falls back to **{target}**", delete_after=15)
+                await self.channel.send(
+                    f"{user.mention} slips on a snake and falls back to **{target}**",
+                    delete_after=15,
+                )
             else:
                 await self.channel.send(f"{user.mention} climbs a ladder to **{target}**", delete_after=15)
             next_tile = target
@@ -615,7 +652,10 @@ class SnakeAndLaddersGame:
         """Return a winning member if we're in the post-round state and there's a winner."""
         if self.state != "post_round":
             return None
-        return next((player for player in self.players if self.player_tiles[player.id] == 100), None)
+        return next(
+            (player for player in self.players if self.player_tiles[player.id] == 100),
+            None,
+        )
 
     def _check_all_rolled(self) -> bool:
         """Check if all members have made their roll."""

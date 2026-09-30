@@ -177,7 +177,13 @@ class AsyncTimerDispatcher:
 
         await self.__call_timer(**data)
 
-    async def create_timer(self, *, event_name: VALID_EVENT_NAMES, expires_at: datetime, metadata: Mapping[str, object]) -> InsertOneResult:
+    async def create_timer(
+        self,
+        *,
+        event_name: VALID_EVENT_NAMES,
+        expires_at: datetime,
+        metadata: Mapping[str, object],
+    ) -> InsertOneResult:
         """Persist a timer and notify the dispatcher that timer data exists.
 
         If the new timer expires before the timer currently being awaited,
@@ -213,9 +219,18 @@ class AsyncTimerDispatcher:
         """Return the first timer matching the supplied fields."""
         return await self.timers_collection.find_one(filters)
 
-    async def delete(self, *, event_name: VALID_EVENT_NAMES, metadata_filter: Mapping[str, object], multiple: bool = False) -> DeleteResult:
+    async def delete(
+        self,
+        *,
+        event_name: VALID_EVENT_NAMES,
+        metadata_filter: Mapping[str, object],
+        multiple: bool = False,
+    ) -> DeleteResult:
         """Delete a matching timer and restart the dispatcher if necessary."""
-        filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
+        filters = {
+            "event_name": event_name,
+            **{f"metadata.{k}": v for k, v in metadata_filter.items()},
+        }
         if multiple:
             data = await self.timers_collection.delete_many(filters)
         else:
@@ -245,6 +260,9 @@ class AsyncTimerDispatcher:
 
     async def search(self, *, event_name: VALID_EVENT_NAMES, metadata_filter: Mapping[str, object]) -> list[TimerData]:
         """Return all timers matching the supplied fields."""
-        filters = {"event_name": event_name, **{f"metadata.{k}": v for k, v in metadata_filter.items()}}
+        filters = {
+            "event_name": event_name,
+            **{f"metadata.{k}": v for k, v in metadata_filter.items()},
+        }
         cursor = self.timers_collection.find(filters, sort=[("expires_at", pymongo.ASCENDING)])
         return await cursor.to_list(length=None)

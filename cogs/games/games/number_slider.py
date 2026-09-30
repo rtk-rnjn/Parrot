@@ -78,7 +78,11 @@ class SlideView(BaseView):
                 for j, number in enumerate(row):
                     style = self.game.correct_style if number == self.game.completed[i][j] else self.game.wrong_style
 
-                    button = SlideButton(label=str(number) if number else "\N{ZERO WIDTH SPACE}", style=style, row=i)
+                    button = SlideButton(
+                        label=str(number) if number else "\N{ZERO WIDTH SPACE}",
+                        style=style,
+                        row=i,
+                    )
                     self.add_item(button)
 
 
@@ -123,7 +127,10 @@ class NumberSlider:
         ix, iy = pressed
         nx, ny = blank
 
-        self.numbers[nx][ny], self.numbers[ix][iy] = (self.numbers[ix][iy], self.numbers[nx][ny])
+        self.numbers[nx][ny], self.numbers[ix][iy] = (
+            self.numbers[ix][iy],
+            self.numbers[nx][ny],
+        )
 
     def shuffle(self, count: int) -> None:
         blank = self.get_item()

@@ -76,7 +76,10 @@ LINKS_RE: re.Pattern[str] = re.compile(
     flags=re.IGNORECASE,
 )
 
-INVITE_RE: re.Pattern[str] = re.compile(r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", flags=re.IGNORECASE)
+INVITE_RE: re.Pattern[str] = re.compile(
+    r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?",
+    flags=re.IGNORECASE,
+)
 
 
 # fmt: off

@@ -13,7 +13,11 @@ class TicketCreateView(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket_button")
+    @discord.ui.button(
+        label="Create Ticket",
+        style=discord.ButtonStyle.primary,
+        custom_id="create_ticket_button",
+    )
     async def create_ticket_button(self, interaction: discord.Interaction[Parrot], button: discord.ui.Button) -> None:
         if interaction.guild is None:
             await interaction.response.send_message("This command can only be used in a server (guild).", ephemeral=True)
@@ -33,7 +37,10 @@ class TicketCreateView(discord.ui.View):
             await interaction.followup.send(f"Your ticket has been created: {thread.mention}", ephemeral=True)
             return
 
-        await interaction.followup.send("Ticket creation is not configured properly. Please contact a server administrator.", ephemeral=True)
+        await interaction.followup.send(
+            "Ticket creation is not configured properly. Please contact a server administrator.",
+            ephemeral=True,
+        )
 
 
 class Ticket(commands.Cog):
@@ -72,7 +79,10 @@ class Ticket(commands.Cog):
         msg = await channel.send(embed=embed, view=TicketCreateView())
 
         await self.bot.database.edit_ticket_config(
-            guild_id=ctx.guild.id, bot_message_id=msg.id, bot_channel_channel_id=channel.id, channel_id=channel.id
+            guild_id=ctx.guild.id,
+            bot_message_id=msg.id,
+            bot_channel_channel_id=channel.id,
+            channel_id=channel.id,
         )
 
     @ticket.command(name="open", aliases=["create"])

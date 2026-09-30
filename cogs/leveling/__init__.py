@@ -77,7 +77,11 @@ class Leveling(commands.Cog):
 
         current_level = self._calculate_level_for_xp(await self.bot.database.get_user_xp(guild_id=message.guild.id, user_id=message.author.id) or 0)
 
-        await self.bot.database.increase_user_xp(guild_id=message.guild.id, user_id=message.author.id, xp=self._calculate_xp_for_message(message))
+        await self.bot.database.increase_user_xp(
+            guild_id=message.guild.id,
+            user_id=message.author.id,
+            xp=self._calculate_xp_for_message(message),
+        )
 
         new_level = self._calculate_level_for_xp(await self.bot.database.get_user_xp(guild_id=message.guild.id, user_id=message.author.id) or 0)
         if new_level > current_level:
@@ -143,7 +147,12 @@ class Leveling(commands.Cog):
 
     @leveling.command(name="role")
     @commands.has_guild_permissions(manage_guild=True)
-    async def set_level_role(self, ctx: commands.Context[Parrot], level: commands.Range[int, 1, 100], role: discord.Role) -> None:
+    async def set_level_role(
+        self,
+        ctx: commands.Context[Parrot],
+        level: commands.Range[int, 1, 100],
+        role: discord.Role,
+    ) -> None:
         """Assign a role when a member reaches a level."""
         if ctx.guild is None:
             return

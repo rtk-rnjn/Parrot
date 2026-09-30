@@ -21,7 +21,10 @@ class _GuildTicketMixin(DatabaseMixin):
         if cached is not None:
             return bool(int(cached))
 
-        guild = await self.guilds_collection.find_one({"_id": guild_id, "ticket_config.enabled": {"$exists": True}}, {"ticket_config.enabled": 1})
+        guild = await self.guilds_collection.find_one(
+            {"_id": guild_id, "ticket_config.enabled": {"$exists": True}},
+            {"ticket_config.enabled": 1},
+        )
         if guild is None:
             return False
         enabled = bool(guild["ticket_config"]["enabled"])
@@ -35,7 +38,8 @@ class _GuildTicketMixin(DatabaseMixin):
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "ticket_config.channel_id": {"$exists": True}}, {"ticket_config.channel_id": 1}
+            {"_id": guild_id, "ticket_config.channel_id": {"$exists": True}},
+            {"ticket_config.channel_id": 1},
         )
         if guild is None:
             return None
@@ -51,7 +55,8 @@ class _GuildTicketMixin(DatabaseMixin):
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "ticket_config.bot_message_id": {"$exists": True}}, {"ticket_config.bot_message_id": 1}
+            {"_id": guild_id, "ticket_config.bot_message_id": {"$exists": True}},
+            {"ticket_config.bot_message_id": 1},
         )
         if guild is None:
             return None
@@ -67,7 +72,10 @@ class _GuildTicketMixin(DatabaseMixin):
             return int(cached)
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "ticket_config.bot_channel_channel_id": {"$exists": True}},
+            {
+                "_id": guild_id,
+                "ticket_config.bot_channel_channel_id": {"$exists": True},
+            },
             {"ticket_config.bot_channel_channel_id": 1},
         )
         if guild is None:
@@ -104,7 +112,10 @@ class _GuildTicketMixin(DatabaseMixin):
         return result.matched_count > 0 or result.upserted_id is not None
 
     async def get_all_ticket_config_message_id(self):
-        cursor = self.guilds_collection.find({"ticket_config.bot_message_id": {"$exists": True, "$ne": None}}, {"ticket_config.bot_message_id": 1})
+        cursor = self.guilds_collection.find(
+            {"ticket_config.bot_message_id": {"$exists": True, "$ne": None}},
+            {"ticket_config.bot_message_id": 1},
+        )
 
         async for document in cursor:
             message_id = document["ticket_config"]["bot_message_id"]

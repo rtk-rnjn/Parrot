@@ -149,7 +149,8 @@ class Meta(commands.Cog):
         ctx: commands.Context[Parrot],
         *,
         member: discord.Member = commands.parameter(  # noqa: B008
-            description="The member to display information about.", default=lambda ctx: ctx.author
+            description="The member to display information about.",
+            default=lambda ctx: ctx.author,
         ),
     ) -> discord.Message:
         """
@@ -184,7 +185,11 @@ class Meta(commands.Cog):
             .add_field(name="Name", value=target, inline=True)
             .add_field(name="Display Name", value=target.display_name, inline=True)
             .add_field(name="Nickname", value=target.nick or "N/A", inline=True)
-            .add_field(name="Created At", value=(discord.utils.format_dt(target.created_at, style="R")), inline=True)
+            .add_field(
+                name="Created At",
+                value=(discord.utils.format_dt(target.created_at, style="R")),
+                inline=True,
+            )
             .add_field(
                 name="Joined At",
                 value=(discord.utils.format_dt(target.joined_at, style="R") if target.joined_at else "N/A"),
@@ -205,7 +210,10 @@ class Meta(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        member: discord.Member = commands.parameter(description="The member to display the avatar of.", default=lambda ctx: ctx.author),
+        member: discord.Member = commands.parameter(
+            description="The member to display the avatar of.",
+            default=lambda ctx: ctx.author,
+        ),
     ) -> discord.Message:
         """
         Display a server member's avatar.
@@ -224,7 +232,11 @@ class Meta(commands.Cog):
         file = discord.File(io.BytesIO(avatar_bytes), filename="avatar.gif")
 
         embed = (
-            discord.Embed(title=f"{target}'s Avatar", colour=target.colour, timestamp=discord.utils.utcnow())
+            discord.Embed(
+                title=f"{target}'s Avatar",
+                colour=target.colour,
+                timestamp=discord.utils.utcnow(),
+            )
             .set_image(url="attachment://avatar.gif")
             .set_footer(text=f"ID: {target.id}")
         )
@@ -287,7 +299,10 @@ class Meta(commands.Cog):
 
         boosts = f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"
         if guild.premium_tier != 0:
-            last_boost = max(guild.members, key=lambda member: member.premium_since or guild.created_at)
+            last_boost = max(
+                guild.members,
+                key=lambda member: member.premium_since or guild.created_at,
+            )
             if last_boost.premium_since is not None:
                 boosts = f"{boosts}\nLast Boost: {last_boost} ({discord.utils.format_dt(last_boost.premium_since, 'R')})"
         else:
@@ -307,7 +322,11 @@ class Meta(commands.Cog):
         embed.add_field(name="Emoji", value=emoji_text, inline=True)
 
         if guild.me.guild_permissions.ban_members:
-            embed.add_field(name="Banned Members", value=f"{len([_ async for _ in guild.bans(limit=1000)])}+", inline=True)
+            embed.add_field(
+                name="Banned Members",
+                value=f"{len([_ async for _ in guild.bans(limit=1000)])}+",
+                inline=True,
+            )
         if guild.me.guild_permissions.manage_guild:
             embed.add_field(name="Invites", value=f"{len(await guild.invites())}", inline=True)
         if guild.banner:
@@ -407,7 +426,8 @@ class Meta(commands.Cog):
         ctx: commands.Context[Parrot],
         *,
         channel: discord.abc.GuildChannel = commands.parameter(  # noqa: B008
-            description="The channel to display information about.", default=lambda ctx: ctx.channel
+            description="The channel to display information about.",
+            default=lambda ctx: ctx.channel,
         ),
     ) -> discord.Message:
         """
@@ -428,14 +448,21 @@ class Meta(commands.Cog):
         channel = channel or ctx.channel
         channel_id = channel.id
 
-        assert isinstance(channel, discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel)
+        assert isinstance(
+            channel,
+            discord.TextChannel | discord.VoiceChannel | discord.CategoryChannel | discord.StageChannel,
+        )
 
         created_at = f"{discord.utils.format_dt(channel.created_at)}"
         mention = channel.mention
         position = channel.position
         channel_type = str(channel.type).capitalize()
         embed = (
-            discord.Embed(title="Channel Info", color=ctx.author.color, timestamp=discord.utils.utcnow())
+            discord.Embed(
+                title="Channel Info",
+                color=ctx.author.color,
+                timestamp=discord.utils.utcnow(),
+            )
             .add_field(name="Name", value=channel.name)
             .add_field(name="ID", value=f"{channel_id}")
             .add_field(name="Created At", value=created_at)

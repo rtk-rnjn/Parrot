@@ -33,7 +33,7 @@ class GiveawayConfigModal(discord.ui.Modal, title="Edit Giveaway Configuration")
         )
         self._giveaway_role_input = discord.ui.RoleSelect(
             placeholder="Select a role to mention for giveaways...",
-            default_values=[discord.Object(id=self.giveaway_role_id)] if self.giveaway_role_id is not None else [],
+            default_values=([discord.Object(id=self.giveaway_role_id)] if self.giveaway_role_id is not None else []),
             min_values=0,
             max_values=1,
         )
@@ -55,7 +55,7 @@ class GiveawayConfigModal(discord.ui.Modal, title="Edit Giveaway Configuration")
         guild_id = interaction.guild.id
         new_config = {
             "giveaway_channel_id": (self._giveaway_channel_input.values[0].id if self._giveaway_channel_input.values else None),
-            "giveaway_role_id": self._giveaway_role_input.values[0].id if self._giveaway_role_input.values else None,
+            "giveaway_role_id": (self._giveaway_role_input.values[0].id if self._giveaway_role_input.values else None),
         }
         await interaction.client.database.edit_giveaway_config(guild_id=guild_id, enabled=True, **new_config)
 

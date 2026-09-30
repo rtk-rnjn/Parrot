@@ -223,9 +223,17 @@ class Love(commands.Cog):
         embed.title = f"__{zodiac}__"
         embed.description = self.zodiac_fact[zodiac]["About"]
         embed.add_field(name="__Motto__", value=self.zodiac_fact[zodiac]["Motto"], inline=False).add_field(
-            name="__Strengths__", value=self.zodiac_fact[zodiac]["Strengths"], inline=False
-        ).add_field(name="__Weaknesses__", value=self.zodiac_fact[zodiac]["Weaknesses"], inline=False).add_field(
-            name="__Full form__", value=self.zodiac_fact[zodiac]["full_form"], inline=False
+            name="__Strengths__",
+            value=self.zodiac_fact[zodiac]["Strengths"],
+            inline=False,
+        ).add_field(
+            name="__Weaknesses__",
+            value=self.zodiac_fact[zodiac]["Weaknesses"],
+            inline=False,
+        ).add_field(
+            name="__Full form__",
+            value=self.zodiac_fact[zodiac]["full_form"],
+            inline=False,
         ).set_thumbnail(url=self.zodiac_fact[zodiac]["url"])
 
     def zodiac_date_verifier(self, query_date: datetime) -> str:
@@ -242,7 +250,11 @@ class Love(commands.Cog):
     @commands.command(aliases=["saintvalentine"])
     async def whoisvalentine(self, ctx: commands.Context[Parrot]):
         """Displays info about Saint Valentine."""
-        embed = discord.Embed(title="Who is Saint Valentine?", description=self.valentine_facts["whois"], color=ctx.author.color)
+        embed = discord.Embed(
+            title="Who is Saint Valentine?",
+            description=self.valentine_facts["whois"],
+            color=ctx.author.color,
+        )
         embed.set_thumbnail(
             url="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Saint_Valentine_-_facial_reconstruction.jpg/1024px-Saint_Valentine_-_facial_reconstruction.jpg"
         )
@@ -302,7 +314,10 @@ class Love(commands.Cog):
             emoji2 = random.choice(HEART_EMOJIS)
             embed.title = "Zodiac Compatibility"
             embed.description = f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
-            embed.add_field(name=f"A letter from Dr.Zodiac {LETTER_EMOJI}", value=compatible_zodiac["description"])
+            embed.add_field(
+                name=f"A letter from Dr.Zodiac {LETTER_EMOJI}",
+                value=compatible_zodiac["description"],
+            )
         else:
             embed = self.generate_invalidname_embed(zodiac_sign)
         await ctx.reply(embed=embed)
@@ -326,7 +341,11 @@ class Love(commands.Cog):
         Note that most of them are very cheesy.
         """
         random_line = random.choice(self.pickup_lines["lines"])
-        embed = discord.Embed(title=":cheese: Your pickup line :cheese:", description=random_line["line"], color=ctx.author.color)
+        embed = discord.Embed(
+            title=":cheese: Your pickup line :cheese:",
+            description=random_line["line"],
+            color=ctx.author.color,
+        )
         embed.set_thumbnail(url=random_line.get("image", self.pickup_lines["placeholder"]))
         await ctx.reply(embed=embed)
 

@@ -25,7 +25,13 @@ _ONLINE_COLOR = discord.Color.green()
 _OFFLINE_COLOR = discord.Color.red()
 
 
-def _dashboard(*, title: str, accent_color: discord.Color, blocks: Sequence[str], footer: str | None = None) -> discord.ui.LayoutView:
+def _dashboard(
+    *,
+    title: str,
+    accent_color: discord.Color,
+    blocks: Sequence[str],
+    footer: str | None = None,
+) -> discord.ui.LayoutView:
     """Build a small, read-only Components V2 "dashboard" message.
 
     This is the Components V2 replacement for the old ``discord.Embed`` +
@@ -62,7 +68,11 @@ def _error_dashboard(system: str, exc: Exception) -> discord.ui.LayoutView:
 def _status_dashboard(*, online: bool, system: str, message: str) -> discord.ui.LayoutView:
     """Build a small pass/fail dashboard, e.g. for a ping check."""
     icon = "\N{LARGE GREEN CIRCLE}" if online else "\N{LARGE RED CIRCLE}"
-    return _dashboard(title=f"## {icon} {system}", accent_color=_ONLINE_COLOR if online else _OFFLINE_COLOR, blocks=[message])
+    return _dashboard(
+        title=f"## {icon} {system}",
+        accent_color=_ONLINE_COLOR if online else _OFFLINE_COLOR,
+        blocks=[message],
+    )
 
 
 def _field(emoji: str, name: str, value: str) -> str:
@@ -192,10 +202,16 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             "Live Stats",
             _kv_lines(
                 [
-                    ("Uptime", f"`{self._format_duration(server.get('uptime_in_seconds', 0))}`"),
+                    (
+                        "Uptime",
+                        f"`{self._format_duration(server.get('uptime_in_seconds', 0))}`",
+                    ),
                     ("Clients", f"`{clients.get('connected_clients', 0):,}`"),
                     ("Memory", self._format_bytes(memory.get("used_memory", 0))),
-                    ("Peak Memory", self._format_bytes(memory.get("used_memory_peak", 0))),
+                    (
+                        "Peak Memory",
+                        self._format_bytes(memory.get("used_memory_peak", 0)),
+                    ),
                     ("Commands", f"`{stats.get('total_commands_processed', 0):,}`"),
                     ("Ops/sec", f"`{stats.get('instantaneous_ops_per_sec', 0):,}`"),
                 ]
@@ -246,7 +262,14 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         if limit_rows:
             blocks.append(_field("\N{ROCKET}", "Limits", _kv_lines(limit_rows)))
 
-        await ctx.reply(view=_dashboard(title="## \N{FLOPPY DISK} Redis Memory", accent_color=_REDIS_COLOR, blocks=blocks, footer=_footer(ctx)))
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{FLOPPY DISK} Redis Memory",
+                accent_color=_REDIS_COLOR,
+                blocks=blocks,
+                footer=_footer(ctx),
+            )
+        )
 
     @redis.command(name="clients")
     async def redis_clients(self, ctx: commands.Context) -> None:
@@ -356,11 +379,24 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     _field(
                         "\N{FILE CABINET}",
                         database,
-                        _kv_lines([("Keys", f"`{keys:,}`"), ("Expires", f"`{expires:,}`"), ("Avg TTL", f"`{avg_ttl:,} ms`")]),
+                        _kv_lines(
+                            [
+                                ("Keys", f"`{keys:,}`"),
+                                ("Expires", f"`{expires:,}`"),
+                                ("Avg TTL", f"`{avg_ttl:,} ms`"),
+                            ]
+                        ),
                     )
                 )
 
-        await ctx.reply(view=_dashboard(title="## \N{OLD KEY} Redis Keyspace", accent_color=_REDIS_COLOR, blocks=blocks, footer=_footer(ctx)))
+        await ctx.reply(
+            view=_dashboard(
+                title="## \N{OLD KEY} Redis Keyspace",
+                accent_color=_REDIS_COLOR,
+                blocks=blocks,
+                footer=_footer(ctx),
+            )
+        )
 
     @redis.command(name="persistence")
     async def redis_persistence(self, ctx: commands.Context) -> None:
@@ -379,9 +415,18 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             _kv_lines(
                 [
                     ("Last save", f"`{persistence.get('rdb_last_save_time', 0)}`"),
-                    ("Changes since save", f"`{persistence.get('rdb_changes_since_last_save', 0):,}`"),
-                    ("Last save status", f"`{persistence.get('rdb_last_bgsave_status', 'unknown')}`"),
-                    ("Save in progress", f"`{bool(persistence.get('rdb_bgsave_in_progress', 0))}`"),
+                    (
+                        "Changes since save",
+                        f"`{persistence.get('rdb_changes_since_last_save', 0):,}`",
+                    ),
+                    (
+                        "Last save status",
+                        f"`{persistence.get('rdb_last_bgsave_status', 'unknown')}`",
+                    ),
+                    (
+                        "Save in progress",
+                        f"`{bool(persistence.get('rdb_bgsave_in_progress', 0))}`",
+                    ),
                 ]
             ),
         )
@@ -392,8 +437,14 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             _kv_lines(
                 [
                     ("Enabled", f"`{bool(persistence.get('aof_enabled', 0))}`"),
-                    ("Rewrite in progress", f"`{bool(persistence.get('aof_rewrite_in_progress', 0))}`"),
-                    ("Pending rewrite", f"`{bool(persistence.get('aof_rewrite_scheduled', 0))}`"),
+                    (
+                        "Rewrite in progress",
+                        f"`{bool(persistence.get('aof_rewrite_in_progress', 0))}`",
+                    ),
+                    (
+                        "Pending rewrite",
+                        f"`{bool(persistence.get('aof_rewrite_scheduled', 0))}`",
+                    ),
                 ]
             ),
         )
@@ -452,7 +503,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 _field(
                     "\N{ANTENNA WITH BARS}",
                     "Replicas",
-                    "\n\n".join(replica_entries) if replica_entries else "No replicas currently connected.",
+                    ("\n\n".join(replica_entries) if replica_entries else "No replicas currently connected."),
                 )
             )
         else:
@@ -464,7 +515,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                         [
                             ("Host", f"`{replication.get('master_host', 'unknown')}`"),
                             ("Port", f"`{replication.get('master_port', 'unknown')}`"),
-                            ("Link", f"`{replication.get('master_link_status', 'unknown')}`"),
+                            (
+                                "Link",
+                                f"`{replication.get('master_link_status', 'unknown')}`",
+                            ),
                         ]
                     ),
                 )
@@ -547,7 +601,13 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             return
 
         ok_value = result.get("ok", 0)
-        await ctx.reply(view=_status_dashboard(online=bool(ok_value), system="MongoDB", message=f"MongoDB is online. `ok={ok_value}`"))
+        await ctx.reply(
+            view=_status_dashboard(
+                online=bool(ok_value),
+                system="MongoDB",
+                message=f"MongoDB is online. `ok={ok_value}`",
+            )
+        )
 
     @mongodb.command(name="status")
     async def mongodb_status(self, ctx: commands.Context) -> None:
@@ -586,13 +646,23 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         memory_block = _field(
             "\N{FLOPPY DISK}",
             "Memory",
-            _kv_lines([("Resident", f"`{memory.get('resident', 0):,} MB`"), ("Virtual", f"`{memory.get('virtual', 0):,} MB`")]),
+            _kv_lines(
+                [
+                    ("Resident", f"`{memory.get('resident', 0):,} MB`"),
+                    ("Virtual", f"`{memory.get('virtual', 0):,} MB`"),
+                ]
+            ),
         )
 
         network_block = _field(
             "\N{GLOBE WITH MERIDIANS}",
             "Network",
-            _kv_lines([("In", f"`{network.get('bytesIn', 0):,}` bytes"), ("Out", f"`{network.get('bytesOut', 0):,}` bytes")]),
+            _kv_lines(
+                [
+                    ("In", f"`{network.get('bytesIn', 0):,}` bytes"),
+                    ("Out", f"`{network.get('bytesOut', 0):,}` bytes"),
+                ]
+            ),
         )
 
         operations_block = _field(
@@ -612,7 +682,13 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             view=_dashboard(
                 title="## \N{LEAF FLUTTERING IN WIND} MongoDB Server Status",
                 accent_color=_MONGO_COLOR,
-                blocks=[instance_block, connections_block, memory_block, network_block, operations_block],
+                blocks=[
+                    instance_block,
+                    connections_block,
+                    memory_block,
+                    network_block,
+                    operations_block,
+                ],
                 footer=_footer(ctx),
             )
         )
@@ -687,7 +763,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @mongodb.command(name="memory")
     async def mongodb_memory(self, ctx: commands.Context) -> None:
         """Show MongoDB memory usage."""
-        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus") # pyright: ignore[reportAssignmentType]
+        status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         memory = status.get("mem", {})
 
@@ -793,11 +869,9 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         return f"{value:.2f} EB"
 
-
     @commands.Cog.listener()
     async def on_redis_message(self, channel: str, message: str) -> None:
         """Log Redis pub/sub messages to the console."""
-
 
     @commands.Cog.listener()
     async def on_mongodb_change(self, change) -> None:

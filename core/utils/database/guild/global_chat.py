@@ -34,14 +34,22 @@ class _GuildGlobalChatMixin(DatabaseMixin):
     ) -> bool:
         updates = {
             f"global_chat_config.{field}": value
-            for field, value in (("enabled", enabled), ("channel_id", channel_id), ("webhook_uri", webhook_uri))
+            for field, value in (
+                ("enabled", enabled),
+                ("channel_id", channel_id),
+                ("webhook_uri", webhook_uri),
+            )
             if value is not MISSING
         }
         if not updates:
             return False
 
         result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
-        for field, value in (("enabled", enabled), ("channel_id", channel_id), ("webhook_uri", webhook_uri)):
+        for field, value in (
+            ("enabled", enabled),
+            ("channel_id", channel_id),
+            ("webhook_uri", webhook_uri),
+        ):
             if value is MISSING:
                 continue
             key = getattr(
@@ -89,7 +97,10 @@ class _GuildGlobalChatMixin(DatabaseMixin):
 
     async def fetch_active_global_chat_webhooks(self):
         """Get all global chat webhook URIs."""
-        filters = {"global_chat_config.webhook_uri": {"$exists": True, "$ne": None}, "global_chat_config.enabled": True}
+        filters = {
+            "global_chat_config.webhook_uri": {"$exists": True, "$ne": None},
+            "global_chat_config.enabled": True,
+        }
 
         projection = {"_id": 1, "global_chat_config.webhook_uri": 1}
         async for guild in self.guilds_collection.find(filters, projection):

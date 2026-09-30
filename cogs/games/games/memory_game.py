@@ -141,7 +141,13 @@ class MemoryGame:
         self.embed = discord.Embed(description="**Memory Game**", color=self.embed_color)
         self.embed.add_field(name="\N{ZERO WIDTH SPACE}", value="Moves: `0`")
 
-        self.view = MemoryView(game=self, items=items, button_style=button_style, pause_time=pause_time, timeout=timeout)
+        self.view = MemoryView(
+            game=self,
+            items=items,
+            button_style=button_style,
+            pause_time=pause_time,
+            timeout=timeout,
+        )
         self.message = await ctx.reply(embed=self.embed, view=self.view)
         self.view.message = self.message
 

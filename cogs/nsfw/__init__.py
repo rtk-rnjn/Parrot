@@ -113,7 +113,12 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def n(self, ctx: commands.Context[Parrot], *, endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif") -> None:
+    async def n(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
+    ) -> None:
         """Mature Content. 18+ only Please."""
         await ctx.typing()
         r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")
@@ -182,21 +187,36 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
     @commands.max_concurrency(1, commands.BucketType.user)
     async def _sex_gif(self, ctx: commands.Context[Parrot], *, search: str) -> None:
         """Mature Content. 18+ only please."""
-        await self._paginate_results(ctx, fetch=self._sexdotcomgif.fetch, search=search, embed_factory=self._sex_embed)
+        await self._paginate_results(
+            ctx,
+            fetch=self._sexdotcomgif.fetch,
+            search=search,
+            embed_factory=self._sex_embed,
+        )
 
     @sexdotcom.command(name="pics", aliases=["pic", "image", "images"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     async def _sex_pics(self, ctx: commands.Context[Parrot], *, search: str) -> None:
         """Mature Content. 18+ only please."""
-        await self._paginate_results(ctx, fetch=self._sexdotcompics.fetch, search=search, embed_factory=self._sex_embed)
+        await self._paginate_results(
+            ctx,
+            fetch=self._sexdotcompics.fetch,
+            search=search,
+            embed_factory=self._sex_embed,
+        )
 
     @sexdotcom.command(name="video", aliases=["vid", "pin"])
     @commands.cooldown(1, 8, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     async def _pin_video(self, ctx: commands.Context[Parrot], *, search: str) -> None:
         """Random video clip from pin.porn. 18+ only please."""
-        await self._paginate_results(ctx, fetch=self._pinporn.search, search=search, embed_factory=self._pin_video_embed)
+        await self._paginate_results(
+            ctx,
+            fetch=self._pinporn.search,
+            search=search,
+            embed_factory=self._pin_video_embed,
+        )
 
 
 async def setup(bot: Parrot) -> None:

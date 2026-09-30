@@ -165,18 +165,30 @@ class Config(commands.Cog):
                     discord.ui.ActionRow(LevelingChannelSelect(channel_id=config["leveling_config"]["channel_id"])),
                 ],
                 [
-                    discord.ui.Section(discord.ui.TextDisplay(WELCOME_CONFIG_DESCRIPTION), accessory=WelcomeEditButton(**config)),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay(WELCOME_CONFIG_DESCRIPTION),
+                        accessory=WelcomeEditButton(**config),
+                    ),
                     discord.ui.Separator(),
-                    discord.ui.Section(discord.ui.TextDisplay(GIVEAWAY_CONFIG_DESCRIPTION), accessory=GiveawayEditButton(**config)),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay(GIVEAWAY_CONFIG_DESCRIPTION),
+                        accessory=GiveawayEditButton(**config),
+                    ),
                     discord.ui.Separator(),
-                    discord.ui.Section(discord.ui.TextDisplay(STARBOARD_CONFIG_DESCRIPTION), accessory=StarboardEditButton(**config)),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay(STARBOARD_CONFIG_DESCRIPTION),
+                        accessory=StarboardEditButton(**config),
+                    ),
                     discord.ui.Separator(),
                     discord.ui.Section(
                         discord.ui.TextDisplay(LEVELING_REWARD_ROLES_DESCRIPTION),
                         accessory=LevelingRewardRolesEditButton(**config),
                     ),
                     discord.ui.Separator(),
-                    discord.ui.Section(discord.ui.TextDisplay(TICKET_CONFIG_DESCRIPTION), accessory=TicketEditButton(**config)),
+                    discord.ui.Section(
+                        discord.ui.TextDisplay(TICKET_CONFIG_DESCRIPTION),
+                        accessory=TicketEditButton(**config),
+                    ),
                 ],
             ],
             footer=footer,

@@ -101,11 +101,17 @@ def _parse_ban(data: Mapping[str, Any]) -> EffectConfig:
 
 
 def _parse_mute(data: Mapping[str, Any]) -> EffectConfig:
-    return MuteConfig(duration_minutes=_require_int(data, "duration_minutes", minimum=0), message=_optional_string(data, "message"))
+    return MuteConfig(
+        duration_minutes=_require_int(data, "duration_minutes", minimum=0),
+        message=_optional_string(data, "message"),
+    )
 
 
 def _parse_timeout(data: Mapping[str, Any]) -> EffectConfig:
-    return TimeoutConfig(duration_minutes=_require_int(data, "duration_minutes", minimum=0), message=_optional_string(data, "message"))
+    return TimeoutConfig(
+        duration_minutes=_require_int(data, "duration_minutes", minimum=0),
+        message=_optional_string(data, "message"),
+    )
 
 
 def _parse_nickname(data: Mapping[str, Any]) -> EffectConfig:
@@ -113,7 +119,10 @@ def _parse_nickname(data: Mapping[str, Any]) -> EffectConfig:
 
 
 def _parse_delete_messages(data: Mapping[str, Any]) -> EffectConfig:
-    return DeleteMessagesConfig(count=_require_int(data, "count", minimum=1), max_age_seconds=_require_int(data, "max_age_seconds", minimum=0))
+    return DeleteMessagesConfig(
+        count=_require_int(data, "count", minimum=1),
+        max_age_seconds=_require_int(data, "max_age_seconds", minimum=0),
+    )
 
 
 def _parse_role(data: Mapping[str, Any]) -> EffectConfig:

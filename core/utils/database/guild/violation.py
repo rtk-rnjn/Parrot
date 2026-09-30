@@ -8,25 +8,48 @@ class _GuildViolationMixin(DatabaseMixin):
     """Guild violation counters, backed by MongoDB and Redis."""
 
     async def increase_violation(self, *, guild_id: int, violation_name: str = "default", user_id: int) -> None:
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$inc": {f"violations.{violation_name}.{user_id}": 1}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$inc": {f"violations.{violation_name}.{user_id}": 1}},
+            upsert=True,
+        )
 
         key = RedisKeys.GUILD_MEMBER_VIOLATION_COUNT.format(guild_id=guild_id, user_id=user_id, violation_name=violation_name)
         await self.redis_client.incr(key)
 
     async def reset_violation(self, *, guild_id: int, violation_name: str = "default", user_id: int) -> None:
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"violations.{violation_name}.{user_id}": 0}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {f"violations.{violation_name}.{user_id}": 0}},
+            upsert=True,
+        )
 
         key = RedisKeys.GUILD_MEMBER_VIOLATION_COUNT.format(guild_id=guild_id, user_id=user_id, violation_name=violation_name)
         await self.redis_client.set(key, 0)
 
     async def decrease_violation(self, *, guild_id: int, violation_name: str = "default", user_id: int) -> None:
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$inc": {f"violations.{violation_name}.{user_id}": -1}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$inc": {f"violations.{violation_name}.{user_id}": -1}},
+            upsert=True,
+        )
 
         key = RedisKeys.GUILD_MEMBER_VIOLATION_COUNT.format(guild_id=guild_id, user_id=user_id, violation_name=violation_name)
         await self.redis_client.decr(key)
 
-    async def set_violation_count(self, *, guild_id: int, violation_name: str = "default", user_id: int, count: int) -> None:
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"violations.{violation_name}.{user_id}": count}}, upsert=True)
+    async def set_violation_count(
+        self,
+        *,
+        guild_id: int,
+        violation_name: str = "default",
+        user_id: int,
+        count: int,
+    ) -> None:
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {f"violations.{violation_name}.{user_id}": count}},
+            upsert=True,
+        )
 
         key = RedisKeys.GUILD_MEMBER_VIOLATION_COUNT.format(guild_id=guild_id, user_id=user_id, violation_name=violation_name)
         await self.redis_client.set(key, count)
@@ -64,7 +87,11 @@ class _GuildViolationMixin(DatabaseMixin):
         return user_violations
 
     async def set_default_violation_expiration(self, *, guild_id: int, expiration_seconds: int | None) -> None:
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"default_violation_expiration": expiration_seconds}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {"default_violation_expiration": expiration_seconds}},
+            upsert=True,
+        )
 
         key = RedisKeys.GUILD_DEFAULT_VIOLATION_EXPIRATION.format(guild_id=guild_id)
         if expiration_seconds is not None:

@@ -41,7 +41,10 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
                 self.view.stop()
                 await interaction.response.edit_message(content="Congratulations, you won!", view=self.view)
                 return
-            await interaction.response.edit_message(content=f"Click the buttons in order! **[Lives: {game.lives}]**", view=self.view)
+            await interaction.response.edit_message(
+                content=f"Click the buttons in order! **[Lives: {game.lives}]**",
+                view=self.view,
+            )
         else:
             game.lives -= 1
 
@@ -56,7 +59,10 @@ class ChimpButton(discord.ui.Button["ChimpView"]):
                 self.style = discord.ButtonStyle.red
 
                 game.wrong_guesses.append(self)
-                await interaction.response.edit_message(content=f"Click the buttons in order! **[Lives: `{game.lives}`]**", view=self.view)
+                await interaction.response.edit_message(
+                    content=f"Click the buttons in order! **[Lives: `{game.lives}`]**",
+                    view=self.view,
+                )
 
 
 class ChimpView(BaseView):
@@ -141,7 +147,10 @@ class ChimpTest:
 
             if not self.view.is_finished():
                 self.view.update_view(style=self.view.button_style, highlight=self.highlight_tiles)
-                await self.message.edit(content=f"Click the buttons in order! **[Lives: {self.lives}]**", view=self.view)
+                await self.message.edit(
+                    content=f"Click the buttons in order! **[Lives: {self.lives}]**",
+                    view=self.view,
+                )
 
         await double_wait(wait_for_delete(ctx, self.message), self.view.wait())
         return self.message

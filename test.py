@@ -22,5 +22,3 @@ image = interpreter.turtle.render()
 
 with open("output.png", "wb") as file:
     file.write(image.read())
-
-print("Created output.png")

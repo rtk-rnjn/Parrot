@@ -15,7 +15,7 @@ class HubChannelSelect(discord.ui.ChannelSelect):
             min_values=0,
             max_values=1,
             channel_types=[discord.ChannelType.voice],
-            default_values=[discord.Object(id=channel_id)] if channel_id is not None else [],
+            default_values=([discord.Object(id=channel_id)] if channel_id is not None else []),
         )
         self.channel_id = channel_id
 

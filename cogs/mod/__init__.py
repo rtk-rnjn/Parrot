@@ -36,9 +36,18 @@ class Snowflake:
 
 class PurgeFlags(commands.FlagConverter, case_insensitive=True, prefix="--", delimiter=" "):
     user: discord.User | None = commands.flag(description="Remove messages from this user", default=None)
-    contains: str | None = commands.flag(description="Remove messages that contains this string (case sensitive)", default=None)
-    prefix: str | None = commands.flag(description="Remove messages that start with this string (case sensitive)", default=None)
-    suffix: str | None = commands.flag(description="Remove messages that end with this string (case sensitive)", default=None)
+    contains: str | None = commands.flag(
+        description="Remove messages that contains this string (case sensitive)",
+        default=None,
+    )
+    prefix: str | None = commands.flag(
+        description="Remove messages that start with this string (case sensitive)",
+        default=None,
+    )
+    suffix: str | None = commands.flag(
+        description="Remove messages that end with this string (case sensitive)",
+        default=None,
+    )
     after: Annotated[int | None, Snowflake] = commands.flag(description="Search for messages that come after this message ID", default=None)
     before: Annotated[int | None, Snowflake] = commands.flag(description="Search for messages that come before this message ID", default=None)
     bot: bool = commands.flag(description="Remove messages from bots (not webhooks!)", default=False)
@@ -180,9 +189,21 @@ _ACTION_META = {
     "kick": ("\N{WOMANS BOOTS}", "Member Kicked", discord.Color.orange()),
     "ban": ("\N{HAMMER}", "Member Banned", discord.Color.red()),
     "unban": ("\N{DOVE OF PEACE}", "Member Unbanned", discord.Color.green()),
-    "mute": ("\N{SPEAKER WITH CANCELLATION STROKE}", "Member Muted", discord.Color.dark_orange()),
-    "unmute": ("\N{SPEAKER WITH THREE SOUND WAVES}", "Member Unmuted", discord.Color.green()),
-    "timeout": ("\N{HOURGLASS WITH FLOWING SAND}", "Member Timed Out", discord.Color.gold()),
+    "mute": (
+        "\N{SPEAKER WITH CANCELLATION STROKE}",
+        "Member Muted",
+        discord.Color.dark_orange(),
+    ),
+    "unmute": (
+        "\N{SPEAKER WITH THREE SOUND WAVES}",
+        "Member Unmuted",
+        discord.Color.green(),
+    ),
+    "timeout": (
+        "\N{HOURGLASS WITH FLOWING SAND}",
+        "Member Timed Out",
+        discord.Color.gold(),
+    ),
     "untimeout": ("\N{ALARM CLOCK}", "Timeout Removed", discord.Color.green()),
 }
 
@@ -222,7 +243,13 @@ class Mod(commands.Cog):
 
         await ctx.guild.kick(member, reason=reason)
 
-        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action="kick", targets=[member], reason=original_reason)
+        await self.mod_log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action="kick",
+            targets=[member],
+            reason=original_reason,
+        )
         return await ctx.reply(f"**{member}** (ID: {member.id}) has been kicked from the server.")
 
     @commands.command(name="ban", aliases=["hackban"])
@@ -259,7 +286,13 @@ class Mod(commands.Cog):
 
         await ctx.guild.ban(member, reason=reason)
 
-        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=[member], reason=original_reason)
+        await self.mod_log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action="ban",
+            targets=[member],
+            reason=original_reason,
+        )
 
         if isinstance(member, discord.Object):
             return await ctx.reply(f"ID: {member.id} has been banned from the server.")
@@ -304,7 +337,13 @@ class Mod(commands.Cog):
             )
 
         result = await ctx.guild.bulk_ban(bannable, reason=reason)
-        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=members, reason=original_reason)
+        await self.mod_log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action="ban",
+            targets=members,
+            reason=original_reason,
+        )
 
         success_count = len(result.banned)
         failure_count = len(result.failed)
@@ -506,14 +545,23 @@ class Mod(commands.Cog):
                 message = await ctx.reply(f"**{member}** (ID: {member.id}) is not currently muted in this server.")
             else:
                 await ctx.bot.database.remove_muted_member(guild_id=ctx.guild.id, member_id=member.id)
-                await ctx.bot.event_scheduler.delete(event_name="mute", metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id})
+                await ctx.bot.event_scheduler.delete(
+                    event_name="mute",
+                    metadata_filter={"guild_id": ctx.guild.id, "member_id": member.id},
+                )
                 await member.remove_roles(mute_role, reason=reason)
 
                 message = await ctx.reply(f"**{member}** (ID: {member.id}) has been unmuted from the server.")
 
                 action = "unmute"
 
-        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action=action, targets=[member], reason=original_reason)
+        await self.mod_log(
+            guild=ctx.guild,
+            responsible_moderator=ctx.author,
+            action=action,
+            targets=[member],
+            reason=original_reason,
+        )
 
         return message
 
@@ -546,7 +594,12 @@ class Mod(commands.Cog):
             await ctx.bot.event_scheduler.create_timer(
                 event_name="mute",
                 expires_at=duration.dt,
-                metadata=MuteMetadata(guild_id=ctx.guild.id, member_id=member.id, moderator_id=ctx.author.id, reason=reason),
+                metadata=MuteMetadata(
+                    guild_id=ctx.guild.id,
+                    member_id=member.id,
+                    moderator_id=ctx.author.id,
+                    reason=reason,
+                ),
             )
 
         await member.add_roles(mute_role, reason=reason)
@@ -670,7 +723,10 @@ class Mod(commands.Cog):
                 "Use `mute role <role>` to change the mute role or `mute sync` to synchronize its permissions."
             )
 
-        mute_role = await ctx.guild.create_role(name=role_name, reason=f"Mute role created by {ctx.author} (ID: {ctx.author.id})")
+        mute_role = await ctx.guild.create_role(
+            name=role_name,
+            reason=f"Mute role created by {ctx.author} (ID: {ctx.author.id})",
+        )
         await ctx.bot.database.edit_mute_config(guild_id=ctx.guild.id, mute_role_id=mute_role.id)
 
         message_contents = [
@@ -805,7 +861,8 @@ class Mod(commands.Cog):
     @commands.Cog.listener("on_member_update")
     async def sticky_mute_role(self, before: discord.Member, after: discord.Member) -> None:
         """If someone removes the mute role from a muted member, reapply it.
-        We don't care if they are muted via timeout, since Discord handles that automatically."""
+        We don't care if they are muted via timeout, since Discord handles that automatically.
+        """
 
         removed_roles = set(before.roles) - set(after.roles)
         if not removed_roles:
@@ -851,7 +908,10 @@ class Mod(commands.Cog):
     @commands.Cog.listener("on_ready")
     async def sync_mute_roles(self) -> None:
         """Sync mute roles for all guilds on bot startup."""
-        async for guild_id, muted_members_id in self.bot.database.get_all_muted_members():
+        async for (
+            guild_id,
+            muted_members_id,
+        ) in self.bot.database.get_all_muted_members():
             guild = self.bot.get_guild(guild_id)
             if guild is None:
                 _log.warning("Guild not found for mute role sync: %s", guild_id)
@@ -873,7 +933,11 @@ class Mod(commands.Cog):
             for member_id in muted_members_id:
                 member = await self.bot.get_or_fetch_member(guild, member_id)
                 if member is None:
-                    _log.warning("Muted member not found in guild: %s, member ID: %s", guild.id, member_id)
+                    _log.warning(
+                        "Muted member not found in guild: %s, member ID: %s",
+                        guild.id,
+                        member_id,
+                    )
                     continue
 
                 if mute_role not in member.roles:
@@ -1072,7 +1136,8 @@ class Mod(commands.Cog):
         for chunk in discord.utils.as_chunks(deleted, 100):
             try:
                 await ctx.channel.delete_messages(  # pyright: ignore[reportAttributeAccessIssue]
-                    chunk, reason=f"Action done by {ctx.author} (ID: {ctx.author.id}): Purge"
+                    chunk,
+                    reason=f"Action done by {ctx.author} (ID: {ctx.author.id}): Purge",
                 )
             except discord.Forbidden:
                 return await ctx.reply("I do not have permissions to delete messages.")
@@ -1154,7 +1219,10 @@ class Mod(commands.Cog):
 
         for bot in bots:
             try:
-                await bot.add_roles(role, reason=f"Role assigned to bot by {ctx.author} (ID: {ctx.author.id})")
+                await bot.add_roles(
+                    role,
+                    reason=f"Role assigned to bot by {ctx.author} (ID: {ctx.author.id})",
+                )
                 success += 1
             except discord.Forbidden, discord.HTTPException:
                 error += 1
@@ -1195,7 +1263,10 @@ class Mod(commands.Cog):
 
         for human in humans:
             try:
-                await human.add_roles(role, reason=f"Role assigned to human by {ctx.author} (ID: {ctx.author.id})")
+                await human.add_roles(
+                    role,
+                    reason=f"Role assigned to human by {ctx.author} (ID: {ctx.author.id})",
+                )
                 success += 1
             except discord.Forbidden, discord.HTTPException:
                 error += 1
@@ -1236,7 +1307,10 @@ class Mod(commands.Cog):
 
         for member in members:
             try:
-                await member.add_roles(role, reason=f"Role assigned to everyone by {ctx.author} (ID: {ctx.author.id})")
+                await member.add_roles(
+                    role,
+                    reason=f"Role assigned to everyone by {ctx.author} (ID: {ctx.author.id})",
+                )
                 success += 1
             except discord.Forbidden, discord.HTTPException:
                 error += 1
@@ -1368,10 +1442,16 @@ class Mod(commands.Cog):
 
         channel = guild.get_channel(channel_id)
         if not isinstance(channel, discord.TextChannel):
-            _log.warning("Moderation log channel not found or is not a text channel for guild: %s", guild.id)
+            _log.warning(
+                "Moderation log channel not found or is not a text channel for guild: %s",
+                guild.id,
+            )
             return
 
-        emoji, title, _color = _ACTION_META.get(action, ("\N{SHIELD}", action.replace("_", " ").title(), discord.Colour.default()))
+        emoji, title, _color = _ACTION_META.get(
+            action,
+            ("\N{SHIELD}", action.replace("_", " ").title(), discord.Colour.default()),
+        )
 
         target_list = list(targets)
         target_lines = [self._format_target(target) for target in target_list]

@@ -106,7 +106,11 @@ class CountryGuesser:
         return round(difflib.SequenceMatcher(None, guess, self.country).ratio() * 100)
 
     def get_embed(self) -> discord.Embed:
-        embed = discord.Embed(title="Guess that country!", description=f"```fix\n{self.get_blanks()}\n```", color=self.embed_color)
+        embed = discord.Embed(
+            title="Guess that country!",
+            description=f"```fix\n{self.get_blanks()}\n```",
+            color=self.embed_color,
+        )
         embed.add_field(
             name="\N{ZERO WIDTH SPACE}",
             value=f"```yml\nblurred: {str(self.hard_mode).lower()}\nflag-mode: {str(self.is_flags).lower()}\n```",
@@ -116,7 +120,11 @@ class CountryGuesser:
         return embed
 
     async def wait_for_response(
-        self, ctx: commands.Context[commands.Bot], *, options: tuple[str, ...] = (), length: int | None = None
+        self,
+        ctx: commands.Context[commands.Bot],
+        *,
+        options: tuple[str, ...] = (),
+        length: int | None = None,
     ) -> tuple[discord.Message, str] | None:
         def check(m: discord.Message) -> bool:
             if length:
@@ -166,7 +174,10 @@ class CountryGuesser:
             self.hints -= 1
             await hint_msg.reply(f"Here is your hint: `{hint}`", mention_author=False)
         else:
-            await hint_msg.reply(f"Okay continue guessing! You have **{self.guesses}** guesses left.", mention_author=False)
+            await hint_msg.reply(
+                f"Okay continue guessing! You have **{self.guesses}** guesses left.",
+                mention_author=False,
+            )
 
         return True
 

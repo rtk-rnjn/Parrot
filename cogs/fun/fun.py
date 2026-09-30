@@ -95,7 +95,13 @@ def from_bottom(text: str) -> str:
     return out.decode()
 
 
-def replace_many(sentence: str, replacements: dict[str, str], *, ignore_case: bool = False, match_case: bool = False) -> str:
+def replace_many(
+    sentence: str,
+    replacements: dict[str, str],
+    *,
+    ignore_case: bool = False,
+    match_case: bool = False,
+) -> str:
     if ignore_case:
         replacements = {word.lower(): replacement for word, replacement in replacements.items()}
 
@@ -192,14 +198,25 @@ class QuizConfigLayout(BaseLayoutView):
 
         self.difficulty_select = discord.ui.Select(
             placeholder="Any Difficulty",
-            options=[discord.SelectOption(label=label, value=value) for label, value in [("Easy", "easy"), ("Medium", "medium"), ("Hard", "hard")]],
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("Easy", "easy"),
+                    ("Medium", "medium"),
+                    ("Hard", "hard"),
+                ]
+            ],
         )
         self.difficulty_select.callback = self.difficulty_select_callback
 
         self.type_select = discord.ui.Select(
             placeholder="Any Type",
             options=[
-                discord.SelectOption(label=label, value=value) for label, value in [("Multiple Choice", "multiple"), ("True / False", "boolean")]
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("Multiple Choice", "multiple"),
+                    ("True / False", "boolean"),
+                ]
             ],
         )
         self.type_select.callback = self.type_select_callback
@@ -254,7 +271,11 @@ class QuizConfigLayout(BaseLayoutView):
 class ColorHandler:
     bot: Parrot
 
-    async def send_colour_response(self, ctx: Context[Parrot], rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> None:
+    async def send_colour_response(
+        self,
+        ctx: Context[Parrot],
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> None:
         """Create and send embed from user given colour information."""
         name = self._rgb_to_name(rgb)
         try:
@@ -315,21 +336,27 @@ class ColorHandler:
         }
 
     @staticmethod
-    def _rgb_to_hsv(rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> tuple[int, int, int]:
+    def _rgb_to_hsv(
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> tuple[int, int, int]:
         """Convert RGB values to HSV values."""
         rgb_list = [val / 255 for val in rgb]
         h, s, v = colorsys.rgb_to_hsv(*rgb_list)
         return round(h * 360), round(s * 100), round(v * 100)
 
     @staticmethod
-    def _rgb_to_hsl(rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> tuple[int, int, int]:
+    def _rgb_to_hsl(
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> tuple[int, int, int]:
         """Convert RGB values to HSL values."""
         rgb_list = [val / 255.0 for val in rgb]
         h, l, s = colorsys.rgb_to_hls(*rgb_list)  # noqa: E741
         return round(h * 360), round(s * 100), round(l * 100)
 
     @staticmethod
-    def _rgb_to_cmyk(rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> tuple[int, int, int, int]:
+    def _rgb_to_cmyk(
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> tuple[int, int, int, int]:
         """Convert RGB values to CMYK values."""
         rgb_list = [val / 255.0 for val in rgb]
         if not any(rgb_list):
@@ -409,7 +436,10 @@ class Fun(commands.Cog, ColorHandler):
             msg = "Provide at least two choices"
             raise commands.BadArgument(msg)
 
-        await ctx.reply(f"\N{DIRECT HIT} I choose **{random.choice(options)}**", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.reply(
+            f"\N{DIRECT HIT} I choose **{random.choice(options)}**",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @random_command.command(name="8ball", aliases=["eightball"])
     async def random_8ball(self, ctx: commands.Context[Parrot], *, _: str):
@@ -493,8 +523,16 @@ class Fun(commands.Cog, ColorHandler):
     async def guess_the_number(
         self,
         ctx: Context[Parrot],
-        upper: int = commands.parameter(converter=int, default=10, description="The upper bound of the guessing range."),
-        lower: int = commands.parameter(converter=int, default=1, description="The lower bound of the guessing range."),
+        upper: int = commands.parameter(
+            converter=int,
+            default=10,
+            description="The upper bound of the guessing range.",
+        ),
+        lower: int = commands.parameter(
+            converter=int,
+            default=1,
+            description="The lower bound of the guessing range.",
+        ),
     ):
         """Guess the number game"""
         upper, lower = max(upper, lower), min(upper, lower)
@@ -523,10 +561,16 @@ class Fun(commands.Cog, ColorHandler):
                 return None
 
             if guess < number:
-                await ctx.reply(f"{ctx.author.mention} Your guess is **too low**. Try again", delete_after=4)
+                await ctx.reply(
+                    f"{ctx.author.mention} Your guess is **too low**. Try again",
+                    delete_after=4,
+                )
 
             else:
-                await ctx.reply(f"{ctx.author.mention} Your guess is **too high**. Try again", delete_after=4)
+                await ctx.reply(
+                    f"{ctx.author.mention} Your guess is **too high**. Try again",
+                    delete_after=4,
+                )
 
         if count >= number_of_chances:
             await ctx.reply(f"{ctx.author.mention} The number is **{number}**. Better luck next time")
@@ -554,17 +598,21 @@ class Fun(commands.Cog, ColorHandler):
 
         FACE = "\N{ACUTE ACCENT}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GREEK SMALL LETTER OMEGA}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GRAVE ACCENT}"
         ls = [
-            (f". {IGS}{IGS}{IGS}{FWLL}{FWLL}{LL}{FWLL}{FWLL}\n"
-            f"{IGS}{IGS}{FWS}{IGS}{FWS}{IGS}  {FWS}|\n"
-            f"{IGS}{IGS}|{FM}{FM}{FM}{FM}|{IGS}|\n"
-            f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
-            f"{IGS}{IGS}{FM}{FM}{FM}{FM}"),
-            (f". {IGS}{IGS}{IGS}{text}\n"
-            f"{IGS}   {IGS} {LA}{FWLL}{LA}{FWLL}_\n"
-            f"{IGS}{IGS}{FWS}({FACE})  {FWS}{FWRS}\n"
-            f"{IGS}{FWS}|{FM}{FM}{FM}{FM}|{FWRS}{FWS}\n"
-            f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
-            f"{IGS}{IGS}{FM}{FM}{FM}{FM}"),
+            (
+                f". {IGS}{IGS}{IGS}{FWLL}{FWLL}{LL}{FWLL}{FWLL}\n"
+                f"{IGS}{IGS}{FWS}{IGS}{FWS}{IGS}  {FWS}|\n"
+                f"{IGS}{IGS}|{FM}{FM}{FM}{FM}|{IGS}|\n"
+                f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
+                f"{IGS}{IGS}{FM}{FM}{FM}{FM}"
+            ),
+            (
+                f". {IGS}{IGS}{IGS}{text}\n"
+                f"{IGS}   {IGS} {LA}{FWLL}{LA}{FWLL}_\n"
+                f"{IGS}{IGS}{FWS}({FACE})  {FWS}{FWRS}\n"
+                f"{IGS}{FWS}|{FM}{FM}{FM}{FM}|{FWRS}{FWS}\n"
+                f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
+                f"{IGS}{IGS}{FM}{FM}{FM}{FM}"
+            ),
         ]
         for _, cat in itertools.product(range(3), ls):
             await m.edit(content=cat)
@@ -775,7 +823,10 @@ class Fun(commands.Cog, ColorHandler):
             raise commands.BadArgument(
                 message=f"Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. User input was: `{hue, saturation, value}`."
             )
-        hsv_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"))
+        hsv_tuple = cast(
+            tuple[int, int, int],
+            ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"),
+        )
         await self.send_colour_response(ctx, hsv_tuple)
 
     @colour.command()
@@ -791,7 +842,10 @@ class Fun(commands.Cog, ColorHandler):
             raise commands.BadArgument(
                 message=f"Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. User input was: `{hue, saturation, lightness}`."
             )
-        hsl_tuple = cast(tuple[int, int, int], ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"))
+        hsl_tuple = cast(
+            tuple[int, int, int],
+            ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"),
+        )
         await self.send_colour_response(ctx, hsl_tuple)
 
     @colour.command()
@@ -859,7 +913,12 @@ class Fun(commands.Cog, ColorHandler):
         await self.send_colour_response(ctx, hex_tuple)
 
     @commands.command(name="urbandictionary", aliases=["ud", "urban"])
-    async def urban_dictionary(self, ctx: Context[Parrot], *, term: str = commands.parameter(description="The term to define.")) -> discord.Message:
+    async def urban_dictionary(
+        self,
+        ctx: Context[Parrot],
+        *,
+        term: str = commands.parameter(description="The term to define."),
+    ) -> discord.Message:
         """Fetch a definition from Urban Dictionary."""
         return await self.get_urban_definition(ctx, term)
 
@@ -881,12 +940,14 @@ class Fun(commands.Cog, ColorHandler):
                 definition = result["definition"]
                 example = result["example"]
 
-                embed = discord.Embed(title=f"Definition of {term}", description=f"{definition}\n\n**Example:**\n{example}")
+                embed = discord.Embed(
+                    title=f"Definition of {term}",
+                    description=f"{definition}\n\n**Example:**\n{example}",
+                )
                 pages.append(embed)
 
         view = PaginationView(author=ctx.author, items=pages)
         return await view.start(ctx)
-
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
@@ -1025,7 +1086,10 @@ class Fun(commands.Cog, ColorHandler):
                     await message.add_reaction("\N{CROSS MARK}")
 
             if score_board:
-                scoreboard_embed = discord.Embed(title="Scoreboard", description="\n".join(f"{user}: {score}" for user, score in score_board.items()))
+                scoreboard_embed = discord.Embed(
+                    title="Scoreboard",
+                    description="\n".join(f"{user}: {score}" for user, score in score_board.items()),
+                )
                 await ctx.reply(embed=scoreboard_embed)
 
         winner = None

@@ -18,7 +18,7 @@ class LevelingChannelSelect(discord.ui.ChannelSelect):
             min_values=0,
             max_values=1,
             channel_types=[discord.ChannelType.text],
-            default_values=[discord.Object(id=channel_id)] if channel_id is not None else [],
+            default_values=([discord.Object(id=channel_id)] if channel_id is not None else []),
         )
         self.channel_id = channel_id
 
@@ -36,7 +36,10 @@ class LevelingChannelSelect(discord.ui.ChannelSelect):
             new_channel_id = selected_channel.id
 
             await interaction.client.database.edit_leveling_config(guild_id=interaction.guild.id, enabled=True, channel_id=new_channel_id)
-            await interaction.followup.send(f"Leveling channel updated to {selected_channel.mention}.", ephemeral=True)
+            await interaction.followup.send(
+                f"Leveling channel updated to {selected_channel.mention}.",
+                ephemeral=True,
+            )
 
         else:
             await interaction.client.database.edit_leveling_config(guild_id=interaction.guild.id, enabled=True, channel_id=None)
@@ -48,10 +51,17 @@ class LevelingRoleAddModal(discord.ui.Modal, title="Add Leveling Role"):
         super().__init__()
 
         self.level_input = discord.ui.TextInput(
-            label="Level", placeholder="Enter the level for this role...", style=discord.TextStyle.short, required=True
+            label="Level",
+            placeholder="Enter the level for this role...",
+            style=discord.TextStyle.short,
+            required=True,
         )
 
-        self._role_input = discord.ui.RoleSelect(placeholder="Select a role to assign at this level...", min_values=1, max_values=1)
+        self._role_input = discord.ui.RoleSelect(
+            placeholder="Select a role to assign at this level...",
+            min_values=1,
+            max_values=1,
+        )
         self.role_input = discord.ui.Label(
             text="Role",
             component=self._role_input,
@@ -68,7 +78,11 @@ class LevelingRoleRemoveModal(discord.ui.Modal, title="Select Roles to remove"):
 
         self._input = discord.ui.CheckboxGroup(
             options=[
-                discord.CheckboxGroupOption(label=f"Level {level}", value=str(level), description=f"Role: @{role_name}")
+                discord.CheckboxGroupOption(
+                    label=f"Level {level}",
+                    value=str(level),
+                    description=f"Role: @{role_name}",
+                )
                 for level, role_name in level_role_mapping.items()
             ]
         )
@@ -81,7 +95,11 @@ class LevelingRoleRemoveModal(discord.ui.Modal, title="Select Roles to remove"):
 
 
 class LevelingRolesConfig(PaginationView):
-    def __init__(self, author: discord.Member | discord.User, **kwargs: Unpack[GuildConfiguration]) -> None:
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        **kwargs: Unpack[GuildConfiguration],
+    ) -> None:
         self.kwargs = kwargs
 
         self.data_chunks = list(discord.utils.as_chunks(self.kwargs["leveling_config"]["level_roles"].items(), 10))
@@ -101,12 +119,18 @@ class LevelingRolesConfig(PaginationView):
             pages.append(embed)
 
         if not pages:
-            embed = discord.Embed(title="Leveling Roles Configuration", description="No leveling roles configured.")
+            embed = discord.Embed(
+                title="Leveling Roles Configuration",
+                description="No leveling roles configured.",
+            )
             pages.append(embed)
 
         super().__init__(author=author, items=pages, hide_skip_button=True, hide_quit_button=True)
 
-        self.reload_button = discord.ui.Button(style=discord.ButtonStyle.blurple, emoji="\N{ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS}")
+        self.reload_button = discord.ui.Button(
+            style=discord.ButtonStyle.blurple,
+            emoji="\N{ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS}",
+        )
         self.reload_button.callback = self.on_reload_button_click
 
         self.add_level_role_button = discord.ui.Button(style=discord.ButtonStyle.green, emoji="\N{HEAVY PLUS SIGN}")
@@ -171,7 +195,10 @@ class LevelingRolesConfig(PaginationView):
                 await interaction.response.send_message("This command can only be used in a server (guild).", ephemeral=True)
                 return
 
-            await interaction.response.send_message(f"Removed leveling roles for levels: {', '.join(map(str, selected_levels))}", ephemeral=True)
+            await interaction.response.send_message(
+                f"Removed leveling roles for levels: {', '.join(map(str, selected_levels))}",
+                ephemeral=True,
+            )
 
         return callback
 
@@ -198,7 +225,10 @@ class LevelingRolesConfig(PaginationView):
             pages.append(embed)
 
         if not pages:
-            embed = discord.Embed(title="Leveling Roles Configuration", description="No leveling roles configured.")
+            embed = discord.Embed(
+                title="Leveling Roles Configuration",
+                description="No leveling roles configured.",
+            )
             pages.append(embed)
 
         self.items = pages

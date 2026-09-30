@@ -50,7 +50,10 @@ class GlobalChat(commands.Cog):
             return
 
         if message.channel.id != global_chat_channel_id:
-            _log.debug("Message is not in the global chat channel for guild %s", message.guild.id)
+            _log.debug(
+                "Message is not in the global chat channel for guild %s",
+                message.guild.id,
+            )
             return
 
         if message.content.startswith((".", "!", "$", "?", "-", "+")) or not message.content.strip():
@@ -60,10 +63,16 @@ class GlobalChat(commands.Cog):
         channel_bucket = self.channel_cooldown.get_bucket(message)
         channel_retry_after = channel_bucket.update_rate_limit() if channel_bucket is not None else None
         if channel_retry_after:
-            _log.debug("Message is being sent too quickly in channel %s, ignoring.", message.channel.id)
+            _log.debug(
+                "Message is being sent too quickly in channel %s, ignoring.",
+                message.channel.id,
+            )
             return
 
-        async for guild_id, webhook_uri in self.bot.database.fetch_active_global_chat_webhooks():
+        async for (
+            guild_id,
+            webhook_uri,
+        ) in self.bot.database.fetch_active_global_chat_webhooks():
             if guild_id == message.guild.id or webhook_uri is None:
                 continue
 
@@ -97,7 +106,6 @@ class GlobalChat(commands.Cog):
 
         content = discord.utils.escape_markdown(content)
         return discord.utils.escape_mentions(content)
-
 
 
 async def setup(bot: Parrot) -> None:

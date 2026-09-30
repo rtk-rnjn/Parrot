@@ -55,14 +55,26 @@ class HostOnlyView(discord.ui.View):
 
 class RuleSetPrompt(discord.ui.Select["RuleSetPromptingView"]):
     CHOICES = {
-        "stacking": RuleSetChoice("Stacking", "Allows the play of multiple cards that have the same value/type at once."),
-        "progressive": RuleSetChoice("Progressive", "Draw cards can be progressively stacked until one must draw."),
+        "stacking": RuleSetChoice(
+            "Stacking",
+            "Allows the play of multiple cards that have the same value/type at once.",
+        ),
+        "progressive": RuleSetChoice(
+            "Progressive",
+            "Draw cards can be progressively stacked until one must draw.",
+        ),
         "seven_o": RuleSetChoice(
             "Seven-O",
             "If you play a 7, you can swap hands. When a 0 is played, everyone passes their hands to their left.",
         ),
-        "jump_in": RuleSetChoice("Jump In", "Immediately play a card that is a duplicate of the current card, even if it isn't your turn."),
-        "no_u": RuleSetChoice("No U", "Playing a reverse card on a draw card will require the opponent to draw the cards instead."),
+        "jump_in": RuleSetChoice(
+            "Jump In",
+            "Immediately play a card that is a duplicate of the current card, even if it isn't your turn.",
+        ),
+        "no_u": RuleSetChoice(
+            "No U",
+            "Playing a reverse card on a draw card will require the opponent to draw the cards instead.",
+        ),
     }
 
     def __init__(self, game: UNO) -> None:
@@ -72,7 +84,12 @@ class RuleSetPrompt(discord.ui.Select["RuleSetPromptingView"]):
             min_values=0,
             max_values=len(self.CHOICES),
             options=[
-                discord.SelectOption(label=v.name, value=k, description=v.description, default=getattr(self.game.rule_set, k, False))
+                discord.SelectOption(
+                    label=v.name,
+                    value=k,
+                    description=v.description,
+                    default=getattr(self.game.rule_set, k, False),
+                )
                 for k, v in self.CHOICES.items()
             ],
             placeholder="Select game rules...",
@@ -111,7 +128,10 @@ class PlayerQueueingView(discord.ui.View):
     async def _update(self) -> None:
         self.immediate_start.disabled = len(self.players) < 2
 
-        await self.game._send(self.OPENING_MESSAGE + "\n\n**Players:**\n" + "\n".join(str(player) for player in self.players), view=self)
+        await self.game._send(
+            self.OPENING_MESSAGE + "\n\n**Players:**\n" + "\n".join(str(player) for player in self.players),
+            view=self,
+        )
 
     @discord.ui.button(label="Join", style=discord.ButtonStyle.green)
     async def join(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -144,7 +164,10 @@ class PlayerQueueingView(discord.ui.View):
             return
 
         if len(self.players) < 2:
-            await interaction.response.send_message("There must be at least 2 players in order to start this game.", ephemeral=True)
+            await interaction.response.send_message(
+                "There must be at least 2 players in order to start this game.",
+                ephemeral=True,
+            )
             return
 
         self.stop()
@@ -393,7 +416,11 @@ class GameView(discord.ui.View):
     async def view_deck(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         hand = discord.utils.get(self.game.hands, player=interaction.user)
         assert hand is not None
-        await interaction.response.send_message(content="Click on a card button to play it.", view=DeckView(self.game, hand), ephemeral=True)
+        await interaction.response.send_message(
+            content="Click on a card button to play it.",
+            view=DeckView(self.game, hand),
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="Draw", style=discord.ButtonStyle.green)
     async def draw(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -755,7 +782,10 @@ class UNO:
         embed.set_thumbnail(url=self.current.image_url)
         embed.description = "\n".join(map(self._embed_format, self.hands))
 
-        embed.set_author(name=f"{self.current_player.name}'s turn!", icon_url=self.current_player.display_avatar.url)
+        embed.set_author(
+            name=f"{self.current_player.name}'s turn!",
+            icon_url=self.current_player.display_avatar.url,
+        )
 
         if self.draw_queue > 0:
             content = f"Stack on or draw {self.draw_queue}" if self.rule_set.progressive else f"Draw {self.draw_queue}!"
@@ -822,7 +852,11 @@ class UNO:
 
         elif card.color is Color.wild:
             cls = WildCardSubview if card.type is CardType.wild else WildPlus4Subview
-            kwargs = {"content": "What will the new color be?", "view": cls(self, hand, cards), "ephemeral": True}
+            kwargs = {
+                "content": "What will the new color be?",
+                "view": cls(self, hand, cards),
+                "ephemeral": True,
+            }
 
             try:
                 await interaction.response.send_message(**kwargs)

@@ -19,7 +19,10 @@ class _UserTodoMixin(DatabaseMixin):
 
     async def __cache_user_todo_item(self, *, user_id: int, todo_item: TodoItem):
         user_todo_item_cache_key = RedisKeys.USER_TODO_ITEM.format(user_id=user_id, todo_id=str(todo_item["id"]))
-        await self.redis_client.hset(user_todo_item_cache_key, mapping={str(k): str(v) for k, v in todo_item.items()})
+        await self.redis_client.hset(
+            user_todo_item_cache_key,
+            mapping={str(k): str(v) for k, v in todo_item.items()},
+        )
 
         redis_todo_item_ids_cache_key = RedisKeys.USER_TODO_ITEM_IDS.format(user_id=user_id)
         await self.redis_client.sadd(redis_todo_item_ids_cache_key, str(todo_item["id"]))
@@ -47,7 +50,14 @@ class _UserTodoMixin(DatabaseMixin):
         due: datetime | None = None,
         status: Literal["pending", "in_progress", "completed"] = "pending",
     ):
-        todo_item: TodoItem = TodoItem(id=ObjectId(), title=title, notes=notes, due=due, created_at=datetime.now(UTC), status=TodoStatus(status))
+        todo_item: TodoItem = TodoItem(
+            id=ObjectId(),
+            title=title,
+            notes=notes,
+            due=due,
+            created_at=datetime.now(UTC),
+            status=TodoStatus(status),
+        )
 
         await self.users_collection.update_one({"_id": user_id}, {"$push": {"todo_items": todo_item}}, upsert=True)
         return todo_item
@@ -70,7 +80,7 @@ class _UserTodoMixin(DatabaseMixin):
                 id=ObjectId(cached_todo_item["id"]),
                 title=cached_todo_item["title"],
                 notes=cached_todo_item.get("notes"),
-                due=datetime.fromisoformat(cached_todo_item["due"]) if cached_todo_item.get("due") else None,
+                due=(datetime.fromisoformat(cached_todo_item["due"]) if cached_todo_item.get("due") else None),
                 created_at=datetime.fromisoformat(cached_todo_item["created_at"]),
                 status=TodoStatus(cached_todo_item["status"]),
             )

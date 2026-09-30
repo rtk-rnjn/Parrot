@@ -37,7 +37,10 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
         self.todo_item["due"] = datetime
 
         relative_time = discord.utils.format_dt(datetime, style="R")
-        await interaction.response.send_message(f"For to-do item (ID: `{self.todo_item['id']}`), due {relative_time}", ephemeral=True)
+        await interaction.response.send_message(
+            f"For to-do item (ID: `{self.todo_item['id']}`), due {relative_time}",
+            ephemeral=True,
+        )
         await interaction.client.event_scheduler.create_timer(
             event_name="todo_due",
             expires_at=datetime,
@@ -46,9 +49,17 @@ class TodoAddDueDateModal(discord.ui.Modal, title="Add Due Date"):
 
 
 class TodoEditModal(discord.ui.Modal, title="Edit To-Do Item"):
-    title_input = discord.ui.TextInput(label="Title", placeholder="Enter the new title for the to-do item", required=True)
+    title_input = discord.ui.TextInput(
+        label="Title",
+        placeholder="Enter the new title for the to-do item",
+        required=True,
+    )
 
-    due_date_input = discord.ui.TextInput(label="Due Date", placeholder="Enter the new due date for the to-do item (optional)", required=False)
+    due_date_input = discord.ui.TextInput(
+        label="Due Date",
+        placeholder="Enter the new due date for the to-do item (optional)",
+        required=False,
+    )
 
     notes_input = discord.ui.TextInput(
         label="Notes",
@@ -87,15 +98,28 @@ class TodoCreateView(BaseView):
 
 
 class TodoStatusButton(discord.ui.Button):
-    def __init__(self, *, style: discord.ButtonStyle, status: Literal["pending", "in_progress", "completed"], todo_item: TodoItem):
+    def __init__(
+        self,
+        *,
+        style: discord.ButtonStyle,
+        status: Literal["pending", "in_progress", "completed"],
+        todo_item: TodoItem,
+    ):
         label = status.replace("_", " ").title()
         super().__init__(label=label, style=style)
         self.status: Literal["pending", "in_progress", "completed"] = status
         self.todo_item = todo_item
 
     async def callback(self, interaction: discord.Interaction[Parrot]):
-        await interaction.client.database.edit_user_todo_item(user_id=interaction.user.id, todo_item_id=self.todo_item["id"], status=self.status)
-        await interaction.response.send_message(f"Updated to-do item (ID: `{self.todo_item['id']}`) to status: {self.status}", ephemeral=True)
+        await interaction.client.database.edit_user_todo_item(
+            user_id=interaction.user.id,
+            todo_item_id=self.todo_item["id"],
+            status=self.status,
+        )
+        await interaction.response.send_message(
+            f"Updated to-do item (ID: `{self.todo_item['id']}`) to status: {self.status}",
+            ephemeral=True,
+        )
 
 
 class TodoViewLayout(BaseLayoutView):
@@ -113,9 +137,21 @@ class TodoViewLayout(BaseLayoutView):
         due = todo_item.get("due")
 
         buttons = [
-            TodoStatusButton(style=discord.ButtonStyle.secondary, status="pending", todo_item=todo_item),
-            TodoStatusButton(style=discord.ButtonStyle.primary, status="in_progress", todo_item=todo_item),
-            TodoStatusButton(style=discord.ButtonStyle.success, status="completed", todo_item=todo_item),
+            TodoStatusButton(
+                style=discord.ButtonStyle.secondary,
+                status="pending",
+                todo_item=todo_item,
+            ),
+            TodoStatusButton(
+                style=discord.ButtonStyle.primary,
+                status="in_progress",
+                todo_item=todo_item,
+            ),
+            TodoStatusButton(
+                style=discord.ButtonStyle.success,
+                status="completed",
+                todo_item=todo_item,
+            ),
         ]
 
         action_row = discord.ui.ActionRow(*buttons)
@@ -193,7 +229,10 @@ class TodoListLayout(BaseLayoutView):
         button = discord.ui.Button(label="View", style=discord.ButtonStyle.primary)
         button.callback = self.create_callback(todo_item)
 
-        return discord.ui.Section(discord.ui.TextDisplay(f"{todo_item['title']} - [{status}] {due_text}"), accessory=button)
+        return discord.ui.Section(
+            discord.ui.TextDisplay(f"{todo_item['title']} - [{status}] {due_text}"),
+            accessory=button,
+        )
 
     def _create_navigation_button(self, label: str, callback, style: discord.ButtonStyle) -> discord.ui.Button:
         button = discord.ui.Button(label=label, style=style)
@@ -300,7 +339,11 @@ class Todo(commands.Cog):
             try:
                 user = await self.bot.fetch_user(metadata["user_id"])
             except discord.NotFound:
-                _log.warning("User with ID %s not found for to-do item ID %s", metadata["user_id"], metadata["item"]["id"])
+                _log.warning(
+                    "User with ID %s not found for to-do item ID %s",
+                    metadata["user_id"],
+                    metadata["item"]["id"],
+                )
                 return
 
         todo_item = metadata["item"]
@@ -308,7 +351,11 @@ class Todo(commands.Cog):
         try:
             await user.send(f"Your to-do item (ID: `{todo_item['id']}`) is due now: {todo_item['title']}")
         except discord.Forbidden:
-            _log.warning("Cannot send DM to user with ID %s for to-do item ID %s", user.id, todo_item["id"])
+            _log.warning(
+                "Cannot send DM to user with ID %s for to-do item ID %s",
+                user.id,
+                todo_item["id"],
+            )
 
 
 async def setup(bot: Parrot) -> None:

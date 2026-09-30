@@ -16,7 +16,12 @@ class DisambiguatorView[T](BaseView):
     message: discord.Message
     selected: T
 
-    def __init__(self, ctx: commands.Context[Parrot], data: list[T], entry: Callable[[T], str] = str):
+    def __init__(
+        self,
+        ctx: commands.Context[Parrot],
+        data: list[T],
+        entry: Callable[[T], str] = str,
+    ):
         super().__init__(author=ctx.author)
         self.ctx = ctx
         self.data: list[T] = data

@@ -143,7 +143,11 @@ class RTFM(commands.Cog):
     async def get_pypi_package(self, url: str):
         return await self.session.get(url=url)
 
-    @commands.group(name="python-tutorial", aliases=["pytut", "python3-tutorial"], invoke_without_command=True)
+    @commands.group(
+        name="python-tutorial",
+        aliases=["pytut", "python3-tutorial"],
+        invoke_without_command=True,
+    )
     async def python(
         self,
         ctx: commands.Context[Parrot],
@@ -163,11 +167,18 @@ class RTFM(commands.Cog):
 
     @python.command(name="list", aliases=["ls", "all"])
     async def python_list(self, ctx: commands.Context[Parrot]) -> discord.Message:
-        return await ctx.reply(embed=discord.Embed(title="List of available tutorials", description="`" + "`, `".join(self.python_tags.keys()) + "`"))
+        return await ctx.reply(
+            embed=discord.Embed(
+                title="List of available tutorials",
+                description="`" + "`, `".join(self.python_tags.keys()) + "`",
+            )
+        )
 
     @commands.command(aliases=["pypi"])
     async def pypisearch(
-        self, ctx: commands.Context[Parrot], package: str = commands.parameter(description="The package to search for.")
+        self,
+        ctx: commands.Context[Parrot],
+        package: str = commands.parameter(description="The package to search for."),
     ) -> discord.Message:
         """Get info about a Python package directly from PyPi."""
         res_raw = await self.get_pypi_package(f"https://pypi.org/pypi/{package}/json")
@@ -195,7 +206,11 @@ class RTFM(commands.Cog):
         _license = getval("license")
 
         embed = (
-            discord.Embed(title=f"{name} PyPi Stats", description=description, color=discord.Color.teal())
+            discord.Embed(
+                title=f"{name} PyPi Stats",
+                description=description,
+                color=discord.Color.teal(),
+            )
             .add_field(name="Author", value=author, inline=True)
             .add_field(name="Author Email", value=author_email, inline=True)
             .add_field(name="Version", value=version, inline=False)
@@ -209,7 +224,9 @@ class RTFM(commands.Cog):
 
     @commands.command(aliases=["npm"])
     async def npmsearch(
-        self, ctx: commands.Context[Parrot], package: str = commands.parameter(description="The package to search for.")
+        self,
+        ctx: commands.Context[Parrot],
+        package: str = commands.parameter(description="The package to search for."),
     ) -> discord.Message:
         """Get info about a NPM package directly from the NPM Registry."""
         res_raw = await self.get_pypi_package(f"https://registry.npmjs.org/{package}/")
@@ -263,7 +280,9 @@ class RTFM(commands.Cog):
 
     @commands.command(aliases=["crates"])
     async def crate(
-        self, ctx: commands.Context[Parrot], package: str = commands.parameter(description="The package to search for.")
+        self,
+        ctx: commands.Context[Parrot],
+        package: str = commands.parameter(description="The package to search for."),
     ) -> discord.Message:
         """Get info about a Rust package directly from the Crates.IO Registry."""
         res_raw = await self.get_pypi_package(f"https://crates.io/api/v1/crates/{package}")
@@ -307,7 +326,11 @@ class RTFM(commands.Cog):
         _license = getversionvals("license")
 
         em = (
-            discord.Embed(title=f"{pkg_name} crates.io Stats", description=description, color=0xE03D29)
+            discord.Embed(
+                title=f"{pkg_name} crates.io Stats",
+                description=description,
+                color=0xE03D29,
+            )
             .add_field(name="Published By", value=publisher, inline=True)
             .add_field(name="Downloads", value=f"{downloads:,}", inline=True)
             .add_field(name="Latest Version", value=latest_version, inline=False)
@@ -363,14 +386,22 @@ class RTFM(commands.Cog):
         return await view.start(ctx, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    async def ascii(self, ctx: commands.Context[Parrot], *, text: str = commands.parameter(description="The text to convert.")) -> discord.Message:
+    async def ascii(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        text: str = commands.parameter(description="The text to convert."),
+    ) -> discord.Message:
         """Returns number representation of characters in text."""
 
         return await ctx.reply(" ".join([str(ord(letter)) for letter in text]))
 
     @commands.command()
     async def unascii(
-        self, ctx: commands.Context[Parrot], *, text: str = commands.parameter(description="The char codes to convert.")
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        text: str = commands.parameter(description="The char codes to convert."),
     ) -> discord.Message:
         """Reforms string from char codes."""
         try:
@@ -486,7 +517,11 @@ class RTFM(commands.Cog):
 
             # User_data will not have a message key if the user exists
             if "message" in user_data:
-                embed = discord.Embed(title="404!!", description=f"The profile for `{username}` was not found.", colour=ctx.author.color)
+                embed = discord.Embed(
+                    title="404!!",
+                    description=f"The profile for `{username}` was not found.",
+                    colour=ctx.author.color,
+                )
 
                 return await ctx.reply(embed=embed)
 
@@ -518,12 +553,19 @@ class RTFM(commands.Cog):
             )
 
             if user_data["type"] == "User":
-                embed.add_field(name="Followers", value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)").add_field(
-                    name="Following", value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)"
+                embed.add_field(
+                    name="Followers",
+                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
+                ).add_field(
+                    name="Following",
+                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
                 )
 
             if user_data["type"] == "User":
-                embed.add_field(name="Gists", value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})")
+                embed.add_field(
+                    name="Gists",
+                    value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})",
+                )
 
         return await ctx.reply(embed=embed)
 
@@ -547,7 +589,11 @@ class RTFM(commands.Cog):
 
             # There won't be a message key if this repo exists
             if "message" in repo_data:
-                embed = discord.Embed(title="404", description="The requested repository was not found.", colour=ctx.author.color)
+                embed = discord.Embed(
+                    title="404",
+                    description="The requested repository was not found.",
+                    colour=ctx.author.color,
+                )
 
                 return await ctx.reply(embed=embed)
 
@@ -568,7 +614,11 @@ class RTFM(commands.Cog):
 
         repo_owner = repo_data["owner"]
 
-        embed.set_author(name=repo_owner["login"], url=repo_owner["html_url"], icon_url=repo_owner["avatar_url"])
+        embed.set_author(
+            name=repo_owner["login"],
+            url=repo_owner["html_url"],
+            icon_url=repo_owner["avatar_url"],
+        )
 
         repo_created_at = arrow.get(repo_data["created_at"]).humanize()
         last_pushed = arrow.get(repo_data["pushed_at"]).humanize()
@@ -689,7 +739,8 @@ class RTFM(commands.Cog):
             return await ctx.reply(embed=embed)
         except discord.HTTPException:
             search_query_too_long = discord.Embed(
-                title="Your search query is too long, please try shortening your search query", color=ctx.author.color
+                title="Your search query is too long, please try shortening your search query",
+                color=ctx.author.color,
             )
             return await ctx.reply(embed=search_query_too_long)
 
@@ -802,10 +853,12 @@ class RTFM(commands.Cog):
         contests = self.kontests_cache["hackerearth"]
 
         return [
-            inspect.cleandoc(f"""ID: *{contest.id}* | **[{contest.title}]({contest.url})** | {contest.status}
+            inspect.cleandoc(
+                f"""ID: *{contest.id}* | **[{contest.title}]({contest.url})** | {contest.status}
                 {contest.description}
                 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
-                `End  :` {discord.utils.format_dt(contest.end_time, "R")}""")
+                `End  :` {discord.utils.format_dt(contest.end_time, "R")}"""
+            )
             for contest in contests
         ]
 
@@ -819,10 +872,12 @@ class RTFM(commands.Cog):
         contests = [c for c in contests if not c.ended]
 
         return [
-            inspect.cleandoc(f"""ID: *{contest.id}* | **[{contest.name}]({contest.url})** | {"ENDED" if contest.ended else "UPCOMING/ONGOING"}
+            inspect.cleandoc(
+                f"""ID: *{contest.id}* | **[{contest.name}]({contest.url})** | {"ENDED" if contest.ended else "UPCOMING/ONGOING"}
                 {contest.description}
                 `Start:` {discord.utils.format_dt(contest.start_time, "R")}
-                `End  :` {discord.utils.format_dt(contest.end_time, "R")}""")
+                `End  :` {discord.utils.format_dt(contest.end_time, "R")}"""
+            )
             for contest in contests
         ]
 
@@ -836,10 +891,12 @@ class RTFM(commands.Cog):
         contests = [c for c in contests if c.phase != "FINISHED"]
 
         return [
-            inspect.cleandoc(f"""ID: *{contest.id}* | **[{contest.name}]({contest.website_url})** | {contest.phase}
+            inspect.cleandoc(
+                f"""ID: *{contest.id}* | **[{contest.name}]({contest.website_url})** | {contest.phase}
                 {contest.description}
                 `Start:` {discord.utils.format_dt(contest.start_time, "R") if contest.start_time else "TBA"}
-                `Time :` {contest.duration_seconds // 60} Minutes""")
+                `Time :` {contest.duration_seconds // 60} Minutes"""
+            )
             for contest in contests
         ]
 
@@ -868,9 +925,11 @@ class RTFM(commands.Cog):
         contests = self.kontests_cache["csacademy"]
 
         return [
-            inspect.cleandoc(f"""ID: NA | **[{contest.name}]({contest.url})**
+            inspect.cleandoc(
+                f"""ID: NA | **[{contest.name}]({contest.url})**
                 {contest.description}
                 `Start:` {discord.utils.format_dt(contest.start_time, "R") if contest.start_time else "TBA"}
-                `End  :` {discord.utils.format_dt(contest.end_time, "R") if contest.end_time else "TBA"}""")
+                `End  :` {discord.utils.format_dt(contest.end_time, "R") if contest.end_time else "TBA"}"""
+            )
             for contest in contests
         ]

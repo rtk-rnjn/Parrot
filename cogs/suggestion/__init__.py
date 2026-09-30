@@ -96,7 +96,10 @@ class Suggestion(commands.Cog):
         jump_url: str = message.jump_url
         content = f"{ctx.author.mention} your suggestion being posted.\n> {jump_url}"
         with contextlib.suppress(discord.Forbidden):
-            await ctx.author.send(content, view=DisabledButtonView(author=ctx.author, display_text=ctx.guild.name))
+            await ctx.author.send(
+                content,
+                view=DisabledButtonView(author=ctx.author, display_text=ctx.guild.name),
+            )
 
     async def __notify_user(
         self,
@@ -118,12 +121,20 @@ class Suggestion(commands.Cog):
             f"> {message.jump_url}"
         )
         with contextlib.suppress(discord.Forbidden):
-            await user.send(content, view=DisabledButtonView(author=user, display_text=ctx.guild.name))
+            await user.send(
+                content,
+                view=DisabledButtonView(author=user, display_text=ctx.guild.name),
+            )
 
     @commands.group(aliases=["suggestion"], invoke_without_command=True)
     @commands.cooldown(1, 60, commands.BucketType.member)
     @commands.bot_has_permissions(embed_links=True, create_public_threads=True)
-    async def suggest(self, ctx: commands.Context[Parrot], *, suggestion: Annotated[str, commands.clean_content]):
+    async def suggest(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        suggestion: Annotated[str, commands.clean_content],
+    ):
         """Suggest something. Abuse of the command may result in required mod actions."""
         assert ctx.guild is not None
 
@@ -167,7 +178,14 @@ class Suggestion(commands.Cog):
         await ctx.reply(f"{ctx.author.mention} Done", delete_after=5)
         return None
 
-    async def suggest_flag(self, ctx: commands.Context[Parrot], message_id: int, flag: str, *, remark: str = ""):
+    async def suggest_flag(
+        self,
+        ctx: commands.Context[Parrot],
+        message_id: int,
+        flag: str,
+        *,
+        remark: str = "",
+    ):
         """To flag the suggestion.
 
         Avalibale Flags :-

@@ -47,7 +47,12 @@ class AFK(commands.Cog):
             try:
                 await ctx.author.edit(nick=nickname, reason="User marked themselves as AFK")
             except discord.HTTPException:
-                _log.warning("Failed to update AFK nickname for %s (%s)", ctx.author, ctx.author.id, exc_info=True)
+                _log.warning(
+                    "Failed to update AFK nickname for %s (%s)",
+                    ctx.author,
+                    ctx.author.id,
+                    exc_info=True,
+                )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -69,13 +74,19 @@ class AFK(commands.Cog):
                 if member is None:
                     continue
 
-                await message.reply(f"{member.mention} is currently AFK: {afk_reason}", allowed_mentions=discord.AllowedMentions.none())
+                await message.reply(
+                    f"{member.mention} is currently AFK: {afk_reason}",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
 
         if afk_reason is None:
             return
 
         await self.bot.database.remove_user_from_afk(guild_id=message.guild.id, user_id=message.author.id)
-        await message.reply(f"Welcome back, {message.author.mention}.", allowed_mentions=discord.AllowedMentions.none())
+        await message.reply(
+            f"Welcome back, {message.author.mention}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
 
 async def setup(bot: Parrot) -> None:

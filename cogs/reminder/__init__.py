@@ -77,7 +77,10 @@ class SnoozeModal(discord.ui.Modal, title="Snooze"):
         try:
             when = FutureTime(str(self.duration)).dt
         except Exception:
-            await interaction.response.send_message('Duration could not be parsed, sorry. Try something like "5 minutes" or "1 hour"', ephemeral=True)
+            await interaction.response.send_message(
+                'Duration could not be parsed, sorry. Try something like "5 minutes" or "1 hour"',
+                ephemeral=True,
+            )
             return
 
         self.parent.snooze.disabled = True
@@ -90,7 +93,10 @@ class SnoozeModal(discord.ui.Modal, title="Snooze"):
         source = discord.utils.snowflake_time(self.metadata["message_id"])
         relative_time_fmt = discord.utils.format_dt(source, "R")
 
-        await interaction.followup.send(f"<@{author_id}>, you will be reminded again - {relative_time_fmt}: {message}", ephemeral=True)
+        await interaction.followup.send(
+            f"<@{author_id}>, you will be reminded again - {relative_time_fmt}: {message}",
+            ephemeral=True,
+        )
 
 
 class SnoozeButton(discord.ui.Button["ReminderView"]):
@@ -207,10 +213,22 @@ class Reminder(commands.Cog):
         # A bit hacky, but if '/' is in the query then it's looking for a raw identifier;
         # otherwise it's looking for a CLDR alias.
         if "/" in query:
-            matches = process.extract(query, self.valid_timezones, scorer=fuzz.WRatio, score_cutoff=50, limit=10)
+            matches = process.extract(
+                query,
+                self.valid_timezones,
+                scorer=fuzz.WRatio,
+                score_cutoff=50,
+                limit=10,
+            )
             return [TimeZone(key=match[0], label=match[0]) for match in matches]
 
-        matches = process.extract(query, self._timezone_aliases.keys(), scorer=fuzz.WRatio, score_cutoff=50, limit=10)
+        matches = process.extract(
+            query,
+            self._timezone_aliases.keys(),
+            scorer=fuzz.WRatio,
+            score_cutoff=50,
+            limit=10,
+        )
         return [TimeZone(label=match[0], key=self._timezone_aliases[match[0]]) for match in matches]
 
     async def get_timezone(self, user_id: int, /) -> str | None:
@@ -346,7 +364,11 @@ class Reminder(commands.Cog):
             permissions = channel.permissions_for(me)
 
             if permissions.send_messages:
-                message = await channel.send(response, view=view, reference=discord.PartialMessage(channel=channel, id=message_id))
+                message = await channel.send(
+                    response,
+                    view=view,
+                    reference=discord.PartialMessage(channel=channel, id=message_id),
+                )
                 if message is not None:
                     view.message = message
                 return

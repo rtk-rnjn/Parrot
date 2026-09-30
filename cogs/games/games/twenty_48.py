@@ -28,7 +28,12 @@ class Twenty48:
 
     player: Player
 
-    def __init__(self, number_to_display_mapping: dict[str, str] | None = None, *, render_image: bool = True) -> None:
+    def __init__(
+        self,
+        number_to_display_mapping: dict[str, str] | None = None,
+        *,
+        render_image: bool = True,
+    ) -> None:
         self.embed_color: DiscordColor | None = None
         self.embed: discord.Embed | None = None
 
@@ -182,7 +187,13 @@ class Twenty48:
 
                     if t != "0":
                         text_fill = self.DARK_CLR if t in ("2", "4") else self.LIGHT_CLR
-                        cursor.text((x + SQ / 2, y + SQ / 2), t, font=font, anchor="mm", fill=text_fill)
+                        cursor.text(
+                            (x + SQ / 2, y + SQ / 2),
+                            t,
+                            font=font,
+                            anchor="mm",
+                            fill=text_fill,
+                        )
 
                     x += SQ + self.SPACE_W
                 x = self.BORDER_W
@@ -208,7 +219,13 @@ class Twenty48:
             return None
         return done.pop().result()
 
-    async def _process_reaction(self, emoji: str, user: discord.User, delete_button: bool, remove_reaction_after: bool) -> bool:
+    async def _process_reaction(
+        self,
+        emoji: str,
+        user: discord.User,
+        delete_button: bool,
+        remove_reaction_after: bool,
+    ) -> bool:
         stop = "\N{BLACK SQUARE FOR STOP}"
         if delete_button and emoji == stop:
             if self.message is not None:

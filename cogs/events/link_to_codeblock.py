@@ -81,21 +81,38 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
                 break
         return ref, file_path
 
-    async def _fetch_github_snippet(self, repo: str, path: str, start_line: str | int | None, end_line: str | int | None) -> str:
+    async def _fetch_github_snippet(
+        self,
+        repo: str,
+        path: str,
+        start_line: str | int | None,
+        end_line: str | int | None,
+    ) -> str:
         """Fetches a snippet from a GitHub repo."""
         # Search the GitHub API for the specified branch
-        branches = await self._fetch_response(f"https://api.github.com/repos/{repo}/branches", "json", headers=GITHUB_HEADERS)
+        branches = await self._fetch_response(
+            f"https://api.github.com/repos/{repo}/branches",
+            "json",
+            headers=GITHUB_HEADERS,
+        )
         tags = await self._fetch_response(f"https://api.github.com/repos/{repo}/tags", "json", headers=GITHUB_HEADERS)
         refs = branches + tags
         ref, file_path = self._find_ref(path, refs)
 
         file_contents = await self._fetch_response(
-            f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={ref}", "text", headers=GITHUB_HEADERS
+            f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={ref}",
+            "text",
+            headers=GITHUB_HEADERS,
         )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
     async def _fetch_github_gist_snippet(
-        self, gist_id: str, revision: str, file_path: str, start_line: str | int | None, end_line: str | int | None
+        self,
+        gist_id: str,
+        revision: str,
+        file_path: str,
+        start_line: str | int | None,
+        end_line: str | int | None,
     ) -> str:
         """Fetches a snippet from a GitHub gist."""
         gist_json: dict | None = await self._fetch_response(
@@ -114,7 +131,13 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
                 return self._snippet_to_codeblock(file_contents, gist_file, start_line, end_line)
         return ""
 
-    async def _fetch_gitlab_snippet(self, repo: str, path: str, start_line: str | int | None, end_line: str | int | None) -> str:
+    async def _fetch_gitlab_snippet(
+        self,
+        repo: str,
+        path: str,
+        start_line: str | int | None,
+        end_line: str | int | None,
+    ) -> str:
         """Fetches a snippet from a GitLab repo."""
         enc_repo = quote_plus(repo)
 
@@ -127,16 +150,26 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         enc_file_path = quote_plus(file_path)
 
         file_contents = await self._fetch_response(
-            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}", "text"
+            f"https://gitlab.com/api/v4/projects/{enc_repo}/repository/files/{enc_file_path}/raw?ref={enc_ref}",
+            "text",
         )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
     async def _fetch_bitbucket_snippet(self, repo: str, ref: str, file_path: str, start_line: str, end_line: str) -> str:
         """Fetches a snippet from a BitBucket repo."""
-        file_contents = await self._fetch_response(f"https://bitbucket.org/{quote_plus(repo)}/raw/{quote_plus(ref)}/{quote_plus(file_path)}", "text")
+        file_contents = await self._fetch_response(
+            f"https://bitbucket.org/{quote_plus(repo)}/raw/{quote_plus(ref)}/{quote_plus(file_path)}",
+            "text",
+        )
         return self._snippet_to_codeblock(file_contents, file_path, start_line, end_line)
 
-    def _snippet_to_codeblock(self, file_contents: Any | None, file_path: str, start_line: str | int | None, end_line: str | int | None) -> str:
+    def _snippet_to_codeblock(
+        self,
+        file_contents: Any | None,
+        file_path: str,
+        start_line: str | int | None,
+        end_line: str | int | None,
+    ) -> str:
         """Given the entire file contents and target lines, creates a code block.
         First, we split the file contents into a list of lines and then keep and join only the required
         ones together.

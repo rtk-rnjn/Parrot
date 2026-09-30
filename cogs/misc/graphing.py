@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 matplotlib.use("agg")
 plt.style.use(("bmh", "ggplot"))
-__all__: tuple[str, ...] = ("boxplot", "plotfn")
+__all__ = ("boxplot", "plotfn")
 
 CODEFONT: FontProperties = FontProperties(fname="assets/Monaco-Linux.ttf")
 

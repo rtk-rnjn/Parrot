@@ -24,7 +24,12 @@ class ReactionGame:
         self.emoji = emoji
 
     async def wait_for_reaction(
-        self, ctx: commands.Context[Parrot], *, timeout: float | None, start_time: float, reacted: set[int]
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        timeout: float | None,
+        start_time: float,
+        reacted: set[int],
     ) -> tuple[Player, float]:
 
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
@@ -36,9 +41,17 @@ class ReactionGame:
         return user, elapsed
 
     async def start(
-        self, ctx: commands.Context[Parrot], *, timeout: float | None = None, embed_color: DiscordColor = DEFAULT_COLOR
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        timeout: float | None = None,
+        embed_color: DiscordColor = DEFAULT_COLOR,
     ) -> discord.Message:
-        embed = discord.Embed(title="Reaction Game", description=f"React with {self.emoji} when the embed is edited!", color=embed_color)
+        embed = discord.Embed(
+            title="Reaction Game",
+            description=f"React with {self.emoji} when the embed is edited!",
+            color=embed_color,
+        )
 
         self.message = await ctx.reply(embed=embed)
         await self.message.add_reaction(self.emoji)

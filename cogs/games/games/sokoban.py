@@ -313,10 +313,13 @@ class SokobanGameView(discord.ui.View):
                 color=discord.Color.blurple(),
                 timestamp=discord.utils.utcnow(),
             )
-            .add_field(name="Controls", value=("Use the buttons below.\n↶ Undo\n↻ Restart"), inline=True)
+            .add_field(
+                name="Controls",
+                value=("Use the buttons below.\n↶ Undo\n↻ Restart"),
+                inline=True,
+            )
             .set_footer(text=f"Moves: {self.game.moves}")
         )
-
 
     def make_win_embed(self) -> discord.Embed:
         embed = discord.Embed(

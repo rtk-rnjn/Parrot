@@ -1,24 +1,3 @@
-"""
-Wikipedia prefix-command group for discord.py 2.6+ using Components V2 (LayoutView).
-
-Install:
-    pip install -U "discord.py>=2.6" wikipedia-api
-
-Load in your bot:
-    await bot.load_extension("wikipedia")
-
-Commands (aliases: wiki, wp):
-    !wikipedia                      -> help
-    !wikipedia <title>              -> same as `page` (falls back to search)
-    !wikipedia search <query>       -> top results with "Open" buttons
-    !wikipedia page <title>         -> article view with section picker
-    !wikipedia random               -> random article
-
-Add `--lang xx` (or `-l xx`) anywhere to pick a language edition, e.g.
-    !wiki search python --lang hi
-    !wiki page Taj Mahal -l fr
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -45,7 +24,7 @@ NETWORK_ERRORS = (aiohttp.ClientError, asyncio.TimeoutError)
 
 def clip(text: str, limit: int) -> str:
     text = text.strip()
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "..."
 
 
 def split_lang(text: str) -> tuple[str, str]:
@@ -54,9 +33,6 @@ def split_lang(text: str) -> tuple[str, str]:
     if not m:
         return text.strip(), "en"
     return LANG_RE.sub(" ", text, count=1).strip(), m.group(1).lower()
-
-
-# Data + API client
 
 
 @dataclass
@@ -78,7 +54,10 @@ class WikiClient:
         self._wikis: dict[str, wikipediaapi.Wikipedia] = {}
 
     async def start(self) -> None:
-        self.session = aiohttp.ClientSession(headers={"User-Agent": self.user_agent}, timeout=aiohttp.ClientTimeout(total=15))
+        self.session = aiohttp.ClientSession(
+            headers={"User-Agent": self.user_agent},
+            timeout=aiohttp.ClientTimeout(total=15),
+        )
 
     async def close(self) -> None:
         if self.session:
@@ -96,7 +75,6 @@ class WikiClient:
             r.raise_for_status()
             return await r.json()
 
-    # -- wikipedia-api (blocking) ------------------------------------------- #
     def _fetch_page_sync(self, lang: str, title: str) -> PageData | None:
         page = self._wiki(lang).page(title)
         if not page.exists():
@@ -126,7 +104,14 @@ class WikiClient:
         return data
 
     async def search(self, lang: str, query: str, limit: int = 5) -> list[tuple[str, str]]:
-        j = await self._api(lang, action="query", list="search", srsearch=query, srlimit=limit, srprop="snippet")
+        j = await self._api(
+            lang,
+            action="query",
+            list="search",
+            srsearch=query,
+            srlimit=limit,
+            srprop="snippet",
+        )
         out = []
         for item in j.get("query", {}).get("search", []):
             snippet = html.unescape(TAG_RE.sub("", item.get("snippet", "")))
@@ -139,9 +124,6 @@ class WikiClient:
         return rows[0]["title"] if rows else None
 
 
-# Views
-
-
 class OwnedView(discord.ui.LayoutView):
     """Base view: only the invoker can interact; disables itself on timeout."""
 
@@ -152,7 +134,10 @@ class OwnedView(discord.ui.LayoutView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message("This menu belongs to someone else — run the command yourself!", ephemeral=True)
+            await interaction.response.send_message(
+                "You can not interact with this view.",
+                ephemeral=True,
+            )
             return False
         return True
 
@@ -211,7 +196,14 @@ class PageView(OwnedView):
 
         # Section picker (Discord caps selects at 25 options)
         if p.sections:
-            options = [discord.SelectOption(label="Summary", value="summary", emoji="📖", default=self.section_index is None)]
+            options = [
+                discord.SelectOption(
+                    label="Summary",
+                    value="summary",
+                    emoji="\N{OPEN BOOK}",
+                    default=self.section_index is None,
+                )
+            ]
             for i, (title, _) in enumerate(p.sections[:24]):
                 options.append(
                     discord.SelectOption(
@@ -220,7 +212,7 @@ class PageView(OwnedView):
                         default=self.section_index == i,
                     )
                 )
-            select = discord.ui.Select(placeholder="Jump to a section…", options=options)
+            select = discord.ui.Select(placeholder="Jump to a section\N{HORIZONTAL ELLIPSIS}", options=options)
             select.callback = self.on_select
             children += [
                 discord.ui.Separator(spacing=discord.SeparatorSpacing.small),
@@ -230,7 +222,7 @@ class PageView(OwnedView):
         # Buttons
         buttons: list[discord.ui.Button] = []
         if self.parent is not None:
-            back = discord.ui.Button(label="Back", emoji="◀️", style=discord.ButtonStyle.secondary)
+            back = discord.ui.Button(label="Back", emoji="\N{BLACK LEFT-POINTING TRIANGLE}", style=discord.ButtonStyle.secondary)
             back.callback = self.on_back
             buttons.append(back)
         buttons.append(discord.ui.Button(label="Read on Wikipedia", url=p.url))
@@ -265,7 +257,7 @@ class SearchView(OwnedView):
         self.lang = lang
 
         children: list[discord.ui.Item] = [
-            discord.ui.TextDisplay(f"## 🔎 Results for “{clip(query, 100)}”"),
+            discord.ui.TextDisplay(f"## \N{RIGHT-POINTING MAGNIFYING GLASS} Results for “{clip(query, 100)}”"),
             discord.ui.Separator(),
         ]
         for i, (title, snippet) in enumerate(results):
@@ -288,7 +280,7 @@ class SearchView(OwnedView):
             try:
                 page = await self.client.get_page(self.lang, title)
             except NETWORK_ERRORS:
-                await interaction.followup.send("⚠️ Couldn't reach Wikipedia.", ephemeral=True)
+                await interaction.followup.send("\N{WARNING SIGN} Couldn't reach Wikipedia.", ephemeral=True)
                 return
             if page is None:
                 await interaction.followup.send("That page no longer exists.", ephemeral=True)
@@ -304,9 +296,6 @@ def message_view(text: str) -> discord.ui.LayoutView:
     view = discord.ui.LayoutView()
     view.add_item(discord.ui.Container(discord.ui.TextDisplay(text), accent_colour=ACCENT))
     return view
-
-
-# Cog
 
 
 class Wikipedia(commands.Cog):
@@ -328,7 +317,7 @@ class Wikipedia(commands.Cog):
     async def _search_flow(self, ctx: commands.Context, query: str, lang: str) -> None:
         results = await self.client.search(lang, query)
         if not results:
-            await self._reply(ctx, message_view(f"❌ No results for **{clip(query, 100)}**."))
+            await self._reply(ctx, message_view(f"\N{CROSS MARK} No results for **{clip(query, 100)}**."))
             return
         await self._reply(ctx, SearchView(self.client, ctx.author.id, query, lang, results))
 
@@ -348,7 +337,7 @@ class Wikipedia(commands.Cog):
             await self._reply(
                 ctx,
                 message_view(
-                    "## 📚 Wikipedia\n"
+                    "## \N{BOOKS} Wikipedia\n"
                     f"`{p}wiki <title>` — open an article\n"
                     f"`{p}wiki search <query>` — search\n"
                     f"`{p}wiki page <title>` — open an article\n"
@@ -362,7 +351,7 @@ class Wikipedia(commands.Cog):
             try:
                 await self._page_flow(ctx, text, lang)
             except NETWORK_ERRORS:
-                await self._reply(ctx, message_view("⚠️ Couldn't reach Wikipedia. Try again shortly."))
+                await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
     @wikipedia.command(name="search", aliases=["s"])
     async def wikipedia_search(self, ctx: commands.Context, *, query: str) -> None:
@@ -375,7 +364,7 @@ class Wikipedia(commands.Cog):
             try:
                 await self._search_flow(ctx, text, lang)
             except NETWORK_ERRORS:
-                await self._reply(ctx, message_view("⚠️ Couldn't reach Wikipedia. Try again shortly."))
+                await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
     @wikipedia.command(name="page", aliases=["p", "article"])
     async def wikipedia_page(self, ctx: commands.Context, *, title: str) -> None:
@@ -388,7 +377,7 @@ class Wikipedia(commands.Cog):
             try:
                 await self._page_flow(ctx, text, lang)
             except NETWORK_ERRORS:
-                await self._reply(ctx, message_view("⚠️ Couldn't reach Wikipedia. Try again shortly."))
+                await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
     @wikipedia.command(name="random", aliases=["r"])
     async def wikipedia_random(self, ctx: commands.Context, *, options: str = "") -> None:
@@ -398,11 +387,11 @@ class Wikipedia(commands.Cog):
             try:
                 title = await self.client.random_title(lang)
                 if title is None:
-                    await self._reply(ctx, message_view("⚠️ Couldn't pick a random article."))
+                    await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't pick a random article."))
                     return
                 await self._page_flow(ctx, title, lang)
             except NETWORK_ERRORS:
-                await self._reply(ctx, message_view("⚠️ Couldn't reach Wikipedia. Try again shortly."))
+                await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
 
 async def setup(bot: commands.Bot) -> None:

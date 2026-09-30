@@ -15,7 +15,13 @@ class ToggleButtonCallback(Protocol):
 
 
 class ToggleButton(discord.ui.Button):
-    def __init__(self, *, enabled: bool, enable_callback: ToggleButtonCallback, disable_callback: ToggleButtonCallback) -> None:
+    def __init__(
+        self,
+        *,
+        enabled: bool,
+        enable_callback: ToggleButtonCallback,
+        disable_callback: ToggleButtonCallback,
+    ) -> None:
         super().__init__(label="On" if enabled else "Off", style=discord.ButtonStyle.secondary)
         self.enable_callback = enable_callback
         self.disable_callback = disable_callback

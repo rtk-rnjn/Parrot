@@ -124,9 +124,21 @@ class ChessInput(discord.ui.Modal, title="Make your move"):
         super().__init__()
         self.view = view
 
-        self.move_from = discord.ui.TextInput(label="from coordinate", style=discord.TextStyle.short, required=True, min_length=2, max_length=2)
+        self.move_from = discord.ui.TextInput(
+            label="from coordinate",
+            style=discord.TextStyle.short,
+            required=True,
+            min_length=2,
+            max_length=2,
+        )
 
-        self.move_to = discord.ui.TextInput(label="to coordinate", style=discord.TextStyle.short, required=True, min_length=2, max_length=2)
+        self.move_to = discord.ui.TextInput(
+            label="to coordinate",
+            style=discord.TextStyle.short,
+            required=True,
+            min_length=2,
+            max_length=2,
+        )
 
         self.add_item(self.move_from)
         self.add_item(self.move_to)
@@ -145,7 +157,10 @@ class ChessInput(discord.ui.Modal, title="Make your move"):
             is_valid_uci = False
 
         if not is_valid_uci:
-            await interaction.response.send_message(f"Invalid coordinates for move: `{from_coord} -> {to_coord}`", ephemeral=True)
+            await interaction.response.send_message(
+                f"Invalid coordinates for move: `{from_coord} -> {to_coord}`",
+                ephemeral=True,
+            )
             return
         await game.place_move(uci)
 

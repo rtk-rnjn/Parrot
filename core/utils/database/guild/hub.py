@@ -15,7 +15,8 @@ class _GuildHubMixin(DatabaseMixin):
             return cached
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "hub_channel_id": {"$exists": True, "$ne": None}}, {"hub_channel_id": 1}
+            {"_id": guild_id, "hub_channel_id": {"$exists": True, "$ne": None}},
+            {"hub_channel_id": 1},
         )
         if guild_config is None:
             return None
@@ -32,12 +33,20 @@ class _GuildHubMixin(DatabaseMixin):
             await self.redis_client.delete(redis_key)
             await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"hub_channel_id": None}}, upsert=True)
         else:
-            await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"hub_channel_id": hub_channel_id}}, upsert=True)
+            await self.guilds_collection.update_one(
+                {"_id": guild_id},
+                {"$set": {"hub_channel_id": hub_channel_id}},
+                upsert=True,
+            )
             await self.redis_client.set(redis_key, hub_channel_id)
 
     async def set_hub_channel_owner_id(self, *, guild_id: int, channel_id: int, owner_id: int) -> None:
         redis_key = RedisKeys.GUILD_HUB_CHANNEL_OWNER.format(guild_id=guild_id, channel_id=channel_id)
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"hub_channel_owners.{channel_id}": owner_id}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {f"hub_channel_owners.{channel_id}": owner_id}},
+            upsert=True,
+        )
         await self.redis_client.set(redis_key, owner_id)
 
     async def get_hub_channel_owner_id(self, *, guild_id: int, channel_id: int) -> int | None:
@@ -48,7 +57,10 @@ class _GuildHubMixin(DatabaseMixin):
             return cached
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, f"hub_channel_owners.{channel_id}": {"$exists": True, "$ne": None}},
+            {
+                "_id": guild_id,
+                f"hub_channel_owners.{channel_id}": {"$exists": True, "$ne": None},
+            },
             {f"hub_channel_owners.{channel_id}": 1},
         )
         if guild_config is None:
@@ -61,5 +73,9 @@ class _GuildHubMixin(DatabaseMixin):
 
     async def remove_hub_channel_owner_id(self, *, guild_id: int, channel_id: int) -> None:
         redis_key = RedisKeys.GUILD_HUB_CHANNEL_OWNER.format(guild_id=guild_id, channel_id=channel_id)
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"hub_channel_owners.{channel_id}": None}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {f"hub_channel_owners.{channel_id}": None}},
+            upsert=True,
+        )
         await self.redis_client.delete(redis_key)

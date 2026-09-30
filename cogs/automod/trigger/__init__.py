@@ -82,7 +82,10 @@ def _parse_regex(data: Mapping[str, Any]) -> TriggerConfig:
 
 
 def _parse_time_window(data: Mapping[str, Any]) -> TriggerConfig:
-    return TimeWindowConfig(count=_require_int(data, "count", minimum=1), within_minutes=_require_int(data, "within_minutes", minimum=1))
+    return TimeWindowConfig(
+        count=_require_int(data, "count", minimum=1),
+        within_minutes=_require_int(data, "within_minutes", minimum=1),
+    )
 
 
 def _parse_violations(data: Mapping[str, Any]) -> TriggerConfig:

@@ -53,7 +53,10 @@ class Player(pomice.Player):
         if not possible_dj_members:
             return cast(discord.Member, self.ctx.author)
 
-        return min(possible_dj_members, key=lambda m: m.joined_at or discord.utils.snowflake_time(m.id))
+        return min(
+            possible_dj_members,
+            key=lambda m: m.joined_at or discord.utils.snowflake_time(m.id),
+        )
 
     def __find_possible_djs(self, members: list[discord.Member]) -> list[discord.Member]:
         possible_djs = []
@@ -76,7 +79,14 @@ class Player(pomice.Player):
         self.shuffle_votes.clear()
         self.stop_votes.clear()
 
-    async def _vote_action(self, *, member: discord.Member, votes: VoteSet, action: ACTION_TYPE, reset_votes: bool = True) -> bool:
+    async def _vote_action(
+        self,
+        *,
+        member: discord.Member,
+        votes: VoteSet,
+        action: ACTION_TYPE,
+        reset_votes: bool = True,
+    ) -> bool:
         if member == self.dj:
             await action()
             if reset_votes:
@@ -139,7 +149,11 @@ class Player(pomice.Player):
         return await self._vote_action(member=member, votes=self.stop_votes, action=self.teardown)
 
     async def vote_shuffle(self, member: discord.Member) -> bool:
-        return await self._vote_action(member=member, votes=self.shuffle_votes, action=lambda: asyncio.to_thread(self._shuffle_queue))
+        return await self._vote_action(
+            member=member,
+            votes=self.shuffle_votes,
+            action=lambda: asyncio.to_thread(self._shuffle_queue),
+        )
 
     async def queue_track(self, track: pomice.Track, ctx: Context[Parrot]) -> None:
         self.queue.put(track)

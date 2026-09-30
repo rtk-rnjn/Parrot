@@ -43,7 +43,10 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
             await self.redis_client.sadd(self.__custom_command_ignored_roles_key(guild_id, name), *ignored_roles)
 
         if ignored_channels:
-            await self.redis_client.sadd(self.__custom_command_ignored_channels_key(guild_id, name), *ignored_channels or [])
+            await self.redis_client.sadd(
+                self.__custom_command_ignored_channels_key(guild_id, name),
+                *ignored_channels or [],
+            )
 
         await self.redis_client.set(self.__custom_command_enabled_key(guild_id, name), int(enabled))
         await self.redis_client.set(self.__custom_command_response_key(guild_id, name), response)
@@ -66,7 +69,8 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
             return cached_response
 
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "custom_commands.name": name}, {"custom_commands": {"$elemMatch": {"name": name}}}
+            {"_id": guild_id, "custom_commands.name": name},
+            {"custom_commands": {"$elemMatch": {"name": name}}},
         )
 
         if guild is None:
@@ -170,7 +174,8 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     async def rename_custom_command(self, *, guild_id: int, old_name: str, new_name: str) -> bool:
         """Rename an existing command."""
         result = await self.guilds_collection.update_one(
-            {"_id": guild_id, "custom_commands.name": old_name}, {"$set": {"custom_commands.$.name": new_name}}
+            {"_id": guild_id, "custom_commands.name": old_name},
+            {"$set": {"custom_commands.$.name": new_name}},
         )
 
         if result.matched_count == 0:
@@ -182,7 +187,8 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     async def get_custom_command(self, *, guild_id: int, name: str) -> CustomCommand | None:
         """Return a custom command object for a guild."""
         guild = await self.guilds_collection.find_one(
-            {"_id": guild_id, "custom_commands.name": name}, {"custom_commands": {"$elemMatch": {"name": name}}}
+            {"_id": guild_id, "custom_commands.name": name},
+            {"custom_commands": {"$elemMatch": {"name": name}}},
         )
         if guild is None:
             return None
@@ -199,7 +205,9 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
     async def push_custom_command_log(self, *, guild_id: int, log_entry: str) -> None:
         """Push a log entry for a custom command."""
         await self.guilds_collection.update_one(
-            {"_id": guild_id}, {"$push": {"custom_commands_logs": {"$each": [log_entry], "$slice": -100}}}, upsert=True
+            {"_id": guild_id},
+            {"$push": {"custom_commands_logs": {"$each": [log_entry], "$slice": -100}}},
+            upsert=True,
         )
 
     async def get_custom_command_logs(self, *, guild_id: int) -> list[str]:
@@ -216,7 +224,11 @@ class _GuildCustomCommandsMixin(DatabaseMixin):
 
     async def set_custom_command_db(self, *, guild_id: int, key: str, value: str) -> None:
         """Set a key-value pair in the custom command database for a guild."""
-        await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {f"custom_commands_db.{key}": value}}, upsert=True)
+        await self.guilds_collection.update_one(
+            {"_id": guild_id},
+            {"$set": {f"custom_commands_db.{key}": value}},
+            upsert=True,
+        )
 
         key = RedisKeys.GUILD_CUSTOM_COMMAND_DB.format(guild_id=guild_id)
         await self.redis_client.hset(key, key, value)

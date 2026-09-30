@@ -37,7 +37,7 @@ async def wait_for_delete(
     *,
     emoji: str = "\N{BLACK SQUARE FOR STOP}",
     bot: Parrot | None = None,
-    user: discord.User | discord.Member | tuple[discord.User | discord.Member, ...] | None = None,
+    user: (discord.User | discord.Member | tuple[discord.User | discord.Member, ...] | None) = None,
     timeout: float | None = None,
 ) -> bool:
     if not user:
@@ -63,12 +63,19 @@ async def wait_for_delete(
 
 
 async def double_wait[A: bool, B: bool](
-    task1: Coroutine[Any, Any, A], task2: Coroutine[Any, Any, B], /, *, loop: asyncio.AbstractEventLoop | None = None
+    task1: Coroutine[Any, Any, A],
+    task2: Coroutine[Any, Any, B],
+    /,
+    *,
+    loop: asyncio.AbstractEventLoop | None = None,
 ) -> tuple[set[asyncio.Task[A] | asyncio.Task[B]], set[asyncio.Task[A] | asyncio.Task[B]]]:
     if not loop:
         loop = asyncio.get_running_loop()
 
-    done, pending = await asyncio.wait([loop.create_task(task1), loop.create_task(task2)], return_when=asyncio.FIRST_COMPLETED)
+    done, pending = await asyncio.wait(
+        [loop.create_task(task1), loop.create_task(task2)],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
     for task in pending:
         task.cancel()
     return done, pending

@@ -12,7 +12,12 @@ if TYPE_CHECKING:
 
 
 class ConfirmationLayout(BaseLayoutView):
-    def __init__(self, author: discord.User | discord.Member, prompt: str, result: asyncio.Future[bool]) -> None:
+    def __init__(
+        self,
+        author: discord.User | discord.Member,
+        prompt: str,
+        result: asyncio.Future[bool],
+    ) -> None:
         super().__init__(author=author)
         self.author = author
         self.result = result

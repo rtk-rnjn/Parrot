@@ -175,7 +175,10 @@ class Highlights(commands.Cog):
 
         em = (
             discord.Embed(description="", timestamp=message.created_at)
-            .set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+            .set_author(
+                name=message.author.display_name,
+                icon_url=message.author.display_avatar.url,
+            )
             .set_footer(text="Triggered")
         )
 
@@ -206,7 +209,11 @@ class Highlights(commands.Cog):
     @commands.Cog.listener("on_highlight")
     async def on_highlight_notify(self, message: discord.Message, member: discord.Member, *, highlight: str) -> None:
         try:
-            await self.bot.wait_for("user_activity", check=lambda channel, user: message.channel == channel and user == member, timeout=30)
+            await self.bot.wait_for(
+                "user_activity",
+                check=lambda channel, user: message.channel == channel and user == member,
+                timeout=30,
+            )
             return
         except TimeoutError:
             pass

@@ -87,12 +87,20 @@ class BookmarkForm(discord.ui.Modal):
         try:
             await self.dm_bookmark(interaction, self.message, title)
         except discord.Forbidden:
-            await interaction.response.send_message(embed=Misc.build_error_embed("Enable your DMs to receive the bookmark."), ephemeral=True)
+            await interaction.response.send_message(
+                embed=Misc.build_error_embed("Enable your DMs to receive the bookmark."),
+                ephemeral=True,
+            )
             return
 
         await interaction.response.send_message(embed=Misc.build_success_reply_embed(self.message), ephemeral=True)
 
-    async def dm_bookmark(self, interaction: discord.Interaction[Parrot], target_message: discord.Message, title: str | None) -> None:
+    async def dm_bookmark(
+        self,
+        interaction: discord.Interaction[Parrot],
+        target_message: discord.Message,
+        title: str | None,
+    ) -> None:
         embed = Misc.build_bookmark_dm(target_message, title=title)
         message_url_view = discord.ui.View().add_item(discord.ui.Button(label="View Message", url=target_message.jump_url))
         await interaction.user.send(embed=embed, view=message_url_view)
@@ -124,7 +132,8 @@ class Misc(commands.Cog):
         # await interaction.response.defer(thinking=False)
         if message.guild is None:
             await interaction.response.send_message(
-                f"{interaction.user.mention} interpreting as command is only available in guilds.", ephemeral=True
+                f"{interaction.user.mention} interpreting as command is only available in guilds.",
+                ephemeral=True,
             )
             return
 
@@ -216,7 +225,12 @@ class Misc(commands.Cog):
 
         assert isinstance(target_message, discord.Message)
 
-        message = await self.action_bookmark(channel=ctx.channel, user=ctx.author, target_message=target_message, title=title)
+        message = await self.action_bookmark(
+            channel=ctx.channel,
+            user=ctx.author,
+            target_message=target_message,
+            title=title,
+        )
 
         # Keep track of who has already bookmarked, so users can't spam reactions and cause loads of DMs
         reaction_message = await self.send_reaction_embed(ctx.channel, target_message)
@@ -239,8 +253,14 @@ class Misc(commands.Cog):
         if target_message.attachments and target_message.attachments[0].url.endswith(("png", "jpeg", "jpg", "gif", "webp")):
             embed.set_image(url=target_message.attachments[0].url)
 
-        embed.add_field(name="Wanna give it a visit?", value=f"[Visit original message]({target_message.jump_url})")
-        embed.set_author(name=target_message.author, icon_url=target_message.author.display_avatar.url)
+        embed.add_field(
+            name="Wanna give it a visit?",
+            value=f"[Visit original message]({target_message.jump_url})",
+        )
+        embed.set_author(
+            name=target_message.author,
+            icon_url=target_message.author.display_avatar.url,
+        )
 
         return embed
 
@@ -323,7 +343,10 @@ class Misc(commands.Cog):
         emb = (
             discord.Embed(color=snipe.author.color, timestamp=snipe.created_at)
             .set_author(name=snipe.author, icon_url=snipe.author.display_avatar.url)
-            .set_footer(text=f"Message sniped by {ctx.author!s}", icon_url=ctx.author.display_avatar.url)
+            .set_footer(
+                text=f"Message sniped by {ctx.author!s}",
+                icon_url=ctx.author.display_avatar.url,
+            )
         )
         if snipe.attachments:
             url = snipe.attachments[0].proxy_url
@@ -359,7 +382,10 @@ class Misc(commands.Cog):
         emb = (
             discord.Embed(color=snipe[0].author.color, timestamp=snipe[0].created_at)
             .set_author(name=snipe[0].author, icon_url=snipe[0].author.display_avatar.url)
-            .set_footer(text=f"Message sniped by {ctx.author!s}", icon_url=ctx.author.display_avatar.url)
+            .set_footer(
+                text=f"Message sniped by {ctx.author!s}",
+                icon_url=ctx.author.display_avatar.url,
+            )
         )
         if snipe[0].content and snipe[1].content:
             emb.description = f"**Before:**\n{self.sanitise(snipe[0].content)}\n\n**After:**\n{self.sanitise(snipe[1].content)}"
@@ -369,7 +395,12 @@ class Misc(commands.Cog):
         return message
 
     @commands.command(name="define", aliases=["dictionary", "dict"])
-    async def define(self, ctx: commands.Context[Parrot], *, term: str = commands.parameter(description="The term to define.")) -> discord.Message:
+    async def define(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        term: str = commands.parameter(description="The term to define."),
+    ) -> discord.Message:
         """Fetch a definition from Urban Dictionary API."""
         closest_match = process.extractOne(term.capitalize(), DICTIONARY.keys(), scorer=fuzz.ratio)
         if closest_match is None:
@@ -424,7 +455,12 @@ class Misc(commands.Cog):
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")
 
     @commands.group(name="logo", aliases=("turtle", "turtle-graphics"), invoke_without_command=True)
-    async def _logo(self, ctx: commands.Context[Parrot], *, code: Annotated[Codeblock, codeblock_converter]) -> None:
+    async def _logo(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: Annotated[Codeblock, codeblock_converter],
+    ) -> None:
         """Interprets the provided code as Logo programming language code and returns the resulting image."""
         parser = LogoParser()
         program = parser.parse(code.content)
@@ -483,7 +519,12 @@ class Misc(commands.Cog):
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
-    async def latex(self, ctx: commands.Context[Parrot], *, code: Annotated[Codeblock, codeblock_converter]) -> None:
+    async def latex(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        code: Annotated[Codeblock, codeblock_converter],
+    ) -> None:
         """Renders the text in latex and sends the image."""
         query = code.content
         query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec

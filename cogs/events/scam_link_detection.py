@@ -19,9 +19,15 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger("bot.cogs.scam_link_detection")
 
-LINK_RE = re.compile(r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)", re.IGNORECASE)
+LINK_RE = re.compile(
+    r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)",
+    re.IGNORECASE,
+)
 
-GITHUB_HEADERS = {"Authorization": f"token {os.environ['GITHUB_PERSONAL_ACCESS_TOKEN']}", "Accept": "application/json"}
+GITHUB_HEADERS = {
+    "Authorization": f"token {os.environ['GITHUB_PERSONAL_ACCESS_TOKEN']}",
+    "Accept": "application/json",
+}
 
 
 class ScamLinkManager:
@@ -179,7 +185,11 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
     async def mark_warned(self, *, channel: discord.abc.MessageableChannel, link: str) -> None:
         await self.bot.database.flag_link_as_warned(link=link, channel_id=channel.id)
 
-    @commands.group(name="sl", hidden=True, aliases=["scamlink", "scamlinks", "scam_link", "scam_links"])
+    @commands.group(
+        name="sl",
+        hidden=True,
+        aliases=["scamlink", "scamlinks", "scam_link", "scam_links"],
+    )
     @commands.is_owner()
     async def scam_links_command(self, ctx: commands.Context):
         """Scam links management."""

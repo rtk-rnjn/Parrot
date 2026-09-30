@@ -14,7 +14,13 @@ if TYPE_CHECKING:
 __all__ = ("_UserMixin",)
 
 
-class _UserMixin(_UserTimezoneMixin, _UserHighlightsMixin, _UserTodoMixin, _UserBirthdayMixin, DatabaseMixin):
+class _UserMixin(
+    _UserTimezoneMixin,
+    _UserHighlightsMixin,
+    _UserTodoMixin,
+    _UserBirthdayMixin,
+    DatabaseMixin,
+):
     def create_user_configuration(self, user_id: int) -> UserConfiguration:
         return {
             "_id": user_id,

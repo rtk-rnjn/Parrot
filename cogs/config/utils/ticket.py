@@ -20,7 +20,7 @@ class TicketConfigModal(discord.ui.Modal, title="Edit Ticket Configuration"):
         self._channel_input = discord.ui.ChannelSelect(
             placeholder="Select a channel for tickets...",
             channel_types=[discord.ChannelType.text],
-            default_values=[discord.Object(id=self.channel_id)] if self.channel_id is not None else [],
+            default_values=([discord.Object(id=self.channel_id)] if self.channel_id is not None else []),
             min_values=0,
             max_values=1,
         )

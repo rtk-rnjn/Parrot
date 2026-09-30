@@ -37,7 +37,10 @@ class GiveawayCog(commands.Cog):
                 self.bot.loop.create_task(self._recover_giveaway(giveaway["_id"]))
                 continue
 
-            timers = await self.bot.event_scheduler.search(event_name="giveaway", metadata_filter={"giveaway_id": str(giveaway["_id"])})
+            timers = await self.bot.event_scheduler.search(
+                event_name="giveaway",
+                metadata_filter={"giveaway_id": str(giveaway["_id"])},
+            )
             if not timers:
                 await self.bot.event_scheduler.create_timer(
                     event_name="giveaway",
@@ -59,7 +62,10 @@ class GiveawayCog(commands.Cog):
             embed.colour = discord.Colour.dark_grey()
             embed.set_field_at(1, name="Ended", value=discord.utils.format_dt(giveaway["ends_at"], "R"))
             if winners:
-                embed.add_field(name="Winner(s)", value=", ".join(f"<@{user_id}>" for user_id in winners))
+                embed.add_field(
+                    name="Winner(s)",
+                    value=", ".join(f"<@{user_id}>" for user_id in winners),
+                )
             else:
                 embed.add_field(name="Winner(s)", value="No eligible entrants.")
         return embed
@@ -79,7 +85,14 @@ class GiveawayCog(commands.Cog):
 
     @giveaway.command(name="start")
     @commands.has_guild_permissions(manage_guild=True)
-    async def start_giveaway(self, ctx: commands.Context[Parrot], duration: FutureTime, winners: commands.Range[int, 1, 20], *, prize: str) -> None:
+    async def start_giveaway(
+        self,
+        ctx: commands.Context[Parrot],
+        duration: FutureTime,
+        winners: commands.Range[int, 1, 20],
+        *,
+        prize: str,
+    ) -> None:
         """Start a giveaway: giveaway start <duration> <winners> <prize>."""
         if ctx.guild is None:
             return
@@ -121,8 +134,15 @@ class GiveawayCog(commands.Cog):
         await message.edit(embed=self._embed(giveaway), view=view)
         self.bot.add_view(view, message_id=message.id)
 
-        await self.bot.event_scheduler.create_timer(event_name="giveaway", expires_at=ends_at, metadata={"giveaway_id": str(giveaway_id)})
-        await ctx.reply(f"Giveaway started and ends {discord.utils.format_dt(ends_at, 'R')}.", delete_after=10)
+        await self.bot.event_scheduler.create_timer(
+            event_name="giveaway",
+            expires_at=ends_at,
+            metadata={"giveaway_id": str(giveaway_id)},
+        )
+        await ctx.reply(
+            f"Giveaway started and ends {discord.utils.format_dt(ends_at, 'R')}.",
+            delete_after=10,
+        )
 
     @giveaway.command(name="from-message", aliases=["message"])
     @commands.has_guild_permissions(manage_guild=True)
@@ -152,8 +172,15 @@ class GiveawayCog(commands.Cog):
             entry_mode="reaction",
         )
         await message.add_reaction(GIVEAWAY_EMOJI)
-        await self.bot.event_scheduler.create_timer(event_name="giveaway", expires_at=duration.dt, metadata={"giveaway_id": str(result.inserted_id)})
-        await ctx.reply(f"Your message is now a giveaway and ends {discord.utils.format_dt(duration.dt, 'R')}.", delete_after=10)
+        await self.bot.event_scheduler.create_timer(
+            event_name="giveaway",
+            expires_at=duration.dt,
+            metadata={"giveaway_id": str(result.inserted_id)},
+        )
+        await ctx.reply(
+            f"Your message is now a giveaway and ends {discord.utils.format_dt(duration.dt, 'R')}.",
+            delete_after=10,
+        )
 
     @giveaway.command(name="end")
     @commands.has_guild_permissions(manage_guild=True)
@@ -213,7 +240,10 @@ class GiveawayCog(commands.Cog):
         if giveaway.get("entry_mode", "reaction") == "button":
             try:
                 message = await self.bot.get_or_fetch_message(channel, giveaway["message_id"])
-                await message.edit(embed=self._embed(giveaway, winners=winners), view=GiveawayView(self, giveaway))
+                await message.edit(
+                    embed=self._embed(giveaway, winners=winners),
+                    view=GiveawayView(self, giveaway),
+                )
             except discord.NotFound, discord.Forbidden:
                 _log.warning("Could not update rerolled giveaway %s", giveaway["_id"])
 
@@ -234,7 +264,10 @@ class GiveawayCog(commands.Cog):
         try:
             message = await self.bot.get_or_fetch_message(channel, giveaway["message_id"])
             if giveaway.get("entry_mode", "reaction") == "button":
-                await message.edit(embed=self._embed(giveaway, winners=winners), view=GiveawayView(self, giveaway))
+                await message.edit(
+                    embed=self._embed(giveaway, winners=winners),
+                    view=GiveawayView(self, giveaway),
+                )
             if winners:
                 await channel.send(
                     f"Congratulations {', '.join(f'<@{user_id}>' for user_id in winners)}! You won **{giveaway['prize']}**!",
@@ -243,7 +276,11 @@ class GiveawayCog(commands.Cog):
             else:
                 await channel.send(f"The giveaway for **{giveaway['prize']}** ended with no eligible entrants.")
         except discord.NotFound, discord.Forbidden:
-            _log.warning("Could not finish giveaway %s in channel %s", giveaway["_id"], giveaway["channel_id"])
+            _log.warning(
+                "Could not finish giveaway %s in channel %s",
+                giveaway["_id"],
+                giveaway["channel_id"],
+            )
 
 
 class GiveawayView(discord.ui.View):
@@ -278,7 +315,10 @@ class GiveawayView(discord.ui.View):
             return
         is_manager = isinstance(interaction.user, discord.Member) and interaction.user.guild_permissions.manage_guild
         if interaction.user.id != giveaway["host_id"] and not is_manager:
-            await interaction.response.send_message("Only the giveaway host or a server manager can reroll it.", ephemeral=True)
+            await interaction.response.send_message(
+                "Only the giveaway host or a server manager can reroll it.",
+                ephemeral=True,
+            )
             return
 
         await interaction.response.defer()

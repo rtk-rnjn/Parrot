@@ -141,8 +141,14 @@ class Help(commands.HelpCommand):
                 colour=discord.Colour.blurple(),
             )
             .add_field(name="Bot Version", value=context.bot.VERSION)
-            .add_field(name="Uptime", value=discord.utils.format_dt(context.bot.started_at, "R"))
-            .add_field(name="Members", value=f"{total_members:,} total\n{len(context.bot.users):,} cached")
+            .add_field(
+                name="Uptime",
+                value=discord.utils.format_dt(context.bot.started_at, "R"),
+            )
+            .add_field(
+                name="Members",
+                value=f"{total_members:,} total\n{len(context.bot.users):,} cached",
+            )
             .add_field(
                 name="Channels",
                 value=(f"{text_channels + voice_channels:,} total\n{text_channels:,} text\n{voice_channels:,} voice"),
@@ -163,7 +169,11 @@ class Help(commands.HelpCommand):
             colour=discord.Colour.blurple(),
         )
 
-        embed.add_field(name="Usage", value=f"```text\n{self.get_command_signature(command)}\n```", inline=False)
+        embed.add_field(
+            name="Usage",
+            value=f"```text\n{self.get_command_signature(command)}\n```",
+            inline=False,
+        )
 
         if command.aliases:
             embed.add_field(
@@ -193,7 +203,11 @@ class Help(commands.HelpCommand):
             colour=discord.Colour.blurple(),
         )
 
-        embed.add_field(name="Usage", value=f"```text\n{self.get_command_signature(group)}\n```", inline=False)
+        embed.add_field(
+            name="Usage",
+            value=f"```text\n{self.get_command_signature(group)}\n```",
+            inline=False,
+        )
 
         commands_list = await self.filter_commands(group.commands, sort=True)
 

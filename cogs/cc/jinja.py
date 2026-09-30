@@ -189,11 +189,17 @@ class HardenedSandboxedEnvironment(ImmutableSandboxedEnvironment):
 
 config = SandboxConfig()
 config.validate()
-env = HardenedSandboxedEnvironment(config, loader=None, autoescape=False, extensions=[], enable_async=True, auto_reload=True)
+env = HardenedSandboxedEnvironment(
+    config,
+    loader=None,
+    autoescape=False,
+    extensions=[],
+    enable_async=True,
+    auto_reload=True,
+)
 
 
 async def render_sandboxed(code: str, **context: Any) -> str:
     config.validate()
     template = env.from_string(code)
     return await template.render_async(context)
-

@@ -30,7 +30,12 @@ class TypingTest:
         self.sentence = random.choice(random_sentences)
 
     async def wait_for_message(
-        self, ctx: commands.Context[Parrot], *, start_time: float, completed: set[int], required_accuracy: float = 50.0
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        start_time: float,
+        completed: set[int],
+        required_accuracy: float = 50.0,
     ) -> tuple[Player, float, float]:
 
         def check(message: discord.Message) -> bool:
@@ -71,7 +76,11 @@ class TypingTest:
         return "".join(result)
 
     async def start(
-        self, ctx: commands.Context[Parrot], *, timeout: float | None = 60.0, embed_color: DiscordColor = DEFAULT_COLOR
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        timeout: float | None = 60.0,
+        embed_color: DiscordColor = DEFAULT_COLOR,
     ) -> discord.Message:
         embed = discord.Embed(
             title="Typing Test",

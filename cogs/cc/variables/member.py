@@ -54,7 +54,12 @@ class JinjaMember:
 
         await self.__member.kick(reason=reason)
 
-    async def ban(self, *, reason: str | None = None, delete_message_days: int = discord.utils.MISSING):
+    async def ban(
+        self,
+        *,
+        reason: str | None = None,
+        delete_message_days: int = discord.utils.MISSING,
+    ):
         """Ban member from guild."""
         if not await self._check_perms(ban_members=True):
             return

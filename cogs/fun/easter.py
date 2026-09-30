@@ -41,7 +41,10 @@ COLOURS = [
     (128, 0, 128, 255),
 ]  # Colours to be replaced - Red, Orange, Yellow, Green, Light Blue, Dark Blue, Pink, Purple
 
-IRREPLACEABLE = [(0, 0, 0, 0), (0, 0, 0, 255)]  # Colours that are meant to stay the same - Transparent and Black
+IRREPLACEABLE = [
+    (0, 0, 0, 0),
+    (0, 0, 0, 255),
+]  # Colours that are meant to stay the same - Transparent and Black
 
 EMOJIS = [
     "\N{REGIONAL INDICATOR SYMBOL LETTER A}",
@@ -124,7 +127,13 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         If the Discord name contains a vowel and the letter y, it will match one or more of these patterns.
         Only the most recently matched pattern will apply the changes.
         """
-        expressions = [("a.+y", "patchy"), ("e.+y", "ears"), ("i.+y", "ditsy"), ("o.+y", "oofy"), ("u.+y", "uffy")]
+        expressions = [
+            ("a.+y", "patchy"),
+            ("e.+y", "ears"),
+            ("i.+y", "ditsy"),
+            ("o.+y", "oofy"),
+            ("u.+y", "uffy"),
+        ]
 
         for exp, vowel_sub in expressions:
             new_name = re.sub(exp, vowel_sub, displayname)
@@ -160,7 +169,16 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         unmatched_name = self.append_name(username)
 
         if spaces_in_name is not None:
-            replacements = ["Cotton", "Fluff", "FloofBounce", "Snuffle", "Nibble", "Cuddle", "Velvetpaw", "Carrot"]
+            replacements = [
+                "Cotton",
+                "Fluff",
+                "FloofBounce",
+                "Snuffle",
+                "Nibble",
+                "Cuddle",
+                "Velvetpaw",
+                "Carrot",
+            ]
             word_to_replace = random.choice(spaces_in_name)
             substitute = random.choice(replacements)
             bunnified_name = username.replace(word_to_replace, substitute)
@@ -293,9 +311,15 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             image_buffer.seek(0)
 
             file = discord.File(image_buffer, filename="egg.png")
-            embed = discord.Embed(title="Your Colourful Easter Egg", description="Here is your pretty little egg. Hope you like it!")
+            embed = discord.Embed(
+                title="Your Colourful Easter Egg",
+                description="Here is your pretty little egg. Hope you like it!",
+            )
             embed.set_image(url="attachment://egg.png")
-            embed.set_footer(text=f"Made by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+            embed.set_footer(
+                text=f"Made by {ctx.author.display_name}",
+                icon_url=ctx.author.display_avatar.url,
+            )
 
         await ctx.reply(file=file, embed=embed)
         return recoloured_image
@@ -309,7 +333,11 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
     @staticmethod
     def make_embed() -> discord.Embed:
         """Makes a nice embed for the message to be sent."""
-        return discord.Embed(colour=discord.Color.red(), title="Easter Egg Fact", description=random.choice(EGG_FACTS))
+        return discord.Embed(
+            colour=discord.Color.red(),
+            title="Easter Egg Fact",
+            description=random.choice(EGG_FACTS),
+        )
 
     @commands.command(aliases=("eggheadquiz", "easterquiz"))
     async def eggquiz(self, ctx: Context) -> None:
@@ -374,7 +402,11 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         content = f"Well done {mentions} for getting it correct!" if mentions else "Nobody got it right..."
 
-        a_embed = discord.Embed(title=f"The correct answer was {correct}!", description="\n".join(results), colour=discord.Color.pink())
+        a_embed = discord.Embed(
+            title=f"The correct answer was {correct}!",
+            description="\n".join(results),
+            colour=discord.Color.pink(),
+        )
 
         await ctx.reply(content, embed=a_embed)
         return None

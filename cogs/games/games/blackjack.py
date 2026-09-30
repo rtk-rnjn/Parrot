@@ -96,7 +96,21 @@ class BlackjackHand:
 class BlackjackDeck:
     """Standard one-deck blackjack shoe."""
 
-    RANKS: ClassVar[tuple[str, ...]] = ("A", "2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K")
+    RANKS: ClassVar[tuple[str, ...]] = (
+        "A",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "0",
+        "J",
+        "Q",
+        "K",
+    )
 
     SUITS: ClassVar[tuple[str, ...]] = ("C", "D", "H", "S")
 
@@ -138,7 +152,13 @@ class Blackjack:
     INSURANCE_PAYOUT = 2.0
     DEALER_STANDS_ON_SOFT_17 = True
 
-    def __init__(self, *, wager: int = BASE_WAGER, decks: int = 6, embed_color: DiscordColor = DEFAULT_COLOR) -> None:
+    def __init__(
+        self,
+        *,
+        wager: int = BASE_WAGER,
+        decks: int = 6,
+        embed_color: DiscordColor = DEFAULT_COLOR,
+    ) -> None:
         if wager <= 0:
             msg = "wager must be greater than zero"
             raise ValueError(msg)
@@ -223,7 +243,11 @@ class Blackjack:
 
         dealer_value = str(self.dealer.value) if self.finished else self.dealer_visible_value()
 
-        embed.add_field(name=f"Dealer \N{EM DASH} {dealer_value}", value=dealer_cards or "-", inline=False)
+        embed.add_field(
+            name=f"Dealer \N{EM DASH} {dealer_value}",
+            value=dealer_cards or "-",
+            inline=False,
+        )
 
         for index, hand in enumerate(self.hands):
             marker = (
@@ -318,9 +342,19 @@ class Blackjack:
 
         first_card, second_card = hand.cards
 
-        first = BlackjackHand(cards=[first_card], bet=hand.bet, is_split=True, split_aces=first_card[0] == "A")
+        first = BlackjackHand(
+            cards=[first_card],
+            bet=hand.bet,
+            is_split=True,
+            split_aces=first_card[0] == "A",
+        )
 
-        second = BlackjackHand(cards=[second_card], bet=hand.bet, is_split=True, split_aces=second_card[0] == "A")
+        second = BlackjackHand(
+            cards=[second_card],
+            bet=hand.bet,
+            is_split=True,
+            split_aces=second_card[0] == "A",
+        )
 
         first.cards.append(self.deck.draw())
         second.cards.append(self.deck.draw())
@@ -452,7 +486,11 @@ class Blackjack:
 
         dealer_cards = self.render_cards(self.dealer.cards)
 
-        embed.add_field(name=f"Dealer \N{EM DASH} {self.dealer.value}", value=dealer_cards, inline=False)
+        embed.add_field(
+            name=f"Dealer \N{EM DASH} {self.dealer.value}",
+            value=dealer_cards,
+            inline=False,
+        )
 
         embed.description = "\n".join(results)
 
@@ -562,11 +600,23 @@ class BlackjackView(BaseView):
             emoji="\N{DIGIT TWO}\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}",
         )
 
-        self.split_button = BlackjackButton(action="split", label="Split", emoji="\N{BLACK SCISSORS}\N{VARIATION SELECTOR-16}")
+        self.split_button = BlackjackButton(
+            action="split",
+            label="Split",
+            emoji="\N{BLACK SCISSORS}\N{VARIATION SELECTOR-16}",
+        )
 
-        self.insurance_button = BlackjackButton(action="insurance", label="Insurance", emoji="\N{SHIELD}\N{VARIATION SELECTOR-16}")
+        self.insurance_button = BlackjackButton(
+            action="insurance",
+            label="Insurance",
+            emoji="\N{SHIELD}\N{VARIATION SELECTOR-16}",
+        )
 
-        self.surrender_button = BlackjackButton(action="surrender", label="Surrender", emoji="\N{WAVING WHITE FLAG}\N{VARIATION SELECTOR-16}")
+        self.surrender_button = BlackjackButton(
+            action="surrender",
+            label="Surrender",
+            emoji="\N{WAVING WHITE FLAG}\N{VARIATION SELECTOR-16}",
+        )
 
         self.add_item(self.hit_button)
         self.add_item(self.stand_button)
@@ -638,4 +688,8 @@ class BlackjackView(BaseView):
         if self.message is not None:
             self.disable_all()
 
-            await self.message.edit(content="**Blackjack \N{EM DASH} Timed Out**", embed=self.game.make_embed(), view=self)
+            await self.message.edit(
+                content="**Blackjack \N{EM DASH} Timed Out**",
+                embed=self.game.make_embed(),
+                view=self,
+            )

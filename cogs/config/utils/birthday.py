@@ -15,7 +15,7 @@ class BirthdayChannelSelect(discord.ui.ChannelSelect):
             min_values=0,
             max_values=1,
             channel_types=[discord.ChannelType.text],
-            default_values=[discord.Object(id=channel_id)] if channel_id is not None else [],
+            default_values=([discord.Object(id=channel_id)] if channel_id is not None else []),
         )
         self.channel_id = channel_id
 
@@ -33,7 +33,10 @@ class BirthdayChannelSelect(discord.ui.ChannelSelect):
             new_channel_id = selected_channel.id
 
             await interaction.client.database.edit_birthday_config(guild_id=interaction.guild.id, enabled=True, channel_id=new_channel_id)
-            await interaction.followup.send(f"Birthday channel updated to {selected_channel.mention}.", ephemeral=True)
+            await interaction.followup.send(
+                f"Birthday channel updated to {selected_channel.mention}.",
+                ephemeral=True,
+            )
 
         else:
             await interaction.client.database.edit_birthday_config(guild_id=interaction.guild.id, enabled=True, channel_id=None)

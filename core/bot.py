@@ -37,7 +37,11 @@ DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 
-RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in ("true", "1", "yes")
+RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in (
+    "true",
+    "1",
+    "yes",
+)
 LAVALINK_PASSWORD = os.environ.get("LAVALINK_PASSWORD", "youshallnotpass")
 OWNER_ID = os.getenv("OWNER_ID")
 
@@ -159,7 +163,11 @@ class Parrot(commands.Bot):
             return None
 
         try:
-            return await asyncio.create_subprocess_shell(" ".join([java, "-jar", str(lavalink_jar)]), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return await asyncio.create_subprocess_shell(
+                " ".join([java, "-jar", str(lavalink_jar)]),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
         except Exception:
             _log.exception("Failed to start Lavalink process.")
 
@@ -189,7 +197,10 @@ class Parrot(commands.Bot):
             elif spec.origin:
                 path = Path(spec.origin)
             else:
-                _log.warning("Could not resolve source path for loaded cog extension: %s", extension)
+                _log.warning(
+                    "Could not resolve source path for loaded cog extension: %s",
+                    extension,
+                )
                 continue
 
             paths[path.resolve()] = extension
@@ -294,11 +305,17 @@ class Parrot(commands.Bot):
                 return
 
             case SpamSeverity.MEDIUM:
-                await ctx.reply("You are sending commands too quickly. Please slow down.", delete_after=5)
+                await ctx.reply(
+                    "You are sending commands too quickly. Please slow down.",
+                    delete_after=5,
+                )
                 return
 
             case SpamSeverity.LOW:
-                await ctx.reply("You are sending commands too quickly. Please slow down.", delete_after=5)
+                await ctx.reply(
+                    "You are sending commands too quickly. Please slow down.",
+                    delete_after=5,
+                )
                 return
 
             case SpamSeverity.NONE:
@@ -368,7 +385,13 @@ class Parrot(commands.Bot):
         except discord.NotFound:
             return None
 
-    async def confirm(self, ctx: commands.Context[Parrot], prompt: str = "Are you sure?", *, timeout: float = 30) -> bool:  # noqa: ASYNC109
+    async def confirm(
+        self,
+        ctx: commands.Context[Parrot],
+        prompt: str = "Are you sure?",
+        *,
+        timeout: float = 30,
+    ) -> bool:
         """Ask the command author to confirm an action in the current channel."""
         result = asyncio.get_running_loop().create_future()
         view = ConfirmationLayout(ctx.author, prompt, result)
@@ -428,7 +451,8 @@ class Parrot(commands.Bot):
         view = DisambiguatorView(context, matches, entry)
         embed = embed or (
             discord.Embed(description="Found multiple choices. Please choose the correct one.").set_author(
-                name=context.author.display_name, icon_url=context.author.display_avatar.url
+                name=context.author.display_name,
+                icon_url=context.author.display_avatar.url,
             )
         )
 
@@ -521,7 +545,6 @@ class Parrot(commands.Bot):
 
         async for change in watcher:
             self.dispatch("mongodb_change", change)
-
 
     async def __start_redis_listener(self) -> None:
         pub_sub_client = self.database.pub_sub_client

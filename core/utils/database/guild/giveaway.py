@@ -70,7 +70,10 @@ class _GuildGiveawayMixin(DatabaseMixin):
         if value is not None:
             return bool(value)
 
-        config = await self.guilds_collection.find_one({"_id": guild_id, "giveaway_config.enabled": {"$exists": True}}, {"giveaway_config": 1})
+        config = await self.guilds_collection.find_one(
+            {"_id": guild_id, "giveaway_config.enabled": {"$exists": True}},
+            {"giveaway_config": 1},
+        )
         if config is None:
             return False
 
@@ -84,7 +87,8 @@ class _GuildGiveawayMixin(DatabaseMixin):
             return value
 
         config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "giveaway_config.giveaway_channel_id": {"$exists": True}}, {"giveaway_config": 1}
+            {"_id": guild_id, "giveaway_config.giveaway_channel_id": {"$exists": True}},
+            {"giveaway_config": 1},
         )
         if config is None:
             return None
@@ -99,7 +103,8 @@ class _GuildGiveawayMixin(DatabaseMixin):
             return value
 
         config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "giveaway_config.giveaway_role_id": {"$exists": True}}, {"giveaway_config": 1}
+            {"_id": guild_id, "giveaway_config.giveaway_role_id": {"$exists": True}},
+            {"giveaway_config": 1},
         )
         if config is None:
             return None

@@ -152,7 +152,14 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
                 delete_after=error.retry_after,
             )
 
-        if isinstance(error, (commands.MissingRequiredArgument, commands.BadUnionArgument, commands.TooManyArguments)):
+        if isinstance(
+            error,
+            (
+                commands.MissingRequiredArgument,
+                commands.BadUnionArgument,
+                commands.TooManyArguments,
+            ),
+        ):
             command = ctx.command
             aliases = f"|{'|'.join(command.aliases)}" if command.aliases else ""  # pyright: ignore[reportOptionalMemberAccess]
             usage = f"{ctx.clean_prefix}{command.qualified_name}{aliases} {command.signature}"  # pyright: ignore[reportOptionalMemberAccess]
@@ -177,7 +184,11 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
 
         if isinstance(error, commands.CheckAnyFailure):
             desc = " or\n".join([e.__str__().format(ctx=ctx) for e in error.errors])
-            return ErrorResponse(title=self._title("Unexpected Error"), description=desc, reset_cooldown=True)
+            return ErrorResponse(
+                title=self._title("Unexpected Error"),
+                description=desc,
+                reset_cooldown=True,
+            )
 
         if isinstance(error, commands.CheckFailure):
             return ErrorResponse(
@@ -187,9 +198,15 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             )
 
         if isinstance(error, asyncio.TimeoutError):
-            return ErrorResponse(title=self._title("Timeout Error"), description="Command took too long to respond")
+            return ErrorResponse(
+                title=self._title("Timeout Error"),
+                description="Command took too long to respond",
+            )
 
-        if isinstance(error, (commands.InvalidEndOfQuotedStringError, commands.UnexpectedQuoteError)):
+        if isinstance(
+            error,
+            (commands.InvalidEndOfQuotedStringError, commands.UnexpectedQuoteError),
+        ):
             return self._quote_error_response(error)
 
         if isinstance(error, commands.DisabledCommand):
@@ -268,17 +285,30 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             description = f"Value you provided is out of range. Expected a value between {error.minimum} and {error.maximum}"
             title = self._title("Value Out Of Range")
 
-        return ErrorResponse(title=title, description=self._add_fuzzy_hint(error, objects, description), reset_cooldown=True)
+        return ErrorResponse(
+            title=title,
+            description=self._add_fuzzy_hint(error, objects, description),
+            reset_cooldown=True,
+        )
 
     async def _send_error_reply(self, ctx: commands.Context[Parrot], response: ErrorResponse) -> discord.Message | None:
         # sentinel path when owner reinvoke happens
         if not response.title and not response.description:
             return None
-        embed = discord.Embed(title=response.title, description=response.description, color=discord.Color.red())
+        embed = discord.Embed(
+            title=response.title,
+            description=response.description,
+            color=discord.Color.red(),
+        )
         random_quote = random.choice(RANDOM_QUOTES)
         return await ctx.reply(content=f"-# _{random_quote}_", embed=embed)
 
-    async def _handle_message_cleanup(self, ctx: commands.Context[Parrot], msg: discord.Message | None, delete_after: float | None) -> None:
+    async def _handle_message_cleanup(
+        self,
+        ctx: commands.Context[Parrot],
+        msg: discord.Message | None,
+        delete_after: float | None,
+    ) -> None:
         if msg is None:
             return
 

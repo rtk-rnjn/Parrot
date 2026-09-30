@@ -43,7 +43,10 @@ class ConnectFour:
         self.winner: Player | None = None
 
         self._conversion: dict[str, int] = {emoji: i for i, emoji in enumerate(self._controls)}
-        self.player_to_emoji: dict[Player, str] = {self.red_player: RED, self.blue_player: BLUE}
+        self.player_to_emoji: dict[Player, str] = {
+            self.red_player: RED,
+            self.blue_player: BLUE,
+        }
         self.emoji_to_player: dict[str, Player] = {v: k for k, v in self.player_to_emoji.items()}
 
     def board_string(self) -> str:

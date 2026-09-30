@@ -15,7 +15,8 @@ class _GuildSuggestionMixin(DatabaseMixin):
             return cached
 
         guild_config = await self.guilds_collection.find_one(
-            {"_id": guild_id, "suggestion_channel_id": {"$exists": True, "$ne": None}}, {"suggestion_channel_id": 1}
+            {"_id": guild_id, "suggestion_channel_id": {"$exists": True, "$ne": None}},
+            {"suggestion_channel_id": 1},
         )
         if guild_config is None:
             return None
@@ -30,7 +31,15 @@ class _GuildSuggestionMixin(DatabaseMixin):
 
         if suggestion_channel_id is None:
             await self.redis_client.delete(redis_key)
-            await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"suggestion_channel_id": None}}, upsert=True)
+            await self.guilds_collection.update_one(
+                {"_id": guild_id},
+                {"$set": {"suggestion_channel_id": None}},
+                upsert=True,
+            )
         else:
-            await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"suggestion_channel_id": suggestion_channel_id}}, upsert=True)
+            await self.guilds_collection.update_one(
+                {"_id": guild_id},
+                {"$set": {"suggestion_channel_id": suggestion_channel_id}},
+                upsert=True,
+            )
             await self.redis_client.set(redis_key, suggestion_channel_id)

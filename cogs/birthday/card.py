@@ -18,7 +18,12 @@ def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(ASSETS_DIR / name, size)
 
 
-def _fit_name(draw: ImageDraw.ImageDraw, name: str, font: ImageFont.FreeTypeFont, maximum_width: int) -> str:
+def _fit_name(
+    draw: ImageDraw.ImageDraw,
+    name: str,
+    font: ImageFont.FreeTypeFont,
+    maximum_width: int,
+) -> str:
     if draw.textbbox((0, 0), name, font=font)[2] <= maximum_width:
         return name
 

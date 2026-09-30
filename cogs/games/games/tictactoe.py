@@ -66,7 +66,10 @@ class Tictactoe:
             "\N{DIGIT NINE}",
         ]
 
-        self.emoji_to_player: dict[str, Player] = {self.CIRCLE: self.circle, self.CROSS: self.cross}
+        self.emoji_to_player: dict[str, Player] = {
+            self.CIRCLE: self.circle,
+            self.CROSS: self.cross,
+        }
         self.player_to_emoji: dict[Player, str] = {v: k for k, v in self.emoji_to_player.items()}
 
     def board_string(self) -> str:
@@ -243,6 +246,9 @@ class BetaTictactoe(Tictactoe):
         self.message = await ctx.reply(embed=self.make_embed(), view=self.view)
         self.view.message = self.message
 
-        await double_wait(wait_for_delete(ctx, self.message, user=(self.cross, self.circle)), self.view.wait())
+        await double_wait(
+            wait_for_delete(ctx, self.message, user=(self.cross, self.circle)),
+            self.view.wait(),
+        )
 
         return self.message

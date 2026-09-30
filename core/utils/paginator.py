@@ -46,8 +46,16 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
         self.first_button = discord.ui.Button(emoji="\N{BLACK LEFT-POINTING DOUBLE TRIANGLE}", style=muted, disabled=True)
         self.previous_button = discord.ui.Button(label="...", style=clickable, disabled=True)
         self.current_button = discord.ui.Button(label=self.current_page_label, style=muted, disabled=True)
-        self.next_button = discord.ui.Button(label="..." if disabled else str(self.current_index + 2), style=clickable, disabled=disabled)
-        self.last_button = discord.ui.Button(emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}", style=muted, disabled=disabled)
+        self.next_button = discord.ui.Button(
+            label="..." if disabled else str(self.current_index + 2),
+            style=clickable,
+            disabled=disabled,
+        )
+        self.last_button = discord.ui.Button(
+            emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}",
+            style=muted,
+            disabled=disabled,
+        )
 
         self.previous_button.callback = self.previous_page_callback
         self.next_button.callback = self.next_page_callback
@@ -140,7 +148,10 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
                 return
 
             if not 1 <= page_number <= len(self.items):
-                await interaction.response.send_message(f"Page number must be between 1 and {len(self.items)}.", ephemeral=True)
+                await interaction.response.send_message(
+                    f"Page number must be between 1 and {len(self.items)}.",
+                    ephemeral=True,
+                )
                 return
 
             await self._change_page(interaction, page_number - 1)
@@ -301,7 +312,11 @@ class PaginationLayout(PaginationMixin[list[discord.ui.Item]], BaseLayoutView):
         self._setup_pagination_buttons()
 
         self._pagination_buttons = discord.ui.ActionRow(
-            self.first_button, self.previous_button, self.current_button, self.next_button, self.last_button
+            self.first_button,
+            self.previous_button,
+            self.current_button,
+            self.next_button,
+            self.last_button,
         )
 
         self.container = discord.ui.Container()

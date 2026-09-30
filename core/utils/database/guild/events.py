@@ -51,7 +51,14 @@ class _GuildEventsMixin(DatabaseMixin):
 
         return False
 
-    async def edit_event(self, guild_id: int, *, event_name: EVENT_NAME, enabled: bool = MISSING, webhook_uri: str | None = MISSING) -> bool:
+    async def edit_event(
+        self,
+        guild_id: int,
+        *,
+        event_name: EVENT_NAME,
+        enabled: bool = MISSING,
+        webhook_uri: str | None = MISSING,
+    ) -> bool:
         updates = {
             f"events.{event_name}.{field}": value for field, value in (("enabled", enabled), ("webhook_uri", webhook_uri)) if value is not MISSING
         }
@@ -60,7 +67,10 @@ class _GuildEventsMixin(DatabaseMixin):
 
         result = await self.guilds_collection.update_one({"_id": guild_id}, {"$set": updates}, upsert=True)
         if enabled is not MISSING:
-            await self.redis_client.set(RedisKeys.GUILD_EVENT_ENABLED.format(guild_id=guild_id, event_name=event_name), int(enabled))
+            await self.redis_client.set(
+                RedisKeys.GUILD_EVENT_ENABLED.format(guild_id=guild_id, event_name=event_name),
+                int(enabled),
+            )
         if webhook_uri is not MISSING:
             key = RedisKeys.GUILD_EVENT_WEBHOOK_URI.format(guild_id=guild_id, event_name=event_name)
             if webhook_uri is None:

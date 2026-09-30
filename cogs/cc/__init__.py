@@ -293,7 +293,11 @@ class CustomCommandModal(discord.ui.Modal):
 
         if include_name_input:
             self.name_input = discord.ui.TextInput(
-                label="Command name", placeholder="welcome", max_length=32, default=custom_command_name, required=True
+                label="Command name",
+                placeholder="welcome",
+                max_length=32,
+                default=custom_command_name,
+                required=True,
             )
             self.add_item(self.name_input)
 
@@ -504,7 +508,10 @@ class CustomCommandSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
         selected_command = self.values[0]
-        command = next((command for command in self.custom_commands if command["name"] == selected_command), None)
+        command = next(
+            (command for command in self.custom_commands if command["name"] == selected_command),
+            None,
+        )
 
         embed = discord.Embed(
             title=f"Edit or Delete Custom Command: {selected_command}",
@@ -515,8 +522,8 @@ class CustomCommandSelect(discord.ui.Select):
             EditCustomCommandButton(
                 command_name=selected_command,
                 command_response=command["response"] if command else "",
-                custom_command_ignored_roles=command["ignored_roles"] if command else [],
-                custom_command_ignored_channels=command["ignored_channels"] if command else [],
+                custom_command_ignored_roles=(command["ignored_roles"] if command else []),
+                custom_command_ignored_channels=(command["ignored_channels"] if command else []),
             )
         )
         view.add_item(DeleteCustomCommandButton(command_name=selected_command))
@@ -547,7 +554,13 @@ class CustomCommandLayout(BaseLayoutView):
             items.append(discord.ui.ActionRow(CustomCommandSelect(custom_commands=custom_commands)))
             items.append(discord.ui.Separator())
 
-        items.append(discord.ui.ActionRow(CreateCustomCommandButton(), CustomCommandVariablesButton(), CustomCommandExamplesButton()))
+        items.append(
+            discord.ui.ActionRow(
+                CreateCustomCommandButton(),
+                CustomCommandVariablesButton(),
+                CustomCommandExamplesButton(),
+            )
+        )
 
         container = discord.ui.Container(*items)
 
@@ -600,7 +613,12 @@ class CustomCommand(commands.Cog):
             "message": JinjaMessage(message=ctx.message),
         }
 
-    async def _render_custom_command(self, ctx: commands.Context[Parrot], response: str, command_id: str | None = None) -> str | None:
+    async def _render_custom_command(
+        self,
+        ctx: commands.Context[Parrot],
+        response: str,
+        command_id: str | None = None,
+    ) -> str | None:
         """Render a custom command response. Returns rendered text or None on error."""
         try:
             return await render_sandboxed(response, **self.prepare_context(ctx))

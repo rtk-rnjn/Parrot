@@ -81,7 +81,13 @@ class Emojis:
 
 
 class Card:
-    def __init__(self, *, color: Color, type: CardType = CardType.number, value: int | None = None) -> None:  # noqa: A002
+    def __init__(
+        self,
+        *,
+        color: Color,
+        type: CardType = CardType.number,
+        value: int | None = None,
+    ) -> None:
         self.color: Color = color
         self.type: CardType = type
         self.value: int | None = value

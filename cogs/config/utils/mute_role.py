@@ -14,7 +14,7 @@ class MuteRoleSelect(discord.ui.RoleSelect):
             placeholder="Select a mute role...",
             min_values=0,
             max_values=1,
-            default_values=[discord.Object(id=mute_role_id)] if mute_role_id is not None else [],
+            default_values=([discord.Object(id=mute_role_id)] if mute_role_id is not None else []),
         )
         self.mute_role_id = mute_role_id
 

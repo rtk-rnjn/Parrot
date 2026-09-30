@@ -34,7 +34,12 @@ class Telephone(commands.Cog):
     async def _clear_busy_lines(self, guild_ids: tuple[int, int]) -> None:
         await asyncio.gather(*(self.bot.database.clear_telephone_line_busy(guild_id=guild_id) for guild_id in guild_ids))
 
-    async def _relay_call(self, ctx: commands.Context[Parrot], target_channel: discord.TextChannel, target_guild: discord.Guild) -> None:
+    async def _relay_call(
+        self,
+        ctx: commands.Context[Parrot],
+        target_channel: discord.TextChannel,
+        target_guild: discord.Guild,
+    ) -> None:
         current_channel = ctx.channel
         await current_channel.send(f"\N{TELEPHONE RECEIVER} **Connected. Say {random.choice(('hi', 'hello', 'heya'))}!**")
         await target_channel.send(f"\N{TELEPHONE RECEIVER} **Connected. Say {random.choice(('hi', 'hello', 'heya'))}!**")
@@ -114,7 +119,11 @@ class Telephone(commands.Cog):
             response: discord.Message | None = None
 
             try:
-                response = await self.bot.wait_for("message", check=self._call_check((ctx.channel, target_channel)), timeout=60)
+                response = await self.bot.wait_for(
+                    "message",
+                    check=self._call_check((ctx.channel, target_channel)),
+                    timeout=60,
+                )
             except TimeoutError:
                 await current_channel.send(
                     f"\N{SLEEPING SYMBOL} Line disconnected from **{target_guild.name}**. Reason: Line inactive for more than 60 seconds."

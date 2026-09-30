@@ -17,8 +17,16 @@ class RockPaperScissors:
 
     message: discord.Message
 
-    OPTIONS: ClassVar[tuple[str, str, str]] = ("\N{ROCK}", "\N{BLACK SCISSORS}", "\N{NEWSPAPER}")
-    BEATS: ClassVar[dict[str, str]] = {OPTIONS[0]: OPTIONS[1], OPTIONS[1]: OPTIONS[2], OPTIONS[2]: OPTIONS[0]}
+    OPTIONS: ClassVar[tuple[str, str, str]] = (
+        "\N{ROCK}",
+        "\N{BLACK SCISSORS}",
+        "\N{NEWSPAPER}",
+    )
+    BEATS: ClassVar[dict[str, str]] = {
+        OPTIONS[0]: OPTIONS[1],
+        OPTIONS[1]: OPTIONS[2],
+        OPTIONS[2]: OPTIONS[0],
+    }
 
     def check_win(self, bot_choice: str, user_choice: str) -> bool:
         return self.BEATS[user_choice] == bot_choice
@@ -140,7 +148,13 @@ class RPSButton(discord.ui.Button["RPSView"]):
 class RPSView(BaseView):
     game: BetaRockPaperScissors
 
-    def __init__(self, game: BetaRockPaperScissors, *, button_style: discord.ButtonStyle, timeout: float | None) -> None:
+    def __init__(
+        self,
+        game: BetaRockPaperScissors,
+        *,
+        button_style: discord.ButtonStyle,
+        timeout: float | None,
+    ) -> None:
         super().__init__(timeout=timeout)
 
         self.button_style = button_style
@@ -182,7 +196,11 @@ class BetaRockPaperScissors(RockPaperScissors):
     ) -> discord.Message:
         self.player1 = ctx.author
 
-        self.embed = discord.Embed(title="Rock Paper Scissors", description="Select a button to play!", color=embed_color)
+        self.embed = discord.Embed(
+            title="Rock Paper Scissors",
+            description="Select a button to play!",
+            color=embed_color,
+        )
 
         self.view = RPSView(self, button_style=button_style, timeout=timeout)
         self.message = await ctx.reply(embed=self.embed, view=self.view)

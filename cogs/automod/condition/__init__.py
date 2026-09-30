@@ -62,7 +62,10 @@ def _parse_no_config(_: Mapping[str, Any]) -> ConditionConfig:
 
 
 def _parse_roles(data: Mapping[str, Any]) -> ConditionConfig:
-    return RolesConfig(roles=_require_int_tuple(data, "roles"), require_all=_optional_bool(data, "require_all", default=False))
+    return RolesConfig(
+        roles=_require_int_tuple(data, "roles"),
+        require_all=_optional_bool(data, "require_all", default=False),
+    )
 
 
 def _parse_channels(data: Mapping[str, Any]) -> ConditionConfig:

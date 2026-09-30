@@ -165,7 +165,11 @@ class Hangman:
 
             self._counter -= 1
 
-            self.embed.set_field_at(1, name="Wrong letters", value=f"{', '.join(self.wrong_letters) or BLANK}")
+            self.embed.set_field_at(
+                1,
+                name="Wrong letters",
+                value=f"{', '.join(self.wrong_letters) or BLANK}",
+            )
             self.embed.set_field_at(2, name="Lives left", value=self.lives(), inline=False)
             self.embed.description = f"```\n{STAGES[self._counter]}\n```"
             await self.message.edit(embed=self.embed)
@@ -254,7 +258,10 @@ class HangmanInput(discord.ui.Modal, title="Make a guess!"):
         game = self.view.game
 
         if len(content) == 1 and content not in game._alpha:
-            await interaction.response.send_message("This is not a valid letter to guess (or you've guessed it before)", ephemeral=True)
+            await interaction.response.send_message(
+                "This is not a valid letter to guess (or you've guessed it before)",
+                ephemeral=True,
+            )
             return
 
         if len(content) > 1 and content not in game._all_words:

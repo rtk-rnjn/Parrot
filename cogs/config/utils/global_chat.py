@@ -15,7 +15,7 @@ class GlobalChatChannelSelect(discord.ui.ChannelSelect):
             min_values=0,
             max_values=1,
             channel_types=[discord.ChannelType.text],
-            default_values=[discord.Object(id=channel_id)] if channel_id is not None else [],
+            default_values=([discord.Object(id=channel_id)] if channel_id is not None else []),
         )
         self.channel_id = channel_id
 
@@ -37,6 +37,12 @@ class GlobalChatChannelSelect(discord.ui.ChannelSelect):
             webhook = await channel.create_webhook(name="Global Chat Webhook", reason="Global chat webhook created.")
 
             await interaction.client.database.edit_global_chat_config(
-                guild_id=interaction.guild.id, enabled=True, webhook_uri=webhook.url, channel_id=new_channel_id
+                guild_id=interaction.guild.id,
+                enabled=True,
+                webhook_uri=webhook.url,
+                channel_id=new_channel_id,
             )
-            await interaction.followup.send(f"Global chat channel updated to {selected_channel.mention}.", ephemeral=True)
+            await interaction.followup.send(
+                f"Global chat channel updated to {selected_channel.mention}.",
+                ephemeral=True,
+            )

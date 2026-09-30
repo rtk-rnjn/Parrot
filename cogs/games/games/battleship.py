@@ -29,7 +29,14 @@ SHIPS: dict[str, tuple[int, tuple[int, int, int]]] = {
 
 
 class Ship:
-    def __init__(self, name: str, size: int, start: Coords, color: tuple[int, int, int], vertical: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        size: int,
+        start: Coords,
+        color: tuple[int, int, int],
+        vertical: bool = False,
+    ) -> None:
         self.name: str = name
         self.size: int = size
 
@@ -303,7 +310,10 @@ class BattleShip:
         await ctx.reply("**Game Started!**\nI've setup the boards in your dms!")
 
         if not self.random:
-            await asyncio.gather(self.get_ship_inputs(ctx, self.player1), self.get_ship_inputs(ctx, self.player2))
+            await asyncio.gather(
+                self.get_ship_inputs(ctx, self.player1),
+                self.get_ship_inputs(ctx, self.player2),
+            )
 
         _, f1, _, f2 = await self.get_file(self.player1)
         _, f3, _, f4 = await self.get_file(self.player2)
@@ -602,7 +612,13 @@ class SetupInput(discord.ui.Modal):
 
         _, start = game.get_coords(start)
 
-        new_ship = Ship(name=self.ship, size=self.button.ship_size, start=start, vertical=vertical, color=self.button.ship_color)
+        new_ship = Ship(
+            name=self.ship,
+            size=self.button.ship_size,
+            start=start,
+            vertical=vertical,
+            color=self.button.ship_color,
+        )
 
         if board._is_valid(new_ship):
             self.button.disabled = True
@@ -616,7 +632,10 @@ class SetupInput(discord.ui.Modal):
                 await interaction.user.send("**All setup!** (Game will soon start after the opponent finishes)")
                 return self.button.view.stop()
         else:
-            await interaction.response.send_message("Ship placement was detected to be invalid, please try again.", ephemeral=True)
+            await interaction.response.send_message(
+                "Ship placement was detected to be invalid, please try again.",
+                ephemeral=True,
+            )
         return None
 
 
@@ -667,7 +686,10 @@ class BetaBattleShip(BattleShip):
     async def get_ship_inputs(self, user: Player) -> Coroutine[Any, Any, bool]:
         embed, file, _, _ = await self.get_file(user)
 
-        embed1 = discord.Embed(description="**Press the buttons to place your ships!**", color=self.embed_color)
+        embed1 = discord.Embed(
+            description="**Press the buttons to place your ships!**",
+            color=self.embed_color,
+        )
 
         view = SetupView(self, timeout=self.timeout)
         await user.send(file=file, embeds=[embed, embed1], view=view)
@@ -693,13 +715,31 @@ class BetaBattleShip(BattleShip):
 
         self.turn = next_turn
 
-        self.player1.embed.set_field_at(0, name="\N{ZERO WIDTH SPACE}", value=f"```yml\nturn: {self.turn.player}\n```")
-        self.player2.embed.set_field_at(0, name="\N{ZERO WIDTH SPACE}", value=f"```yml\nturn: {self.turn.player}\n```")
+        self.player1.embed.set_field_at(
+            0,
+            name="\N{ZERO WIDTH SPACE}",
+            value=f"```yml\nturn: {self.turn.player}\n```",
+        )
+        self.player2.embed.set_field_at(
+            0,
+            name="\N{ZERO WIDTH SPACE}",
+            value=f"```yml\nturn: {self.turn.player}\n```",
+        )
 
         if self.message1 is not None:
-            await self.message1.edit(view=self.view1, content="**Battleship**", embeds=[e2, e1, self.player1.embed], attachments=[f2, f1])
+            await self.message1.edit(
+                view=self.view1,
+                content="**Battleship**",
+                embeds=[e2, e1, self.player1.embed],
+                attachments=[f2, f1],
+            )
         if self.message2 is not None:
-            await self.message2.edit(view=self.view2, content="**Battleship**", embeds=[e4, e3, self.player2.embed], attachments=[f4, f3])
+            await self.message2.edit(
+                view=self.view2,
+                content="**Battleship**",
+                embeds=[e4, e3, self.player2.embed],
+                attachments=[f4, f3],
+            )
 
         winner = self.who_won()
         if winner is not None:
@@ -740,9 +780,19 @@ class BetaBattleShip(BattleShip):
         self.player1.embed.add_field(name="\N{ZERO WIDTH SPACE}", value=f"```yml\nturn: {self.turn.player}\n```")
         self.player2.embed.add_field(name="\N{ZERO WIDTH SPACE}", value=f"```yml\nturn: {self.turn.player}\n```")
 
-        self.message1 = await self.player1.send(content="**Game starting!**", view=self.view1, embeds=[e2, e1, self.player1.embed], files=[f2, f1])
+        self.message1 = await self.player1.send(
+            content="**Game starting!**",
+            view=self.view1,
+            embeds=[e2, e1, self.player1.embed],
+            files=[f2, f1],
+        )
         self.view1.message = self.message1
-        self.message2 = await self.player2.send(content="**Game starting!**", view=self.view2, embeds=[e4, e3, self.player2.embed], files=[f4, f3])
+        self.message2 = await self.player2.send(
+            content="**Game starting!**",
+            view=self.view2,
+            embeds=[e4, e3, self.player2.embed],
+            files=[f4, f3],
+        )
         self.view2.message = self.message2
 
         await asyncio.gather(self.view1.wait(), self.view2.wait())

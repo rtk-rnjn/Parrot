@@ -8,7 +8,10 @@ from discord.ext import commands
 class MypyConverter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
     code: str = commands.flag(description="The code to lint with mypy.")
     # Import Discovery
-    no_namespace_packages: bool = commands.flag(description="Do not consider namespace packages when searching for imports.", default=False)
+    no_namespace_packages: bool = commands.flag(
+        description="Do not consider namespace packages when searching for imports.",
+        default=False,
+    )
     ignore_missing_imports: bool = commands.flag(description="Ignore missing imports.", default=False)
     follow_imports: Literal["skip", "silent", "error", "normal"] = commands.flag(description="How to handle imports.", default="normal")
     no_site_packages: bool = commands.flag(description="Do not include site packages.", default=False)

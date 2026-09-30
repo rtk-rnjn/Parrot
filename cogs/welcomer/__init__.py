@@ -37,7 +37,10 @@ class Welcomer(commands.Cog):
         if me is None or not channel.permissions_for(me).send_messages:
             return
 
-        await channel.send(self._format_message(message, member), allowed_mentions=discord.AllowedMentions.none())
+        await channel.send(
+            self._format_message(message, member),
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @commands.Cog.listener("on_member_join")
     async def member_join_role(self, member: discord.Member) -> None:
@@ -90,7 +93,10 @@ class Welcomer(commands.Cog):
         if me is None or not channel.permissions_for(me).send_messages:
             return
 
-        await channel.send(self._format_message(message, member), allowed_mentions=discord.AllowedMentions.none())
+        await channel.send(
+            self._format_message(message, member),
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @staticmethod
     def _format_message(message: str, member: discord.Member) -> str:
@@ -104,7 +110,11 @@ class Welcomer(commands.Cog):
                 count=member.guild.member_count,
             )
         except KeyError, ValueError:
-            _log.warning("Invalid welcome message format in guild %s", member.guild.id, exc_info=True)
+            _log.warning(
+                "Invalid welcome message format in guild %s",
+                member.guild.id,
+                exc_info=True,
+            )
             return message
 
     @commands.group(name="welcome", invoke_without_command=True)
@@ -136,9 +146,17 @@ class Welcomer(commands.Cog):
         updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, enabled=False)
         await ctx.reply("Welcome messages disabled." if updated else "Welcome messages have not been configured yet.")
 
-    @welcome.command(name="join-message", aliases=["welcome-message", "join_message", "welcome_message"])
+    @welcome.command(
+        name="join-message",
+        aliases=["welcome-message", "join_message", "welcome_message"],
+    )
     @commands.has_guild_permissions(manage_guild=True)
-    async def set_join_message(self, ctx: commands.Context[Parrot], *, message: Annotated[str, commands.clean_content]) -> None:
+    async def set_join_message(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        message: Annotated[str, commands.clean_content],
+    ) -> None:
         """Set the member join message."""
         if ctx.guild is None:
             return
@@ -156,9 +174,17 @@ class Welcomer(commands.Cog):
         updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_role_id=role.id)
         await ctx.reply("Join role updated." if updated else "Welcome messages have not been configured yet.")
 
-    @welcome.command(name="leave-message", aliases=["goodbye-message", "leave_message", "goodbye_message"])
+    @welcome.command(
+        name="leave-message",
+        aliases=["goodbye-message", "leave_message", "goodbye_message"],
+    )
     @commands.has_guild_permissions(manage_guild=True)
-    async def set_leave_message(self, ctx: commands.Context[Parrot], *, message: Annotated[str, commands.clean_content]) -> None:
+    async def set_leave_message(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        message: Annotated[str, commands.clean_content],
+    ) -> None:
         """Set the member leave message."""
         if ctx.guild is None:
             return
@@ -166,7 +192,10 @@ class Welcomer(commands.Cog):
         updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_leave_message=message)
         await ctx.reply("Leave message updated." if updated else "Welcome messages have not been configured yet.")
 
-    @welcome.command(name="join-channel", aliases=["welcome-channel", "join_channel", "welcome_channel"])
+    @welcome.command(
+        name="join-channel",
+        aliases=["welcome-channel", "join_channel", "welcome_channel"],
+    )
     @commands.has_guild_permissions(manage_guild=True)
     async def set_join_channel(self, ctx: commands.Context[Parrot], channel: discord.TextChannel) -> None:
         """Set the channel used for member join messages."""
@@ -176,7 +205,10 @@ class Welcomer(commands.Cog):
         updated = await self.bot.database.edit_welcome_config(guild_id=ctx.guild.id, on_member_join_channel_id=channel.id)
         await ctx.reply("Join channel updated." if updated else "Welcome messages have not been configured yet.")
 
-    @welcome.command(name="leave-channel", aliases=["goodbye-channel", "leave_channel", "goodbye_channel"])
+    @welcome.command(
+        name="leave-channel",
+        aliases=["goodbye-channel", "leave_channel", "goodbye_channel"],
+    )
     @commands.has_guild_permissions(manage_guild=True)
     async def set_leave_channel(self, ctx: commands.Context[Parrot], channel: discord.TextChannel) -> None:
         """Set the channel used for member leave messages."""

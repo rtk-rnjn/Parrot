@@ -121,7 +121,12 @@ class Music(commands.Cog):
             await ctx.reply("Only the DJ can disconnect me.")
 
     @commands.command(name="play", aliases=["p"])
-    async def play(self, ctx: Context[Parrot], *, query: str = commands.parameter(description="The URL or search term to play.")) -> None:
+    async def play(
+        self,
+        ctx: Context[Parrot],
+        *,
+        query: str = commands.parameter(description="The URL or search term to play."),
+    ) -> None:
         """Play a song from a URL or search term."""
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
@@ -132,7 +137,11 @@ class Music(commands.Cog):
         node = self.bot.lavalink_node_pool.get_best_node(algorithm=pomice.NodeAlgorithm.by_players)
         result = None
 
-        for search_type in [pomice.SearchType.other, pomice.SearchType.scsearch, pomice.SearchType.ytsearch]:
+        for search_type in [
+            pomice.SearchType.other,
+            pomice.SearchType.scsearch,
+            pomice.SearchType.ytsearch,
+        ]:
             result = await node.get_tracks(query, search_type=search_type, ctx=ctx)
             if result is not None:
                 break
@@ -316,7 +325,13 @@ class Music(commands.Cog):
         for host, port, password, identifier in providers:
             status = f"Connecting to `{identifier}` at..."
             try:
-                await self.bot.lavalink_node_pool.create_node(bot=self.bot, host=host, port=int(port), password=password, identifier=identifier)
+                await self.bot.lavalink_node_pool.create_node(
+                    bot=self.bot,
+                    host=host,
+                    port=int(port),
+                    password=password,
+                    identifier=identifier,
+                )
                 status += " \N{WHITE HEAVY CHECK MARK}"
                 contents.append(status)
                 await message.edit(content="\n".join(contents))
@@ -344,7 +359,11 @@ class Music(commands.Cog):
         for node in nodes.values():
             description += f"**Host:** {node._host}:{node._port}\n**Players:** {len(node.players)}\n\n"
 
-        embed = discord.Embed(title="Connected Lavalink Nodes", description=description, color=discord.Color.blurple())
+        embed = discord.Embed(
+            title="Connected Lavalink Nodes",
+            description=description,
+            color=discord.Color.blurple(),
+        )
         await ctx.reply(embed=embed)
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 

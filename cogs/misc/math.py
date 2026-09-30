@@ -14,7 +14,7 @@ import discord
 import mpmath
 import sympy
 from discord.ext import commands
-from sympy import Expr
+from sympy import Expr, Integer
 from sympy.parsing.sympy_parser import auto_number, auto_symbol, convert_xor, implicit_multiplication, parse_expr
 
 if TYPE_CHECKING:
@@ -424,7 +424,7 @@ def parse_input(text: str, variables: Mapping[str, Expr]) -> Expression | Assign
     return Assignment(name, _build(rhs, variables))
 
 
-def _check_power(base: Expr, exponent: Expr) -> None:
+def _check_power(base: Integer, exponent: Integer) -> None:
     """Refuse exact powers that would produce absurdly large integers."""
 
     if not (base.is_Rational and exponent.is_Rational) or base in {0, 1, -1}:
@@ -475,13 +475,13 @@ def _compact(text: str) -> str:
     return re.sub(r"\s+", "", text.replace("**", "^"))
 
 
-def _render(value: Expr) -> tuple[str | None, str | None]:
+def _render(value: Integer) -> tuple[str | None, str | None]:
     """Return ``(exact, approximation)``; either may be ``None``."""
 
     if value.is_Float:
         return _number(value), None
 
-    if value.is_Integer and int(value).bit_length() > MAX_EXACT_INTEGER_BITS:
+    if value.is_Integer and value.p.bit_length() > MAX_EXACT_INTEGER_BITS:
         return None, _number(value)
 
     try:

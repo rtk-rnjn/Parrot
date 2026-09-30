@@ -15,6 +15,7 @@ import secrets
 import string
 import uuid
 from collections import defaultdict
+from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
 
 import arrow
@@ -48,7 +49,7 @@ CHARACTER_VALUES = {
 }
 # fmt: on
 
-with open("assets/color_names.json", encoding="utf-8") as file:
+with Path("assets/color_names.json").open(encoding="utf-8") as file:
     color_names: dict[str, str] = discord.utils._from_json(file.read())
 
 
@@ -658,7 +659,7 @@ class Fun(commands.Cog, ColorHandler):
     async def fun_animation_virus(
         self,
         ctx: Context[Parrot],
-        user: discord.Member = commands.parameter(description="The user to infect.", default=commands.parameters.Author),
+        user: discord.Member = commands.parameter(description="The user to infect.", default=commands.parameters.Author),  # noqa: B008
         virus: str = commands.parameter(description="The name of the virus to insert.", default="trojan"),
     ):
         """Insert a virus to yourself or someone else."""
@@ -725,8 +726,8 @@ class Fun(commands.Cog, ColorHandler):
         DOWN = "\N{HANGUL LETTER YO}"
         LEFT = "\N{HANGUL LETTER YA}"
 
-        m: discord.Message = await ctx.reply(rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\  {TOP}`")
-        lst = (
+        message: discord.Message = await ctx.reply(rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\  {TOP}`")
+        animation_frames = (
             rf"`(\{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})\  {TOP}`",
             rf"`(-{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})-  {TOP}`",
             rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}  {RIGHT}`",
@@ -739,8 +740,8 @@ class Fun(commands.Cog, ColorHandler):
             rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\                 {TOP}`",
         )
 
-        for k in lst:
-            await m.edit(content=k)
+        for animation_frame in animation_frames:
+            await message.edit(content=animation_frame)
             await asyncio.sleep(1.5)
 
     @commands.command(name="funwarn", hidden=True)
@@ -755,7 +756,7 @@ class Fun(commands.Cog, ColorHandler):
 
         FACE = f"{MACRON}\\({IDEA_GRAPHIC_FULL_STOP}{KATAKANA_MIDDLE_DOT}{IDEA_GRAPHIC}{KATAKANA_MIDDLE_DOT})/{MACRON}"
 
-        ls = (
+        animation_frames = (
             "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
             "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
             "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
@@ -774,8 +775,8 @@ class Fun(commands.Cog, ColorHandler):
             "```diff\n- CTRL + R FOR MANUAL OVERRIDE... -\n```",
         )
 
-        for i in ls:
-            await msg.edit(content=i)
+        for animation_frame in animation_frames:
+            await msg.edit(content=animation_frame)
             await asyncio.sleep(1.5)
 
     @commands.group(aliases=("color",), invoke_without_command=True)

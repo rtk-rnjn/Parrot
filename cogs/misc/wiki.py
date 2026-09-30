@@ -6,12 +6,18 @@ import html
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 from urllib.parse import quote
 
 import aiohttp
 import discord
 import wikipediaapi
 from discord.ext import commands
+
+from core.utils import BaseLayoutView
+
+if TYPE_CHECKING:
+    from core import Parrot
 
 USER_AGENT = "Parrot/1.0.0 (https://github.com/rtk-rnjn/Parrot; ritik0ranjan@gmail.com)"
 
@@ -50,18 +56,8 @@ class WikiClient:
 
     def __init__(self, user_agent: str = USER_AGENT):
         self.user_agent = user_agent
-        self.session: aiohttp.ClientSession | None = None
         self._wikis: dict[str, wikipediaapi.Wikipedia] = {}
-
-    async def start(self) -> None:
-        self.session = aiohttp.ClientSession(
-            headers={"User-Agent": self.user_agent},
-            timeout=aiohttp.ClientTimeout(total=15),
-        )
-
-    async def close(self) -> None:
-        if self.session:
-            await self.session.close()
+        self.session: aiohttp.ClientSession | None = None
 
     def _wiki(self, lang: str) -> wikipediaapi.Wikipedia:
         if lang not in self._wikis:
@@ -94,17 +90,17 @@ class WikiClient:
         try:
             assert self.session
             url = f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{quote(data.title, safe='')}"
-            async with self.session.get(url) as r:
-                if r.status == 200:
-                    j = await r.json()
-                    data.description = j.get("description")
-                    data.thumbnail = (j.get("thumbnail") or {}).get("source")
+            async with self.session.get(url) as response:
+                if response.status == 200:
+                    summary_response = await response.json()
+                    data.description = summary_response.get("description")
+                    data.thumbnail = (summary_response.get("thumbnail") or {}).get("source")
         except NETWORK_ERRORS:
             pass
         return data
 
     async def search(self, lang: str, query: str, limit: int = 5) -> list[tuple[str, str]]:
-        j = await self._api(
+        response_data = await self._api(
             lang,
             action="query",
             list="search",
@@ -113,31 +109,28 @@ class WikiClient:
             srprop="snippet",
         )
         out = []
-        for item in j.get("query", {}).get("search", []):
+        for item in response_data.get("query", {}).get("search", []):
             snippet = html.unescape(TAG_RE.sub("", item.get("snippet", "")))
             out.append((item["title"], snippet))
         return out
 
     async def random_title(self, lang: str) -> str | None:
-        j = await self._api(lang, action="query", list="random", rnnamespace=0, rnlimit=1)
-        rows = j.get("query", {}).get("random", [])
+        response_data = await self._api(lang, action="query", list="random", rnnamespace=0, rnlimit=1)
+        rows = response_data.get("query", {}).get("random", [])
         return rows[0]["title"] if rows else None
 
 
-class OwnedView(discord.ui.LayoutView):
+class OwnedView(BaseLayoutView):
     """Base view: only the invoker can interact; disables itself on timeout."""
 
     def __init__(self, author_id: int, *, timeout: float = 180):
-        super().__init__(timeout=timeout)
+        super().__init__(author=discord.Object(author_id), timeout=timeout)  # pyright: ignore[reportArgumentType]
         self.author_id = author_id
         self.message: discord.Message | None = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message(
-                "You can not interact with this view.",
-                ephemeral=True,
-            )
+            await interaction.response.send_message("You can not interact with this view.", ephemeral=True)
             return False
         return True
 
@@ -169,23 +162,23 @@ class PageView(OwnedView):
 
     def build(self) -> None:
         self.clear_items()
-        p = self.page
+        page = self.page
 
-        header = f"# {p.title}"
-        if p.description:
-            header += f"\n-# {p.description}"
-        if p.thumbnail:
+        header = f"# {page.title}"
+        if page.description:
+            header += f"\n-# {page.description}"
+        if page.thumbnail:
             top: discord.ui.Item = discord.ui.Section(
                 discord.ui.TextDisplay(header),
-                accessory=discord.ui.Thumbnail(p.thumbnail, description=p.title),
+                accessory=discord.ui.Thumbnail(page.thumbnail, description=page.title),
             )
         else:
             top = discord.ui.TextDisplay(header)
 
         if self.section_index is None:
-            body = clip(p.summary, 1500) or "*No summary available.*"
+            body = clip(page.summary, 1500) or "*No summary available.*"
         else:
-            title, text = p.sections[self.section_index]
+            title, text = page.sections[self.section_index]
             body = f"### {clip(title, 200)}\n" + (clip(text, 1500) if text.strip() else "*This section only contains subsections.*")
 
         children: list[discord.ui.Item] = [
@@ -195,7 +188,7 @@ class PageView(OwnedView):
         ]
 
         # Section picker (Discord caps selects at 25 options)
-        if p.sections:
+        if page.sections:
             options = [
                 discord.SelectOption(
                     label="Summary",
@@ -204,7 +197,7 @@ class PageView(OwnedView):
                     default=self.section_index is None,
                 )
             ]
-            for i, (title, _) in enumerate(p.sections[:24]):
+            for i, (title, _) in enumerate(page.sections[:24]):
                 options.append(
                     discord.SelectOption(
                         label=clip(title, 100) or "Untitled",
@@ -225,7 +218,7 @@ class PageView(OwnedView):
             back = discord.ui.Button(label="Back", emoji="\N{BLACK LEFT-POINTING TRIANGLE}", style=discord.ButtonStyle.secondary)
             back.callback = self.on_back
             buttons.append(back)
-        buttons.append(discord.ui.Button(label="Read on Wikipedia", url=p.url))
+        buttons.append(discord.ui.Button(label="Read on Wikipedia", url=page.url))
         children.append(discord.ui.ActionRow(*buttons))
 
         self.add_item(discord.ui.Container(*children, accent_colour=ACCENT))
@@ -299,15 +292,12 @@ def message_view(text: str) -> discord.ui.LayoutView:
 
 
 class Wikipedia(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: Parrot):
         self.bot = bot
         self.client = WikiClient()
 
     async def cog_load(self) -> None:
-        await self.client.start()
-
-    async def cog_unload(self) -> None:
-        await self.client.close()
+        self.client.session = self.bot.http_session
 
     async def _reply(self, ctx: commands.Context, view: discord.ui.LayoutView) -> None:
         msg = await ctx.reply(view=view, mention_author=False)
@@ -330,8 +320,13 @@ class Wikipedia(commands.Cog):
         await self._reply(ctx, PageView(self.client, ctx.author.id, page, lang))
 
     @commands.group(name="wikipedia", aliases=["wiki", "wp"], invoke_without_command=True)
-    async def wikipedia(self, ctx: commands.Context, *, query: str = "") -> None:
-        """Browse Wikipedia. `!wiki <title>` opens an article."""
+    async def wikipedia(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        query: str = commands.parameter(description="The article title or search query.", default=""),
+    ) -> None:
+        """Browse Wikipedia."""
         if not query.strip():
             p = ctx.clean_prefix
             await self._reply(
@@ -354,7 +349,7 @@ class Wikipedia(commands.Cog):
                 await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
     @wikipedia.command(name="search", aliases=["s"])
-    async def wikipedia_search(self, ctx: commands.Context, *, query: str) -> None:
+    async def wikipedia_search(self, ctx: commands.Context[Parrot], *, query: str = commands.parameter(description="The search query.")) -> None:
         """Search Wikipedia and pick a result."""
         text, lang = split_lang(query)
         if not text:
@@ -367,7 +362,12 @@ class Wikipedia(commands.Cog):
                 await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
     @wikipedia.command(name="page", aliases=["p", "article"])
-    async def wikipedia_page(self, ctx: commands.Context, *, title: str) -> None:
+    async def wikipedia_page(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        title: str = commands.parameter(description="The article title."),
+    ) -> None:
         """Show a Wikipedia article."""
         text, lang = split_lang(title)
         if not text:
@@ -380,7 +380,12 @@ class Wikipedia(commands.Cog):
                 await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
     @wikipedia.command(name="random", aliases=["r"])
-    async def wikipedia_random(self, ctx: commands.Context, *, options: str = "") -> None:
+    async def wikipedia_random(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        options: str = commands.parameter(description="Additional options for the random article."),
+    ) -> None:
         """Show a random Wikipedia article."""
         _, lang = split_lang(options)
         async with ctx.typing():

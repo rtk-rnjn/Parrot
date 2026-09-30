@@ -179,10 +179,10 @@ class Parrot(commands.Bot):
         for extention in LOADABLE_COGS:
             await self.load_extension(extention)
 
-        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.start())
-        self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs())
+        self.event_scheduler.timer_task = self.loop.create_task(self.event_scheduler.start(), name="Event Scheduler")
+        self._cog_autoreload_task = self.loop.create_task(self._autoreload_cogs(), name="Cog Autoreloader")
 
-        await self._start_database_listeners()
+        self._start_database_listeners()
 
     @staticmethod
     def _cog_extension_paths() -> dict[Path, str]:
@@ -302,7 +302,7 @@ class Parrot(commands.Bot):
         spam_severity = self._check_for_spam(message)
         match spam_severity:
             case SpamSeverity.HIGH:
-                self.loop.create_task(self._temporarily_ban_user(ctx.author, duration=60))
+                self.loop.create_task(self._temporarily_ban_user(ctx.author, duration=60), name=f"Temporary Ban: {ctx.author} ({ctx.author.id})")
                 return
 
             case SpamSeverity.MEDIUM:
@@ -360,7 +360,7 @@ class Parrot(commands.Bot):
     async def __before_invoke(self, ctx: commands.Context[Parrot]) -> None:
         if ctx.guild is not None and not ctx.guild.chunked:
             await ctx.bot.wait_until_ready()
-            self.loop.create_task(ctx.guild.chunk())
+            self.loop.create_task(ctx.guild.chunk(), name=f"Chunking Guild: {ctx.guild} ({ctx.guild.id})")
 
             await self.database.register_guild(ctx.guild.id)
             await self.database.register_user(ctx.author.id)
@@ -582,6 +582,6 @@ class Parrot(commands.Bot):
         finally:
             await pub_sub_client.close()
 
-    async def _start_database_listeners(self) -> None:
-        self.loop.create_task(self.__start_mongodb_listener())
-        self.loop.create_task(self.__start_redis_listener())
+    def _start_database_listeners(self) -> None:
+        self.loop.create_task(self.__start_mongodb_listener(), name="MongoDB Change Stream Listener")
+        self.loop.create_task(self.__start_redis_listener(), name="Redis Pub/Sub Listener")

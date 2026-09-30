@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import traceback
 from collections.abc import Sequence
@@ -25,7 +26,7 @@ _ONLINE_COLOR = discord.Color.green()
 _OFFLINE_COLOR = discord.Color.red()
 
 
-def _dashboard(
+def create_dashboard_view(
     *,
     title: str,
     accent_color: discord.Color,
@@ -58,7 +59,7 @@ def _dashboard(
 
 def _error_dashboard(system: str, exc: Exception) -> discord.ui.LayoutView:
     """Build a small red dashboard for a caught exception."""
-    return _dashboard(
+    return create_dashboard_view(
         title=f"## \N{CROSS MARK} {system} Error",
         accent_color=_OFFLINE_COLOR,
         blocks=[f"```py\n{type(exc).__name__}: {exc}\n```"],
@@ -68,7 +69,7 @@ def _error_dashboard(system: str, exc: Exception) -> discord.ui.LayoutView:
 def _status_dashboard(*, online: bool, system: str, message: str) -> discord.ui.LayoutView:
     """Build a small pass/fail dashboard, e.g. for a ping check."""
     icon = "\N{LARGE GREEN CIRCLE}" if online else "\N{LARGE RED CIRCLE}"
-    return _dashboard(
+    return create_dashboard_view(
         title=f"## {icon} {system}",
         accent_color=_ONLINE_COLOR if online else _OFFLINE_COLOR,
         blocks=[message],
@@ -85,7 +86,7 @@ def _kv_lines(rows: Sequence[tuple[str | None, str]]) -> str:
     return "\n".join(f"- **{label}:** {value}" for label, value in rows)
 
 
-def _footer(ctx: commands.Context) -> str:
+def create_footer(ctx: commands.Context) -> str:
     ts = int(discord.utils.utcnow().timestamp())
     return f"Requested by {ctx.author} \N{BULLET} <t:{ts}:R>"
 
@@ -219,11 +220,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         )
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{ELECTRIC PLUG} Redis Status",
                 accent_color=_REDIS_COLOR,
                 blocks=[server_block, stats_block],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -263,11 +264,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             blocks.append(_field("\N{ROCKET}", "Limits", _kv_lines(limit_rows)))
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{FLOPPY DISK} Redis Memory",
                 accent_color=_REDIS_COLOR,
                 blocks=blocks,
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -298,11 +299,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             rows.append((name, value))
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{BUSTS IN SILHOUETTE} Redis Clients",
                 accent_color=_REDIS_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -342,11 +343,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             rows.append(("Cache Hit Rate", f"`{hit_rate:.2f}%`"))
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{BAR CHART} Redis Statistics",
                 accent_color=_REDIS_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -390,11 +391,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 )
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{OLD KEY} Redis Keyspace",
                 accent_color=_REDIS_COLOR,
                 blocks=blocks,
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -450,11 +451,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         )
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{PACKAGE} Redis Persistence",
                 accent_color=_REDIS_COLOR,
                 blocks=[rdb_block, aof_block],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -525,11 +526,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             )
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{TWISTED RIGHTWARDS ARROWS} Redis Replication",
                 accent_color=_REDIS_COLOR,
                 blocks=blocks,
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -553,11 +554,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         rows = [(key, f"`{value}`") for key, value in result.items()]
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title=f"## \N{GEAR} Redis Config \N{EM DASH} `{parameter}`",
                 accent_color=_REDIS_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -679,7 +680,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         )
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{LEAF FLUTTERING IN WIND} MongoDB Server Status",
                 accent_color=_MONGO_COLOR,
                 blocks=[
@@ -689,7 +690,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                     network_block,
                     operations_block,
                 ],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -712,11 +713,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         ]
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{ELECTRIC PLUG} MongoDB Connections",
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -730,11 +731,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         rows = [(name.capitalize(), f"`{operations.get(name, 0):,}`") for name in ("insert", "query", "update", "delete", "getmore", "command")]
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{GEAR} MongoDB Operations",
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -752,11 +753,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         ]
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{GLOBE WITH MERIDIANS} MongoDB Network",
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -774,11 +775,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         ]
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{FLOPPY DISK} MongoDB Memory",
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -798,11 +799,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             block = "\n".join(f"- `{database['name']}` \N{EM DASH} {self._format_bytes(database.get('sizeOnDisk', 0))}" for database in databases)
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title="## \N{FILE CABINET} MongoDB Databases",
                 accent_color=_MONGO_COLOR,
                 blocks=[block],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -820,11 +821,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         block = "\n".join(f"- `{name}`" for name in names) or "No collections found."
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title=f"## \N{OPEN FILE FOLDER} MongoDB Collections \N{EM DASH} `{database_name}`",
                 accent_color=_MONGO_COLOR,
                 blocks=[block],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -850,11 +851,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         ]
 
         await ctx.reply(
-            view=_dashboard(
+            view=create_dashboard_view(
                 title=f"## \N{PACKAGE} MongoDB Storage \N{EM DASH} `{database_name}`",
                 accent_color=_MONGO_COLOR,
                 blocks=[_kv_lines(rows)],
-                footer=_footer(ctx),
+                footer=create_footer(ctx),
             )
         )
 
@@ -876,6 +877,42 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @commands.Cog.listener()
     async def on_mongodb_change(self, change) -> None:
         """Log MongoDB change events to the console."""
+
+    @commands.group(name="asyncio", invoke_without_command=True, aliases=["async", "loop"])
+    @commands.is_owner()
+    async def asyncio_group(self, ctx: commands.Context) -> None:
+        """Asyncio event loop monitoring commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @asyncio_group.command(name="tasks")
+    @commands.is_owner()
+    async def asyncio_tasks(self, ctx: commands.Context[Parrot]) -> None:
+        """List all asyncio tasks in the event loop."""
+        tasks = asyncio.all_tasks(loop=self.bot.loop)
+        task_list = "\n".join(f"- {task.get_name()}" for task in tasks)
+
+        await ctx.reply(
+            view=create_dashboard_view(
+                title="## \N{SPIRAL CALENDAR PAD} Asyncio Tasks",
+                accent_color=discord.Color.blue(),
+                blocks=[task_list or "No tasks found."],
+                footer=create_footer(ctx),
+            )
+        )
+
+    @asyncio_group.command(name="cancel")
+    @commands.is_owner()
+    async def asyncio_cancel(self, ctx: commands.Context[Parrot], task_name: str) -> None:
+        """Cancel an asyncio task by name."""
+        tasks = asyncio.all_tasks(loop=self.bot.loop)
+        for task in tasks:
+            if task.get_name() == task_name:
+                task.cancel()
+                await ctx.reply(f"\N{CROSS MARK} Task `{task_name}` has been cancelled.")
+                return
+
+        await ctx.reply(f"\N{WARNING SIGN} No task found with the name `{task_name}`.")
 
 
 async def setup(bot: Parrot) -> None:

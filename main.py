@@ -21,6 +21,8 @@ LOG_FORMAT = "[%(asctime)s] [%(levelname)-8s] [%(name)s] [%(module)s:%(lineno)d:
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+USER_AGENT = "Parrot/1.0.0 (https://github.com/rtk-rnjn/Parrot; ritik0ranjan@gmail.com)"
+
 load_dotenv()
 
 
@@ -107,7 +109,7 @@ async def start_bot() -> None:
         timeout = ClientTimeout(total=30, connect=10, sock_connect=10, sock_read=20)
         connector = TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET, ttl_dns_cache=300)
 
-        async with ClientSession(timeout=timeout, connector=connector) as session, bot:
+        async with ClientSession(timeout=timeout, connector=connector, headers={"User-Agent": USER_AGENT}) as session, bot:
             bot._http_session = session
             _log.info("Starting bot.")
             await bot.start()

@@ -24,9 +24,10 @@ from jishaku.codeblocks import Codeblock, codeblock_converter
 from jishaku.paginators import PaginatorEmbedInterface
 from rapidfuzz.process import extractOne
 
+from core.utils import PaginationView
+
 from ._kontests import AtCoder, CodeForces, CSAcademy, HackerEarth, HackerRank
-from ._used import execute_run
-from ._utils import (
+from .constants import (
     ANSI_RE,
     CHEAT_SH_PYTHON_URL,
     CURL_HEADERS,
@@ -41,6 +42,7 @@ from ._utils import (
     WTF_PYTHON_BASE_URL,
     WTF_PYTHON_RAW_URL,
 )
+from .used import build_embeds, execute_run, parse_man_page
 
 try:
     import lxml  # noqa: F401  # pylint: disable=unused-import
@@ -77,7 +79,7 @@ class RTFM(commands.Cog):
 
         tags_path = pathlib.Path("assets/python_tags")
         for tag_file in tags_path.glob("*.md"):
-            with open(tag_file, encoding="utf-8") as file:
+            with tag_file.open(encoding="utf-8") as file:
                 post = frontmatter.load(file)
                 tag_name = tag_file.stem
                 self._python_tags[tag_name] = post
@@ -337,57 +339,28 @@ class RTFM(commands.Cog):
             return await ctx.reply(output)
 
     @commands.command()
-    async def man(self, ctx: commands.Context[Parrot], *, page: str = commands.parameter(description="The manual page to get.")) -> discord.Message:
+    async def man(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        page: str = commands.parameter(description="The manual page to get."),
+    ) -> discord.Message | None:
         """Returns the manual's page for a (mostly Debian) linux command."""
-        base_url = f"https://man.cx/{page}"
-        url = urllib.parse.quote_plus(base_url, safe=";/?:@&=$,><-[]")
+        url = f"https://man.cx/{urllib.parse.quote(page.strip(), safe='()')}"
 
-        async with self.bot.http_session.get(url) as response:
-            if response.status != 200:
-                return await ctx.reply("An error occurred (status code: {response.status}). Retry later.")
+        async with ctx.typing():
+            async with self.bot.http_session.get(url) as response:
+                if response.status != 200:
+                    return await ctx.reply(f"An error occurred (status code: {response.status}). Retry later.")
+                html = await response.text()
 
-            soup = BeautifulSoup(await response.text(), HTML_PARSER)
+            parsed = await asyncio.to_thread(parse_man_page, html)  # big pages are CPU-heavy
 
-            name_tag = None
-            for tag in soup.find_all("h2"):
-                if tag.string and tag.string.strip() == "NAME":
-                    name_tag = tag
-                    break
+        if parsed is None:
+            return await ctx.reply(f"No manual entry for `{page}`. (Debian)")
 
-            if name_tag is None:
-                # No NAME, no page
-                return await ctx.reply(f"No manual entry for `{page}`. (Debian)")
-
-            # Get the two (or less) first parts from the nav aside
-            # The first one is NAME, we already have it in nameTag
-            contents: list[Tag] = soup.find_all("nav", limit=2)[1].find_all("li", limit=3)[1:]
-
-            if contents[-1].string == "COMMENTS":
-                contents.remove(-1)
-
-            title = self.get_content(name_tag)
-
-            emb = (
-                discord.Embed(title=title, url=f"https://man.cx/{page}")
-                .set_author(name="Debian Linux man pages")
-                .set_thumbnail(url="https://www.debian.org/logos/openlogo-nd-100.png")
-            )
-
-            for tag in contents:
-                first_child = next(tag.children, None)
-                if first_child is None:
-                    h2 = None
-                else:
-                    href = first_child.get("href")
-                    if not href or not href.startswith("#"):
-                        h2 = None
-                    else:
-                        anchor = soup.find(attrs={"name": href[1:]})
-                        h2 = anchor.find_parent() if anchor else None
-
-                emb.add_field(name=str(tag.string).strip(), value=(self.get_content(h2)).strip(), inline=False)
-
-            return await ctx.reply(embed=emb)
+        view = PaginationView(author=ctx.author, items=build_embeds(parsed, url))
+        return await view.start(ctx, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def ascii(self, ctx: commands.Context[Parrot], *, text: str = commands.parameter(description="The text to convert.")) -> discord.Message:
@@ -616,7 +589,7 @@ class RTFM(commands.Cog):
     async def realpython(
         self,
         ctx: commands.Context[Parrot],
-        amount: commands.Range[int, 1, 5] = commands.parameter(description="The amount of articles to fetch (1-5).", default=5),
+        amount: commands.Range[int, 1, 5] = commands.parameter(description="The amount of articles to fetch (1-5).", default=5),  # noqa: B008
         *,
         query: str = commands.parameter(description="The search terms to look for."),
     ) -> discord.Message:
@@ -756,7 +729,8 @@ class RTFM(commands.Cog):
             no_query_embed = discord.Embed(
                 title="WTF Python?!",
                 colour=ctx.author.color,
-                description=f"A repository filled with suprising snippets that can make you say WTF?!\n\n[Go to the Repository]({WTF_PYTHON_BASE_URL})",
+                description="A repository filled with suprising snippets that can make you say WTF?!",
+                url=WTF_PYTHON_BASE_URL,
             )
             return await ctx.reply(embed=no_query_embed)
 
@@ -778,7 +752,7 @@ class RTFM(commands.Cog):
         """Unload the cog and cancel the task."""
         self.fetch_readme.cancel()
 
-    kontests_cache = {}
+    kontests_cache: dict[str, list] = {}
 
     @commands.command(name="kontest-reload", hidden=True)
     @commands.is_owner()

@@ -8,7 +8,7 @@ import os
 import socket
 from pathlib import Path
 
-from aiohttp import AsyncResolver, ClientSession, TCPConnector
+from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
 from dotenv import load_dotenv
 from rich.logging import RichHandler
 
@@ -92,7 +92,10 @@ async def start_bot() -> None:
         await bot.database.ping_mongo_server()
         await bot.database.ping_redis_server()
 
-        async with ClientSession(connector=TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET)) as session, bot:
+        timeout = ClientTimeout(total=30, connect=10, sock_connect=10, sock_read=20)
+        connector = TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET, ttl_dns_cache=300)
+
+        async with ClientSession(timeout=timeout, connector=connector) as session, bot:
             bot._http_session = session
             _log.info("Starting bot.")
             await bot.start()

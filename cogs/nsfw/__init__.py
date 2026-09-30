@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal
 
+import aiohttp
 import arrow
 import discord
 from discord.ext import commands
+
+from core.utils import PaginationView
+
+from .pinporn import PinPorn, Video
+from .sexdotcom import Pin, SexDotComGif, SexDotComPics
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -38,7 +45,7 @@ ENDPOINTS = [
 _log = logging.getLogger("bot.cogs.nsfw")
 
 
-class NSFW(commands.Cog):
+class NSFW(commands.Cog, command_attrs={"hidden": True}):
     """Mature Content. 18+ only."""
 
     def __init__(self, bot: Parrot) -> None:
@@ -46,6 +53,10 @@ class NSFW(commands.Cog):
         self.nekobot_image_url = "https://nekobot.xyz/api/image"
 
         _log.info("Cog loaded: %s", self.__class__.__name__)
+
+        self._sexdotcomgif = SexDotComGif(session=self.bot.http_session)
+        self._sexdotcompics = SexDotComPics(session=self.bot.http_session)
+        self._pinporn = PinPorn(session=self.bot.http_session)
 
     async def is_user_allowed(self, ctx: commands.Context[Parrot]) -> bool:
         if ctx.author.id in (self.bot.owner_ids or {}):
@@ -87,7 +98,7 @@ class NSFW(commands.Cog):
 
         return discord.Embed().set_image(url=url)
 
-    async def command_endpoint_method(self, ctx: commands.Context[Parrot]) -> None:
+    async def send_command_response(self, ctx: commands.Context[Parrot]) -> None:
         assert ctx.command is not None
         await ctx.typing()
         embed = await self.get_embed(ctx.command.qualified_name)
@@ -95,7 +106,7 @@ class NSFW(commands.Cog):
 
     def command_loader(self) -> None:
         for end_point in ENDPOINTS:
-            command = commands.Command(NSFW.command_endpoint_method, enabled=True, name=end_point)
+            command = commands.Command(NSFW.send_command_response, enabled=True, name=end_point)
             command.cog = self
 
             self.bot.add_command(command)
@@ -111,6 +122,81 @@ class NSFW(commands.Cog):
             await ctx.reply(embed=discord.Embed().set_image(url=res["url"]))
         else:
             await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")
+
+    async def _paginate_results[I: Pin | Video](
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        fetch,
+        search: str,
+        embed_factory: Callable[[I], discord.Embed],
+        error_message: str = "Couldn't reach the site. Try again later.",
+    ) -> None:
+        await ctx.typing()
+
+        try:
+            result = await fetch(search)
+        except aiohttp.ClientError, TimeoutError:
+            _log.exception("API request failed")
+            await ctx.reply(error_message)
+            return
+
+        items = getattr(result, "pins", None) or getattr(result, "videos", None)
+
+        if not items:
+            escaped = discord.utils.escape_markdown(search)
+            await ctx.reply(f"No results for `{escaped}`.")
+            return
+
+        embeds = [embed_factory(item) for item in items]
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
+
+    def _sex_embed(self, item: Pin) -> discord.Embed:
+        embed = discord.Embed(title=item.title, url=item.url)
+        embed.set_image(url=item.url)
+        return embed
+
+    def _pin_video_embed(self, video: Video) -> discord.Embed:
+        embed = discord.Embed(title=video.title, url=video.url)
+        embed.set_image(url=video.thumbnail)
+        embed.set_footer(text=f"{video.uploader} · \N{THUMBS UP SIGN} {video.rating} · pin.porn")
+
+        data = embed.to_dict()
+        data["video"] = {
+            "url": video.url,
+            "height": 720,
+            "width": 1280,
+        }
+
+        return discord.Embed.from_dict(data)
+
+    @commands.group(name="sex", aliases=["sexdotcom", "sex.com"], invoke_without_command=True)
+    @commands.is_nsfw()
+    async def sexdotcom(self, ctx: commands.Context[Parrot]) -> None:
+        """Mature Content. 18+ only please."""
+        await ctx.send_help(ctx.command)
+
+    @sexdotcom.command(name="gif")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def _sex_gif(self, ctx: commands.Context[Parrot], *, search: str) -> None:
+        """Mature Content. 18+ only please."""
+        await self._paginate_results(ctx, fetch=self._sexdotcomgif.fetch, search=search, embed_factory=self._sex_embed)
+
+    @sexdotcom.command(name="pics", aliases=["pic", "image", "images"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def _sex_pics(self, ctx: commands.Context[Parrot], *, search: str) -> None:
+        """Mature Content. 18+ only please."""
+        await self._paginate_results(ctx, fetch=self._sexdotcompics.fetch, search=search, embed_factory=self._sex_embed)
+
+    @sexdotcom.command(name="video", aliases=["vid", "pin"])
+    @commands.cooldown(1, 8, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.user)
+    async def _pin_video(self, ctx: commands.Context[Parrot], *, search: str) -> None:
+        """Random video clip from pin.porn. 18+ only please."""
+        await self._paginate_results(ctx, fetch=self._pinporn.search, search=search, embed_factory=self._pin_video_embed)
 
 
 async def setup(bot: Parrot) -> None:

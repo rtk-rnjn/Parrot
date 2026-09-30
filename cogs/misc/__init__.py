@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+import asyncio
+import hashlib
+import io
 import logging
+import string
 import time
-from typing import TYPE_CHECKING, Annotated
+from pathlib import Path
+from typing import TYPE_CHECKING, Annotated, BinaryIO
 
 import discord
 import sympy
 from discord.ext import commands
+from jishaku.codeblocks import Codeblock, codeblock_converter
+from PIL import Image
 from rapidfuzz import fuzz, process
 
 from core.constants import INVITE_RE, LINKS_RE
@@ -14,16 +21,41 @@ from core.utils import PaginationView
 
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
+from .logo import LogoInterpreter, LogoParser, build_logo_guide
+from .ttg import Truths, TTFlag
 
 if TYPE_CHECKING:
     from core import Parrot
 
 BOOKMARK_EMOJI = "\N{PUSHPIN}"
 
+LATEX_API_URL = "https://rtex.probablyaweb.site/api/v2"
+
+THIS_DIR = Path(__file__).parent
+CACHE_DIRECTORY = THIS_DIR / "_latex_cache"
+CACHE_DIRECTORY.mkdir(exist_ok=True)
+TEMPLATE = string.Template(r"""
+\documentclass{article}
+\begin{document}
+    \pagenumbering{gobble}
+    $text
+\end{document}
+""")
+
+
 _log = logging.getLogger("bot.cogs.misc")
 
-with open("assets/dictionary.json", encoding="utf-8") as file:
+
+with Path("assets/dictionary.json").open(encoding="utf-8") as file:
     DICTIONARY: dict[str, str] = discord.utils._from_json(file.read())
+
+
+class InvalidLatexError(Exception):
+    """Represents an error caused by invalid latex."""
+
+    def __init__(self, logs: str | None) -> None:
+        super().__init__(logs)
+        self.logs = logs
 
 
 class WrappedMessageConverter(commands.MessageConverter):  # pylint: disable=too-few-public-methods
@@ -64,6 +96,16 @@ class BookmarkForm(discord.ui.Modal):
         embed = Misc.build_bookmark_dm(target_message, title=title)
         message_url_view = discord.ui.View().add_item(discord.ui.Button(label="View Message", url=target_message.jump_url))
         await interaction.user.send(embed=embed, view=message_url_view)
+
+
+def _process_image(data: bytes, out_file: BinaryIO) -> None:
+    PAD = 10
+
+    image = Image.open(io.BytesIO(data)).convert("RGBA")
+    width, height = image.size
+    background = Image.new("RGBA", (width + 2 * PAD, height + 2 * PAD), "WHITE")
+    background.paste(image, (PAD, PAD), image)
+    background.save(out_file)
 
 
 class Misc(commands.Cog):
@@ -122,7 +164,12 @@ class Misc(commands.Cog):
         """Send the author a link to `target_message` via DMs."""
         if not target_message:
             if not ctx.message.reference:
-                msg = "You must either provide a valid message to bookmark, or reply to one.\n\nThe lookup strategy for a message is as follows (in order):\n1. Lookup by '{channel ID}-{message ID}' (retrieved by shift-clicking on 'Copy ID')\n2. Lookup by message ID (the message **must** be in the context channel)\n3. Lookup by message URL"
+                msg = (
+                    "You must either provide a valid message to bookmark, or reply to one.\n\n"
+                    "The lookup strategy for a message is as follows (in order):\n"
+                    "1. Lookup by '{channel ID}-{message ID}' (retrieved by shift-clicking on 'Copy ID')\n"
+                    "2. Lookup by message ID (the message **must** be in the context channel)\n3. Lookup by message URL"
+                )
                 raise commands.BadArgument(msg)
             maybe_message = ctx.message.reference.resolved
             if isinstance(maybe_message, discord.Message):
@@ -267,7 +314,7 @@ class Misc(commands.Cog):
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def snipe_message(self, ctx: commands.Context[Parrot], index: int = 1) -> discord.Message:
         """Snipes someone's message that's deleted."""
-        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # type: ignore
+        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # pyright: ignore[reportAssignmentType]
 
         snipe: discord.Message = snipes.get_snipe(ctx.channel, index=index)
 
@@ -305,7 +352,7 @@ class Misc(commands.Cog):
         """Snipes someone's message that's deleted."""
         channel = ctx.channel
 
-        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # type: ignore
+        snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # pyright: ignore[reportAssignmentType]
 
         snipe: tuple[discord.Message, discord.Message] = snipes.get_edit_snipe(channel, index=index)
 
@@ -332,7 +379,7 @@ class Misc(commands.Cog):
     @commands.command(name="ghostping", aliases=["gp", "ghost-ping"])
     async def ghost_ping(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
         """Check if someone ghost pinged you."""
-        cog: PingMessageListner = self.bot.get_cog("PingMessageListner")  # type: ignore
+        cog: PingMessageListner = self.bot.get_cog("PingMessageListner")  # pyright: ignore[reportAssignmentType]
         pages = []
         for message in cog.get_ghost_pings(ctx.author.id):
             relative_dt = discord.utils.format_dt(message.created_at, style="R")
@@ -375,6 +422,85 @@ class Misc(commands.Cog):
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; {e}")
         except (SyntaxError, sympy.SympifyError, ZeroDivisionError) as e:
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")
+
+    @commands.group(name="logo", aliases=("turtle", "turtle-graphics"), invoke_without_command=True)
+    async def _logo(self, ctx: commands.Context[Parrot], *, code: Annotated[Codeblock, codeblock_converter]) -> None:
+        """Interprets the provided code as Logo programming language code and returns the resulting image."""
+        parser = LogoParser()
+        program = parser.parse(code.content)
+
+        interpreter = LogoInterpreter()
+        await asyncio.to_thread(interpreter.execute, program)
+
+        image_buffer = await asyncio.to_thread(interpreter.turtle.render)
+        await ctx.reply(file=discord.File(image_buffer, filename="logo.png"))
+
+    @_logo.command(name="guide", aliases=("help", "tutorial"))
+    async def _logo_guide(self, ctx: commands.Context[Parrot]) -> None:
+        """Sends a guide on how to use the Logo programming language."""
+        embeds = build_logo_guide()
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
+
+    @commands.command(aliases=["trutht", "tt", "ttable"])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def truthtable(self, ctx: commands.Context[Parrot], *, flags: TTFlag):
+        """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
+
+        ```
+        Negation             : not, -, ~
+        Logical disjunction  : or
+        Logical nor          : nor
+        Exclusive disjunction: xor, !=
+        Logical conjunction  : and
+        Logical NAND         : nand
+        Material implication : =>, implies
+        Logical biconditional: =
+        ```
+        """
+        table = Truths(
+            [j.strip(" ") for j in flags.var.replace(" ", "").split(",")],
+            [i.strip(" ") for i in flags.con.split(",")],
+            ascending=flags.ascending,
+        )
+        main = table.as_tabulate(index=False, table_format=flags.table_format, align=flags.align)
+        if len(main) > 1900:
+            await ctx.reply("The generated table is too long to display. Please try again with a smaller input.")
+            return
+
+        await ctx.reply(f"```{flags.table_format}\n{main}\n```")
+
+    async def _generate_image(self, query: str, out_file: BinaryIO) -> None:
+        """Make an API request and save the generated image to cache."""
+        payload = {"code": query, "format": "png"}
+        async with self.bot.http_session.post(LATEX_API_URL, data=payload, raise_for_status=True) as response:
+            response_json = await response.json()
+        if response_json["status"] != "success":
+            raise InvalidLatexError(logs=response_json.get("log"))
+
+        async with self.bot.http_session.get(f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True) as response:
+            await asyncio.to_thread(_process_image, await response.read(), out_file)
+
+    @commands.command()
+    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
+    async def latex(self, ctx: commands.Context[Parrot], *, code: Annotated[Codeblock, codeblock_converter]) -> None:
+        """Renders the text in latex and sends the image."""
+        query = code.content
+        query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec
+        image_path = CACHE_DIRECTORY / f"{query_hash}.png"
+        if not image_path.exists():
+            try:
+                with image_path.open("wb") as out_file:
+                    await self._generate_image(TEMPLATE.substitute(text=query), out_file)
+            except InvalidLatexError as err:
+                embed = discord.Embed(title="Failed to render input.")
+                if err.logs is None:
+                    embed.description = "No logs available"
+
+                await ctx.send(embed=embed)
+                image_path.unlink()
+                return
+        await ctx.send(file=discord.File(image_path, "latex.png"))
 
 
 async def setup(bot: Parrot) -> None:

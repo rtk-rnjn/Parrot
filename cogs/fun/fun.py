@@ -404,9 +404,9 @@ class Fun(commands.Cog, ColorHandler):
 
     @random_command.command(name="choice", aliases=["choose", "pick"])
     async def random_choice(self, ctx: commands.Context[Parrot], *options: str):
-        """Randomly choose between options separated by |."""
+        """Randomly choose between options."""
         if len(options) < 2:
-            msg = "Provide at least two choices separated by `|`."
+            msg = "Provide at least two choices"
             raise commands.BadArgument(msg)
 
         await ctx.reply(f"\N{DIRECT HIT} I choose **{random.choice(options)}**", allowed_mentions=discord.AllowedMentions.none())

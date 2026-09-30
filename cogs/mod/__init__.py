@@ -121,8 +121,7 @@ class MemberID(commands.Converter):
             try:
                 member_id = int(argument, base=10)
             except ValueError:
-                error_message = f"{argument} is not a valid member or member ID."
-                raise commands.BadArgument(error_message) from None
+                raise commands.MemberNotFound(argument) from None
             else:
                 member = await ctx.bot.get_or_fetch_member(ctx.guild, member_id)
 
@@ -223,7 +222,7 @@ class Mod(commands.Cog):
 
         await ctx.guild.kick(member, reason=reason)
 
-        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action="kick", targets=[member], reason=original_reason)
+        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action="kick", targets=[member], reason=original_reason)
         return await ctx.reply(f"**{member}** (ID: {member.id}) has been kicked from the server.")
 
     @commands.command(name="ban", aliases=["hackban"])
@@ -260,7 +259,7 @@ class Mod(commands.Cog):
 
         await ctx.guild.ban(member, reason=reason)
 
-        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=[member], reason=original_reason)
+        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=[member], reason=original_reason)
 
         if isinstance(member, discord.Object):
             return await ctx.reply(f"ID: {member.id} has been banned from the server.")
@@ -305,7 +304,7 @@ class Mod(commands.Cog):
             )
 
         result = await ctx.guild.bulk_ban(bannable, reason=reason)
-        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=members, reason=original_reason)
+        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action="ban", targets=members, reason=original_reason)
 
         success_count = len(result.banned)
         failure_count = len(result.failed)
@@ -404,7 +403,7 @@ class Mod(commands.Cog):
             reason = f"{ctx.author} (ID: {ctx.author.id})"
 
         await ctx.guild.unban(member.user, reason=reason)
-        await self.log(
+        await self.mod_log(
             guild=ctx.guild,
             responsible_moderator=ctx.author,
             targets=[member.user],
@@ -462,7 +461,7 @@ class Mod(commands.Cog):
             message = await ctx.reply(response)
             action = "timeout"
 
-        await self.log(
+        await self.mod_log(
             guild=ctx.guild,
             responsible_moderator=ctx.author,
             action=action,
@@ -514,7 +513,7 @@ class Mod(commands.Cog):
 
                 action = "unmute"
 
-        await self.log(guild=ctx.guild, responsible_moderator=ctx.author, action=action, targets=[member], reason=original_reason)
+        await self.mod_log(guild=ctx.guild, responsible_moderator=ctx.author, action=action, targets=[member], reason=original_reason)
 
         return message
 
@@ -532,14 +531,13 @@ class Mod(commands.Cog):
 
         mute_role_id = await ctx.bot.database.get_guild_mute_role(guild_id=ctx.guild.id)
         if mute_role_id is None:
-            return await ctx.reply("No mute role has been set for this server. Use `mute role <role>` to set a mute role first.")
+            message = "No mute role has been set for this server."
+            raise commands.CommandError(message)
 
         mute_role = ctx.guild.get_role(mute_role_id)
         if mute_role is None:
-            return await ctx.reply(
-                "The configured mute role does not exist in this server. Please set a valid mute role using `mute role <role>` "
-                "or create a new mute role using `mute create`."
-            )
+            message = "No mute role has been set for this server."
+            raise commands.CommandError(message)
 
         if reason is None:
             reason = f"{ctx.author} (ID: {ctx.author.id})"
@@ -1352,7 +1350,7 @@ class Mod(commands.Cog):
         await self.bot.database.edit_moderator_config(guild_id=ctx.guild.id, moderator_logs_channel_id=None)
         return await ctx.reply("Successfully unset the moderation log channel.")
 
-    async def log[T: discord.Member | discord.User | discord.Object](
+    async def mod_log[T: discord.Member | discord.User | discord.Object](
         self,
         *,
         guild: discord.Guild,

@@ -1,0 +1,91 @@
+start: item*
+
+?item: procedure
+     | statement
+
+?statement: command
+          | repeat
+          | make
+          | procedure_call
+
+repeat: _REPEAT expression "[" statement* "]"
+
+make: _MAKE variable_name expression
+
+variable_name: VARIABLE
+
+procedure: _TO NAME parameter* statement* _END
+
+parameter: VARIABLE
+
+procedure_call: NAME expression*
+
+?command: _FD expression              -> forward
+        | _BK expression              -> backward
+        | _RT expression              -> right
+        | _LT expression              -> left
+        | _PU                          -> pen_up
+        | _PD                          -> pen_down
+        | _HOME                        -> home
+        | _CS                          -> clear_screen
+        | _SETPC WORD                  -> set_pen_color
+        | _SETWIDTH expression         -> set_pen_width
+        | _SETXY expression expression -> set_xy
+        | _SETH expression             -> set_heading
+
+?expression: comparison
+
+?comparison: addition
+           | addition "=" addition   -> equal
+           | addition "<" addition   -> less
+           | addition ">" addition   -> greater
+
+?addition: multiplication
+         | addition "+" multiplication -> add
+         | addition "-" multiplication -> sub
+
+?multiplication: unary
+               | multiplication "*" unary -> mul
+               | multiplication "/" unary -> div
+
+?unary: atom
+      | "-" unary -> neg
+
+?atom: NUMBER       -> number
+     | VARIABLE     -> variable
+     | "(" expression ")"
+
+_FD.10: /(?i:FD|FORWARD)\b/
+_BK.10: /(?i:BK|BACK|BACKWARD)\b/
+_RT.10: /(?i:RT|RIGHT)\b/
+_LT.10: /(?i:LT|LEFT)\b/
+
+_PU.10: /(?i:PU|PENUP)\b/
+_PD.10: /(?i:PD|PENDOWN)\b/
+
+_HOME.10: /(?i:HOME)\b/
+_CS.10: /(?i:CS|CLEARSCREEN)\b/
+
+_SETPC.10: /(?i:SETPC|SETPENCOLOR)\b/
+_SETWIDTH.10: /(?i:SETWIDTH|SETW)\b/
+_SETXY.10: /(?i:SETXY)\b/
+_SETH.10: /(?i:SETH|SETHEADING)\b/
+
+_REPEAT.10: /(?i:REPEAT)\b/
+_MAKE.10: /(?i:MAKE)\b/
+
+_TO.10: /(?i:TO)\b/
+_END.10: /(?i:END)\b/
+
+VARIABLE: /:[A-Za-z_][A-Za-z0-9_]*/
+
+NAME: /[A-Za-z_][A-Za-z0-9_]*/
+
+WORD: /"[^ \t\r\n\[\]]+/
+
+NUMBER: /(?:\d+(?:\.\d*)?|\.\d+)/
+
+%import common.WS
+
+%ignore WS
+%ignore /;[^\n]*/

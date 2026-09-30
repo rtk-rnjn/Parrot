@@ -71,12 +71,12 @@ POSITIVE_REPLIES: Final[list[str]] = [
 ]
 
 
-LINKS_RE: Final[re.Pattern[str]] = re.compile(
+LINKS_RE: re.Pattern[str] = re.compile(
     r"((http|https)\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*",
     flags=re.IGNORECASE,
 )
 
-INVITE_RE: Final[re.Pattern[str]] = re.compile(r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", flags=re.IGNORECASE)
+INVITE_RE: re.Pattern[str] = re.compile(r"(?:https?://)?discord(?:app)?\.(?:com/invite|gg)/[a-zA-Z0-9]+/?", flags=re.IGNORECASE)
 
 
 # fmt: off

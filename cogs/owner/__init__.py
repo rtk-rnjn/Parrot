@@ -797,13 +797,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @commands.Cog.listener()
     async def on_redis_message(self, channel: str, message: str) -> None:
         """Log Redis pub/sub messages to the console."""
-        print(f"[Redis Pub/Sub] Channel: {channel} | Message: {message}")
 
 
     @commands.Cog.listener()
     async def on_mongodb_change(self, change) -> None:
         """Log MongoDB change events to the console."""
-        print(f"[MongoDB] Change: {change}")
 
 
 async def setup(bot: Parrot) -> None:

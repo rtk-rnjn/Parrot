@@ -1,24 +1,11 @@
 from __future__ import annotations
 
 import re
-from typing import Annotated, Literal
+from typing import Literal
 
 from discord.ext import commands
 
 POSSIBLE_FLAKE8_CODE = re.compile(r"([A-Z]\d{2,4})")
-
-
-def convert_bool(text: str) -> bool:
-    """True/False converter."""
-    lowered = str(text).lower()
-    true = lowered in {"yes", "y", "true", "t", "1", "enable", "on", "o", "ok", "sure", "yeah", "yup", "right"}
-    false = lowered in {"no", "n", "false", "f", "0", "disable", "off", "none", "nah", "nope", "wrong"}
-    if true:
-        return True
-    if false:
-        return False
-
-    raise commands.BadBoolArgument(lowered)
 
 
 class Flake8Converter(commands.FlagConverter, case_insensitive=True, delimiter=" ", prefix="--"):
@@ -29,11 +16,11 @@ class Flake8Converter(commands.FlagConverter, case_insensitive=True, delimiter="
     max_doc_length: int | None = commands.flag(description="Maximum allowed docstring length.", default=None)
     max_complexity: int | None = commands.flag(description="Maximum allowed complexity.", default=None)
 
-    statistics: Annotated[bool | None, convert_bool] = commands.flag(description="Enable statistics.", default=None)
-    doctests: Annotated[bool | None, convert_bool] = commands.flag(description="Enable doctests.", default=None)
+    statistics: bool = commands.flag(description="Enable statistics.", default=False)
+    doctests: bool = commands.flag(description="Enable doctests.", default=False)
     color: Literal["auto", "always", "never"] | None = commands.flag(description="Set color output.", default=None)
-    verbose: Annotated[bool | None, convert_bool] = commands.flag(description="Enable verbose output.", default=None)
-    count: Annotated[bool | None, convert_bool] = commands.flag(description="Enable count output.", default=None)
+    verbose: bool = commands.flag(description="Enable verbose output.", default=False)
+    count: bool = commands.flag(description="Enable count output.", default=False)
 
 
 def validate_flake8_code(code: str) -> list[str]:

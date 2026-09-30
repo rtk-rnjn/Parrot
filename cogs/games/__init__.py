@@ -178,7 +178,7 @@ class Games(commands.Cog):
         """Guess the hidden word in limited attempts; tile colours show correct, misplaced, and absent letters."""
         await Wordle().start(ctx)
 
-    @commands.command(name="typing_test", aliases=["tt", "typingtest", "typing-test"])
+    @commands.command(name="typing_test", aliases=["typingtest", "typing-test"])
     async def typing_test(self, ctx: commands.Context[Parrot]) -> None:
         """Type the displayed passage quickly and accurately to receive a speed and accuracy result."""
         await TypingTest().start(ctx)

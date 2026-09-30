@@ -5,6 +5,7 @@ import logging
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 import arrow
@@ -21,7 +22,7 @@ QUESTION_MARK = "\N{BLACK QUESTION MARK ORNAMENT}"
 
 _log = logging.getLogger("bot.cogs.events.error")
 
-with open("assets/random_quotes.txt", encoding="utf-8") as f:
+with Path("assets/random_quotes.txt").open(encoding="utf-8") as f:
     RANDOM_QUOTES = [line.strip() for line in f if line.strip()]
 
 

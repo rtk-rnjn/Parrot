@@ -2,24 +2,13 @@ services:
   mongodb:
     image: mongo:8
     container_name: mongodb
-    command:
-      - mongod
-      - --replSet
-      - rs0
-      - --bind_ip_all
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mongosh",
-          "--quiet",
-          "--eval",
-          "db.adminCommand('ping').ok"
-        ]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -31,23 +20,22 @@ services:
       mongodb:
         condition: service_healthy
     restart: "no"
-    entrypoint: ["/bin/bash", "-c"]
-    command: >
-      "mongosh --host mongodb:27017 --quiet --eval
-      'try {
-        rs.status();
-        print(\"Replica set already initialized\");
-      } catch (e) {
-        rs.initiate({
-          _id: \"rs0\",
-          members: [
-            { _id: 0, host: \"mongodb:27017\" }
-          ]
-        });
-      }'"
+    entrypoint: ["mongosh", "--host", "mongodb:27017", "--quiet", "--eval"]
+    command:
+      - |
+        try {
+          rs.status();
+          print("Replica set already initialized");
+        } catch (e) {
+          rs.initiate({
+            _id: "rs0",
+            members: [{ _id: 0, host: "mongodb:27017" }]
+          });
+          print("Replica set initiated");
+        }
 
   redis:
-    image: redis:8
+    image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"

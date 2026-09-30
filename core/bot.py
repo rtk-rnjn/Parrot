@@ -67,6 +67,7 @@ LOADABLE_COGS = [
     "cogs.leveling",
     "cogs.meta",
     "cogs.misc",
+    "cogs.misc.wiki",
     "cogs.mod",
     "cogs.music",
     "cogs.nsfw",
@@ -119,7 +120,7 @@ class Parrot(commands.Bot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             strip_after_prefix=True,
             shard_id=1,
-            max_messages=2**12,
+            max_messages=2**13,
             owner_ids={int(OWNER_ID)} if OWNER_ID else None,
             help_command=BotHelp(),
             **kwargs,
@@ -257,9 +258,9 @@ class Parrot(commands.Bot):
         if message.guild is not None:
             prefix = await self.database.get_command_prefix(guild_id=message.guild.id)
         else:
-            prefix = Parrot.DEFAULT_PREFIX
+            prefix = self.DEFAULT_PREFIX
 
-        prefix = prefix or Parrot.DEFAULT_PREFIX
+        prefix = prefix or self.DEFAULT_PREFIX
 
         return commands.when_mentioned_or(prefix)(self, message)
 
@@ -273,7 +274,7 @@ class Parrot(commands.Bot):
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             if message.channel.permissions_for(message.guild.me).send_messages:
-                prefix = await self.database.get_command_prefix(guild_id=message.guild.id) or Parrot.DEFAULT_PREFIX
+                prefix = await self.database.get_command_prefix(guild_id=message.guild.id) or self.DEFAULT_PREFIX
                 await message.channel.send(f"Prefix: `{prefix}`", reference=message)
 
             return
@@ -283,10 +284,7 @@ class Parrot(commands.Bot):
     async def process_commands(self, message: discord.Message, /) -> None:
         ctx: commands.Context[Parrot] = await self.get_context(message, cls=commands.Context)
 
-        if ctx.command is None:
-            return
-
-        if ctx.author.id in self.temporary_ban_list:
+        if ctx.command is None or ctx.author.id in self.temporary_ban_list:
             return
 
         spam_severity = self._check_for_spam(message)
@@ -513,6 +511,8 @@ class Parrot(commands.Bot):
         #   cfg = rs.conf()
         #   cfg.members[0].host = "localhost:27017"
         #   rs.reconfig(cfg, { force: true })
+        #
+        # Or just: docker exec mongodb mongosh --quiet --eval 'c = rs.conf(); c.members[0].host = "localhost:27017"; rs.reconfig(c)'
         #
         # In production, prefer configuring a hostname that is reachable from
         # every MongoDB client rather than using `localhost`.

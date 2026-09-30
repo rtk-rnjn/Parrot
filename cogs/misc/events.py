@@ -51,14 +51,13 @@ class SnipeMessageListener(Cog):
 
         index -= 1
         if index < 0:
-            msg = "Index must be positive"
-            raise commands.BadArgument(msg)
+            raise commands.RangeError(index, 1, len(self.snipes[channel.id]))
+
         if index > len(self.snipes[channel.id]):
-            msg = f"Index must be less than {len(self.snipes[channel.id])}"
-            raise commands.BadArgument(msg)
+            raise commands.RangeError(index, 1, len(self.snipes[channel.id]))
         try:
             return self.snipes[channel.id][index]
-        except Exception:
+        except KeyError:
             err = "Message not found"
             raise commands.MessageNotFound(err) from None
 

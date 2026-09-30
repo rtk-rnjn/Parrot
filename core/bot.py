@@ -72,6 +72,7 @@ LOADABLE_COGS = [
     "cogs.meta",
     "cogs.misc",
     "cogs.misc.wiki",
+    "cogs.misc.math",
     "cogs.mod",
     "cogs.music",
     "cogs.nsfw",
@@ -390,7 +391,7 @@ class Parrot(commands.Bot):
         ctx: commands.Context[Parrot],
         prompt: str = "Are you sure?",
         *,
-        timeout: float = 30,
+        timeout: float = 30,  # noqa: ASYNC109
     ) -> bool:
         """Ask the command author to confirm an action in the current channel."""
         result = asyncio.get_running_loop().create_future()

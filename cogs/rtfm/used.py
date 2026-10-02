@@ -270,18 +270,19 @@ def _split_long(text: str, limit: int) -> list[str]:
     if len(text) <= limit:
         return [text]
     pieces, buf = [], ""
-    for line in text.split("\n"):
-        while len(line) > limit:
+    for current_line in text.split("\n"):
+        remaining_line = current_line
+        while len(remaining_line) > limit:
             if buf:
                 pieces.append(buf)
                 buf = ""
-            pieces.append(line[:limit])
-            line = line[limit:]
-        if buf and len(buf) + 1 + len(line) > limit:
+            pieces.append(remaining_line[:limit])
+            remaining_line = remaining_line[limit:]
+        if buf and len(buf) + 1 + len(remaining_line) > limit:
             pieces.append(buf)
-            buf = line
+            buf = remaining_line
         else:
-            buf = f"{buf}\n{line}" if buf else line
+            buf = f"{buf}\n{remaining_line}" if buf else remaining_line
     if buf:
         pieces.append(buf)
     return pieces

@@ -144,10 +144,7 @@ class Hub(commands.Cog):
         guild = member.guild
 
         me = guild.me
-        if me is None:
-            return None
-
-        if not me.guild_permissions.manage_channels:
+        if me is None or not me.guild_permissions.manage_channels:
             _log.warning(
                 "Bot does not have Manage Channels in guild %s (%s)",
                 guild.name,
@@ -185,11 +182,7 @@ class Hub(commands.Cog):
                 overwrites=overwrites,
                 reason=(f"Join-to-create channel for {member} ({member.id})"),
             )
-        except discord.Forbidden:
-            _log.exception("Bot cannot create voice channels in guild %s", guild.id)
-            return None
-
-        except discord.HTTPException:
+        except (discord.Forbidden, discord.HTTPException):
             _log.exception("Failed to create personal channel for %s in guild %s", member, guild.id)
             return None
 

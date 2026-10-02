@@ -164,61 +164,62 @@ def _is_variable(name: str, known: frozenset[str]) -> bool:
     return name in known or _VARIABLE_RE.fullmatch(name) is not None
 
 
-def _plausible_shape(tokens: list[Token], known: frozenset[str]) -> bool:  # noqa: PLR0911
-    """Check that tokens form something expression-shaped (not that it parses)."""
+def _valid_shape_token(kind: str, token: str, following: str | None, depth: int, known: frozenset[str]) -> int | None:
+    if kind == NAME:
+        if token in FUNCTIONS and following != "(":
+            return None
+        if token not in FUNCTIONS and (_is_variable(token, known) or token in CONSTANTS) and following == "(":
+            return None
+        if token not in FUNCTIONS and token not in CONSTANTS and not _is_variable(token, known):
+            return None
+    elif token == "(":
+        depth += 1
+    elif token == ")":
+        depth -= 1
+        if depth < 0:
+            return None
+    elif (token in {",", "="} and depth == 0) or token == "=":
+        return None
+    return depth
 
-    if not tokens:
-        return False
+
+def _plausible_shape(tokens: list[Token], known: frozenset[str]) -> bool:
+    """Check that tokens form something expression-shaped (not that it parses)."""
 
     depth = 0
     previous: Token | None = None
+    valid = bool(tokens)
 
     for index, (kind, token) in enumerate(tokens):
+        if not valid:
+            break
         following = tokens[index + 1][1] if index + 1 < len(tokens) else None
 
-        if kind == NAME:
-            if token in FUNCTIONS:
-                if following != "(":
-                    return False
-            elif token in CONSTANTS or _is_variable(token, known):
-                if following == "(":
-                    return False
-            else:
-                return False  # an ordinary word
-        elif token == "(":
-            depth += 1
-        elif token == ")":
-            depth -= 1
-            if depth < 0:
-                return False
-        elif token == ",":
-            if depth == 0:
-                return False
-        elif token == "=":
-            return False
+        depth = _valid_shape_token(kind, token, following, depth, known)
+        if depth is None:
+            valid = False
+            break
 
         # Two operands in a row are only plausible as implicit multiplication
         # of a number ("2x", "2pi"); "x 5" or "3 4" are prose.
         if previous is not None and kind in {NUM, NAME} and previous[0] in {NUM, NAME} and previous[0] != NUM:
-            return False
+            valid = False
+            break
 
         if previous is not None and kind == NUM and previous[0] == NUM:
-            return False
+            valid = False
+            break
 
         previous = (kind, token)
 
-    if depth != 0:
-        return False
-
     start = 1 if tokens[0][1] in {"+", "-"} else 0
-
-    if start >= len(tokens):
-        return False
-
-    start_kind, start_token = tokens[start]
+    start_valid = start < len(tokens)
+    start_kind, start_token = tokens[start] if start_valid else ("", "")
     end_kind, end_token = tokens[-1]
 
-    return (start_kind in {NUM, NAME} or start_token == "(") and (end_kind in {NUM, NAME} or end_token == ")")
+    return (
+        valid and depth == 0 and start_valid and (start_kind in {NUM, NAME} or start_token == "(") and (end_kind in {NUM, NAME} or end_token == ")")
+    )
 
 
 def _has_math_signal(tokens: list[Token]) -> bool:
@@ -296,6 +297,34 @@ class Assignment:
     value: Expr
 
 
+def _validate_token(kind: str, token: str, following: str | None, depth: int) -> int:
+    if kind == NUM:
+        if sum(character.isdigit() for character in token) > MAX_LITERAL_DIGITS:
+            msg = "Number is too long."
+            raise MathParseError(msg)
+    elif kind == NAME:
+        if token in FUNCTIONS and following != "(":
+            msg = f"{token} needs parentheses, e.g. {token}(x)."
+            raise MathParseError(msg)
+        if following == "(":
+            msg = f"Unknown function: {token}. (Use * for multiplication.)"
+            raise MathParseError(msg)
+        if token in _INTERNAL_NAMES or keyword.iskeyword(token):
+            msg = f"{token!r} is not a valid name."
+            raise MathParseError(msg)
+    elif token == "(":
+        depth += 1
+        if depth > MAX_PAREN_DEPTH:
+            msg = "Expression is nested too deeply."
+            raise MathParseError(msg)
+    elif token == ")":
+        depth -= 1
+        if depth < 0:
+            msg = "Unbalanced parentheses."
+            raise MathParseError(msg)
+    return depth
+
+
 def _validate_tokens(tokens: list[Token]) -> None:
     if not tokens:
         msg = "Expression is empty."
@@ -310,33 +339,7 @@ def _validate_tokens(tokens: list[Token]) -> None:
     for index, (kind, token) in enumerate(tokens):
         following = tokens[index + 1][1] if index + 1 < len(tokens) else None
 
-        if kind == NUM:
-            if sum(character.isdigit() for character in token) > MAX_LITERAL_DIGITS:
-                msg = "Number is too long."
-                raise MathParseError(msg)
-        elif kind == NAME:
-            if token in FUNCTIONS:
-                if following != "(":
-                    msg = f"{token} needs parentheses, e.g. {token}(x)."
-                    raise MathParseError(msg)
-            elif following == "(":
-                msg = f"Unknown function: {token}. (Use * for multiplication.)"
-                raise MathParseError(msg)
-            elif token in _INTERNAL_NAMES or keyword.iskeyword(token):
-                msg = f"{token!r} is not a valid name."
-                raise MathParseError(msg)
-        elif token == "(":
-            depth += 1
-
-            if depth > MAX_PAREN_DEPTH:
-                msg = "Expression is nested too deeply."
-                raise MathParseError(msg)
-        elif token == ")":
-            depth -= 1
-
-            if depth < 0:
-                msg = "Unbalanced parentheses."
-                raise MathParseError(msg)
+        depth = _validate_token(kind, token, following, depth)
 
     if depth:
         msg = "Unbalanced parentheses."

@@ -125,7 +125,7 @@ class Starboard(commands.Cog):
     async def _delete_board_message(self, channel: discord.TextChannel, guild_id: int, source_id: int, board_id: int) -> None:
         try:
             board_message = await channel.fetch_message(board_id)
-            await board_message.delete()
+            await board_message.delete(delay=0)
         except discord.Forbidden, discord.NotFound:
             pass
         finally:

@@ -4,6 +4,7 @@ import difflib
 import os
 import random
 from io import BytesIO
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import discord
@@ -45,10 +46,9 @@ class CountryGuesser:
 
         self.light_mode = False if self.is_flags else light_mode
 
-        folder = "assets/country-flags" if self.is_flags else "assets/country-data"
-        self._countries_path = folder
+        self._countries_path = Path("assets/country-flags" if self.is_flags else "assets/country-data")
 
-        self.all_countries = os.listdir(self._countries_path)
+        self.all_countries = [country.name for country in self._countries_path.iterdir()]
 
     @executor
     def invert_image(self, image_path: BytesIO | os.PathLike | str) -> BytesIO:
@@ -80,7 +80,7 @@ class CountryGuesser:
         country_file = random.choice(self.all_countries)
         self.country = country_file.strip()[:-4].lower()
 
-        file = os.path.join(self._countries_path, country_file)
+        file = self._countries_path / country_file
 
         if self.hard_mode:
             file = await self.blur_image(file)

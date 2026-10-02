@@ -1052,7 +1052,7 @@ class Mod(commands.Cog):
         count = 0
         async for msg in ctx.history(limit=search, before=ctx.message):
             if msg.author == ctx.me and not (msg.mentions or msg.role_mentions):
-                await msg.delete()
+                await msg.delete(delay=0)
                 count += 1
         return {"Bot": count}
 
@@ -1309,7 +1309,18 @@ class Mod(commands.Cog):
             return await ctx.send_help(ctx.command)
         return None
 
-    async def _assign_role(  # noqa: PLR0915
+    async def _add_role_to_member(self, member: discord.Member, role: discord.Role, target: str, author: discord.Member) -> tuple[bool, str | None]:
+        try:
+            await member.add_roles(role, reason=f"Role assigned to {target} by {author} (ID: {author.id})")
+        except discord.Forbidden:
+            return False, "Permission denied"
+        except discord.HTTPException as exc:
+            return False, f"HTTP error ({exc.status})"
+        except discord.DiscordException:
+            return False, "Discord error"
+        return True, None
+
+    async def _assign_role(
         self, ctx: commands.Context[Parrot], role: discord.Role, members: list[discord.Member], *, target: Literal["bots", "humans", "members"]
     ) -> discord.Message:
         """Assign a role to multiple members with a rolling progress display."""
@@ -1355,22 +1366,10 @@ class Mod(commands.Cog):
         message = await ctx.reply(build_progress())
 
         for member in members:
-            try:
-                await member.add_roles(
-                    role,
-                    reason=f"Role assigned to {target} by {ctx.author} (ID: {ctx.author.id})",
-                )
-            except discord.Forbidden:
-                results.append((member, False))
-                failures["Permission denied"] += 1
-            except discord.HTTPException as exc:
-                results.append((member, False))
-                failures[f"HTTP error ({exc.status})"] += 1
-            except discord.DiscordException:
-                results.append((member, False))
-                failures["Discord error"] += 1
-            else:
-                results.append((member, True))
+            succeeded, failure = await self._add_role_to_member(member, role, target, ctx.author)
+            results.append((member, succeeded))
+            if failure is not None:
+                failures[failure] += 1
 
             now = time.monotonic()
 

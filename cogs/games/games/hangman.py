@@ -233,7 +233,7 @@ class Hangman:
 
             if delete_after_guess:
                 with contextlib.suppress(discord.DiscordException):
-                    await message.delete()
+                    await message.delete(delay=0)
         return self.message
 
 
@@ -290,7 +290,7 @@ class HangmanButton(WordInputButton):
         if self.label == "Cancel":
             await interaction.response.send_message(f"Game Over! the word was: **{game.word}**")
             assert interaction.message is not None
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
             self.view.stop()
         else:
             await interaction.response.send_modal(HangmanInput(self.view))

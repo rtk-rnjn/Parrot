@@ -1,1 +1,1 @@
-from .view import PourView  # noqa
+from .view import PourView  # noqa: F401

@@ -57,7 +57,7 @@ class CommandError(commands.Cog, command_attrs={"hidden": True}):
             return
 
         with contextlib.suppress(discord.NotFound):
-            await msg.delete()
+            await msg.delete(delay=0)
 
     @staticmethod
     def _log_and_raise(ctx: Context, error: Exception) -> None:

@@ -230,7 +230,7 @@ class Twenty48:
         stop = "\N{BLACK SQUARE FOR STOP}"
         if delete_button and emoji == stop:
             if self.message is not None:
-                await self.message.delete()
+                await self.message.delete(delay=0)
             return True
 
         moves = {
@@ -331,7 +331,7 @@ class Twenty48_Button(discord.ui.Button["BaseView"]):
         if emoji == "\N{BLACK SQUARE FOR STOP}":
             self.view.stop()
             assert interaction.message is not None
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
             return
 
         if emoji == "\N{BLACK RIGHTWARDS ARROW}":

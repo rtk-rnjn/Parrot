@@ -391,7 +391,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         total_no = sum(r.count for r in msg.reactions) - len(valid_emojis)  # - bot's reactions
 
         if total_no == 0:
-            return await msg.delete()  # To avoid ZeroDivisionError if nobody reacts
+            return await msg.delete(delay=0)  # To avoid ZeroDivisionError if nobody reacts
 
         results = ["**VOTES:**"]
         for emoji, _ in answers:
@@ -434,11 +434,9 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
     @staticmethod
     async def already_reacted(message: discord.Message, user: discord.Member | discord.User) -> bool:
         """Returns whether a given user has reacted more than once to a given message."""
-        users = []
-
-        for r in message.reactions:
-            async for i in r.users():
-                users.append(i.id)
+        users: list[int] = []
+        for reaction in message.reactions:
+            users.extend([user.id async for user in reaction.users()])
 
         return users.count(user.id) > 1  # Old reaction plus new reaction
 

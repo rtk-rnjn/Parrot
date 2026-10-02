@@ -207,7 +207,7 @@ class LevelingRolesConfig(PaginationView):
             await interaction.response.send_message("This command can only be used in a server (guild).", ephemeral=True)
             return
 
-        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # type: ignore
+        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # pyright: ignore[reportAttributeAccessIssue]
         self.data_chunks = list(discord.utils.as_chunks(self.kwargs["leveling_config"]["level_roles"].items(), 10))
 
         pages: list[discord.Embed] = []
@@ -249,7 +249,7 @@ class LevelingRewardRolesEditButton(discord.ui.Button):
             await interaction.followup.send("This command can only be used in a server (guild).", ephemeral=True)
             return
 
-        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # type: ignore
+        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # pyright: ignore[reportAttributeAccessIssue]
 
         view = LevelingRolesConfig(interaction.user, **self.kwargs)
         await interaction.response.send_message(embed=view.items[0], view=view, ephemeral=True)

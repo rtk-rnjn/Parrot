@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import unicodedata
+from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import discord
@@ -21,7 +22,7 @@ class ProfaneWord(TypedDict):
     intensity: int
 
 
-with open("assets/profane_words.json") as file:
+with Path("assets/profane_words.json").open() as file:
     profane_words: list[ProfaneWord] = loads(file.read())
 
 

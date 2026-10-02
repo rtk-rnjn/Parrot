@@ -87,7 +87,7 @@ class Card:
         self,
         *,
         color: Color,
-        type: CardType = CardType.number,
+        type: CardType = CardType.number,  # noqa: A002
         value: int | None = None,
     ) -> None:
         self.color: Color = color

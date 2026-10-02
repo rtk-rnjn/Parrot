@@ -22,7 +22,7 @@ class VerbalButton(discord.ui.Button["VerbalView"]):
         lives_decr = False
 
         if self.label == "Cancel" and interaction.message:
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
             self.view.stop()
             return
 

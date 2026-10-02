@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import pathlib
 import random
 import time
 from typing import TYPE_CHECKING
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 
-with open("assets/random_sentences.txt", encoding="utf-8") as file:
+with pathlib.Path("assets/random_sentences.txt").open(encoding="utf-8") as file:
     random_sentences = [line.strip() for line in file]
 
 

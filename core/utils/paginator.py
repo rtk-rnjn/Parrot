@@ -162,7 +162,7 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
         assert isinstance(self, discord.ui.View | discord.ui.LayoutView), "PaginationMixin must be used with a View or LayoutView."
 
         self.stop()
-        await interaction.message.delete() if interaction.message else None
+        await interaction.message.delete(delay=0) if interaction.message else None
 
     async def update_page(self, interaction: discord.Interaction[Parrot]) -> None:
         raise NotImplementedError

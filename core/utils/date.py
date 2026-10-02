@@ -42,7 +42,7 @@ _MONTH_ALT = "|".join(sorted(MONTHS, key=len, reverse=True))
 
 _DAY = r"(?P<day>\d{1,2})(?:st|nd|rd|th)?"
 _MONTH = rf"(?P<month>{_MONTH_ALT})\.?"
-_YEAR = r"(?P<year>\d{4}|['\u2019]?\d{2})"  # 2004 | '04 | 04 | ’04
+_YEAR = r"(?P<year>\d{4}|['\u2019]?\d{2})"  # 2004 | '04 | 04 | ’04  # noqa: RUF003
 _SEP = r"[\s,]+"
 
 # Every pattern is tried against the *start* of the string; the longest match

@@ -66,7 +66,7 @@ class NumButton(discord.ui.Button["NumView"]):
         assert self.view
 
         if self.label == "Cancel" and interaction.message:
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
             self.view.stop()
         else:
             await interaction.response.send_modal(NumModal(self.view))

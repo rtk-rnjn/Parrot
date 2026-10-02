@@ -7,6 +7,7 @@ import random
 import re
 import string
 import textwrap
+from collections.abc import Callable
 from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING, Annotated, TypedDict, cast
@@ -413,10 +414,55 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         if not ctx.invoked_subcommand:
             await invoke_help_command(ctx)
 
+    async def _run_antidote_round(
+        self,
+        ctx: commands.Context[Parrot],
+        board_id: Message,
+        antidote_embed: Embed,
+        antidote_answer: list[str],
+        predicate: Callable[[Reaction, Member], bool],
+        page_guess_list: list[str],
+        page_result_list: list[str],
+    ) -> tuple[bool, int]:
+        tries = 0
+        guess_count = 0
+        guesses: list[str] = []
+        while tries < ANTIDOTE_GUESSES:
+            try:
+                reaction, user = await ctx.bot.wait_for("reaction_add", timeout=300, check=predicate)
+            except TimeoutError:
+                break
+            if reaction.emoji not in ANTIDOTE_EMOJI:
+                continue
+            guesses.append(reaction.emoji)
+            guess_count += 1
+            if guess_count < ANTIDOTE_GUESS_LENGTH:
+                continue
+            guess_count = 0
+            page_guess_list[tries] = " ".join(guesses)
+            result = [
+                TICK_EMOJI if guess == answer else BLANK_EMOJI if guess in antidote_answer else CROSS_EMOJI
+                for guess, answer in zip(guesses, antidote_answer, strict=False)
+            ]
+            result.sort()
+            page_result_list[tries] = " ".join(result)
+            board = [line for i in range(ANTIDOTE_GUESSES) for line in (f"`{i + 1:02d}` {page_guess_list[i]} - {page_result_list[i]}", EMPTY_UNICODE)]
+            for emoji in guesses:
+                await board_id.remove_reaction(emoji, user)
+            won = guesses == antidote_answer
+            tries += 1
+            guesses = []
+            antidote_embed.clear_fields()
+            antidote_embed.add_field(name=f"{ANTIDOTE_GUESSES - tries} guesses remaining", value="\n".join(board))
+            await board_id.edit(embed=antidote_embed)
+            if won:
+                return True, tries
+        return False, tries
+
     @commands.bot_has_permissions(manage_messages=True)
     @snakes_group.command(name="antidote")
     @commands.max_concurrency(1, per=commands.BucketType.channel)
-    async def antidote_command(self, ctx: commands.Context[Parrot]) -> None:  # noqa: PLR0915
+    async def antidote_command(self, ctx: commands.Context[Parrot]) -> None:
         """Antidote! Can you create the antivenom before the patient dies?
         Rules:  You have 4 ingredients for each antidote, you only have 10 attempts
                 Once you synthesize the antidote, you will be presented with 4 markers
@@ -444,14 +490,9 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
                 )
             )
 
-        antidote_tries = 0
-        antidote_guess_count = 0
-        antidote_guess_list = []
-        guess_result = []
         board = []
         page_guess_list = []
         page_result_list = []
-        win = False
 
         antidote_embed = Embed(color=SNAKE_COLOR, title="Antidote")
         antidote_embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
@@ -471,53 +512,9 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         for emoji in ANTIDOTE_EMOJI:
             await board_id.add_reaction(emoji)
 
-        while not win and antidote_tries < ANTIDOTE_GUESSES:
-            try:
-                reaction, user = await ctx.bot.wait_for("reaction_add", timeout=300, check=predicate)
-            except TimeoutError:
-                break
-
-            if antidote_tries < ANTIDOTE_GUESSES and antidote_guess_count < ANTIDOTE_GUESS_LENGTH:
-                if reaction.emoji in ANTIDOTE_EMOJI:
-                    antidote_guess_list.append(reaction.emoji)
-                    antidote_guess_count += 1
-
-                if antidote_guess_count == ANTIDOTE_GUESS_LENGTH:
-                    antidote_guess_count = 0
-                    page_guess_list[antidote_tries] = " ".join(antidote_guess_list)
-
-                    for i, item in enumerate(antidote_answer):
-                        if antidote_guess_list[i] == item:
-                            guess_result.append(TICK_EMOJI)
-                        elif antidote_guess_list[i] in antidote_answer:
-                            guess_result.append(BLANK_EMOJI)
-                        else:
-                            guess_result.append(CROSS_EMOJI)
-                    guess_result.sort()
-                    page_result_list[antidote_tries] = " ".join(guess_result)
-
-                    board = []
-                    for i in range(10):
-                        board.append(f"`{i + 1:02d}` {page_guess_list[i]} - {page_result_list[i]}")
-                        board.append(EMPTY_UNICODE)
-
-                    for emoji in antidote_guess_list:
-                        await board_id.remove_reaction(emoji, user)
-
-                    if antidote_guess_list == antidote_answer:
-                        win = True
-
-                    antidote_tries += 1
-                    guess_result = []
-                    antidote_guess_list = []
-
-                    antidote_embed.clear_fields()
-                    antidote_embed.add_field(
-                        name=f"{10 - antidote_tries} guesses remaining",
-                        value="\n".join(board),
-                    )
-
-                    await board_id.edit(embed=antidote_embed)
+        win, antidote_tries = await self._run_antidote_round(
+            ctx, board_id, antidote_embed, antidote_answer, predicate, page_guess_list, page_result_list
+        )
 
         if win:
             antidote_embed = Embed(color=SNAKE_COLOR, title="Antidote")
@@ -685,7 +682,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
             await message.edit(embed=hatch_embed)
             await asyncio.sleep(1)
         await asyncio.sleep(1)
-        await message.delete()
+        await message.delete(delay=0)
 
         my_snake_embed = Embed(description=f":tada: Congrats! You hatched: **{snake_name}**")
         my_snake_embed.set_thumbnail(url=snake_image)

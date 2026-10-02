@@ -684,7 +684,7 @@ class UNO:
 
     async def _resend(self, content: str | None = None, **kwargs) -> discord.Message:
         if self._message is not None:
-            await self._message.delete()
+            await self._message.delete(delay=0)
         return await self._send(content, **kwargs)
 
     async def choose_rule_set(self) -> None:
@@ -811,25 +811,8 @@ class UNO:
         return [originator]
 
     async def play(self, interaction: discord.Interaction, hand: Hand, card: Card):
-        if self.current_player != hand.player:
-            if self.rule_set.jump_in and self.current == card:
-                await self.handle_jump_in(hand, card)
-            else:
-                return await interaction.response.send_message("It is not your turn.", ephemeral=True)
-
-        if not self.can_play(card):
-            return await interaction.response.send_message("You cannot play this card.", ephemeral=True)
-
-        if card not in hand._cards:
-            return await interaction.response.send_message("You have already discarded this card.", ephemeral=True)
-
-        if self.draw_queue > 0:
-            if not self.rule_set.progressive:
-                return await interaction.response.send_message("You cannot play anything, you must draw instead.", ephemeral=True)
-
-            can_play = card.type is self.current.type is CardType.plus_2 or card.type is CardType.plus_4
-            if not can_play:
-                return await interaction.response.send_message("You must stack onto the draw, or draw yourself.", ephemeral=True)
+        if not await self._validate_play(interaction, hand, card):
+            return
 
         # All unsafe players are now safe as they haven't been caught
         self._uno_safe = {hand.player for hand in self.hands if len(hand) <= 1}
@@ -839,34 +822,58 @@ class UNO:
         else:
             cards = [card]
 
-        if card.type is CardType.number:
-            await self.handle_play(cards)
-
-        elif card.type is CardType.reverse:
-            await self.handle_reverse_card(cards)
-
-        elif card.type is CardType.skip:
-            await self.handle_skip_card(cards)
-
-        elif card.type is CardType.plus_2:
-            await self.handle_draw_2(cards)
-
-        elif card.color is Color.wild:
-            cls = WildCardSubview if card.type is CardType.wild else WildPlus4Subview
-            kwargs = {
-                "content": "What will the new color be?",
-                "view": cls(self, hand, cards),
-                "ephemeral": True,
-            }
-
-            try:
-                await interaction.response.send_message(**kwargs)
-            except discord.InteractionResponded, discord.NotFound:
-                await interaction.followup.send(**kwargs)
+        await self._dispatch_card(interaction, hand, card, cards)
 
         with contextlib.suppress(discord.InteractionResponded):
             await interaction.response.defer()
-        return None
+        return
+
+    async def _validate_play(self, interaction: discord.Interaction, hand: Hand, card: Card) -> bool:
+        valid = True
+        if self.current_player != hand.player:
+            if self.rule_set.jump_in and self.current == card:
+                await self.handle_jump_in(hand, card)
+            else:
+                await interaction.response.send_message("It is not your turn.", ephemeral=True)
+                valid = False
+        if valid and not self.can_play(card):
+            await interaction.response.send_message("You cannot play this card.", ephemeral=True)
+            valid = False
+        if valid and card not in hand._cards:
+            await interaction.response.send_message("You have already discarded this card.", ephemeral=True)
+            valid = False
+        if valid and self.draw_queue > 0 and not self.rule_set.progressive:
+            await interaction.response.send_message("You cannot play anything, you must draw instead.", ephemeral=True)
+            valid = False
+        if (
+            valid
+            and self.draw_queue > 0
+            and self.rule_set.progressive
+            and not ((card.type is self.current.type is CardType.plus_2) or card.type is CardType.plus_4)
+        ):
+            await interaction.response.send_message("You must stack onto the draw, or draw yourself.", ephemeral=True)
+            valid = False
+        return valid
+
+    async def _dispatch_card(self, interaction: discord.Interaction, hand: Hand, card: Card, cards: list[Card]) -> None:
+        handlers = {
+            CardType.number: self.handle_play,
+            CardType.reverse: self.handle_reverse_card,
+            CardType.skip: self.handle_skip_card,
+            CardType.plus_2: self.handle_draw_2,
+        }
+        handler = handlers.get(card.type)
+        if handler is not None:
+            await handler(cards)
+            return
+        if card.color is not Color.wild:
+            return
+        cls = WildCardSubview if card.type is CardType.wild else WildPlus4Subview
+        kwargs = {"content": "What will the new color be?", "view": cls(self, hand, cards), "ephemeral": True}
+        try:
+            await interaction.response.send_message(**kwargs)
+        except discord.InteractionResponded, discord.NotFound:
+            await interaction.followup.send(**kwargs)
 
     # list to take care of stacks
     async def handle_play(self, cards: list[Card]) -> None:

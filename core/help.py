@@ -97,6 +97,20 @@ class HelpView(discord.ui.LayoutView):
             self.build_command()
 
     def build_index(self) -> None:
+        categories = self.categories
+        container = discord.ui.Container(accent_colour=discord.Colour.blurple())
+        previous, next_button, home = self._make_navigation_buttons()
+        self._add_header(container)
+        self._add_category_select(container, categories)
+        if self.selected_category is None:
+            self._add_home_content(container, categories)
+        else:
+            self._add_category_content(container, categories, previous, next_button, home)
+        if self.selected_category is not None:
+            container.add_item(discord.ui.TextDisplay(f"*Page {self.page + 1}/{self.page_count} · {len(self.selected_commands)} commands*"))
+        self.add_item(container)
+
+    def _make_navigation_buttons(self) -> tuple[discord.ui.Button, discord.ui.Button, discord.ui.Button]:
         previous = discord.ui.Button(
             label="Previous",
             emoji="◀️",
@@ -136,15 +150,15 @@ class HelpView(discord.ui.LayoutView):
         previous.callback = previous_callback
         next_button.callback = next_callback
         home.callback = home_callback
+        return previous, next_button, home
 
-        categories = self.categories
-        container = discord.ui.Container(accent_colour=discord.Colour.blurple())
+    def _add_header(self, container: discord.ui.Container) -> None:
         bot = self.ctx.bot
-
         container.add_item(
             discord.ui.TextDisplay(f"## {bot.user.name} Help\nUse `{self.prefix}help <command>` for detailed information about a command.")
         )
 
+    def _add_category_select(self, container: discord.ui.Container, categories: list[tuple[commands.Cog, list[commands.Command]]]) -> None:
         options = [
             discord.SelectOption(
                 label=cog.qualified_name[:100],
@@ -168,66 +182,49 @@ class HelpView(discord.ui.LayoutView):
             select.callback = select_callback
             container.add_item(discord.ui.ActionRow(select))
 
-        if self.selected_category is None:
-            total_commands = sum(self.command_count(command) for _, commands_list in categories for command in commands_list)
-            uptime = getattr(bot, "started_at", None)
-            creator = f"<@{BOT_OWNER_ID}>"
-            commit = self.help_command.get_last_commits()
+    def _add_home_content(self, container: discord.ui.Container, categories: list[tuple[commands.Cog, list[commands.Command]]]) -> None:
+        bot = self.ctx.bot
+        total_commands = sum(self.command_count(command) for _, commands_list in categories for command in commands_list)
+        info = f"### Bot Information\n**Creator:** <@{BOT_OWNER_ID}> ({BOT_OWNER_ID})\n**Commands:** `{total_commands}`\n"
+        uptime = getattr(bot, "started_at", None)
+        if uptime is not None:
+            info += f"\n**Uptime:** {discord.utils.format_dt(uptime, 'R')}"
+        commit = self.help_command.get_last_commits()
+        if commit:
+            info += f"\n**Recent Commit:**\n{commit}"
+        container.add_item(discord.ui.TextDisplay(info))
+        container.add_item(discord.ui.TextDisplay(f"### How to Use\n{BASIC_USAGE.strip()}"))
 
-            info = f"### Bot Information\n**Creator:** {creator} ({BOT_OWNER_ID})\n**Commands:** `{total_commands}`\n"
+    def _add_category_content(
+        self,
+        container: discord.ui.Container,
+        categories: list[tuple[commands.Cog, list[commands.Command]]],
+        previous: discord.ui.Button,
+        next_button: discord.ui.Button,
+        home: discord.ui.Button,
+    ) -> None:
+        paginator = commands.Paginator(prefix="", suffix="", max_size=3900)
+        paginator.add_line(f"### {self.selected_category}")
+        for command in self.page_commands:
+            paginator.add_line(f"`{self.prefix}{command.qualified_name}` — {command.short_doc or 'No description provided.'}")
+        container.add_item(discord.ui.TextDisplay(paginator.pages[0] if paginator.pages else "No commands available."))
+        options = [
+            discord.SelectOption(
+                label=command.qualified_name[:100], value=str(index), description=(command.short_doc or "No description provided.")[:100]
+            )
+            for index, command in enumerate(self.page_commands)
+        ]
+        if options:
+            select = discord.ui.Select(placeholder="Select a command...", options=options)
 
-            if uptime is not None:
-                info += f"\n**Uptime:** {discord.utils.format_dt(uptime, 'R')}"
+            async def command_callback(interaction: discord.Interaction) -> None:
+                self.command = self.page_commands[int(select.values[0])]
+                self.refresh()
+                await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
 
-            if commit:
-                info += f"\n**Recent Commit:**\n{commit}"
-
-            container.add_item(discord.ui.TextDisplay(info))
-
-            usage = BASIC_USAGE.strip()
-            container.add_item(discord.ui.TextDisplay(f"### How to Use\n{usage}"))
-
-            paginator = commands.Paginator(prefix="", suffix="", max_size=3900)
-
-            if paginator.pages:
-                container.add_item(discord.ui.TextDisplay(paginator.pages[0]))
-        else:
-            paginator = commands.Paginator(prefix="", suffix="", max_size=3900)
-            paginator.add_line(f"### {self.selected_category}")
-
-            for command in self.page_commands:
-                description = command.short_doc or "No description provided."
-                paginator.add_line(f"`{self.prefix}{command.qualified_name}` — {description}")
-
-            page = paginator.pages[0] if paginator.pages else "No commands available."
-            container.add_item(discord.ui.TextDisplay(page))
-
-            command_options = [
-                discord.SelectOption(
-                    label=command.qualified_name[:100],
-                    value=str(index),
-                    description=(command.short_doc or "No description provided.")[:100],
-                )
-                for index, command in enumerate(self.page_commands)
-            ]
-
-            if command_options:
-                command_select = discord.ui.Select(placeholder="Select a command...", options=command_options)
-
-                async def command_callback(interaction: discord.Interaction) -> None:
-                    self.command = self.page_commands[int(command_select.values[0])]
-                    self.refresh()
-                    await interaction.response.edit_message(content=None, embeds=[], attachments=[], view=self)
-
-                command_select.callback = command_callback
-                container.add_item(discord.ui.ActionRow(command_select))
-
-                container.add_item(discord.ui.ActionRow(previous, next_button, home))
-
-        if self.selected_category is not None:
-            container.add_item(discord.ui.TextDisplay(f"*Page {self.page + 1}/{self.page_count} · {len(self.selected_commands)} commands*"))
-
-        self.add_item(container)
+            select.callback = command_callback
+            container.add_item(discord.ui.ActionRow(select))
+            container.add_item(discord.ui.ActionRow(previous, next_button, home))
 
     def build_command(self) -> None:
         command = self.command

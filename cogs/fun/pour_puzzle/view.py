@@ -56,64 +56,68 @@ class BottleButton(discord.ui.Button["PourView"]):
         assert self.view
 
         if self.view.state == 0:
-            self.disabled = True
-            self.style = discord.ButtonStyle.primary
-            self.view.selected = self
-            for btn in self.view.children:
-                if isinstance(btn, discord.ui.Button) and btn.custom_id == "cancel_btn":
-                    btn.disabled = False
-                    continue
-                if isinstance(btn, BottleButton) and btn != self:
-                    try:
-                        btn.disabled = bool(btn.bottle.is_full() or self.bottle.liquids[-1].color != btn.bottle.liquids[-1].color)
-                    except IndexError:
-                        btn.disabled = False
-            self.view.state = 1
-            await interaction.response.edit_message(view=self.view)
-
+            await self._select_bottle(interaction)
         elif self.view.state == 1 and self.view.selected is not None:
-            await self.view.selected.bottle.pour(self.bottle)
+            await self._pour_selected(interaction)
 
-            for btn in self.view.children:
-                if isinstance(btn, discord.ui.Button) and btn.custom_id == "cancel_btn":
+    async def _select_bottle(self, interaction: discord.Interaction) -> None:
+        assert self.view is not None
+        self.disabled = True
+        self.style = discord.ButtonStyle.primary
+        self.view.selected = self
+        for btn in self.view.children:
+            if isinstance(btn, discord.ui.Button) and btn.custom_id == "cancel_btn":
+                btn.disabled = False
+            elif isinstance(btn, BottleButton) and btn != self:
+                try:
+                    btn.disabled = btn.bottle.is_full() or self.bottle.liquids[-1].color != btn.bottle.liquids[-1].color
+                except IndexError:
+                    btn.disabled = False
+        self.view.state = 1
+        await interaction.response.edit_message(view=self.view)
+
+    async def _pour_selected(self, interaction: discord.Interaction) -> None:
+        assert self.view is not None
+        assert self.view.selected is not None
+        await self.view.selected.bottle.pour(self.bottle)
+        for btn in self.view.children:
+            if isinstance(btn, discord.ui.Button) and btn.custom_id == "cancel_btn":
+                btn.disabled = True
+            elif isinstance(btn, BottleButton):
+                btn.disabled = btn.bottle.is_empty()
+                if btn == self.view.selected:
+                    btn.style = discord.ButtonStyle.secondary
+                if btn.bottle.is_completed():
+                    btn.style = discord.ButtonStyle.success
                     btn.disabled = True
-                    continue
-                if isinstance(btn, BottleButton):
-                    btn.disabled = bool(btn.bottle.is_empty())
-                    if btn == self.view.selected:
-                        btn.style = discord.ButtonStyle.secondary
-                    if btn.bottle.is_completed():
-                        btn.style = discord.ButtonStyle.success
-                        btn.disabled = True
 
-            self.view.state = 0
-            assert self.view.message is not None
+        self.view.state = 0
+        assert self.view.message is not None
+        embed = self.view.message.embeds[0]
+        img_buffer = await asyncio.to_thread(self.view.draw_image)
+        img_file = discord.File(img_buffer, "pour_game.png")
+        embed.set_image(url="attachment://pour_game.png")
+        self._finish_level(embed)
+        await interaction.response.edit_message(embed=embed, attachments=[img_file], view=self.view)
 
-            embed = self.view.message.embeds[0]
-            img_buffer = await asyncio.to_thread(self.view.draw_image)
-
-            img_file = discord.File(img_buffer, "pour_game.png")
-            embed.set_image(url="attachment://pour_game.png")
-
-            if self.view.win_check():
-                embed.description = f"Level : {self.view.level}\nYou've completed this level!"
-                for btn in self.view.children:
-                    if isinstance(btn, discord.ui.Button) and btn.custom_id != "exit_btn":
-                        btn.disabled = True
-
-                self.view.level += 1
-                if self.view.level <= len(levels):
-                    next_button = discord.ui.Button(
-                        label=f"Level {self.view.level} >",
-                        style=discord.ButtonStyle.success,
-                        row=0,
-                        custom_id="next_lvl_btn",
-                    )
-                    next_button.callback = self.view.next_button_callback
-
-                    self.view.add_item(next_button)
-
-            await interaction.response.edit_message(embed=embed, attachments=[img_file], view=self.view)
+    def _finish_level(self, embed: discord.Embed) -> None:
+        assert self.view is not None
+        if not self.view.win_check():
+            return
+        embed.description = f"Level : {self.view.level}\nYou've completed this level!"
+        for btn in self.view.children:
+            if isinstance(btn, discord.ui.Button) and btn.custom_id != "exit_btn":
+                btn.disabled = True
+        self.view.level += 1
+        if self.view.level <= len(levels):
+            next_button = discord.ui.Button(
+                label=f"Level {self.view.level} >",
+                style=discord.ButtonStyle.success,
+                row=0,
+                custom_id="next_lvl_btn",
+            )
+            next_button.callback = self.view.next_button_callback
+            self.view.add_item(next_button)
 
 
 class PourView(BaseView):
@@ -180,10 +184,6 @@ class PourView(BaseView):
 
     def win_check(self):
         checks = [(btn.bottle.is_completed() or btn.bottle.is_empty()) for btn in self.children if isinstance(btn, BottleButton)]
-        for btn in self.children:
-            if isinstance(btn, BottleButton):
-                checks.append(btn.bottle.is_completed() or btn.bottle.is_empty())
-
         return all(checks)
 
     @discord.ui.button(label="Exit", style=discord.ButtonStyle.danger, custom_id="exit_btn", row=0)

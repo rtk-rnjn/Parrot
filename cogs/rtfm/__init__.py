@@ -10,7 +10,7 @@ import unicodedata
 import urllib.parse
 from html import unescape
 from random import random
-from typing import TYPE_CHECKING, Annotated, Any, Literal
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal
 from urllib.parse import quote, quote_plus
 
 import aiohttp
@@ -863,7 +863,7 @@ class Developer(commands.Cog):
         """Unload the cog and cancel the task."""
         self.fetch_readme.cancel()
 
-    kontests_cache: dict[str, list] = {}
+    kontests_cache: ClassVar[dict[str, list]] = {}
 
     @commands.command(name="kontest-reload", hidden=True)
     @commands.is_owner()

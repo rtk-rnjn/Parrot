@@ -20,7 +20,7 @@ class AtCoderContestData:
 
     @property
     def start_time(self) -> datetime.datetime:
-        return datetime.datetime.strptime(self.__data["start_time"], TIME_FORMAT)
+        return datetime.datetime.strptime(self.__data["start_time"], TIME_FORMAT).replace(tzinfo=datetime.UTC)
 
     @property
     def duration_minutes(self) -> int:

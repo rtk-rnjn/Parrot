@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from random import choice
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
@@ -35,7 +34,7 @@ class HackerRankContest:
 
     @property
     def created_at(self) -> datetime.datetime:
-        return datetime.datetime.strptime(self.__data["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        return datetime.datetime.strptime(self.__data["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=datetime.UTC)
 
     @property
     def rated(self) -> bool:
@@ -55,12 +54,12 @@ class HackerRankContest:
     @property
     def end_time(self) -> datetime.datetime:
         epoch = self.__data["epoch_endtime"]
-        return datetime.datetime.fromtimestamp(epoch)
+        return datetime.datetime.fromtimestamp(epoch, tz=datetime.UTC)
 
     @property
     def start_time(self) -> datetime.datetime:
         epoch = self.__data["epoch_starttime"]
-        return datetime.datetime.fromtimestamp(epoch)
+        return datetime.datetime.fromtimestamp(epoch, tz=datetime.UTC)
 
     @property
     def url(self) -> str:
@@ -73,10 +72,7 @@ class HackerRank:
         self.bot = bot
 
     async def fetch(self) -> None:
-        async with self.bot.http_session.get(
-            f"{API}{UPCOMING}",
-            headers={"User-Agent": choice(self.bot.assets.user_agents)},
-        ) as response:
+        async with self.bot.http_session.get(f"{API}{UPCOMING}") as response:
             data = await response.json()
             self.__contests = [HackerRankContest(c) for c in data["models"]]
 

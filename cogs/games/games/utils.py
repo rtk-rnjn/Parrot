@@ -58,7 +58,7 @@ async def wait_for_delete(
     except TimeoutError:
         return False
     else:
-        await message.delete()
+        await message.delete(delay=0)
         return True
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pathlib
 import random
 from io import BytesIO
 from typing import TYPE_CHECKING, Final
@@ -50,7 +51,7 @@ class Wordle:
     def __init__(self, word: str | None = None, *, text_size: int = 55) -> None:
         self.embed_color: DiscordColor | None = None
 
-        with open("assets/words.txt") as f:
+        with pathlib.Path("assets/words.txt").open(encoding="utf-8") as f:
             self._valid_words = tuple(f.read().splitlines())
         self._text_size = text_size
         self._font = ImageFont.truetype("assets/HelveticaNeuBold.ttf", self._text_size)
@@ -71,8 +72,7 @@ class Wordle:
             self.word = random.choice(self._valid_words)
 
     def parse_guess(self, guess: str) -> bool:
-        assert (guess_len := len(guess)) == len(self.word)
-
+        guess_len = len(guess)
         word: list[str | None] = list(self.word)
         curr_guess: list[Guess | None] = [None] * guess_len
 
@@ -161,7 +161,7 @@ class Wordle:
                 won = self.parse_guess(content)
                 buf = await self.render_image()
 
-                await self.message.delete()
+                await self.message.delete(delay=0)
 
                 embed = discord.Embed(title="Wordle!", color=self.embed_color)
                 embed.set_image(url="attachment://wordle.png")
@@ -240,7 +240,7 @@ class WordInputButton(discord.ui.Button["WordleView"]):
         if self.label == "Cancel":
             await interaction.response.send_message(f"Game Over! the word was: **{game.word}**")
             assert interaction.message is not None
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
             self.view.stop()
             return
         await interaction.response.send_modal(WordInput(self.view))

@@ -89,41 +89,7 @@ class SokobanGame:
         self.rows = len(self.level)
         self.cols = max(len(row) for row in self.level)
 
-        found_player: Position | None = None
-
-        for row, line in enumerate(self.level):
-            for col in range(self.cols):
-                char = line[col] if col < len(line) else " "
-
-                position = Position(row, col)
-
-                match char:
-                    case "#":
-                        self.walls.add(position)
-
-                    case ".":
-                        self.targets.add(position)
-
-                    case "$":
-                        self.blocks.add(position)
-
-                    case "@":
-                        if found_player is not None:
-                            msg = "Level contains more than one player."
-                            raise ValueError(msg)
-
-                        found_player = position
-
-                    case "x":
-                        self.blocks.add(position)
-                        self.targets.add(position)
-
-                    case " ":
-                        pass
-
-                    case _:
-                        message = f"Invalid character {char!r} at row {row + 1}, column {col + 1}."
-                        raise ValueError(message)
+        found_player = self._parse_cells()
 
         if found_player is None:
             msg = "Level does not contain a player."
@@ -134,6 +100,35 @@ class SokobanGame:
             raise ValueError(message)
 
         self.player = found_player
+
+    def _parse_cells(self) -> Position:
+        found_player: Position | None = None
+        for row, line in enumerate(self.level):
+            for col in range(self.cols):
+                position = Position(row, col)
+                char = line[col] if col < len(line) else " "
+                if char == "#":
+                    self.walls.add(position)
+                elif char == ".":
+                    self.targets.add(position)
+                elif char == "$":
+                    self.blocks.add(position)
+                elif char == "@":
+                    if found_player is not None:
+                        msg = "Level contains more than one player."
+                        raise ValueError(msg)
+                    found_player = position
+                elif char == "x":
+                    self.blocks.add(position)
+                    self.targets.add(position)
+                elif char != " ":
+                    message = f"Invalid character {char!r} at row {row + 1}, column {col + 1}."
+                    raise ValueError(message)
+
+        if found_player is None:
+            msg = "Level does not contain a player."
+            raise ValueError(msg)
+        return found_player
 
     def display_board(self) -> str:
         """

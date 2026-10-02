@@ -75,7 +75,7 @@ class GiveawayEditButton(discord.ui.Button):
             await interaction.followup.send("This command can only be used in a server (guild).", ephemeral=True)
             return
 
-        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # type: ignore
+        self.kwargs: GuildConfiguration = await interaction.client.database.get_guild_configuration(interaction.guild.id)  # type: ignore[reportAttributeAccessIssue]
         modal = GiveawayConfigModal(**self.kwargs)
 
         await interaction.response.send_modal(modal)

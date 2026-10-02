@@ -39,10 +39,14 @@ select = [
 ignore = [
     "E501",  # Line too long
     "PLR0913",  # Too many arguments
+    "ASYNC109",
 ]
 
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
+
+[tool.ruff.lint.pylint]
+max-positional-args = 9
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [

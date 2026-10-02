@@ -46,6 +46,6 @@ class DisambiguatorView[T](BaseView):
         await interaction.response.defer()
 
         if not self.message.flags.ephemeral:
-            await self.message.delete()
+            await self.message.delete(delay=0)
 
         self.stop()

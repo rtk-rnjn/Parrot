@@ -28,13 +28,13 @@ class CSAcademyContestData:
         if not self.__data["startTime"]:
             return None
 
-        return datetime.datetime.fromtimestamp(self.__data["startTime"])
+        return datetime.datetime.fromtimestamp(self.__data["startTime"], tz=datetime.UTC)
 
     @property
     def end_time(self) -> datetime.datetime | None:
         if not self.__data["endTime"]:
             return None
-        return datetime.datetime.fromtimestamp(self.__data["endTime"])
+        return datetime.datetime.fromtimestamp(self.__data["endTime"], tz=datetime.UTC)
 
     @property
     def duration_seconds(self) -> int:
@@ -42,7 +42,7 @@ class CSAcademyContestData:
 
     @property
     def ended(self) -> bool:
-        return datetime.datetime.now() > self.end_time if self.end_time else False
+        return datetime.datetime.now(tz=datetime.UTC) > self.end_time if self.end_time else False
 
     @property
     def description(self) -> str:

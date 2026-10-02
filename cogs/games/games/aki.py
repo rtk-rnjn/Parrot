@@ -127,7 +127,7 @@ class Akinator:
         if emoji == STOP:
             await ctx.reply("**Session ended**")
             if self.message is not None:
-                await self.message.delete()
+                await self.message.delete(delay=0)
             return True
 
         if emoji == BACK:
@@ -241,7 +241,7 @@ class AkiView(BaseView):
             assert interaction.message is not None
             await interaction.message.reply("Session ended", mention_author=True)
             self.stop()
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
             return
 
         # defer to avoid 3s interaction timeout while waiting for the akinator API

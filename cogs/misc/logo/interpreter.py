@@ -110,52 +110,25 @@ class LogoInterpreter:
     # Commands
 
     def execute_command(self, command: Command, env: Environment) -> None:
-        name = command.name
-
-        if name == "FD":
-            self.turtle.forward(self.evaluate(command.args[0], env))
-
-        elif name == "BK":
-            self.turtle.backward(self.evaluate(command.args[0], env))
-
-        elif name == "RT":
-            self.turtle.right(self.evaluate(command.args[0], env))
-
-        elif name == "LT":
-            self.turtle.left(self.evaluate(command.args[0], env))
-
-        elif name == "PU":
-            self.turtle.pen_up()
-
-        elif name == "PD":
-            self.turtle.pen_down_mode()
-
-        elif name == "HOME":
-            self.turtle.home()
-
-        elif name == "CS":
-            self.turtle.clear()
-
-        elif name == "SETWIDTH":
-            width = self.evaluate(command.args[0], env)
-            self.turtle.set_width(self.require_int(width))
-
-        elif name == "SETH":
-            heading = self.evaluate(command.args[0], env)
-            self.turtle.set_heading(heading)
-
-        elif name == "SETXY":
-            x = self.evaluate(command.args[0], env)
-            y = self.evaluate(command.args[1], env)
-
-            self.turtle.set_xy(x, y)
-
-        elif name == "SETPC":
-            self.turtle.set_color(parse_color(command.args[0]))
-
-        else:
-            msg = f"Unknown command: {name}"
+        handlers = {
+            "FD": lambda: self.turtle.forward(self.evaluate(command.args[0], env)),
+            "BK": lambda: self.turtle.backward(self.evaluate(command.args[0], env)),
+            "RT": lambda: self.turtle.right(self.evaluate(command.args[0], env)),
+            "LT": lambda: self.turtle.left(self.evaluate(command.args[0], env)),
+            "PU": self.turtle.pen_up,
+            "PD": self.turtle.pen_down_mode,
+            "HOME": self.turtle.home,
+            "CS": self.turtle.clear,
+            "SETWIDTH": lambda: self.turtle.set_width(self.require_int(self.evaluate(command.args[0], env))),
+            "SETH": lambda: self.turtle.set_heading(self.evaluate(command.args[0], env)),
+            "SETXY": lambda: self.turtle.set_xy(self.evaluate(command.args[0], env), self.evaluate(command.args[1], env)),
+            "SETPC": lambda: self.turtle.set_color(parse_color(command.args[0])),
+        }
+        handler = handlers.get(command.name)
+        if handler is None:
+            msg = f"Unknown command: {command.name}"
             raise LogoRuntimeError(msg)
+        handler()
 
     # Procedures
 
@@ -191,7 +164,7 @@ class LogoInterpreter:
 
     # Expression evaluation
 
-    def evaluate(self, expression: Any, env: Environment) -> float:  # noqa: PLR0911
+    def evaluate(self, expression: Any, env: Environment) -> float:
         if isinstance(expression, Number):
             return expression.value
 
@@ -199,52 +172,42 @@ class LogoInterpreter:
             return env.get(expression.name)
 
         if isinstance(expression, Unary):
-            value = self.evaluate(
-                expression.operand,
-                env,
-            )
-
-            if expression.operator == "-":
-                return -value
-
-            msg = f"Unknown unary operator: {expression.operator}"
-            raise LogoRuntimeError(msg)
+            value = self.evaluate(expression.operand, env)
+            if expression.operator != "-":
+                msg = f"Unknown unary operator: {expression.operator}"
+                raise LogoRuntimeError(msg)
+            return -value
 
         if isinstance(expression, Binary):
-            left = self.evaluate(expression.left, env)
-
-            right = self.evaluate(expression.right, env)
-
-            if expression.operator == "+":
-                return left + right
-
-            if expression.operator == "-":
-                return left - right
-
-            if expression.operator == "*":
-                return left * right
-
-            if expression.operator == "/":
-                if right == 0:
-                    msg = "Division by zero."
-                    raise LogoRuntimeError(msg)
-
-                return left / right
-
-            if expression.operator == "=":
-                return float(left == right)
-
-            if expression.operator == "<":
-                return float(left < right)
-
-            if expression.operator == ">":
-                return float(left > right)
-
-            msg = f"Unknown binary operator: {expression.operator}"
-            raise LogoRuntimeError(msg)
+            return self.evaluate_binary(expression, env)
 
         msg = f"Cannot evaluate {type(expression).__name__}"
         raise LogoRuntimeError(msg)
+
+    def evaluate_binary(self, expression: Binary, env: Environment) -> float:
+        left = self.evaluate(expression.left, env)
+        right = self.evaluate(expression.right, env)
+        operations = {
+            "+": lambda: left + right,
+            "-": lambda: left - right,
+            "*": lambda: left * right,
+            "/": lambda: self._divide(left, right),
+            "=": lambda: float(left == right),
+            "<": lambda: float(left < right),
+            ">": lambda: float(left > right),
+        }
+        operation = operations.get(expression.operator)
+        if operation is None:
+            msg = f"Unknown binary operator: {expression.operator}"
+            raise LogoRuntimeError(msg)
+        return operation()
+
+    @staticmethod
+    def _divide(left: float, right: float) -> float:
+        if right == 0:
+            msg = "Division by zero."
+            raise LogoRuntimeError(msg)
+        return left / right
 
     @staticmethod
     def require_int(value: float) -> int:

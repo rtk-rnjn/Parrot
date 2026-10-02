@@ -12,6 +12,8 @@ from .utils import DEFAULT_COLOR, BaseView, DiscordColor, chunk, double_wait, wa
 if TYPE_CHECKING:
     from core import Parrot
 
+MEMORY_ITEMS = 12
+
 
 class MemoryButton(discord.ui.Button["MemoryView"]):
     def __init__(self, emoji: str, *, style: discord.ButtonStyle, row: int = 0) -> None:
@@ -95,12 +97,12 @@ class MemoryView(BaseView):
 
         if not items:
             items = self.DEFAULT_ITEMS[:]
-        assert len(items) == 12
+        assert len(items) == MEMORY_ITEMS
 
         items *= 2
         random.shuffle(items)
         random.shuffle(items)
-        items.insert(12, None)  # type: ignore[arg-type]
+        items.insert(MEMORY_ITEMS, None)  # type: ignore[arg-type]
 
         self.board = chunk(items, count=5)
 

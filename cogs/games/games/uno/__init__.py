@@ -7,7 +7,7 @@ import random
 from collections import defaultdict
 from collections.abc import Awaitable, Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, NamedTuple, overload
+from typing import TYPE_CHECKING, ClassVar, Literal, NamedTuple, overload
 
 import discord
 from discord.ext import commands
@@ -18,6 +18,7 @@ from .enums import CardType, Color
 if TYPE_CHECKING:
     from core import Parrot
 
+MIN_PLAYERS = 2
 COLORS = {
     Color.red: (255, 69, 69),
     Color.yellow: (255, 199, 69),
@@ -54,7 +55,7 @@ class HostOnlyView(discord.ui.View):
 
 
 class RuleSetPrompt(discord.ui.Select["RuleSetPromptingView"]):
-    CHOICES = {
+    CHOICES: ClassVar[dict[str, RuleSetChoice]] = {
         "stacking": RuleSetChoice(
             "Stacking",
             "Allows the play of multiple cards that have the same value/type at once.",
@@ -96,7 +97,7 @@ class RuleSetPrompt(discord.ui.Select["RuleSetPromptingView"]):
         )
 
     async def callback(self, interaction: discord.Interaction, /) -> None:
-        values = interaction.data["values"]
+        values = interaction.data.get("values", []) if interaction.data is not None else []
         for value in self.CHOICES:
             setattr(self.game.rule_set, value, value in values)
 
@@ -126,7 +127,7 @@ class PlayerQueueingView(discord.ui.View):
         super().__init__(timeout=180)
 
     async def _update(self) -> None:
-        self.immediate_start.disabled = len(self.players) < 2
+        self.immediate_start.disabled = len(self.players) < MIN_PLAYERS
 
         await self.game._send(
             self.OPENING_MESSAGE + "\n\n**Players:**\n" + "\n".join(str(player) for player in self.players),
@@ -163,7 +164,7 @@ class PlayerQueueingView(discord.ui.View):
             await interaction.response.send_message("Only the host can start this game.", ephemeral=True)
             return
 
-        if len(self.players) < 2:
+        if len(self.players) < MIN_PLAYERS:
             await interaction.response.send_message(
                 "There must be at least 2 players in order to start this game.",
                 ephemeral=True,

@@ -24,6 +24,11 @@ from .utils import PerlinNoiseFactory, SnakeAndLaddersGame, create_snek_frame, f
 if TYPE_CHECKING:
     from core import Parrot
 
+MIN_LONG_MESSAGE_WORDS = 3
+ANTIDOTE_GUESSES = 10
+ANTIDOTE_GUESS_LENGTH = 4
+SNAKE_DESCRIPTION_LIMIT = 1000
+
 SNAKE_COLOR = 0x399600
 
 
@@ -267,7 +272,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         Else, just return whatever the last message is.
         """
         long_message = random.choice(messages)
-        if len(long_message.split()) < 3 and retries > 0:
+        if len(long_message.split()) < MIN_LONG_MESSAGE_WORDS and retries > 0:
             return self._get_random_long_message(messages, retries=retries - 1)
 
         return long_message
@@ -455,7 +460,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         random.shuffle(antidote_answer)
         antidote_answer.pop()
 
-        for i in range(10):
+        for i in range(ANTIDOTE_GUESSES):
             page_guess_list.append(f"{HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI} {HOLE_EMOJI}")
             page_result_list.append(f"{CROSS_EMOJI} {CROSS_EMOJI} {CROSS_EMOJI} {CROSS_EMOJI}")
             board.append(f"`{i + 1:02d}` {page_guess_list[i]} - {page_result_list[i]}")
@@ -466,18 +471,18 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         for emoji in ANTIDOTE_EMOJI:
             await board_id.add_reaction(emoji)
 
-        while not win and antidote_tries < 10:
+        while not win and antidote_tries < ANTIDOTE_GUESSES:
             try:
                 reaction, user = await ctx.bot.wait_for("reaction_add", timeout=300, check=predicate)
             except TimeoutError:
                 break
 
-            if antidote_tries < 10 and antidote_guess_count < 4:
+            if antidote_tries < ANTIDOTE_GUESSES and antidote_guess_count < ANTIDOTE_GUESS_LENGTH:
                 if reaction.emoji in ANTIDOTE_EMOJI:
                     antidote_guess_list.append(reaction.emoji)
                     antidote_guess_count += 1
 
-                if antidote_guess_count == 4:
+                if antidote_guess_count == ANTIDOTE_GUESS_LENGTH:
                     antidote_guess_count = 0
                     page_guess_list[antidote_tries] = " ".join(antidote_guess_list)
 
@@ -602,8 +607,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
 
             description = data.get("info") or "No description available."
 
-            if len(description) > 1000:
-                description = description[:1000]
+            if len(description) > SNAKE_DESCRIPTION_LIMIT:
+                description = description[:SNAKE_DESCRIPTION_LIMIT]
                 last_newline = description.rfind("\n")
                 if last_newline > 0:
                     description = description[:last_newline]

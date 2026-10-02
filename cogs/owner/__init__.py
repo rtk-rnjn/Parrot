@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 _log = logging.getLogger("bot.cogs.owner")
+REDIS_RESULT_LIMIT = 1980
+BYTES_PER_UNIT = 1024
 
 # Shared accent colors so every dashboard for a given backend looks the same.
 _REDIS_COLOR = discord.Color.red()
@@ -122,7 +124,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message) -> bool:
             return m.author == ctx.author and m.channel == ctx.channel
 
-        while True + True == 2:
+        while True:
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=300)
             except TimeoutError:
@@ -136,7 +138,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             codeblock = codeblock_converter(msg.content)
             try:
                 result = await self.bot.database.redis_client.execute_command(codeblock.content)
-                if len(str(result)) > 1980:
+                if len(str(result)) > REDIS_RESULT_LIMIT:
                     await msg.reply("\N{WARNING SIGN} Result is too long to display.")
                 else:
                     await msg.reply(f"```py\n{result}```")
@@ -929,9 +931,9 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         value = float(value)
 
         for unit in ("B", "KB", "MB", "GB", "TB", "PB"):
-            if value < 1024:
+            if value < BYTES_PER_UNIT:
                 return f"{value:.2f} {unit}"
-            value /= 1024
+            value /= BYTES_PER_UNIT
 
         return f"{value:.2f} EB"
 

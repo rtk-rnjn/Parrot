@@ -16,6 +16,7 @@ from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, double_wait
 if TYPE_CHECKING:
     from core import Parrot
 
+WINNING_TILE = 2048
 Board = list[list[int]]
 
 
@@ -161,7 +162,7 @@ class Twenty48:
 
         for num in (2048, 4096, 8192):
             if num in flattened:
-                if num == 2048:
+                if num == WINNING_TILE:
                     self.embed = discord.Embed(description="", color=self.embed_color)
                 if self.embed is not None:
                     self.embed.description = (self.embed.description or "") + f"\N{WHITE MEDIUM STAR}: Congrats! You hit **{num}**!\n"

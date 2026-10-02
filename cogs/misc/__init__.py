@@ -49,6 +49,8 @@ LATEX_DOCUMENT_TEMPLATE = string.Template(r"""
 
 
 _log = logging.getLogger("bot.cogs.misc")
+EMBED_FIELD_LIMIT = 1024
+DISCORD_MESSAGE_LIMIT = 1900
 
 
 with Path("assets/dictionary.json").open(encoding="utf-8") as file:
@@ -339,7 +341,7 @@ class Misc(commands.Cog):
         return message
 
     def sanitise(self, st: str) -> str:
-        if len(st) > 1024:
+        if len(st) > EMBED_FIELD_LIMIT:
             st = f"{st[:980]}..."
         return INVITE_RE.sub("[INVITE REDACTED]", st)
 
@@ -562,7 +564,7 @@ class Misc(commands.Cog):
             ascending=flags.ascending,
         )
         main = table.as_tabulate(index=False, table_format=flags.table_format, align=flags.align)
-        if len(main) > 1900:
+        if len(main) > DISCORD_MESSAGE_LIMIT:
             await ctx.reply("The generated table is too long to display. Please try again with a smaller input.")
             return
 

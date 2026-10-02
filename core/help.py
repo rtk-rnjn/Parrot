@@ -10,6 +10,8 @@ import pygit2
 from discord.ext import commands
 from dotenv import load_dotenv
 
+COMMIT_SUMMARY_LIMIT = 50
+
 load_dotenv()
 
 __all__ = ("Help",)
@@ -304,7 +306,7 @@ class Help(commands.HelpCommand):
         short, _, _ = commit.message.partition("\n")
         short_sha = str(commit.id)[:6]
         commit_time = arrow.Arrow.fromtimestamp(commit.commit_time)
-        short = short[:50] + "..." if len(short) > 50 else short
+        short = short[:COMMIT_SUMMARY_LIMIT] + "..." if len(short) > COMMIT_SUMMARY_LIMIT else short
         return f"[`{short_sha}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.id}) {short} ({discord.utils.format_dt(commit_time, 'R')})"
 
     def get_last_commits(self, count: int = 3) -> str | None:

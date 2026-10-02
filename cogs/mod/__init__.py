@@ -18,6 +18,10 @@ if TYPE_CHECKING:
     from core import Parrot
 
 _log = logging.getLogger("bot.cogs.mod")
+REASON_LIMIT = 512
+DISCORD_MESSAGE_LIMIT = 1900
+DISCORD_HARD_LIMIT = 2000
+MAX_DISPLAY_TARGETS = 5
 
 
 class Snowflake:
@@ -99,8 +103,8 @@ class ActionReason(commands.Converter):
         """Build and validate an audit-log reason."""
         ret = f"{ctx.author} ({ctx.author.id}): {argument}"
 
-        if len(ret) > 512:
-            reason_max = 512 - len(ret) + len(argument)
+        if len(ret) > REASON_LIMIT:
+            reason_max = REASON_LIMIT - len(ret) + len(argument)
             error_message = f"Reason is too long ({len(argument)}/{reason_max})"
             raise commands.BadArgument(error_message)
 
@@ -411,7 +415,7 @@ class Mod(commands.Cog):
         details = "\n- ".join(f"{member} (ID: {member.id})" for member in members)
         message = prefix + details
 
-        if len(message) > 1900:
+        if len(message) > DISCORD_MESSAGE_LIMIT:
             return f"\n-# Some members [{len(members)}] could not be banned due to role hierarchy or being the bot itself."
 
         return message
@@ -1262,7 +1266,7 @@ class Mod(commands.Cog):
 
         to_send = "\n".join(messages)
 
-        if len(to_send) > 2000:
+        if len(to_send) > DISCORD_HARD_LIMIT:
             await ctx.send(f"Successfully removed {deleted} messages.", delete_after=10)
         else:
             await ctx.send(to_send, delete_after=10)
@@ -1579,8 +1583,8 @@ class Mod(commands.Cog):
         target_list = list(targets)
         target_lines = [self._format_target(target) for target in target_list]
 
-        if len(target_lines) > 5:
-            target_lines = [*target_lines[:5], f"...and {len(target_lines) - 5} more."]
+        if len(target_lines) > MAX_DISPLAY_TARGETS:
+            target_lines = [*target_lines[:MAX_DISPLAY_TARGETS], f"...and {len(target_lines) - MAX_DISPLAY_TARGETS} more."]
 
         target_text = "\n".join(target_lines) or "*Not applicable*"
 

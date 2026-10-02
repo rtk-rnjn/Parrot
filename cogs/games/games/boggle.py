@@ -12,6 +12,10 @@ from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player, chunk
 if TYPE_CHECKING:
     from core import Parrot
 
+BOARD_SIZE = 4
+ENTER_BUTTON_ROW = 4
+MIN_WORD_LENGTH = 3
+
 
 class BoggleButton(discord.ui.Button["BoggleView"]):
     def __init__(self, label: str, style: discord.ButtonStyle, *, row: int, col: int) -> None:
@@ -60,8 +64,8 @@ class BoggleView(BaseView):
                 button = BoggleButton(label=letter, style=self.game.button_style, row=i, col=j)
                 self.add_item(button)
 
-        clean_children = [item for item in self.children if item.row != 4]
-        self.nested_children: list[list[BoggleButton]] = chunk(clean_children, count=4)  # type: ignore[arg-type]
+        clean_children = [item for item in self.children if item.row != ENTER_BUTTON_ROW]
+        self.nested_children: list[list[BoggleButton]] = chunk(clean_children, count=BOARD_SIZE)  # type: ignore[arg-type]
 
     async def on_timeout(self) -> None:
         embed = self.game.win()
@@ -85,7 +89,7 @@ class BoggleView(BaseView):
             await interaction.response.send_message("You have no current guesses!", ephemeral=True)
             return
 
-        if len(game.current_word) < 3:
+        if len(game.current_word) < MIN_WORD_LENGTH:
             await interaction.response.send_message("Word must be of at least 3 letters in length!", ephemeral=True)
             return
 
@@ -173,7 +177,7 @@ class Boggle:
         self.indices = []
 
         for button in self.view.children:
-            if isinstance(button, discord.ui.Button) and button.row != 4:
+            if isinstance(button, discord.ui.Button) and button.row != ENTER_BUTTON_ROW:
                 button.style = self.button_style
 
     def get_embed(self) -> discord.Embed:

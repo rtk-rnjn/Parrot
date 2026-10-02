@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 VALID_COMMAND_NAME = re.compile(r"^[a-z0-9_-]{1,32}$", re.IGNORECASE)
 
 _log = logging.getLogger("bot.cogs.cc")
+COMMAND_DESCRIPTION_LIMIT = 80
+DISCORD_MESSAGE_LIMIT = 2000
 
 
 CUSTOM_COMMAND_HELP = r"""
@@ -501,7 +503,7 @@ class CustomCommandSelect(discord.ui.Select):
         options = [
             discord.SelectOption(
                 label=command["name"],
-                description=command["response"][:80] + ("..." if len(command["response"]) > 80 else ""),
+                description=command["response"][:COMMAND_DESCRIPTION_LIMIT] + ("..." if len(command["response"]) > COMMAND_DESCRIPTION_LIMIT else ""),
             )
             for command in custom_commands
         ]
@@ -716,7 +718,7 @@ class CC(commands.Cog):
         log = f"{message.created_at} User {message.author} (`{message.author.id}`) invoked custom command `{context.invoked_with}` in channel {message.channel} (`{message.channel.id}`)."
         if rendered:
             await self.bot.database.push_custom_command_log(guild_id=message.guild.id, log_entry=log)
-            if len(rendered) > 2000:
+            if len(rendered) > DISCORD_MESSAGE_LIMIT:
                 rendered = f"{rendered[:1997]}..."
             await message.channel.send(rendered, allowed_mentions=discord.AllowedMentions.none())
 

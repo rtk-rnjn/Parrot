@@ -18,6 +18,8 @@ if TYPE_CHECKING:
     from core import Parrot
 
 _log = logging.getLogger("bot.cogs.reminder")
+REMINDER_PREVIEW_LENGTH = 28
+HTTP_OK = 200
 
 
 class ReminderMetadata(TypedDict):
@@ -56,7 +58,11 @@ class ReminderLayout(BaseLayoutView):
         jump_url = f"https://discord.com/channels/{metadata['guild_id']}/{metadata['channel_id']}/{metadata['message_id']}"
 
         relative_time_fmt = discord.utils.format_dt(reminder["expires_at"], "R")
-        parsed_text = "Content: " + metadata["reminder_text"][:28] + "..." if len(metadata["reminder_text"]) > 28 else metadata["reminder_text"]
+        parsed_text = (
+            "Content: " + metadata["reminder_text"][:REMINDER_PREVIEW_LENGTH] + "..."
+            if len(metadata["reminder_text"]) > REMINDER_PREVIEW_LENGTH
+            else metadata["reminder_text"]
+        )
 
         return discord.ui.Section(
             discord.ui.TextDisplay(f"[{index}. **{relative_time_fmt}**]({jump_url})\n-# {parsed_text}"),
@@ -244,7 +250,7 @@ class Reminder(commands.Cog):
 
     async def parse_bcp47_timezones(self) -> None:
         async with self.bot.http_session.get(self.BCP47_TIMEZONE_DATA_URL) as resp:
-            if resp.status != 200:
+            if resp.status != HTTP_OK:
                 return
 
             parser = etree.XMLParser(ns_clean=True, recover=True, encoding="utf-8")

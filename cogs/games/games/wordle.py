@@ -26,6 +26,8 @@ GRAY: Final[tuple[int, int, int]] = (119, 123, 125)
 ORANGE: Final[tuple[int, int, int]] = (200, 179, 87)
 GREEN: Final[tuple[int, int, int]] = (105, 169, 99)
 LGRAY: Final[tuple[int, int, int]] = (198, 201, 205)
+WORD_LENGTH: Final[int] = 5
+MAX_GUESSES: Final[int] = 6
 
 
 class Guess:
@@ -56,7 +58,7 @@ class Wordle:
         self.guesses: list[list[Guess | None]] = []
 
         if word:
-            if len(word) != 5:
+            if len(word) != WORD_LENGTH:
                 msg = "Word must be of length 5"
                 raise ValueError(msg)
 
@@ -140,7 +142,7 @@ class Wordle:
         while not ctx.bot.is_closed():
 
             def check(m: discord.Message) -> bool:
-                return (len(m.content) == 5 or m.content.lower() == "stop") and m.author == ctx.author and m.channel == ctx.channel
+                return (len(m.content) == WORD_LENGTH or m.content.lower() == "stop") and m.author == ctx.author and m.channel == ctx.channel
 
             try:
                 guess: discord.Message = await ctx.bot.wait_for("message", timeout=timeout, check=check)
@@ -169,7 +171,7 @@ class Wordle:
                 if won:
                     await ctx.reply("Game Over! You won!")
                     break
-                if len(self.guesses) >= 6:
+                if len(self.guesses) >= MAX_GUESSES:
                     await ctx.reply(f"Game Over! You lose, the word was: **{self.word}**")
                     break
 
@@ -207,7 +209,7 @@ class WordInput(discord.ui.Modal, title="Word Input"):
         if won:
             assert interaction.message is not None
             await interaction.message.reply("Game Over! You won!", mention_author=True)
-        elif lost := len(game.guesses) >= 6:
+        elif lost := len(game.guesses) >= MAX_GUESSES:
             assert interaction.message is not None
             await interaction.message.reply(
                 f"Game Over! You lose, the word was: **{game.word}**",

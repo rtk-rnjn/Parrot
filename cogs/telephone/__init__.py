@@ -11,6 +11,8 @@ from rapidfuzz import fuzz, process
 if TYPE_CHECKING:
     from core import Parrot
 
+SERVER_MATCH_THRESHOLD = 80
+
 
 class Telephone(commands.Cog):
     """Ever thought to talk to your friends in a different server? Well, now you can!"""
@@ -152,7 +154,7 @@ class Telephone(commands.Cog):
         guilds = {guild.name: guild for guild in self.bot.guilds}
         match, score, _ = process.extractOne(server, guilds.keys(), scorer=fuzz.ratio)
 
-        if score >= 80:
+        if score >= SERVER_MATCH_THRESHOLD:
             return guilds[match]
 
         return None

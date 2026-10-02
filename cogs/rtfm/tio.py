@@ -6,6 +6,7 @@ from functools import partial
 import aiohttp
 
 to_bytes = partial(bytes, encoding="utf-8")
+HTTP_OK = 200
 
 
 def _to_tio_string(couple):
@@ -39,7 +40,7 @@ class Tio:
     async def send(self) -> str | None:
         async with aiohttp.ClientSession() as client_session:
             res = await client_session.post(self.backend, data=self.request)
-            if res.status != 200:
+            if res.status != HTTP_OK:
                 msg = f"Failed to get response from TIO: {res.status}"
                 raise aiohttp.ClientError(msg)
 

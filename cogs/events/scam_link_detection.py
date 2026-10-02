@@ -19,6 +19,9 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger("bot.cogs.scam_link_detection")
 
+SCAM_LINK_CACHE_THRESHOLD = 20000
+HTTP_OK = 200
+
 LINK_RE = re.compile(
     r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)",
     re.IGNORECASE,
@@ -67,7 +70,7 @@ class ScamLinkManager:
         exists = await self.bot.database.is_scam_links_cache_exists()
         if exists:
             count = await self.bot.database.get_scam_links_count()
-            if count and count > 20000:
+            if count and count > SCAM_LINK_CACHE_THRESHOLD:
                 await self.fetch_latest_commit()
                 self.already_fetched = True
                 return
@@ -81,7 +84,7 @@ class ScamLinkManager:
 
     async def fetch_scam_links_from_source(self) -> list[str]:
         async with self.bot.http_session.get(self.source_uri, headers=GITHUB_HEADERS) as response:
-            if response.status != 200:
+            if response.status != HTTP_OK:
                 return []
 
             list_text = await response.text()
@@ -89,7 +92,7 @@ class ScamLinkManager:
 
     async def fetch_latest_commit(self) -> dict | None:
         async with self.bot.http_session.get(self.source_commit_uri, headers=GITHUB_HEADERS) as response:
-            if response.status != 200:
+            if response.status != HTTP_OK:
                 return None
             data = await response.json()
             if not isinstance(data, dict):

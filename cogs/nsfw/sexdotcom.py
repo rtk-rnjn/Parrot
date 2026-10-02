@@ -12,6 +12,7 @@ import yarl
 __all__ = ("Pin", "PinPage", "SexDotComGif", "SexDotComPics")
 
 _log = logging.getLogger("bot.cogs.nsfw.sexdotcom")
+HTTP_TOO_MANY_REQUESTS = 429
 
 _SITE = yarl.URL("https://www.sex.com")
 _IMAGE_HOST = "https://imagex1.sx.cdn.live"
@@ -115,7 +116,7 @@ class _SexDotCom:
         url = _SITE.with_path(path)
         _log.debug("GET %s %s", url, params)
         async with self.session.get(url, params=params, headers=_HEADERS, cookies=_COOKIES) as resp:
-            if resp.status == 429:
+            if resp.status == HTTP_TOO_MANY_REQUESTS:
                 _log.warning("Rate limited by sex.com")
             resp.raise_for_status()
             payload = await resp.json(content_type=None)

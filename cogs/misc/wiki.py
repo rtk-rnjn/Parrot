@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 USER_AGENT = "Parrot/1.0.0 (https://github.com/rtk-rnjn/Parrot; ritik0ranjan@gmail.com)"
+HTTP_OK = 200
 
 ACCENT = discord.Colour.from_rgb(51, 102, 204)
 TAG_RE = re.compile(r"<[^>]+>")
@@ -91,7 +92,7 @@ class WikiClient:
             assert self.session
             url = f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{quote(data.title, safe='')}"
             async with self.session.get(url) as response:
-                if response.status == 200:
+                if response.status == HTTP_OK:
                     summary_response = await response.json()
                     data.description = summary_response.get("description")
                     data.thumbnail = (summary_response.get("thumbnail") or {}).get("source")

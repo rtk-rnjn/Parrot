@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger("bot.cogs.fun.hanukkah")
 
+MAX_FESTIVAL_DAY_SUFFIX = 3
+
 HEBCAL_URL = (
     "https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&year=now&month=x&ss=on&mf=on&c=on&geo=geoname&geonameid=3448439&m=50&s=on"
 )
@@ -87,7 +89,7 @@ class Hanukkah(commands.Cog, command_attrs={"hidden": True}):
 
             festival_day = hanukkah_dates.index(today)
             number_suffixes = ["st", "nd", "rd", "th"]
-            suffix = number_suffixes[festival_day - 1 if festival_day <= 3 else 3]
+            suffix = number_suffixes[festival_day - 1 if festival_day <= MAX_FESTIVAL_DAY_SUFFIX else MAX_FESTIVAL_DAY_SUFFIX]
             message = ":menorah:" * festival_day
 
             embed.description = f"It is the {festival_day}{suffix} day of Hanukkah!\n{message}"

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 Liquid = namedtuple("Liquid", "color")
+MAX_BOTTLE_LIQUIDS = 4
 
 
 class Bottle:
@@ -34,7 +35,7 @@ class Bottle:
                 break
 
     def is_full(self):
-        return len(self.liquids) == 4
+        return len(self.liquids) == MAX_BOTTLE_LIQUIDS
 
     def is_empty(self):
         return not self.liquids

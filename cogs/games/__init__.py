@@ -258,7 +258,7 @@ class Games(commands.Cog):
         await Blackjack().start(ctx)
 
     @commands.command("uno", aliases=["unogame"])
-    @commands.max_concurrency(1, commands.BucketType.user)
+    @commands.max_concurrency(1, commands.BucketType.channel)
     async def play_uno(self, ctx: commands.Context):
         """Play multiplayer UNO by matching colour or value and using action and wild cards; empty your hand first.
         This command has max concurrency of 1 per user.

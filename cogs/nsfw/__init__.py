@@ -43,6 +43,8 @@ ENDPOINTS = [
 ]
 
 _log = logging.getLogger("bot.cogs.nsfw")
+LEGAL_AGE = 18
+HTTP_OK = 200
 
 
 class NSFW(commands.Cog, command_attrs={"hidden": True}):
@@ -72,7 +74,7 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
         birthday_date = arrow.get(birthday)
         today = arrow.utcnow()
         age = today.year - birthday_date.year - ((today.month, today.day) < (birthday_date.month, birthday_date.day))
-        return age >= 18
+        return age >= LEGAL_AGE
 
     async def cog_load(self):
         self.command_loader()
@@ -91,7 +93,7 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
 
     async def get_embed(self, type_str: str) -> discord.Embed:
         response = await self.bot.http_session.get(self.nekobot_image_url, params={"type": type_str})
-        if response.status != 200:
+        if response.status != HTTP_OK:
             msg = "Something went wrong with the API"
             raise commands.CommandError(msg)
         url = (await response.json())["message"]
@@ -125,7 +127,7 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
         """
         await ctx.typing()
         r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")
-        if r.status == 200:
+        if r.status == HTTP_OK:
             res = await r.json()
             await ctx.reply(embed=discord.Embed().set_image(url=res["url"]))
         else:

@@ -9,6 +9,8 @@ import pyparsing
 from discord.ext import commands
 from tabulate import tabulate
 
+SINGLE_OPERAND_COUNT = 2
+
 # fmt: off
 OPERATIONS = {
     "not"    : (lambda x: not x),
@@ -77,7 +79,7 @@ def solve_phrase(phrase):
         if len(phrase) == 1:
             return solve_phrase(phrase[0])
         # single operand operation
-        if len(phrase) == 2:
+        if len(phrase) == SINGLE_OPERAND_COUNT:
             return OPERATIONS[phrase[0]](solve_phrase(phrase[1]))
         return OPERATIONS[phrase[1]](solve_phrase(phrase[0]), solve_phrase([phrase[2]]))
     return None

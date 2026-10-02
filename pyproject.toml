@@ -37,9 +37,8 @@ select = [
 ]
 
 ignore = [
-    "PLR0913",
-    "PLR0912",
-    "PLR2004",
+    "E501",  # Line too long
+    "PLR0913",  # Too many arguments
 ]
 
 [tool.ruff.lint.isort]

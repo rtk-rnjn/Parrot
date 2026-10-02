@@ -6,6 +6,8 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw
 
+MAX_PEN_WIDTH = 50
+
 
 @dataclass
 class Segment:
@@ -80,7 +82,7 @@ class Turtle:
         self.pen_color = color
 
     def set_width(self, width: int) -> None:
-        if width < 1 or width > 50:
+        if width < 1 or width > MAX_PEN_WIDTH:
             msg = "Pen width must be between 1 and 50."
             raise ValueError(msg)
 

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from .snakes import Snakes
 
 SNAKE_RESOURCES = Path("assets/snakes").absolute()
+MAX_PLAYER_TILE = 100
 
 h1 = r"""```
    ----
@@ -653,7 +654,7 @@ class SnakeAndLaddersGame:
         if self.state != "post_round":
             return None
         return next(
-            (player for player in self.players if self.player_tiles[player.id] == 100),
+            (player for player in self.players if self.player_tiles[player.id] == MAX_PLAYER_TILE),
             None,
         )
 

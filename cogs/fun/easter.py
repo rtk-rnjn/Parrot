@@ -27,6 +27,8 @@ EGGHEAD_QUESTIONS: dict = loads(Path(r"assets/easter/egghead_questions.json").re
 TRADITIONS: dict = loads(Path(r"assets/easter/traditions.json").read_text("utf8"))
 
 TIMELIMIT = 10
+MIN_EGG_COLOURS = 2
+EGG_COLOUR_COUNT = 8
 HTML_COLOURS: dict = loads(Path(r"assets/html_colours.json").read_text("utf8"))
 XKCD_COLOURS: dict = loads(Path(r"assets/xkcd_colours.json").read_text("utf8"))
 
@@ -267,7 +269,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         This command has no cooldown.
         """
-        if len(colors) < 2:
+        if len(colors) < MIN_EGG_COLOURS:
             await ctx.reply("You must include at least 2 colours!")
             return None
 
@@ -295,8 +297,8 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         async with ctx.typing():
             # Expand list to 8 colours
             colour_count = len(colours)
-            if colour_count < 8:
-                repeat_count, remainder = divmod(8, colour_count)
+            if colour_count < EGG_COLOUR_COUNT:
+                repeat_count, remainder = divmod(EGG_COLOUR_COUNT, colour_count)
                 colours = colours * repeat_count + colours[:remainder]
 
             design_number = random.randint(1, 6)

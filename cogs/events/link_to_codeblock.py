@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger("bot.cogs.link_to_codeblock")
 
+DISCORD_MESSAGE_LIMIT = 2000
+
 GITHUB_RE = re.compile(
     r"https://github\.com/(?P<repo>[a-zA-Z0-9-]+/[\w.-]+)/blob/"
     r"(?P<path>[^#>]+)(\?[^#>]+)?(#L(?P<start_line>\d+)(([-~:]|(\.\.))L(?P<end_line>\d+))?)",
@@ -236,7 +238,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         assert isinstance(message.author, discord.Member)
 
         message_to_send = await self._parse_snippets(message.content)
-        if 0 < len(message_to_send) < 2000 and message.guild.me.guild_permissions.send_messages:
+        if 0 < len(message_to_send) < DISCORD_MESSAGE_LIMIT and message.guild.me.guild_permissions.send_messages:
             await message.reply(message_to_send, mention_author=False)
 
 

@@ -16,6 +16,12 @@ __all__ = ("MONTHS", "BadDateTransform", "DateTransformer", "HumanDate")
 
 Prefer = Literal["current", "future", "past"]
 
+FULL_YEAR_LENGTH = 4
+MAX_MONTH = 12
+AMPM_MAX_HOUR = 12
+MAX_HOUR = 23
+MAX_MINUTE_OR_SECOND = 59
+
 MONTHS: dict[str, int] = {
     "jan": 1, "january": 1,
     "feb": 2, "febuary": 2, "february": 2,   # 'febuary' is the single most common typo
@@ -78,7 +84,7 @@ def _expand_year(raw: str, *, pivot: int = 69) -> int:
     Matches the POSIX/strptime pivot: 69-99 is 1900s, 00-68 is 2000s.
     """
     raw = raw.lstrip("'\u2019")
-    if len(raw) >= 4:
+    if len(raw) >= FULL_YEAR_LENGTH:
         return int(raw)
     n = int(raw)
     return 1900 + n if n >= pivot else 2000 + n
@@ -106,9 +112,9 @@ def _resolve_month_day(data: dict[str, str | None], *, dayfirst: bool) -> tuple[
     if month_raw is None:
         # Purely numeric: 23/03 is unambiguous (23 can't be a month), 03/04 isn't.
         first, second = int(data["first"]), int(data["second"])  # type: ignore[arg-type]
-        if first > 12:
+        if first > MAX_MONTH:
             return second, first
-        if second > 12:
+        if second > MAX_MONTH:
             return first, second
         return (second, first) if dayfirst else (first, second)
 
@@ -136,14 +142,14 @@ def _parse_time(text: str) -> tuple[datetime.time, int] | None:
 
     ampm = m.group("ampm")
     if ampm:
-        if not 1 <= hour <= 12:
+        if not 1 <= hour <= AMPM_MAX_HOUR:
             return None
         if ampm[0].lower() == "p":
-            hour = hour if hour == 12 else hour + 12
-        elif hour == 12:
+            hour = hour if hour == AMPM_MAX_HOUR else hour + 12
+        elif hour == AMPM_MAX_HOUR:
             hour = 0
 
-    if hour > 23 or minute > 59 or second > 59:
+    if hour > MAX_HOUR or minute > MAX_MINUTE_OR_SECOND or second > MAX_MINUTE_OR_SECOND:
         return None
     return datetime.time(hour, minute, second), m.end()
 

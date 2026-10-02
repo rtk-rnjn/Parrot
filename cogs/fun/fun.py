@@ -33,6 +33,13 @@ from .pour_puzzle import PourView
 if TYPE_CHECKING:
     from core import Parrot
 
+HEX_CODE_MAX_LENGTH = 7
+MIN_RANDOM_CHOICES = 2
+RGBA_CHANNELS = 4
+HTTP_OK = 200
+DISCORD_MESSAGE_LIMIT = 2000
+SIMILARITY_THRESHOLD = 0.9
+
 _log = logging.getLogger("bot.cogs.fun")
 
 THUMBNAIL_SIZE = (80, 80)
@@ -294,7 +301,7 @@ class ColorHandler:
             input_colour = ctx.kwargs["user_colour_name"]
         elif colour_mode == "hex":
             input_colour = ctx.args[2:][0]
-            if len(input_colour) > 7:
+            if len(input_colour) > HEX_CODE_MAX_LENGTH:
                 input_colour = input_colour[:-2]
         else:
             input_colour = tuple(ctx.args[2:])
@@ -445,7 +452,7 @@ class Fun(commands.Cog, ColorHandler):
 
         This command has no cooldown.
         """
-        if len(options) < 2:
+        if len(options) < MIN_RANDOM_CHOICES:
             msg = "Provide at least two choices"
             raise commands.BadArgument(msg)
 
@@ -531,16 +538,12 @@ class Fun(commands.Cog, ColorHandler):
     async def random_password(
         self,
         ctx: commands.Context[Parrot],
-        length: int = commands.parameter(description="The length of the password to generate.", default=8),
+        length: commands.Range[int, 8, 128] = commands.parameter(description="The length of the password to generate.", default=8),  # noqa: B008
     ):
         """Generate a cryptographically secure random password.
 
         This command has no cooldown.
         """
-        if not 8 <= length <= 128:
-            msg = "Password length must be between 8 and 128."
-            raise commands.BadArgument(msg)
-
         alphabet = string.ascii_letters + string.digits + string.punctuation
         password = "".join(secrets.choice(alphabet) for _ in range(length))
 
@@ -938,8 +941,6 @@ class Fun(commands.Cog, ColorHandler):
 
         This command has no cooldown.
         """
-        if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
-            raise commands.BadArgument(message=f"CMYK values can only be from 0 to 100. User input was: `{cyan, magenta, yellow, key}`.")
         r = round(255 * (1 - (cyan / 100)) * (1 - (key / 100)))
         g = round(255 * (1 - (magenta / 100)) * (1 - (key / 100)))
         b = round(255 * (1 - (yellow / 100)) * (1 - (key / 100)))
@@ -964,7 +965,7 @@ class Fun(commands.Cog, ColorHandler):
             )
 
         hex_tuple = ImageColor.getrgb(hex_code)
-        if len(hex_tuple) == 4:
+        if len(hex_tuple) == RGBA_CHANNELS:
             hex_tuple = hex_tuple[:-1]  # Colour must be RGB. If RGBA, we remove the alpha value
         await self.send_colour_response(ctx, hex_tuple)
 
@@ -1020,7 +1021,7 @@ class Fun(commands.Cog, ColorHandler):
         pages: list[discord.Embed] = []
 
         async with self.bot.http_session.get(url) as response:
-            if response.status != 200:
+            if response.status != HTTP_OK:
                 return await ctx.reply("Failed to fetch definition from Urban Dictionary.")
 
             data = await response.json()
@@ -1048,8 +1049,8 @@ class Fun(commands.Cog, ColorHandler):
         This command has no cooldown.
         """
         text = to_bottom(text)
-        if len(text) > 2000:
-            await ctx.reply(text[:2000])
+        if len(text) > DISCORD_MESSAGE_LIMIT:
+            await ctx.reply(text[:DISCORD_MESSAGE_LIMIT])
         else:
             await ctx.reply(text)
 
@@ -1060,8 +1061,8 @@ class Fun(commands.Cog, ColorHandler):
         This command has no cooldown.
         """
         text = from_bottom(text)
-        if len(text) > 2000:
-            await ctx.reply(text[:2000])
+        if len(text) > DISCORD_MESSAGE_LIMIT:
+            await ctx.reply(text[:DISCORD_MESSAGE_LIMIT])
         else:
             await ctx.reply(text)
 
@@ -1128,7 +1129,7 @@ class Fun(commands.Cog, ColorHandler):
 
         message = await ctx.reply("Fetching quiz questions...")
         async with self.bot.http_session.get(url) as response:
-            if response.status != 200:
+            if response.status != HTTP_OK:
                 await message.edit(content="Failed to fetch quiz questions.")
                 return
 
@@ -1191,7 +1192,7 @@ class Fun(commands.Cog, ColorHandler):
 
                 similarity = difflib.SequenceMatcher(None, answer.casefold(), correct_answer.casefold()).ratio()
 
-                if similarity >= 0.9:
+                if similarity >= SIMILARITY_THRESHOLD:
                     score_board[user] += 10
                     await ctx.reply(f"{user.mention} Correct! Your score: {score_board[user]}")
 

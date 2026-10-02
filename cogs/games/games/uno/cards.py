@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import ClassVar
+
 from .enums import CardType, Color
 
 
 class Emojis:
     class red:
-        numbers = [
+        numbers: ClassVar[list[str]] = [
             "<:red_0:1004449477068869713>",
             "<:red_1:1004449477999992915>",
             "<:red_2:1004449479430262925>",
@@ -23,7 +25,7 @@ class Emojis:
         skip = "<:red_skip:1004449492243853443>"
 
     class yellow:
-        numbers = [
+        numbers: ClassVar[list[str]] = [
             "<:yellow_0:1004449493170786384>",
             "<:yellow_1:1004449494206779483>",
             "<:yellow_2:1004449495083384863>",
@@ -41,7 +43,7 @@ class Emojis:
         skip = "<:yellow_skip:1004449507523690587>"
 
     class blue:
-        numbers = [
+        numbers: ClassVar[list[str]] = [
             "<:blue_0:1004449508698116157>",
             "<:blue_1:1004449510031892631>",
             "<:blue_2:1004449511034343544>",
@@ -59,7 +61,7 @@ class Emojis:
         skip = "<:blue_skip:1004449521234890795>"
 
     class green:
-        numbers = [
+        numbers: ClassVar[list[str]] = [
             "<:green_0:1004449522136653844>",
             "<:green_1:1004449523046821889>",
             "<:green_2:1004449524502233149>",

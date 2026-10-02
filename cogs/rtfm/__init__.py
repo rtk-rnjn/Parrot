@@ -58,6 +58,11 @@ if TYPE_CHECKING:
 
 
 _log = logging.getLogger("bot.cogs.rtfm")
+HTTP_OK = 200
+EMBED_FIELD_LIMIT = 1024
+MIN_TUTORIAL_SCORE = 50
+DISCORD_MESSAGE_LIMIT = 2000
+DEVELOPMENT_NOTICE_PROBABILITY = 0.1
 
 
 class Developer(commands.Cog):
@@ -90,7 +95,7 @@ class Developer(commands.Cog):
     async def fetch_readme(self) -> None:
         """Gets the content of README.md from the WTF Python Repository."""
         async with self.bot.http_session.get(f"{WTF_PYTHON_RAW_URL}README.md") as resp:
-            if resp.status == 200:
+            if resp.status == HTTP_OK:
                 raw = await resp.text()
                 self.parse_readme(raw)
 
@@ -131,7 +136,7 @@ class Developer(commands.Cog):
                 break
             siblings.append(elem.text)
         content = "\n".join(siblings)
-        if len(content) >= 1024:
+        if len(content) >= EMBED_FIELD_LIMIT:
             content = f"{content[:1021]}..."
 
         return re.sub(r" +", " ", content)
@@ -162,7 +167,7 @@ class Developer(commands.Cog):
         if match is None:
             return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
 
-        if match[1] < 50:
+        if match[1] < MIN_TUTORIAL_SCORE:
             return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
 
         data = self.python_tags[match[0]]
@@ -398,7 +403,7 @@ class Developer(commands.Cog):
 
         async with ctx.typing():
             async with self.bot.http_session.get(url) as response:
-                if response.status != 200:
+                if response.status != HTTP_OK:
                     return await ctx.reply(f"An error occurred (status code: {response.status}). Retry later.")
                 html = await response.text()
 
@@ -526,7 +531,7 @@ class Developer(commands.Cog):
             return f"`\\U{digit:>08}`: {name} - {c} \N{EM DASH} <http://www.fileformat.info/info/unicode/char/{digit}>"
 
         msg = "\n".join(map(to_string, characters))
-        if len(msg) > 2000:
+        if len(msg) > DISCORD_MESSAGE_LIMIT:
             return await ctx.reply("Output too long to display.")
         return await ctx.reply(msg)
 
@@ -698,7 +703,7 @@ class Developer(commands.Cog):
 
         params = {"q": query, "limit": amount, "kind": "article"}
         async with self.bot.http_session.get(url=REAL_PYTHON_ROOT_API, params=params) as response:
-            if response.status != 200:
+            if response.status != HTTP_OK:
                 return await ctx.reply(
                     embed=discord.Embed(
                         title="Error while searching Real Python",
@@ -748,7 +753,7 @@ class Developer(commands.Cog):
         """
         params = {**STACKOVERFLOW_PARAMS, "q": query}
         async with self.bot.http_session.get(url=STACKOVERFLOW_BASE_API, params=params) as response:
-            if response.status == 200:
+            if response.status == HTTP_OK:
                 data = await response.json()
             else:
                 return await ctx.reply(
@@ -890,7 +895,7 @@ class Developer(commands.Cog):
         This command has a cooldown of 15 seconds per user.
         """
 
-        if random() < 0.1:
+        if random() < DEVELOPMENT_NOTICE_PROBABILITY:
             await ctx.reply("From Owner: This command is still in development. Please be patient.")
 
         mapping = {

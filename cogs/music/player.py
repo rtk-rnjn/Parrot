@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 MEMBER_ID = int
 VoteSet = set[MEMBER_ID]
 ACTION_TYPE = Callable[[], Awaitable[bool]]
+VOICE_VOTE_THRESHOLD = 0.5
 
 
 class Player(pomice.Player):
@@ -94,7 +95,7 @@ class Player(pomice.Player):
             return True
 
         votes.add(member.id)
-        if len(votes) / self._non_bot_members() >= 0.5:
+        if len(votes) / self._non_bot_members() >= VOICE_VOTE_THRESHOLD:
             await action()
             votes.clear()
             return True

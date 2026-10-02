@@ -6,6 +6,8 @@ from pymongo import UpdateOne
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
 
+GUILD_LEVELING_KEY_PARTS = 3
+
 
 class _GuildLevelingMixin(DatabaseMixin):
     async def __invalidate_leveling_config_cache(self, *, guild_id: int) -> None:
@@ -143,7 +145,7 @@ class _GuildLevelingMixin(DatabaseMixin):
         guild_ids: set[int] = set()
         async for key in self.redis_client.scan_iter(match="guild:*:leveling_data*"):
             parts = key.split(":")
-            if len(parts) >= 3 and parts[0] == "guild" and parts[2] == "leveling_data":
+            if len(parts) >= GUILD_LEVELING_KEY_PARTS and parts[0] == "guild" and parts[2] == "leveling_data":
                 guild_ids.add(int(parts[1]))
 
         flushed_users = 0

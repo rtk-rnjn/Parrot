@@ -18,6 +18,7 @@ from .utils import Player as PlayerType
 from .wordle import WordInputButton
 
 Coords = tuple[int, int]
+BOARD_SIZE = 10
 
 SHIPS: dict[str, tuple[int, tuple[int, int, int]]] = {
     "carrier": (5, (52, 152, 219)),
@@ -74,14 +75,14 @@ class Board:
         return self.my_hits + self.my_misses
 
     def _is_valid(self, ship: Ship) -> bool:
-        if ship.end[0] > 10 or ship.end[1] > 10:
+        if ship.end[0] > BOARD_SIZE or ship.end[1] > BOARD_SIZE:
             return False
 
         return all(not any(c in existing.span for c in ship.span) for existing in self.ships)
 
     def _place_ships(self) -> None:
         def place_ship(ship: str, size: int, color: tuple[int, int, int]) -> None:
-            start = random.randint(1, 10), random.randint(1, 10)
+            start = random.randint(1, BOARD_SIZE), random.randint(1, BOARD_SIZE)
             vertical = bool(random.randint(0, 1))
 
             new_ship = Ship(name=ship, size=size, start=start, vertical=vertical, color=color)

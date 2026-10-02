@@ -27,6 +27,12 @@ except ImportError:
 
 _log = logging.getLogger("bot.cogs.love")
 
+CAPRICORN_START_DAY = 22
+CAPRICORN_END_DAY = 19
+DECEMBER = 12
+JANUARY = 1
+JANUARY_END_DAY = 31
+
 
 class LoveMatch(TypedDict):
     titles: list[str]
@@ -301,7 +307,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
             except ValueError:
                 await ctx.reply(f"Sorry, but `{month}` is not a valid month name.")
                 return
-        if (month == 1 and 1 <= date <= 19) or (month == 12 and 22 <= date <= 31):
+        if (month == JANUARY and 1 <= date <= CAPRICORN_END_DAY) or (month == DECEMBER and CAPRICORN_START_DAY <= date <= JANUARY_END_DAY):
             zodiac = "capricorn"
             final_embed = self.zodiac_build_embed(zodiac)
         else:

@@ -87,6 +87,9 @@ LOADABLE_COGS = [
 ]
 
 _log = logging.getLogger("bot.core")
+SPAM_HIGH_THRESHOLD = 5
+SPAM_MEDIUM_THRESHOLD = 3
+MAX_AUTOCOMPLETE_RESULTS = 25
 
 lavalink_jar = Path("Lavalink.jar")
 COGS_DIR = Path(__file__).resolve().parents[1] / "cogs"
@@ -113,7 +116,7 @@ class Parrot(commands.Bot):
         # intents.presences = True - Fuck you discord
 
         super().__init__(
-            command_prefix=self.get_prefix,  # pyright: ignore[reportArgumentType]
+            command_prefix=Parrot.get_prefix,
             intents=intents,
             chunk_guilds_at_startup=False,
             case_insensitive=True,
@@ -169,6 +172,7 @@ class Parrot(commands.Bot):
             )
         except Exception:
             _log.exception("Failed to start Lavalink process.")
+            return None
 
     @override
     async def setup_hook(self) -> None:
@@ -327,10 +331,10 @@ class Parrot(commands.Bot):
         retry_after = bucket.update_rate_limit(message.created_at.timestamp()) if bucket else None
         if retry_after is not None:
             self.spam_counter[message.author.id] += 1
-            if self.spam_counter[message.author.id] >= 5:
+            if self.spam_counter[message.author.id] >= SPAM_HIGH_THRESHOLD:
                 return SpamSeverity.HIGH
 
-            if self.spam_counter[message.author.id] >= 3:
+            if self.spam_counter[message.author.id] >= SPAM_MEDIUM_THRESHOLD:
                 return SpamSeverity.MEDIUM
 
             return SpamSeverity.LOW
@@ -443,7 +447,7 @@ class Parrot(commands.Bot):
         if len(matches) == 1:
             return matches[0]
 
-        if len(matches) > 25:
+        if len(matches) > MAX_AUTOCOMPLETE_RESULTS:
             message = "Too many results found. Please refine your search."
             raise ValueError(message)
 

@@ -74,15 +74,18 @@ def human_join(seq: Sequence, delim: str = ", ", final: str = "or") -> str:
     Parameters such as ``delim`` and ``final`` allow the same helper to be
     used for different styles, for example ``"a, b and c"``.
     """
+    SINGULAR = 1
+    HAS_TWO = 2
+
     size = len(seq)
 
     if size == 0:
         return ""
 
-    if size == 1:
+    if size == SINGULAR:
         return seq[0]
 
-    if size == 2:
+    if size == HAS_TWO:
         return f"{seq[0]} {final} {seq[1]}"
 
     return delim.join(seq[:-1]) + f" {final} {seq[-1]}"

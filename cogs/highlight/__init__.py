@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from core import Parrot
 
 _log = logging.getLogger("bot.cogs.highlights")
+EMBED_DESCRIPTION_LIMIT = 4096
 
 
 class Highlights(commands.Cog):
@@ -217,7 +218,7 @@ class Highlights(commands.Cog):
                 content = escape_and_highlight(ms.content)
                 relative_time = discord.utils.format_dt(ms.created_at, style="R")
                 text = f"{relative_time} `@{ms.author!s}`: {escape_and_highlight(content)}\n"
-                if len(initial_description + em.description + text) <= 4096:
+                if len(initial_description + em.description + text) <= EMBED_DESCRIPTION_LIMIT:
                     em.description = text + em.description
         except discord.HTTPException:
             pass

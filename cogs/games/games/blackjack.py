@@ -18,6 +18,10 @@ if TYPE_CHECKING:
 
 _black_jack_cards = CARDS_EMOJIS_MAP.copy()
 _card_back = CARD_BACK_EMOJI
+BLACKJACK_VALUE = 21
+INITIAL_HAND_SIZE = 2
+MAX_HANDS = 4
+DEALER_STAND_VALUE = 17
 
 
 class HandStatus(Enum):
@@ -53,7 +57,7 @@ class BlackjackHand:
             else:
                 total += int(rank)
 
-        while total > 21 and aces:
+        while total > BLACKJACK_VALUE and aces:
             total -= 10
             aces -= 1
 
@@ -74,7 +78,7 @@ class BlackjackHand:
             else:
                 total += int(rank)
 
-        while total > 21 and aces:
+        while total > BLACKJACK_VALUE and aces:
             total -= 10
             aces -= 1
 
@@ -82,11 +86,11 @@ class BlackjackHand:
 
     @property
     def is_blackjack(self) -> bool:
-        return len(self.cards) == 2 and self.value == 21
+        return len(self.cards) == INITIAL_HAND_SIZE and self.value == BLACKJACK_VALUE
 
     @property
     def is_bust(self) -> bool:
-        return self.value > 21
+        return self.value > BLACKJACK_VALUE
 
     @property
     def can_hit(self) -> bool:
@@ -227,7 +231,7 @@ class Blackjack:
         return "".join(rendered)
 
     def dealer_visible_value(self) -> str:
-        if len(self.dealer.cards) < 2:
+        if len(self.dealer.cards) < INITIAL_HAND_SIZE:
             return "0"
 
         if self.finished:
@@ -271,16 +275,16 @@ class Blackjack:
         return embed
 
     def can_double(self, hand: BlackjackHand) -> bool:
-        return hand.status is HandStatus.ACTIVE and len(hand.cards) == 2 and not hand.doubled
+        return hand.status is HandStatus.ACTIVE and len(hand.cards) == INITIAL_HAND_SIZE and not hand.doubled
 
     def can_split(self, hand: BlackjackHand) -> bool:
         if hand.status is not HandStatus.ACTIVE:
             return False
 
-        if len(hand.cards) != 2:
+        if len(hand.cards) != INITIAL_HAND_SIZE:
             return False
 
-        if len(self.hands) >= 4:
+        if len(self.hands) >= MAX_HANDS:
             return False
 
         first = hand.cards[0][0]
@@ -289,7 +293,7 @@ class Blackjack:
         return self.card_value(first) == self.card_value(second)
 
     def can_surrender(self, hand: BlackjackHand) -> bool:
-        return hand.status is HandStatus.ACTIVE and len(hand.cards) == 2 and not hand.is_split
+        return hand.status is HandStatus.ACTIVE and len(hand.cards) == INITIAL_HAND_SIZE and not hand.is_split
 
     @staticmethod
     def card_value(rank: str) -> int:
@@ -336,7 +340,7 @@ class Blackjack:
             msg = "This hand cannot be split."
             raise ValueError(msg)
 
-        if len(self.hands) >= 4:
+        if len(self.hands) >= MAX_HANDS:
             msg = "Maximum number of hands reached."
             raise ValueError(msg)
 
@@ -378,7 +382,7 @@ class Blackjack:
             msg = "Insurance has already been taken."
             raise ValueError(msg)
 
-        hand.insurance = hand.bet // 2
+        hand.insurance = hand.bet // INITIAL_HAND_SIZE
         self.insurance_available = False
 
     def surrender(self, hand: BlackjackHand) -> None:
@@ -394,15 +398,15 @@ class Blackjack:
         while True:
             value = self.dealer.value
 
-            if value > 21:
+            if value > BLACKJACK_VALUE:
                 self.dealer.status = HandStatus.BUST
                 return
 
-            if value < 17:
+            if value < DEALER_STAND_VALUE:
                 self.draw(self.dealer)
                 continue
 
-            if value == 17 and self.dealer.is_soft:
+            if value == DEALER_STAND_VALUE and self.dealer.is_soft:
                 if self.DEALER_STANDS_ON_SOFT_17:
                     self.dealer.status = HandStatus.STAND
                     return

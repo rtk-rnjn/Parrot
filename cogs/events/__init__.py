@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .arbitrary import ArbitraryEvents
 from .error import CommandError
 from .link_to_codeblock import LinkToCodeblock
 from .scam_link_detection import ScamLinkDetection
@@ -14,3 +15,4 @@ async def setup(bot: Parrot) -> None:
     await bot.add_cog(CommandError(bot))
     await bot.add_cog(LinkToCodeblock(bot))
     await bot.add_cog(ScamLinkDetection(bot))
+    await bot.add_cog(ArbitraryEvents(bot))

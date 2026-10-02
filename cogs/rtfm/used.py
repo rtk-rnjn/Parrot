@@ -18,6 +18,9 @@ _SUBTITLE_RE = re.compile(r"[A-Za-z][A-Za-z ]+")
 _NAME_SPLIT_RE = re.compile(r"\s[-\u2013\u2014]\s")
 
 DEBIAN_RED = 0xD70A53
+MIN_MARGIN_PERCENT = 15
+MIN_TABLE_CELLS = 2
+SHORT_DESCRIPTION_LIMIT = 80
 
 quickmap: dict[str, str] = {
     "asm": "assembly",
@@ -171,7 +174,7 @@ def _clean(text: str) -> str:
 def _level(tag: Tag) -> int:
     style = tag.get("style")
     match = _MARGIN_RE.search(style if isinstance(style, str) else "")
-    return 1 if match and int(match[1]) >= 15 else 0
+    return 1 if match and int(match[1]) >= MIN_MARGIN_PERCENT else 0
 
 
 def _code_block(tag: Tag) -> str:
@@ -197,9 +200,9 @@ def _blocks_from(node: Tag, section_title: str) -> list[Block]:
             cells = [c for c in (_clean(_inline(td)) for td in row.find_all("td")) if c]
             if len(cells) == 1:
                 out.append(Block(0, cells[0]))
-            elif len(cells) >= 2:
+            elif len(cells) >= MIN_TABLE_CELLS:
                 key, desc = cells[0], cells[-1]
-                if len(desc) <= 80:
+                if len(desc) <= SHORT_DESCRIPTION_LIMIT:
                     out.append(Block(0, f"{key} \u2014 {desc}"))
                 else:
                     out += [Block(0, key), Block(1, desc)]

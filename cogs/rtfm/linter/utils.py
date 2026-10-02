@@ -38,6 +38,8 @@ from .pyright import validate_flag as pyright_validate_flag
 from .ruff import RuffConverter
 from .ruff import validate_flag as ruff_validate_flag
 
+DISCORD_MESSAGE_LIMIT = 2000
+
 
 async def lint(cmd: str, filename: str) -> dict[str, str]:
     proc = await asyncio.create_subprocess_shell(
@@ -406,7 +408,7 @@ class LintCode:
         if res == self.source:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes in the code, already formatted]```")
             return
-        if len(res) > 2000:
+        if len(res) > DISCORD_MESSAGE_LIMIT:
             await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
             await ctx.reply(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
@@ -422,7 +424,7 @@ class LintCode:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
             return
 
-        if len(res) > 2000:
+        if len(res) > DISCORD_MESSAGE_LIMIT:
             await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
             await ctx.reply(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
@@ -437,7 +439,7 @@ class LintCode:
         if res == self.source:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
             return
-        if len(res) > 2000:
+        if len(res) > DISCORD_MESSAGE_LIMIT:
             await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
             await ctx.reply(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
@@ -455,7 +457,7 @@ class LintCode:
         if res == self.source:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
             return
-        if len(res) > 2000:
+        if len(res) > DISCORD_MESSAGE_LIMIT:
             await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
             await ctx.reply(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return
@@ -473,7 +475,7 @@ class LintCode:
             await ctx.reply(f"```ansi\n{Fore.RED}[No Changes]```")
             return
 
-        if len(res) > 2000:
+        if len(res) > DISCORD_MESSAGE_LIMIT:
             await ctx.reply(f"```ansi\n{Fore.RED}[The formated code is too long, to display]```")
             await ctx.reply(file=discord.File(fp=io.BytesIO(res.encode("utf-8")), filename="formated.py"))
             return

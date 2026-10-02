@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import io
 from random import random
-from typing import Annotated
 
 import discord
 from discord.ext import commands
@@ -12,6 +11,7 @@ from core import Parrot
 from core.utils import DisabledButtonView
 
 REACTION_EMOJI = ["\N{UPWARDS BLACK ARROW}", "\N{DOWNWARDS BLACK ARROW}"]
+FLAGGING_NOTICE_PROBABILITY = 0.05
 
 # fmt: off
 OTHER_REACTION = {
@@ -46,7 +46,7 @@ OTHER_REACTION = {
 # fmt: on
 
 
-class Suggestion(commands.Cog):
+class Suggestion(commands.Cog, command_attrs={"hidden": True}):
     """For making the suggestion, which then then voted on by the community."""
 
     def __init__(self, bot: Parrot) -> None:
@@ -72,14 +72,23 @@ class Suggestion(commands.Cog):
         embed: discord.Embed,
         ctx: commands.Context[Parrot],
         file: discord.File = discord.utils.MISSING,
-    ) -> discord.Message | None:
+    ):
         assert ctx.guild is not None
 
         channel_id = await self.bot.database.get_suggestion_channel_id(guild_id=ctx.guild.id)
-        channel = ctx.guild.get_channel(channel_id) if channel_id is not None else None
-        if channel is None or not isinstance(channel, discord.TextChannel):
-            err = f"{ctx.author.mention} error fetching suggestion channel"
-            raise commands.BadArgument(err)
+
+        if channel_id is None:
+            message = "suggestion channel is not set."
+            raise commands.CommandError(message)
+
+        channel = ctx.guild.get_channel(channel_id)
+        if channel is None:
+            # Delete?
+            raise commands.ChannelNotFound(int(channel_id))
+
+        if not isinstance(channel, discord.TextChannel):
+            raise commands.ChannelNotFound(int(channel_id))
+
         file = file or discord.utils.MISSING
 
         msg: discord.Message = await channel.send(content, embed=embed, file=file)
@@ -88,6 +97,8 @@ class Suggestion(commands.Cog):
             await ctx.message.add_reaction(reaction)
 
         await msg.create_thread(name=f"Suggestion {ctx.author}")
+
+        return msg
 
     async def __notify_on_suggestion(self, ctx: commands.Context[Parrot], *, message: discord.Message | None) -> None:
         if message is None or ctx.guild is None:
@@ -126,42 +137,26 @@ class Suggestion(commands.Cog):
                 view=DisabledButtonView(author=user, display_text=ctx.guild.name),
             )
 
-    @commands.group(aliases=["suggestion"], invoke_without_command=True)
-    @commands.cooldown(1, 60, commands.BucketType.member)
-    @commands.bot_has_permissions(embed_links=True, create_public_threads=True)
-    async def suggest(
-        self,
-        ctx: commands.Context[Parrot],
-        *,
-        suggestion: Annotated[str, commands.clean_content],
-    ):
-        """Suggest something. Abuse of the command may result in required mod actions.
-
-        No special user permissions are required.
-        The bot must have the "Embed Links and Create Public Threads" permissions to run this command successfully.
-
-        This command has a cooldown of 60 seconds per member.
-        """
+    async def suggest(self, ctx: commands.Context[Parrot], *, suggestion: str):
         assert ctx.guild is not None
 
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6)
-            embed.set_author(name=str(ctx.author), icon_url=ctx.author.display_avatar.url)
-            embed.set_footer(
-                text=f"Author ID: {ctx.author.id}",
-                icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url),
-            )
+        embed = discord.Embed(description=suggestion, timestamp=ctx.message.created_at, color=0xADD8E6)
+        embed.set_author(name=str(ctx.author), icon_url=ctx.author.display_avatar.url)
+        embed.set_footer(
+            text=f"Author ID: {ctx.author.id}",
+            icon_url=getattr(ctx.guild.icon, "url", ctx.author.display_avatar.url),
+        )
 
-            file: discord.File = discord.utils.MISSING
+        file: discord.File = discord.utils.MISSING
 
-            if ctx.message.attachments and (ctx.message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp"))):
-                _bytes = await ctx.message.attachments[0].read(use_cached=True)
-                file = discord.File(io.BytesIO(_bytes), "image.jpg")
-                embed.set_image(url="attachment://image.jpg")
+        if ctx.message.attachments and (ctx.message.attachments[0].url.lower().endswith(("png", "jpeg", "jpg", "gif", "webp"))):
+            _bytes = await ctx.message.attachments[0].read(use_cached=True)
+            file = discord.File(io.BytesIO(_bytes), "image.jpg")
+            embed.set_image(url="attachment://image.jpg")
 
-            msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
-            await self.__notify_on_suggestion(ctx, message=msg)
-            await ctx.message.delete(delay=0)
+        msg = await self.__suggest(ctx=ctx, embed=embed, file=file)
+        await self.__notify_on_suggestion(ctx, message=msg)
+        await ctx.message.delete(delay=0)
 
     async def clear_suggestion_embed(self, ctx: commands.Context[Parrot], message_id: int):
         """To remove all kind of notes and extra reaction from suggestion embed."""
@@ -239,7 +234,7 @@ class Suggestion(commands.Cog):
 
         await ctx.reply(f"{ctx.author.mention} Done", delete_after=5)
 
-        if random() < 0.05:
+        if random() < FLAGGING_NOTICE_PROBABILITY:
             await ctx.reply(
                 f"{ctx.author.mention} btw, you can also flag the suggestion by replying the message with the proper FLAG.\n"
                 f"Like: `INVALID > This is a remark`, `SPAM`"
@@ -264,15 +259,13 @@ class Suggestion(commands.Cog):
         if context.valid:
             return
 
-        await self.suggest(context, suggestion=message.content)
+        clean_content = await commands.clean_content().convert(context, message.content)
+        await self.suggest(context, suggestion=clean_content)
 
     async def __parse_mod_action(self, message: discord.Message) -> bool | None:
         assert isinstance(message.author, discord.Member)
 
-        if not self.__is_mod(message.author):
-            return None
-
-        if ">" not in message.content:
+        if not self.__is_mod(message.author) or ">" not in message.content:
             return None
 
         command, remark = message.content.split(">", 1)
@@ -287,10 +280,7 @@ class Suggestion(commands.Cog):
             if message.reference is not None:
                 msg: discord.Message | discord.DeletedReferencedMessage | None = message.reference.resolved
 
-            if not isinstance(msg, discord.Message):
-                return None
-
-            if msg.author.id != self.bot.user.id:
+            if not isinstance(msg, discord.Message) or msg.author.id != self.bot.user.id:
                 return None
 
             if command in ["CLS", "CLEAR"]:

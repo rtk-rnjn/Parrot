@@ -16,6 +16,9 @@ if TYPE_CHECKING:
 _log = logging.getLogger("bot.cogs.leveling")
 
 XP_FLUSH_INTERVAL_SECONDS = 30
+SHORT_MESSAGE_LIMIT = 10
+MEDIUM_MESSAGE_LIMIT = 50
+LONG_MESSAGE_LIMIT = 100
 
 
 class Leveling(commands.Cog):
@@ -39,11 +42,11 @@ class Leveling(commands.Cog):
             return 0
 
         message_length = len(message.content)
-        if message_length < 10:
+        if message_length < SHORT_MESSAGE_LIMIT:
             return random.randint(1, 3)
-        if message_length < 50:
+        if message_length < MEDIUM_MESSAGE_LIMIT:
             return random.randint(3, 5)
-        if message_length < 100:
+        if message_length < LONG_MESSAGE_LIMIT:
             return random.randint(5, 10)
         return random.randint(10, 15)
 

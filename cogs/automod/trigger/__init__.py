@@ -7,6 +7,8 @@ from typing import Any
 from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, NoConfig, RegexConfig, TimeWindowConfig, ViolationConfig
 from .mapping import _CONFIG_TYPES, TriggerConfig, TriggerType
 
+MAX_PERCENTAGE = 100
+
 
 class TriggerParseError(ValueError):
     """Raised when a trigger configuration is invalid."""
@@ -57,7 +59,7 @@ def _parse_no_config(_: Mapping[str, Any]) -> TriggerConfig:
 
 def _parse_all_caps(data: Mapping[str, Any]) -> TriggerConfig:
     percentage = _require_int(data, "percentage", minimum=0)
-    if percentage > 100:
+    if percentage > MAX_PERCENTAGE:
         msg = "'percentage' must be <= 100"
         raise TriggerParseError(msg)
 

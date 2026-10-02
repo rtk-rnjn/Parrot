@@ -7,7 +7,7 @@ import re
 from contextlib import suppress
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import discord
 from discord.ext import commands
@@ -208,7 +208,8 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         This command has no cooldown.
         """
         if self.current_channel:
-            await ctx.reply(f"A riddle is already being solved in {self.current_channel.mention}!")
+            channel_name = getattr(self.current_channel, "mention", str(self.current_channel))
+            await ctx.reply(f"A riddle is already being solved in {channel_name}!")
             return
 
         self.current_channel = ctx.channel
@@ -303,7 +304,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
             design_number = random.randint(1, 6)
             image = Image.open(Path(f"assets/easter/easter_eggs/design{design_number}.png"))
-            pixel_data = list(image.getdata())
+            pixel_data = cast(list[tuple[int, int, int, int]], image.getdata())
 
             replaceable_colours = {pixel for pixel in pixel_data if pixel not in IRREPLACEABLE}
             replaceable_colours = sorted(replaceable_colours, key=COLOURS.index)
@@ -313,7 +314,9 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             recoloured_data = []
             for pixel in pixel_data:
                 if pixel in colour_replacements:
-                    recoloured_data.append((*colour_replacements[pixel].to_rgb(), 255))
+                    replacement = colour_replacements[pixel]
+                    replacement_colour = replacement if isinstance(replacement, discord.Colour) else discord.Colour(int(replacement))
+                    recoloured_data.append((*replacement_colour.to_rgb(), 255))
                     # Also ensures that the alpha channel has a value
                 else:
                     recoloured_data.append(pixel)

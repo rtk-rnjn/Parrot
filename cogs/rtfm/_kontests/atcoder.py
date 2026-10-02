@@ -58,13 +58,16 @@ class AtCoder:
 
     def _parse_contest_row(self, row: BeautifulSoup | Tag) -> AtCoderContestData:
         cells = row.find_all("td")
+        anchor = cells[1].find("a")
+        if anchor is None:
+            raise ValueError("Contest row has no URL")
         return AtCoderContestData(
             {
                 "name": cells[1].text.strip(),
                 "start_time": cells[0].text.strip(),
                 "duration": cells[2].text.strip(),
                 "rated_range": cells[3].text.strip(),
-                "url": cells[1].find("a")["href"],
+                "url": anchor["href"],
             }
         )
 

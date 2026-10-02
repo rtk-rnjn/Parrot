@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 BULB = "\N{ELECTRIC LIGHT BULB}"
 
-Board = list[list[Literal[BULB] | None]]
+Board = list[list[str | None]]
 
 
 class LightsOutButton(discord.ui.Button["LightsOutView"]):
@@ -118,7 +118,7 @@ class LightsOut:
         self.button_style = button_style
         self.player = ctx.author
 
-        flat_tiles = random.choices((None, BULB), k=self.count**2)
+        flat_tiles: list[str | None] = [random.choice((None, BULB)) for _ in range(self.count**2)]
         self.tiles = chunk(flat_tiles, count=self.count)
 
         self.view = LightsOutView(self, timeout=timeout)

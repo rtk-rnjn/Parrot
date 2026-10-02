@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import arrow
 import dateparser
@@ -118,7 +118,7 @@ class RelativeDelta(app_commands.Transformer, commands.Converter):
             msg = "invalid time provided"
             raise ValueError(msg)
         data = {k: int(v or 0) for k, v in m.groupdict().items()}
-        return relativedelta(**data)
+        return relativedelta(**cast(dict[str, Any], data))
 
     async def convert(self, ctx: commands.Context[Parrot], argument: str) -> relativedelta:
         try:

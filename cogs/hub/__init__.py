@@ -54,7 +54,7 @@ class Hub(commands.Cog):
             )
             await self._handle_move(member, before.channel, after.channel)
 
-    async def _handle_join(self, member: discord.Member, channel: discord.VoiceChannel) -> None:
+    async def _handle_join(self, member: discord.Member, channel: discord.VoiceChannel | discord.StageChannel) -> None:
         hub_channel_id = await self.bot.database.get_hub_channel_id(guild_id=member.guild.id)
 
         if hub_channel_id is None:
@@ -65,7 +65,7 @@ class Hub(commands.Cog):
 
         await self._create_personal_channel(member, channel)
 
-    async def _handle_leave(self, member: discord.Member, channel: discord.VoiceChannel) -> None:
+    async def _handle_leave(self, member: discord.Member, channel: discord.VoiceChannel | discord.StageChannel) -> None:
         hub_channel_id = await self.bot.database.get_hub_channel_id(guild_id=member.guild.id)
 
         if hub_channel_id is None:
@@ -80,8 +80,8 @@ class Hub(commands.Cog):
     async def _handle_move(
         self,
         member: discord.Member,
-        before: discord.VoiceChannel,
-        after: discord.VoiceChannel,
+        before: discord.VoiceChannel | discord.StageChannel,
+        after: discord.VoiceChannel | discord.StageChannel,
     ) -> None:
         hub_channel_id = await self.bot.database.get_hub_channel_id(guild_id=member.guild.id)
 
@@ -140,7 +140,9 @@ class Hub(commands.Cog):
             return voice_channel
         return None
 
-    async def _create_personal_channel(self, member: discord.Member, hub_channel: discord.VoiceChannel) -> discord.VoiceChannel | None:
+    async def _create_personal_channel(
+        self, member: discord.Member, hub_channel: discord.VoiceChannel | discord.StageChannel
+    ) -> discord.VoiceChannel | None:
         guild = member.guild
 
         me = guild.me
@@ -204,7 +206,7 @@ class Hub(commands.Cog):
 
         return personal_channel
 
-    async def _delete_if_empty(self, channel: discord.VoiceChannel) -> None:
+    async def _delete_if_empty(self, channel: discord.VoiceChannel | discord.StageChannel) -> None:
         if channel.members:
             return
 

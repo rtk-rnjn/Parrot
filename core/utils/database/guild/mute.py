@@ -11,7 +11,10 @@ class _GuildMuteRoleMixin(DatabaseMixin):
         await self.guilds_collection.update_one({"_id": guild_id}, {"$set": {"mute_role_id": mute_role_id}}, upsert=True)
 
         redis_key = RedisKeys.GUILD_MUTE_ROLE_ID.format(guild_id=guild_id)
-        await self.redis_client.set(redis_key, mute_role_id)
+        if mute_role_id is None:
+            await self.redis_client.delete(redis_key)
+        else:
+            await self.redis_client.set(redis_key, mute_role_id)
 
     async def get_guild_mute_role(self, *, guild_id: int) -> int | None:
         redis_key = RedisKeys.GUILD_MUTE_ROLE_ID.format(guild_id=guild_id)

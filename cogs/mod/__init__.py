@@ -1309,7 +1309,9 @@ class Mod(commands.Cog):
             return await ctx.send_help(ctx.command)
         return None
 
-    async def _add_role_to_member(self, member: discord.Member, role: discord.Role, target: str, author: discord.Member) -> tuple[bool, str | None]:
+    async def _add_role_to_member(
+        self, member: discord.Member, role: discord.Role, target: str, author: discord.User | discord.Member
+    ) -> tuple[bool, str | None]:
         try:
             await member.add_roles(role, reason=f"Role assigned to {target} by {author} (ID: {author.id})")
         except discord.Forbidden:

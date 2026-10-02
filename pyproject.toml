@@ -65,4 +65,6 @@ docstring-code-format = true
 include = ["src", "tests"]
 typeCheckingMode = "basic"
 pythonVersion = "3.14"
+venvPath = "."
+venv = ".venv"
 reportUnnecessaryTypeIgnoreComment = "warning"

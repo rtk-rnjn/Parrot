@@ -154,9 +154,8 @@ class HelpView(discord.ui.LayoutView):
 
     def _add_header(self, container: discord.ui.Container) -> None:
         bot = self.ctx.bot
-        container.add_item(
-            discord.ui.TextDisplay(f"## {bot.user.name} Help\nUse `{self.prefix}help <command>` for detailed information about a command.")
-        )
+        bot_name = bot.user.name if bot.user is not None else "Parrot"
+        container.add_item(discord.ui.TextDisplay(f"## {bot_name} Help\nUse `{self.prefix}help <command>` for detailed information about a command."))
 
     def _add_category_select(self, container: discord.ui.Container, categories: list[tuple[commands.Cog, list[commands.Command]]]) -> None:
         options = [
@@ -304,7 +303,9 @@ class Help(commands.HelpCommand):
         short_sha = str(commit.id)[:6]
         commit_time = arrow.Arrow.fromtimestamp(commit.commit_time)
         short = short[:COMMIT_SUMMARY_LIMIT] + "..." if len(short) > COMMIT_SUMMARY_LIMIT else short
-        return f"[`{short_sha}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.id}) {short} ({discord.utils.format_dt(commit_time, 'R')})"
+        return (
+            f"[`{short_sha}`](https://github.com/rtk-rnjn/Parrot/commit/{commit.id}) {short} ({discord.utils.format_dt(commit_time.datetime, 'R')})"
+        )
 
     def get_last_commits(self, count: int = 3) -> str | None:
         if not Path(".git").is_dir():

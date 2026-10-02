@@ -412,5 +412,5 @@ class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
                 await self._reply(ctx, message_view("\N{WARNING SIGN} Couldn't reach Wikipedia. Try again shortly."))
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: Parrot) -> None:
     await bot.add_cog(Wikipedia(bot))

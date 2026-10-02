@@ -17,7 +17,7 @@ class _UserHighlightsMixin(DatabaseMixin):
 
         cached = await self.redis_client.smembers(redis_key)
         if cached:
-            return cached
+            return {item.decode() if isinstance(item, bytes) else item for item in cached}
 
         user_config = await self.users_collection.find_one({"_id": user_id, "highlights.guild_id": guild_id}, {"highlights.$": 1})
         if not user_config:

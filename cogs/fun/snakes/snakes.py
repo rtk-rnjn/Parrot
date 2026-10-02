@@ -7,7 +7,7 @@ import random
 import re
 import string
 import textwrap
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING, Annotated, TypedDict, cast
@@ -419,7 +419,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         ctx: commands.Context[Parrot],
         board_id: Message,
         antidote_embed: Embed,
-        antidote_answer: list[str],
+        antidote_answer: Sequence[str],
         predicate: Callable[[Reaction, Member], bool],
         page_guess_list: list[str],
         page_result_list: list[str],

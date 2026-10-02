@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import cast
+from typing import Any, cast
 
 import arrow
 
@@ -44,16 +44,15 @@ class _GuildTagsMixin(DatabaseMixin):
                 RedisKeys.GUILD_TAG_ALIASES.format(guild_id=guild_id, tag_name=name),
                 *aliases,
             )
-            await self.redis_client.hset(
-                RedisKeys.GUILD_TAG_ALIAS_MAP.format(guild_id=guild_id),
-                mapping=dict.fromkeys(aliases, name),
-            )
+            alias_map_key = RedisKeys.GUILD_TAG_ALIAS_MAP.format(guild_id=guild_id)
+            for alias in aliases:
+                await self.redis_client.hset(alias_map_key, key=alias, value=name)
 
         if used_count is not None:
             await self.redis_client.hset(
                 RedisKeys.GUILD_TAG_USED_COUNT.format(guild_id=guild_id, tag_name=name),
-                mapping=used_count,
-            )  # pyright: ignore[reportArgumentType]
+                 mapping=cast(Any, used_count),
+            )
 
     async def __invalidate_tag_cache(self, *, guild_id: int, name: str):
         """Invalidate a tag's cache in Redis."""
@@ -379,7 +378,9 @@ class _GuildTagsMixin(DatabaseMixin):
             tag_name = name_or_alias
 
         tag_names_key = RedisKeys.GUILD_TAG_NAMES.format(guild_id=guild_id)
-        exists_in_cache = await self.redis_client.sismember(tag_names_key, tag_name)  # pyright: ignore[reportArgumentType]
+        if isinstance(tag_name, bytes):
+            tag_name = tag_name.decode()
+        exists_in_cache = await self.redis_client.sismember(tag_names_key, tag_name)
         if exists_in_cache:
             return True
 

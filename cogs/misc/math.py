@@ -8,7 +8,7 @@ import re
 from collections import OrderedDict
 from collections.abc import Hashable, Iterable, Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Protocol, cast
 
 import discord
 import mpmath
@@ -446,10 +446,10 @@ def _evaluate_tree(expression: Expr) -> Expr:
     if not expression.args:
         return expression
 
-    args = tuple(_evaluate_tree(arg) for arg in expression.args)
+    args = tuple(_evaluate_tree(cast(Expr, arg)) for arg in expression.args)
 
     if isinstance(expression, sympy.Pow):
-        _check_power(*args)
+        _check_power(cast(Integer, args[0]), cast(Integer, args[1]))
 
     return expression.func(*args)
 
@@ -537,7 +537,7 @@ def evaluate_input(text: str, variables: Mapping[str, Expr]) -> Evaluation:
     parsed = parse_input(text, variables)
     value = _evaluate_tree(parsed.value)
     _validate_result(value)
-    exact, approximation = _render(value)
+    exact, approximation = _render(cast(Integer, value))
 
     if isinstance(parsed, Assignment):
         if sympy.Symbol(parsed.name) in value.free_symbols:
@@ -550,7 +550,7 @@ def evaluate_input(text: str, variables: Mapping[str, Expr]) -> Evaluation:
         )
 
     if exact is not None and approximation is None and _compact(exact) == _compact(parsed.source):
-        names = ", ".join(sorted(symbol.name for symbol in value.free_symbols))
+        names = ", ".join(sorted(cast(sympy.Symbol, symbol).name for symbol in value.free_symbols))
         note = f"  (already simplified; undefined: {names})" if names else ""
         return Evaluation(exact + note)
 

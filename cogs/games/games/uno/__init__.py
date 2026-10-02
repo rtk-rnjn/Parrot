@@ -7,7 +7,7 @@ import random
 from collections import defaultdict
 from collections.abc import Awaitable, Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar, Literal, NamedTuple, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, NamedTuple, cast, overload
 
 import discord
 from discord.ext import commands
@@ -43,9 +43,9 @@ class RuleSetChoice(NamedTuple):
 
 
 class HostOnlyView(discord.ui.View):
-    def __init__(self, host: discord.Member, *, timeout: float = 360) -> None:
+    def __init__(self, host: discord.Member | discord.User, *, timeout: float = 360) -> None:
         super().__init__(timeout=timeout)
-        self._view_owner: discord.Member = host
+        self._view_owner: discord.Member | discord.User = host
 
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         if interaction.user != self._view_owner:
@@ -366,7 +366,7 @@ class VoteKickSelect(discord.ui.Select["VoteKickView"]):
     def __init__(self, game: UNO, user: discord.Member | discord.User) -> None:
         super().__init__(
             placeholder="Choose someone to vote-kick...",
-            options=[discord.SelectOption(label=str(hand.player), value=hand.player.id) for hand in game.hands if hand.player != user],
+            options=[discord.SelectOption(label=str(hand.player), value=str(hand.player.id)) for hand in game.hands if hand.player != user],
         )
         self.game: UNO = game
 
@@ -374,8 +374,13 @@ class VoteKickSelect(discord.ui.Select["VoteKickView"]):
         assert self.view is not None
         assert interaction.data is not None
 
-        value = int(interaction.data["values"][0])
-        target = discord.utils.get(self.game.hands, player__id=value).player
+        data = cast(dict[str, Any], interaction.data)
+        value = int(cast(list[str], data["values"])[0])
+        target_hand = discord.utils.get(self.game.hands, player__id=value)
+        if target_hand is None:
+            await interaction.response.send_message("This person is not in the game.", ephemeral=True)
+            return
+        target = target_hand.player
 
         if target in self.game._always_skip:
             await interaction.response.send_message("This person is not in the game.", ephemeral=True)
@@ -449,7 +454,7 @@ class GameView(discord.ui.View):
 
         else:
             card = hand.draw()
-            if self.game.current.match(card):
+            if self.game.current is not None and self.game.current.match(card):
                 await interaction.response.send_message(
                     f"You drew a {card.emoji}. Would you like to play it?",
                     view=ImmediatePlaySubview(self.game, hand, card),
@@ -589,7 +594,7 @@ class UNO:
         self.ctx = ctx
         self.host = ctx.author
 
-        self.rule_set: RuleSet = rule_set  # This could be None on init
+        self.rule_set: RuleSet = rule_set or RuleSet()
         self.players: set[discord.Member | discord.User] = set(players) if players else set()
 
         self.deck: Deck = Deck(self)
@@ -849,6 +854,7 @@ class UNO:
             valid
             and self.draw_queue > 0
             and self.rule_set.progressive
+            and self.current is not None
             and not ((card.type is self.current.type is CardType.plus_2) or card.type is CardType.plus_4)
         ):
             await interaction.response.send_message("You must stack onto the draw, or draw yourself.", ephemeral=True)

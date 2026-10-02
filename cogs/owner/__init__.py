@@ -111,7 +111,12 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @commands.command(name="redis-repl", aliases=["redis-cli"])
     @commands.is_owner()
     async def redis_repl(self, ctx: commands.Context[Parrot]) -> None:
-        """Start a Redis REPL session."""
+        """Start a Redis REPL session.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         await ctx.reply("\N{VIDEO GAME} Starting Redis REPL session. Type `exit` to quit.")
 
         def check(m: discord.Message) -> bool:
@@ -141,7 +146,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.group(name="redis", invoke_without_command=True)
     async def redis(self, ctx: commands.Context[Parrot]) -> None:
-        """Redis monitoring commands."""
+        """Redis monitoring commands.
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -155,7 +163,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="ping")
     async def redis_ping(self, ctx: commands.Context[Parrot]) -> None:
-        """Check whether Redis is reachable."""
+        """Check whether Redis is reachable.
+
+        This command has no cooldown.
+        """
         try:
             result = await self.bot.database.redis_client.ping()
         except Exception as exc:
@@ -172,7 +183,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="status")
     async def redis_status(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis instance status."""
+        """Show Redis instance status.
+
+        This command has no cooldown.
+        """
         redis = self.bot.database.redis_client
 
         try:
@@ -230,7 +244,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="memory")
     async def redis_memory(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis memory statistics."""
+        """Show Redis memory statistics.
+
+        This command has no cooldown.
+        """
         try:
             info = await self.bot.database.redis_client.info("memory")
         except Exception as exc:
@@ -274,7 +291,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="clients")
     async def redis_clients(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis client statistics."""
+        """Show Redis client statistics.
+
+        This command has no cooldown.
+        """
         try:
             info = await self.bot.database.redis_client.info("clients")
         except Exception as exc:
@@ -309,7 +329,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="stats")
     async def redis_stats(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis command and network statistics."""
+        """Show Redis command and network statistics.
+
+        This command has no cooldown.
+        """
         try:
             info = await self.bot.database.redis_client.info("stats")
         except Exception as exc:
@@ -353,7 +376,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="keyspace")
     async def redis_keyspace(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis keyspace statistics."""
+        """Show Redis keyspace statistics.
+
+        This command has no cooldown.
+        """
         try:
             info = await self.bot.database.redis_client.info("keyspace")
         except Exception as exc:
@@ -401,7 +427,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="persistence")
     async def redis_persistence(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis persistence status."""
+        """Show Redis persistence status.
+
+        This command has no cooldown.
+        """
         try:
             info = await self.bot.database.redis_client.info("persistence")
         except Exception as exc:
@@ -461,7 +490,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="replication")
     async def redis_replication(self, ctx: commands.Context[Parrot]) -> None:
-        """Show Redis replication status."""
+        """Show Redis replication status.
+
+        This command has no cooldown.
+        """
         try:
             info = await self.bot.database.redis_client.info("replication")
         except Exception as exc:
@@ -536,7 +568,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @redis.command(name="config")
     async def redis_config(self, ctx: commands.Context[Parrot], parameter: str | None = None) -> None:
-        """Show a Redis configuration value."""
+        """Show a Redis configuration value.
+
+        This command has no cooldown.
+        """
         if not parameter:
             await ctx.reply("\N{INFORMATION SOURCE} Specify a configuration parameter, e.g. `redis config maxmemory`.")
             return
@@ -588,13 +623,19 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.group(name="mongodb", invoke_without_command=True)
     async def mongodb(self, ctx: commands.Context[Parrot]) -> None:
-        """MongoDB monitoring commands."""
+        """MongoDB monitoring commands.
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
     @mongodb.command(name="ping")
     async def mongodb_ping(self, ctx: commands.Context[Parrot]) -> None:
-        """Check MongoDB connectivity."""
+        """Check MongoDB connectivity.
+
+        This command has no cooldown.
+        """
         try:
             result = await self.bot.database.mongo_client.admin.command("ping")
         except Exception as exc:
@@ -612,7 +653,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="status")
     async def mongodb_status(self, ctx: commands.Context[Parrot]) -> None:
-        """Show MongoDB server status."""
+        """Show MongoDB server status.
+
+        This command has no cooldown.
+        """
         status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         connections = status.get("connections", {})
@@ -696,7 +740,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="connections")
     async def mongodb_connections(self, ctx: commands.Context[Parrot]) -> None:
-        """Show MongoDB connection statistics."""
+        """Show MongoDB connection statistics.
+
+        This command has no cooldown.
+        """
         status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         connections = status.get("connections", {})
@@ -723,7 +770,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="operations")
     async def mongodb_operations(self, ctx: commands.Context[Parrot]) -> None:
-        """Show MongoDB operation counters."""
+        """Show MongoDB operation counters.
+
+        This command has no cooldown.
+        """
         status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         operations = status.get("opcounters", {})
@@ -741,7 +791,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="network")
     async def mongodb_network(self, ctx: commands.Context[Parrot]) -> None:
-        """Show MongoDB network statistics."""
+        """Show MongoDB network statistics.
+
+        This command has no cooldown.
+        """
         status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         network = status.get("network", {})
@@ -763,7 +816,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="memory")
     async def mongodb_memory(self, ctx: commands.Context[Parrot]) -> None:
-        """Show MongoDB memory usage."""
+        """Show MongoDB memory usage.
+
+        This command has no cooldown.
+        """
         status: ServerStatus = await self.bot.database.mongo_client.admin.command("serverStatus")  # pyright: ignore[reportAssignmentType]
 
         memory = status.get("mem", {})
@@ -785,7 +841,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="databases")
     async def mongodb_databases(self, ctx: commands.Context[Parrot]) -> None:
-        """List MongoDB databases."""
+        """List MongoDB databases.
+
+        This command has no cooldown.
+        """
         try:
             databases = await self.bot.database.mongo_client.list_databases()
             databases = [database async for database in databases]
@@ -809,7 +868,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="collections")
     async def mongodb_collections(self, ctx: commands.Context[Parrot], database: str | None = None) -> None:
-        """List collections in a database."""
+        """List collections in a database.
+
+        This command has no cooldown.
+        """
         database_name = database or self.bot.database.mongo_client.get_default_database().name
 
         try:
@@ -831,7 +893,10 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
     @mongodb.command(name="storage")
     async def mongodb_storage(self, ctx: commands.Context[Parrot], database: str | None = None) -> None:
-        """Show database storage statistics."""
+        """Show database storage statistics.
+
+        This command has no cooldown.
+        """
         database_name = database or self.bot.database.mongo_db.name
         db = self.bot.database.mongo_client[database_name]
 
@@ -881,14 +946,24 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @commands.group(name="asyncio", invoke_without_command=True, aliases=["async", "loop"])
     @commands.is_owner()
     async def asyncio_group(self, ctx: commands.Context[Parrot]) -> None:
-        """Asyncio event loop monitoring commands."""
+        """Asyncio event loop monitoring commands.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
     @asyncio_group.command(name="tasks")
     @commands.is_owner()
     async def asyncio_tasks(self, ctx: commands.Context[Parrot]) -> None:
-        """List all asyncio tasks in the event loop."""
+        """List all asyncio tasks in the event loop.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         tasks = asyncio.all_tasks(loop=self.bot.loop)
         task_list = "\n".join(f"- {task.get_name()}" for task in tasks)
 
@@ -904,7 +979,12 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
     @asyncio_group.command(name="cancel")
     @commands.is_owner()
     async def asyncio_cancel(self, ctx: commands.Context[Parrot], task_name: str) -> None:
-        """Cancel an asyncio task by name."""
+        """Cancel an asyncio task by name.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         tasks = asyncio.all_tasks(loop=self.bot.loop)
         for task in tasks:
             if task.get_name() == task_name:

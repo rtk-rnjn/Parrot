@@ -50,6 +50,8 @@ class Music(commands.Cog):
 
         On success, the bot will react to the message with: \N{WHITE HEAVY CHECK MARK}
         Otherwise, it will react with: \N{WARNING SIGN}
+
+        This command has no cooldown.
         """
 
         if isinstance(ctx.voice_client, Player) and ctx.voice_client.is_connected:
@@ -69,7 +71,12 @@ class Music(commands.Cog):
     @commands.command(name="forcejoin", aliases=["fj"])
     @commands.has_permissions(manage_channels=True)
     async def force_join(self, ctx: Context[Parrot]) -> None:
-        """Forces the bot to join your current voice channel, disconnecting from any existing one."""
+        """Forces the bot to join your current voice channel, disconnecting from any existing one.
+
+        You must have the "Manage Channels" permission to use this command.
+
+        This command has no cooldown.
+        """
 
         assert isinstance(ctx.author, discord.Member)
 
@@ -103,7 +110,10 @@ class Music(commands.Cog):
 
     @commands.command(name="leave", aliases=["disconnect", "dc"])
     async def leave(self, ctx: Context[Parrot]) -> None:
-        """Disconnects the bot from the voice channel."""
+        """Disconnects the bot from the voice channel.
+
+        This command has no cooldown.
+        """
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
             await ctx.message.add_reaction("\N{WARNING SIGN}")
@@ -127,7 +137,10 @@ class Music(commands.Cog):
         *,
         query: str = commands.parameter(description="The URL or search term to play."),
     ) -> None:
-        """Play a song from a URL or search term."""
+        """Play a song from a URL or search term.
+
+        This command has no cooldown.
+        """
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
             await ctx.message.add_reaction("\N{WARNING SIGN}")
@@ -166,7 +179,10 @@ class Music(commands.Cog):
 
     @commands.command(name="skip", aliases=["s"])
     async def skip(self, ctx: Context[Parrot]) -> None:
-        """Skips the current track."""
+        """Skips the current track.
+
+        This command has no cooldown.
+        """
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
             await ctx.message.add_reaction("\N{WARNING SIGN}")
@@ -186,7 +202,10 @@ class Music(commands.Cog):
 
     @commands.command(name="queue", aliases=["q"])
     async def queue(self, ctx: Context[Parrot]) -> None:
-        """Displays the current queue."""
+        """Displays the current queue.
+
+        This command has no cooldown.
+        """
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
             await ctx.message.add_reaction("\N{WARNING SIGN}")
@@ -215,7 +234,10 @@ class Music(commands.Cog):
 
     @commands.command(name="nowplaying", aliases=["np"])
     async def now_playing(self, ctx: Context[Parrot]) -> None:
-        """Shows the currently playing track."""
+        """Shows the currently playing track.
+
+        This command has no cooldown.
+        """
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
             await ctx.message.add_reaction("\N{WARNING SIGN}")
@@ -252,7 +274,10 @@ class Music(commands.Cog):
 
     @commands.command(name="stop")
     async def stop(self, ctx: Context[Parrot]) -> None:
-        """Stops playback and clears the queue."""
+        """Stops playback and clears the queue.
+
+        This command has no cooldown.
+        """
 
         if not ctx.voice_client or (isinstance(ctx.voice_client, Player) and not ctx.voice_client.is_connected):
             await ctx.message.add_reaction("\N{WARNING SIGN}")
@@ -314,7 +339,12 @@ class Music(commands.Cog):
     @commands.command(name="loadlavasrc")
     @commands.is_owner()
     async def load_lavasrc(self, ctx: Context[Parrot]) -> None:
-        """Loads Lavalink nodes from the lavasrc list."""
+        """Loads Lavalink nodes from the lavasrc list.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
 
         errors = []
         providers = await self.fetch_lavasrc_providers()
@@ -348,7 +378,12 @@ class Music(commands.Cog):
     @commands.command(name="listnodes")
     @commands.is_owner()
     async def list_nodes(self, ctx: Context[Parrot]) -> None:
-        """Lists all connected Lavalink nodes."""
+        """Lists all connected Lavalink nodes.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
 
         nodes = self.bot.lavalink_node_pool.nodes
         if not nodes:

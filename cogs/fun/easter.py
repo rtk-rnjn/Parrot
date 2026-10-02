@@ -108,7 +108,10 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command(name="fool")
     async def april_fools(self, ctx: Context) -> None:
-        """Get a random April Fools' video from Youtube."""
+        """Get a random April Fools' video from Youtube.
+
+        This command has no cooldown.
+        """
         video = random.choice(ALL_VIDS)
 
         channel, url = video["channel"], video["url"]
@@ -150,12 +153,18 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command()
     async def bunnyname(self, ctx: Context) -> None:
-        """Picks a random bunny name from a JSON file."""
+        """Picks a random bunny name from a JSON file.
+
+        This command has no cooldown.
+        """
         await ctx.reply(random.choice(BUNNY_NAMES["names"]))
 
     @commands.command()
     async def bunnifyme(self, ctx: Context) -> None:
-        """Gets your Discord username and bunnifies it."""
+        """Gets your Discord username and bunnifies it.
+
+        This command has no cooldown.
+        """
         username = ctx.author.display_name
 
         # If name contains spaces or other separators, get the individual words to randomly bunnify
@@ -189,10 +198,12 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
 
         await ctx.reply(bunnified_name)
 
-    @commands.command(aliases=("riddlemethis", "riddleme"))
+    @commands.command(aliases=["riddlemethis", "riddleme"])
     async def riddle(self, ctx: Context) -> None:
         """Gives a random riddle, then provides 2 hints at certain intervals before revealing the answer.
         The duration of the hint interval can be configured by changing the TIMELIMIT constant in this file.
+
+        This command has no cooldown.
         """
         if self.current_channel:
             await ctx.reply(f"A riddle is already being solved in {self.current_channel.mention}!")
@@ -248,11 +259,13 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         if message.content.lower() == self.correct.lower():
             self.winners.add(message.author.mention)
 
-    @commands.command(aliases=("decorateegg",))
+    @commands.command(aliases=["decorateegg"])
     async def eggdecorate(self, ctx: Context, *colors: discord.Colour | str) -> Image.Image | None:
         """Picks a random egg design and decorates it using the given colours.
         Colours are split by spaces, unless you wrap the colour name in double quotes.
         Discord colour names, HTML colour names, XKCD colour names and hex values are accepted.
+
+        This command has no cooldown.
         """
         if len(colors) < 2:
             await ctx.reply("You must include at least 2 colours!")
@@ -324,9 +337,12 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
         await ctx.reply(file=file, embed=embed)
         return recoloured_image
 
-    @commands.command(name="eggfact", aliases=("efact",))
+    @commands.command(name="eggfact", aliases=["efact"])
     async def easter_facts(self, ctx: Context) -> None:
-        """Get easter egg facts."""
+        """Get easter egg facts.
+
+        This command has no cooldown.
+        """
         embed = self.make_embed()
         await ctx.reply(embed=embed)
 
@@ -339,10 +355,12 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             description=random.choice(EGG_FACTS),
         )
 
-    @commands.command(aliases=("eggheadquiz", "easterquiz"))
+    @commands.command(aliases=["eggheadquiz", "easterquiz"])
     async def eggquiz(self, ctx: Context) -> None:
         """Gives a random quiz question, waits 30 seconds and then outputs the answer.
         Also informs of the percentages and votes of each option.
+
+        This command has no cooldown.
         """
         random_question = random.choice(EGGHEAD_QUESTIONS)
         question, answers = random_question["question"], random_question["answers"]
@@ -433,9 +451,12 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
             return await reaction.message.remove_reaction(reaction, user)
         return None
 
-    @commands.command(aliases=("eastercustoms",))
+    @commands.command(aliases=["eastercustoms"])
     async def easter_tradition(self, ctx: Context) -> None:
-        """Responds with a random tradition or custom."""
+        """Responds with a random tradition or custom.
+
+        This command has no cooldown.
+        """
         random_country = random.choice(list(TRADITIONS))
 
         await ctx.reply(f"{random_country}:\n{TRADITIONS[random_country]}")

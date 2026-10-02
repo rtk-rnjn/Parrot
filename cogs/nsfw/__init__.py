@@ -119,7 +119,10 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
         *,
         endpoint: Literal["gif", "jav", "rb", "ahegao", "twitter"] = "gif",
     ) -> None:
-        """Mature Content. 18+ only Please."""
+        """Mature Content. 18+ only Please.
+
+        This command has a cooldown of 5 seconds per user.
+        """
         await ctx.typing()
         r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")
         if r.status == 200:
@@ -179,14 +182,21 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
     @commands.group(name="sex", aliases=["sexdotcom", "sex.com"], invoke_without_command=True)
     @commands.is_nsfw()
     async def sexdotcom(self, ctx: commands.Context[Parrot]) -> None:
-        """Mature Content. 18+ only please."""
+        """Mature Content. 18+ only please.
+
+        This command has no cooldown.
+        """
         await ctx.send_help(ctx.command)
 
     @sexdotcom.command(name="gif")
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     async def _sex_gif(self, ctx: commands.Context[Parrot], *, search: str) -> None:
-        """Mature Content. 18+ only please."""
+        """Mature Content. 18+ only please.
+
+        This command has max concurrency of 1 per user.
+        This command has a cooldown of 5 seconds per user.
+        """
         await self._paginate_results(
             ctx,
             fetch=self._sexdotcomgif.fetch,
@@ -198,7 +208,11 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     async def _sex_pics(self, ctx: commands.Context[Parrot], *, search: str) -> None:
-        """Mature Content. 18+ only please."""
+        """Mature Content. 18+ only please.
+
+        This command has max concurrency of 1 per user.
+        This command has a cooldown of 5 seconds per user.
+        """
         await self._paginate_results(
             ctx,
             fetch=self._sexdotcompics.fetch,
@@ -210,7 +224,11 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
     @commands.cooldown(1, 8, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     async def _pin_video(self, ctx: commands.Context[Parrot], *, search: str) -> None:
-        """Random video clip from pin.porn. 18+ only please."""
+        """Random video clip from pin.porn. 18+ only please.
+
+        This command has max concurrency of 1 per user.
+        This command has a cooldown of 8 seconds per user.
+        """
         await self._paginate_results(
             ctx,
             fetch=self._pinporn.search,

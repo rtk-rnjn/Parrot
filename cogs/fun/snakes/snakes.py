@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Annotated, TypedDict, cast
 
 from discord import Embed, File, Member, Message, Reaction
 from discord.ext import commands
-from discord.ext.commands import BucketType, bot_has_permissions, group
 from PIL import Image, ImageDraw, ImageFont
 
 from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS
@@ -402,16 +401,16 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
 
         await message.clear_reactions()
 
-    @group(name="snakes", aliases=("snake",), invoke_without_command=True)
-    @bot_has_permissions(manage_messages=True)
+    @commands.group(name="snakes", aliases=["snake"], invoke_without_command=True)
+    @commands.bot_has_permissions(manage_messages=True)
     async def snakes_group(self, ctx: commands.Context[Parrot]) -> None:
         """Commands from our first code jam."""
         if not ctx.invoked_subcommand:
             await invoke_help_command(ctx)
 
-    @bot_has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(manage_messages=True)
     @snakes_group.command(name="antidote")
-    @commands.max_concurrency(1, per=BucketType.channel)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     async def antidote_command(self, ctx: commands.Context[Parrot]) -> None:  # noqa: PLR0915
         """Antidote! Can you create the antivenom before the patient dies?
         Rules:  You have 4 ingredients for each antidote, you only have 10 attempts
@@ -422,6 +421,11 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         Info:   The game automatically ends after 5 minutes inactivity.
                 You should only use each ingredient once.
         This game was created by Lord Bisk and Runew0lf.
+
+        No special user permissions are required.
+        The bot must have the "Manage Messages" permission to run this command successfully.
+        This command has max concurrency of 1 per channel.
+        This command has no cooldown.
         """
 
         def predicate(reaction_: Reaction, user_: Member) -> bool:
@@ -536,6 +540,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         """Draws a random snek using Perlin noise.
         Written by Momo and kel.
         Modified by juan and lemon.
+
+        This command has no cooldown.
         """
         async with ctx.typing():
             width = random.randint(6, 10)
@@ -565,8 +571,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
             await ctx.reply(file=file)
 
     @snakes_group.command(name="get")
-    @bot_has_permissions(manage_messages=True)
-    @commands.max_concurrency(1, per=BucketType.channel)
+    @commands.bot_has_permissions(manage_messages=True)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     async def get_command(
         self,
         ctx: commands.Context[Parrot],
@@ -575,6 +581,11 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
     ) -> None:
         """Fetches information about a snake from Wikipedia.
         Created by Ava and eivl.
+
+        No special user permissions are required.
+        The bot must have the "Manage Messages" permission to run this command successfully.
+        This command has max concurrency of 1 per channel.
+        This command has no cooldown.
         """
         async with ctx.typing():
             if name is None:
@@ -616,12 +627,14 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
 
             await ctx.reply(embed=embed)
 
-    @snakes_group.command(name="guess", aliases=("identify",))
-    @commands.max_concurrency(1, per=BucketType.channel)
+    @snakes_group.command(name="guess", aliases=["identify"])
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     async def guess_command(self, ctx: commands.Context[Parrot]) -> None:
         """Snake identifying game.
         Made by Ava and eivl.
         Modified by lemon.
+        This command has max concurrency of 1 per channel.
+        This command has no cooldown.
         """
         async with ctx.typing():
             image = None
@@ -652,6 +665,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
     async def hatch_command(self, ctx: commands.Context[Parrot]) -> None:
         """Hatches your personal snake.
         Written by Momo and kel.
+
+        This command has no cooldown.
         """
 
         snake_name = random.choice(list(snakes.keys()))
@@ -674,11 +689,13 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         await ctx.reply(embed=my_snake_embed)
 
     @snakes_group.command(name="quiz")
-    @commands.max_concurrency(1, per=BucketType.channel)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     async def quiz_command(self, ctx: commands.Context[Parrot]) -> None:
         """Asks a snake-related question in the chat and validates the user's guess.
         This was created by Mushy and Cardium,
         and modified by Urthas and lemon.
+        This command has max concurrency of 1 per channel.
+        This command has no cooldown.
         """
 
         question = random.choice(self.snake_quizzes)
@@ -694,7 +711,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         quiz = await ctx.reply(embed=embed)
         await self._validate_answer(ctx, quiz, answer, options)
 
-    @snakes_group.command(name="name", aliases=("name_gen",))
+    @snakes_group.command(name="name", aliases=["name_gen"])
     async def name_command(self, ctx: commands.Context[Parrot], *, name: str | None = None) -> None:
         """Snakifies a username.
         Slices the users name at the last vowel (or second last if the name
@@ -713,6 +730,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
             lucy + python = luthon
             joseph + taipan = joseipan
         This was written by Iceman, and modified for inclusion into the bot by lemon.
+
+        This command has no cooldown.
         """
         snake_name = await self._get_snake_name()
         snake_name = snake_name["name"]
@@ -754,11 +773,13 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         await ctx.reply(embed=embed)
 
     @snakes_group.command(name="sal")
-    @commands.max_concurrency(1, per=BucketType.channel)
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
     async def sal_command(self, ctx: commands.Context[Parrot]) -> None:
         """Play a game of Snakes and Ladders.
         Written by Momo and kel.
         Modified by lemon.
+        This command has max concurrency of 1 per channel.
+        This command has no cooldown.
         """
 
         if ctx.channel in self.active_sal:
@@ -779,6 +800,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
     ) -> None:
         """Create an interesting little card from a snake.
         Created by juan and Someone during the first code jam.
+
+        This command has no cooldown.
         """
 
         if name is None:
@@ -820,6 +843,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         """Gets a snake-related fact.
         Written by Andrew and Prithaj.
         Modified by lemon.
+
+        This command has no cooldown.
         """
         question = random.choice(self.snake_facts)["fact"]
         embed = Embed(title="Snake fact", color=SNAKE_COLOR, description=question)
@@ -832,6 +857,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         Otherwise, a random message from the user's history is snakified.
         Written by Momo and kel.
         Modified by lemon.
+
+        This command has no cooldown.
         """
         embed = Embed()
         user = ctx.author
@@ -846,6 +873,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         """Gets a random quote from the Zen of Python, except as if spoken by a snake.
         Written by Prithaj and Andrew.
         Modified by lemon.
+
+        This command has no cooldown.
         """
         embed = Embed(title="Zzzen of Pythhon", color=SNAKE_COLOR)
 

@@ -72,12 +72,16 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
             await target.send("The fact for the selected day is not yet available.")
 
     @in_month(Month.JUNE)
-    @commands.command(name="pridefact", aliases=("pridefacts",))
+    @commands.command(name="pridefact", aliases=["pridefacts"])
     async def pridefact(self, ctx: commands.Context[Parrot], option: str | None = None) -> None:
         """Sends a message with a pride fact of the day.
+
         If "random" is given as an argument, a random previous fact will be provided.
-        If a date is given as an argument, and the date is in the past, the fact from that day
-        will be provided.
+        If a date is given as an argument, and the date is in the past, the fact from that day will be provided.
+
+        This command is only available during the month of June.
+
+        This command has no cooldown.
         """
         if not option:
             await self.send_select_fact(ctx, discord.utils.utcnow())
@@ -92,9 +96,14 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
         return discord.Embed(colour=discord.Color.pink(), title="Pride Fact!", description=fact)
 
     @in_month(Month.JUNE)
-    @commands.command(name="dragname", aliases=("dragqueenname", "queenme"))
+    @commands.command(name="dragname", aliases=["dragqueenname", "queenme"])
     async def dragname(self, ctx: commands.Context[Parrot]) -> None:
-        """Sends a message with a drag queen name."""
+        """Sends a message with a drag queen name.
+
+        This command is only available during the month of June.
+
+        This command has no cooldown.
+        """
         await ctx.reply(random.choice(NAMES))
 
     def get_video(self, genre: str | None = None) -> dict:
@@ -112,10 +121,15 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
         return {}
 
     @in_month(Month.JUNE)
-    @commands.command(name="prideanthem", aliases=("anthem", "pridesong"))
+    @commands.command(name="prideanthem", aliases=["anthem", "pridesong"])
     async def prideanthem(self, ctx: commands.Context[Parrot], genre: str | None = None) -> None:
         """Sends a message with a video of a random pride anthem.
+
         If `genre` is supplied, it will select from that genre only.
+
+        This command is only available during the month of June.
+
+        This command has no cooldown.
         """
         anthem = self.get_video(genre)
         if anthem:
@@ -125,12 +139,12 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
 
     def invalid_embed_generate(self, pride_leader: str) -> discord.Embed:
         """Generates Invalid Embed.
-        The invalid embed contains a list of closely matched names of the invalid pride
-        leader the user gave. If no closely matched names are found it would list all
-        the available pride leader names.
-        Wikipedia is a useful place to learn about pride leaders and we don't have all
-        the pride leaders, so the bot would add a field containing the wikipedia
-        command to execute.
+
+        The invalid embed contains a list of closely matched names of the invalid pride leader the user gave.
+        If no closely matched names are found it would list all the available pride leader names.
+
+        Wikipedia is a useful place to learn about pride leaders and we don't have all the pride leaders,
+        so the bot would add a field containing the wikipedia command to execute.
         """
         embed = discord.Embed(color=discord.Color.red())
         pride_leader = pride_leader.title()
@@ -161,11 +175,15 @@ class Pride(commands.Cog, command_attrs={"hidden": True}):
         return embed
 
     @in_month(Month.JUNE)
-    @commands.command(aliases=("pl", "prideleader"))
+    @commands.command(aliases=["pl", "prideleader"])
     async def pride_leader(self, ctx: commands.Context[Parrot], *, pride_leader_name: str | None) -> None:
         """Information about a Pride Leader.
-        Returns information about the specified pride leader
-        and if there is no pride leader given, return a random pride leader.
+
+        Returns information about the specified pride leader and if there is no pride leader given, return a random pride leader.
+
+        This command is only available during the month of June.
+
+        This command has no cooldown.
         """
         if not pride_leader_name:
             leader = random.choice(list(PRIDE_RESOURCE.values()))

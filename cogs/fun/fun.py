@@ -408,7 +408,10 @@ class Fun(commands.Cog, ColorHandler):
 
     @commands.group(name="random", invoke_without_command=True)
     async def random_command(self, ctx: commands.Context[Parrot]):
-        """Some fun commands regarding RNG"""
+        """Some fun commands regarding RNG
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -419,7 +422,10 @@ class Fun(commands.Cog, ColorHandler):
         minimum: int = commands.parameter(description="The minimum value for the random number.", default=1),
         maximum: int = commands.parameter(description="The maximum value for the random number.", default=100),
     ):
-        """Generate a random number between two values."""
+        """Generate a random number between two values.
+
+        This command has no cooldown.
+        """
         if minimum > maximum:
             minimum, maximum = maximum, minimum
 
@@ -427,12 +433,18 @@ class Fun(commands.Cog, ColorHandler):
 
     @random_command.command(name="coin", aliases=["flip"])
     async def random_coin(self, ctx: commands.Context[Parrot]):
-        """Flip a coin."""
+        """Flip a coin.
+
+        This command has no cooldown.
+        """
         await ctx.reply(random.choice(["\N{COIN} **Heads!**", "\N{COIN} **Tails!**"]))
 
     @random_command.command(name="choice", aliases=["choose", "pick"])
     async def random_choice(self, ctx: commands.Context[Parrot], *options: str):
-        """Randomly choose between options."""
+        """Randomly choose between options.
+
+        This command has no cooldown.
+        """
         if len(options) < 2:
             msg = "Provide at least two choices"
             raise commands.BadArgument(msg)
@@ -444,7 +456,10 @@ class Fun(commands.Cog, ColorHandler):
 
     @random_command.command(name="8ball", aliases=["eightball"])
     async def random_8ball(self, ctx: commands.Context[Parrot], *, _: str):
-        """Ask the magic 8-ball a question."""
+        """Ask the magic 8-ball a question.
+
+        This command has no cooldown.
+        """
         responses = [
             "Yes.",
             "No.",
@@ -464,8 +479,16 @@ class Fun(commands.Cog, ColorHandler):
         await ctx.reply(f"\N{BILLIARDS} **Answer:** {random.choice(responses)}")
 
     @random_command.command(name="chance")
-    async def random_chance(self, ctx: commands.Context[Parrot], *, thing: str):
-        """Generate a random chance for something."""
+    async def random_chance(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        thing: str = commands.parameter(description="The thing to calculate the chance of happening.", default="something"),
+    ):
+        """Generate a random chance for something.
+
+        This command has no cooldown.
+        """
         # need to make this deterministic based on the input, so that the same input always gives the same output
         hash_value = hash(thing)
         percent = abs(hash_value) % 101
@@ -473,8 +496,16 @@ class Fun(commands.Cog, ColorHandler):
         await ctx.reply(f"\N{DIRECT HIT} The chance of **{thing}** happening is **{percent}%**.")
 
     @random_command.command(name="rate")
-    async def random_rate(self, ctx: commands.Context[Parrot], *, thing: str):
-        """Give something a random rating out of 10."""
+    async def random_rate(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        thing: str = commands.parameter(description="The thing to rate.", default="something"),
+    ):
+        """Give something a random rating out of 10.
+
+        This command has no cooldown.
+        """
         rating = random.randint(0, 100) / 10
 
         await ctx.reply(f"\N{WHITE MEDIUM STAR} I rate **{thing}** **{rating:.1f}/10**.")
@@ -482,7 +513,13 @@ class Fun(commands.Cog, ColorHandler):
     @random_command.command(name="member")
     @commands.guild_only()
     async def random_member(self, ctx: commands.Context[Parrot]):
-        """Pick a random member from the server."""
+        """Pick a random member from the server.
+
+        This command has no cooldown.
+        """
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
         members = [member for member in ctx.guild.members if not member.bot]
 
         random.shuffle(members)
@@ -496,7 +533,10 @@ class Fun(commands.Cog, ColorHandler):
         ctx: commands.Context[Parrot],
         length: int = commands.parameter(description="The length of the password to generate.", default=8),
     ):
-        """Generate a cryptographically secure random password."""
+        """Generate a cryptographically secure random password.
+
+        This command has no cooldown.
+        """
         if not 8 <= length <= 128:
             msg = "Password length must be between 8 and 128."
             raise commands.BadArgument(msg)
@@ -508,7 +548,12 @@ class Fun(commands.Cog, ColorHandler):
 
     @random_command.command(name="uuid")
     async def random_uuid(self, ctx: commands.Context[Parrot]):
-        """Generate a random UUID."""
+        """Generate a random UUID.
+
+        It sends a UUID v1, v4, v6, v7, and v8.
+
+        This command has no cooldown.
+        """
 
         contents = [
             "`UUID v1:` " + str(uuid.uuid1()),
@@ -535,7 +580,15 @@ class Fun(commands.Cog, ColorHandler):
             description="The lower bound of the guessing range.",
         ),
     ):
-        """Guess the number game"""
+        """Guess the number game
+
+        Number of chances is calculated using log2(upper - lower + 1) and rounded to the nearest integer.
+        This makes the game more 50% fair, as it gives the user a reasonable number of chances to guess the number.
+
+        This command has max concurrency of 1 per user.
+
+        This command has no cooldown.
+        """
         upper, lower = max(upper, lower), min(upper, lower)
         number = random.randint(lower, upper)
 
@@ -577,15 +630,17 @@ class Fun(commands.Cog, ColorHandler):
             await ctx.reply(f"{ctx.author.mention} The number is **{number}**. Better luck next time")
         return None
 
-    @commands.command(name="cathi")
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
+    @commands.command(name="cathi", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_cathi(
         self,
         ctx: Context[Parrot],
         text: str = commands.parameter(description="The text for the cat to say.", default="Hi..."),
     ):
-        """Make a cat say something."""
+        """Make a cat say something.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         # please dont DM to ask what is this, I forget
         m: discord.Message = await ctx.reply("starting")
 
@@ -619,11 +674,13 @@ class Fun(commands.Cog, ColorHandler):
             await m.edit(content=cat)
             await asyncio.sleep(1.5)
 
-    @commands.command(name="flop")
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
+    @commands.command(name="flop", hidden=True)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_flop(self, ctx: Context[Parrot]):
-        """Flop."""
+        """Make a flop animation.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         m = await ctx.reply("Starting...")
         DEGREE_SIGN = "\N{DEGREE SIGN}"
         WHITE_SQUARE = "\N{WHITE SQUARE}"
@@ -643,10 +700,12 @@ class Fun(commands.Cog, ColorHandler):
             await asyncio.sleep(1.5)
 
     @commands.command(name="poof", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_poof(self, ctx: Context[Parrot]):
-        """Poof."""
+        """Make a poof animation.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         m: discord.Message = await ctx.reply("...")
         ls = ("(   ' - ')", r"' \- ')", r"\- ')", "')", ")", "*poofness*")
         for i in ls:
@@ -654,7 +713,6 @@ class Fun(commands.Cog, ColorHandler):
             await asyncio.sleep(1.5)
 
     @commands.command(name="virus", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_virus(
         self,
@@ -662,7 +720,10 @@ class Fun(commands.Cog, ColorHandler):
         user: discord.Member = commands.parameter(description="The user to infect.", default=commands.parameters.Author),  # noqa: B008
         virus: str = commands.parameter(description="The name of the virus to insert.", default="trojan"),
     ):
-        """Insert a virus to yourself or someone else."""
+        """Insert a virus to yourself or someone else.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         m = await ctx.reply("...")
         user = user or ctx.author
         DARK_SHADE = "\N{DARK SHADE}"
@@ -683,20 +744,24 @@ class Fun(commands.Cog, ColorHandler):
             for i in range(3, SHIFTER, 3)
         ]
         ls.append(f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
-        for _ in range(3):
-            ls.append(
-                f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe"
-            )
+        ls.extend(
+            f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':.<24}{Fore.WHITE}] "
+            f"{Fore.YELLOW}{next(rotator)} "
+            f"{Fore.BLUE}{virus}-virus.exe"
+            for _ in range(3)
+        )
         ls.append(f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}")
         for i in ls:
             await m.edit(content=f"{PREFIX}{i}{SUFFIX}")
             await asyncio.sleep(1.5)
 
     @commands.command(name="boom", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_boom(self, ctx: Context[Parrot]):
-        """Booms a message!."""
+        """Booms a message!.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         m = await ctx.reply("THIS MESSAGE WILL SELFDESTRUCT IN 5")
         await asyncio.sleep(1.5)
         ls = (
@@ -713,9 +778,14 @@ class Fun(commands.Cog, ColorHandler):
             await asyncio.sleep(1.5)
 
     @commands.command(name="table", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_table(self, ctx: Context[Parrot]):
+        """Animate a table-themed message.
+
+        This command sends a short animated text sequence to the channel.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         # Thanks `CutieRei#5211`(830248412904947753)
         DEGREE_SIGN = "\N{DEGREE SIGN}"
         WHITE_SQUARE = "\N{WHITE SQUARE}"
@@ -745,9 +815,14 @@ class Fun(commands.Cog, ColorHandler):
             await asyncio.sleep(1.5)
 
     @commands.command(name="funwarn", hidden=True)
-    @commands.max_concurrency(1, per=commands.BucketType.channel)
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def fun_animation_warning(self, ctx: Context[Parrot]):
+        """Display an animated system-overload warning.
+
+        This command sends a short warning animation to the channel.
+
+        This command has a cooldown of 60 seconds per user.
+        """
         msg = await ctx.reply("...")
         IDEA_GRAPHIC_FULL_STOP = "\N{HALFWIDTH IDEOGRAPHIC FULL STOP}"
         IDEA_GRAPHIC = "\N{CJK UNIFIED IDEOGRAPH-76CA}"
@@ -779,7 +854,7 @@ class Fun(commands.Cog, ColorHandler):
             await msg.edit(content=animation_frame)
             await asyncio.sleep(1.5)
 
-    @commands.group(aliases=("color",), invoke_without_command=True)
+    @commands.group(aliases=["color"], invoke_without_command=True)
     async def colour(
         self,
         ctx: Context[Parrot],
@@ -789,6 +864,8 @@ class Fun(commands.Cog, ColorHandler):
         """Create an embed that displays colour information.
 
         If no subcommand is called, a randomly selected colour will be shown.
+
+        This command has no cooldown.
         """
         try:
             extra_colour = cast(tuple[int, int, int], ImageColor.getrgb(colour_input))
@@ -801,13 +878,14 @@ class Fun(commands.Cog, ColorHandler):
     async def rgb(
         self,
         ctx: Context[Parrot],
-        red: int = commands.parameter(description="The red value (0-255)."),
-        green: int = commands.parameter(description="The green value (0-255)."),
-        blue: int = commands.parameter(description="The blue value (0-255)."),
+        red: commands.Range[int, 0, 255] = commands.parameter(description="The red value (0-255)."),  # noqa: B008
+        green: commands.Range[int, 0, 255] = commands.parameter(description="The green value (0-255)."),  # noqa: B008
+        blue: commands.Range[int, 0, 255] = commands.parameter(description="The blue value (0-255)."),  # noqa: B008
     ) -> None:
-        """Create an embed from an RGB input."""
-        if any(c not in range(256) for c in (red, green, blue)):
-            raise commands.BadArgument(message=f"RGB values can only be from 0 to 255. User input was: `{red, green, blue}`.")
+        """Create an embed from an RGB input.
+
+        This command has no cooldown.
+        """
         rgb_tuple = (red, green, blue)
         await self.send_colour_response(ctx, rgb_tuple)
 
@@ -815,15 +893,14 @@ class Fun(commands.Cog, ColorHandler):
     async def hsv(
         self,
         ctx: Context[Parrot],
-        hue: int = commands.parameter(description="The hue value (0-360)."),
-        saturation: int = commands.parameter(description="The saturation value (0-100)."),
-        value: int = commands.parameter(description="The value (brightness) (0-100)."),
+        hue: commands.Range[int, 0, 360] = commands.parameter(description="The hue value (0-360)."),  # noqa: B008
+        saturation: commands.Range[int, 0, 100] = commands.parameter(description="The saturation value (0-100)."),  # noqa: B008
+        value: commands.Range[int, 0, 100] = commands.parameter(description="The value (brightness) (0-100)."),  # noqa: B008
     ) -> None:
-        """Create an embed from an HSV input."""
-        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, value)):
-            raise commands.BadArgument(
-                message=f"Hue can only be from 0 to 360. Saturation and Value can only be from 0 to 100. User input was: `{hue, saturation, value}`."
-            )
+        """Create an embed from an HSV input.
+
+        This command has no cooldown.
+        """
         hsv_tuple = cast(
             tuple[int, int, int],
             ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"),
@@ -834,15 +911,14 @@ class Fun(commands.Cog, ColorHandler):
     async def hsl(
         self,
         ctx: Context[Parrot],
-        hue: int = commands.parameter(description="The hue value (0-360)."),
-        saturation: int = commands.parameter(description="The saturation value (0-100)."),
-        lightness: int = commands.parameter(description="The lightness value (0-100)."),
+        hue: commands.Range[int, 0, 360] = commands.parameter(description="The hue value (0-360)."),  # noqa: B008
+        saturation: commands.Range[int, 0, 100] = commands.parameter(description="The saturation value (0-100)."),  # noqa: B008
+        lightness: commands.Range[int, 0, 100] = commands.parameter(description="The lightness value (0-100)."),  # noqa: B008
     ) -> None:
-        """Create an embed from an HSL input."""
-        if (hue not in range(361)) or any(c not in range(101) for c in (saturation, lightness)):
-            raise commands.BadArgument(
-                message=f"Hue can only be from 0 to 360. Saturation and Lightness can only be from 0 to 100. User input was: `{hue, saturation, lightness}`."
-            )
+        """Create an embed from an HSL input.
+
+        This command has no cooldown.
+        """
         hsl_tuple = cast(
             tuple[int, int, int],
             ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"),
@@ -853,12 +929,15 @@ class Fun(commands.Cog, ColorHandler):
     async def cmyk(
         self,
         ctx: Context[Parrot],
-        cyan: int = commands.parameter(description="The cyan value (0-100)."),
-        magenta: int = commands.parameter(description="The magenta value (0-100)."),
-        yellow: int = commands.parameter(description="The yellow value (0-100)."),
-        key: int = commands.parameter(description="The key (black) value (0-100)."),
+        cyan: commands.Range[int, 0, 100] = commands.parameter(description="The cyan value (0-100)."),  # noqa: B008
+        magenta: commands.Range[int, 0, 100] = commands.parameter(description="The magenta value (0-100)."),  # noqa: B008
+        yellow: commands.Range[int, 0, 100] = commands.parameter(description="The yellow value (0-100)."),  # noqa: B008
+        key: commands.Range[int, 0, 100] = commands.parameter(description="The key (black) value (0-100)."),  # noqa: B008
     ) -> None:
-        """Create an embed from a CMYK input."""
+        """Create an embed from a CMYK input.
+
+        This command has no cooldown.
+        """
         if any(c not in range(101) for c in (cyan, magenta, yellow, key)):
             raise commands.BadArgument(message=f"CMYK values can only be from 0 to 100. User input was: `{cyan, magenta, yellow, key}`.")
         r = round(255 * (1 - (cyan / 100)) * (1 - (key / 100)))
@@ -872,7 +951,10 @@ class Fun(commands.Cog, ColorHandler):
         ctx: Context[Parrot],
         hex_code: str = commands.parameter(description="The HEX color code.", displayed_name="hex"),
     ) -> None:
-        """Create an embed from a HEX input."""
+        """Create an embed from a HEX input.
+
+        This command has no cooldown.
+        """
         if hex_code[0] != "#":
             hex_code = f"#{hex_code}"
 
@@ -891,14 +973,17 @@ class Fun(commands.Cog, ColorHandler):
         self,
         ctx: Context[Parrot],
         *,
-        user_colour_name: str = commands.parameter(description="The name of the colour.", displayed_name="colour name"),
+        name: str = commands.parameter(description="The name of the colour."),
     ) -> None:
-        """Create an embed from a name input."""
-        hex_colour = self.match_colour_name(user_colour_name)
+        """Create an embed from a name input.
+
+        This command has no cooldown.
+        """
+        hex_colour = self.match_colour_name(name)
         if hex_colour is None:
             name_error_embed = discord.Embed(
                 title="No colour match found.",
-                description=f"No colour found for: `{user_colour_name}`",
+                description=f"No colour found for: `{name}`",
                 colour=discord.Color.dark_red(),
             )
             await ctx.reply(embed=name_error_embed)
@@ -908,7 +993,10 @@ class Fun(commands.Cog, ColorHandler):
 
     @colour.command()
     async def random(self, ctx: Context[Parrot]) -> None:
-        """Create an embed from a randomly chosen colour."""
+        """Create an embed from a randomly chosen colour.
+
+        This command has no cooldown.
+        """
         hex_colour = random.choice(list(color_names.values()))
         hex_tuple = ImageColor.getrgb(f"#{hex_colour}")
         await self.send_colour_response(ctx, hex_tuple)
@@ -920,7 +1008,10 @@ class Fun(commands.Cog, ColorHandler):
         *,
         term: str = commands.parameter(description="The term to define."),
     ) -> discord.Message:
-        """Fetch a definition from Urban Dictionary."""
+        """Fetch a definition from Urban Dictionary.
+
+        This command has no cooldown.
+        """
         return await self.get_urban_definition(ctx, term)
 
     async def get_urban_definition(self, ctx: Context[Parrot], term: str) -> discord.Message:
@@ -952,7 +1043,10 @@ class Fun(commands.Cog, ColorHandler):
 
     @commands.command(name="bottomify", aliases=["bottom"])
     async def _bottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Bottomify your text."""
+        """Bottomify your text.
+
+        This command has no cooldown.
+        """
         text = to_bottom(text)
         if len(text) > 2000:
             await ctx.reply(text[:2000])
@@ -961,7 +1055,10 @@ class Fun(commands.Cog, ColorHandler):
 
     @commands.command(name="debottomify", aliases=["debottom"])
     async def _debottomify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Debottomify your text."""
+        """Debottomify your text.
+
+        This command has no cooldown.
+        """
         text = from_bottom(text)
         if len(text) > 2000:
             await ctx.reply(text[:2000])
@@ -969,13 +1066,17 @@ class Fun(commands.Cog, ColorHandler):
             await ctx.reply(text)
 
     @commands.command(name="pour", aliases=["pourpuzzle"])
-    @commands.bot_has_permissions(embed_links=True, attach_files=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def _pour(self, ctx: Context, *, level: int = 1):
-        """Pour puzzle."""
-        if level > 50:
-            return await ctx.reply("Level must be between 1 and 50")
+    async def pour_puzzle(
+        self,
+        ctx: Context,
+        *,
+        level: commands.Range[int, 1, 50] = commands.parameter(description="The level of the pour puzzle (1-50).", default=1),  # noqa: B008
+    ):
+        """Pour puzzle.
 
+        This command has a cooldown of 5 seconds per user.
+        """
         view = PourView(ctx, level)
         img_buf = await asyncio.to_thread(view.draw_image)
         embed = discord.Embed(title="Pour puzzle", description=f"Level: {level}")
@@ -985,12 +1086,18 @@ class Fun(commands.Cog, ColorHandler):
 
         embed.set_footer(text=f"Game played by: {ctx.author}", icon_url=ctx.author.display_avatar.url)
         view.message = await ctx.reply(file=file, embed=embed, view=view)
-        return None
 
     @commands.command()
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def uwuify(self, ctx: Context, *, text: Annotated[str, commands.clean_content]):
-        """Converts a given `text` into it's uwu equivalent."""
+    async def uwuify(
+        self,
+        ctx: Context,
+        *,
+        text: Annotated[str, commands.clean_content] = commands.parameter(description="The text to uwuify."),
+    ):
+        """Converts a given `text` into it's uwu equivalent.
+
+        This command has no cooldown.
+        """
         conversion_func = functools.partial(replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True)
 
         converted_text = conversion_func(text)
@@ -1003,7 +1110,14 @@ class Fun(commands.Cog, ColorHandler):
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.channel)
     async def quiz(self, ctx: commands.Context[Parrot]):
-        """Starts a quiz game."""
+        """Starts a quiz game.
+
+        Powered by the Open Trivia Database API (<https://opentdb.com/>).
+
+        This command has max concurrency of 1 per channel.
+
+        This command has no cooldown.
+        """
         view = QuizConfigLayout(author=ctx.author)
         await ctx.reply(view=view)
         await view.wait()

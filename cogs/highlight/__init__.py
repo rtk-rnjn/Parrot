@@ -32,6 +32,8 @@ class Highlights(commands.Cog):
 
         This command group allows users to manage their message highlights.
         Users can add, remove, and list their highlight trigger words, as well as block or unblock users from triggering their highlights.
+
+        This command has no cooldown.
         """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
@@ -47,11 +49,16 @@ class Highlights(commands.Cog):
 
         This command allows users to add a new highlight trigger word.
         When a message containing this trigger word is sent in a channel, the user will receive a notification.
+
+        This command has no cooldown.
         """
         assert ctx.guild is not None
 
         await self.bot.database.add_user_highlight(guild_id=ctx.guild.id, user_id=ctx.author.id, words=[trigger])
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+        if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+            await ctx.message.delete(delay=0)
 
     @highlight.command(name="remove", aliases=["delete", "del", "rm"])
     async def remove_highlight(
@@ -60,14 +67,23 @@ class Highlights(commands.Cog):
         *,
         trigger: str = commands.parameter(description="The trigger word for the highlight"),
     ) -> None:
-        """Remove an existing highlight."""
+        """Remove an existing highlight.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         await self.bot.database.remove_user_highlight(guild_id=ctx.guild.id, user_id=ctx.author.id, words=[trigger])
 
+        if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+            await ctx.message.delete(delay=0)
+
     @highlight.command(name="list", aliases=["ls"])
     async def list_highlights(self, ctx: commands.Context[Parrot]) -> None:
-        """List all highlights."""
+        """List all highlights.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         highlights = await self.bot.database.get_user_highlights(guild_id=ctx.guild.id, user_id=ctx.author.id)
@@ -90,7 +106,10 @@ class Highlights(commands.Cog):
         *,
         user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
     ) -> None:
-        """Block a user from triggering your highlights."""
+        """Block a user from triggering your highlights.
+
+        This command has no cooldown.
+        """
         await self.bot.database.add_user_highlight_ignored_user(user_id=ctx.author.id, ignored_user_id=user.id)
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -101,7 +120,10 @@ class Highlights(commands.Cog):
         *,
         user: discord.Member | discord.User = commands.parameter(description="The user to block from triggering your highlights"),  # noqa: B008
     ) -> None:
-        """Unblock a user from triggering your highlights."""
+        """Unblock a user from triggering your highlights.
+
+        This command has no cooldown.
+        """
         await self.bot.database.remove_user_highlight_ignored_user(user_id=ctx.author.id, ignored_user_id=user.id)
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -182,19 +204,19 @@ class Highlights(commands.Cog):
             .set_footer(text="Triggered")
         )
 
-        def esc(string: str) -> str:
+        def escape_and_highlight(string: str) -> str:
             st: str = discord.utils.escape_markdown(string)
             return st.replace(f"{highlight}", f"**{highlight}**")
 
-        content = esc(message.content)[:2000]
+        content = escape_and_highlight(message.content)[:2000]
         relative_time = discord.utils.format_dt(message.created_at, style="R")
         em.description = f"{relative_time} `@{message.author!s}`: {content}"
 
         try:
             async for ms in message.channel.history(limit=3, before=message):
-                content = esc(ms.content)
+                content = escape_and_highlight(ms.content)
                 relative_time = discord.utils.format_dt(ms.created_at, style="R")
-                text = f"{relative_time} `@{ms.author!s}`: {esc(content)}\n"
+                text = f"{relative_time} `@{ms.author!s}`: {escape_and_highlight(content)}\n"
                 if len(initial_description + em.description + text) <= 4096:
                     em.description = text + em.description
         except discord.HTTPException:

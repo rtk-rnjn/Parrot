@@ -110,7 +110,10 @@ class Leveling(commands.Cog):
 
     @commands.group(name="leveling", invoke_without_command=True)
     async def leveling(self, ctx: commands.Context[Parrot]) -> None:
-        """Manage or view server leveling."""
+        """Manage or view server leveling.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -120,7 +123,12 @@ class Leveling(commands.Cog):
     @leveling.command(name="enable")
     @commands.has_guild_permissions(manage_guild=True)
     async def enable_leveling(self, ctx: commands.Context[Parrot]) -> None:
-        """Enable leveling in this server."""
+        """Enable leveling in this server.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -134,7 +142,12 @@ class Leveling(commands.Cog):
     @leveling.command(name="disable")
     @commands.has_guild_permissions(manage_guild=True)
     async def disable_leveling(self, ctx: commands.Context[Parrot]) -> None:
-        """Disable leveling in this server."""
+        """Disable leveling in this server.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -153,7 +166,12 @@ class Leveling(commands.Cog):
         level: commands.Range[int, 1, 100],
         role: discord.Role,
     ) -> None:
-        """Assign a role when a member reaches a level."""
+        """Assign a role when a member reaches a level.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -163,7 +181,12 @@ class Leveling(commands.Cog):
     @leveling.command(name="unrole")
     @commands.has_guild_permissions(manage_guild=True)
     async def remove_level_role(self, ctx: commands.Context[Parrot], level: commands.Range[int, 1, 100]) -> None:
-        """Remove a role assignment from a level."""
+        """Remove a role assignment from a level.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -172,7 +195,10 @@ class Leveling(commands.Cog):
 
     @commands.command(name="rank", aliases=["level"])
     async def rank(self, ctx: commands.Context[Parrot], *, member: discord.Member | None = None) -> None:
-        """Show a member's current level and XP."""
+        """Show a member's current level and XP.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 

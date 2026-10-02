@@ -50,13 +50,18 @@ class Giveaway(commands.Cog):
 
     @staticmethod
     def _embed(giveaway: GiveawayModel, *, winners: list[int] | None = None) -> discord.Embed:
-        embed = discord.Embed(title=f"{GIVEAWAY_EMOJI} Giveaway", colour=discord.Colour.blurple())
         entry_mode = giveaway.get("entry_mode", "reaction")
         entry_hint = "React with \N{PARTY POPPER} to enter!" if entry_mode == "reaction" else "Click **Enter giveaway** to enter!"
-        embed.description = f"**Prize:** {giveaway['prize']}\n{entry_hint}"
-        embed.add_field(name="Winners", value=str(giveaway["winners"]))
-        embed.add_field(name="Ends", value=discord.utils.format_dt(giveaway["ends_at"], "R"))
-        embed.set_footer(text=f"Giveaway ID: {giveaway['_id']}")
+        embed = (
+            discord.Embed(
+                title=f"{GIVEAWAY_EMOJI} Giveaway",
+                colour=discord.Colour.blurple(),
+                description=f"**Prize:** {giveaway['prize']}\n{entry_hint}",
+            )
+            .add_field(name="Winners", value=str(giveaway["winners"]))
+            .add_field(name="Ends", value=discord.utils.format_dt(giveaway["ends_at"], "R"))
+            .set_footer(text=f"Giveaway ID: {giveaway['_id']}")
+        )
         if giveaway["ended"]:
             embed.description = f"**Prize:** {giveaway['prize']}\nThis giveaway has ended."
             embed.colour = discord.Colour.dark_grey()
@@ -80,7 +85,10 @@ class Giveaway(commands.Cog):
     @commands.group(name="giveaway", invoke_without_command=True, aliases=["gaw", "gw"])
     @commands.guild_only()
     async def giveaway(self, ctx: commands.Context[Parrot]) -> None:
-        """Manage giveaways in this server."""
+        """Manage giveaways in this server.
+
+        This command has no cooldown.
+        """
         await ctx.send_help(ctx.command)
 
     @giveaway.command(name="start")
@@ -93,7 +101,12 @@ class Giveaway(commands.Cog):
         *,
         prize: str,
     ) -> None:
-        """Start a giveaway: giveaway start <duration> <winners> <prize>."""
+        """Start a giveaway: giveaway start <duration> <winners> <prize>.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -153,7 +166,12 @@ class Giveaway(commands.Cog):
         duration: FutureTime,
         winners: commands.Range[int, 1, 20],
     ) -> None:
-        """Turn the author's existing message into a reaction-only giveaway."""
+        """Turn the author's existing message into a reaction-only giveaway.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None or message.guild != ctx.guild or message.author.id != ctx.author.id:
             await ctx.reply("The message must be your own message in this server.")
             return
@@ -185,7 +203,12 @@ class Giveaway(commands.Cog):
     @giveaway.command(name="end")
     @commands.has_guild_permissions(manage_guild=True)
     async def end_giveaway(self, ctx: commands.Context[Parrot], giveaway_id: str) -> None:
-        """End a giveaway immediately."""
+        """End a giveaway immediately.
+
+        You must have the "Manage Server" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
         object_id = self._object_id(giveaway_id)

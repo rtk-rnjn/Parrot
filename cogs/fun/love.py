@@ -250,7 +250,10 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command(aliases=["saintvalentine"])
     async def whoisvalentine(self, ctx: commands.Context[Parrot]):
-        """Displays info about Saint Valentine."""
+        """Displays info about Saint Valentine.
+
+        This command has no cooldown.
+        """
         embed = discord.Embed(
             title="Who is Saint Valentine?",
             description=self.valentine_facts["whois"],
@@ -264,7 +267,10 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command(aliases=["valentine-fact"])
     async def valentinefact(self, ctx: commands.Context[Parrot]) -> None:
-        """Shows a random fact about Valentine's Day."""
+        """Shows a random fact about Valentine's Day.
+
+        This command has no cooldown.
+        """
         embed = discord.Embed(
             title=choice(self.valentine_facts["titles"]),
             description=choice(self.valentine_facts["text"]),
@@ -275,13 +281,19 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.group(name="zodiac", invoke_without_command=True)
     async def zodiac(self, ctx: commands.Context[Parrot], zodiac_sign: str) -> None:
-        """Provides information about zodiac sign by taking zodiac sign name as input."""
+        """Provides information about zodiac sign by taking zodiac sign name as input.
+
+        This command has no cooldown.
+        """
         final_embed = self.zodiac_build_embed(zodiac_sign)
         await ctx.reply(embed=final_embed)
 
     @zodiac.command(name="date")
     async def date_and_month(self, ctx: commands.Context[Parrot], date: int, month: int | str) -> None:
-        """Provides information about zodiac sign by taking month and date as input."""
+        """Provides information about zodiac sign by taking month and date as input.
+
+        This command has no cooldown.
+        """
         if isinstance(month, str):
             month = month.capitalize()
             try:
@@ -305,16 +317,22 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
 
         await ctx.reply(embed=final_embed)
 
-    @zodiac.command(name="partnerzodiac", aliases=("partner",))
+    @zodiac.command(name="partnerzodiac", aliases=["partner"])
     async def partner_zodiac(self, ctx: commands.Context[Parrot], zodiac_sign: str) -> None:
-        """Provides a random counter compatible zodiac sign to the given user's zodiac sign."""
+        """Provides a random counter compatible zodiac sign to the given user's zodiac sign.
+
+        This command has no cooldown.
+        """
         embed = discord.Embed(color=discord.Color.dark_magenta())
         if self.zodiacs.get(zodiac_sign.capitalize()):
             compatible_zodiac = random.choice(self.zodiacs[zodiac_sign.capitalize()])
             emoji1 = random.choice(HEART_EMOJIS)
             emoji2 = random.choice(HEART_EMOJIS)
             embed.title = "Zodiac Compatibility"
-            embed.description = f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
+            embed.description = (
+                f"{zodiac_sign.capitalize()}{emoji1}{compatible_zodiac['Zodiac']}\n"
+                f"{emoji2}Compatibility meter : {compatible_zodiac['compatibility_score']}{emoji2}"
+            )
             embed.add_field(
                 name=f"A letter from Dr.Zodiac {LETTER_EMOJI}",
                 value=compatible_zodiac["description"],
@@ -325,7 +343,10 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command()
     async def savethedate(self, ctx: commands.Context[Parrot]) -> None:
-        """Gives you ideas for what to do on a date with your valentine."""
+        """Gives you ideas for what to do on a date with your valentine.
+
+        This command has no cooldown.
+        """
         random_date = random.choice(self.valentines_date_ideas)
         emoji_1 = random.choice(HEART_EMOJIS)
         emoji_2 = random.choice(HEART_EMOJIS)
@@ -340,6 +361,8 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
     async def pickupline(self, ctx: commands.Context[Parrot]) -> None:
         """Gives you a random pickup line.
         Note that most of them are very cheesy.
+
+        This command has no cooldown.
         """
         random_line = random.choice(self.pickup_lines["lines"])
         embed = discord.Embed(
@@ -352,7 +375,10 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
 
     @commands.command()
     async def myvalenstate(self, ctx: commands.Context[Parrot], *, name: str | None = None) -> None:
-        """Find the vacation spot(s) with the most matching characters to the invoking user."""
+        """Find the vacation spot(s) with the most matching characters to the invoking user.
+
+        This command has no cooldown.
+        """
         eq_chars = collections.defaultdict(int)
         author = ctx.author.name.lower().replace(" ", "") if name is None else name.lower().replace(" ", "")
 
@@ -384,7 +410,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         embed.set_image(url=self.valenstates[valenstate]["flag"])
         await ctx.reply(embed=embed)
 
-    @commands.command(aliases=("love_calculator", "love_calc"))
+    @commands.command(aliases=["love_calculator", "love_calc"])
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
     async def love(self, ctx: commands.Context[Parrot], who: Member, whom: Member) -> None:
         """Tells you how much the two love each other.
@@ -396,9 +422,9 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
           - name#discrim
           - name
           - nickname
-        Any two arguments will always yield the same result, regardless of the order of arguments:
-          Running $love @joe#6000 @chrisjl#2655 will always yield the same result.
-          Running $love @chrisjl#2655 @joe#6000 will yield the same result as before.
+        Any two arguments will always yield the same result, regardless of the order of arguments.
+
+        This command has a cooldown.
         """
 
         who_user = discord.utils.escape_markdown(who.display_name)

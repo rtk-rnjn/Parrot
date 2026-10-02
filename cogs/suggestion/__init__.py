@@ -135,7 +135,13 @@ class Suggestion(commands.Cog):
         *,
         suggestion: Annotated[str, commands.clean_content],
     ):
-        """Suggest something. Abuse of the command may result in required mod actions."""
+        """Suggest something. Abuse of the command may result in required mod actions.
+
+        No special user permissions are required.
+        The bot must have the "Embed Links and Create Public Threads" permissions to run this command successfully.
+
+        This command has a cooldown of 60 seconds per member.
+        """
         assert ctx.guild is not None
 
         if not ctx.invoked_subcommand:

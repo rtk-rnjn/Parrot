@@ -579,7 +579,12 @@ class CC(commands.Cog):
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def cc(self, ctx: commands.Context[Parrot]) -> None:
-        """Manage custom commands."""
+        """Manage custom commands.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -603,13 +608,23 @@ class CC(commands.Cog):
     @cc.command(name="manage")
     @commands.has_permissions(administrator=True)
     async def manage(self, ctx: commands.Context[Parrot]) -> None:
-        """Open the custom-command management panel."""
+        """Open the custom-command management panel.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         await self.send_panel(ctx)
 
     @cc.command(name="logs", aliases=["log"])
     @commands.has_permissions(administrator=True)
     async def logs(self, ctx: commands.Context[Parrot]) -> None:
-        """View the custom command logs."""
+        """View the custom command logs.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
@@ -712,7 +727,12 @@ class CC(commands.Cog):
         ctx: commands.Context[Parrot],
         name: Annotated[str, commands.clean_content] = commands.parameter(description="The name of the custom command to edit."),
     ) -> None:
-        """Edit an existing custom command."""
+        """Edit an existing custom command.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             await ctx.reply("This command can only be used in a guild.")
             return
@@ -740,7 +760,12 @@ class CC(commands.Cog):
         ctx: commands.Context[Parrot],
         name: Annotated[str, commands.clean_content] = commands.parameter(description="The name of the custom command to delete."),
     ) -> None:
-        """Delete an existing custom command."""
+        """Delete an existing custom command.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             await ctx.reply("This command can only be used in a guild.")
             return
@@ -760,7 +785,12 @@ class CC(commands.Cog):
         old_name: Annotated[str, commands.clean_content] = commands.parameter(description="The current name of the custom command."),
         new_name: Annotated[str, commands.clean_content] = commands.parameter(description="The new name for the custom command."),
     ) -> None:
-        """Rename an existing custom command."""
+        """Rename an existing custom command.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             await ctx.reply("This command can only be used in a guild.")
             return

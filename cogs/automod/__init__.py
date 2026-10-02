@@ -21,12 +21,22 @@ class Automod(commands.Cog):
     @commands.group(name="automod", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def automod(self, ctx: commands.Context[Parrot]) -> None:
-        """Shows the help message for the automod feature."""
+        """Shows the help message for the automod feature.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
 
     @automod.command(name="guide", aliases=["help"])
     @commands.has_permissions(administrator=True)
     async def automod_help(self, ctx: commands.Context[Parrot]) -> None:
-        """Shows the help message for the automod feature."""
+        """Shows the help message for the automod feature.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         embeds = automod_embeds()
         view = PaginationView(author=ctx.author, items=embeds)
         await view.start(ctx)

@@ -283,13 +283,19 @@ class Todo(commands.Cog):
 
     @commands.group(name="todo")
     async def todo(self, ctx: commands.Context) -> None:
-        """Manage your to-do list."""
+        """Manage your to-do list.
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
     @todo.command(name="add", aliases=["create", "new", "+", "+="])
     async def add_todo(self, ctx: commands.Context[Parrot], *, title: str) -> None:
-        """Add a new to-do item."""
+        """Add a new to-do item.
+
+        This command has no cooldown.
+        """
         todo_item = await self.bot.database.create_user_todo_item(user_id=ctx.author.id, title=title)
         embed = discord.Embed(title=f"ID: {todo_item['id']}", description=todo_item["title"])
         view = TodoCreateView(author=ctx.author, todo_item=todo_item)
@@ -297,7 +303,10 @@ class Todo(commands.Cog):
 
     @todo.command(name="list", aliases=["ls", "all"])
     async def list_todo(self, ctx: commands.Context[Parrot]) -> None:
-        """List your to-do items."""
+        """List your to-do items.
+
+        This command has no cooldown.
+        """
         todo_items = await self.bot.database.get_user_todo_items(user_id=ctx.author.id)
         if not todo_items:
             await ctx.reply("You have no to-do items.")
@@ -308,12 +317,18 @@ class Todo(commands.Cog):
 
     @commands.command(name="todos")
     async def todos(self, ctx: commands.Context[Parrot]) -> None:
-        """Alias for the todo list command."""
+        """Alias for the todo list command.
+
+        This command has no cooldown.
+        """
         await ctx.invoke(self.list_todo)
 
     @todo.command(name="remove", aliases=["delete", "rm", "del"])
     async def remove_todo(self, ctx: commands.Context[Parrot], *, id: str) -> None:  # noqa: A002
-        """Remove a to-do item."""
+        """Remove a to-do item.
+
+        This command has no cooldown.
+        """
         removed = await self.bot.database.delete_user_todo_item(user_id=ctx.author.id, todo_item_id=ObjectId(id))
         if removed:
             await ctx.reply(f"Removed to-do item (ID: `{id}`)")
@@ -322,7 +337,10 @@ class Todo(commands.Cog):
 
     @todo.command(name="view", aliases=["show"])
     async def view_todo(self, ctx: commands.Context[Parrot], *, id: str) -> None:  # noqa: A002
-        """View a to-do item."""
+        """View a to-do item.
+
+        This command has no cooldown.
+        """
         todo_item = await self.bot.database.get_user_todo_item(user_id=ctx.author.id, todo_item_id=ObjectId(id))
         if not todo_item:
             await ctx.reply(f"No to-do item found with ID: `{id}`")

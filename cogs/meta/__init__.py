@@ -49,7 +49,7 @@ class Meta(commands.Cog):
             names.append("Mention Everyone")
         return ", ".join(names) if names else "None"
 
-    @commands.command(name="ping", aliases=("latency",))
+    @commands.command(name="ping", aliases=["latency"])
     @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
     async def ping(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """
@@ -96,7 +96,7 @@ class Meta(commands.Cog):
         )
         return await message.edit(content=content)
 
-    @commands.command(name="uptime", aliases=("up",))
+    @commands.command(name="uptime", aliases=["up"])
     @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
     async def uptime(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Display how long the bot has been online.
@@ -123,7 +123,7 @@ class Meta(commands.Cog):
 
         return await ctx.reply(f"{UPTIME_EMOJI} **Uptime:** {uptime}\n{STARTED_EMOJI} **Started:** {started}")
 
-    @commands.command(name="member_count", aliases=("member-count", "mc"))
+    @commands.command(name="member_count", aliases=["member-count", "mc"])
     @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
     async def member_count(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """
@@ -149,7 +149,7 @@ class Meta(commands.Cog):
             f"{MEMBER_EMOJI} **Members:** `{ctx.guild.member_count:,}`\n{HUMAN_EMOJI} **Humans:** `{humans:,}`\n{BOT_EMOJI} **Bots:** `{bots:,}`"
         )
 
-    @commands.command(name="userinfo", aliases=("memberinfo", "ui", "mi"))
+    @commands.command(name="userinfo", aliases=["memberinfo", "ui", "mi"])
     @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.member)
     async def user_info(
         self,

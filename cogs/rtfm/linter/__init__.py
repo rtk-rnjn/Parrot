@@ -20,7 +20,10 @@ class Linter(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.user)
     async def lintcode(self, ctx: commands.Context[Parrot]):
-        """To lint your codes."""
+        """To lint your codes.
+        This command has max concurrency of 1 per user.
+        This command has a cooldown of 5 seconds per user.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -32,7 +35,10 @@ class Linter(commands.Cog):
         *,
         flag: Flake8Converter = commands.parameter(description="The code or flags to lint with flake8."),  # noqa: B008
     ):
-        """Lint code with flake8."""
+        """Lint code with flake8.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(flag).set_linttype("flake8")
         await linter.lint(ctx)
 
@@ -44,7 +50,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to lint with flake8."),
     ):
-        """Shortcut for `lintcode flake8` with no flags, just the code."""
+        """Shortcut for `lintcode flake8` with no flags, just the code.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code).set_linttype("flake8")
         await linter.lint_with_flake8(ctx)
 
@@ -56,7 +65,10 @@ class Linter(commands.Cog):
         *,
         flag: PyLintConverter = commands.parameter(description="The code or flags to lint with pylint."),  # noqa: B008
     ):
-        """Lint code with pylint."""
+        """Lint code with pylint.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(flag).set_linttype("pylint")
         await linter.lint(ctx)
 
@@ -68,7 +80,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to lint with pylint."),
     ):
-        """Shortcut for `lintcode pylint` with no flags, just the code."""
+        """Shortcut for `lintcode pylint` with no flags, just the code.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code).set_linttype("pylint")
         await linter.lint_with_pylint(ctx)
 
@@ -80,7 +95,10 @@ class Linter(commands.Cog):
         *,
         flag: MypyConverter = commands.parameter(description="The code or flags to lint with mypy."),  # noqa: B008
     ):
-        """Lint code with mypy."""
+        """Lint code with mypy.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(flag).set_linttype("mypy")
         await linter.lint(ctx)
 
@@ -92,7 +110,10 @@ class Linter(commands.Cog):
         *,
         flag: BanditConverter = commands.parameter(description="The code or flags to lint with bandit."),  # noqa: B008
     ):
-        """Lint code with bandit."""
+        """Lint code with bandit.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(flag).set_linttype("bandit")
         await linter.lint(ctx)
 
@@ -104,7 +125,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to lint with bandit."),
     ):
-        """Shortcut for `lintcode bandit` with no flags, just the code."""
+        """Shortcut for `lintcode bandit` with no flags, just the code.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code).set_linttype("bandit")
         await linter.lint_with_bandit(ctx)
 
@@ -116,7 +140,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to format with black."),
     ):
-        """Format code with black."""
+        """Format code with black.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code)
         await linter.run_black(ctx)
 
@@ -128,7 +155,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to format with black and isort."),
     ):
-        """Format code with black and isort."""
+        """Format code with black and isort.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code)
         await linter.run_isort_with_black(ctx)
 
@@ -140,7 +170,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to format with isort."),
     ):
-        """Format code with isort."""
+        """Format code with isort.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code)
         await linter.run_isort(ctx)
 
@@ -152,7 +185,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to format with yapf."),
     ):
-        """Format code with yapf."""
+        """Format code with yapf.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code)
         await linter.run_yapf(ctx)
 
@@ -164,7 +200,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to format with autopep8."),
     ):
-        """Format code with autopep8."""
+        """Format code with autopep8.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code)
         await linter.run_autopep8(ctx)
 
@@ -176,7 +215,10 @@ class Linter(commands.Cog):
         *,
         code: PyrightConverter = commands.parameter(description="The code or flags to lint with pyright."),  # noqa: B008
     ):
-        """Lint code with pyright."""
+        """Lint code with pyright.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint(ctx)
 
@@ -188,7 +230,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to lint with pyright."),
     ):
-        """Shortcut for `lintcode pyright` with no flags, just the code."""
+        """Shortcut for `lintcode pyright` with no flags, just the code.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code).set_linttype("pyright")
         await linter.lint_with_pyright(ctx)
 
@@ -200,7 +245,10 @@ class Linter(commands.Cog):
         *,
         flag: RuffConverter = commands.parameter(description="The code or flags to lint with ruff."),  # noqa: B008
     ):
-        """Lint code with ruff."""
+        """Lint code with ruff.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(flag).set_linttype("ruff")
         await linter.lint(ctx)
 
@@ -212,7 +260,10 @@ class Linter(commands.Cog):
         *,
         code: str = commands.parameter(description="The code to lint with ruff."),
     ):
-        """Shortcut for `lintcode ruff` with no flags, just the code."""
+        """Shortcut for `lintcode ruff` with no flags, just the code.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         linter = LintCode(code).set_linttype("ruff")
         await linter.lint_with_ruff(ctx)
 

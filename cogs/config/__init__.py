@@ -123,6 +123,10 @@ class Config(commands.Cog):
 
         This command serves as a parent for various subcommands that allow
         you to configure different aspects of the bot's behavior and settings.
+
+        You must have the "Administrator" permissions to use this command.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None, "This command can only be used in a server (guild)."

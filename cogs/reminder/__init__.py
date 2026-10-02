@@ -282,6 +282,8 @@ class Reminder(commands.Cog):
 
         This is used to convert times to your local timezone when
         using the reminder command and other miscellaneous commands.
+
+        This command has no cooldown.
         """
         return await ctx.send_help(ctx.command)
 
@@ -296,6 +298,8 @@ class Reminder(commands.Cog):
 
         This is used to convert times to your local timezone when
         using the reminder command and other miscellaneous commands.
+
+        This command has no cooldown.
         """
 
         label = timezone.label
@@ -311,7 +315,10 @@ class Reminder(commands.Cog):
         *,
         timezone: TimeZone = commands.parameter(description="The timezone to get info about."),  # noqa: B008
     ) -> discord.Message:
-        """Retrieves info about a timezone."""
+        """Retrieves info about a timezone.
+
+        This command has no cooldown.
+        """
 
         key = timezone.key
         label = timezone.label
@@ -403,6 +410,8 @@ class Reminder(commands.Cog):
 
         Times are in UTC unless a timezone is specified
         using the "timezone set" command.
+
+        This command has no cooldown.
         """
 
         if TYPE_CHECKING:
@@ -426,6 +435,8 @@ class Reminder(commands.Cog):
         """Lists your active reminders.
 
         This command will show you a list of all your active reminders, along with the time remaining until each reminder is triggered.
+
+        This command has no cooldown.
         """
 
         reminders = await self.bot.event_scheduler.search(event_name="reminder", metadata_filter={"user_id": ctx.author.id})

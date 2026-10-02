@@ -154,7 +154,10 @@ class Developer(commands.Cog):
         *,
         text: str = commands.parameter(description="The tutorial to search for."),
     ) -> discord.Message:
-        """Search for a python tutorial."""
+        """Search for a python tutorial.
+
+        This command has no cooldown.
+        """
         match = await asyncio.to_thread(extractOne, text, self.python_tags.keys())
         if match is None:
             return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
@@ -167,6 +170,13 @@ class Developer(commands.Cog):
 
     @python.command(name="list", aliases=["ls", "all"])
     async def python_list(self, ctx: commands.Context[Parrot]) -> discord.Message:
+        """List the available Python tutorials.
+
+        This command displays the tutorial names that can be searched with the parent command.
+
+
+        This command has no cooldown.
+        """
         return await ctx.reply(
             embed=discord.Embed(
                 title="List of available tutorials",
@@ -180,7 +190,10 @@ class Developer(commands.Cog):
         ctx: commands.Context[Parrot],
         package: str = commands.parameter(description="The package to search for."),
     ) -> discord.Message:
-        """Get info about a Python package directly from PyPi."""
+        """Get info about a Python package directly from PyPi.
+
+        This command has no cooldown.
+        """
         res_raw = await self.get_pypi_package(f"https://pypi.org/pypi/{package}/json")
 
         try:
@@ -228,7 +241,10 @@ class Developer(commands.Cog):
         ctx: commands.Context[Parrot],
         package: str = commands.parameter(description="The package to search for."),
     ) -> discord.Message:
-        """Get info about a NPM package directly from the NPM Registry."""
+        """Get info about a NPM package directly from the NPM Registry.
+
+        This command has no cooldown.
+        """
         res_raw = await self.get_pypi_package(f"https://registry.npmjs.org/{package}/")
 
         res_json = await res_raw.json()
@@ -284,7 +300,10 @@ class Developer(commands.Cog):
         ctx: commands.Context[Parrot],
         package: str = commands.parameter(description="The package to search for."),
     ) -> discord.Message:
-        """Get info about a Rust package directly from the Crates.IO Registry."""
+        """Get info about a Rust package directly from the Crates.IO Registry.
+
+        This command has no cooldown.
+        """
         res_raw = await self.get_pypi_package(f"https://crates.io/api/v1/crates/{package}")
 
         res_json = await res_raw.json()
@@ -351,7 +370,10 @@ class Developer(commands.Cog):
         *,
         codeblock: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="Code block to run."),  # noqa: B008
     ) -> discord.Message:
-        """Run code in various languages."""
+        """Run code in various languages.
+
+        This command has no cooldown.
+        """
         language = codeblock.language
         if language is None:
             raise commands.MissingRequiredArgument(commands.Parameter(name="language", kind=inspect.Parameter.POSITIONAL_ONLY))
@@ -368,7 +390,10 @@ class Developer(commands.Cog):
         *,
         page: str = commands.parameter(description="The manual page to get."),
     ) -> discord.Message | None:
-        """Returns the manual's page for a (mostly Debian) linux command."""
+        """Returns the manual's page for a (mostly Debian) linux command.
+
+        This command has no cooldown.
+        """
         url = f"https://man.cx/{urllib.parse.quote(page.strip(), safe='()')}"
 
         async with ctx.typing():
@@ -392,7 +417,10 @@ class Developer(commands.Cog):
         *,
         text: str = commands.parameter(description="The text to convert."),
     ) -> discord.Message:
-        """Returns number representation of characters in text."""
+        """Returns number representation of characters in text.
+
+        This command has no cooldown.
+        """
 
         return await ctx.reply(" ".join([str(ord(letter)) for letter in text]))
 
@@ -403,7 +431,10 @@ class Developer(commands.Cog):
         *,
         text: str = commands.parameter(description="The char codes to convert."),
     ) -> discord.Message:
-        """Reforms string from char codes."""
+        """Reforms string from char codes.
+
+        This command has no cooldown.
+        """
         try:
             codes = [chr(int(i)) for i in text.split(" ")]
 
@@ -421,7 +452,10 @@ class Developer(commands.Cog):
             description="The unit of the given value.", default="mio"
         ),
     ) -> discord.Message:
-        """Shows byte conversions of given value."""
+        """Shows byte conversions of given value.
+
+        This command has no cooldown.
+        """
         units = ("o", "kio", "mio", "gio", "tio", "pio", "eio", "zio", "yio")
 
         emb = discord.Embed(title="Binary conversions")
@@ -452,6 +486,8 @@ class Developer(commands.Cog):
         - `sha512`
         - `blake2b`
         - `blake2s`
+
+        This command has no cooldown.
         """
         algo = algorithm.lower()
 
@@ -480,6 +516,8 @@ class Developer(commands.Cog):
         """Shows you information about a number of characters.
 
         Only up to 25 characters at a time.
+
+        This command has no cooldown.
         """
 
         def to_string(c):
@@ -497,21 +535,27 @@ class Developer(commands.Cog):
         async with self.bot.http_session.get(url) as r:
             return await r.json()
 
-    @commands.group(name="github", aliases=("gh", "git", "g"))  # Thanks `will.#0021` (211756205721255947)
+    @commands.group(name="github", aliases=["gh", "git", "g"])  # Thanks `will.#0021` (211756205721255947)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def github_group(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
-        """Commands for finding information related to GitHub."""
+        """Commands for finding information related to GitHub.
+
+        This command has a cooldown of 10 seconds per user.
+        """
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
         return None
 
-    @github_group.command(name="user", aliases=("userinfo", "u"))  # Thanks `will.#0021` (211756205721255947)
+    @github_group.command(name="user", aliases=["userinfo", "u"])  # Thanks `will.#0021` (211756205721255947)
     async def github_user_info(
         self,
         ctx: commands.Context[Parrot],
         username: str = commands.parameter(description="The GitHub username to fetch information for."),
     ) -> discord.Message:
-        """Fetches a user's GitHub information."""
+        """Fetches a user's GitHub information.
+
+        This command has no cooldown.
+        """
         async with ctx.typing():
             user_data = await self.fetch_data(f"{GITHUB_API_URL}/users/{quote_plus(username)}")
 
@@ -569,10 +613,12 @@ class Developer(commands.Cog):
 
         return await ctx.reply(embed=embed)
 
-    @github_group.command(name="repository", aliases=("repo", "r"))  # Thanks ``willdn`` (will.#0021 - 211756205721255947)
+    @github_group.command(name="repository", aliases=["repo", "r"])  # Thanks ``willdn`` (will.#0021 - 211756205721255947)
     async def github_repo_info(self, ctx: commands.Context[Parrot], *repository: str) -> discord.Message:
         """Fetches a repositories' GitHub information.
         The repository should look like `user/reponame` or `user reponame`.
+
+        This command has no cooldown.
         """
         repo = "/".join(repository)
         if repo.count("/") != 1:
@@ -646,6 +692,8 @@ class Developer(commands.Cog):
         """Send some articles from RealPython that match the search terms.
         By default the top 5 matches are sent, this can be overwritten to a number between 1 and 5 by specifying an amount before the search query.
         If no search query is specified by the user, the home page is sent.
+
+        This command has a cooldown of 10 seconds per user.
         """
 
         params = {"q": query, "limit": amount, "kind": "article"}
@@ -694,7 +742,10 @@ class Developer(commands.Cog):
         *,
         query: str = commands.parameter(description="The search terms to look for."),
     ) -> discord.Message:
-        """Sends the top 5 results of a search query from stackoverflow."""
+        """Sends the top 5 results of a search query from stackoverflow.
+
+        This command has a cooldown of 15 seconds per user.
+        """
         params = {**STACKOVERFLOW_PARAMS, "q": query}
         async with self.bot.http_session.get(url=STACKOVERFLOW_BASE_API, params=params) as response:
             if response.status == 200:
@@ -749,6 +800,8 @@ class Developer(commands.Cog):
         """Search cheat.sh.
 
         Gets a post from https://cheat.sh/python/ by default.
+
+        This command has no cooldown.
         """
         search_string = quote_plus(" ".join(search_terms))
 
@@ -775,6 +828,8 @@ class Developer(commands.Cog):
     ) -> discord.Message:
         """Search WTF Python repository.
         Gets the link of the fuzzy matched query from https://github.com/satwikkansal/wtfpython.
+
+        This command has no cooldown.
         """
         if query is None:
             no_query_embed = discord.Embed(
@@ -808,6 +863,16 @@ class Developer(commands.Cog):
     @commands.command(name="kontest-reload", hidden=True)
     @commands.is_owner()
     async def kontest_reload(self, ctx: commands.Context[Parrot]) -> None:
+        """Reload the cached competitive-programming contests.
+
+        This command clears the cached contest data so it can be fetched again.
+
+        You must be a bot owner to use this command.
+
+
+
+        This command has no cooldown.
+        """
         self.kontests_cache.clear()
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -820,7 +885,10 @@ class Developer(commands.Cog):
             description="The competitive programming platform to get upcoming contests for."
         ),
     ) -> discord.Message:
-        """Get the upcoming contests on various competitive programming platforms."""
+        """Get the upcoming contests on various competitive programming platforms.
+
+        This command has a cooldown of 15 seconds per user.
+        """
 
         if random() < 0.1:
             await ctx.reply("From Owner: This command is still in development. Please be patient.")

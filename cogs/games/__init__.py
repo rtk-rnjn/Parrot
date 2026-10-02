@@ -94,65 +94,101 @@ class Games(commands.Cog):
 
     @commands.command(name="akinator", aliases=["aki"])
     async def akinator(self, ctx: commands.Context[Parrot]) -> None:
-        """Think of a person, character, or object and answer Akinator's questions until it guesses."""
+        """Think of a person, character, or object and answer Akinator's questions until it guesses.
+
+        This command has no cooldown.
+        """
         await Akinator().start(ctx)
 
     @commands.command(name="battleship", aliases=["bs"])
     async def battleship(self, ctx: commands.Context[Parrot]) -> None:
-        """Play two-player Battleship: place your fleet and fire at coordinates to sink the opponent's ships."""
+        """Play two-player Battleship: place your fleet and fire at coordinates to sink the opponent's ships.
+
+        This command has no cooldown.
+        """
         opponent = await self.wait_for_player(ctx)
         await BattleShip(ctx.author, opponent).start(ctx)
 
     @commands.command(name="boggle")
     async def boggle(self, ctx: commands.Context[Parrot]) -> None:
-        """Find as many connected words as possible in the letter grid before the timer ends."""
+        """Find as many connected words as possible in the letter grid before the timer ends.
+
+        This command has no cooldown.
+        """
         await Boggle().start(ctx)
 
     @commands.command(name="chimp_test", aliases=["ct", "chimp", "chimptest", "chimp-test"])
     async def chimp_test(self, ctx: commands.Context[Parrot]) -> None:
-        """Memorize the numbered tiles, then select them in ascending order after they are hidden."""
+        """Memorize the numbered tiles, then select them in ascending order after they are hidden.
+
+        This command has no cooldown.
+        """
         await ChimpTest().start(ctx)
 
     @commands.command(name="chess")
     async def chess(self, ctx: commands.Context[Parrot]) -> None:
-        """Play two-player Chess and checkmate the opposing king."""
+        """Play two-player Chess and checkmate the opposing king.
+
+        This command has no cooldown.
+        """
         opponent = await self.wait_for_player(ctx)
         await Chess(white=ctx.author, black=opponent).start(ctx)
 
     @commands.command(name="connect_four", aliases=["cf", "connect4", "connect-four", "c4"])
     async def connect_four(self, ctx: commands.Context[Parrot]) -> None:
-        """Play Connect Four: drop pieces and connect four horizontally, vertically, or diagonally."""
+        """Play Connect Four: drop pieces and connect four horizontally, vertically, or diagonally.
+
+        This command has no cooldown.
+        """
         opponent = await self.wait_for_player(ctx)
         await ConnectFour(red=ctx.author, blue=opponent).start(ctx)
 
     @commands.command(name="country_guesser", aliases=["cg", "countryguesser", "country-guesser"])
     async def country_guesser(self, ctx: commands.Context[Parrot]) -> None:
-        """Identify the country from the clues and submit your answer before the round ends."""
+        """Identify the country from the clues and submit your answer before the round ends.
+
+        This command has no cooldown.
+        """
         await CountryGuesser().start(ctx)
 
     @commands.command(name="hangman", aliases=["hm"])
     async def hangman(self, ctx: commands.Context[Parrot]) -> None:
-        """Guess letters to reveal the hidden word before you run out of attempts."""
+        """Guess letters to reveal the hidden word before you run out of attempts.
+
+        This command has no cooldown.
+        """
         await Hangman().start(ctx)
 
     @commands.command(name="lights_out", aliases=["lo", "lightout", "lightsout"])
     async def lights_out(self, ctx: commands.Context[Parrot]) -> None:
-        """Turn off every light; pressing a tile changes it and its neighbours."""
+        """Turn off every light; pressing a tile changes it and its neighbours.
+
+        This command has no cooldown.
+        """
         await LightsOut().start(ctx)
 
     @commands.command(name="memory_game", aliases=["mg", "memorygame", "memory-game"])
     async def memory_game(self, ctx: commands.Context[Parrot]) -> None:
-        """Reveal two tiles at a time and find all matching pairs."""
+        """Reveal two tiles at a time and find all matching pairs.
+
+        This command has no cooldown.
+        """
         await MemoryGame().start(ctx)
 
     @commands.command(name="number_memory", aliases=["nm", "numbermemory", "number-memory"])
     async def number_memory(self, ctx: commands.Context[Parrot]) -> None:
-        """Memorize the displayed number and enter it after it disappears; the challenge grows each round."""
+        """Memorize the displayed number and enter it after it disappears; the challenge grows each round.
+
+        This command has no cooldown.
+        """
         await NumberMemory().start(ctx)
 
     @commands.command(name="number_slider", aliases=["ns", "numberslider", "number-slider"])
     async def number_slider(self, ctx: commands.Context[Parrot]) -> None:
-        """Arrange the numbered tiles into order by sliding them through the empty space."""
+        """Arrange the numbered tiles into order by sliding them through the empty space.
+
+        This command has no cooldown.
+        """
         await NumberSlider().start(ctx)
 
     @commands.command(
@@ -160,33 +196,51 @@ class Games(commands.Cog):
         aliases=["rps", "rockpaperscissors", "rock-paper-scissors"],
     )
     async def rock_paper_scissors(self, ctx: commands.Context[Parrot]) -> None:
-        """Choose rock, paper, or scissors against the bot: rock beats scissors, scissors beats paper, and paper beats rock."""
+        """Choose rock, paper, or scissors against the bot: rock beats scissors, scissors beats paper, and paper beats rock.
+
+        This command has no cooldown.
+        """
         await RockPaperScissors().start(ctx)
 
     @commands.command(name="tictactoe", aliases=["ttt", "tic-tac-toe", "tic_tac_toe"])
     async def tictactoe(self, ctx: commands.Context[Parrot]) -> None:
-        """Play two-player Tic-Tac-Toe and get three marks in a row to win."""
+        """Play two-player Tic-Tac-Toe and get three marks in a row to win.
+
+        This command has no cooldown.
+        """
         opponent = await self.wait_for_player(ctx)
         await Tictactoe(cross=ctx.author, circle=opponent).start(ctx)
 
     @commands.command(name="twenty_48", aliases=["2048", "twenty48", "twenty-48"])
     async def twenty_48(self, ctx: commands.Context[Parrot]) -> None:
-        """Slide equal numbered tiles together to merge them and build toward 2048."""
+        """Slide equal numbered tiles together to merge them and build toward 2048.
+
+        This command has no cooldown.
+        """
         await Twenty48().start(ctx)
 
     @commands.command(name="verbal_memory", aliases=["vm", "verbalmemory", "verbal-memory"])
     async def verbal_memory(self, ctx: commands.Context[Parrot]) -> None:
-        """Decide whether each displayed word is new or has appeared before; mistakes cost a life."""
+        """Decide whether each displayed word is new or has appeared before; mistakes cost a life.
+
+        This command has no cooldown.
+        """
         await VerbalMemory().start(ctx)
 
     @commands.command(name="wordle", aliases=["wdl", "wordlegame", "wordle-game"])
     async def wordle(self, ctx: commands.Context[Parrot]) -> None:
-        """Guess the hidden word in limited attempts; tile colours show correct, misplaced, and absent letters."""
+        """Guess the hidden word in limited attempts; tile colours show correct, misplaced, and absent letters.
+
+        This command has no cooldown.
+        """
         await Wordle().start(ctx)
 
     @commands.command(name="typing_test", aliases=["typingtest", "typing-test"])
     async def typing_test(self, ctx: commands.Context[Parrot]) -> None:
-        """Type the displayed passage quickly and accurately to receive a speed and accuracy result."""
+        """Type the displayed passage quickly and accurately to receive a speed and accuracy result.
+
+        This command has no cooldown.
+        """
         await TypingTest().start(ctx)
 
     @commands.command(name="blackjack", aliases=["bj", "black-jack", "black_jack"])
@@ -198,13 +252,18 @@ class Games(commands.Cog):
         1 or 11. Use Hit, Stand, Double, Split, Insurance, or Surrender.
         The dealer stands on 17. A natural Blackjack pays 3:2 in the game
         result display.
+
+        This command has no cooldown.
         """
         await Blackjack().start(ctx)
 
     @commands.command("uno", aliases=["unogame"])
     @commands.max_concurrency(1, commands.BucketType.user)
     async def play_uno(self, ctx: commands.Context):
-        """Play multiplayer UNO by matching colour or value and using action and wild cards; empty your hand first."""
+        """Play multiplayer UNO by matching colour or value and using action and wild cards; empty your hand first.
+        This command has max concurrency of 1 per user.
+        This command has no cooldown.
+        """
         if ctx.channel.id in self.uno_games:
             raise commands.MaxConcurrencyReached(1, commands.BucketType.channel)
 
@@ -219,7 +278,10 @@ class Games(commands.Cog):
 
     @commands.command(name="sokoban", aliases=["sk", "soko", "sokobangame", "sokoban-game"])
     async def sokoban(self, ctx: commands.Context[Parrot], level: int | None = 1) -> None:
-        """Push boxes onto the target locations in the warehouse maze; you can only push, not pull."""
+        """Push boxes onto the target locations in the warehouse maze; you can only push, not pull.
+
+        This command has no cooldown.
+        """
         await SokobanGameView().start(ctx, level=level)
 
 

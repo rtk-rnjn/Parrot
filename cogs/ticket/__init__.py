@@ -54,14 +54,24 @@ class Ticket(commands.Cog):
     @commands.group(name="ticket", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def ticket(self, ctx: commands.Context[Parrot]) -> None:
-        """Manage ticket settings."""
+        """Manage ticket settings.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
     @ticket.command(name="setup")
     @commands.has_permissions(administrator=True)
     async def ticket_setup(self, ctx: commands.Context[Parrot], *, message: str) -> None:
-        """Set up the ticket system in a channel."""
+        """Set up the ticket system in a channel.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         channel_id = await self.bot.database.get_ticket_config_channel_id(ctx.guild.id)
@@ -88,7 +98,13 @@ class Ticket(commands.Cog):
     @ticket.command(name="open", aliases=["create"])
     @commands.bot_has_guild_permissions(create_private_threads=True)
     async def ticket_open(self, ctx: commands.Context[Parrot]) -> None:
-        """Open a new ticket; without using the buttons"""
+        """Open a new ticket; without using the buttons
+
+        No special user permissions are required.
+        The bot must have the "Create Private Threads" permission to run this command successfully.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
         assert isinstance(ctx.author, discord.Member)
 
@@ -119,7 +135,13 @@ class Ticket(commands.Cog):
     @commands.has_permissions(manage_threads=True)
     @commands.bot_has_permissions(manage_threads=True)
     async def ticket_delete(self, ctx: commands.Context[Parrot]) -> None:
-        """Close the ticket in the current channel."""
+        """Close the ticket in the current channel.
+
+        You must have the "Manage Threads" permission to use this command.
+        The bot must have the "Manage Threads" permission to run this command successfully.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             await ctx.reply("This command can only be used in a server (guild).")
             return
@@ -136,7 +158,10 @@ class Ticket(commands.Cog):
 
     @ticket.command(name="resolved", aliases=["close", "archive"])
     async def ticket_resolved(self, ctx: commands.Context[Parrot]) -> None:
-        """Mark the ticket in the current channel as resolved."""
+        """Mark the ticket in the current channel as resolved.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             await ctx.reply("This command can only be used in a server (guild).")
             return

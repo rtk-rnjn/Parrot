@@ -160,7 +160,10 @@ class Telephone(commands.Cog):
     @commands.group(name="telephone", aliases=["phone", "tel", "call"])
     @commands.max_concurrency(1, per=commands.BucketType.guild)
     async def telephone(self, ctx: commands.Context[Parrot], *, server: str) -> None:
-        """Starts a game of telephone in the specified server."""
+        """Starts a game of telephone in the specified server.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         target_guild = self._search_guild(server)
@@ -174,7 +177,12 @@ class Telephone(commands.Cog):
     @telephone.command(name="enable", aliases=["on"])
     @commands.has_permissions(administrator=True)
     async def enable(self, ctx: commands.Context[Parrot]) -> None:
-        """Enables the telephone game in the server."""
+        """Enables the telephone game in the server.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, enabled=True)
@@ -183,7 +191,12 @@ class Telephone(commands.Cog):
     @telephone.command(name="disable", aliases=["off"])
     @commands.has_permissions(administrator=True)
     async def disable(self, ctx: commands.Context[Parrot]) -> None:
-        """Disables the telephone game in the server."""
+        """Disables the telephone game in the server.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, enabled=False)
@@ -200,7 +213,12 @@ class Telephone(commands.Cog):
             default=lambda ctx: ctx.channel if isinstance(ctx.channel, discord.TextChannel) else None,
         ),
     ) -> None:
-        """Sets the channel for the telephone game in the server."""
+        """Sets the channel for the telephone game in the server.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         await self.bot.database.edit_telephone_config(guild_id=ctx.guild.id, channel_id=channel.id)
@@ -209,7 +227,12 @@ class Telephone(commands.Cog):
     @telephone.command(name="block", aliases=["ban"])
     @commands.has_permissions(administrator=True)
     async def block(self, ctx: commands.Context[Parrot], *, server: str) -> None:
-        """Blocks a server from calling the telephone game."""
+        """Blocks a server from calling the telephone game.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         target_guild = self._search_guild(server)
@@ -225,7 +248,12 @@ class Telephone(commands.Cog):
     @telephone.command(name="unblock", aliases=["unban"])
     @commands.has_permissions(administrator=True)
     async def unblock(self, ctx: commands.Context[Parrot], *, server: str) -> None:
-        """Unblocks a server from calling the telephone game."""
+        """Unblocks a server from calling the telephone game.
+
+        You must have the "Administrator" permission to use this command.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         target_guild = self._search_guild(server)

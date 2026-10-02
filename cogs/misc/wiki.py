@@ -326,7 +326,10 @@ class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
         *,
         query: str = commands.parameter(description="The article title or search query.", default=""),
     ) -> None:
-        """Browse Wikipedia."""
+        """Browse Wikipedia.
+
+        This command has no cooldown.
+        """
         if not query.strip():
             p = ctx.clean_prefix
             await self._reply(
@@ -350,7 +353,10 @@ class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
 
     @wikipedia.command(name="search", aliases=["s"])
     async def wikipedia_search(self, ctx: commands.Context[Parrot], *, query: str = commands.parameter(description="The search query.")) -> None:
-        """Search Wikipedia and pick a result."""
+        """Search Wikipedia and pick a result.
+
+        This command has no cooldown.
+        """
         text, lang = split_lang(query)
         if not text:
             await self._reply(ctx, message_view("Give me something to search for."))
@@ -368,7 +374,10 @@ class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
         *,
         title: str = commands.parameter(description="The article title."),
     ) -> None:
-        """Show a Wikipedia article."""
+        """Show a Wikipedia article.
+
+        This command has no cooldown.
+        """
         text, lang = split_lang(title)
         if not text:
             await self._reply(ctx, message_view("Give me an article title."))
@@ -386,7 +395,10 @@ class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
         *,
         options: str = commands.parameter(description="Additional options for the random article."),
     ) -> None:
-        """Show a random Wikipedia article."""
+        """Show a random Wikipedia article.
+
+        This command has no cooldown.
+        """
         _, lang = split_lang(options)
         async with ctx.typing():
             try:

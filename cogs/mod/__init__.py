@@ -236,6 +236,8 @@ class Mod(commands.Cog):
         You must have the "Kick Members" permission to use this command.
         Bot must also have the "Kick Members" permission to successfully kick a member.
 
+
+
         This command has no cooldown.
         """
         if TYPE_CHECKING:
@@ -283,6 +285,8 @@ class Mod(commands.Cog):
 
         You must have the "Ban Members" permission to use this command.
         Bot must also have the "Ban Members" permission to successfully ban a member.
+
+
 
         This command has no cooldown.
         """
@@ -339,6 +343,8 @@ class Mod(commands.Cog):
 
         You must have the "Ban Members" permission to use this command.
         Bot must also have the "Ban Members" permission to successfully ban members.
+
+
 
         This command has no cooldown.
         """
@@ -428,6 +434,8 @@ class Mod(commands.Cog):
         You must have the "Kick Members" permission to use this command.
         Bot must also have the "Ban Members" permission to successfully softban a member.
 
+
+
         This command has no cooldown.
         """
         if TYPE_CHECKING:
@@ -465,6 +473,8 @@ class Mod(commands.Cog):
 
         You must have the "Ban Members" permission to use this command.
         Bot must also have the "Ban Members" permission to successfully unban a member.
+
+
 
         This command has no cooldown.
         """
@@ -509,6 +519,8 @@ class Mod(commands.Cog):
 
         You must have the "Moderate Members" permission to use this command.
         Bot must also have the "Manage Roles" and "Moderate Members" permissions to successfully timeout a member.
+
+
 
         This command has no cooldown.
         """
@@ -568,6 +580,9 @@ class Mod(commands.Cog):
         You must have the "Moderate Members" permission to use this command.
         You must also have the "Manage Roles" permission to successfully unmute a member using the configured mute role.
 
+
+
+        The bot must have the "Moderate Members and Manage Roles" permissions to run this command successfully.
         This command has no cooldown.
         """
         if TYPE_CHECKING:
@@ -664,7 +679,16 @@ class Mod(commands.Cog):
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for timing out the member(s).", default=None),
     ) -> discord.Message:
-        """Manage the mute role for the server."""
+        """Manage the mute role for the server.
+
+        This command applies the configured mute role or opens help for a mute subcommand.
+
+        You must have the "Moderate Members" permission to use this command.
+
+
+
+        This command has no cooldown.
+        """
         if ctx.invoked_subcommand is None:
             return await self.timeout_member(ctx, member=member, duration=duration, reason=reason)
 
@@ -690,6 +714,8 @@ class Mod(commands.Cog):
         You must have the "Moderate Members" and "Manage Roles" permissions to use this command.
         Bot must also have the "Manage Roles" permission to successfully set the mute role.
 
+
+
         This command has no cooldown.
         """
         if TYPE_CHECKING:
@@ -713,6 +739,8 @@ class Mod(commands.Cog):
 
         You must have the "Moderate Members", "Manage Roles", and "Manage Channels" permissions to use this command.
         Bot must also have the "Manage Roles" and "Manage Channels" permissions to successfully synchronize the permissions of the mute role.
+
+
 
         This command has no cooldown.
         """
@@ -763,6 +791,8 @@ class Mod(commands.Cog):
 
         You must have the "Moderate Members", "Manage Roles", and "Manage Channels" permissions to use this command.
         Bot must also have the "Manage Roles" and "Manage Channels" permissions to successfully create the mute role.
+
+
 
         This command has no cooldown.
         """
@@ -815,6 +845,8 @@ class Mod(commands.Cog):
         You must have the "Moderate Members" and "Manage Roles" permissions to use this command.
         Bot must also have the "Manage Roles" permission to successfully remove the mute role.
 
+
+
         This command has no cooldown.
         """
         if TYPE_CHECKING:
@@ -842,6 +874,10 @@ class Mod(commands.Cog):
         This command retrieves a list of all members who are currently muted in the server, either through the mute role or through Discord's built-in timeout feature.
 
         You must have the "Moderate Members" permission to use this command.
+
+
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -1057,6 +1093,9 @@ class Mod(commands.Cog):
 
         Members with Manage Messages can search up to 1000 messages.
         Members without can search up to 25 messages.
+
+
+        This command has a cooldown of 5 seconds per channel.
         """
 
         assert isinstance(ctx.me, discord.Member)
@@ -1159,6 +1198,9 @@ class Mod(commands.Cog):
         When the command is done doing its work, you will get a message
         detailing which users got removed and how many messages got removed.
 
+
+
+        The bot must have the "Manage Messages" permission to run this command successfully.
         This command has no cooldown.
         """
 
@@ -1237,6 +1279,8 @@ class Mod(commands.Cog):
         You must have "Manage Messages" permissions to use this command.
         The bot must also have "Manage Messages" permissions to successfully remove reactions.
 
+
+
         This command has no cooldown.
         """
 
@@ -1253,6 +1297,9 @@ class Mod(commands.Cog):
         """Manage roles in the server.
 
         This command allows you to manage roles in the server, including creating, deleting, and modifying roles.
+
+
+        This command has no cooldown.
         """
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
@@ -1368,6 +1415,7 @@ class Mod(commands.Cog):
         You must have "Manage Roles" permissions to use this command.
         The bot must also have "Manage Roles" permissions to successfully assign the role to all bots in the server.
 
+        This command has max concurrency of 1 per server.
         This command has a cooldown of 10 seconds per server.
         """
         if TYPE_CHECKING:
@@ -1393,6 +1441,7 @@ class Mod(commands.Cog):
         You must have "Manage Roles" permissions to use this command.
         The bot must also have "Manage Roles" permissions to successfully assign the role to all humans in the server.
 
+        This command has max concurrency of 1 per server.
         This command has a cooldown of 10 seconds per server.
         """
 
@@ -1419,6 +1468,7 @@ class Mod(commands.Cog):
         You must have "Manage Roles" permissions to use this command.
         The bot must also have "Manage Roles" permissions to successfully assign the role to everyone in the server.
 
+        This command has max concurrency of 1 per server.
         This command has a cooldown of 10 seconds per server.
         """
 
@@ -1443,6 +1493,8 @@ class Mod(commands.Cog):
 
         You must have "Manage Roles" permissions to use this command.
         The bot must also have "Manage Roles" permissions to successfully assign the role to the member.
+
+
 
         This command has no cooldown.
         """
@@ -1476,6 +1528,8 @@ class Mod(commands.Cog):
 
         You must have "Manage Roles" permissions to use this command.
         The bot must also have "Manage Roles" permissions to successfully remove the role from the member.
+
+
 
         This command has no cooldown.
         """

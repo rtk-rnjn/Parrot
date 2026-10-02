@@ -21,7 +21,10 @@ class Tags(commands.Cog):
 
     @commands.command(name="tags")
     async def tags(self, ctx: commands.Context[Parrot]) -> None:
-        """List all tags in the server."""
+        """List all tags in the server.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         tags = await self.bot.database.get_all_tags(guild_id=ctx.guild.id)
@@ -40,7 +43,10 @@ class Tags(commands.Cog):
 
     @commands.group(name="tag")
     async def tag(self, ctx: commands.Context[Parrot], *, name: str) -> None:
-        """View a specific tag."""
+        """View a specific tag.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         content = await self.bot.database.get_tag_content(guild_id=ctx.guild.id, name_or_alias=name)
@@ -56,7 +62,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="all", aliases=["list", "ls"])
     async def list_tags(self, ctx: commands.Context[Parrot]) -> None:
-        """List all tags in the server."""
+        """List all tags in the server.
+
+        This command has no cooldown.
+        """
         await ctx.invoke(self.tags)
 
     @tag.command(name="create", aliases=["add", "new", "+"])
@@ -67,7 +76,10 @@ class Tags(commands.Cog):
         *,
         content: Annotated[str, commands.clean_content],
     ) -> None:
-        """Create a new tag."""
+        """Create a new tag.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=name)
@@ -87,7 +99,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="delete", aliases=["remove", "rm", "del"])
     async def delete_tag(self, ctx: commands.Context[Parrot], *, name: str) -> None:
-        """Delete a tag."""
+        """Delete a tag.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         tag_name = await self.bot.database.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
@@ -116,7 +131,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="raw")
     async def raw_tag(self, ctx: commands.Context[Parrot], *, name: str) -> None:
-        """View a tag with mentions escaped."""
+        """View a tag with mentions escaped.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         content = await self.bot.database.get_tag_content(guild_id=ctx.guild.id, name_or_alias=name)
@@ -134,7 +152,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="transfer")
     async def transfer_tag(self, ctx: commands.Context[Parrot], name: str, member: discord.Member) -> None:
-        """Transfer a tag to another server member."""
+        """Transfer a tag to another server member.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         tag_name = await self.bot.database.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
@@ -155,7 +176,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="search")
     async def search_tags(self, ctx: commands.Context[Parrot], *, query: str) -> None:
-        """Search tag names and aliases."""
+        """Search tag names and aliases.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         matches = await self.bot.database.search_tags(guild_id=ctx.guild.id, query=query)
@@ -172,7 +196,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="count", aliases=["usage", "stats"])
     async def tag_usage(self, ctx: commands.Context[Parrot], *, name: str) -> None:
-        """Show usage counts for a tag."""
+        """Show usage counts for a tag.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         usage = await self.bot.database.get_tag_usage(guild_id=ctx.guild.id, name_or_alias=name)
@@ -184,12 +211,18 @@ class Tags(commands.Cog):
 
     @tag.group(name="top", invoke_without_command=True)
     async def top_tags(self, ctx: commands.Context[Parrot]) -> None:
-        """Show top tag usage reports."""
+        """Show top tag usage reports.
+
+        This command has no cooldown.
+        """
         await ctx.send_help(ctx.command)
 
     @top_tags.command(name="users")
     async def top_tag_users(self, ctx: commands.Context[Parrot]) -> None:
-        """Show users with the most tag uses."""
+        """Show users with the most tag uses.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         rows = await self.bot.database.get_top_tag_users(guild_id=ctx.guild.id)
@@ -202,7 +235,10 @@ class Tags(commands.Cog):
 
     @top_tags.command(name="used", aliases=["tags"])
     async def top_used_tags(self, ctx: commands.Context[Parrot]) -> None:
-        """Show the most-used tags."""
+        """Show the most-used tags.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         rows = await self.bot.database.get_top_used_tags(guild_id=ctx.guild.id)
@@ -213,7 +249,10 @@ class Tags(commands.Cog):
 
     @tag.command(name="nsfw", aliases=["mark-nsfw"])
     async def mark_tag_nsfw(self, ctx: commands.Context[Parrot], *, name: str) -> None:
-        """Mark a tag as NSFW."""
+        """Mark a tag as NSFW.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         tag_name = await self.bot.database.get_tag_name(guild_id=ctx.guild.id, name_or_alias=name)
@@ -240,7 +279,10 @@ class Tags(commands.Cog):
         *,
         new_content: Annotated[str, commands.clean_content],
     ) -> None:
-        """Edit a tag's content."""
+        """Edit a tag's content.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=name)
@@ -258,12 +300,18 @@ class Tags(commands.Cog):
 
     @tag.group(name="alias", invoke_without_command=True)
     async def tag_alias(self, ctx: commands.Context[Parrot]) -> None:
-        """Manage tag aliases."""
+        """Manage tag aliases.
+
+        This command has no cooldown.
+        """
         await ctx.send_help(ctx.command)
 
     @tag_alias.command(name="add", aliases=["create", "new"])
     async def add_tag_alias(self, ctx: commands.Context[Parrot], tag_name: str, alias: str) -> None:
-        """Add an alias to a tag."""
+        """Add an alias to a tag.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=tag_name)
@@ -281,7 +329,10 @@ class Tags(commands.Cog):
 
     @tag_alias.command(name="remove", aliases=["delete", "rm", "del"])
     async def remove_tag_alias(self, ctx: commands.Context[Parrot], tag_name: str, alias: str) -> None:
-        """Remove an alias from a tag."""
+        """Remove an alias from a tag.
+
+        This command has no cooldown.
+        """
         assert ctx.guild is not None
 
         exists = await self.bot.database.is_tag_present(guild_id=ctx.guild.id, name_or_alias=tag_name)

@@ -53,9 +53,14 @@ class Hanukkah(commands.Cog, command_attrs={"hidden": True}):
         return self.hanukkah_dates
 
     @in_month(Month.NOVEMBER, Month.DECEMBER)
-    @commands.command(name="hanukkah", aliases=("chanukah",))
+    @commands.command(name="hanukkah", aliases=["chanukah"])
     async def hanukkah_festival(self, ctx: Context) -> None:
-        """Tells you about the Hanukkah festival."""
+        """Tells you about the Hanukkah festival.
+
+        This command is only available during the months of November and December.
+
+        This command has no cooldown.
+        """
 
         hanukkah_dates = await self.fetch_hanukkah_dates()
         start_day = hanukkah_dates[0]

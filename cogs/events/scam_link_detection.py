@@ -192,40 +192,70 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
     )
     @commands.is_owner()
     async def scam_links_command(self, ctx: commands.Context):
-        """Scam links management."""
+        """Scam links management.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
 
     @scam_links_command.command(name="update", hidden=True)
     @commands.is_owner()
     async def update_scam_links_command(self, ctx: commands.Context):
-        """Update scam links cache."""
+        """Update scam links cache.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         await self.scam_links_manager.update_cache()
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @scam_links_command.command(name="stop", hidden=True)
     @commands.is_owner()
     async def stop_scam_links_command(self, ctx: commands.Context):
-        """Stop scam links detection."""
+        """Stop scam links detection.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         self.global_stop = True
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @scam_links_command.command(name="start", hidden=True)
     @commands.is_owner()
     async def start_scam_links_command(self, ctx: commands.Context):
-        """Start scam links detection."""
+        """Start scam links detection.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         self.global_stop = False
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @scam_links_command.command(name="status", hidden=True)
     @commands.is_owner()
     async def status_scam_links_command(self, ctx: commands.Context):
-        """Check scam links detection status."""
+        """Check scam links detection status.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         status = "stopped" if self.global_stop else "running"
         await ctx.reply(f"Scam links detection is currently **{status}**. Warned count: {self.warned_count}")
 
     @scam_links_command.command(name="check", hidden=True, aliases=["is_scam", "is_scam_link", "chk"])
     @commands.is_owner()
     async def check_scam_link_command(self, ctx: commands.Context[Parrot], *, link: str):
-        """Check if a link is a scam link."""
+        """Check if a link is a scam link.
+
+        You must be a bot owner to use this command.
+
+        This command has no cooldown.
+        """
         is_scam = await self.scam_links_manager.is_scam_link(link=link)
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         if is_scam:

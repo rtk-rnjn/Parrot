@@ -171,7 +171,7 @@ class Misc(commands.Cog):
             content=f"{interaction.user.mention} completed command interpretation. It took {end - ini:.2f} seconds."
         )
 
-    @commands.command(name="bookmark", aliases=("bm", "pin"))
+    @commands.command(name="bookmark", aliases=["bm", "pin"])
     async def bookmark(
         self,
         ctx: commands.Context[Parrot],
@@ -181,7 +181,10 @@ class Misc(commands.Cog):
         *,
         title: str = commands.parameter(description="The title of the bookmark.", default="Bookmark"),
     ) -> discord.Message:
-        """Send the author a link to `target_message` via DMs."""
+        """Send the author a link to `target_message` via DMs.
+
+        This command has no cooldown.
+        """
         if not target_message:
             if not ctx.message.reference:
                 msg = (
@@ -438,6 +441,7 @@ class Misc(commands.Cog):
     ) -> discord.Message:
         """Fetch a definition from Oxford Dictionary.
 
+
         This command has no cooldown.
         """
         await ctx.typing()
@@ -448,7 +452,10 @@ class Misc(commands.Cog):
 
     @commands.command(name="ghostping", aliases=["gp", "ghost-ping"])
     async def ghost_ping(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
-        """Check if someone ghost pinged you."""
+        """Check if someone ghost pinged you.
+
+        This command has no cooldown.
+        """
         cog: PingMessageListner = self.bot.get_cog("PingMessageListner")  # pyright: ignore[reportAssignmentType]
         pages = []
         for message in cog.get_ghost_pings(ctx.author.id):
@@ -468,20 +475,29 @@ class Misc(commands.Cog):
         await view.start(ctx)
         return None
 
-    @commands.command(name="boxplot", aliases=("box", "boxwhisker", "numsetdata"))
+    @commands.command(name="boxplot", aliases=["box", "boxwhisker", "numsetdata"])
     async def _boxplot(self, ctx: commands.Context[Parrot], *numbers: float) -> None:
         """Plots the providednumber data set in a box & whisker plot
 
         showing Min, Max, Mean, Q1, Median and Q3.
         Numbers should be seperated by spaces per data point.
+
+        This command has no cooldown.
         """
         file = await boxplot(numbers)
         await ctx.reply(file=file)
 
-    @commands.command(name="plot", aliases=("line-graph", "graph"))
-    async def _plot(self, ctx: commands.Context[Parrot], *, equation: str) -> None:
+    @commands.command(name="plot", aliases=["line-graph", "graph"])
+    async def _plot(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        equation: str = commands.parameter(description="The equation to plot. Use `x` as the variable."),
+    ) -> None:
         """Plots the provided equation out.
         Ex: `$plot 2x+1`.
+
+        This command has no cooldown.
         """
         try:
             file = await plotfn(equation)
@@ -493,14 +509,17 @@ class Misc(commands.Cog):
         except (SyntaxError, sympy.SympifyError, ZeroDivisionError) as e:
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")
 
-    @commands.group(name="logo", aliases=("turtle", "turtle-graphics"), invoke_without_command=True)
+    @commands.group(name="logo", aliases=["turtle", "turtle-graphics"], invoke_without_command=True)
     async def _logo(
         self,
         ctx: commands.Context[Parrot],
         *,
-        code: Annotated[Codeblock, codeblock_converter],
+        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
     ) -> None:
-        """Interprets the provided code as Logo programming language code and returns the resulting image."""
+        """Interprets the provided code as Logo programming language code and returns the resulting image.
+
+        This command has no cooldown.
+        """
         parser = LogoParser()
         program = parser.parse(code.content)
 
@@ -510,15 +529,17 @@ class Misc(commands.Cog):
         image_buffer = await asyncio.to_thread(interpreter.turtle.render)
         await ctx.reply(file=discord.File(image_buffer, filename="logo.png"))
 
-    @_logo.command(name="guide", aliases=("help", "tutorial"))
+    @_logo.command(name="guide", aliases=["help", "tutorial"])
     async def _logo_guide(self, ctx: commands.Context[Parrot]) -> None:
-        """Sends a guide on how to use the Logo programming language."""
+        """Sends a guide on how to use the Logo programming language.
+
+        This command has no cooldown.
+        """
         embeds = build_logo_guide()
         view = PaginationView(author=ctx.author, items=embeds)
         await view.start(ctx)
 
     @commands.command(aliases=["trutht", "tt", "ttable"])
-    @commands.max_concurrency(1, per=commands.BucketType.user)
     async def truthtable(self, ctx: commands.Context[Parrot], *, flags: TTFlag):
         """A simple command to generate Truth Table of given data. Make sure you use proper syntax.
 
@@ -532,6 +553,8 @@ class Misc(commands.Cog):
         Material implication : =>, implies
         Logical biconditional: =
         ```
+
+        This command has no cooldown.
         """
         table = Truths(
             [j.strip(" ") for j in flags.var.replace(" ", "").split(",")],
@@ -568,7 +591,8 @@ class Misc(commands.Cog):
 
         This command has max concurrency of 1 per guild, meaning that only one user can use this command in a guild at a time.
 
-        This command has no cooldown."""
+        This command has no cooldown.
+        """
         query = code.content
         query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec
         image_path = LATEX_CACHE_DIRECTORY / f"{query_hash}.png"
@@ -596,6 +620,7 @@ class Misc(commands.Cog):
         """Set your AFK status.
 
         AFK status will be automatically removed when you send a message in the server.
+
 
         This command has no cooldown.
         """
@@ -660,7 +685,10 @@ class Misc(commands.Cog):
 
     @commands.group(name="birthday", invoke_without_command=True, aliases=["bday", "dob"])
     async def birthday(self, ctx: commands.Context[Parrot]) -> None:
-        """View birthday status or manage your birthday."""
+        """View birthday status or manage your birthday.
+
+        This command has no cooldown.
+        """
         if ctx.guild is None:
             return
 
@@ -673,7 +701,10 @@ class Misc(commands.Cog):
 
     @birthday.command(name="set")
     async def set_birthday(self, ctx: commands.Context[Parrot], *, date: str) -> None:
-        """Set your birthday."""
+        """Set your birthday.
+
+        This command has no cooldown.
+        """
         try:
             birthday = parse_birthday(date)
         except ValueError:
@@ -686,7 +717,10 @@ class Misc(commands.Cog):
 
     @birthday.command(name="clear")
     async def clear_birthday(self, ctx: commands.Context[Parrot]) -> None:
-        """Remove your saved birthday."""
+        """Remove your saved birthday.
+
+        This command has no cooldown.
+        """
         await self.bot.database.clear_user_birthday(ctx.author.id)
         await ctx.reply("Your birthday has been cleared.")
 

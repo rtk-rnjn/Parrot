@@ -341,10 +341,22 @@ class Misc(commands.Cog):
         return INVITE_RE.sub("[INVITE REDACTED]", st)
 
     @commands.command(name="snipe")
-    @commands.bot_has_permissions(read_message_history=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def snipe_message(self, ctx: commands.Context[Parrot], index: int = 1) -> discord.Message:
-        """Snipes someone's message that's deleted."""
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
+    async def snipe_message(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        index: int = commands.parameter(description="Index of the message to snipe, with 1 being the most recent.", default=1),
+    ) -> discord.Message:
+        """Snipes someone's message that's deleted.
+
+        This command is used to retrieve the most recently deleted message in a channel.
+        You can specify the index of the message to snipe, with 1 being the most recent, 2 being the second most recent, and so on.
+
+        This command has max concurrency of 1 per channel, meaning that only one user can use this command in a channel at a time.
+
+        This command has no cooldown.
+        """
         snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # pyright: ignore[reportAssignmentType]
 
         snipe: discord.Message = snipes.get_snipe(ctx.channel, index=index)
@@ -380,10 +392,22 @@ class Misc(commands.Cog):
         return message
 
     @commands.command(name="editsnipe", aliases=["esnipe"])
-    @commands.bot_has_permissions(read_message_history=True, embed_links=True)
-    @commands.max_concurrency(1, per=commands.BucketType.user)
-    async def edit_snipe_message(self, ctx: commands.Context[Parrot], index: int = 1) -> discord.Message:
-        """Snipes someone's message that's deleted."""
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
+    async def edit_snipe_message(
+        self,
+        ctx: commands.Context[Parrot],
+        *,
+        index: int = commands.parameter(description="Index of the message to snipe, with 1 being the most recent.", default=1),
+    ) -> discord.Message:
+        """Snipes someone's message that's deleted.
+
+        This command is used to retrieve the most recently edited message in a channel.
+        You can specify the index of the message to snipe, with 1 being the most recent, 2 being the second most recent, and so on.
+
+        This command has max concurrency of 1 per channel, meaning that only one user can use this command in a channel at a time.
+
+        This command has no cooldown.
+        """
         channel = ctx.channel
 
         snipes: SnipeMessageListener = self.bot.get_cog("SnipeMessageListener")  # pyright: ignore[reportAssignmentType]
@@ -412,7 +436,11 @@ class Misc(commands.Cog):
         *,
         term: str = commands.parameter(description="The term to define."),
     ) -> discord.Message:
-        """Fetch a definition from Urban Dictionary API."""
+        """Fetch a definition from Oxford Dictionary.
+
+        This command has no cooldown.
+        """
+        await ctx.typing()
         closest_match = process.extractOne(term.capitalize(), DICTIONARY.keys(), scorer=fuzz.ratio)
         if closest_match is None:
             return await ctx.reply(f"No definition found for '{term}'.")
@@ -536,7 +564,11 @@ class Misc(commands.Cog):
         *,
         code: Annotated[Codeblock, codeblock_converter],
     ) -> None:
-        """Renders the text in latex and sends the image."""
+        """Renders the text in latex and sends the image.
+
+        This command has max concurrency of 1 per guild, meaning that only one user can use this command in a guild at a time.
+
+        This command has no cooldown."""
         query = code.content
         query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec
         image_path = LATEX_CACHE_DIRECTORY / f"{query_hash}.png"
@@ -561,7 +593,12 @@ class Misc(commands.Cog):
         *,
         reason: Annotated[str, commands.clean_content] = commands.parameter(description="Reason for going AFK", default=DEFAULT_AFK_REASON),
     ) -> None:
-        """Set your AFK status."""
+        """Set your AFK status.
+
+        AFK status will be automatically removed when you send a message in the server.
+
+        This command has no cooldown.
+        """
 
         if ctx.guild is None or not isinstance(ctx.author, discord.Member):
             return

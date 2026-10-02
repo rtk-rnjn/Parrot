@@ -1,21 +1,20 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 import discord
 
 
-class JinjaMessage:
-    def __init__(self, *, message: discord.Message) -> None:
-        self.__message = message
-
-    def __repr__(self) -> str:
-        return f"<JinjaMessage {self.__message.jump_url}>"
+@dataclass(frozen=True, slots=True)
+class Message:
+    _message: discord.Message = field(repr=False)
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Get message id."""
-        return self.__message.id
+        return self._message.id
 
     @property
-    def content(self):
+    def content(self) -> str:
         """Get message content."""
-        return self.__message.content
+        return self._message.content

@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import logging
 import re
+import time
 from collections import Counter
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
@@ -225,7 +226,18 @@ class Mod(commands.Cog):
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for kicking the member(s).", default=None),
     ) -> discord.Message:
-        """Kick member from the server."""
+        """Kick member from the server.
+
+        Kicking a member removes them from the server, but does not prevent them from rejoining.
+        This is useful for temporarily removing a member or for enforcing server rules without permanently banning them.
+
+        This command will log the action in the moderation log channel if it is configured for the server.
+
+        You must have the "Kick Members" permission to use this command.
+        Bot must also have the "Kick Members" permission to successfully kick a member.
+
+        This command has no cooldown.
+        """
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
@@ -264,10 +276,15 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Ban member from the server.
 
-        A member that is not currently in the server can still be banned by
-        providing their Discord ID. This is known as a "hackban" and is useful
-        for banning users who have already left the server or who have been
-        banned from the server previously.
+        A member that is not currently in the server can still be banned by providing their Discord ID.
+        This is known as a "hackban" and is useful for banning users who have already left the server or who have been banned from the server previously.
+
+        This command will log the action in the moderation log channel if it is configured for the server.
+
+        You must have the "Ban Members" permission to use this command.
+        Bot must also have the "Ban Members" permission to successfully ban a member.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -315,10 +332,15 @@ class Mod(commands.Cog):
         Members that can be banned are processed even if another target fails.
         The response reports successful and failed targets separately.
 
-        The bot will attempt to ban all members in a single bulk operation,
-        which is more efficient than banning them one by one.
-        However, if any member cannot be banned due to role hierarchy or being the bot itself,
-        they will be skipped and reported in the response.
+        The bot will attempt to ban all members in a single bulk operation, which is more efficient than banning them one by one.
+        However, if any member cannot be banned due to role hierarchy or being the bot itself, they will be skipped and reported in the response.
+
+        This command will log the action in the moderation log channel if it is configured for the server.
+
+        You must have the "Ban Members" permission to use this command.
+        Bot must also have the "Ban Members" permission to successfully ban members.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -389,7 +411,7 @@ class Mod(commands.Cog):
         return message
 
     @commands.command(name="softban", aliases=["soft-ban"])
-    @commands.has_permissions(ban_members=True)
+    @commands.has_permissions(kick_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
     async def soft_ban_member(
         self,
@@ -400,9 +422,13 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Softban a member from the server.
 
-        A softban is a ban followed by an immediate unban. This removes the
-        member from the server and deletes their messages, but allows them to
-        rejoin if they wish.
+        A softban is a ban followed by an immediate unban.
+        This removes the member from the server and deletes their messages, but allows them to rejoin if they wish.
+
+        You must have the "Kick Members" permission to use this command.
+        Bot must also have the "Ban Members" permission to successfully softban a member.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -433,7 +459,15 @@ class Mod(commands.Cog):
         *,
         reason: Annotated[str | None, ActionReason] = commands.parameter(description="The reason for unbanning the member(s).", default=None),
     ) -> discord.Message:
-        """Unban a member from the server."""
+        """Unban a member from the server.
+
+        Unbanning a member removes the ban restriction on their account, allowing them to rejoin the server if they wish.
+
+        You must have the "Ban Members" permission to use this command.
+        Bot must also have the "Ban Members" permission to successfully unban a member.
+
+        This command has no cooldown.
+        """
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
@@ -453,7 +487,7 @@ class Mod(commands.Cog):
 
     @commands.command(name="timeout", aliases=["stfu"])
     @commands.has_permissions(moderate_members=True)
-    @commands.bot_has_guild_permissions(moderate_members=True)
+    @commands.bot_has_guild_permissions(moderate_members=True, manage_roles=True)
     async def timeout_member(
         self,
         ctx: commands.Context[Parrot],
@@ -464,15 +498,19 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Timeout a member from the server.
 
-        A timeout is a temporary restriction on a member's ability to send
-        messages or interact with the server. The duration of the timeout is
-        specified in seconds, minutes, hours, or days.
+        A timeout is a temporary restriction on a member's ability to send messages or interact with the server.
+        The duration of the timeout is specified in seconds, minutes, hours, or days.
 
-        If the duration is not specified or exceeds 28 days, the bot will
-        attempt to mute the member using the configured mute role instead. This
-        is because Discord's built-in timeout feature has a maximum duration of
-        28 days. Mute roles can be used to enforce longer timeouts, but they
-        require proper configuration and permissions to work correctly.
+        If the duration is not specified or exceeds 28 days, the bot will attempt to mute the member using the configured mute role instead.
+        This is because Discord's built-in timeout feature has a maximum duration of 28 days.
+        Mute roles can be used to enforce longer timeouts, but they require proper configuration and permissions to work correctly.
+
+        This command will log the action in the moderation log channel if it is configured for the server.
+
+        You must have the "Moderate Members" permission to use this command.
+        Bot must also have the "Manage Roles" and "Moderate Members" permissions to successfully timeout a member.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -513,7 +551,7 @@ class Mod(commands.Cog):
 
     @commands.command(name="unmute")
     @commands.has_permissions(moderate_members=True)
-    @commands.bot_has_guild_permissions(moderate_members=True)
+    @commands.bot_has_guild_permissions(moderate_members=True, manage_roles=True)
     async def unmute_member(
         self,
         ctx: commands.Context[Parrot],
@@ -523,8 +561,14 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Unmute a member from the server.
 
-        Unmuting a member removes any timeout restrictions on their ability to
-        send messages or interact with the server.
+        Unmuting a member removes any timeout restrictions on their ability to send messages or interact with the server.
+
+        This command will log the action in the moderation log channel if it is configured for the server.
+
+        You must have the "Moderate Members" permission to use this command.
+        You must also have the "Manage Roles" permission to successfully unmute a member using the configured mute role.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -628,6 +672,7 @@ class Mod(commands.Cog):
 
     @mute.command(name="role")
     @commands.has_permissions(moderate_members=True, manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
     async def mute_role(
         self,
         ctx: commands.Context[Parrot],
@@ -636,13 +681,16 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Set the mute role for the server.
 
-        The mute role is assigned to members when they are muted, restricting
-        their ability to send messages or interact with the server.
+        The mute role is assigned to members when they are muted, restricting their ability to send messages or interact with the server.
 
-        This will overwrite any existing mute role for the server. Make sure
-        the mute role has the correct permissions set to prevent muted members
-        from sending messages or interacting with the server. Use `mute sync`
-        to automatically adjust the permissions of the mute role.
+        This will overwrite any existing mute role for the server.
+        Make sure  the mute role has the correct permissions set to prevent muted members from sending messages or interacting with the server.
+        Use `mute sync` to automatically adjust the permissions of the mute role.
+
+        You must have the "Moderate Members" and "Manage Roles" permissions to use this command.
+        Bot must also have the "Manage Roles" permission to successfully set the mute role.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -660,9 +708,13 @@ class Mod(commands.Cog):
     async def mute_sync(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Synchronize the permissions of the mute role with the server's channels.
 
-        This command ensures that the mute role has the correct permissions set
-        to prevent muted members from sending messages or interacting with the
-        server.
+        This command ensures that the mute role has the correct permissions set to prevent muted members from sending messages or interacting with the server.
+        Basically, it will set the permissions of the mute role to deny sending messages and speaking in all channels.
+
+        You must have the "Moderate Members", "Manage Roles", and "Manage Channels" permissions to use this command.
+        Bot must also have the "Manage Roles" and "Manage Channels" permissions to successfully synchronize the permissions of the mute role.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -706,10 +758,13 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Create a new mute role for the server.
 
-        This command creates a new role with the specified name and sets it as
-        the mute role for the server. The role will have permissions set to
-        prevent muted members from sending messages or interacting with the
-        server.
+        This command creates a new role with the specified name and sets it as the mute role for the server.
+        The role will have permissions set to prevent muted members from sending messages or interacting with the server.
+
+        You must have the "Moderate Members", "Manage Roles", and "Manage Channels" permissions to use this command.
+        Bot must also have the "Manage Roles" and "Manage Channels" permissions to successfully create the mute role.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -749,14 +804,18 @@ class Mod(commands.Cog):
         return message
 
     @mute.command(name="remove", aliases=["delete", "del", "rm", "unbind"])
-    @commands.has_permissions(moderate_members=True, manage_roles=True)
+    @commands.has_permissions(manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
     async def mute_remove(self, ctx: commands.Context[Parrot]) -> discord.Message:
         """Remove the mute role from the server.
 
-        This command removes the mute role from the server and deletes it. Any
-        members who were muted will no longer have the mute role assigned to
-        them.
+        This command removes the mute role from the server and deletes it.
+        Any members who were muted will no longer have the mute role assigned to them.
+
+        You must have the "Moderate Members" and "Manage Roles" permissions to use this command.
+        Bot must also have the "Manage Roles" permission to successfully remove the mute role.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -778,7 +837,12 @@ class Mod(commands.Cog):
     @mute.command(name="list", aliases=["show", "view", "ls"])
     @commands.has_permissions(moderate_members=True)
     async def mute_list(self, ctx: commands.Context[Parrot]) -> discord.Message:
-        """List all currently muted members in the server."""
+        """List all currently muted members in the server.
+
+        This command retrieves a list of all members who are currently muted in the server, either through the mute role or through Discord's built-in timeout feature.
+
+        You must have the "Moderate Members" permission to use this command.
+        """
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
@@ -1094,6 +1158,8 @@ class Mod(commands.Cog):
 
         When the command is done doing its work, you will get a message
         detailing which users got removed and how many messages got removed.
+
+        This command has no cooldown.
         """
 
         await ctx.defer()
@@ -1166,7 +1232,12 @@ class Mod(commands.Cog):
     async def clear_reactions(self, ctx: commands.Context[Parrot], search: commands.Range[int, 1, 2000] = 100):
         """Removes all reactions from messages that have them.
 
-        You must have Manage Messages to use this command.
+        This command searches through the specified number of messages in the channel and removes all reactions from messages that have them.
+
+        You must have "Manage Messages" permissions to use this command.
+        The bot must also have "Manage Messages" permissions to successfully remove reactions.
+
+        This command has no cooldown.
         """
 
         total_reactions = 0
@@ -1181,18 +1252,111 @@ class Mod(commands.Cog):
     async def role(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
         """Manage roles in the server.
 
-        This command allows you to manage roles in the server, including
-        creating, deleting, and modifying roles. You must have Manage Roles
-        permissions to use this command.
+        This command allows you to manage roles in the server, including creating, deleting, and modifying roles.
         """
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
         return None
 
+    async def _assign_role(  # noqa: PLR0915
+        self, ctx: commands.Context[Parrot], role: discord.Role, members: list[discord.Member], *, target: Literal["bots", "humans", "members"]
+    ) -> discord.Message:
+        """Assign a role to multiple members with a rolling progress display."""
+
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        if ctx.guild.me.top_role <= role:
+            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
+
+        if not members:
+            return await ctx.reply(f"There are no {target} in this server.")
+
+        members = [member for member in members if role not in member.roles]
+
+        if not members:
+            return await ctx.reply(f"All {target} already have the role **{role}**.")
+
+        page_size = 5
+        edit_interval = 2.0
+
+        results: list[tuple[discord.Member, bool]] = []
+        failures: Counter[str] = Counter()
+
+        started_at = time.monotonic()
+        last_edit = started_at
+
+        def build_progress() -> str:
+            lines = [f"**Adding role {role.mention}...**", ""]
+
+            visible = results[-page_size:]
+            start_index = len(results) - len(visible) + 1
+
+            for index, (member, success) in enumerate(visible, start=start_index):
+                status = "\N{WHITE HEAVY CHECK MARK}" if success else "\N{CROSS MARK}"
+                lines.append(f"{index}. {member.mention} {status}")
+
+            lines.append("")
+            lines.append(f"Progress: `{len(results)}/{len(members)}`")
+
+            return "\n".join(lines)
+
+        message = await ctx.reply(build_progress())
+
+        for member in members:
+            try:
+                await member.add_roles(
+                    role,
+                    reason=f"Role assigned to {target} by {ctx.author} (ID: {ctx.author.id})",
+                )
+            except discord.Forbidden:
+                results.append((member, False))
+                failures["Permission denied"] += 1
+            except discord.HTTPException as exc:
+                results.append((member, False))
+                failures[f"HTTP error ({exc.status})"] += 1
+            except discord.DiscordException:
+                results.append((member, False))
+                failures["Discord error"] += 1
+            else:
+                results.append((member, True))
+
+            now = time.monotonic()
+
+            if now - last_edit >= edit_interval or len(results) == len(members):
+                try:
+                    await message.edit(content=build_progress(), allowed_mentions=discord.AllowedMentions.none())
+                except discord.HTTPException:
+                    pass
+                else:
+                    last_edit = now
+
+        success = sum(success for _, success in results)
+        failed = len(results) - success
+        elapsed = time.monotonic() - started_at
+
+        lines = [f"**Role assignment complete: {role.mention}**"]
+        lines.append(f"\N{WHITE HEAVY CHECK MARK} Successful: `{success}`")
+        lines.append(f"\N{CROSS MARK} Failed: `{failed}`")
+        lines.append("")
+        lines.append(f"\N{ALARM CLOCK} Time: `{elapsed:.1f}s`")
+
+        if failures:
+            lines.append("")
+            lines.append("**Failures:**")
+
+            for reason, count in failures.items():
+                lines.append(f"- `{count}` — {reason}")
+
+        await message.edit(content="\n".join(lines))
+
+        return message
+
     @role.command(name="bot", aliases=["bots"])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.cooldown(1, 10.0, type=commands.BucketType.guild)
     async def role_bot(
         self,
         ctx: commands.Context[Parrot],
@@ -1201,42 +1365,23 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Assign a role to all bots in the server.
 
-        This command assigns the specified role to all bots in the server.
-        You must have Manage Roles permissions to use this command.
+        You must have "Manage Roles" permissions to use this command.
+        The bot must also have "Manage Roles" permissions to successfully assign the role to all bots in the server.
+
+        This command has a cooldown of 10 seconds per server.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if ctx.guild.me.top_role <= role:
-            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
-
         bots = [member for member in ctx.guild.members if member.bot]
-        if not bots:
-            return await ctx.reply("There are no bots in this server.")
 
-        success = 0
-        error = 0
-
-        for bot in bots:
-            try:
-                await bot.add_roles(
-                    role,
-                    reason=f"Role assigned to bot by {ctx.author} (ID: {ctx.author.id})",
-                )
-                success += 1
-            except discord.Forbidden, discord.HTTPException:
-                error += 1
-
-        if error:
-            return await ctx.reply(
-                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} bots, but failed to assign it to {error} bots."
-            )
-        return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} bots in the server.")
+        return await self._assign_role(ctx, role, bots, target="bots")
 
     @role.command(name="human", aliases=["humans"])
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.cooldown(1, 10.0, type=commands.BucketType.guild)
     async def role_human(
         self,
         ctx: commands.Context[Parrot],
@@ -1245,42 +1390,24 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Assign a role to all humans in the server.
 
-        This command assigns the specified role to all humans in the server.
-        You must have Manage Roles permissions to use this command.
+        You must have "Manage Roles" permissions to use this command.
+        The bot must also have "Manage Roles" permissions to successfully assign the role to all humans in the server.
+
+        This command has a cooldown of 10 seconds per server.
         """
+
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if ctx.guild.me.top_role <= role:
-            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
-
         humans = [member for member in ctx.guild.members if not member.bot]
-        if not humans:
-            return await ctx.reply("There are no humans in this server.")
 
-        success = 0
-        error = 0
-
-        for human in humans:
-            try:
-                await human.add_roles(
-                    role,
-                    reason=f"Role assigned to human by {ctx.author} (ID: {ctx.author.id})",
-                )
-                success += 1
-            except discord.Forbidden, discord.HTTPException:
-                error += 1
-
-        if error:
-            return await ctx.reply(
-                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} humans, but failed to assign it to {error} humans."
-            )
-        return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} humans in the server.")
+        return await self._assign_role(ctx, role, humans, target="humans")
 
     @role.command(name="everyone", aliases=["all"])
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.cooldown(1, 10.0, type=commands.BucketType.guild)
     async def role_everyone(
         self,
         ctx: commands.Context[Parrot],
@@ -1289,37 +1416,16 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Assign a role to everyone in the server.
 
-        This command assigns the specified role to everyone in the server.
-        You must have Manage Roles permissions to use this command.
+        You must have "Manage Roles" permissions to use this command.
+        The bot must also have "Manage Roles" permissions to successfully assign the role to everyone in the server.
+
+        This command has a cooldown of 10 seconds per server.
         """
+
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if ctx.guild.me.top_role <= role:
-            return await ctx.reply(f"Cannot assign the role **{role}** (ID: {role.id}) because it is higher than or equal to bot top role.")
-
-        members = ctx.guild.members
-        if not members:
-            return await ctx.reply("There are no members in this server.")
-
-        success = 0
-        error = 0
-
-        for member in members:
-            try:
-                await member.add_roles(
-                    role,
-                    reason=f"Role assigned to everyone by {ctx.author} (ID: {ctx.author.id})",
-                )
-                success += 1
-            except discord.Forbidden, discord.HTTPException:
-                error += 1
-
-        if error:
-            return await ctx.reply(
-                f"Successfully assigned the role **{role}** (ID: {role.id}) to {success} members, but failed to assign it to {error} members."
-            )
-        return await ctx.reply(f"Successfully assigned the role **{role}** (ID: {role.id}) to all {success} members in the server.")
+        return await self._assign_role(ctx, role, list(ctx.guild.members), target="members")
 
     @role.command(name="add", aliases=["assign", "give", "+=", "+"])
     @commands.has_permissions(manage_roles=True)
@@ -1333,8 +1439,12 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Assign a role to a member in the server.
 
-        This command assigns the specified role to the specified member in the
-        server. You must have Manage Roles permissions to use this command.
+        This command assigns the specified role to the specified member in the server.
+
+        You must have "Manage Roles" permissions to use this command.
+        The bot must also have "Manage Roles" permissions to successfully assign the role to the member.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -1362,8 +1472,12 @@ class Mod(commands.Cog):
     ) -> discord.Message:
         """Remove a role from a member in the server.
 
-        This command removes the specified role from the specified member in the
-        server. You must have Manage Roles permissions to use this command.
+        This command removes the specified role from the specified member in the server.
+
+        You must have "Manage Roles" permissions to use this command.
+        The bot must also have "Manage Roles" permissions to successfully remove the role from the member.
+
+        This command has no cooldown.
         """
         if TYPE_CHECKING:
             assert ctx.guild is not None
@@ -1378,51 +1492,6 @@ class Mod(commands.Cog):
             return await ctx.reply(f"Failed to remove the role **{role}** (ID: {role.id}) from {member} due to insufficient permissions.")
         except discord.HTTPException as e:
             return await ctx.reply(f"Failed to remove the role **{role}** (ID: {role.id}) from {member} due to an error: {e}.")
-
-    @commands.group(name="mod", invoke_without_command=True)
-    async def mod(self, ctx: commands.Context[Parrot]) -> discord.Message | None:
-        """Manage moderation settings in the server.
-
-        This command allows you to manage moderation settings in the server,
-        including automod rules, mute roles, and other moderation-related
-        configurations. You must have Manage Server permissions to use this
-        command.
-        """
-        if ctx.invoked_subcommand is None:
-            return await ctx.send_help(ctx.command)
-        return None
-
-    @mod.command(name="set-logs", aliases=["set_logs", "setlog", "set_log"])
-    @commands.has_permissions(manage_guild=True)
-    async def set_mod_log(self, ctx: commands.Context[Parrot], *, channel: discord.TextChannel) -> discord.Message:
-        """Set the moderation log channel for the server.
-
-        This command sets the specified text channel as the moderation log
-        channel for the server. All moderation actions will be logged in this
-        channel.
-
-        You must have Manage Server permissions to use this command.
-        """
-        if TYPE_CHECKING:
-            assert ctx.guild is not None
-
-        await self.bot.database.edit_moderator_config(guild_id=ctx.guild.id, moderator_logs_channel_id=channel.id)
-        return await ctx.reply(f"Successfully set the moderation log channel to {channel.mention} (ID: {channel.id}).")
-
-    @mod.command(name="unset-logs", aliases=["unset_logs", "unsetlog", "unset_log"])
-    @commands.has_permissions(manage_guild=True)
-    async def unset_mod_log(self, ctx: commands.Context[Parrot]) -> discord.Message:
-        """Unset the moderation log channel for the server.
-
-        This command unsets the moderation log channel for the server.
-
-        You must have Manage Server permissions to use this command.
-        """
-        if TYPE_CHECKING:
-            assert ctx.guild is not None
-
-        await self.bot.database.edit_moderator_config(guild_id=ctx.guild.id, moderator_logs_channel_id=None)
-        return await ctx.reply("Successfully unset the moderation log channel.")
 
     async def mod_log[T: discord.Member | discord.User | discord.Object](
         self,

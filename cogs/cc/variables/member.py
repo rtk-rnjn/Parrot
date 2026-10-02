@@ -1,88 +1,88 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
 import discord
 
 
-class JinjaMember:
-    def __init__(self, *, member: discord.Member | discord.User) -> None:
-        assert isinstance(member, discord.Member)
-        self.__member = member
-
-    def __repr__(self) -> str:
-        return f"<JinjaMember id={self.id} name={self.name}>"
+@dataclass(frozen=True, slots=True)
+class Member:
+    _member: discord.Member = field(repr=False)
 
     def __str__(self) -> str:
         return self.name
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Get member id."""
-        return self.__member.id
+        return self._member.id
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Get member name."""
-        return self.__member.name
+        return self._member.name
 
     @property
-    def mention(self):
+    def mention(self) -> str:
         """Get member mention."""
-        return self.__member.mention
+        return self._member.mention
 
     @property
-    def nick(self):
+    def nick(self) -> str | None:
         """Get member nickname."""
-        return self.__member.nick
+        return self._member.nick
 
     @property
-    def display_name(self):
+    def display_name(self) -> str:
         """Get member display name."""
-        return self.__member.display_name
+        return self._member.display_name
 
     @property
-    def avatar_url(self):
-        """Get member avatar url."""
-        return self.__member.display_avatar.url
+    def avatar_url(self) -> str:
+        """Get member avatar URL."""
+        return self._member.display_avatar.url
 
-    async def _check_perms(self, **perms: bool) -> bool:
-        """Check if bot has permissions to do actions on member."""
+    async def __check_perms(self, **perms: bool) -> bool:
+        """Check if the bot has permissions to act on the member."""
         permissions = discord.Permissions(**perms)
-        return self.__member.guild.me.guild_permissions >= permissions and self.__member.guild.me.top_role > self.__member.top_role
 
-    async def kick(self, *, reason: str | None = None):
+        me = self._member.guild.me
+        if me is None:
+            return False
+
+        return me.guild_permissions >= permissions and me.top_role > self._member.top_role
+
+    async def kick(self, *, reason: str | None = None) -> None:
         """Kick member from guild."""
-        if not await self._check_perms(kick_members=True):
+        if not await self.__check_perms(kick_members=True):
             return
 
-        await self.__member.kick(reason=reason)
+        await self._member.kick(reason=reason)
 
-    async def ban(
-        self,
-        *,
-        reason: str | None = None,
-        delete_message_days: int = discord.utils.MISSING,
-    ):
+    async def ban(self, *, reason: str | None = None, delete_message_days: int = discord.utils.MISSING) -> None:
         """Ban member from guild."""
-        if not await self._check_perms(ban_members=True):
+        if not await self.__check_perms(ban_members=True):
             return
 
-        await self.__member.ban(reason=reason, delete_message_days=delete_message_days)
+        await self._member.ban(reason=reason, delete_message_days=delete_message_days)
 
-    async def unban(self, *, reason: str | None = None):
+    async def unban(self, *, reason: str | None = None) -> None:
         """Unban member from guild."""
-        if not await self._check_perms(ban_members=True):
+        if not await self.__check_perms(ban_members=True):
             return
 
-        await self.__member.unban(reason=reason)
+        await self._member.unban(reason=reason)
 
-    async def add_role(self, *, role: discord.Object, reason: str | None = None):
+    async def add_role(self, *, role: discord.Object, reason: str | None = None) -> None:
         """Add role to member."""
-        if not await self._check_perms(manage_roles=True):
+        if not await self.__check_perms(manage_roles=True):
             return
 
-        await self.__member.add_roles(role, reason=reason)
+        await self._member.add_roles(role, reason=reason)
 
-    async def remove_role(self, *, role: discord.Object, reason: str | None = None):
+    async def remove_role(self, *, role: discord.Object, reason: str | None = None) -> None:
         """Remove role from member."""
-        if not await self._check_perms(manage_roles=True):
+        if not await self.__check_perms(manage_roles=True):
             return
 
-        await self.__member.remove_roles(role, reason=reason)
+        await self._member.remove_roles(role, reason=reason)

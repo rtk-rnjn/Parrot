@@ -15,7 +15,7 @@ from core import BaseLayoutView, BaseView, PaginationView
 from core.utils.database.models import CustomCommand as CustomCommandModel
 
 from .jinja import render_sandboxed
-from .variables import JinjaChannel, JinjaGuild, JinjaMember, JinjaMessage
+from .variables import Channel, Member, Message, Server, ServerDatabase
 
 if TYPE_CHECKING:
     from core import Parrot
@@ -30,7 +30,8 @@ CUSTOM_COMMAND_HELP = r"""
 The custom command system allows you to create dynamic, personalized commands for your server using the **Jinja2** templating language.
 
 ## How it works
-When a user triggers a custom command, the bot processes your template and sends the resulting text. You can insert variables (like the user's name), create conditions (`if`/`else`), and manipulate text.
+When a user triggers a custom command, the bot processes your template and sends the resulting text.
+You can insert variables (like the user's name), create conditions (`if`/`else`), and manipulate text.
 
 **Basic Syntax:**
 - `{{ ... }}` : Prints the result of a variable (e.g., `{{ author.name }}`).
@@ -481,7 +482,7 @@ class CustomCommandVariablesButton(discord.ui.Button):
         super().__init__(label="Variables", style=discord.ButtonStyle.gray)
 
     async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        view = PaginationView(author=interaction.user, items=CUSTOM_COMMAND_VARIABLES_PAGES)
+        view = PaginationView(author=interaction.user, items=CUSTOM_COMMAND_VARIABLES_PAGES, hide_quit_button=True)
         await interaction.response.send_message(embed=CUSTOM_COMMAND_VARIABLES_PAGES[0], view=view, ephemeral=True)
 
 
@@ -490,7 +491,7 @@ class CustomCommandExamplesButton(discord.ui.Button):
         super().__init__(label="Examples", style=discord.ButtonStyle.gray)
 
     async def callback(self, interaction: discord.Interaction[Parrot]) -> None:
-        view = PaginationView(author=interaction.user, items=CUSTOM_COMMAND_EXAMPLES_PAGES)
+        view = PaginationView(author=interaction.user, items=CUSTOM_COMMAND_EXAMPLES_PAGES, hide_quit_button=True)
         await interaction.response.send_message(embed=CUSTOM_COMMAND_EXAMPLES_PAGES[0], view=view, ephemeral=True)
 
 
@@ -569,8 +570,10 @@ class CustomCommandLayout(BaseLayoutView):
 
 class CC(commands.Cog):
     """Manage custom commands."""
+
     def __init__(self, bot: Parrot) -> None:
         self.bot = bot
+        self._cooldown_mapping = commands.CooldownMapping.from_cooldown(10, 10.0, commands.BucketType.guild)
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
@@ -603,15 +606,49 @@ class CC(commands.Cog):
         """Open the custom-command management panel."""
         await self.send_panel(ctx)
 
+    @cc.command(name="logs", aliases=["log"])
+    @commands.has_permissions(administrator=True)
+    async def logs(self, ctx: commands.Context[Parrot]) -> None:
+        """View the custom command logs."""
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        logs = await self.bot.database.get_custom_command_logs(guild_id=ctx.guild.id)
+        if not logs:
+            await ctx.send("No custom command logs found.")
+            return
+
+        embeds: list[discord.Embed] = []
+        for _, chunk in enumerate(discord.utils.as_chunks(logs, 10)):
+            embed = discord.Embed(
+                description="\n".join(chunk),
+                color=discord.Color.blue(),
+            )
+            embeds.append(embed)
+
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
+
     def prepare_context(self, ctx: commands.Context[Parrot]) -> dict[str, object]:
         """Prepare a context for a custom command."""
-        assert ctx.guild is not None
-        assert isinstance(ctx.channel, discord.abc.GuildChannel)
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+            assert isinstance(ctx.channel, discord.abc.GuildChannel)
+            assert isinstance(ctx.author, discord.Member)
+
+        internal_db = self.bot.database.cc_internal_database
         return {
-            "channel": JinjaChannel(channel=ctx.channel),
-            "guild": JinjaGuild(guild=ctx.guild),
-            "author": JinjaMember(member=ctx.author),
-            "message": JinjaMessage(message=ctx.message),
+            "channel": Channel(_channel=ctx.channel),
+            "guild": Server(_guild=ctx.guild),
+            "author": Member(_member=ctx.author),
+            "message": Message(_message=ctx.message),
+            "database": ServerDatabase(
+                guild=ctx.guild,
+                get_func=internal_db.get,
+                set_func=internal_db.set,
+                delete_func=internal_db.delete,
+                exists_func=internal_db.exists,
+            ),
         }
 
     async def _render_custom_command(
@@ -637,29 +674,36 @@ class CC(commands.Cog):
         if context.command is not None or context.invoked_with is None:
             return
 
-        command = await self.bot.database.get_custom_command(guild_id=message.guild.id, name=context.invoked_with)
-        if command is None:
+        response = await self.bot.database.get_custom_command_response(guild_id=message.guild.id, name=context.invoked_with)
+        if response is None:
             return
 
-        response = command["response"]
+        bucket = self._cooldown_mapping.get_bucket(message)
+        retry_after = bucket.update_rate_limit() if bucket is not None else None
+        if retry_after:
+            _log.info(
+                "Custom command '%s' invoked too quickly in guild %s (%s). Retry after %.2f seconds.",
+                context.invoked_with,
+                message.guild.name,
+                message.guild.id,
+                retry_after,
+            )
+            return
 
-        ignored_roles = command.get("ignored_roles", [])
-        ignored_channels = command.get("ignored_channels", [])
+        ignored_roles = await self.bot.database.get_custom_command_ignored_roles(guild_id=message.guild.id, name=context.invoked_with)
+        ignored_channels = await self.bot.database.get_custom_command_ignored_channels(guild_id=message.guild.id, name=context.invoked_with)
 
         assert isinstance(message.author, discord.Member)
         if any(role.id in ignored_roles for role in message.author.roles) or message.channel.id in ignored_channels:
             return
 
         rendered = await self._render_custom_command(context, response, command_id=context.invoked_with)
-        relative_dt = discord.utils.format_dt(message.created_at, style="R")
+        log = f"{message.created_at} User {message.author} (`{message.author.id}`) invoked custom command `{context.invoked_with}` in channel {message.channel} (`{message.channel.id}`)."
         if rendered:
-            await self.bot.database.push_custom_command_log(
-                guild_id=message.guild.id,
-                log_entry=f"{relative_dt} User {message.author} (`{message.author.id}`) invoked custom command `{context.invoked_with}` in channel {message.channel} (`{message.channel.id}`).",
-            )
+            await self.bot.database.push_custom_command_log(guild_id=message.guild.id, log_entry=log)
             if len(rendered) > 2000:
                 rendered = f"{rendered[:1997]}..."
-            await message.channel.send(rendered)
+            await message.channel.send(rendered, allowed_mentions=discord.AllowedMentions.none())
 
     @cc.command(name="edit")
     @commands.has_permissions(administrator=True)

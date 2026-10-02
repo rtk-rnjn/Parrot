@@ -17,6 +17,9 @@ if TYPE_CHECKING:
 _log = logging.getLogger("bot.cogs.meta")
 
 
+EMOJI_URI = "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{emoji}.png"
+
+
 class Meta(commands.Cog):
     """Meta commands for the bot."""
 
@@ -25,7 +28,7 @@ class Meta(commands.Cog):
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
     def _permission_names(self, permissions: discord.Permissions, *, role: bool = False) -> str:
-        names = []
+        names: list[str] = []
         if permissions.administrator:
             names.append("Administrator")
         if permissions.kick_members and permissions.ban_members and permissions.manage_messages:
@@ -85,8 +88,12 @@ class Meta(commands.Cog):
 
         ping_pong_emoji = "\N{TABLE TENNIS PADDLE AND BALL}"
 
-        content = f"{ping_pong_emoji} **Pong!** Gateway: `{gateway_latency:.2f}ms` | API: `{api_latency:.2f}ms` | Database: `{database_latency:.2f}ms` (MongoDB: `{mongo_latency:.2f}ms`, Redis: `{redis_latency:.2f}ms`)"
-
+        content = (
+            f"{ping_pong_emoji} **Pong!** "
+            f"Gateway: `{gateway_latency:.2f}ms` | "
+            f"API: `{api_latency:.2f}ms` | "
+            f"Database: `{database_latency:.2f}ms` (MongoDB: `{mongo_latency:.2f}ms`, Redis: `{redis_latency:.2f}ms`)"
+        )
         return await message.edit(content=content)
 
     @commands.command(name="uptime", aliases=("up",))
@@ -210,7 +217,7 @@ class Meta(commands.Cog):
         self,
         ctx: commands.Context[Parrot],
         *,
-        member: discord.Member = commands.parameter(
+        member: discord.Member = commands.parameter(  # noqa: B008
             description="The member to display the avatar of.",
             default=lambda ctx: ctx.author,
         ),
@@ -249,31 +256,20 @@ class Meta(commands.Cog):
 
         return message
 
-    def _server_summary_fields(self, guild: discord.Guild) -> list[tuple[str, object, bool]]:
+    def _server_summary_fields(self, guild: discord.Guild) -> list[tuple[str, object]]:
         statuses = [len(list(filter(lambda member: str(member.status) == status, guild.members))) for status in ("online", "idle", "dnd", "offline")]
+        total_humans = len([member for member in guild.members if not member.bot])
+        total_bots = len(guild.members) - total_humans
         return [
-            ("Owner", guild.owner, True),
-            ("Region", "Deprecated", True),
-            ("Created at", f"{discord.utils.format_dt(guild.created_at)}", True),
-            (
-                "Total Members",
-                f"Members: {len(guild.members)}\nHumans: {len([member for member in guild.members if not member.bot])}\nBots: {len([member for member in guild.members if member.bot])}",
-                True,
-            ),
-            (
-                "Total channels",
-                f"Categories: {len(guild.categories)}\nText: {len(guild.text_channels)}\nVoice:{len(guild.voice_channels)}",
-                True,
-            ),
-            (
-                "General",
-                f"Roles: {len(guild.roles)}\nEmojis: {len(guild.emojis)}\nBoost Level: {guild.premium_tier}",
-                True,
-            ),
+            ("Owner", guild.owner),
+            ("Region", "Deprecated"),
+            ("Created at", f"{discord.utils.format_dt(guild.created_at)}"),
+            ("Total Members", f"Members: {len(guild.members)}\nHumans: {total_humans}\nBots: {total_bots}"),
+            ("Total channels", f"Categories: {len(guild.categories)}\nText: {len(guild.text_channels)}\nVoice:{len(guild.voice_channels)}"),
+            ("General", f"Roles: {len(guild.roles)}\nEmojis: {len(guild.emojis)}\nBoost Level: {guild.premium_tier}"),
             (
                 "Statuses",
-                f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]} [Blame Discord]",
-                True,
+                f":green_circle: {statuses[0]}\n:yellow_circle: {statuses[1]}\n:red_circle: {statuses[2]}\n:black_circle: {statuses[3]}",
             ),
         ]
 
@@ -327,8 +323,10 @@ class Meta(commands.Cog):
                 value=f"{len([_ async for _ in guild.bans(limit=1000)])}+",
                 inline=True,
             )
+
         if guild.me.guild_permissions.manage_guild:
             embed.add_field(name="Invites", value=f"{len(await guild.invites())}", inline=True)
+
         if guild.banner:
             embed.set_image(url=guild.banner.url)
 
@@ -364,8 +362,8 @@ class Meta(commands.Cog):
         if ctx.guild.icon:
             embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.set_footer(text=f"ID: {ctx.guild.id}")
-        for name, value, inline in self._server_summary_fields(ctx.guild):
-            embed.add_field(name=name, value=value, inline=inline)
+        for name, value in self._server_summary_fields(ctx.guild):
+            embed.add_field(name=name, value=value)
         await self._add_server_details(embed, ctx.guild)
 
         return await ctx.reply(embed=embed)
@@ -413,9 +411,7 @@ class Meta(commands.Cog):
         embed.description = f"Key perms: {permissions if permissions != 'None' else 'N/A'}"
         embed.set_footer(text=f"ID: {role.id}")
         if role.unicode_emoji:
-            embed.set_thumbnail(
-                url=f"https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{ord(next(iter(role.unicode_emoji))):x}.png"
-            )
+            embed.set_thumbnail(url=EMOJI_URI.format(emoji=f"{ord(next(iter(role.unicode_emoji))):x}"))
         if role.icon:
             embed.set_thumbnail(url=role.icon.url)
         return await ctx.reply(embed=embed)

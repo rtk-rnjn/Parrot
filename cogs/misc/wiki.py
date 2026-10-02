@@ -291,7 +291,7 @@ def message_view(text: str) -> discord.ui.LayoutView:
     return view
 
 
-class Wikipedia(commands.Cog):
+class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Parrot):
         self.bot = bot
         self.client = WikiClient()

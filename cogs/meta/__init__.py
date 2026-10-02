@@ -89,10 +89,7 @@ class Meta(commands.Cog):
         ping_pong_emoji = "\N{TABLE TENNIS PADDLE AND BALL}"
 
         content = (
-            f"{ping_pong_emoji} **Pong!** "
-            f"Gateway: `{gateway_latency:.2f}ms` | "
-            f"API: `{api_latency:.2f}ms` | "
-            f"Database: `{database_latency:.2f}ms` (MongoDB: `{mongo_latency:.2f}ms`, Redis: `{redis_latency:.2f}ms`)"
+            f"{ping_pong_emoji} **Pong!** Gateway: `{gateway_latency:.2f}ms` | API: `{api_latency:.2f}ms` | Database: `{database_latency:.2f}ms`"
         )
         return await message.edit(content=content)
 
@@ -290,7 +287,8 @@ class Meta(commands.Cog):
             "ANIMATED_ICON": "Animated Icon",
             "BANNER": "Banner",
         }
-        if info := [f":ballot_box_with_check: {label}" for feature, label in features.items() if feature in guild.features]:
+        info = [f":ballot_box_with_check: {label}" for feature, label in features.items() if feature in guild.features]
+        if info:
             embed.add_field(name="Features", value="\n".join(info))
 
         boosts = f"Level {guild.premium_tier}\n{guild.premium_subscription_count} boosts"

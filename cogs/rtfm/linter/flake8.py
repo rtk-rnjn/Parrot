@@ -43,12 +43,14 @@ def validate_flag(flag: Flake8Converter) -> str:
 
     if flag.ignore:
         _ig = flag.ignore.replace(",", " ")
-        if codes := validate_flake8_code(_ig):
+        codes = validate_flake8_code(_ig)
+        if codes:
             options.extend(("--ignore", ",".join(codes)))
 
     if flag.select:
         _sl = flag.select.replace(",", " ")
-        if codes := validate_flake8_code(_sl):
+        codes = validate_flake8_code(_sl)
+        if codes:
             options.extend(("--select", ",".join(codes)))
 
     if flag.max_line_length:

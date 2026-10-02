@@ -269,7 +269,8 @@ class StackCardButton(discord.ui.Button["StackView"]):
 
         self.view.cards.append(self.card)
 
-        if total := sum(self.card.stackable_with(card) for card in self.view.hand._cards if all(inner is not card for inner in self.view.cards)):
+        total = sum(self.card.stackable_with(card) for card in self.view.hand._cards if all(inner is not card for inner in self.view.cards))
+        if total:
             term = "another card" if total == 1 else "more cards"
             view = StackView(self.view.game, self.view.hand, self.view.cards)
 
@@ -800,7 +801,8 @@ class UNO:
         return embed
 
     async def _handle_stacks(self, interaction: discord.Interaction, hand: Hand, originator: Card) -> list[Card]:
-        if total := sum(originator.stackable_with(card) for card in hand._cards if card is not originator):
+        total = sum(originator.stackable_with(card) for card in hand._cards if card is not originator)
+        if total:
             term = "a card" if total == 1 else "cards"
             view = StackView(self, hand, [originator])
 

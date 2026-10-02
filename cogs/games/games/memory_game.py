@@ -25,7 +25,8 @@ class MemoryButton(discord.ui.Button["MemoryView"]):
         assert self.view is not None
         game = self.view.game
 
-        if opened := self.view.opened:
+        opened = self.view.opened
+        if opened:
             game.moves += 1
             assert game.embed is not None
             game.embed.set_field_at(0, name="\N{ZERO WIDTH SPACE}", value=f"Moves: `{game.moves}`")

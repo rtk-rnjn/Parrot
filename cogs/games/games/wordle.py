@@ -209,7 +209,8 @@ class WordInput(discord.ui.Modal, title="Word Input"):
         if won:
             assert interaction.message is not None
             await interaction.message.reply("Game Over! You won!", mention_author=True)
-        elif lost := len(game.guesses) >= MAX_GUESSES:
+        elif len(game.guesses) >= MAX_GUESSES:
+            lost = True
             assert interaction.message is not None
             await interaction.message.reply(
                 f"Game Over! You lose, the word was: **{game.word}**",

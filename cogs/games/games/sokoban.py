@@ -318,7 +318,7 @@ class SokobanGameView(discord.ui.View):
 
     def make_win_embed(self) -> discord.Embed:
         embed = discord.Embed(
-            title="You win! 🎉",
+            title="You win! \N{PARTY POPPER}",
             description=self.game.display_board(),
             color=discord.Color.green(),
             timestamp=discord.utils.utcnow(),

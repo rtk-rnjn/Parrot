@@ -194,7 +194,8 @@ class TTTButton(discord.ui.Button["TTTView"]):
 
         tie = all(button.disabled for button in self.view.children if isinstance(button, discord.ui.Button))
 
-        if game_over := game.is_game_over(tie=tie):
+        game_over = game.is_game_over(tie=tie)
+        if game_over:
             if game.winning_indexes:
                 self.view.disable_all()
                 game.create_streak()

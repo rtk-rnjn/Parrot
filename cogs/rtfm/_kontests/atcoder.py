@@ -50,7 +50,8 @@ class AtCoder:
         return None
 
     def _get_contest_table(self, soup):
-        if div := soup.find("div", id="contest-table-upcoming"):
+        div = soup.find("div", id="contest-table-upcoming")
+        if div:
             return div.find("table")
 
         error = "Could not find the contest table"

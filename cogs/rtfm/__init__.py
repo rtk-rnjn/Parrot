@@ -107,7 +107,8 @@ class Developer(commands.Cog):
         table_of_contents = match[0].split("\n")
 
         for header in list(map(str.strip, table_of_contents)):
-            if match := re.search(r"\[▶ (.*)\]\((.*)\)", header):
+            match = re.search(r"\[▶ (.*)\]\((.*)\)", header)
+            if match:
                 hyper_link = match[0].split("(")[1].replace(")", "")
                 self.wtf_section_links[match[0]] = f"{WTF_PYTHON_BASE_URL}/{hyper_link}"
 

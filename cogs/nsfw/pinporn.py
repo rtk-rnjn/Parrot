@@ -86,7 +86,11 @@ class PinPorn:
             resp.raise_for_status()
             payload = await resp.json(content_type=None)
 
-        videos = [v for i in payload.get("data", []) if (v := Video.from_json(i))]
+        videos = []
+        for item in payload.get("data", []):
+            video = Video.from_json(item)
+            if video:
+                videos.append(video)
         if self.filter_content:
             videos = [v for v in videos if self._allowed(v)]
 

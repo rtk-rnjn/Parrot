@@ -36,7 +36,8 @@ def enum_docstrings[E: Enum](enum: type[E]) -> type[E]:
         # no source code available
         return enum
 
-    if mod.body and isinstance(class_def := mod.body[0], ast.ClassDef):
+    class_def = mod.body[0] if mod.body else None
+    if isinstance(class_def, ast.ClassDef):
         # An enum member docstring is unassigned if it is the exact same object
         # as enum.__doc__.
         unassigned = partial(is_, enum.__doc__)

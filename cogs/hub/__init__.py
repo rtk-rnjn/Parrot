@@ -160,7 +160,8 @@ class Hub(commands.Cog):
         if existing_channel_id is None:
             return None
 
-        if existing_channel := await self._find_existing_channel(member):
+        existing_channel = await self._find_existing_channel(member)
+        if existing_channel:
             return existing_channel
 
         overwrites = {
@@ -184,7 +185,7 @@ class Hub(commands.Cog):
                 overwrites=overwrites,
                 reason=(f"Join-to-create channel for {member} ({member.id})"),
             )
-        except (discord.Forbidden, discord.HTTPException):
+        except discord.Forbidden, discord.HTTPException:
             _log.exception("Failed to create personal channel for %s in guild %s", member, guild.id)
             return None
 

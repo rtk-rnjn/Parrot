@@ -123,7 +123,11 @@ class _SexDotCom:
 
         _log.debug("Fetched %d pins from sex.com", len(payload.get("data", [])))
 
-        pins = [p for item in payload.get("data", []) if (p := Pin.from_json(item))]
+        pins = []
+        for item in payload.get("data", []):
+            pin = Pin.from_json(item)
+            if pin:
+                pins.append(pin)
         if self.filter_titles:
             pins = [p for p in pins if not _BLOCKED.search(p.title)]
 

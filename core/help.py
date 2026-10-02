@@ -113,19 +113,19 @@ class HelpView(discord.ui.LayoutView):
     def _make_navigation_buttons(self) -> tuple[discord.ui.Button, discord.ui.Button, discord.ui.Button]:
         previous = discord.ui.Button(
             label="Previous",
-            emoji="◀️",
+            emoji="\N{BLACK LEFT-POINTING TRIANGLE}",
             style=discord.ButtonStyle.secondary,
             disabled=self.selected_category is None or self.page <= 0,
         )
         next_button = discord.ui.Button(
             label="Next",
-            emoji="▶️",
+            emoji="\N{BLACK RIGHT-POINTING TRIANGLE}",
             style=discord.ButtonStyle.secondary,
             disabled=self.selected_category is None or self.page >= self.page_count - 1,
         )
         home = discord.ui.Button(
             label="Home",
-            emoji="🏠",
+            emoji="\N{HOUSE BUILDING}",
             style=discord.ButtonStyle.primary,
             disabled=self.selected_category is None,
         )
@@ -263,7 +263,7 @@ class HelpView(discord.ui.LayoutView):
                 discord.ui.MediaGallery(discord.MediaGalleryItem(usage_demo, description=f"{command.qualified_name} usage demonstration"))
             )
 
-        back = discord.ui.Button(label="Back", emoji="◀️", style=discord.ButtonStyle.secondary)
+        back = discord.ui.Button(label="Back", emoji="\N{BLACK LEFT-POINTING TRIANGLE}", style=discord.ButtonStyle.secondary)
 
         async def back_callback(interaction: discord.Interaction) -> None:
             self.command = None

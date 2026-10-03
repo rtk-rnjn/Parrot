@@ -1,6 +1,6 @@
 # Parrot
 
-Parrot is a modular Discord bot written for Python 3.14 and `discord.py`. Features are organized as independent cogs, with shared bot, database, and utility code under `core/`.
+Parrot is a modular Discord bot written for Python 3.14 and `discord.py`.
 
 ## Requirements
 
@@ -29,8 +29,3 @@ Supporting services can be started with:
 ```bash
 docker compose up -d
 ```
-
-## Contributing
-
-Keep feature-specific behavior inside its cog, use shared abstractions from `core/` where appropriate, and run Ruff, Pyright, and Flake8 before opening a pull request.
-

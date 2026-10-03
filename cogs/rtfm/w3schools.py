@@ -572,7 +572,7 @@ class ChoiceView(OwnedView):
         await interaction.edit_original_response(embed=view.build_embed(), view=view)
 
 
-class W3Schools(commands.Cog, name="W3Schools"):
+class W3Schools(commands.Cog, name="W3Schools", command_attrs={"hidden": True}):
     """Look up W3Schools lessons."""
 
     def __init__(self, bot: Parrot) -> None:

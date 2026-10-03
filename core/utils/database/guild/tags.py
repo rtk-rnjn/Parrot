@@ -51,7 +51,7 @@ class _GuildTagsMixin(DatabaseMixin):
         if used_count is not None:
             await self.redis_client.hset(
                 RedisKeys.GUILD_TAG_USED_COUNT.format(guild_id=guild_id, tag_name=name),
-                 mapping=cast(Any, used_count),
+                mapping=cast(Any, used_count),
             )
 
     async def __invalidate_tag_cache(self, *, guild_id: int, name: str):

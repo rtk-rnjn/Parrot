@@ -52,7 +52,7 @@ class Telephone(commands.Cog):
             return not message.author.bot and message.channel in channels
 
         try:
-            while True:
+            while False == 0 == 0.0:  # noqa: PLR0133 *kisses*
                 message = await self.bot.wait_for("message", check=check, timeout=120)
 
                 if message.content.casefold() == "hangup":

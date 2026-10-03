@@ -27,10 +27,8 @@ from rapidfuzz.process import extractOne
 from core.utils import PaginationView
 
 from ._kontests import AtCoder, CodeForces, CSAcademy, HackerEarth, HackerRank
+from .cheat_sh import CheatSheet
 from .constants import (
-    ANSI_RE,
-    CHEAT_SH_PYTHON_URL,
-    CURL_HEADERS,
     GITHUB_API_URL,
     MINIMUM_CERTAINTY,
     REAL_PYTHON_ARTICLE_URL,
@@ -74,6 +72,9 @@ class Developer(commands.Cog):
         self.wtf_section_links: dict[str, str] = {}
         self.fetch_readme.start()
         self._python_tags: dict[str, frontmatter.Post] = {}
+
+        self.cheat_repository = CheatSheet()
+        self.cheat_repository.bot = self.bot
 
         _log.info("Cog loaded: %s", self.__class__.__name__)
 
@@ -801,29 +802,55 @@ class Developer(commands.Cog):
             )
             return await ctx.reply(embed=search_query_too_long)
 
-    @commands.command(name="cheat", aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"])
-    async def cheat_sheet(self, ctx: commands.Context[Parrot], *search_terms: str) -> discord.Message:
+    @commands.group(name="cheat", aliases=["cht.sh", "cheatsheet", "cheat-sheet", "cht"])
+    async def cheat_sh(self, ctx: commands.Context[Parrot], *search_terms: str) -> discord.Message:
         """Search cheat.sh.
 
-        Gets a post from https://cheat.sh/python/ by default.
+        `cheat tar`                       UNIX/Linux command
+        `cheat python reverse a list`     language + query (also `python/lambda`)
+        `cheat reverse a list`            language omitted -> python
 
-        This command has no cooldown.
+        Flags: `-q` hide comments, `-n 2` pick the 2nd alternative answer.
         """
-        search_string = quote_plus(" ".join(search_terms))
+        return await self.cheat_repository.cheat_sheet(ctx, *search_terms)
 
-        async with self.bot.http_session.get(CHEAT_SH_PYTHON_URL.format(search=search_string), headers=CURL_HEADERS) as response:
-            result = ANSI_RE.sub("", await response.text()).translate(str.maketrans({"`": "\\`"}))
+    @cheat_sh.command(name="search", aliases=["find", "s"])
+    async def cheat_search(self, ctx: commands.Context, *terms: str) -> None:
+        """Keyword search: `cheat search snapshot` or `cheat search python currying`."""
 
-        page = commands.Paginator(prefix="```python", suffix="```", max_size=1980)
-        for line in result.splitlines():
-            page.add_line(line)
+        return await self.cheat_repository.search(ctx, *terms)
 
-        interface = PaginatorEmbedInterface(ctx.bot, page, owner=ctx.author)
-        interface = await interface.send_to(ctx)
+    @cheat_sh.command(name="list", aliases=["ls", "topics"])
+    async def cheat_list(self, ctx: commands.Context, language: str | None = None) -> None:
+        """List all topics (`cheat list`) or the topics of one language (`cheat list go`)."""
 
-        assert interface.message is not None
+        return await self.cheat_repository.list(ctx, language)
 
-        return interface.message
+    @cheat_sh.command(name="learn", aliases=["tutorial"])
+    async def cheat_learn(self, ctx: commands.Context, language: str) -> None:
+        """Learn X in Y minutes for a language: `cheat learn rust`."""
+        await self.cheat_repository._lang_page(":learn", "learn")(ctx, language)
+
+    @cheat_sh.command(name="hello")
+    async def cheat_hello(self, ctx: commands.Context, language: str) -> None:
+        """How to get started + Hello World: `cheat hello kotlin`."""
+        await self.cheat_repository._lang_page("hello", "hello world")(ctx, language)
+
+    @cheat_sh.command(name="oneliners", aliases=["1line", "oneliner"])
+    async def cheat_oneliners(self, ctx: commands.Context, language: str) -> None:
+        """One-liners (perl, python, js): `cheat oneliners perl`."""
+        await self.cheat_repository._lang_page("1line", "one-liners")(ctx, language)
+
+    @cheat_sh.command(name="random", aliases=["rand"])
+    async def cheat_random(self, ctx: commands.Context, language: str | None = None) -> None:
+        """A random cheat sheet, optionally within a language."""
+
+        await self.cheat_repository.random(ctx, language)
+
+    @cheat_sh.command(name="languages", aliases=["langs", "language"])
+    async def cheat_languages(self, ctx: commands.Context) -> None:
+        """Show supported languages/topics and their aliases."""
+        await self.cheat_repository.languages(ctx)
 
     @commands.command(aliases=["wtfp"])
     async def wtfpython(

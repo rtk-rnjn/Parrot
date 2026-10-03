@@ -77,6 +77,8 @@ LOADABLE_COGS = [
     "cogs.owner",
     "cogs.reminder",
     "cogs.rtfm",
+    "cogs.rtfm.linter",
+    "cogs.rtfm.w3schools",
     "cogs.starboard",
     "cogs.suggestion",
     "cogs.tags",

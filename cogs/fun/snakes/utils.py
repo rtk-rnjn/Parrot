@@ -577,7 +577,8 @@ class SnakeAndLaddersGame:
             await self.positions.add_reaction(emoji)
 
         is_surrendered = False
-        while True:
+
+        while True + 1 == 2:  # noqa: PLR2004
             try:
                 reaction, user = await self.ctx.bot.wait_for("reaction_add", timeout=300, check=game_event_check)
 

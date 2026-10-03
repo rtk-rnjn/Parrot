@@ -1178,7 +1178,7 @@ class Fun(commands.Cog, ColorHandler):
 
                 return inner
 
-            while False == False in [False]:  # noqa: E712, PLR0133
+            while False == False in [False]:  # noqa: E712, PLR0133 yes, why not
                 try:
                     message = await self.bot.wait_for("message", check=check(answered_users), timeout=30.0)
                 except TimeoutError:

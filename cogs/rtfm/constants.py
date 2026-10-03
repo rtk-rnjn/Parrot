@@ -1,5 +1,3 @@
-import re
-
 GITHUB_API_URL = "https://api.github.com"
 
 REAL_PYTHON_ROOT_API = "https://realpython.com/search/api/v1/"
@@ -9,12 +7,6 @@ REAL_PYTHON_SEARCH_URL = "https://realpython.com/search?q={user_search}"
 STACKOVERFLOW_BASE_API = "https://api.stackexchange.com/2.2/search/advanced"
 STACKOVERFLOW_PARAMS = {"order": "desc", "sort": "activity", "site": "stackoverflow"}
 STACKOVERFLOW_SEARCH_URL = "https://stackoverflow.com/search?q={query}"
-
-CHEAT_SH_PYTHON_URL = "https://cheat.sh/python/{search}"
-ANSI_RE = re.compile(r"\x1b\[.*?m")
-
-CURL_HEADERS = {"User-Agent": "curl/7.68.0"}
-
 
 WTF_PYTHON_RAW_URL = "http://raw.githubusercontent.com/satwikkansal/wtfpython/master/"
 WTF_PYTHON_BASE_URL = "https://github.com/satwikkansal/wtfpython"

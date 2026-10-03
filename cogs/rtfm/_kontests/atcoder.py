@@ -61,7 +61,9 @@ class AtCoder:
         cells = row.find_all("td")
         anchor = cells[1].find("a")
         if anchor is None:
-            raise ValueError("Contest row has no URL")
+            message = "Contest row has no URL"
+            raise ValueError(message)
+
         return AtCoderContestData(
             {
                 "name": cells[1].text.strip(),

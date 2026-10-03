@@ -68,3 +68,24 @@ pythonVersion = "3.14"
 venvPath = "."
 venv = ".venv"
 reportUnnecessaryTypeIgnoreComment = "warning"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+norecursedirs = [
+    ".venv",
+    "venv",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "build",
+    "dist",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks integration tests",
+]

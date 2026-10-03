@@ -62,13 +62,17 @@ A simple timer implementation might check the database every second:
 
 ```text
 query database
-    ↓
+    │
+    v
 sleep 1 second
-    ↓
+    │
+    v
 query database
-    ↓
+    │
+    v
 sleep 1 second
-    ↓
+    │
+    v
 ...
 ```
 
@@ -78,11 +82,14 @@ Instead, suppose the earliest timer expires at `12:30:00`:
 
 ```text
 query database
-    ↓
+    │
+    v
 timer expires at 12:30:00
-    ↓
+    │
+    v
 sleep until 12:30:00
-    ↓
+    │
+    v
 process timer
 ```
 
@@ -187,13 +194,13 @@ The flow is:
 ```text
 _have_data.set()
       │
-      ▼
+      v
 wake dispatcher
       │
-      ▼
+      v
 query MongoDB
       │
-      ▼
+      v
 find earliest timer
 ```
 
@@ -265,9 +272,9 @@ The database operation therefore acts as the timer's consumption step:
 
 ```text
 Timer exists
-    ↓
+    │
 delete timer
-    ↓
+    │
 deletion succeeded?
    / \
  no   yes
@@ -336,22 +343,22 @@ Old dispatcher
      │
      │ sleeping until 12:10
      │
-     ▼
+     v
 new timer inserted for 12:05
      │
-     ▼
+     v
 old dispatcher cancelled
      │
-     ▼
+     v
 new dispatcher starts
      │
-     ▼
+     v
 query MongoDB
      │
-     ▼
+     v
 find 12:05 timer
      │
-     ▼
+     v
 sleep until 12:05
 ```
 
@@ -556,13 +563,13 @@ After waking, the dispatcher queries MongoDB again.
 ```text
              _have_data.set()
                     │
-                    ▼
+                    v
              Wake dispatcher
                     │
-                    ▼
+                    v
              Query MongoDB
                     │
-                    ▼
+                    v
           Authoritative timer state
 ```
 
@@ -612,18 +619,18 @@ Rather than attempting to modify the existing sleep operation, the implementatio
                                │
                        new timer: 12:05
                                │
-                               ▼
+                               v
                          cancel task
                                │
-                               ▼
+                               v
                     ┌─────────────────────┐
                     │ New dispatcher task │
                     └──────────┬──────────┘
                                │
-                               ▼
+                               v
                         query MongoDB
                                │
-                               ▼
+                               v
                          select 12:05
 ```
 
@@ -862,15 +869,20 @@ When no timers exist:
 
 ```text
 No timer
-   ↓
+   │
+   v
 Clear Event
-   ↓
+   │
+   v
 Wait
-   ↓
+   │
+   v
 Timer created
-   ↓
+   │
+   v
 Set Event
-   ↓
+   │
+   v
 Query MongoDB again
 ```
 
@@ -878,13 +890,17 @@ When the timer collection changes in a way that invalidates the current scheduli
 
 ```text
 Database changed
-      ↓
+      │
+      v
 Discard cached state
-      ↓
+      │
+      v
 Cancel dispatcher
-      ↓
+      │
+      v
 Create new dispatcher
-      ↓
+      │
+      v
 Read authoritative state from MongoDB
 ```
 

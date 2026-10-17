@@ -36,7 +36,7 @@ __all__ = (
     "lunar_phase",
 )
 
-_log = logging.getLogger("bot.weather")
+_log = logging.getLogger(__name__)
 
 BASE = "https://api.openweathermap.org"
 TILE_BASE = "https://tile.openweathermap.org/map"

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
-import json
 import logging
 import math
 import os
@@ -11,7 +9,6 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
-from urllib.parse import urlencode
 
 import aiohttp
 from discord.ext import commands
@@ -542,12 +539,6 @@ class WeatherClient:
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self._gate = asyncio.Semaphore(6)
-        self._onecall_blocked_until = 0.0
-        self._onecall_checked_redis = False
-
-    @property
-    def _redis(self):
-        return self.bot.database.redis_client
 
     @property
     def key(self) -> str | None:
@@ -557,47 +548,14 @@ class WeatherClient:
     def onecall_available(self) -> bool:
         return time.monotonic() >= self._onecall_blocked_until
 
-    async def _is_onecall_blocked(self) -> bool:
-        if os.environ.get("OPEN_WEATHER_FREE_TIER", "").lower() in {"1", "true", "yes"}:
-            return True
-        if time.monotonic() < self._onecall_blocked_until:
-            return True
-        if not self._onecall_checked_redis:
-            self._onecall_checked_redis = True
+    def _is_onecall_blocked(self) -> bool:
+        return True
 
-            if await self._redis.get("weather:onecall_blocked"):
-                self._onecall_blocked_until = time.monotonic() + ONECALL_BLOCK_TTL
-                return True
-
-        return False
-
-    async def _mark_onecall_blocked(self) -> None:
+    def _mark_onecall_blocked(self) -> None:
         self._onecall_blocked_until = time.monotonic() + ONECALL_BLOCK_TTL
-        with contextlib.suppress(Exception):
-            await self._redis.set("weather:onecall_blocked", "1", ex=ONECALL_BLOCK_TTL)
-
-    @staticmethod
-    def _cache_key(path: str, params: dict[str, Any]) -> str:
-        return f"weather:{path}?{urlencode(sorted((k, round(v, 3) if isinstance(v, float) else v) for k, v in params.items()))}"
 
     async def get(self, path: str, params: dict[str, Any], *, ttl: int = 600, fresh: bool = False) -> Any:
-        key = self._cache_key(path, params)
-        if not fresh and (hit := await self._redis.get(key)) is not None:
-            return json.loads(hit)
-
-        try:
-            data = await self._send(path, params)
-        except Unavailable:
-            if (stale := await self._redis.get(f"{key}:stale")) is not None:
-                return json.loads(stale)
-            raise
-
-        payload = json.dumps(data, separators=(",", ":"))
-        async with self._redis.pipeline(transaction=False) as pipe:
-            pipe.set(key, payload, ex=ttl)
-            pipe.set(f"{key}:stale", payload, ex=STALE_TTL)
-            await pipe.execute()
-        return data
+        return await self._send(path, params)
 
     async def _send(self, path: str, params: dict[str, Any]) -> Any:
         if (token := self.key) is None:
@@ -620,7 +578,6 @@ class WeatherClient:
         match status:
             case 401 if path.startswith("/data/3.0"):
                 _log.debug("OpenWeather 3.0 not subscribed (%s); falling back to 2.5 free tier.", path)
-                await self._mark_onecall_blocked()
                 message = "This API key uses the free OpenWeather 2.5 tier (One Call 3.0 is not enabled)."
                 raise PlanRequired(message)
             case 401:
@@ -643,10 +600,7 @@ class WeatherClient:
                 message = f"OpenWeather returned an unexpected error ({status})."
                 raise Unavailable(message)
 
-    async def _fetch_bytes(self, url: str, cache_key: str, *, params: dict[str, Any] | None = None, ttl: int = 86_400) -> bytes | None:
-        if (cached := await self._redis.get(cache_key)) is not None:
-            return cached if isinstance(cached, bytes) else cached.encode("latin1")
-
+    async def _fetch_bytes(self, url: str, *, params: dict[str, Any] | None = None, ttl: int = 86_400) -> bytes | None:
         try:
             async with self._gate, self.bot.http_session.get(url, params=params, timeout=TIMEOUT) as response:
                 if response.status != 200:
@@ -655,14 +609,12 @@ class WeatherClient:
         except TimeoutError, aiohttp.ClientError:
             return None
 
-        with contextlib.suppress(Exception):
-            await self._redis.set(cache_key, raw, ex=ttl)
         return raw
 
     async def icon(self, code: str | None) -> bytes | None:
         if not code:
             return None
-        return await self._fetch_bytes(icon_url(code), f"weather:icon:{code}", ttl=604_800)
+        return await self._fetch_bytes(icon_url(code), ttl=604_800)
 
     async def icons(self, codes: Iterable[str]) -> dict[str, bytes | None]:
         unique = sorted({c for c in codes if c})
@@ -724,7 +676,7 @@ class WeatherClient:
         """Everything for a place in One Call layout, falling back cleanly to the free 2.5 endpoints."""
         params = {"lat": place.lat, "lon": place.lon, "units": units.key, "lang": lang}
 
-        if not await self._is_onecall_blocked():
+        if not self._is_onecall_blocked():
             try:
                 data = await self.get("/data/3.0/onecall", params, ttl=600, fresh=fresh)
             except PlanRequired:
@@ -757,14 +709,14 @@ class WeatherClient:
         return {"current": current["list"][0], "forecast": forecast["list"], "history": history}
 
     async def day_summary(self, place: Place, date: str, units: Units, lang: str) -> dict[str, Any]:
-        if await self._is_onecall_blocked():
+        if self._is_onecall_blocked():
             msg = "This API key uses the free OpenWeather 2.5 tier."
             raise PlanRequired(msg)
         params = {"lat": place.lat, "lon": place.lon, "date": date, "units": units.key, "lang": lang}
         return await self.get("/data/3.0/onecall/day_summary", params, ttl=3600)
 
     async def timemachine(self, place: Place, timestamp: int, units: Units, lang: str) -> dict[str, Any]:
-        if await self._is_onecall_blocked():
+        if self._is_onecall_blocked():
             msg = "This API key uses the free OpenWeather 2.5 tier."
             raise PlanRequired(msg)
         params = {"lat": place.lat, "lon": place.lon, "dt": timestamp, "units": units.key, "lang": lang}
@@ -781,7 +733,7 @@ class WeatherClient:
         fresh: bool = False,
     ) -> dict[str, Any]:
         """Fetch One Call 3.0 AI overview, or synthesize a rich 2.5 overview on the Free Tier."""
-        if not await self._is_onecall_blocked():
+        if not self._is_onecall_blocked():
             params = {"lat": place.lat, "lon": place.lon, "units": units.key}
             try:
                 data = await self.get("/data/3.0/onecall/overview", params, ttl=1800, fresh=fresh)

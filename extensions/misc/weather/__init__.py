@@ -1175,10 +1175,12 @@ class Weather(commands.Cog, command_attrs={"hidden": True}):
             candidates=candidates,
         )
         file = await view.render_active_page()
+        await ctx.typing()
+
         if file is not None:
-            view.message = await ctx.send(view=view, file=file)
+            view.message = await ctx.reply(view=view, file=file)
         else:
-            view.message = await ctx.send(view=view)
+            view.message = await ctx.reply(view=view)
 
     async def build_history_view(
         self,

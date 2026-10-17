@@ -488,7 +488,7 @@ def _extract_trailing_derivatives(body: str) -> tuple[str, list[tuple[str, str]]
     return remaining, derivatives
 
 
-def _parse_senses(body: str) -> list[SenseItem]:
+def _parse_senses(body: str) -> list[SenseItem]:  # noqa: PLR0912
     """
     Splits a POS block body into numbered senses (1, 2, 3...) and lettered
     sub-senses (a, B, C... — noting uppercase B/C after periods in the dataset).
@@ -675,7 +675,8 @@ def _chunk_lines_for_embed_field(lines: list[str], max_len: int = 1024) -> list[
     current_lines: list[str] = []
     current_len = 0
 
-    for line in lines:
+    for chunk_candidate in lines:
+        line = chunk_candidate
         if len(line) > max_len:
             line = line[: max_len - 3] + "..."
 
@@ -694,7 +695,7 @@ def _chunk_lines_for_embed_field(lines: list[str], max_len: int = 1024) -> list[
     return chunks or ["—"]
 
 
-def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:
+def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # noqa: PLR0912
     """
     Converts a `(key, value)` pair from `dictionary.json` into a richly formatted
     `discord.Embed` with full part-of-speech labels, structured numbered senses,

@@ -73,7 +73,7 @@ CUSTOM_COMMAND_VARIABLES_PAGES = [
         - `{% do author.add_role(role_id, reason='...') %}`: Assigns a safe role below the bot
         - `{% do author.remove_role(role_id, reason='...') %}`: Removes a role
         - `{% do author.kick(reason='...') %}`: Kicks the member (if bot has permission)
-        - `{% do author.ban(reason='...', delete_message_days=0) %}`: Bans the member (0–7 days)
+        - `{% do author.ban(reason='...', delete_message_days=0) %}`: Bans the member (0-7 days)
 
         **`message` (Triggering Message)**
         - `message.id`: Discord message ID (`int`)
@@ -96,7 +96,7 @@ CUSTOM_COMMAND_VARIABLES_PAGES = [
 
         **Stats & Boosts**
         - `guild.member_count`: Total member count
-        - `guild.premium_tier`: Boost level (`0`–`3`)
+        - `guild.premium_tier`: Boost level (`0`-`3`)
         - `guild.premium_subscription_count`: Total server boosts
         - `guild.afk_timeout`: AFK timeout in seconds
 
@@ -254,10 +254,10 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         {% set my_roles = author.roles | map(attribute='id') | list -%}
         {% if role_id in my_roles -%}
           {% do author.remove_role(role_id, reason='Custom command role toggle') -%}
-          ➖ Removed the role from {{ author.display_name }}!
+          **[`-`]** Removed the role from {{ author.display_name }}!
         {% else -%}
           {% do author.add_role(role_id, reason='Custom command role toggle') -%}
-          ➕ Added the role to {{ author.display_name }}!
+          **[`+`]** Added the role to {{ author.display_name }}!
         {% endif %}
         ```
 
@@ -859,7 +859,7 @@ class CC(commands.Cog, name="Custom Commands"):
             return None
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message) -> None:
+    async def on_message(self, message: discord.Message) -> None:  # noqa: PLR0911
         if message.guild is None or message.author.bot or not message.content or not isinstance(message.author, discord.Member):
             return
 

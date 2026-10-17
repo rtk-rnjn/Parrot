@@ -1,0 +1,125 @@
+server:
+  port: 2333
+  address: 0.0.0.0
+  http2:
+    enabled: false
+
+plugins:
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+
+    clients:
+      - MUSIC
+      - ANDROID_VR
+      - WEB
+      - WEBEMBEDDED
+
+  lavasrc:
+    providers:
+      - "ytsearch:\"%ISRC%\""
+      - "ytsearch:%QUERY%"
+
+    sources:
+      spotify: true
+      youtube: true
+      ytdlp: true
+
+    spotify:
+      clientId: ${SPOTIFY_CLIENT_ID}
+      clientSecret: ${SPOTIFY_CLIENT_SECRET}
+
+lavalink:
+  plugins:
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.2"
+      snapshot: false
+
+    - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.8.3"
+      repository: "https://maven.lavalink.dev/releases"
+      snapshot: false
+
+  server:
+    password: ${LAVALINK_SERVER_PASSWORD}
+
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      nico: true
+      http: true
+      local: false
+
+    filters:
+      volume: true
+      equalizer: true
+      karaoke: true
+      timescale: true
+      tremolo: true
+      vibrato: true
+      distortion: true
+      rotation: true
+      channelMix: true
+      lowPass: true
+
+    # Audio buffering
+    nonAllocatingFrameBuffer: false
+    bufferDurationMs: 400
+    frameBufferDurationMs: 5000
+
+    # Audio quality
+    opusEncodingQuality: 10
+    resamplingQuality: MEDIUM
+
+    # Playback
+    trackStuckThresholdMs: 10000
+    useSeekGhosting: true
+
+    # YouTube / player
+    youtubePlaylistLoadLimit: 6
+    playerUpdateInterval: 5
+    youtubeSearchEnabled: true
+    soundcloudSearchEnabled: true
+
+    # Diagnostics
+    gc-warnings: true
+
+    # Network timeouts
+    timeouts:
+      connectTimeoutMs: 3000
+      connectionRequestTimeoutMs: 3000
+      socketTimeoutMs: 3000
+
+metrics:
+  prometheus:
+    enabled: true
+    endpoint: /metrics
+
+sentry:
+  dsn: ""
+  environment: ""
+
+logging:
+  file:
+    path: ./logs/
+
+  level:
+    root: INFO
+    lavalink: INFO
+
+  request:
+    enabled: true
+    includeClientInfo: true
+    includeHeaders: false
+    includeQueryString: true
+    includePayload: true
+    maxPayloadLength: 10000
+    beforeRequest: false
+
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 14

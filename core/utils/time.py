@@ -1,0 +1,294 @@
+# core/utils/time.py
+
+from __future__ import annotations
+
+import datetime
+import re
+from typing import TYPE_CHECKING, Any, cast
+
+import arrow
+import dateparser
+import discord
+from dateutil.relativedelta import relativedelta
+from discord import app_commands
+from discord.ext import commands
+
+if TYPE_CHECKING:
+    from core import Bot
+
+__all__ = (
+    "FriendlyTimeResult",
+    "FutureTime",
+    "HumanTime",
+    "RelativeDelta",
+    "ShortTime",
+    "Time",
+    "UserFriendlyTime",
+)
+
+SHORT_RE = re.compile(
+    r"""
+    (?:(?P<years>\d+)(?:years?|y))?
+    (?:(?P<months>\d+)(?:months?|mon?))?
+    (?:(?P<weeks>\d+)(?:weeks?|w))?
+    (?:(?P<days>\d+)(?:days?|d))?
+    (?:(?P<hours>\d+)(?:hours?|hr?s?))?
+    (?:(?P<minutes>\d+)(?:minutes?|m(?:ins?)?))?
+    (?:(?P<seconds>\d+)(?:seconds?|s(?:ecs?)?))?
+    """,
+    re.VERBOSE | re.IGNORECASE,
+)
+
+DISCORD_TS_RE = re.compile(r"<t:(?P<ts>\d+)(?:\:[RFfDdTt])?>")
+
+
+def _as_arrow_now(now: datetime.datetime | None, tzinfo: datetime.tzinfo) -> arrow.Arrow:
+    if now is None:
+        return arrow.now(tzinfo)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=datetime.UTC)
+    return arrow.get(now).to(tzinfo)
+
+
+def _parse_short(argument: str, now: arrow.Arrow) -> arrow.Arrow | None:
+    m = SHORT_RE.fullmatch(argument.strip())
+    if not m or not m.group(0):
+        return None
+    data = {k: int(v or 0) for k, v in m.groupdict().items()}
+    if not any(data.values()):
+        return None
+    return now.shift(check_imaginary=True, **data)
+
+
+def _parse_discord_ts(argument: str, tzinfo: datetime.tzinfo) -> arrow.Arrow | None:
+    m = DISCORD_TS_RE.fullmatch(argument.strip())
+    if not m:
+        return None
+    return arrow.get(int(m.group("ts"))).to(tzinfo)
+
+
+def _parse_human(argument: str, now: arrow.Arrow, tzinfo: datetime.tzinfo) -> arrow.Arrow | None:
+    dt = dateparser.parse(
+        argument,
+        settings={
+            "RELATIVE_BASE": now.datetime,
+            "RETURN_AS_TIMEZONE_AWARE": True,
+            "TIMEZONE": str(getattr(tzinfo, "key", "UTC")),
+            "TO_TIMEZONE": str(getattr(tzinfo, "key", "UTC")),
+            "PREFER_DATES_FROM": "future",
+        },
+    )
+    return arrow.get(dt).to(tzinfo) if dt else None
+
+
+class ShortTime:
+    compiled = SHORT_RE
+    discord_fmt = DISCORD_TS_RE
+    dt: datetime.datetime
+
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
+        base = _as_arrow_now(now, tzinfo)
+        parsed = _parse_short(argument, base) or _parse_discord_ts(argument, tzinfo)
+        if parsed is None:
+            msg = "invalid time provided"
+            raise commands.BadArgument(msg)
+        self.dt = parsed.datetime
+
+    @classmethod
+    async def convert(cls, ctx: commands.Context[Bot], argument: str) -> ShortTime:
+        tzinfo = datetime.UTC
+        reminder = ctx.bot.reminder
+        if reminder is not None:
+            tzinfo = await reminder.get_tzinfo(ctx.author.id)
+        return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
+
+
+class RelativeDelta(app_commands.Transformer, commands.Converter):
+    @classmethod
+    def __do_conversion(cls, argument: str) -> relativedelta:
+        m = ShortTime.compiled.fullmatch(argument.strip())
+        if m is None or not m.group(0):
+            msg = "invalid time provided"
+            raise ValueError(msg)
+        data = {k: int(v or 0) for k, v in m.groupdict().items()}
+        return relativedelta(**cast(dict[str, Any], data))
+
+    async def convert(self, ctx: commands.Context[Bot], argument: str) -> relativedelta:
+        try:
+            return self.__do_conversion(argument)
+        except ValueError as e:
+            raise commands.BadArgument(str(e)) from None
+
+    async def transform(self, interaction, value: str) -> relativedelta:
+        try:
+            return self.__do_conversion(value)
+        except ValueError as e:
+            raise app_commands.AppCommandError(str(e)) from None
+
+
+class HumanTime:
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
+        base = _as_arrow_now(now, tzinfo)
+        parsed = _parse_human(argument, base, tzinfo)
+        if parsed is None:
+            msg = 'invalid time provided, try e.g. "tomorrow" or "3 days"'
+            raise commands.BadArgument(msg)
+        self.dt = parsed.datetime
+        self._past = parsed <= base
+
+    @classmethod
+    async def convert(cls, ctx: commands.Context[Bot], argument: str) -> HumanTime:
+        tzinfo = datetime.UTC
+        reminder = ctx.bot.reminder
+        if reminder is not None:
+            tzinfo = await reminder.get_tzinfo(ctx.author.id)
+        return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
+
+
+class Time(HumanTime):
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
+        try:
+            s = ShortTime(argument, now=now, tzinfo=tzinfo)
+        except commands.BadArgument:
+            super().__init__(argument, now=now, tzinfo=tzinfo)
+        else:
+            self.dt = s.dt
+            self._past = False
+
+
+class FutureTime(Time):
+    def __init__(
+        self,
+        argument: str,
+        *,
+        now: datetime.datetime | None = None,
+        tzinfo: datetime.tzinfo = datetime.UTC,
+    ):
+        super().__init__(argument, now=now, tzinfo=tzinfo)
+        if self._past:
+            msg = "this time is in the past"
+            raise commands.BadArgument(msg)
+
+
+class BadTimeTransform(app_commands.AppCommandError):
+    pass
+
+
+class TimeTransformer(app_commands.Transformer):
+    async def transform(self, interaction: discord.Interaction[Bot], value: str) -> datetime.datetime:
+        tzinfo = datetime.UTC
+        reminder = interaction.client.reminder
+        if reminder is not None:
+            tzinfo = await reminder.get_tzinfo(interaction.user.id)
+
+        now = interaction.created_at.astimezone(tzinfo)
+        try:
+            short = ShortTime(value, now=now, tzinfo=tzinfo)
+            return short.dt
+        except commands.BadArgument:
+            try:
+                human = FutureTime(value, now=now, tzinfo=tzinfo)
+                return human.dt
+            except commands.BadArgument as e:
+                raise BadTimeTransform(str(e)) from None
+
+
+class FriendlyTimeResult:
+    dt: datetime.datetime
+    arg: str
+    __slots__ = ("arg", "dt")
+
+    def __init__(self, dt: datetime.datetime):
+        self.dt = dt
+        self.arg = ""
+
+    async def ensure_constraints(
+        self,
+        ctx: commands.Context[Bot],
+        uft: UserFriendlyTime,
+        now: datetime.datetime,
+        remaining: str,
+    ) -> None:
+        if self.dt < now:
+            msg = "This time is in the past."
+            raise commands.BadArgument(msg)
+        if not remaining:
+            if uft.default is None:
+                msg = "Missing argument after the time."
+                raise commands.BadArgument(msg)
+            remaining = uft.default
+        if uft.converter is not None:
+            self.arg = await uft.converter.convert(ctx, remaining)
+        else:
+            self.arg = remaining
+
+
+class UserFriendlyTime(commands.Converter):
+    def __init__(
+        self,
+        converter: type[commands.Converter] | commands.Converter | None = None,
+        *,
+        default: Any = None,
+    ):
+        if isinstance(converter, type) and issubclass(converter, commands.Converter):
+            converter = converter()
+        if converter is not None and not isinstance(converter, commands.Converter):
+            msg = "commands.Converter subclass necessary."
+            raise TypeError(msg)
+        self.converter: commands.Converter = converter  # pyright: ignore[reportAttributeAccessIssue]
+        self.default: Any = default
+
+    async def convert(self, ctx: commands.Context[Bot], argument: str) -> FriendlyTimeResult:
+        now = ctx.message.created_at
+        tzinfo = datetime.UTC
+        reminder = ctx.bot.reminder
+        if reminder is not None:
+            tzinfo = await reminder.get_tzinfo(ctx.author.id)
+
+        # 1) leading short-time
+        m = ShortTime.compiled.match(argument)
+        if m and m.group(0):
+            data = {k: int(v or 0) for k, v in m.groupdict().items()}
+            if any(data.values()):
+                dt = arrow.get(now).to(tzinfo).shift(check_imaginary=True, **data).datetime
+                remaining = argument[m.end() :].strip()
+                r = FriendlyTimeResult(dt)
+                await r.ensure_constraints(ctx, self, now, remaining)
+                return r
+
+        # 2) leading discord timestamp
+        m = ShortTime.discord_fmt.match(argument)
+        if m:
+            dt = arrow.get(int(m.group("ts"))).to(tzinfo).datetime
+            remaining = argument[m.end() :].strip()
+            r = FriendlyTimeResult(dt)
+            await r.ensure_constraints(ctx, self, now, remaining)
+            return r
+
+        # 3) fallback natural language (whole argument as time)
+        parsed = _parse_human(argument, arrow.get(now).to(tzinfo), tzinfo)
+        if parsed is None:
+            msg = 'Invalid time provided, try e.g. "tomorrow" or "3 days".'
+            raise commands.BadArgument(msg)
+
+        r = FriendlyTimeResult(parsed.datetime)
+        await r.ensure_constraints(ctx, self, now, self.default if self.default is not None else "")
+        return r

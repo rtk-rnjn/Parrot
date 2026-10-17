@@ -1,0 +1,94 @@
+from __future__ import annotations
+
+import asyncio
+import contextlib
+from collections.abc import Coroutine
+from typing import TYPE_CHECKING, Any, Final
+
+import discord
+from discord.ext import commands
+
+if TYPE_CHECKING:
+    from core import Bot
+
+__all__: tuple[str, ...] = (
+    "DEFAULT_COLOR",
+    "BaseView",
+    "DiscordColor",
+    "Player",
+    "chunk",
+    "double_wait",
+    "wait_for_delete",
+)
+
+DiscordColor = discord.Color | int
+Player = discord.User | discord.Member
+
+DEFAULT_COLOR: Final[discord.Color] = discord.Color(0xFFFFFF)
+
+
+def chunk[T](iterable: list[T], *, count: int) -> list[list[T]]:
+    return [iterable[i : i + count] for i in range(0, len(iterable), count)]
+
+
+async def wait_for_delete(
+    ctx: commands.Context[Bot],
+    message: discord.Message,
+    *,
+    emoji: str = "\N{BLACK SQUARE FOR STOP}",
+    bot: Bot | None = None,
+    user: (discord.User | discord.Member | tuple[discord.User | discord.Member, ...] | None) = None,
+    timeout: float | None = None,
+) -> bool:
+    if not user:
+        user = ctx.author
+    with contextlib.suppress(discord.DiscordException):
+        await message.add_reaction(emoji)
+
+    def check(reaction: discord.Reaction, _user: discord.User) -> bool:
+        if reaction.emoji == emoji and reaction.message.id == message.id:
+            if isinstance(user, tuple):
+                return _user in user
+            return _user == user
+        return False
+
+    resolved_bot: discord.Client = bot or ctx.bot
+    try:
+        await resolved_bot.wait_for("reaction_add", timeout=timeout, check=check)
+    except TimeoutError:
+        return False
+    else:
+        await message.delete(delay=0)
+        return True
+
+
+async def double_wait[R](
+    *tasks: Coroutine[Any, Any, R],
+    loop: asyncio.AbstractEventLoop | None = None,
+):
+    if not loop:
+        loop = asyncio.get_running_loop()
+
+    done, pending = await asyncio.wait(
+        [loop.create_task(task) for task in tasks],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
+    for task in pending:
+        task.cancel()
+    return done, pending
+
+
+class BaseView(discord.ui.View):
+    message: discord.Message | None = None
+
+    def disable_all(self) -> None:
+        for button in self.children:
+            if isinstance(button, discord.ui.Button):
+                button.disabled = True
+
+    async def on_timeout(self) -> None:
+        self.disable_all()
+        if self.message is not None:
+            with contextlib.suppress(discord.HTTPException):
+                await self.message.edit(view=self)
+        self.stop()

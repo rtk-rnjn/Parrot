@@ -1,0 +1,135 @@
+# core/utils/database/__init__.py
+
+from __future__ import annotations
+
+import os
+from typing import TYPE_CHECKING, Final
+
+from dotenv import load_dotenv
+from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.asynchronous.mongo_client import AsyncMongoClient
+from redis.asyncio import BlockingConnectionPool, Redis
+from redis.asyncio.client import PubSub
+
+from .cache_keys import RedisKeys
+from .guild import EVENT_NAMES, SETTING_SECTIONS, GuildSettingSection, _GuildMixin
+from .mixin import DatabaseMixin
+from .models import Giveaway, GuildConfiguration, ModAction, UserConfiguration
+from .scam_links import _ScamLinksMixin
+from .user import _UserMixin
+
+if TYPE_CHECKING:
+    from core import Bot
+
+__all__ = ("EVENT_NAMES", "SETTING_SECTIONS", "DatabaseManager", "GuildSettingSection")
+
+load_dotenv()
+
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://admin:password@localhost:27017/")
+
+CACHE_TTL_SECONDS = 3600
+
+
+class _DatabaseInfraMixin(DatabaseMixin):
+    """Shared database connections, lifecycle operations, and base lookups."""
+
+    async def invalidate_redis(self) -> None:
+        """Invalidate all Redis cache entries (useful for testing)."""
+        await self.redis_client.flushdb()
+
+    async def close(self) -> None:
+        """Close the database connections."""
+        await self.redis_client.aclose()
+        await self.mongo_client.close()
+
+    async def get_guild_configuration(self, guild_id: int, /) -> GuildConfiguration | None:
+        return await self.guilds_collection.find_one({"_id": guild_id})
+
+    async def get_user_configuration(self, user_id: int, /) -> UserConfiguration | None:
+        return await self.users_collection.find_one({"_id": user_id})
+
+
+class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMixin):
+    """Database facade composed from guild, user, bot, and infrastructure mixins.
+
+    Domain methods use ``get_*``, ``set_*``, ``add_*``, ``remove_*``, and
+    ``delete_*`` verbs. MongoDB and Redis clients remain available for the few
+    components that need transactions or scheduler-specific collections.
+    """
+
+    def __init__(self, bot: Bot, /) -> None:
+        self.bot = bot
+
+        pool = BlockingConnectionPool(
+            host="localhost",
+            port=6379,
+            db=0,
+            decode_responses=True,
+            protocol=3,
+            max_connections=200,
+            socket_connect_timeout=1.0,
+            socket_timeout=1.0,
+            health_check_interval=30,
+        )
+
+        self.redis_client: Final[Redis] = Redis.from_pool(pool)
+        self.__pub_sub_client: PubSub = self.redis_client.pubsub()
+
+        # tz_aware=True returns timezone-aware datetimes.
+        self.mongo_client: Final[AsyncMongoClient] = AsyncMongoClient(MONGO_URI, tz_aware=True)
+        self.mongo_db = self.mongo_client["database"]
+
+        self.guilds_collection: Final[AsyncCollection[GuildConfiguration]] = self.mongo_db["guilds"]
+        self.users_collection: Final[AsyncCollection[UserConfiguration]] = self.mongo_db["users"]
+
+        self.giveaways_collection: Final[AsyncCollection[Giveaway]] = self.mongo_db["giveaways"]
+        self.mod_actions_collection: Final[AsyncCollection[ModAction]] = self.mongo_db["mod_actions"]
+
+    @property
+    def pub_sub_client(self) -> PubSub:
+        return self.__pub_sub_client
+
+    async def ping_mongo_server(self) -> bool:
+        """Ping the MongoDB server to check if it's reachable."""
+        response = await self.mongo_client.admin.command("ping")
+        return response.get("ok", 0) == 1
+
+    async def ping_redis_server(self) -> bool:
+        """Ping the Redis server to check if it's reachable."""
+        return await self.redis_client.ping()
+
+    async def is_guild_registered(self, guild_id: int, /) -> bool:
+        """Check if a guild is registered in the database."""
+        redis_key = RedisKeys.REGISTERED_GUILDS
+        if await self.redis_client.sismember(redis_key, str(guild_id)):
+            return True
+
+        exists = await self.guilds_collection.count_documents({"_id": guild_id}, limit=1) > 0
+        if exists:
+            await self.redis_client.sadd(redis_key, str(guild_id))
+
+        return exists
+
+    async def is_user_registered(self, user_id: int, /) -> bool:
+        """Check if a user is registered in the database."""
+        redis_key = RedisKeys.REGISTERED_USERS
+        if await self.redis_client.sismember(redis_key, str(user_id)):
+            return True
+
+        exists = await self.users_collection.count_documents({"_id": user_id}, limit=1) > 0
+        if exists:
+            await self.redis_client.sadd(redis_key, str(user_id))
+
+        return exists
+
+    async def register_guild(self, guild_id: int, /) -> None:
+        """Register a guild in the database."""
+        if not await self.is_guild_registered(guild_id):
+            await self.guilds_collection.insert_one(self.create_guild_configuration(guild_id))
+            await self.redis_client.sadd(RedisKeys.REGISTERED_GUILDS, str(guild_id))
+
+    async def register_user(self, user_id: int, /) -> None:
+        """Register a user in the database."""
+        if not await self.is_user_registered(user_id):
+            await self.users_collection.insert_one(self.create_user_configuration(user_id))
+            await self.redis_client.sadd(RedisKeys.REGISTERED_USERS, str(user_id))

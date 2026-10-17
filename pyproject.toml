@@ -1,0 +1,142 @@
+[project]
+name = "parrot"
+requires-python = ">=3.14"
+
+[tool.ruff]
+line-length = 150
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle / Pyflakes
+    "E",
+    "W",
+    "F",
+
+    # isort
+    "I",
+
+    # Bugbear
+    "B",
+
+    # flake8-builtins
+    "A",
+
+    # flake8-comprehensions
+    "C4",
+
+    # pyupgrade
+    "UP",
+
+    # flake8-simplify
+    "SIM",
+
+    # flake8-return
+    "RET",
+
+    # Ruff
+    "RUF",
+
+    # Async
+    "ASYNC",
+
+    # Datetime
+    "DTZ",
+
+    # Future annotations
+    "FA",
+
+    # Implicit string concatenation
+    "ISC",
+
+    # Pylint
+    "PL",
+
+    # flake8-pie
+    "PIE",
+
+    # pygrep-hooks
+    "PGH",
+
+    # pytest
+    "PT",
+
+    # Debugger
+    "T10",
+
+    # Print
+    "T20",
+
+    # Error messages
+    "EM",
+
+    # Logging
+    "G",
+    "LOG",
+
+    # pathlib
+    "PTH",
+
+    # Performance
+    "PERF",
+
+    # Bandit / security
+    "S",
+]
+
+ignore = [
+    "E501",     # Line too long; formatter/linter uses 150-character limit
+    "PLR0913",  # Too many arguments
+    "PLR2004",  # Magic value comparison
+    "ASYNC109",
+    "S101",     # assert
+    "S311",     # random module
+]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pylint]
+max-positional-args = 9
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",     # assert
+    "PLR2004",  # Magic value comparison
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+
+[tool.pyright]
+include = ["core", "extensions", "tests"]
+typeCheckingMode = "basic"
+pythonVersion = "3.14"
+venvPath = "."
+venv = ".venv"
+reportUnnecessaryTypeIgnoreComment = "warning"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+norecursedirs = [
+    ".venv",
+    "venv",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "build",
+    "dist",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks integration tests",
+]

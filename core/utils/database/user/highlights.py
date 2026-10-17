@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+from pymongo.asynchronous.collection import AsyncCollection
+
+from ..cache_keys import RedisKeys
+from ..mixin import DatabaseMixin
+from ..models import UserConfiguration
+
+
+class _UserHighlightsMixin(DatabaseMixin):
+    """User timezone operations."""
+
+    users_collection: AsyncCollection[UserConfiguration]
+
+    async def get_user_highlights(self, *, guild_id: int, user_id: int) -> set[str] | None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_WORDS.format(guild_id=guild_id, user_id=user_id)
+
+        cached = await self.redis_client.smembers(redis_key)
+        if cached:
+            return {item.decode() if isinstance(item, bytes) else item for item in cached}
+
+        user_config = await self.users_collection.find_one({"_id": user_id, "highlights.guild_id": guild_id}, {"highlights.$": 1})
+        if not user_config:
+            return None
+
+        highlight = user_config["highlights"][0]
+        await self.redis_client.sadd(redis_key, *highlight["words"])
+        return set(highlight["words"])
+
+    async def get_user_highlight_ignored_users(self, *, user_id: int) -> set[int] | None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_IGNORED_USERS.format(user_id=user_id)
+
+        cached = await self.redis_client.smembers(redis_key)
+        if cached:
+            return {int(user) for user in cached}
+
+        user_config = await self.users_collection.find_one(
+            {"_id": user_id, "highlight_ignored_users": {"$exists": True}},
+            {"highlight_ignored_users": 1},
+        )
+        if not user_config:
+            return None
+
+        ignored_users = user_config["highlight_ignored_users"]
+        if ignored_users:
+            await self.redis_client.sadd(redis_key, *ignored_users)
+        return set(ignored_users)
+
+    async def add_user_highlight_ignored_user(self, *, user_id: int, ignored_user_id: int) -> None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_IGNORED_USERS.format(user_id=user_id)
+        await self.redis_client.sadd(redis_key, ignored_user_id)
+        await self.users_collection.update_one(
+            {"_id": user_id},
+            {"$addToSet": {"highlight_ignored_users": ignored_user_id}},
+        )
+
+    async def remove_user_highlight_ignored_user(self, *, user_id: int, ignored_user_id: int) -> None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_IGNORED_USERS.format(user_id=user_id)
+        await self.redis_client.srem(redis_key, ignored_user_id)
+        await self.users_collection.update_one({"_id": user_id}, {"$pull": {"highlight_ignored_users": ignored_user_id}})
+
+    async def clear_user_highlight_ignored_users(self, *, user_id: int) -> None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_IGNORED_USERS.format(user_id=user_id)
+        await self.redis_client.delete(redis_key)
+        await self.users_collection.update_one({"_id": user_id}, {"$set": {"highlight_ignored_users": []}})
+
+    async def add_user_highlight(self, *, guild_id: int, user_id: int, words: list[str]) -> None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_WORDS.format(guild_id=guild_id, user_id=user_id)
+        await self.redis_client.sadd(redis_key, *words)
+        await self.users_collection.update_one(
+            {"_id": user_id, "highlights.guild_id": guild_id},
+            {"$addToSet": {"highlights.$.words": {"$each": words}}},
+        )
+
+    async def remove_user_highlight(self, *, guild_id: int, user_id: int, words: list[str]) -> None:
+        redis_key = RedisKeys.USER_HIGHLIGHT_WORDS.format(guild_id=guild_id, user_id=user_id)
+        await self.redis_client.srem(redis_key, *words)
+        await self.users_collection.update_one(
+            {"_id": user_id, "highlights.guild_id": guild_id},
+            {"$pull": {"highlights.$.words": {"$in": words}}},
+        )
+
+    async def get_all_user_highlights(self, *, guild_id: int) -> dict[int, set[str]]:
+        result: dict[int, set[str]] = {}
+
+        async for user_config in self.users_collection.find({"highlights.guild_id": guild_id}, {"_id": 1, "highlights.$": 1}):
+            user_id = user_config["_id"]
+            highlight = user_config["highlights"][0]
+            result[user_id] = set(highlight["words"])
+
+        return result

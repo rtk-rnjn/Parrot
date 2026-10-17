@@ -1,0 +1,69 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongodb-init:
+    image: mongo:latest
+    container_name: mongodb-init
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["mongosh", "--host", "mongodb:27017", "--quiet", "--eval"]
+    command:
+      - |
+        try {
+          rs.status();
+          print("Replica set already initialized");
+        } catch (e) {
+          rs.initiate({
+            _id: "rs0",
+            members: [{ _id: 0, host: "mongodb:27017" }]
+          });
+          print("Replica set initiated");
+        }
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4-alpine
+    container_name: lavalink
+    restart: unless-stopped
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xmx6G
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+      - ./plugins/:/opt/Lavalink/plugins/
+    networks:
+      - lavalink
+    expose:
+      - 2333
+    ports:
+      - "2333:2333"
+    env_file:
+      - .env
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  lavalink:
+    name: lavalink

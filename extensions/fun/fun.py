@@ -1,0 +1,1426 @@
+from __future__ import annotations
+
+import asyncio
+import colorsys
+import difflib
+import functools
+import html
+import io
+import itertools
+import logging
+import math
+import random
+import re
+import secrets
+import string
+import uuid
+from collections import defaultdict
+from collections.abc import Callable
+from pathlib import Path
+from typing import TYPE_CHECKING, Annotated, Any, Literal, TypedDict, cast
+
+import arrow
+import discord
+from colorama import Fore
+from discord.ext import commands
+from discord.ext.commands import Context
+from PIL import Image, ImageColor
+from rapidfuzz.process import extractOne as rf_extract_one
+
+from core.utils import BaseLayoutView, PaginationView
+
+from .duck_game import (
+    ANSWER_REGEX,
+    CORRECT_GOOSE,
+    CORRECT_SOLN,
+    EMOJI_WRONG,
+    GAME_DURATION,
+    HELP_IMAGE_PATH,
+    HELP_TEXT,
+    INCORRECT_GOOSE,
+    INCORRECT_SOLN,
+    SOLN_DISTR,
+    DuckGame,
+    assemble_board_image,
+)
+from .pour_puzzle import PourView
+
+if TYPE_CHECKING:
+    from core import Bot
+
+HEX_CODE_MAX_LENGTH = 7
+MIN_RANDOM_CHOICES = 2
+RGBA_CHANNELS = 4
+HTTP_OK = 200
+DISCORD_MESSAGE_LIMIT = 2000
+SIMILARITY_THRESHOLD = 0.9
+
+_log = logging.getLogger(__name__)
+
+THUMBNAIL_SIZE = (80, 80)
+SECTION_SEPERATOR = "\N{WHITE RIGHT POINTING BACKHAND INDEX}\N{WHITE LEFT POINTING BACKHAND INDEX}"
+
+# fmt: off
+CHARACTER_VALUES = {
+    200: "\N{PEOPLE HUGGING}",
+    50 : "\N{SPARKLING HEART}",
+    10 : "\N{SPARKLES}",
+    5  : "\N{FACE WITH PLEADING EYES}",
+    1  : ",",
+    0  : "\N{HEAVY BLACK HEART}",
+}
+# fmt: on
+
+with Path("assets/color_names.json").open(encoding="utf-8") as file:
+    color_names: dict[str, str] = discord.utils._from_json(file.read())
+
+
+class QuizData(TypedDict):
+    category: str
+    type: Literal["multiple", "boolean"]
+    difficulty: Literal["easy", "medium", "hard"]
+    question: str
+    correct_answer: str
+    incorrect_answers: list[str]
+
+
+class MadlibsTemplate(TypedDict):
+    """Structure of a template in the madlibs JSON file."""
+
+    title: str
+    blanks: list[str]
+    value: list[str]
+
+
+def to_bottom(text: str) -> str:
+    out = bytearray()
+
+    for char in text.encode():
+        temp_char = char
+        while temp_char != 0:
+            for value, emoji in CHARACTER_VALUES.items():
+                if temp_char >= value:
+                    temp_char -= value
+                    out += emoji.encode()
+                    break
+
+        out += SECTION_SEPERATOR.encode()
+
+    return out.decode("utf-8")
+
+
+def from_bottom(text: str) -> str:
+    out = bytearray()
+    text = text.strip().removesuffix(SECTION_SEPERATOR)
+
+    if any(c not in CHARACTER_VALUES.values() for c in text.replace(SECTION_SEPERATOR, "")):
+        msg = f"Invalid bottom text: {text}"
+        raise TypeError(msg)
+
+    for char in text.split(SECTION_SEPERATOR):
+        rev_mapping = {v: k for k, v in CHARACTER_VALUES.items()}
+
+        sub = sum(rev_mapping[emoji] for emoji in char)
+        out += sub.to_bytes(1, "big")
+
+    return out.decode()
+
+
+def replace_many(
+    sentence: str,
+    replacements: dict[str, str],
+    *,
+    ignore_case: bool = False,
+    match_case: bool = False,
+) -> str:
+    if ignore_case:
+        replacements = {word.lower(): replacement for word, replacement in replacements.items()}
+
+    words_to_replace = sorted(replacements, key=lambda s: (-len(s), s))
+
+    # Join and compile words to replace into a regex
+    pattern = "|".join(re.escape(word) for word in words_to_replace)
+    regex = re.compile(pattern, re.I if ignore_case else 0)
+
+    def _repl(match: re.Match) -> str:
+        """Returns replacement depending on `ignore_case` and `match_case`."""
+        word: str = match[0]
+        replacement = replacements[word.lower() if ignore_case else word]
+
+        if not match_case:
+            return replacement
+
+        # Clean punctuation from word so string methods work
+        cleaned_word = word.translate(str.maketrans("", "", string.punctuation))
+        if cleaned_word.isupper():
+            return replacement.upper()
+        if cleaned_word[0].isupper():
+            return replacement.capitalize()
+        return replacement.lower()
+
+    return regex.sub(_repl, sentence)
+
+
+def suppress_links(message: str) -> str:
+    """Accepts a message that may contain links, suppresses them, and returns them."""
+    for link in set(re.findall(r"https?://[^\s]+", message, re.IGNORECASE)):
+        message = message.replace(link, f"<{link}>")
+    return message
+
+
+UWU_WORDS = {
+    "fi": "fwi",
+    "l": "w",
+    "r": "w",
+    "some": "sum",
+    "th": "d",
+    "thing": "fing",
+    "tho": "fo",
+    "you're": "yuw'we",
+    "your": "yur",
+    "you": "yuw",
+}
+
+
+class QuizConfigLayout(BaseLayoutView):
+    def __init__(self, *, author: discord.User | discord.Member):
+        super().__init__(author=author)
+        self.url: str | None = None
+
+        self.author = author
+
+        header = discord.ui.TextDisplay(
+            "# Quiz Configuration\n"
+            "-# This quiz is provided by the Open Trivia Database.\n"
+            "-# Creative Commons Attribution-ShareAlike 4.0 International License"
+        )
+        self.category_select = discord.ui.Select(
+            placeholder="Any Category",
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("General Knowledge", "9"),
+                    ("Entertainment: Books", "10"),
+                    ("Entertainment: Film", "11"),
+                    ("Entertainment: Music", "12"),
+                    ("Entertainment: Musicals & Theatres", "13"),
+                    ("Entertainment: Television", "14"),
+                    ("Entertainment: Video Games", "15"),
+                    ("Entertainment: Board Games", "16"),
+                    ("Science & Nature", "17"),
+                    ("Science: Computers", "18"),
+                    ("Mythology", "20"),
+                    ("Sports", "21"),
+                    ("Geography", "22"),
+                    ("History", "23"),
+                    ("Politics", "24"),
+                    ("Art", "25"),
+                    ("Celebrities", "26"),
+                    ("Animals", "27"),
+                    ("Vehicles", "28"),
+                    ("Entertainment: Comics", "29"),
+                    ("Science: Gadgets", "30"),
+                    ("Entertainment: Japanese Anime & Manga", "31"),
+                    ("Entertainment: Cartoon & Animations", "32"),
+                ]
+            ],
+        )
+        self.category_select.callback = self.category_select_callback
+
+        self.difficulty_select = discord.ui.Select(
+            placeholder="Any Difficulty",
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("Easy", "easy"),
+                    ("Medium", "medium"),
+                    ("Hard", "hard"),
+                ]
+            ],
+        )
+        self.difficulty_select.callback = self.difficulty_select_callback
+
+        self.type_select = discord.ui.Select(
+            placeholder="Any Type",
+            options=[
+                discord.SelectOption(label=label, value=value)
+                for label, value in [
+                    ("Multiple Choice", "multiple"),
+                    ("True / False", "boolean"),
+                ]
+            ],
+        )
+        self.type_select.callback = self.type_select_callback
+
+        self.start_button = discord.ui.Button(label="Start Quiz", style=discord.ButtonStyle.green)
+        self.start_button.callback = self.start_quiz
+
+        self.cancel_button = discord.ui.Button(label="Cancel Quiz", style=discord.ButtonStyle.red)
+        self.cancel_button.callback = self.cancel_quiz
+
+        container = discord.ui.Container(
+            header,
+            discord.ui.Separator(),
+            discord.ui.TextDisplay("Select a category for the quiz below:"),
+            discord.ui.ActionRow(self.category_select),
+            discord.ui.Separator(),
+            discord.ui.TextDisplay("Select difficulty for the quiz below:"),
+            discord.ui.ActionRow(self.difficulty_select),
+            discord.ui.Separator(),
+            discord.ui.TextDisplay("Select type for the quiz below:"),
+            discord.ui.ActionRow(self.type_select),
+            discord.ui.Separator(),
+            discord.ui.ActionRow(self.start_button, self.cancel_button),
+        )
+
+        self.add_item(container)
+
+    async def start_quiz(self, interaction: discord.Interaction):
+        category = self.category_select.values[0] if self.category_select.values else ""
+        difficulty = self.difficulty_select.values[0] if self.difficulty_select.values else ""
+        q_type = self.type_select.values[0] if self.type_select.values else ""
+
+        self.url = f"https://opentdb.com/api.php?amount=10&category={category}&difficulty={difficulty}&type={q_type}"
+        content = f"Starting quiz with the following configuration:\nCategory: {category or 'Any'}\nDifficulty: {difficulty or 'Any'}\nType: {q_type or 'Any'}"
+        await interaction.response.send_message(content, ephemeral=True)
+        self.stop()
+
+    async def category_select_callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+    async def difficulty_select_callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+    async def type_select_callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+    async def cancel_quiz(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Quiz cancelled.", ephemeral=True)
+        self.stop()
+
+
+class ColorHandler:
+    bot: Bot
+
+    async def send_colour_response(
+        self,
+        ctx: Context[Bot],
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> None:
+        """Create and send embed from user given colour information."""
+        name = self._rgb_to_name(rgb)
+        try:
+            colour_or_color = ctx.invoked_parents[0]
+        except IndexError:
+            colour_or_color = "colour"
+
+        colour_mode = ctx.invoked_with
+        if colour_mode == "random":
+            colour_mode = colour_or_color
+            input_colour = name
+        elif colour_mode in ("colour", "color"):
+            input_colour = ctx.kwargs["colour_input"]
+        elif colour_mode == "name":
+            input_colour = ctx.kwargs["user_colour_name"]
+        elif colour_mode == "hex":
+            input_colour = ctx.args[2:][0]
+            if len(input_colour) > HEX_CODE_MAX_LENGTH:
+                input_colour = input_colour[:-2]
+        else:
+            input_colour = tuple(ctx.args[2:])
+
+        if colour_mode is not None:
+            colour_mode = colour_mode.upper() if colour_mode not in ("name", "hex", "random", "color", "colour") else colour_mode.title()
+
+        colour_embed = discord.Embed(
+            title=f"{name or input_colour}",
+            description=f"{colour_or_color.title()} information for {colour_mode} `{input_colour or name}`.",
+            colour=discord.Color.from_rgb(*rgb),
+        )
+        colour_conversions = self.get_colour_conversions(rgb)
+        for colour_space, value in colour_conversions.items():
+            colour_embed.add_field(name=colour_space, value=f"`{value}`", inline=True)
+
+        thumbnail = Image.new("RGB", THUMBNAIL_SIZE, color=rgb)
+        buffer = io.BytesIO()
+
+        await asyncio.to_thread(thumbnail.save, buffer, "PNG")
+        await asyncio.to_thread(buffer.seek, 0)
+        thumbnail_file = discord.File(buffer, filename="colour.png")
+
+        colour_embed.set_thumbnail(url="attachment://colour.png")
+
+        await ctx.reply(file=thumbnail_file, embed=colour_embed)
+
+    def get_colour_conversions(self, rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> dict[str, Any]:
+        """Create a dictionary mapping of colour types and their values."""
+        colour_name = self._rgb_to_name(rgb)
+        if colour_name is None:
+            colour_name = "No match found"
+        return {
+            "RGB": rgb,
+            "HSV": self._rgb_to_hsv(rgb),
+            "HSL": self._rgb_to_hsl(rgb),
+            "CMYK": self._rgb_to_cmyk(rgb),
+            "Hex": self._rgb_to_hex(rgb),
+            "Name": colour_name,
+        }
+
+    @staticmethod
+    def _rgb_to_hsv(
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> tuple[int, int, int]:
+        """Convert RGB values to HSV values."""
+        rgb_list = [val / 255 for val in rgb]
+        h, s, v = colorsys.rgb_to_hsv(*rgb_list)
+        return round(h * 360), round(s * 100), round(v * 100)
+
+    @staticmethod
+    def _rgb_to_hsl(
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> tuple[int, int, int]:
+        """Convert RGB values to HSL values."""
+        rgb_list = [val / 255.0 for val in rgb]
+        h, l, s = colorsys.rgb_to_hls(*rgb_list)  # noqa: E741
+        return round(h * 360), round(s * 100), round(l * 100)
+
+    @staticmethod
+    def _rgb_to_cmyk(
+        rgb: tuple[int, int, int] | tuple[int, int, int, int],
+    ) -> tuple[int, int, int, int]:
+        """Convert RGB values to CMYK values."""
+        rgb_list = [val / 255.0 for val in rgb]
+        if not any(rgb_list):
+            return 0, 0, 0, 100
+        k = 1 - max(rgb_list)
+        c = round((1 - rgb_list[0] - k) * 100 / (1 - k))
+        m = round((1 - rgb_list[1] - k) * 100 / (1 - k))
+        y = round((1 - rgb_list[2] - k) * 100 / (1 - k))
+        return c, m, y, round(k * 100)
+
+    @staticmethod
+    def _rgb_to_hex(rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> str:
+        """Convert RGB values to HEX code."""
+        hex_ = "".join([hex(val)[2:].zfill(2) for val in rgb])
+        return f"#{hex_}".upper()
+
+    def _rgb_to_name(self, rgb: tuple[int, int, int] | tuple[int, int, int, int]) -> str | None:
+        """Convert RGB values to a fuzzy matched name."""
+        input_hex_colour = self._rgb_to_hex(rgb)
+        try:
+            maybe_none = rf_extract_one(query=input_hex_colour, choices=color_names.values(), score_cutoff=80)
+            if maybe_none is None:
+                raise TypeError
+            match, _, _ = maybe_none
+            colour_name = next(name for name, hex_code in color_names.items() if hex_code == match)
+        except TypeError:
+            colour_name = None
+        return colour_name
+
+    def match_colour_name(self, input_colour_name: str) -> str | None:
+        """Convert a colour name to HEX code."""
+        try:
+            maybe_none = rf_extract_one(query=input_colour_name, choices=color_names.keys(), score_cutoff=80)
+            if maybe_none is None:
+                raise TypeError
+            match, _, _ = maybe_none
+        except ValueError, TypeError:
+            return None
+        return f"#{color_names[match]}"
+
+
+class Fun(commands.Cog, ColorHandler):
+    """Fun commands for the bot."""
+
+    help_emoji = "\N{GAME DIE}"
+
+    def __init__(self, bot: Bot):
+        self.bot = bot
+        _log.debug("Cog loaded: %s", self.__class__.__name__)
+
+        self.madlib_entries: dict[int, str] = {}
+        self.madlibs_author_checks: set[Callable[[discord.Message], bool]] = set()
+        self.templates = self._load_templates()
+        self.current_duck_games: dict[int, DuckGame] = {}
+
+    @commands.group(name="random", invoke_without_command=True)
+    async def random_command(self, ctx: commands.Context[Bot]):
+        """Some fun commands regarding RNG"""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @random_command.command(name="number", aliases=["num"])
+    async def random_number(
+        self,
+        ctx: commands.Context[Bot],
+        minimum: int = commands.parameter(description="The minimum value for the random number.", default=1),
+        maximum: int = commands.parameter(description="The maximum value for the random number.", default=100),
+    ):
+        """Generate a random number between two values."""
+        if minimum > maximum:
+            minimum, maximum = maximum, minimum
+
+        await ctx.reply(f"\N{GAME DIE} **{random.randint(minimum, maximum)}**")
+
+    @random_command.command(name="coin", aliases=["flip"])
+    async def random_coin(self, ctx: commands.Context[Bot]):
+        """Flip a coin."""
+        await ctx.reply(random.choice(["\N{COIN} **Heads!**", "\N{COIN} **Tails!**"]))
+
+    @random_command.command(name="choice", aliases=["choose", "pick"])
+    async def random_choice(self, ctx: commands.Context[Bot], *options: str):
+        """Randomly choose between options."""
+        if len(options) < MIN_RANDOM_CHOICES:
+            msg = "Provide at least two choices"
+            raise commands.BadArgument(msg)
+
+        await ctx.reply(
+            f"\N{DIRECT HIT} I choose **{random.choice(options)}**",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @random_command.command(name="8ball", aliases=["eightball"])
+    async def random_8ball(self, ctx: commands.Context[Bot], *, question: str = commands.parameter(description="The yes-or-no question to ask")):
+        """Ask the magic 8-ball a question."""
+        responses = [
+            "Yes.",
+            "No.",
+            "Definitely.",
+            "Absolutely not.",
+            "Maybe.",
+            "Probably.",
+            "Probably not.",
+            "Ask again later.",
+            "Without a doubt.",
+            "Very unlikely.",
+            "The signs point to yes.",
+            "The signs point to no.",
+            "I wouldn't count on it.",
+        ]
+
+        await ctx.reply(f"\N{BILLIARDS} **Answer:** {random.choice(responses)}")
+
+    @random_command.command(name="chance")
+    async def random_chance(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        thing: str = commands.parameter(description="The thing to calculate the chance of happening.", default="something"),
+    ):
+        """Generate a random chance for something."""
+        # need to make this deterministic based on the input, so that the same input always gives the same output
+        hash_value = hash(thing)
+        percent = abs(hash_value) % 101
+
+        await ctx.reply(f"\N{DIRECT HIT} The chance of **{thing}** happening is **{percent}%**.")
+
+    @random_command.command(name="rate")
+    async def random_rate(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        thing: str = commands.parameter(description="The thing to rate.", default="something"),
+    ):
+        """Give something a random rating out of 10."""
+        rating = random.randint(0, 100) / 10
+
+        await ctx.reply(f"\N{WHITE MEDIUM STAR} I rate **{thing}** **{rating:.1f}/10**.")
+
+    @random_command.command(name="member")
+    @commands.guild_only()
+    async def random_member(self, ctx: commands.Context[Bot]):
+        """Pick a random member from the server."""
+        if TYPE_CHECKING:
+            assert ctx.guild is not None
+
+        members = [member for member in ctx.guild.members if not member.bot]
+
+        random.shuffle(members)
+
+        member = random.choice(members)
+        await ctx.reply(f"\N{DIRECT HIT} Random member: {member.display_name} ({member.id})")
+
+    @random_command.command(name="password")
+    async def random_password(
+        self,
+        ctx: commands.Context[Bot],
+        length: commands.Range[int, 8, 128] = commands.parameter(description="The length of the password to generate.", default=8),  # noqa: B008
+    ):
+        """Generate a cryptographically secure random password."""
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        password = "".join(secrets.choice(alphabet) for _ in range(length))
+
+        await ctx.reply(f"\N{CLOSED LOCK WITH KEY} `{password}`")
+
+    @random_command.command(name="uuid")
+    async def random_uuid(self, ctx: commands.Context[Bot]):
+        """Generate a random UUID.
+
+        It sends a UUID v1, v4, v6, v7, and v8.
+        """
+
+        contents = [
+            "`UUID v1:` " + str(uuid.uuid1()),
+            "`UUID v4:` " + str(uuid.uuid4()),
+            "`UUID v6:` " + str(uuid.uuid6()),
+            "`UUID v7:` " + str(uuid.uuid7()),
+            "`UUID v8:` " + str(uuid.uuid8()),
+        ]
+        await ctx.reply("\n".join(contents))
+
+    @commands.command(name="guess-the-number", aliases=["gtn"])
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def guess_the_number(
+        self,
+        ctx: Context[Bot],
+        upper: int = commands.parameter(
+            converter=int,
+            default=10,
+            description="The upper bound of the guessing range.",
+        ),
+        lower: int = commands.parameter(
+            converter=int,
+            default=1,
+            description="The lower bound of the guessing range.",
+        ),
+    ):
+        """Guess the number game
+
+        Number of chances is calculated using log2(upper - lower + 1) and rounded to the nearest integer.
+        This makes the game more 50% fair, as it gives the user a reasonable number of chances to guess the number.
+
+        """
+        upper, lower = max(upper, lower), min(upper, lower)
+        number = random.randint(lower, upper)
+
+        number_of_chances = math.log(upper - lower + 1, 2)
+        number_of_chances = round(number_of_chances)
+        await ctx.reply(f"{ctx.author.mention} Guess a number between **{lower}** and **{upper}** in **{number_of_chances}** chances. Goodluck")
+        count = 0
+
+        def check(m: discord.Message) -> bool:
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.isdigit()
+
+        while count < number_of_chances:
+            count += 1
+
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=30)
+            except TimeoutError:
+                return await ctx.reply("You took too long to respond. Game Over")
+
+            guess = int(msg.content)
+
+            if guess == number:
+                await ctx.reply(f"{ctx.author.mention} Congratulation, you guessed the number in **{count}** attempts :tada:.")
+                return None
+
+            if guess < number:
+                await ctx.reply(
+                    f"{ctx.author.mention} Your guess is **too low**. Try again",
+                    delete_after=4,
+                )
+
+            else:
+                await ctx.reply(
+                    f"{ctx.author.mention} Your guess is **too high**. Try again",
+                    delete_after=4,
+                )
+
+        if count >= number_of_chances:
+            await ctx.reply(f"{ctx.author.mention} The number is **{number}**. Better luck next time")
+        return None
+
+    @commands.command(name="cathi", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_cathi(
+        self,
+        ctx: Context[Bot],
+        text: str = commands.parameter(description="The text for the cat to say.", default="Hi..."),
+    ):
+        """Make a cat say something."""
+        # please dont DM to ask what is this, I forget
+        m: discord.Message = await ctx.reply("starting")
+
+        FWLL = "\N{FULLWIDTH LOW LINE}"
+        LL = "_"
+        IGS = "\N{IDEOGRAPHIC SPACE}"
+        FWS = "\N{FULLWIDTH SOLIDUS}"
+        FWRS = "\N{FULLWIDTH REVERSE SOLIDUS}"
+        FM = "\N{FULLWIDTH MACRON}"
+        LA = "\N{LOGICAL AND}"
+
+        FACE = "\N{ACUTE ACCENT}\N{HALFWIDTH KATAKANA MIDDLE DOT}\N{GREEK SMALL LETTER OMEGA}\N{HALFWIDTH KATAKANA MIDDLE DOT}`"
+        ls = [
+            (
+                f". {IGS}{IGS}{IGS}{FWLL}{FWLL}{LL}{FWLL}{FWLL}\n"
+                f"{IGS}{IGS}{FWS}{IGS}{FWS}{IGS}  {FWS}|\n"
+                f"{IGS}{IGS}|{FM}{FM}{FM}{FM}|{IGS}|\n"
+                f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
+                f"{IGS}{IGS}{FM}{FM}{FM}{FM}"
+            ),
+            (
+                f". {IGS}{IGS}{IGS}{text}\n"
+                f"{IGS}   {IGS} {LA}{FWLL}{LA}{FWLL}_\n"
+                f"{IGS}{IGS}{FWS}({FACE})  {FWS}{FWRS}\n"
+                f"{IGS}{FWS}|{FM}{FM}{FM}{FM}|{FWRS}{FWS}\n"
+                f"{IGS}{IGS}|{IGS}{IGS}{IGS}{IGS}|{FWS}\n"
+                f"{IGS}{IGS}{FM}{FM}{FM}{FM}"
+            ),
+        ]
+        for _, cat in itertools.product(range(3), ls):
+            await m.edit(content=cat)
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="flop", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_flop(self, ctx: Context[Bot]):
+        """Make a flop animation."""
+        m = await ctx.reply("Starting...")
+        DEGREE_SIGN = "\N{DEGREE SIGN}"
+        WHITE_SQUARE = "\N{WHITE SQUARE}"
+        EM_DASH = "-"
+        HAND_UP = "\N{BOX DRAWINGS LIGHT ARC UP AND LEFT}"
+        CURVE_DOWN = "\N{PRESENTATION FORM FOR VERTICAL LEFT PARENTHESIS}"
+
+        ls = (
+            rf"(   {DEGREE_SIGN} - {DEGREE_SIGN}) (' - '   )",
+            rf"(\{DEGREE_SIGN} - {DEGREE_SIGN})\ (' - '   )",
+            rf"({EM_DASH}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){EM_DASH} (' - '   )",
+            rf"({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}(' - '   )",
+            rf"({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}{CURVE_DOWN}(\\ .o.)\\",
+        )
+        for i in ls:
+            await m.edit(content=i)
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="poof", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_poof(self, ctx: Context[Bot]):
+        """Make a poof animation."""
+        m: discord.Message = await ctx.reply("...")
+        ls = ("(   ' - ')", r"' \- ')", r"\- ')", "')", ")", "*poofness*")
+        for i in ls:
+            await m.edit(content=discord.utils.escape_markdown(i))
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="virus", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_virus(
+        self,
+        ctx: Context[Bot],
+        user: discord.Member = commands.parameter(description="The user to infect.", default=commands.parameters.Author),  # noqa: B008
+        virus: str = commands.parameter(description="The name of the virus to insert.", default="trojan"),
+    ):
+        """Insert a virus to yourself or someone else."""
+        m = await ctx.reply("...")
+        user = user or ctx.author
+        DARK_SHADE = "\N{DARK SHADE}"
+
+        PREFIX = "```ansi\n"
+        SUFFIX = "\n```"
+
+        SHIFTER = 24
+
+        def D(n: int) -> str:
+            return DARK_SHADE * n + " " * (SHIFTER - n)
+
+        rotator = itertools.cycle(["/", "-", "\\", "|"])
+        dot_rotator = itertools.cycle([".", "..", "..."])
+
+        ls = [
+            f"{Fore.WHITE}[{Fore.GREEN}{D(i)}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe Packing files{next(dot_rotator)}"
+            for i in range(3, SHIFTER, 3)
+        ]
+        ls.append(f"{Fore.WHITE}[{Fore.GREEN}{'Successfully downloaded':<24}{Fore.WHITE}] {Fore.YELLOW}{next(rotator)} {Fore.BLUE}{virus}-virus.exe")
+        ls.extend(
+            f"{Fore.WHITE}[{Fore.RED}{f'Injecting virus{next(dot_rotator)}':.<24}{Fore.WHITE}] "
+            f"{Fore.YELLOW}{next(rotator)} "
+            f"{Fore.BLUE}{virus}-virus.exe"
+            for _ in range(3)
+        )
+        ls.append(f"{Fore.GREEN}Successfully {Fore.WHITE}Injected {Fore.RED}{virus}-virus.exe into {Fore.YELLOW}{user.name}")
+        for i in ls:
+            await m.edit(content=f"{PREFIX}{i}{SUFFIX}")
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="boom", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_boom(self, ctx: Context[Bot]):
+        """Booms a message!."""
+        m = await ctx.reply("THIS MESSAGE WILL SELFDESTRUCT IN 5")
+        await asyncio.sleep(1.5)
+        ls = (
+            "THIS MESSAGE WILL SELFDESTRUCT IN 4",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 3",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 2",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 1",
+            "THIS MESSAGE WILL SELFDESTRUCT IN 0",
+            "\N{BOMB}",
+            "\N{COLLISION SYMBOL}",
+        )
+        for i in ls:
+            await m.edit(content=i)
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="table", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_table(self, ctx: Context[Bot]):
+        """Animate a table-themed message.
+
+        This command sends a short animated text sequence to the channel.
+        """
+        # Thanks `CutieRei#5211`(830248412904947753)
+        DEGREE_SIGN = "\N{DEGREE SIGN}"
+        WHITE_SQUARE = "\N{WHITE SQUARE}"
+        HAND_UP = "\N{BOX DRAWINGS LIGHT ARC UP AND LEFT}"
+
+        TOP = "\N{HANGUL LETTER YU}"
+        RIGHT = "\N{HANGUL LETTER YEO}"
+        DOWN = "\N{HANGUL LETTER YO}"
+        LEFT = "\N{HANGUL LETTER YA}"
+
+        message: discord.Message = await ctx.reply(rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\  {TOP}`")
+        animation_frames = (
+            rf"`(\{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})\  {TOP}`",
+            rf"`(-{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN})-  {TOP}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}  {RIGHT}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}    {DOWN}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}      {LEFT}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}        {TOP}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}          {RIGHT}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}            {DOWN}`",
+            rf"`({HAND_UP}{DEGREE_SIGN}{WHITE_SQUARE}{DEGREE_SIGN}){HAND_UP}              {LEFT}`",
+            rf"`(\{DEGREE_SIGN}-{DEGREE_SIGN})\                 {TOP}`",
+        )
+
+        for animation_frame in animation_frames:
+            await message.edit(content=animation_frame)
+            await asyncio.sleep(1.5)
+
+    @commands.command(name="funwarn", hidden=True)
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def fun_animation_warning(self, ctx: Context[Bot]):
+        """Display an animated system-overload warning.
+
+        This command sends a short warning animation to the channel.
+        """
+        msg = await ctx.reply("...")
+        IDEA_GRAPHIC_FULL_STOP = "\N{HALFWIDTH IDEOGRAPHIC FULL STOP}"
+        IDEA_GRAPHIC = "\N{CJK UNIFIED IDEOGRAPH-76CA}"
+        KATAKANA_MIDDLE_DOT = "\N{HALFWIDTH KATAKANA MIDDLE DOT}"
+        MACRON = "\N{MACRON}"
+
+        FACE = f"{MACRON}\\({IDEA_GRAPHIC_FULL_STOP}{KATAKANA_MIDDLE_DOT}{IDEA_GRAPHIC}{KATAKANA_MIDDLE_DOT})/{MACRON}"
+
+        animation_frames = (
+            "```diff\n- OAD !! WARNING !! SYSTEM OVERL -\n```",
+            "```diff\n- D !! WARNING !! SYSTEM OVERLOA -\n```",
+            "```diff\n- !! WARNING !! SYSTEM OVERLOAD  -\n```",
+            "```diff\n-  WARNING !! SYSTEM OVERLOAD !! -\n```",
+            "```diff\n- ARNING !! SYSTEM OVERLOAD !! W -\n```",
+            "```diff\n- NING !! SYSTEM OVERLOAD !! WAR -\n```",
+            "```diff\n- NG !! SYSTEM OVERLOAD !! WARNI -\n```",
+            "```diff\n-  !! SYSTEM OVERLOAD !! WARNING -\n```",
+            "```diff\n- ! SYSTEM OVERLOAD !! WARNING ! -\n```",
+            "```diff\n- IMMINENT SHUT-DOWN IN 0.5 SEC! -\n```",
+            "```diff\n- WARNING !! SYSTEM OVERLOAD !!  -\n```",
+            "```diff\n- IMMINENT SHUT-DOWN IN 0.2 SEC! -\n```",
+            "```diff\n- SYSTEM OVERLOAD !! WARNING !!  -\n```",
+            "```diff\n- IMMINENT SHUT-DOWN IN 0.01 SEC! -\n```",
+            f"```diff\n- SHUT-DOWN EXIT ERROR {FACE} -\n```",
+            "```diff\n- CTRL + R FOR MANUAL OVERRIDE... -\n```",
+        )
+
+        for animation_frame in animation_frames:
+            await msg.edit(content=animation_frame)
+            await asyncio.sleep(1.5)
+
+    @commands.group(aliases=["color"], invoke_without_command=True)
+    async def colour(
+        self,
+        ctx: Context[Bot],
+        *,
+        colour_input: str = commands.parameter(description="The colour to display.", displayed_name="color"),
+    ) -> None:
+        """Create an embed that displays colour information.
+
+        If no subcommand is called, a randomly selected colour will be shown.
+        """
+        try:
+            extra_colour = cast(tuple[int, int, int], ImageColor.getrgb(colour_input))
+            await self.send_colour_response(ctx, extra_colour)
+        except ValueError:
+            pass
+            # TODO: Handle unknown colour formats
+
+    @colour.command()
+    async def rgb(
+        self,
+        ctx: Context[Bot],
+        red: commands.Range[int, 0, 255] = commands.parameter(description="The red value (0-255)."),  # noqa: B008
+        green: commands.Range[int, 0, 255] = commands.parameter(description="The green value (0-255)."),  # noqa: B008
+        blue: commands.Range[int, 0, 255] = commands.parameter(description="The blue value (0-255)."),  # noqa: B008
+    ) -> None:
+        """Create an embed from an RGB input."""
+        rgb_tuple = (red, green, blue)
+        await self.send_colour_response(ctx, rgb_tuple)
+
+    @colour.command()
+    async def hsv(
+        self,
+        ctx: Context[Bot],
+        hue: commands.Range[int, 0, 360] = commands.parameter(description="The hue value (0-360)."),  # noqa: B008
+        saturation: commands.Range[int, 0, 100] = commands.parameter(description="The saturation value (0-100)."),  # noqa: B008
+        value: commands.Range[int, 0, 100] = commands.parameter(description="The value (brightness) (0-100)."),  # noqa: B008
+    ) -> None:
+        """Create an embed from an HSV input."""
+        hsv_tuple = cast(
+            tuple[int, int, int],
+            ImageColor.getrgb(f"hsv({hue}, {saturation}%, {value}%)"),
+        )
+        await self.send_colour_response(ctx, hsv_tuple)
+
+    @colour.command()
+    async def hsl(
+        self,
+        ctx: Context[Bot],
+        hue: commands.Range[int, 0, 360] = commands.parameter(description="The hue value (0-360)."),  # noqa: B008
+        saturation: commands.Range[int, 0, 100] = commands.parameter(description="The saturation value (0-100)."),  # noqa: B008
+        lightness: commands.Range[int, 0, 100] = commands.parameter(description="The lightness value (0-100)."),  # noqa: B008
+    ) -> None:
+        """Create an embed from an HSL input."""
+        hsl_tuple = cast(
+            tuple[int, int, int],
+            ImageColor.getrgb(f"hsl({hue}, {saturation}%, {lightness}%)"),
+        )
+        await self.send_colour_response(ctx, hsl_tuple)
+
+    @colour.command()
+    async def cmyk(
+        self,
+        ctx: Context[Bot],
+        cyan: commands.Range[int, 0, 100] = commands.parameter(description="The cyan value (0-100)."),  # noqa: B008
+        magenta: commands.Range[int, 0, 100] = commands.parameter(description="The magenta value (0-100)."),  # noqa: B008
+        yellow: commands.Range[int, 0, 100] = commands.parameter(description="The yellow value (0-100)."),  # noqa: B008
+        key: commands.Range[int, 0, 100] = commands.parameter(description="The key (black) value (0-100)."),  # noqa: B008
+    ) -> None:
+        """Create an embed from a CMYK input."""
+        r = round(255 * (1 - (cyan / 100)) * (1 - (key / 100)))
+        g = round(255 * (1 - (magenta / 100)) * (1 - (key / 100)))
+        b = round(255 * (1 - (yellow / 100)) * (1 - (key / 100)))
+        await self.send_colour_response(ctx, (r, g, b))
+
+    @colour.command()
+    async def hex(
+        self,
+        ctx: Context[Bot],
+        hex_code: str = commands.parameter(description="The HEX color code.", displayed_name="hex"),
+    ) -> None:
+        """Create an embed from a HEX input."""
+        if hex_code[0] != "#":
+            hex_code = f"#{hex_code}"
+
+        if len(hex_code) not in (4, 5, 7, 9) or any(digit not in string.hexdigits for digit in hex_code[1:]):
+            raise commands.BadArgument(
+                message=f"Cannot convert `{hex_code}` to a recognizable Hex format. Hex values must be hexadecimal and take the form *#RRGGBB* or *#RGB*."
+            )
+
+        hex_tuple = ImageColor.getrgb(hex_code)
+        if len(hex_tuple) == RGBA_CHANNELS:
+            hex_tuple = hex_tuple[:-1]  # Colour must be RGB. If RGBA, we remove the alpha value
+        await self.send_colour_response(ctx, hex_tuple)
+
+    @colour.command()
+    async def name(
+        self,
+        ctx: Context[Bot],
+        *,
+        name: str = commands.parameter(description="The name of the colour."),
+    ) -> None:
+        """Create an embed from a name input."""
+        hex_colour = self.match_colour_name(name)
+        if hex_colour is None:
+            name_error_embed = discord.Embed(
+                title="No colour match found.",
+                description=f"No colour found for: `{name}`",
+                colour=discord.Color.dark_red(),
+            )
+            await ctx.reply(embed=name_error_embed)
+            return
+        hex_tuple = ImageColor.getrgb(hex_colour)
+        await self.send_colour_response(ctx, hex_tuple)
+
+    @colour.command()
+    async def random(self, ctx: Context[Bot]) -> None:
+        """Create an embed from a randomly chosen colour."""
+        hex_colour = random.choice(list(color_names.values()))
+        hex_tuple = ImageColor.getrgb(f"#{hex_colour}")
+        await self.send_colour_response(ctx, hex_tuple)
+
+    @commands.command(name="urbandictionary", aliases=["ud", "urban"])
+    async def urban_dictionary(
+        self,
+        ctx: Context[Bot],
+        *,
+        term: str = commands.parameter(description="The term to define."),
+    ) -> discord.Message:
+        """Fetch a definition from Urban Dictionary."""
+        return await self.get_urban_definition(ctx, term)
+
+    async def get_urban_definition(self, ctx: Context[Bot], term: str) -> discord.Message:
+        """Fetch a definition from Urban Dictionary API."""
+        url = f"https://api.urbandictionary.com/v0/define?term={term}"
+        pages: list[discord.Embed] = []
+
+        async with self.bot.http_session.get(url) as response:
+            if response.status != HTTP_OK:
+                return await ctx.reply("Failed to fetch definition from Urban Dictionary.")
+
+            data = await response.json()
+            if not data["list"]:
+                return await ctx.reply(f"No definition found for: `{term}`")
+
+            results = data["list"]
+            for result in results:
+                definition = result["definition"]
+                example = result["example"]
+
+                embed = discord.Embed(
+                    title=f"Definition of {term}",
+                    description=f"{definition}\n\n**Example:**\n{example}",
+                )
+                pages.append(embed)
+
+        view = PaginationView(author=ctx.author, items=pages)
+        return await view.start(ctx)
+
+    @commands.command(name="bottomify", aliases=["bottom"])
+    async def _bottomify(
+        self, ctx: Context, *, text: Annotated[str, commands.clean_content] = commands.parameter(description="The text to turn into bottom")
+    ):
+        """Bottomify your text."""
+        text = to_bottom(text)
+        if len(text) > DISCORD_MESSAGE_LIMIT:
+            await ctx.reply(text[:DISCORD_MESSAGE_LIMIT])
+        else:
+            await ctx.reply(text)
+
+    @commands.command(name="debottomify", aliases=["debottom"])
+    async def _debottomify(
+        self, ctx: Context, *, text: Annotated[str, commands.clean_content] = commands.parameter(description="The bottom text to translate back")
+    ):
+        """Debottomify your text."""
+        text = from_bottom(text)
+        if len(text) > DISCORD_MESSAGE_LIMIT:
+            await ctx.reply(text[:DISCORD_MESSAGE_LIMIT])
+        else:
+            await ctx.reply(text)
+
+    @commands.command(name="pour", aliases=["pourpuzzle"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def pour_puzzle(
+        self,
+        ctx: Context,
+        *,
+        level: commands.Range[int, 1, 50] = commands.parameter(description="The level of the pour puzzle (1-50).", default=1),  # noqa: B008
+    ):
+        """Pour puzzle."""
+        view = PourView(ctx, level)
+        img_buf = await asyncio.to_thread(view.draw_image)
+        embed = discord.Embed(title="Pour puzzle", description=f"Level: {level}")
+
+        file = discord.File(img_buf, filename="pour_game.png")
+        embed.set_image(url="attachment://pour_game.png")
+
+        embed.set_footer(text=f"Game played by: {ctx.author}", icon_url=ctx.author.display_avatar.url)
+        view.message = await ctx.reply(file=file, embed=embed, view=view)
+
+    @commands.command()
+    async def uwuify(
+        self,
+        ctx: Context,
+        *,
+        text: Annotated[str, commands.clean_content] = commands.parameter(description="The text to uwuify."),
+    ):
+        """Converts a given `text` into it's uwu equivalent."""
+        conversion_func = functools.partial(replace_many, replacements=UWU_WORDS, ignore_case=True, match_case=True)
+
+        converted_text = conversion_func(text)
+        converted_text = suppress_links(converted_text)
+        # Don't put >>> if only embed present
+        if converted_text:
+            converted_text = f">>> {converted_text.lstrip('> ')}"
+        await ctx.reply(content=converted_text)
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.channel)
+    async def quiz(self, ctx: commands.Context[Bot]):
+        """Starts a quiz game.
+
+        Powered by the Open Trivia Database API (<https://opentdb.com/>).
+        """
+        view = QuizConfigLayout(author=ctx.author)
+        await ctx.reply(view=view)
+        await view.wait()
+        url = view.url
+        if url is None:
+            await ctx.reply("Quiz cancelled.")
+            return
+
+        message = await ctx.reply("Fetching quiz questions...")
+        async with self.bot.http_session.get(url) as response:
+            if response.status != HTTP_OK:
+                await message.edit(content="Failed to fetch quiz questions.")
+                return
+
+            data = await response.json()
+            response_code = data.get("response_code")
+            if response_code != 0:
+                await message.edit(content="No questions found for the selected configuration.")
+                return
+
+            questions = data.get("results", [])
+            if not questions:
+                await message.edit(content="No questions found for the selected configuration.")
+                return
+
+        await message.edit(content=f"Starting the quiz game... [Fetched {len(questions)} questions]")
+        await self.start_quiz_game(ctx, questions)
+
+    async def start_quiz_game(self, ctx: commands.Context[Bot], questions: list[QuizData]):
+        score_board: dict[discord.User | discord.Member, int] = defaultdict(int)
+
+        for index, question in enumerate(questions, start=1):
+            correct_answer = question["correct_answer"]
+            incorrect_answers = question["incorrect_answers"]
+
+            options = [*incorrect_answers, correct_answer]
+            random.shuffle(options)
+
+            description = html.unescape(question["question"])
+            options_text = "\n".join(f"- {html.unescape(option)}" for option in options)
+
+            end_time = arrow.utcnow().shift(seconds=30)
+            relative_time = discord.utils.format_dt(end_time.datetime, style="R")
+
+            embed = discord.Embed(
+                title=f"Question {index}",
+                description=(f"{description}\n\n**Options:**\n{options_text}\n\n-# Time left: {relative_time}"),
+            )
+
+            question_message = await ctx.reply(embed=embed)
+
+            answered_users: set[int] = set()
+
+            def check(answered_users: set[int]):
+                def inner(m: discord.Message) -> bool:
+                    return m.channel == ctx.channel and not m.author.bot and m.author.id not in answered_users
+
+                return inner
+
+            while False == False in [False]:  # noqa: E712, PLR0133 yes, why not
+                try:
+                    message = await self.bot.wait_for("message", check=check(answered_users), timeout=30.0)
+                except TimeoutError:
+                    await ctx.reply(f"Time's up! The correct answer was: **{correct_answer}**")
+                    break
+
+                user = message.author
+                answered_users.add(user.id)
+
+                answer = message.content.strip()
+
+                similarity = difflib.SequenceMatcher(None, answer.casefold(), correct_answer.casefold()).ratio()
+
+                if similarity >= SIMILARITY_THRESHOLD:
+                    score_board[user] += 10
+                    await ctx.reply(f"{user.mention} Correct! Your score: {score_board[user]}")
+
+                    embed.set_footer(text=f"{user} answered correctly!")
+                    await question_message.edit(embed=embed)
+                else:
+                    await message.add_reaction("\N{CROSS MARK}")
+
+            if score_board:
+                scoreboard_embed = discord.Embed(
+                    title="Scoreboard",
+                    description="\n".join(f"{user}: {score}" for user, score in score_board.items()),
+                )
+                await ctx.reply(embed=scoreboard_embed)
+
+        winner = None
+        for user, score in score_board.items():
+            if winner is None or score > score_board[winner]:
+                winner = user
+
+        if winner:
+            await ctx.reply(f"Quiz finished! The winner is {winner.mention} with a score of {score_board[winner]}!")
+        else:
+            await ctx.reply("Quiz finished! No one scored any points.")
+
+    @staticmethod
+    def _load_templates() -> list[MadlibsTemplate]:
+        madlibs_stories = Path("assets/madlibs_templates.json")
+
+        return discord.utils._from_json(madlibs_stories.read_bytes()) if madlibs_stories.exists() else []
+
+    @staticmethod
+    def madlibs_embed(part_of_speech: str, number_of_inputs: int) -> discord.Embed:
+        """Method to generate an embed with the game information."""
+        madlibs_embed = discord.Embed(title="Madlibs", color=discord.Colour.random())
+
+        madlibs_embed.add_field(
+            name="Enter a word that fits the given part of speech!",
+            value=f"Part of speech: {part_of_speech}\n\nMake sure not to spam, or you may get auto-muted!",
+        )
+
+        madlibs_embed.set_footer(text=f"Inputs remaining: {number_of_inputs}")
+
+        return madlibs_embed
+
+    @commands.Cog.listener("on_message_edit")
+    async def on_madlibs_message_edit(self, _: discord.Message, after: discord.Message) -> None:
+        for check in self.madlibs_author_checks:
+            if check(after):
+                break
+        else:
+            return
+
+        self.madlib_entries[after.id] = after.content
+
+    @commands.command()
+    @commands.max_concurrency(1, per=commands.BucketType.user)
+    async def madlibs(self, ctx: commands.Context[Bot]) -> None:
+        """
+        Play Madlibs with the bot!
+        Madlibs is a game where the player is asked to enter a word that
+        fits a random part of speech (e.g. noun, adjective, verb, plural noun, etc.)
+        a random amount of times, depending on the story chosen by the bot at the beginning.
+        """
+        random_template = random.choice(self.templates)
+
+        def author_check(message: discord.Message) -> bool:
+            return message.channel.id == ctx.channel.id and message.author.id == ctx.author.id
+
+        self.madlibs_author_checks.add(author_check)
+
+        loading_embed = discord.Embed(
+            title="Madlibs",
+            description="Loading your Madlibs game...",
+            color=discord.Colour.random(),
+        )
+        original_message: discord.Message = await ctx.send(embed=loading_embed)
+
+        user_submitted_words: dict[int, str] = {}
+
+        for i, part_of_speech in enumerate(random_template["blanks"]):
+            inputs_left = len(random_template["blanks"]) - i
+
+            madlibs_embed = self.madlibs_embed(part_of_speech, inputs_left)
+            await original_message.edit(embed=madlibs_embed)
+
+            try:
+                message = await self.bot.wait_for("message", check=author_check, timeout=60)
+            except TimeoutError:
+                timeout_embed = discord.Embed(
+                    description="Uh oh! You took too long to respond!",
+                    color=discord.Colour.random(),
+                )
+
+                await ctx.send(ctx.author.mention, embed=timeout_embed)
+
+                for message_id, value in user_submitted_words.items():
+                    self.madlib_entries.pop(message_id, value)
+
+                self.madlibs_author_checks.remove(author_check)
+
+                return
+
+            user_submitted_words[message.id] = message.content
+
+        blanks = [self.madlib_entries.pop(msg_id, user_submitted_words[msg_id]) for msg_id in user_submitted_words]
+
+        self.madlibs_author_checks.remove(author_check)
+
+        story = []
+        for value, blank in zip(random_template["value"], blanks, strict=False):
+            story.append(f"{value}__{blank}__")
+
+        # In each story template, there is always one more "value"
+        # (fragment from the story) than there are blanks (words that the player enters)
+        # so we need to compensate by appending the last line of the story again.
+        story.append(random_template["value"][-1])
+
+        story_embed = discord.Embed(
+            title=random_template["title"],
+            description="".join(story),
+            color=discord.Colour.random(),
+        )
+
+        story_embed.set_footer(text=f"Generated for {ctx.author}", icon_url=ctx.author.display_avatar.url)
+
+        await ctx.send(embed=story_embed)
+
+    @commands.group(
+        name="duckduckduckgoose",
+        aliases=["dddg", "ddg", "duckduckgoose", "duckgoose"],
+        invoke_without_command=True,
+    )
+    @commands.cooldown(rate=1, per=2, type=commands.BucketType.channel)
+    async def duck_start_game(self, ctx: Context) -> None:
+        """Start a new Duck Duck Duck Goose game."""
+        if ctx.channel.id in self.current_duck_games:
+            await ctx.send("There's already a game running!")
+            return
+
+        (minimum_solutions,) = random.choices(range(len(SOLN_DISTR)), weights=SOLN_DISTR)
+        game = DuckGame(minimum_solutions=minimum_solutions)
+        game.running = True
+        self.current_duck_games[ctx.channel.id] = game
+
+        game.board_msg = await self.send_board_embed(ctx, game)
+        game.found_msg = await self.send_found_embed(ctx)
+        await asyncio.sleep(GAME_DURATION)
+
+        # Checking for the channel ID in the currently running games is not sufficient.
+        # The game could have been ended by a player, and a new game already started in the same channel.
+        if game.running:
+            try:
+                del self.current_duck_games[ctx.channel.id]
+                await self.end_game(ctx.channel, game, end_message="Time's up!")
+            except KeyError:
+                pass
+
+    @commands.Cog.listener("on_message")
+    async def duck_game_on_message(self, msg: discord.Message) -> None:
+        """Listen for messages and process them as answers if appropriate."""
+        if msg.author.bot:
+            return
+
+        channel = msg.channel
+        if channel.id not in self.current_duck_games:
+            return
+
+        game = self.current_duck_games[channel.id]
+        if msg.content.strip().lower() == "goose":
+            # If all of the solutions have been claimed, i.e. the "goose" call is correct.
+            if len(game.solutions) == len(game.claimed_answers):
+                try:
+                    del self.current_duck_games[channel.id]
+                    game.scores[msg.author] += CORRECT_GOOSE
+                    await self.end_game(channel, game, end_message=f"{msg.author.display_name} GOOSED!")
+                except KeyError:
+                    pass
+            else:
+                await msg.add_reaction(EMOJI_WRONG)
+                game.scores[msg.author] += INCORRECT_GOOSE
+            return
+
+        # Valid answers contain 3 numbers.
+        if not (match := re.match(ANSWER_REGEX, msg.content)):
+            return
+        answer = tuple(sorted(int(m) for m in match.groups()))
+
+        # Be forgiving for answers that use indices not on the board.
+        if any(0 <= n < len(game.board) for n in answer):
+            return
+
+        # Also be forgiving for answers that have already been claimed (and avoid penalizing for racing conditions).
+        if answer in game.claimed_answers:
+            return
+
+        if answer in game.solutions:
+            game.claimed_answers[answer] = msg.author
+            game.scores[msg.author] += CORRECT_SOLN
+            await self.append_to_found_embed(game, f"{answer!s:12s}  -  {msg.author.display_name}")
+        else:
+            await msg.add_reaction(EMOJI_WRONG)
+            game.scores[msg.author] += INCORRECT_SOLN
+
+    async def send_board_embed(self, ctx: Context, game: DuckGame) -> discord.Message:
+        """Create and send an embed to display the board."""
+        image = assemble_board_image(game.board, game.rows, game.columns)
+        with io.BytesIO() as image_stream:
+            await asyncio.to_thread(image.save, image_stream, format="png")
+            image_stream.seek(0)
+            file = discord.File(fp=image_stream, filename="board.png")
+        embed = discord.Embed(
+            title="Duck Duck Duck Goose!",
+            color=discord.Color.dark_purple(),
+        ).set_image(url="attachment://board.png")
+        return await ctx.send(embed=embed, file=file)
+
+    async def send_found_embed(self, ctx: Context) -> discord.Message:
+        """Create and send an embed to display claimed answers. This will be edited as the game goes on."""
+        # Can't be part of the board embed because of discord.py limitations with editing an embed with an image.
+        embed = discord.Embed(
+            title="Flights Found",
+            color=discord.Color.dark_purple(),
+        )
+        return await ctx.send(embed=embed)
+
+    async def append_to_found_embed(self, game: DuckGame, text: str) -> None:
+        """Append text to the claimed answers embed."""
+        async with game.editing_embed:
+            (found_embed,) = game.found_msg.embeds
+            old_desc = found_embed.description or ""
+            found_embed.description = f"{old_desc.rstrip()}\n{text}"
+            await game.found_msg.edit(embed=found_embed)
+
+    async def end_game(self, channel: discord.abc.Messageable, game: DuckGame, end_message: str) -> None:
+        """Edit the game embed to reflect the end of the game and mark the game as not running."""
+        game.running = False
+
+        scoreboard_embed = discord.Embed(
+            title=end_message,
+            color=discord.Color.dark_purple(),
+        )
+        scores: list[tuple[discord.Member, int]] = sorted(
+            game.scores.items(),
+            key=lambda item: item[1],
+            reverse=True,
+        )
+        scoreboard = "Final scores:\n\n" + "\n".join(f"{member.display_name}: {score}" for member, score in scores)
+
+        scoreboard_embed.description = scoreboard
+        await channel.send(embed=scoreboard_embed)
+
+        if missed := [ans for ans in game.solutions if ans not in game.claimed_answers]:
+            missed_text = "Flights everyone missed:\n" + "\n".join(f"{ans}" for ans in missed)
+        else:
+            missed_text = "All the flights were found!"
+        await self.append_to_found_embed(game, f"\n{missed_text}")
+
+    @duck_start_game.command(name="help")
+    async def show_rules(self, ctx: Context) -> None:
+        """Explain the rules of the game."""
+        await self.send_help_embed(ctx)
+
+    @duck_start_game.command(name="stop")
+    @commands.has_permissions(manage_messages=True)
+    async def stop_game(self, ctx: Context) -> None:
+        """Stop a currently running game. Only available to mods."""
+        try:
+            game = self.current_duck_games.pop(ctx.channel.id)
+        except KeyError:
+            await ctx.send("No game currently running in this channel")
+            return
+        await self.end_game(ctx.channel, game, end_message="Game canceled.")
+
+    @staticmethod
+    async def send_help_embed(ctx: Context) -> discord.Message:
+        """Send rules embed."""
+        embed = discord.Embed(
+            title="Compete against other players to find valid flights!",
+            color=discord.Color.dark_purple(),
+        )
+        embed.description = HELP_TEXT
+        file = discord.File(HELP_IMAGE_PATH, filename="help.png")
+        embed.set_image(url="attachment://help.png")
+        embed.set_footer(text="Tip: using Discord's compact message display mode can help keep the board on the screen")
+        return await ctx.send(file=file, embed=embed)
+
+
+async def setup(bot: Bot) -> None:
+    await bot.add_cog(Fun(bot))

@@ -1,0 +1,43 @@
+from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, NoConfig, RegexConfig, TimeWindowConfig, ViolationConfig
+from .enum import TriggerType
+
+type TriggerConfig = NoConfig | CountConfig | TimeWindowConfig | ListConfig | RegexConfig | LengthConfig | ViolationConfig | AllCapsConfig
+
+_CONFIG_TYPES: dict[TriggerType, type[TriggerConfig]] = {
+    TriggerType.ALL_CAPS: AllCapsConfig,
+    TriggerType.MESSAGE_MENTIONS: CountConfig,
+    TriggerType.ANY_LINK: NoConfig,
+    TriggerType.VIOLATIONS: ViolationConfig,
+    TriggerType.WORD_DENYLIST: ListConfig,
+    TriggerType.WORD_ALLOWLIST: ListConfig,
+    TriggerType.WEBSITE_DENYLIST: ListConfig,
+    TriggerType.WEBSITE_ALLOWLIST: ListConfig,
+    TriggerType.SERVER_INVITES: NoConfig,
+    TriggerType.MESSAGE_REGEX: RegexConfig,
+    TriggerType.MESSAGE_NOT_REGEX: RegexConfig,
+    TriggerType.X_CONSECUTIVE_IDENTICAL_MESSAGES: TimeWindowConfig,
+    TriggerType.NICKNAME_REGEX: RegexConfig,
+    TriggerType.NICKNAME_NOT_REGEX: RegexConfig,
+    TriggerType.NICKNAME_WORD_ALLOWLIST: ListConfig,
+    TriggerType.NICKNAME_WORD_DENYLIST: ListConfig,
+    TriggerType.X_USER_ATTACHMENTS_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_CHANNEL_ATTACHMENTS_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.JOIN_USERNAME_WORD_ALLOWLIST: ListConfig,
+    TriggerType.JOIN_USERNAME_WORD_DENYLIST: ListConfig,
+    TriggerType.JOIN_USERNAME_REGEX: RegexConfig,
+    TriggerType.JOIN_USERNAME_NOT_REGEX: RegexConfig,
+    TriggerType.JOIN_USERNAME_INVITE: NoConfig,
+    TriggerType.NEW_MEMBER: NoConfig,
+    TriggerType.MESSAGE_WITHOUT_ATTACHMENTS: NoConfig,
+    TriggerType.MESSAGE_WITH_ATTACHMENTS: NoConfig,
+    TriggerType.FLAGGED_SCAM_LINKS: NoConfig,
+    TriggerType.MESSAGE_LENGTH_GT: LengthConfig,
+    TriggerType.MESSAGE_LENGTH_LT: LengthConfig,
+    TriggerType.X_USER_LINKS_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_CHANNEL_LINKS_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_VIOLATION_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_USER_MESSAGE_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_CHANNEL_MESSAGE_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_USER_MESSAGE_MENTIONS_IN_Y_MINUTES: TimeWindowConfig,
+    TriggerType.X_CHANNEL_MESSAGE_MENTIONS_IN_Y_MINUTES: TimeWindowConfig,
+}

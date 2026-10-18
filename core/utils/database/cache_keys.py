@@ -97,3 +97,9 @@ class RedisKeys(StrEnum):
 
     USER_TODO_ITEM_IDS = "user:{user_id}:todo_item_ids"
     USER_TODO_ITEM = "user:{user_id}:todo_item:{todo_id}"
+
+    COMMAND_CONFIG_ENABLED = "command_config:{guild_id}:{command_path}:enabled"
+    COMMAND_CONFIG_IGNORED_ROLES = "command_config:{guild_id}:{command_path}:ignored_roles"
+    COMMAND_CONFIG_ALLOWED_ROLES = "command_config:{guild_id}:{command_path}:allowed_roles"
+    COMMAND_CONFIG_IGNORED_CHANNELS = "command_config:{guild_id}:{command_path}:ignored_channels"
+    COMMAND_CONFIG_ALLOWED_CHANNELS = "command_config:{guild_id}:{command_path}:allowed_channels"

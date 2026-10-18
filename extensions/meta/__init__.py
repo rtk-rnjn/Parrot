@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import io
 import itertools
 import logging
@@ -16,8 +17,10 @@ from typing import TYPE_CHECKING, Annotated
 import discord
 import psutil
 import pygit2
+from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
+from rapidfuzz import process
 
 from core.utils import DeleteMessageButtonView
 
@@ -41,6 +44,32 @@ SUGGESTION_MIN = 50
 SUGGESTION_MAX = 1500
 EMOJI_URI = "https://raw.githubusercontent.com/iamcal/emoji-data/master/img-twitter-72/{emoji}.png"
 QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={data}&ecc=H&margin=19"
+
+
+# Commands that live in a library rather than in your repo link to that library's repo instead.
+EXTERNAL_SOURCES = {
+    "discord": ("Rapptz/discord.py", "master"),
+    "jishaku": ("Gorialis/jishaku", "master"),
+}
+
+SUGGESTION_COUNT = 3
+
+
+def find_root() -> Path:
+    """The folder containing ``.git``, falling back to the working directory."""
+    found = pygit2.discover_repository(str(Path.cwd()))
+    return Path(found).parent if found else Path.cwd()
+
+
+def find_branch(root: Path) -> str:
+    """``GITHUB_BRANCH`` if set, otherwise the checked-out branch (or commit when detached), otherwise ``main``."""
+    if configured := os.getenv("GITHUB_BRANCH"):
+        return configured
+    try:
+        repo = pygit2.Repository(str(root))
+        return str(repo.head.target) if repo.head_is_detached else repo.head.shorthand
+    except pygit2.GitError, KeyError:
+        return "main"
 
 
 def _short(text: str, limit: int) -> str:
@@ -123,6 +152,10 @@ class Meta(commands.Cog):
 
         self.process.cpu_percent(interval=None)
         psutil.cpu_percent(interval=None)
+
+        self.root = find_root()
+        self.branch = find_branch(self.root)
+
         _log.debug("Cog loaded: %s", self.__class__.__name__)
 
     def _permission_names(self, permissions: discord.Permissions, *, role: bool = False) -> str:
@@ -706,6 +739,97 @@ class Meta(commands.Cog):
         """
         invite_url = discord.utils.oauth_url(self.bot.user.id, scopes=("bot", "applications.commands"))
         return await ctx.reply(f"Invite Bot to your server: [Click Here](<{invite_url}>)")
+
+    @commands.command(name="source", aliases=["src"])
+    async def source(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        command: str | None = commands.parameter(
+            description="A command, subcommand (e.g. `tag create`), cog or `help`. Leave empty for the whole repository.",
+            default=None,
+        ),
+    ) -> None:
+        """Displays my full source code or for a specific command.
+
+        To display the source code of a subcommand you can separate it by
+        periods, e.g. tag.create for the create subcommand of the tag command
+        or by spaces.
+        """
+        if command is None:
+            await ctx.reply(REPO_URL)
+            return
+
+        query = command.strip().removeprefix(ctx.clean_prefix).strip()
+        target = self.find_command(query)
+        if target is None:
+            matches = [match for match, _, _ in process.extract(query, self.fetch_available_commands(), limit=SUGGESTION_COUNT, score_cutoff=60)]
+            hint = "\nDid you mean " + ", ".join(f"`{match}`" for match in matches) + "?" if matches else ""
+            await ctx.reply(f"Could not find a command, cog or slash command called **{discord.utils.escape_markdown(query)}**.{hint}")
+            return
+
+        found = self.extract_source_details(target)
+        if found is None:
+            await ctx.reply("Could not find the source for that.")
+            return
+
+        path, url, first, last = found
+        await ctx.reply(f"`{path}` lines {first}\N{EN DASH}{last}\n<{url}>")
+
+    def fetch_available_commands(self) -> list[str]:
+        """Everything that can be looked up: commands, slash commands, cogs and ``help``."""
+        names = {"help"}
+        names.update(command.qualified_name for command in self.bot.walk_commands())
+        names.update(command.qualified_name for command in self.bot.tree.walk_commands() if isinstance(command, app_commands.Command))
+        names.update(self.bot.cogs)
+        return sorted(names, key=str.casefold)
+
+    def find_command(self, query: str):
+        """Turn what the user typed into the function or class whose source we want."""
+        query = " ".join(query.replace(".", " ").split())
+
+        if query.casefold() == "help":
+            help_command = self.bot.help_command
+            return type(help_command) if help_command is not None else None
+
+        if (command := self.bot.get_command(query)) is not None:
+            return inspect.unwrap(command.callback)
+
+        for app_command in self.bot.tree.walk_commands():
+            if isinstance(app_command, app_commands.Command) and app_command.qualified_name.casefold() == query.casefold():
+                return inspect.unwrap(app_command.callback)
+
+        for name, cog in self.bot.cogs.items():
+            if name.casefold() == query.casefold():
+                return type(cog)
+        return None
+
+    def extract_source_details(self, obj) -> tuple[str, str, int, int] | None:
+        """Return ``(path, url, first_line, last_line)`` for a function or class, or ``None``."""
+        try:
+            lines, first = inspect.getsourcelines(obj)
+            filename = inspect.getsourcefile(obj)
+        except OSError, TypeError:
+            return None
+        if filename is None:
+            return None
+
+        last = first + len(lines) - 1
+        module = getattr(obj, "__module__", "") or ""
+        top = module.partition(".")[0]
+
+        if top in EXTERNAL_SOURCES:
+            slug, branch = EXTERNAL_SOURCES[top]
+            parts = Path(filename).parts
+            path = "/".join(parts[len(parts) - 1 - parts[::-1].index(top) :]) if top in parts else module.replace(".", "/") + ".py"
+        else:
+            slug, branch = REPO_SLUG, self.branch
+            try:
+                path = Path(filename).resolve().relative_to(self.root).as_posix()
+            except ValueError:
+                return None
+
+        return path, f"https://github.com/{slug}/blob/{branch}/{path}#L{first}-L{last}", first, last
 
 
 async def setup(bot: Bot) -> None:

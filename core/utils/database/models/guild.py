@@ -79,3 +79,13 @@ class ModAction(TypedDict):
     created_at: datetime
     expires_at: datetime | None
     metadata: dict[str, str]
+
+
+class CommandConfig(TypedDict):
+    command_path: str
+    guild_id: int
+    enabled: bool
+    ignored_roles: list[int]
+    ignored_channels: list[int]
+    allowed_roles: list[int]
+    allowed_channels: list[int]

@@ -6,6 +6,7 @@ from ..mixin import DatabaseMixin
 from .afk import _GuildAfkMixin
 from .automod import _GuildAutomodMixin
 from .birthday import _GuildBirthdayMixin
+from .commands import _GuildCommandConfigMixin
 from .custom_commands import _GuildCustomCommandsMixin
 from .defaults import DEFAULT_PREFIX, EVENT_NAMES, default_guild_configuration
 from .events import _GuildEventsMixin
@@ -53,6 +54,7 @@ class _GuildMixin(
     _GuildModeratorMixin,
     _GuildModActionMixin,
     _GuildSettingsMixin,
+    _GuildCommandConfigMixin,
     DatabaseMixin,
 ):
     def create_guild_configuration(self, guild_id: int) -> GuildConfiguration:

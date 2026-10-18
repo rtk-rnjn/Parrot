@@ -34,7 +34,7 @@ from .chat import GlobalChatConfig, TelephoneConfig, TicketConfig
 from .commands import CustomCommand
 from .community import BirthdayConfig, Giveaway, GiveawayConfig, LevelingConfig, StarboardConfig, WelcomeConfig
 from .events import Events, EventsConfig
-from .guild import GuildConfiguration, ModAction, ModeratorConfig, UserViolation
+from .guild import CommandConfig, GuildConfiguration, ModAction, ModeratorConfig, UserViolation
 from .tags import Tag, TagUserUsage, TagUserUsageRow, TopTagUsage, TopTagUsageRow
 from .user import Highlight, SupercellAccount, SupercellGame, TodoItem, TodoPriority, TodoStatus, UserConfiguration, WeatherSettings
 
@@ -46,6 +46,7 @@ __all__ = (
     "BirthdayConfig",
     "CategoriesConfigDict",
     "ChannelsConfigDict",
+    "CommandConfig",
     "ConditionDict",
     "CountConfigDict",
     "CustomCommand",

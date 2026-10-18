@@ -4,7 +4,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
 
-from .models import Giveaway, GuildConfiguration, ModAction, UserConfiguration
+from .models import CommandConfig, Giveaway, GuildConfiguration, ModAction, UserConfiguration
 
 
 class DatabaseMixin:
@@ -23,5 +23,7 @@ class DatabaseMixin:
 
     giveaways_collection: AsyncCollection[Giveaway]
     mod_actions_collection: AsyncCollection[ModAction]
+
+    commands_config_collection: AsyncCollection[CommandConfig]
 
     __slots__ = ()

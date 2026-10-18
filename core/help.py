@@ -5,6 +5,7 @@ import difflib
 import inspect
 import itertools
 import os
+import re
 import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -21,21 +22,37 @@ from .utils import BaseLayoutView, NoticeLayout, human_join, truncate
 if TYPE_CHECKING:
     from core import Bot
 
+    from .utils.database.models import CommandConfig
+
 load_dotenv()
 
 __all__ = ("Help",)
 
 BOT_OWNER_ID = os.environ["OWNER_ID"]
+
 REPO_SLUG = os.getenv("GITHUB_REPO", "rtk-rnjn/Parrot").removeprefix("https://github.com/").strip("/")
 REPO_URL = f"https://github.com/{REPO_SLUG}"
+
 COMMANDS_PER_PAGE = 8
 SELECT_LIMIT = 25
 COMMIT_COUNT = 3
 COMMIT_SUMMARY_LIMIT = 50
 SUGGESTION_COUNT = 3
 MAX_TEXT = 3800
+
 DEFAULT_EMOJI = "\N{PACKAGE}"
 DOT = " \N{MIDDLE DOT} "
+
+PROTECTED_COMMANDS = frozenset({"help"})
+
+CONFIG_ROWS_PER_PAGE = 12
+RULE_KEYS = ("allowed_roles", "ignored_roles", "allowed_channels", "ignored_channels")
+RULE_LABELS = {
+    "ignored_channels": ("Ignored channels", "<#{}>"),
+    "ignored_roles": ("Ignored roles", "<@&{}>"),
+    "allowed_channels": ("Allowed channels only", "<#{}>"),
+    "allowed_roles": ("Allowed roles only", "<@&{}>"),
+}
 
 USAGE_LEGEND = (
     "1. `<argument>` required"
@@ -84,6 +101,25 @@ class Category:
     @property
     def total(self) -> int:
         return sum(count_commands(command) for command in self.commands)
+
+
+def walk_commands(command: commands.Command):
+    """Yield ``command`` and every nested subcommand, hidden ones included."""
+    yield command
+    if isinstance(command, commands.Group):
+        for child in sorted(command.commands, key=lambda child: child.name):
+            yield from walk_commands(child)
+
+
+def collect_paths(targets: list[commands.Command]) -> list[str]:
+    """Full qualified names (never aliases) for every target and all of its descendants."""
+    paths: dict[str, None] = {}
+    for root in targets:
+        for command in walk_commands(root):
+            if command.qualified_name.split()[0] in PROTECTED_COMMANDS:
+                continue
+            paths[command.qualified_name] = None
+    return list(paths)
 
 
 def count_commands(command: commands.Command, *, include_hidden: bool = False) -> int:
@@ -230,6 +266,121 @@ def subcommands_of(command: commands.Command, *, include_hidden: bool = False) -
     return sorted((child for child in command.commands if include_hidden or not child.hidden), key=lambda child: child.name)
 
 
+class BulkToggleModal(discord.ui.Modal):
+    """Enable or disable several commands or whole categories by typing their names."""
+
+    def __init__(self, help_view: HelpView, enabled: bool) -> None:
+        super().__init__(title=f"{'Enable' if enabled else 'Disable'} commands", timeout=300)
+        self.help_view = help_view
+        self.enabled = enabled
+        self.names = discord.ui.TextInput(
+            label="Commands or categories",
+            style=discord.TextStyle.paragraph,
+            placeholder="One per line or comma separated, e.g.\nrandom\nmod ban",
+            max_length=1000,
+        )
+        self.add_item(self.names)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        view = self.help_view
+        targets: list[commands.Command] = []
+        unknown: list[str] = []
+
+        for raw in re.split(r"[,\n]+", self.names.value):
+            name = raw.strip().removeprefix(view.prefix).strip()
+            if not name:
+                continue
+            if (command := view.ctx.bot.get_command(name)) is not None:
+                targets.append(command)  # aliases resolve here; only qualified_name is stored
+            elif category := next((c for c in view.categories if c.name.casefold() == name.casefold()), None):
+                targets.extend(category.commands)
+            else:
+                unknown.append(name)
+
+        note = f"\nNot found: {', '.join(f'`{name}`' for name in unknown)}" if unknown else ""
+        await view.apply(interaction, targets, self.enabled, note=note)
+
+
+def channel_defaults(guild: discord.Guild, ids: list[int]) -> list[discord.SelectDefaultValue]:
+    """Pre-selected channels for a modal select; channels that no longer exist are dropped."""
+    return [
+        discord.SelectDefaultValue(id=item, type=discord.SelectDefaultValueType.channel)
+        for item in ids
+        if guild.get_channel_or_thread(item) is not None
+    ][:25]
+
+
+def role_defaults(guild: discord.Guild, ids: list[int]) -> list[discord.SelectDefaultValue]:
+    """Pre-selected roles for a modal select; roles that no longer exist are dropped."""
+    return [discord.SelectDefaultValue(id=item, type=discord.SelectDefaultValueType.role) for item in ids if guild.get_role(item) is not None][:25]
+
+
+class CommandConfigModal(discord.ui.Modal):
+    """Configure one command, a group (with all subcommands) or a whole category in one go."""
+
+    def __init__(self, help_view: HelpView, targets: list[commands.Command], *, name: str, enabled: bool) -> None:
+        super().__init__(title=truncate(f"Configure {name}", 45), timeout=300)
+        self.help_view = help_view
+        self.targets = targets
+
+        guild = help_view.ctx.guild
+        assert guild is not None
+        # A single command or group is pre-filled with its current rules; a category starts blank.
+        current = help_view.configs.get(targets[0].qualified_name, {}) if len(targets) == 1 else {}
+
+        self.status = discord.ui.Select(
+            options=[
+                discord.SelectOption(label="Enabled", value="enabled", emoji="\N{WHITE HEAVY CHECK MARK}", default=enabled),
+                discord.SelectOption(label="Disabled everywhere", value="disabled", emoji="\N{NO ENTRY SIGN}", default=not enabled),
+            ]
+        )
+        self.ignored_channels = discord.ui.ChannelSelect(
+            placeholder="No ignored channels",
+            min_values=0,
+            max_values=25,
+            required=False,
+            default_values=channel_defaults(guild, current.get("ignored_channels") or []),
+        )
+        self.ignored_roles = discord.ui.RoleSelect(
+            placeholder="No ignored roles",
+            min_values=0,
+            max_values=25,
+            required=False,
+            default_values=role_defaults(guild, current.get("ignored_roles") or []),
+        )
+        self.allowed_channels = discord.ui.ChannelSelect(
+            placeholder="Works in every channel",
+            min_values=0,
+            max_values=25,
+            required=False,
+            default_values=channel_defaults(guild, current.get("allowed_channels") or []),
+        )
+        self.allowed_roles = discord.ui.RoleSelect(
+            placeholder="Usable by every role",
+            min_values=0,
+            max_values=25,
+            required=False,
+            default_values=role_defaults(guild, current.get("allowed_roles") or []),
+        )
+
+        self.add_item(discord.ui.Label(text="Status", description="Disabled turns it off in the whole server.", component=self.status))
+        self.add_item(discord.ui.Label(text="Ignored channels", description="It does nothing in these channels.", component=self.ignored_channels))
+        self.add_item(discord.ui.Label(text="Ignored roles", description="Members with these roles cannot use it.", component=self.ignored_roles))
+        self.add_item(
+            discord.ui.Label(text="Only in these channels", description="Leave empty to allow every channel.", component=self.allowed_channels)
+        )
+        self.add_item(discord.ui.Label(text="Only for these roles", description="Leave empty to allow every role.", component=self.allowed_roles))
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        rules = {
+            "ignored_channels": [channel.id for channel in self.ignored_channels.values],
+            "ignored_roles": [role.id for role in self.ignored_roles.values],
+            "allowed_channels": [channel.id for channel in self.allowed_channels.values],
+            "allowed_roles": [role.id for role in self.allowed_roles.values],
+        }
+        await self.help_view.apply(interaction, self.targets, self.status.values[0] == "enabled", rules=rules)
+
+
 class HelpView(BaseLayoutView):
     """The interactive help menu: a home page, one page per category and one per command."""
 
@@ -243,6 +394,12 @@ class HelpView(BaseLayoutView):
         self.category: Category | None = None
         self.command: commands.Command | None = None
         self.page = 0
+        self.command_enabled = True
+        self.configuring = False
+        self.config_rows: list[CommandConfig] = []
+        self.disabled: set[str] = set()
+        self.configs: dict[str, dict[str, Any]] = {}
+        self.admin_row: discord.ui.ActionRow | None = None
 
         self.container = discord.ui.Container(accent_colour=discord.Colour.blurple())
         self.add_item(self.container)
@@ -263,18 +420,29 @@ class HelpView(BaseLayoutView):
     async def show_home(self) -> None:
         self.category = None
         self.command = None
+        self.configuring = False
         self.page = 0
         await asyncio.to_thread(self.render)
 
     async def show_category(self, category: Category, *, page: int = 0) -> None:
         self.category = category
         self.command = None
+        self.configuring = False
         self.page = page
+        if self.ctx.guild is not None and self.is_admin(self.ctx.author):
+            await self.load_config()
         await asyncio.to_thread(self.render)
 
     async def show_command(self, command: commands.Command) -> None:
         self.category = self.category_for(command)
         self.command = command
+        self.configuring = False
+        if self.ctx.guild is not None:
+            if self.is_admin(self.ctx.author):
+                await self.load_config()
+                self.command_enabled = command.qualified_name not in self.disabled
+            else:
+                self.command_enabled = await self.ctx.bot.database.is_command_enabled(guild_id=self.ctx.guild.id, command_path=command.qualified_name)
         await asyncio.to_thread(self.render)
 
     async def edit(self, interaction: discord.Interaction) -> None:
@@ -282,12 +450,20 @@ class HelpView(BaseLayoutView):
 
     def render(self) -> None:
         self.container.clear_items()
-        if self.command is not None:
+        if self.admin_row is not None:
+            self.remove_item(self.admin_row)
+            self.admin_row = None
+
+        if self.configuring:
+            self.render_config()
+        elif self.command is not None:
             self.render_command(self.command)
         elif self.category is not None:
             self.render_category(self.category)
         else:
             self.render_home()
+
+        self.build_admin_row()
 
     def button(
         self,
@@ -417,6 +593,8 @@ class HelpView(BaseLayoutView):
         meta = [self.category.name if self.category else "Uncategorised"]
         if isinstance(command, commands.HybridCommand | commands.HybridGroup):
             meta.append(f"also `/{command.qualified_name}`")
+        if not self.command_enabled:
+            meta.append("\N{NO ENTRY SIGN} disabled in this server")
         sections.append(f"## {self.prefix}{command.qualified_name}\n-# {DOT.join(meta)}")
         sections.append(f"### Usage\n`{self.help_command.get_command_signature(command)}`")
 
@@ -463,7 +641,7 @@ class HelpView(BaseLayoutView):
 
         async def back(interaction: discord.Interaction) -> None:
             if command.parent is not None:
-                self.show_command(command.parent)  # type: ignore[arg-type]
+                await self.show_command(command.parent)  # type: ignore[arg-type]
             elif self.category is not None:
                 await self.show_category(self.category)
             else:
@@ -474,6 +652,211 @@ class HelpView(BaseLayoutView):
             f"Back to {command.full_parent_name}" if command.parent is not None else f"Back to {self.category.name}" if self.category else "Back"
         )
         self.container.add_item(discord.ui.ActionRow(self.button(back_label, back, emoji="\N{BLACK LEFT-POINTING TRIANGLE}"), self.home_button()))
+
+    def is_admin(self, user: discord.abc.User) -> bool:
+        return isinstance(user, discord.Member) and user.guild_permissions.administrator
+
+    async def load_config(self) -> None:
+        """Fetch this server's command configs so the (sync) render step can draw them."""
+        if self.ctx.guild is None:
+            return
+
+        configs = await self.ctx.bot.database.get_guild_command_configs(guild_id=self.ctx.guild.id)
+        configs = [config for config in configs if config.get("command_path")]
+        self.configs = {config["command_path"]: config for config in configs}
+        self.disabled = {config["command_path"] for config in configs if not config.get("enabled", True)}
+        self.config_rows = sorted(
+            (config for config in configs if not config.get("enabled", True) or any(config.get(key) for key in RULE_KEYS)),
+            key=lambda config: config["command_path"],
+        )
+
+    async def show_config(self, *, page: int = 0) -> None:
+        self.category = None
+        self.command = None
+        self.configuring = True
+        self.page = page
+        await self.load_config()
+        await asyncio.to_thread(self.render)
+
+    async def apply(
+        self,
+        interaction: discord.Interaction,
+        targets: list[commands.Command],
+        enabled: bool,
+        *,
+        note: str = "",
+        rules: dict[str, list[int]] | None = None,
+    ) -> None:
+        """Enable/disable every target and all of its subcommands, optionally setting channel/role rules."""
+        await self.apply_paths(interaction, collect_paths(targets), enabled, note=note, rules=rules)
+
+    async def apply_paths(
+        self,
+        interaction: discord.Interaction,
+        paths: list[str],
+        enabled: bool,
+        *,
+        note: str = "",
+        rules: dict[str, list[int]] | None = None,
+    ) -> None:
+        if interaction.guild is None or not self.is_admin(interaction.user):
+            await interaction.response.send_message("Only **Administrators** can do that.", ephemeral=True)
+            return
+
+        if not paths:
+            await interaction.response.send_message(f"Nothing to change.{note}", ephemeral=True)
+            return
+
+        database = self.ctx.bot.database
+        await database.edit_commands_config(guild_id=interaction.guild.id, command_paths=paths, enabled=enabled, **(rules or {}))
+
+        await self.load_config()
+        if self.command is not None:
+            self.command_enabled = self.command.qualified_name not in self.disabled
+
+        await asyncio.to_thread(self.render)
+        await interaction.response.edit_message(view=self)
+
+        shown = ", ".join(f"`{path}`" for path in paths[:10]) + (f" and {len(paths) - 10} more" if len(paths) > 10 else "")
+        lines = [f"{'Enabled' if enabled else 'Disabled'} **{len(paths)}** command(s): {shown}"]
+        for key, (label, template) in RULE_LABELS.items():
+            if ids := (rules or {}).get(key):
+                lines.append(f"{label}: " + " ".join(template.format(item) for item in ids))
+        await interaction.followup.send("\n".join(lines) + note, ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
+
+    def build_admin_row(self) -> None:
+        """Admin-only buttons, added to the view itself (outside the container) as a normal top-level row."""
+        if self.configuring or self.ctx.guild is None or not self.is_admin(self.ctx.author):
+            return
+
+        if self.command is not None:
+            targets = [self.command]
+            noun = "group" if isinstance(self.command, commands.Group) else "command"
+            name = self.command.qualified_name
+        elif self.category is not None:
+            targets = list(self.category.commands)
+            noun = "category"
+            name = self.category.name
+        else:
+            targets, noun, name = [], "", ""
+
+        buttons: list[discord.ui.Button] = []
+        paths = collect_paths(targets)
+        if paths:
+            off = sum(1 for path in paths if path in self.disabled)
+            size = f" ({len(paths)})" if noun == "category" else f" (+{len(paths) - 1})" if len(paths) > 1 else ""
+
+            def opener(enabled: bool):
+                async def callback(interaction: discord.Interaction) -> None:
+                    if not self.is_admin(interaction.user):
+                        await interaction.response.send_message("Only **Administrators** can do that.", ephemeral=True)
+                        return
+                    await interaction.response.send_modal(CommandConfigModal(self, targets, name=name, enabled=enabled))
+
+                return callback
+
+            if off < len(paths):
+                buttons.append(self.button(f"Disable {noun}{size}", opener(False), emoji="\N{NO ENTRY SIGN}", style=discord.ButtonStyle.danger))
+            if off > 0:
+                buttons.append(
+                    self.button(f"Enable {noun}{size}", opener(True), emoji="\N{WHITE HEAVY CHECK MARK}", style=discord.ButtonStyle.success)
+                )
+
+        async def open_config(interaction: discord.Interaction) -> None:
+            if not self.is_admin(interaction.user):
+                await interaction.response.send_message("Only **Administrators** can do that.", ephemeral=True)
+                return
+            await self.show_config()
+            await self.edit(interaction)
+
+        buttons.append(self.button("Configure Commands", open_config, emoji="\N{GEAR}", style=discord.ButtonStyle.primary))
+
+        self.admin_row = discord.ui.ActionRow(*buttons)
+        self.add_item(self.admin_row)
+
+    def config_table(self, rows: list[CommandConfig]) -> str:
+        width = max(7, min(28, max(len(row["command_path"]) for row in rows)))
+        lines = [f"{'Command':<{width}}  State  AR IR AC IC"]
+        for row in rows:
+            state = "on" if row.get("enabled", True) else "OFF"
+            counts = " ".join(f"{len(row.get(key) or []):>2}" for key in RULE_KEYS)
+            lines.append(f"{truncate(row['command_path'], width):<{width}}  {state:<5}  {counts}")
+        return "```\n" + "\n".join(lines) + "\n```"
+
+    def render_config(self) -> None:
+        rows = self.config_rows
+        pages = max(1, -(-len(rows) // CONFIG_ROWS_PER_PAGE))
+        self.page = min(self.page, pages - 1)
+        shown = rows[self.page * CONFIG_ROWS_PER_PAGE : (self.page + 1) * CONFIG_ROWS_PER_PAGE]
+
+        total = sum(1 for _ in self.ctx.bot.walk_commands())
+        with_rules = sum(1 for row in rows if any(row.get(key) for key in RULE_KEYS))
+
+        self.header("Command configuration" + DOT + "administrators only")
+        self.container.add_item(
+            discord.ui.TextDisplay(
+                "## \N{GEAR} Configure Commands\n"
+                f"**{len(self.disabled)}** of {total} commands disabled" + DOT + f"**{with_rules}** with role or channel rules"
+            )
+        )
+
+        category_lines: list[str] = []
+        for category in self.categories:
+            paths = collect_paths(category.commands)
+            off = sum(1 for path in paths if path in self.disabled)
+            if off:
+                category_lines.append(f"{category.emoji} **{category.name}** - {off}/{len(paths)} disabled")
+        if category_lines:
+            self.container.add_item(discord.ui.TextDisplay(truncate("### By category\n" + "\n".join(category_lines), 1200)))
+
+        self.container.add_item(discord.ui.Separator())
+        if shown:
+            self.container.add_item(
+                discord.ui.TextDisplay(
+                    "### Configured commands\n"
+                    + self.config_table(shown)
+                    + "\n-# AR / IR = allowed / ignored roles"
+                    + DOT
+                    + "AC / IC = allowed / ignored channels"
+                )
+            )
+        else:
+            self.container.add_item(discord.ui.TextDisplay("### Configured commands\nEvery command is enabled and has no role or channel rules."))
+        self.container.add_item(discord.ui.Separator())
+
+        async def previous(interaction: discord.Interaction) -> None:
+            await self.show_config(page=self.page - 1)
+            await self.edit(interaction)
+
+        async def following(interaction: discord.Interaction) -> None:
+            await self.show_config(page=self.page + 1)
+            await self.edit(interaction)
+
+        self.container.add_item(
+            discord.ui.ActionRow(
+                self.button("Previous", previous, emoji="\N{BLACK LEFT-POINTING TRIANGLE}", disabled=self.page == 0),
+                self.button(f"Page {self.page + 1} of {pages}", previous, disabled=True),
+                self.button("Next", following, emoji="\N{BLACK RIGHT-POINTING TRIANGLE}", disabled=self.page >= pages - 1),
+            )
+        )
+
+        async def bulk_disable(interaction: discord.Interaction) -> None:
+            await interaction.response.send_modal(BulkToggleModal(self, False))
+
+        async def bulk_enable(interaction: discord.Interaction) -> None:
+            await interaction.response.send_modal(BulkToggleModal(self, True))
+
+        async def enable_everything(interaction: discord.Interaction) -> None:
+            await self.apply_paths(interaction, sorted(self.disabled), True)
+
+        self.container.add_item(
+            discord.ui.ActionRow(
+                self.button("Disable by name", bulk_disable, emoji="\N{NO ENTRY SIGN}", style=discord.ButtonStyle.danger),
+                self.button("Enable by name", bulk_enable, emoji="\N{WHITE HEAVY CHECK MARK}", style=discord.ButtonStyle.success),
+                self.button("Enable all disabled", enable_everything, disabled=not self.disabled),
+                self.home_button(),
+            )
+        )
 
 
 class HiddenNoticeView(BaseLayoutView):

@@ -297,7 +297,8 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
         if not uri:
             return None
 
-        if (webhook := self._webhooks.get(uri)) is None:
+        webhook = self._webhooks.get(uri)
+        if webhook is None:
             try:
                 webhook = discord.Webhook.from_url(uri, session=self.bot.http_session)
             except ValueError:
@@ -642,7 +643,8 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
                 continue
             add(embed, label, formatter(value), inline=True)
 
-        if overwrites := overwrite_lines(channel):
+        overwrites = overwrite_lines(channel)
+        if overwrites:
             add(embed, f"Permission overwrites ({len(overwrites)})", "\n".join(overwrites))
 
     @commands.Cog.listener()
@@ -829,7 +831,8 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
         add(embed, "Emoji", role.unicode_emoji, inline=True)
         add(embed, "Icon", f"[link]({role.icon.url})" if role.icon else None, inline=True)
 
-        if tags := role.tags:
+        tags = role.tags
+        if tags:
             details = []
             if tags.is_premium_subscriber():
                 details.append("Server booster role")

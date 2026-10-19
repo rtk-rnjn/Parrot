@@ -1916,7 +1916,8 @@ class Mod(commands.Cog, name="Moderation"):
         This command removes the specified role from the specified member in the server.
         You can only remove roles that are below your own top role.
         """
-        if problem := self._role_problem(ctx, role, "removed"):
+        problem = self._role_problem(ctx, role, "removed")
+        if problem:
             return await ctx.reply(problem)
 
         try:

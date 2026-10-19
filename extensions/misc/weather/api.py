@@ -558,7 +558,8 @@ class WeatherClient:
         return await self._send(path, params)
 
     async def _send(self, path: str, params: dict[str, Any]) -> Any:
-        if (token := self.key) is None:
+        token = self.key
+        if token is None:
             message = "The OpenWeather API key (`OPEN_WEATHER_API_KEY`) is not configured."
             raise Unavailable(message)
 
@@ -644,7 +645,8 @@ class WeatherClient:
             msg = "Please provide a location name, postal code, or `lat, lon` coordinates."
             raise LocationNotFound(msg)
 
-        if match := _COORD_RE.match(cleaned):
+        match = _COORD_RE.match(cleaned)
+        if match:
             lat, lon = float(match.group(1)), float(match.group(2))
             if not (-90 <= lat <= 90 and -180 <= lon <= 180):
                 msg = "Coordinates must be between -90..90 latitude and -180..180 longitude."

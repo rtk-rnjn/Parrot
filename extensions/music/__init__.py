@@ -270,7 +270,8 @@ class Music(commands.Cog):
     @commands.command(name="leave", aliases=["disconnect", "dc"])
     async def leave(self, ctx: Context[Bot]) -> None:
         """Disconnects the bot from the voice channel. Only the DJ can do this."""
-        if (got := await self._controls(ctx, dj=True)) is None:
+        got = await self._controls(ctx, dj=True)
+        if got is None:
             return
         player, _ = got
 
@@ -286,9 +287,11 @@ class Music(commands.Cog):
         query: str = commands.parameter(description="The URL or search term to play."),
     ) -> None:
         """Queues a track or playlist from a URL or search term. Joins your channel if needed."""
-        if (player := await self._ensure_player(ctx)) is None:
+        player = await self._ensure_player(ctx)
+        if player is None:
             return
-        if (resolved := await self._resolve(ctx, query)) is None:
+        resolved = await self._resolve(ctx, query)
+        if resolved is None:
             return
 
         started_idle = player.song is None
@@ -317,9 +320,11 @@ class Music(commands.Cog):
         query: str = commands.parameter(description="What to search for."),
     ) -> None:
         """Shows search results and lets you pick what to queue."""
-        if (player := await self._ensure_player(ctx)) is None:
+        player = await self._ensure_player(ctx)
+        if player is None:
             return
-        if (resolved := await self._resolve(ctx, query, limit=10)) is None:
+        resolved = await self._resolve(ctx, query, limit=10)
+        if resolved is None:
             return
 
         view = SearchView(ctx, player, resolved.songs[:10])
@@ -475,7 +480,8 @@ class Music(commands.Cog):
         position: str = commands.parameter(description="A time such as 90, 1:30 or 1:02:03."),
     ) -> None:
         """Jumps to a position in the current track. Only the DJ can do this."""
-        if (got := await self._controls(ctx, dj=True)) is None:
+        got = await self._controls(ctx, dj=True)
+        if got is None:
             return
         player, _ = got
 
@@ -509,7 +515,8 @@ class Music(commands.Cog):
             )
             return
 
-        if (got := await self._controls(ctx, dj=True)) is None:
+        got = await self._controls(ctx, dj=True)
+        if got is None:
             return
         player, _ = got
 
@@ -557,7 +564,8 @@ class Music(commands.Cog):
     @commands.command(name="clear")
     async def clear(self, ctx: Context[Bot]) -> None:
         """Clears the queue but keeps the current track playing. Only the DJ can do this."""
-        if (got := await self._controls(ctx, dj=True)) is None:
+        got = await self._controls(ctx, dj=True)
+        if got is None:
             return
         player, _ = got
 

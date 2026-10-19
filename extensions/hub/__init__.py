@@ -489,7 +489,8 @@ class Hub(commands.Cog):
             )
             return
 
-        if (old := self.panels.get(channel.id)) is not None:
+        old = self.panels.get(channel.id)
+        if old is not None:
             await old.close("Replaced by a newer panel.")
 
         panel = HubPanel(self, ctx.author, channel)
@@ -528,7 +529,8 @@ class Hub(commands.Cog):
             await ctx.reply(view=NoticeLayout.error(MISSING_PERMS))
             return
 
-        if (panel := self.panels.get(channel.id)) is not None:
+        panel = self.panels.get(channel.id)
+        if panel is not None:
             await panel.refresh()
         await ctx.reply(view=NoticeLayout.info(f"You now own {channel.mention}. Run the `hub` command to open its panel."))
 
@@ -540,7 +542,8 @@ class Hub(commands.Cog):
         if old_owner is not None:
             await channel.set_permissions(old_owner, overwrite=guest_overwrite(), reason="Ownership transferred away")
 
-        if (panel := self.panels.get(channel.id)) is not None:
+        panel = self.panels.get(channel.id)
+        if panel is not None:
             panel.owner = new_owner
 
     async def _owned_channel(self, member: discord.Member) -> discord.VoiceChannel | None:
@@ -584,7 +587,8 @@ class Hub(commands.Cog):
         self._creating.add(member.id)
         try:
             # Returning owners go back to the channel they already have.
-            if (existing := await self._owned_channel(member)) is not None:
+            existing = await self._owned_channel(member)
+            if existing is not None:
                 with contextlib.suppress(discord.HTTPException):
                     await member.move_to(existing, reason="Returning member to their existing temporary channel")
                 return
@@ -638,7 +642,8 @@ class Hub(commands.Cog):
         guild = channel.guild
         await self.db.remove_hub_channel_owner_id(guild_id=guild.id, channel_id=channel.id)
 
-        if (panel := self.panels.get(channel.id)) is not None:
+        panel = self.panels.get(channel.id)
+        if panel is not None:
             await panel.close("The channel was deleted.")
 
         try:

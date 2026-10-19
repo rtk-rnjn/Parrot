@@ -162,7 +162,8 @@ class NewsView(BaseLayoutView):
         meta = source + (f" \N{MIDDLE DOT} {discord.utils.format_dt(published, 'R')}" if published else "")
 
         self.container.add_item(discord.ui.TextDisplay(f"### [{truncate(title, 250)}]({article['url']})\n-# {meta}"))
-        if description := news_clean(article.get("description")):
+        description = news_clean(article.get("description"))
+        if description:
             self.container.add_item(discord.ui.TextDisplay(truncate(description, 1200)))
 
         image = article.get("urlToImage")

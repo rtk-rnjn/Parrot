@@ -178,7 +178,8 @@ class Hearts(CardGame):
             return list(hand)
 
         led = suit_of(self.trick[0][1])
-        if follow := [c for c in hand if suit_of(c) == led]:
+        follow = [c for c in hand if suit_of(c) == led]
+        if follow:
             return follow
         if self.trick_no == 1 and (safe := [c for c in hand if not is_point(c)]):
             return safe
@@ -218,7 +219,8 @@ class Hearts(CardGame):
         if not self.trick:
             return self._bot_lead(legal, queen_out)
         led = suit_of(self.trick[0][1])
-        if following := [c for c in legal if suit_of(c) == led]:
+        following = [c for c in legal if suit_of(c) == led]
+        if following:
             return self._bot_follow(following, led)
         return self._bot_dump(legal, queen_out)
 
@@ -244,7 +246,8 @@ class Hearts(CardGame):
     def _bot_dump(legal: list[str], queen_out: bool) -> str:
         if QUEEN in legal:
             return QUEEN
-        if hearts := [c for c in legal if suit_of(c) == "H"]:
+        hearts = [c for c in legal if suit_of(c) == "H"]
+        if hearts:
             return max(hearts, key=rank_of)
         return max(legal, key=lambda c: (queen_out and suit_of(c) == "S" and rank_of(c) > QUEEN_RANK, rank_of(c)))
 

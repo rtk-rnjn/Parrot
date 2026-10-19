@@ -351,7 +351,8 @@ class ReminderView(BaseView):
         options = [discord.SelectOption(label=label, value=key) for key, (label, _) in SNOOZE_OPTIONS.items()]
         self.add_item(make_select("Snooze for\N{HORIZONTAL ELLIPSIS}", options, self._snooze))
         self.add_item(make_button(self._custom_snooze, label="Custom snooze", emoji="\N{ALARM CLOCK}"))
-        if url := jump_url(metadata):
+        url = jump_url(metadata)
+        if url:
             self.add_item(discord.ui.Button(url=url, label="Original message"))
 
     async def _snooze_until(self, interaction: discord.Interaction, when: datetime.datetime) -> None:

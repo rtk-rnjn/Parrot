@@ -672,7 +672,8 @@ class ResultsView(OwnedView):
             else:
                 accessory = discord.ui.Button(label="Open", url=entry.url)
             container.add_item(discord.ui.Section(text, accessory=accessory))
-        if actions := self.actions():
+        actions = self.actions()
+        if actions:
             container.add_item(discord.ui.ActionRow(*actions))
         container.add_item(discord.ui.TextDisplay(f"-# {self.footer}"))
         self.add_item(container)

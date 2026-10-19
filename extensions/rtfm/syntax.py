@@ -343,7 +343,8 @@ def split_sections(nodes: list[PageElement], base: str) -> tuple[str | None, dic
         if isinstance(node, Comment):
             continue
         if isinstance(node, NavigableString):
-            if text := " ".join(node.split()):
+            text = " ".join(node.split())
+            if text:
                 sections[current].append(text)
             continue
         if not isinstance(node, Tag):
@@ -359,7 +360,8 @@ def split_sections(nodes: list[PageElement], base: str) -> tuple[str | None, dic
             current = clean_heading(heading) or current
             sections.setdefault(current, [])
             heading.decompose()
-        if markdown := to_markdown(node, base):
+        markdown = to_markdown(node, base)
+        if markdown:
             sections[current].append(markdown)
     return title, {name: "\n\n".join(parts) for name, parts in sections.items() if parts}
 

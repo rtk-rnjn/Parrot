@@ -262,7 +262,8 @@ def render_table(view: TableView, images: dict[str, bytes | None]) -> bytes:  # 
             _tint(img, (sx - 88, top - 8, sx + 88, top + 146), 18, (255, 255, 255, 18), GOLD, 3)
         _pill(draw, sx, top + 2, truncate(seat.name, 16), "gold" if seat.active else "dark", 17)
 
-        if info := _seat_info(seat):
+        info = _seat_info(seat)
+        if info:
             _pill_row(draw, sx, top + 38, info, 14)
 
         card_y = top + 68
@@ -611,7 +612,8 @@ class HandPanel(discord.ui.LayoutView):
         return callback
 
     async def _submit(self, interaction: discord.Interaction, action: Action) -> None:
-        if (error := self.game.submit(self.seat, action)) is not None:
+        error = self.game.submit(self.seat, action)
+        if error is not None:
             await interaction.response.send_message(error, ephemeral=True)
             return
         await interaction.response.edit_message(view=NoticeLayout.success("Move sent - watch the table."), attachments=[])
@@ -661,7 +663,8 @@ class CardGame:
         return next((seat for seat in self.seats if seat.user is not None and seat.user.id == user.id), None)
 
     def panel_spec(self, seat: Seat) -> PromptSpec:
-        if (pending := self.pendings.get(seat)) is not None:
+        pending = self.pendings.get(seat)
+        if pending is not None:
             return pending.build()
         return PromptSpec(cards=self.hand_of(seat), caption=self.idle_caption(seat), hidden=self.hand_hidden(seat))
 
@@ -726,7 +729,8 @@ class CardGame:
         pending = self.pendings.get(seat)
         if pending is None or pending.future.done():
             return "It's not your turn."
-        if (error := pending.validate(action)) is not None:
+        error = pending.validate(action)
+        if error is not None:
             return error
         seat.afk = 0
         pending.future.set_result(action)

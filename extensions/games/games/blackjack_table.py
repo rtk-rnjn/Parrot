@@ -79,7 +79,8 @@ def card_url(code: str) -> str:
 
 def card_store(bot: Bot) -> ImageStore:
     """One shared card image cache per bot."""
-    if (store := getattr(bot, "_card_image_store", None)) is None:
+    store = getattr(bot, "_card_image_store", None)
+    if store is None:
         store = ImageStore(bot, capacity=64, directory=IMAGE_DIRECTORY.parent / "cards")
         bot._card_image_store = store  # pyright: ignore[reportAttributeAccessIssue]
     return store

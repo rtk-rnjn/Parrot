@@ -50,7 +50,8 @@ class TabbedLayout(BaseLayoutView):
         self._cache: dict[str, Page] = {}
 
     async def _load(self, name: str) -> Page:
-        if (page := self._cache.get(name)) is None:
+        page = self._cache.get(name)
+        if page is None:
             page = self._cache[name] = await self.tabs[name]()
         return page
 

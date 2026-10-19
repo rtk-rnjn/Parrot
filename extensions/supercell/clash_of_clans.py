@@ -156,7 +156,8 @@ class ClashOfClans(SupercellCog, command_attrs={"hidden": True}):
             "Heroes": lambda: self._heroes(player),
             "Army": lambda: self._army(player),
         }
-        if clan := player.get("clan"):
+        clan = player.get("clan")
+        if clan:
             tabs["Clan"] = lambda: self._clan_overview(clan["tag"])
         return tabs
 
@@ -189,7 +190,8 @@ class ClashOfClans(SupercellCog, command_attrs={"hidden": True}):
         ]
         if clan:
             line = clan["name"]
-            if role := ROLES.get(player.get("role", "")):
+            role = ROLES.get(player.get("role", ""))
+            if role:
                 line += f" \N{BULLET} {role}"
         else:
             line = "No clan"

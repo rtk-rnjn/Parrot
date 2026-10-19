@@ -57,7 +57,8 @@ def evaluate(cards: Sequence[str]) -> tuple[int, ...]:  # noqa: PLR0911
         return (FULL_HOUSE, top, rest[0][0])
     if flush_ranks:
         return (FLUSH, *flush_ranks[:5])
-    if (high := _straight_high(set(ranks))) is not None:
+    high = _straight_high(set(ranks))
+    if high is not None:
         return (STRAIGHT, high)
     if count == 3:
         return (TRIPS, top, *[r for r in ranks if r != top][:2])

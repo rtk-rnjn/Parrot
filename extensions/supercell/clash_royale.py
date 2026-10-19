@@ -203,7 +203,8 @@ class ClashRoyale(SupercellCog, command_attrs={"hidden": True}):
             "Chests": lambda: self._chests(tag),
             "Battles": lambda: self._battles(tag),
         }
-        if clan := player.get("clan"):
+        clan = player.get("clan")
+        if clan:
             tabs["Clan"] = lambda: self._clan_overview(clan["tag"])
         return tabs
 
@@ -240,7 +241,8 @@ class ClashRoyale(SupercellCog, command_attrs={"hidden": True}):
         ]
         if clan:
             line = clan["name"]
-            if role := ROLES.get(player.get("role", "")):
+            role = ROLES.get(player.get("role", ""))
+            if role:
                 line += f" \N{BULLET} {role}"
         else:
             line = "No clan"
@@ -290,7 +292,8 @@ class ClashRoyale(SupercellCog, command_attrs={"hidden": True}):
         for chest in items[:8]:
             lines.append(f"**Next** \N{MIDDLE DOT} {chest['name']}" if chest["index"] == 0 else f"`+{chest['index']}` {chest['name']}")  # noqa: PERF401
 
-        if special := [c for c in items[8:] if c["name"] not in COMMON_CHESTS]:
+        special = [c for c in items[8:] if c["name"] not in COMMON_CHESTS]
+        if special:
             lines += ["", "**Further ahead**", *(f"`+{c['index']}` {c['name']}" for c in special)]
         return Page(text="\n".join(lines))
 

@@ -902,7 +902,8 @@ class Misc(commands.Cog, name="Miscellaneous"):
             await ctx.reply("Translation is not available right now. Please try again later.", mention_author=False)
             return
 
-        if retry := bucket.update_rate_limit():
+        retry = bucket.update_rate_limit()
+        if retry:
             raise commands.CommandOnCooldown(self.translate_user_limit._cooldown, retry, commands.BucketType.user)  # pyright: ignore[reportArgumentType]
 
         async with ctx.typing():

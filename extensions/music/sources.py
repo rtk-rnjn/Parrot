@@ -78,12 +78,14 @@ async def resolve(bot: Bot, ctx: Context[Bot], query: str, *, limit: int = 1) ->
     """Lavalink (three search backends), then yt-dlp. Raises :class:`ResolveError` when everything came up empty."""
     errors: list[str] = []
 
-    if (resolved := await _resolve_lavalink(bot, ctx, query, limit, errors)) is not None:
+    resolved = await _resolve_lavalink(bot, ctx, query, limit, errors)
+    if resolved is not None:
         return resolved
 
     if local_available():
         try:
-            if (resolved := await _resolve_local(query, ctx.author, limit)) is not None:
+            resolved = await _resolve_local(query, ctx.author, limit)
+            if resolved is not None:
                 return resolved
         except Exception as exc:  # pylint: disable=broad-exception-caught
             _log.debug("yt-dlp could not resolve %r: %s", query, exc)

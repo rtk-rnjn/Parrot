@@ -119,7 +119,8 @@ class ChessClient:
         try:
             data = await self._send(path)
         except ChessUnavailable:
-            if (stale := await self._redis.get(f"{key}:stale")) is not None:
+            stale = await self._redis.get(f"{key}:stale")
+            if stale is not None:
                 return json.loads(stale)
             raise
 
@@ -342,12 +343,14 @@ class ChessCom(commands.Cog, command_attrs={"hidden": True}):
             data = await self.api.get("/puzzle/random" if random else "/puzzle", ttl=1 if random else 600)
 
         lines = [f"### {data.get('title', 'Puzzle')}", f"[Solve on chess.com]({data['url']})"]
-        if published := data.get("publish_time"):
+        published = data.get("publish_time")
+        if published:
             lines.append(f"-# Published {_when(published, 'D')}")
 
         container = discord.ui.Container(accent_colour=COLOUR)
         container.add_item(discord.ui.TextDisplay("\n".join(lines)))
-        if image := data.get("image"):
+        image = data.get("image")
+        if image:
             container.add_item(discord.ui.MediaGallery(discord.MediaGalleryItem(image)))
 
         view = discord.ui.LayoutView(timeout=None)
@@ -404,7 +407,8 @@ class ChessCom(commands.Cog, command_attrs={"hidden": True}):
             f"**Format** {str(settings.get('type', '-')).title()} \N{MIDDLE DOT} {str(settings.get('time_class', '-')).title()} ({settings.get('time_control', '-')})",
             f"**Players** {len(data.get('players', []))} \N{MIDDLE DOT} **Rounds** {len(data.get('rounds', []))}",
         ]
-        if finish := data.get("finish_time"):
+        finish = data.get("finish_time")
+        if finish:
             lines.append(f"**Finished** {_when(finish)}")
         lines.append(f"[Open on chess.com]({data['url']})")
         await ctx.reply(view=NoticeLayout("\n".join(lines), colour=COLOUR))
@@ -458,7 +462,8 @@ class ChessCom(commands.Cog, command_attrs={"hidden": True}):
             footer=FOOTER,
         )
         text = f"-# [Open on chess.com]({profile['url']})"
-        if linked := await self.link_text(username):
+        linked = await self.link_text(username)
+        if linked:
             text += f"\n-# {linked}"
         return Page(text=text, image=image)
 

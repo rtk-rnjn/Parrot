@@ -943,7 +943,8 @@ class OwnerPanel(BaseLayoutView):
         self.container.clear_items()
         self.container.accent_colour = discord.Colour.red() if tab.error else tab.accent
         self.container.add_item(discord.ui.TextDisplay(f"## {tab.emoji} {tab.label}\n-# {tab.subtitle}"))
-        if (selector := tab.view_select()) is not None:
+        selector = tab.view_select()
+        if selector is not None:
             self.container.add_item(selector)
         self.container.add_item(discord.ui.Separator())
 

@@ -186,7 +186,8 @@ class JavaIndex:
         parts = split_query(query)
         if not parts or len(parts) > MAX_HOPS + 2:
             return []
-        if (package := self.packages.get(".".join(parts).lower())) is not None:
+        package = self.packages.get(".".join(parts).lower())
+        if package is not None:
             return [package]
         for split in range(len(parts), 0, -1):
             head, rest = parts[:split], parts[split:]
@@ -198,13 +199,15 @@ class JavaIndex:
                     continue
                 name, rest = name.partition("(")[0], head[-1:]  # `ArrayList(int)` asks for a constructor
             for qualname in self.lookup(name):
-                if hits := await self.walk(qualname, rest):
+                hits = await self.walk(qualname, rest)
+                if hits:
                     return hits
         return []
 
     def lookup(self, name: str) -> list[str]:
         lowered = name.lower()
-        if (qualname := self.by_qualname.get(lowered)) is not None:
+        qualname = self.by_qualname.get(lowered)
+        if qualname is not None:
             return [qualname]
         return self.by_name.get(lowered, [])
 
@@ -214,7 +217,8 @@ class JavaIndex:
             return [(jtype.display, jtype.entry)]
         current: str | None = qualname
         for segment in rest[:-1]:
-            if (current := await self.member_type(current, segment)) is None:
+            current = await self.member_type(current, segment)
+            if current is None:
                 return []
         return [(member.name, member.entry) for member in await self.overloads(current, rest[-1])]
 

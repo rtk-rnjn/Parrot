@@ -1,166 +1,127 @@
 #!/usr/bin/env python3
 """
-Convert non-ASCII Unicode characters in a project to their Unicode names.
+Remove the walrus operator (:=) from Python files.
 
-Modes
------
-escape (default)  Python files only. Inside string literals, replace each
-                  non-ASCII char with \\N{NAME}, e.g. "caf\N{LATIN SMALL LETTER E WITH ACUTE}" -> "caf\\N{LATIN SMALL LETTER E WITH ACUTE}".
-                  Uses `tokenize`, so identifiers, comments and code are untouched.
-                  Raw strings are skipped (\\N doesn't work in them).
-text              Any text file. Replace each non-ASCII char with " NAME "
-                  (spaced plain words), e.g. "caf\N{LATIN SMALL LETTER E WITH ACUTE}" -> "caf LATIN SMALL LETTER E WITH ACUTE ".
+Auto-fixed (safe) cases, when the header is on a single line:
+  if (x := expr):            if (x := expr) > 0:          (also bare `if x := expr:`)
+  while (x := expr):         while (x := expr) is not None:   (no `else:` clause)
+Everything else (comprehensions, `and`/`or` chains, lambdas, elif, call args, ...)
+is reported with file:line so you can rewrite it by hand.
 
-Usage
------
-  python unicode_to_names.py PATH                 # dry run (shows what would change)
-  python unicode_to_names.py PATH --write         # apply changes
-  python unicode_to_names.py PATH --mode text --ext .md .txt --write
-  python unicode_to_names.py PATH --comments --write   # escape mode: also convert comments to " NAME " text
+Usage:
+  python remove_walrus.py PATH            # dry run
+  python remove_walrus.py PATH --write    # apply
 """
 import argparse
-import io
-import re
+import ast
 import sys
-import tokenize
-import unicodedata
 from pathlib import Path
 
 SKIP_DIRS = {".git", ".hg", ".svn", "venv", ".venv", "env", "node_modules",
              "__pycache__", ".tox", ".mypy_cache", "build", "dist", ".idea"}
-NON_ASCII = re.compile(r"[^\x00-\x7f]")
-STRING_PREFIX = re.compile(r"^([A-Za-z]*)['\"]")
 
 
-def char_name(ch: str) -> str | None:
-    try:
-        return unicodedata.name(ch)
-    except ValueError:
-        return None
+def cidx(line: str, byte_off: int) -> int:
+    """ast offsets are UTF-8 byte offsets; convert to str index."""
+    return len(line.encode("utf-8")[:byte_off].decode("utf-8"))
 
 
-def to_escape(text: str) -> str:
-    def sub(m):
-        ch = m.group()
-        name = char_name(ch)
-        if name:
-            return "\\N{%s}" % name
-        cp = ord(ch)
-        return f"\\u{cp:04x}" if cp <= 0xFFFF else f"\\U{cp:08x}"
-    return NON_ASCII.sub(sub, text)
+def fix_source(src: str):
+    tree = ast.parse(src)
+    lines = src.split("\n")
+    handled: set[int] = set()
+    edits = []  # (lineno, new_lines)
 
-
-def to_spaced(text: str) -> str:
-    def sub(m):
-        ch = m.group()
-        return f" {char_name(ch) or f'U+{ord(ch):04X}'} "
-    return NON_ASCII.sub(sub, text)
-
-
-def convert_python(source: str, comments: bool, warnings: list[str]) -> str:
-    """Escape non-ASCII chars inside (non-raw) string literals via tokenize."""
-    if not NON_ASCII.search(source):
-        return source
-
-    # absolute offset of each line start
-    lines = source.splitlines(keepends=True)
-    starts, pos = [0], 0
-    for ln in lines:
-        pos += len(ln)
-        starts.append(pos)
-
-    def offset(row, col):
-        return starts[row - 1] + col
-
-    edits = []  # (start, end, replacement)
-    try:
-        tokens = list(tokenize.generate_tokens(io.StringIO(source).readline))
-    except (tokenize.TokenError, IndentationError, SyntaxError) as e:
-        warnings.append(f"tokenize failed ({e}); file left unchanged")
-        return source
-
-    for tok in tokens:
-        if not NON_ASCII.search(tok.string):
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.If, ast.While)):
             continue
-        s, e = offset(*tok.start), offset(*tok.end)
-        if tok.type == tokenize.STRING:
-            prefix = STRING_PREFIX.match(tok.string)
-            if prefix and "r" in prefix.group(1).lower():
-                warnings.append(f"line {tok.start[0]}: raw string skipped")
-                continue
-            if prefix and "b" in prefix.group(1).lower():
-                continue  # non-ASCII bytes literals are a SyntaxError anyway
-            edits.append((s, e, to_escape(tok.string)))
-        elif tok.type == getattr(tokenize, "FSTRING_MIDDLE", -1):
-            if "{" in tok.string or "}" in tok.string:
-                warnings.append(f"line {tok.start[0]}: f-string with braces skipped")
-                continue
-            edits.append((s, e, to_escape(tok.string)))
-        elif tok.type == tokenize.COMMENT and comments:
-            edits.append((s, e, to_spaced(tok.string)))
-        elif tok.type == tokenize.NAME:
-            warnings.append(f"line {tok.start[0]}: non-ASCII identifier {tok.string!r} left alone")
-
-    for s, e, rep in sorted(edits, reverse=True):
-        source = source[:s] + rep + source[e:]
-    return source
-
-
-def iter_files(root: Path, exts: set[str]):
-    if root.is_file():
-        yield root
-        return
-    for p in root.rglob("*"):
-        if any(part in SKIP_DIRS for part in p.parts):
+        test = node.test
+        if isinstance(test, ast.NamedExpr):
+            w = test
+        elif isinstance(test, ast.Compare) and isinstance(test.left, ast.NamedExpr):
+            w = test.left  # leftmost operand is evaluated first, so hoisting is safe
+        else:
             continue
-        if p.is_file() and p.suffix.lower() in exts:
-            yield p
+        if sum(isinstance(n, ast.NamedExpr) for n in ast.walk(test)) != 1:
+            continue
+        if any(isinstance(n, ast.NamedExpr) for n in ast.walk(w.value)):
+            continue
+        if not isinstance(w.target, ast.Name):
+            continue
+        if isinstance(node, ast.While) and node.orelse:
+            continue  # `while True` + break would skip the else clause
+
+        line = lines[node.lineno - 1]
+        kw = "if " if isinstance(node, ast.If) else "while "
+        if test.end_lineno != node.lineno or not line.lstrip().startswith(kw) \
+                or not line.rstrip().endswith(":"):
+            continue  # multi-line header, `elif`, or trailing comment
+
+        indent = line[: len(line) - len(line.lstrip())]
+        name = w.target.id
+        value = ast.get_source_segment(src, w.value)
+        a, b = cidx(line, w.col_offset), cidx(line, w.end_col_offset)
+        if a > 0 and line[a - 1] == "(" and line[b:b + 1] == ")":
+            a, b = a - 1, b + 1
+        new_header = line[:a] + name + line[b:]
+
+        if isinstance(node, ast.If):
+            new = [indent + f"{name} = {value}", new_header]
+        else:
+            test_text = new_header.strip()[len("while"):-1].strip()
+            cond = f"not {test_text}" if test_text.isidentifier() else f"not ({test_text})"
+            body_line = lines[node.body[0].lineno - 1]
+            body_indent = body_line[: len(body_line) - len(body_line.lstrip())]
+            unit = body_indent[len(indent):] or "    "
+            new = [
+                indent + "while True:",
+                body_indent + f"{name} = {value}",
+                body_indent + f"if {cond}:",
+                body_indent + unit + "break",
+            ]
+        edits.append((node.lineno, new))
+        handled.add(id(w))
+
+    for lineno, new in sorted(edits, reverse=True):  # bottom-up keeps line numbers valid
+        lines[lineno - 1: lineno] = new
+
+    remaining = [n.lineno for n in ast.walk(tree)
+                 if isinstance(n, ast.NamedExpr) and id(n) not in handled]
+    return "\n".join(lines), len(edits), sorted(remaining)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("path", type=Path)
-    ap.add_argument("--mode", choices=["escape", "text"], default="escape")
-    ap.add_argument("--ext", nargs="+", help="file extensions to process (default: .py for escape, .txt .md .rst for text)")
-    ap.add_argument("--comments", action="store_true", help="escape mode: also convert comments to spaced names")
-    ap.add_argument("--write", action="store_true", help="apply changes (default is dry run)")
+    ap.add_argument("--write", action="store_true")
     args = ap.parse_args()
 
-    exts = {e if e.startswith(".") else "." + e for e in (args.ext or
-            ([".py"] if args.mode == "escape" else [".txt", ".md", ".rst"]))}
-    exts = {e.lower() for e in exts}
+    files = [args.path] if args.path.is_file() else [
+        p for p in args.path.rglob("*.py") if not any(part in SKIP_DIRS for part in p.parts)]
 
-    changed = 0
-    for f in iter_files(args.path, exts):
+    fixed_total, manual_total = 0, 0
+    for f in files:
         try:
-            original = f.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError) as e:
+            src = f.read_text(encoding="utf-8")
+            if ":=" not in src:
+                continue
+            new, n_fixed, remaining = fix_source(src)
+        except (SyntaxError, UnicodeDecodeError) as e:
             print(f"SKIP {f}: {e}", file=sys.stderr)
             continue
 
-        warnings: list[str] = []
-        if args.mode == "escape":
-            new = convert_python(original, args.comments, warnings)
-        else:
-            new = to_spaced(original)
+        if n_fixed:
+            fixed_total += n_fixed
+            print(f"{'FIXED' if args.write else 'WOULD FIX'} {f}: {n_fixed} walrus use(s)")
+            if args.write:
+                ast.parse(new)  # sanity check before saving
+                f.write_text(new, encoding="utf-8")
+        for ln in remaining:
+            manual_total += 1
+            print(f"MANUAL {f}:{ln}")
 
-        for w in warnings:
-            print(f"  warn {f}: {w}", file=sys.stderr)
-        if new == original:
-            continue
-
-        changed += 1
-        print(f"{'UPDATED' if args.write else 'WOULD CHANGE'} {f}")
-        if args.write:
-            if f.suffix == ".py":  # make sure the result still parses
-                try:
-                    compile(new, str(f), "exec")
-                except SyntaxError as e:
-                    print(f"  ERROR {f}: result would not compile ({e}); skipped", file=sys.stderr)
-                    continue
-            f.write_text(new, encoding="utf-8")
-
-    print(f"\n{changed} file(s) {'modified' if args.write else 'would be modified (dry run; use --write)'}")
+    print(f"\n{fixed_total} auto-fixed{'' if args.write else ' (dry run; use --write)'}, "
+          f"{manual_total} need manual rewrite")
     return 0
 
 

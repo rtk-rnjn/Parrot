@@ -63,7 +63,8 @@ def find_root() -> Path:
 
 def find_branch(root: Path) -> str:
     """``GITHUB_BRANCH`` if set, otherwise the checked-out branch (or commit when detached), otherwise ``main``."""
-    if configured := os.getenv("GITHUB_BRANCH"):
+    configured = os.getenv("GITHUB_BRANCH")
+    if configured:
         return configured
     try:
         repo = pygit2.Repository(str(root))
@@ -792,7 +793,8 @@ class Meta(commands.Cog):
             help_command = self.bot.help_command
             return type(help_command) if help_command is not None else None
 
-        if (command := self.bot.get_command(query)) is not None:
+        command = self.bot.get_command(query)
+        if command is not None:
             return inspect.unwrap(command.callback)
 
         for app_command in self.bot.tree.walk_commands():

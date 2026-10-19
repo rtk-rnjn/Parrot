@@ -159,13 +159,15 @@ class SupercellClient:
     async def get(self, path: str, *, params: dict[str, Any] | None = None, ttl: int = 60) -> Any:
         """GET ``path``, serving fresh data from Redis and falling back to a stale copy while Supercell is down."""
         key = self._key(path, params)
-        if (hit := await self._redis.get(key)) is not None:
+        hit = await self._redis.get(key)
+        if hit is not None:
             return json.loads(hit)
 
         try:
             data = await self._send("GET", path, params=params)
         except Unavailable:
-            if (stale := await self._redis.get(f"{key}:stale")) is not None:
+            stale = await self._redis.get(f"{key}:stale")
+            if stale is not None:
                 return json.loads(stale)
             raise
 
@@ -261,7 +263,8 @@ class ImageStore:
         if not url:
             return None
 
-        if (cached := self._memory.get(url)) is not None:
+        cached = self._memory.get(url)
+        if cached is not None:
             self._memory.move_to_end(url)
             return cached
 

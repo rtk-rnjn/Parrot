@@ -108,13 +108,15 @@ class Games(commands.Cog):
 
     async def card_table(self, ctx: commands.Context[Bot], game_cls: type[CardGame]) -> None:
         """Open a lobby for ``game_cls``; empty seats become bots when the host starts. One table per channel."""
-        if (running := self.card_tables.get(ctx.channel.id)) is not None:
+        running = self.card_tables.get(ctx.channel.id)
+        if running is not None:
             await ctx.reply(view=NoticeLayout.warning(f"A game of **{running.title}** is already running in this channel."))
             return
 
         self.card_tables[ctx.channel.id] = game_cls
         try:
-            if (table := await Lobby(ctx, game_cls).run()) is not None:
+            table = await Lobby(ctx, game_cls).run()
+            if table is not None:
                 seats, message = table
                 await game_cls(ctx, seats, message).run()
         finally:

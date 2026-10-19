@@ -232,7 +232,10 @@ class SessionMixin:
             elif self.loop_mode is LoopMode.queue:
                 self.queue.extend([previous])
 
-        while (song := self.queue.pop()) is not None:
+        while True:
+            song = self.queue.pop()
+            if not (song is not None):
+                break
             if await self._begin(song):
                 return song
 

@@ -290,7 +290,8 @@ class BulkToggleModal(discord.ui.Modal):
             name = raw.strip().removeprefix(view.prefix).strip()
             if not name:
                 continue
-            if (command := view.ctx.bot.get_command(name)) is not None:
+            command = view.ctx.bot.get_command(name)
+            if command is not None:
                 targets.append(command)  # aliases resolve here; only qualified_name is stored
             elif category := next((c for c in view.categories if c.name.casefold() == name.casefold()), None):
                 targets.extend(category.commands)
@@ -535,8 +536,7 @@ class HelpView(BaseLayoutView):
         self.container.add_item(discord.ui.TextDisplay(f"### Reading usage\n{USAGE_LEGEND}"))
 
         footer = [f"Made by <@{BOT_OWNER_ID}>"]
-        if (started := getattr(self.ctx.bot, "_started_at", None)) is not None:
-            footer.append(f"online since {discord.utils.format_dt(started, 'R')}")
+        footer.append(f"online since {discord.utils.format_dt(self.ctx.bot.started_at, 'R')}")
 
         self.container.add_item(discord.ui.TextDisplay("-# " + DOT.join(footer)))
         commits = self.help_command.recent_commits(seperator="\n")
@@ -598,8 +598,10 @@ class HelpView(BaseLayoutView):
         sections.append(f"## {self.prefix}{command.qualified_name}\n-# {DOT.join(meta)}")
         sections.append(f"### Usage\n`{self.help_command.get_command_signature(command)}`")
 
-        if arguments := argument_lines(command):
+        arguments = argument_lines(command)
+        if arguments:
             sections.append("### Arguments\n" + "\n".join(arguments))
+
         needs = requirements(command)
         sections.append("### Requirements\n" + ("\n".join(f"\N{BULLET} {line}" for line in needs) if needs else "No special permissions."))
         if command.aliases:
@@ -608,7 +610,9 @@ class HelpView(BaseLayoutView):
         examples = command.extras.get("examples")
         if isinstance(examples, list | tuple) and examples:
             sections.append("### Examples\n" + "\n".join(f"`{self.prefix}{example}`" for example in examples))
-        if children := subcommands_of(command, include_hidden=self.include_hidden):
+
+        children = subcommands_of(command, include_hidden=self.include_hidden)
+        if children:
             sections.append("### Subcommands\n" + "\n".join(f"`{child.name}` - {child.short_doc or 'No description.'}" for child in children))
 
         # The description gets whatever room the structured sections leave.
@@ -621,7 +625,8 @@ class HelpView(BaseLayoutView):
         self.container.add_item(discord.ui.TextDisplay(self.command_text(command)))
         self.container.add_item(discord.ui.Separator())
 
-        if children := subcommands_of(command, include_hidden=self.include_hidden):
+        children = subcommands_of(command, include_hidden=self.include_hidden)
+        if children:
             options = [
                 discord.SelectOption(label=child.name[:100], value=str(index), description=truncate(child.short_doc, 100) or None)
                 for index, child in enumerate(children[:SELECT_LIMIT])
@@ -720,7 +725,8 @@ class HelpView(BaseLayoutView):
         shown = ", ".join(f"`{path}`" for path in paths[:10]) + (f" and {len(paths) - 10} more" if len(paths) > 10 else "")
         lines = [f"{'Enabled' if enabled else 'Disabled'} **{len(paths)}** command(s): {shown}"]
         for key, (label, template) in RULE_LABELS.items():
-            if ids := (rules or {}).get(key):
+            ids = (rules or {}).get(key)
+            if ids:
                 lines.append(f"{label}: " + " ".join(template.format(item) for item in ids))
         await interaction.followup.send("\n".join(lines) + note, ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
 

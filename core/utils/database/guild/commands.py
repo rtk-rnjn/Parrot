@@ -169,7 +169,8 @@ class _GuildCommandConfigMixin(DatabaseMixin):
 
         defaults = {"enabled": True, "ignored_roles": [], "allowed_roles": [], "ignored_channels": [], "allowed_channels": []}
         update: dict = {"$set": fields}
-        if on_insert := {key: value for key, value in defaults.items() if key not in fields}:
+        on_insert = {key: value for key, value in defaults.items() if key not in fields}
+        if on_insert:
             update["$setOnInsert"] = on_insert
 
         await self.commands_config_collection.bulk_write(

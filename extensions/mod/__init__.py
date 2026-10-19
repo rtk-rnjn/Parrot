@@ -20,7 +20,7 @@ from core.utils import PaginationView
 
 if TYPE_CHECKING:
     from core import Bot
-    from core.utils.database.models import ModAction
+    from core.utils.database.models import ModAction as ModActionDict
 
 _log = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class ModAction:
     metadata: dict[str, str] = field(default_factory=dict)
 
     @classmethod
-    def from_document(cls, doc: ModAction) -> ModAction:
+    def from_document(cls, doc: ModActionDict) -> ModAction:
         return cls(
             guild_id=doc["guild_id"],
             action=doc["action"],  # pyright: ignore[reportArgumentType]

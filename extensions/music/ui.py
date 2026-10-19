@@ -15,7 +15,7 @@ MAX_TITLE_LENGTH = 80
 def format_progress(position: float, length: float, *, is_stream: bool = False, width: int = PROGRESS_BAR_WIDTH) -> str:
     """A slider with timestamps. Streams and unknown lengths get no slider."""
     if is_stream:
-        return f"🔴 LIVE · {format_clock_duration(position)}"
+        return f"\N{LARGE RED CIRCLE} LIVE · {format_clock_duration(position)}"
     if length <= 0:
         return format_clock_duration(position)
 

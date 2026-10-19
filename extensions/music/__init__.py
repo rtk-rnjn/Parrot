@@ -235,7 +235,8 @@ class Music(commands.Cog):
                 )
             return
 
-        if (player := await self._connect(ctx, channel)) is not None:
+        player = await self._connect(ctx, channel)
+        if player is not None:
             player.sync_idle()
             await ctx.reply(view=Notice.success(f"Joined {channel.mention}.", footer=f"Backend: {player.backend_name}"))
 
@@ -249,7 +250,8 @@ class Music(commands.Cog):
 
         player = self._get_player(ctx)
         if player is None:
-            if (player := await self._connect(ctx, channel)) is not None:
+            player = await self._connect(ctx, channel)
+            if player is not None:
                 await ctx.reply(view=Notice.success(f"Joined {channel.mention}."))
             return
 
@@ -326,7 +328,8 @@ class Music(commands.Cog):
     @commands.command(name="skip", aliases=["s"])
     async def skip(self, ctx: Context[Bot]) -> None:
         """Skips the current track. The DJ skips at once; everyone else votes."""
-        if (got := await self._controls(ctx)) is None:
+        got = await self._controls(ctx)
+        if got is None:
             return
         player, member = got
 
@@ -342,7 +345,8 @@ class Music(commands.Cog):
     @commands.command(name="stop")
     async def stop(self, ctx: Context[Bot]) -> None:
         """Stops playback, clears the queue and disconnects. The DJ stops at once; everyone else votes."""
-        if (got := await self._controls(ctx)) is None:
+        got = await self._controls(ctx)
+        if got is None:
             return
         player, member = got
 
@@ -354,7 +358,8 @@ class Music(commands.Cog):
     @commands.command(name="pause")
     async def pause(self, ctx: Context[Bot]) -> None:
         """Pauses playback. The DJ pauses at once; everyone else votes."""
-        if (got := await self._controls(ctx)) is None:
+        got = await self._controls(ctx)
+        if got is None:
             return
         player, member = got
 
@@ -370,7 +375,8 @@ class Music(commands.Cog):
     @commands.command(name="resume", aliases=["unpause"])
     async def resume(self, ctx: Context[Bot]) -> None:
         """Resumes playback. The DJ resumes at once; everyone else votes."""
-        if (got := await self._controls(ctx)) is None:
+        got = await self._controls(ctx)
+        if got is None:
             return
         player, member = got
 
@@ -386,7 +392,8 @@ class Music(commands.Cog):
     @commands.command(name="shuffle")
     async def shuffle(self, ctx: Context[Bot]) -> None:
         """Shuffles the queue. The DJ shuffles at once; everyone else votes."""
-        if (got := await self._controls(ctx)) is None:
+        got = await self._controls(ctx)
+        if got is None:
             return
         player, member = got
 
@@ -422,7 +429,8 @@ class Music(commands.Cog):
         level: Annotated[int, commands.Range[int, 0, 150]] | None = commands.parameter(default=None, description="Volume from 0 to 150."),
     ) -> None:
         """Shows or sets the volume. Only the DJ can change it."""
-        if (got := await self._controls(ctx, dj=level is not None)) is None:
+        got = await self._controls(ctx, dj=level is not None)
+        if got is None:
             return
         player, _ = got
 
@@ -442,8 +450,10 @@ class Music(commands.Cog):
         mode: str | None = commands.parameter(default=None, description="off, track or queue. Leave empty to cycle."),
     ) -> None:
         """Sets the loop mode. Only the DJ can change it."""
-        if (got := await self._controls(ctx, dj=True)) is None:
+        got = await self._controls(ctx, dj=True)
+        if got is None:
             return
+
         player, _ = got
 
         if mode is None:

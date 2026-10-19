@@ -1152,7 +1152,8 @@ def map_card(
             key = (tx % n, ty)
             position = (round((tx - fx) * 256 + w / 2), round((ty - fy) * 256 + h / 2))
             for target, source in ((ground, base), (weather, overlay)):
-                if (data := source.get(key)) is None:
+                data = source.get(key)
+                if data is None:
                     continue
                 try:
                     tile_img = Image.open(BytesIO(data)).convert("RGBA")

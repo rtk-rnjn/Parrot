@@ -77,6 +77,11 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         panel = OwnerPanel(ctx.author, bot=self.bot)
         await panel.start(ctx)
 
+    @commands.command(name="echo", rest_is_raw=True)
+    async def echo(self, ctx: commands.Context[Bot], *, message: str) -> None:
+        """Echo a message."""
+        await ctx.reply(message)
+
 
 async def setup(bot: Bot) -> None:
     await bot.add_cog(Owner(bot))

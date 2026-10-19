@@ -466,25 +466,30 @@ class MusicPanel(discord.ui.LayoutView):
         return _vote_notice(await self.player.vote_shuffle(member), "Your vote to shuffle has been counted.")
 
     async def _cycle_loop(self, member: discord.Member) -> Notice | None:
-        if (notice := self._dj_only(member)) is not None:
+        notice = self._dj_only(member)
+        if notice is not None:
             return notice
         self.player.loop_mode = self.player.loop_mode.next
         return None
 
     async def _set_loop(self, member: discord.Member, mode: LoopMode) -> Notice | None:
-        if (notice := self._dj_only(member)) is not None:
+        notice = self._dj_only(member)
+        if notice is not None:
             return notice
         self.player.loop_mode = mode
         return None
 
     async def _volume(self, member: discord.Member, delta: int) -> Notice | None:
-        if (notice := self._dj_only(member)) is not None:
+        notice = self._dj_only(member)
+        if notice is not None:
             return notice
+
         await self.player.set_volume_level(self.player.volume_level + delta)
         return None
 
     async def _set_filter(self, member: discord.Member, value: str) -> Notice | None:
-        if (notice := self._dj_only(member)) is not None:
+        notice = self._dj_only(member)
+        if notice is not None:
             return notice
         try:
             await self.player.set_preset(None if value == "off" else value)
@@ -508,13 +513,15 @@ class MusicPanel(discord.ui.LayoutView):
         return None
 
     async def _clear(self, member: discord.Member) -> Notice | None:
-        if (notice := self._dj_only(member)) is not None:
+        notice = self._dj_only(member)
+        if notice is not None:
             return notice
         self.player.queue.clear()
         return None
 
     async def _leave(self, member: discord.Member) -> Notice | None:
-        if (notice := self._dj_only(member)) is not None:
+        notice = self._dj_only(member)
+        if notice is not None:
             return notice
         await self.player.teardown(f"Disconnected by {member.display_name}.")
         return None

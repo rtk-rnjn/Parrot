@@ -585,7 +585,8 @@ class Mod(commands.Cog, name="Moderation"):
         if not isinstance(member, discord.Member):
             return await ctx.reply("That user is not in this server.")
 
-        if problem := self._target_problem(ctx, member, "kick"):
+        problem = self._target_problem(ctx, member, "kick")
+        if problem is not None:
             return await ctx.reply(problem)
 
         await self._dm_user(member, ctx.guild, f"You have been kicked from {ctx.guild.name}", reason)
@@ -619,7 +620,8 @@ class Mod(commands.Cog, name="Moderation"):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if problem := self._target_problem(ctx, member, "ban"):
+        problem = self._target_problem(ctx, member, "ban")
+        if problem is not None:
             return await ctx.reply(problem)
 
         await self._dm_user(member, ctx.guild, f"You have been banned from {ctx.guild.name}", reason)
@@ -749,7 +751,8 @@ class Mod(commands.Cog, name="Moderation"):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if problem := self._target_problem(ctx, member, "softban"):
+        problem = self._target_problem(ctx, member, "softban")
+        if problem is not None:
             return await ctx.reply(problem)
 
         await self._dm_user(member, ctx.guild, f"You have been softbanned from {ctx.guild.name}", reason)
@@ -802,7 +805,8 @@ class Mod(commands.Cog, name="Moderation"):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if problem := self._target_problem(ctx, member, "timeout"):
+        problem = self._target_problem(ctx, member, "timeout")
+        if problem is not None:
             return await ctx.reply(problem)
 
         # Discord's native timeout is capped at 28 days; anything longer (or indefinite) uses the mute role.
@@ -1334,7 +1338,8 @@ class Mod(commands.Cog, name="Moderation"):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if problem := self._target_problem(ctx, member, "warn", check_bot_hierarchy=False):
+        problem = self._target_problem(ctx, member, "warn", check_bot_hierarchy=False)
+        if problem is not None:
             return await ctx.reply(problem)
 
         result = await self.issue_warning(ctx.guild, member, moderator=ctx.author, reason=reason)
@@ -1411,7 +1416,8 @@ class Mod(commands.Cog, name="Moderation"):
         await ctx.bot.database.delete_violation(guild_id=ctx.guild.id, _id=violation["_id"])
 
         metadata = {}
-        if removed_reason := violation.get("metadata", {}).get("reason"):
+        removed_reason = violation.get("metadata", {}).get("reason")
+        if removed_reason is not None:
             metadata["removed_warning"] = _truncate(removed_reason, 200)
 
         entry = await self.log_action(guild=ctx.guild, action="unwarn", moderator=ctx.author, targets=[user], reason=reason, metadata=metadata)
@@ -1736,7 +1742,8 @@ class Mod(commands.Cog, name="Moderation"):
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
-        if problem := self._role_problem(ctx, role, "assigned"):
+        problem = self._role_problem(ctx, role, "assigned")
+        if problem is not None:
             return await ctx.reply(problem)
 
         if not members:
@@ -1882,7 +1889,8 @@ class Mod(commands.Cog, name="Moderation"):
         This command assigns the specified role to the specified member in the server.
         You can only assign roles that are below your own top role.
         """
-        if problem := self._role_problem(ctx, role, "assigned"):
+        problem = self._role_problem(ctx, role, "assigned")
+        if problem is not None:
             return await ctx.reply(problem)
 
         try:

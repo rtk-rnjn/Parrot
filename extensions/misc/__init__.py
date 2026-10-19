@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, BinaryIO
 
+import aiohttp
 import arrow
 import discord
 import sympy
@@ -21,6 +22,7 @@ from core.constants import INVITE_RE, LINKS_RE
 from core.utils import HumanDate, PaginationView
 
 from .birthday_card import birthday_card_file
+from .constants import LANGUAGE_CODES, TRANSLATE_API, TRANSLATE_HEADERS, TRANSLATION_FLAG_MAP
 from .dictionary_parser import build_definition_embed
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
@@ -145,6 +147,9 @@ class Misc(commands.Cog, name="Miscellaneous"):
 
         self.bot.tree.add_command(self.__bookmark_context_menu)
         self.bot.tree.add_command(self.__interpret_as_command)
+
+        self.translate_user_limit = commands.CooldownMapping(commands.Cooldown(3, 15), lambda user_id: user_id)
+        self.translate_message_limit = commands.CooldownMapping(commands.Cooldown(1, 60), lambda key: key)
 
         _log.debug("Cog loaded: %s", self.__class__.__name__)
 
@@ -823,6 +828,139 @@ class Misc(commands.Cog, name="Miscellaneous"):
 
         view = NewsView(ctx, topic, articles)
         view.message = await ctx.reply(view=view)
+
+    async def google_translate(self, text: str, to: str) -> tuple[str, str] | None:
+        translated = ""
+        source = "auto"
+        try:
+            async with self.bot.http_session.get(
+                TRANSLATE_API,
+                params=[
+                    ("dj", "1"),
+                    ("dt", "sp"),
+                    ("dt", "t"),
+                    ("dt", "ld"),
+                    ("dt", "bd"),
+                    ("client", "dict-chrome-ex"),
+                    ("sl", "auto"),
+                    ("tl", to),
+                    ("q", text[:1000]),
+                ],
+                headers=TRANSLATE_HEADERS,
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as response:
+                if response.status == 200:
+                    data = await response.json(content_type=None)
+                    source = str(data.get("src") or "auto")
+                    translated = "".join(sentence.get("trans", "") for sentence in data.get("sentences") or [])
+        except aiohttp.ClientError, TimeoutError, ValueError, AttributeError, TypeError:
+            return None
+        return (source, translated) if translated.strip() else None
+
+    @commands.command(name="translate", aliases=["tr"])
+    async def translate(
+        self,
+        ctx: commands.Context[Bot],
+        to: str = commands.parameter(description="The language code to translate to, e.g. 'en' for English.", default="en"),
+        *,
+        text: str | None = commands.parameter(
+            description="The text to translate. If not provided, the command will attempt to translate the message being replied to.",
+            default=None,
+        ),
+    ) -> None:
+        """Translate text into another language, English by default.
+
+        Reply to a message to translate it, or type the text yourself.
+        Put a language code first to pick the target, e.g. translate hi Hello.
+        """
+
+        languages = LANGUAGE_CODES
+
+        if to.lower() not in languages:
+            text = f"{to} {text}" if text else to
+            to = "en"
+        to = to.lower()
+
+        if not text:
+            reference = ctx.message.reference
+            if reference is not None:
+                message = reference.resolved
+                if not isinstance(message, discord.Message) and reference.message_id is not None:
+                    try:
+                        message = await ctx.fetch_message(reference.message_id)
+                    except discord.HTTPException:
+                        message = None
+                if isinstance(message, discord.Message):
+                    text = message.content
+
+        if not text or not text.strip():
+            await ctx.reply("There is nothing to translate. Give me some text or reply to a message.", mention_author=False)
+            return
+
+        bucket = self.translate_message_limit.get_bucket(ctx.author.id)
+        if bucket is None:
+            await ctx.reply("Translation is not available right now. Please try again later.", mention_author=False)
+            return
+
+        if retry := bucket.update_rate_limit():
+            raise commands.CommandOnCooldown(self.translate_user_limit._cooldown, retry, commands.BucketType.user)  # pyright: ignore[reportArgumentType]
+
+        async with ctx.typing():
+            result = await self.google_translate(text, to)
+
+        if result is None:
+            await ctx.reply("I couldn't translate that right now. Try again later.", mention_author=False)
+            return
+
+        source, translated = result
+        await ctx.reply(
+            f"-# {source} \N{RIGHTWARDS ARROW} {to}\n{translated}"[:2000],
+            mention_author=False,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
+        target = TRANSLATION_FLAG_MAP.get(str(payload.emoji))
+        if (
+            target is None
+            or (payload.member is not None and payload.member.bot)
+            or (self.bot.user is not None and payload.user_id == self.bot.user.id)
+        ):
+            return
+
+        translation_user_bucket = self.translate_user_limit.get_bucket(payload.user_id)
+        translation_message_bucket = self.translate_message_limit.get_bucket((payload.message_id, target))
+        if (
+            translation_user_bucket is None
+            or translation_message_bucket is None
+            or translation_user_bucket.update_rate_limit()
+            or translation_message_bucket.update_rate_limit()
+        ):
+            return
+
+        try:
+            channel = self.bot.get_partial_messageable(payload.channel_id, guild_id=payload.guild_id)
+            message = await self.bot.get_or_fetch_message(channel, payload.message_id)
+        except discord.HTTPException:
+            return
+
+        if not message.content.strip():
+            return
+
+        result = await self.google_translate(message.content, target)
+        if result is None or result[0] == target:
+            return
+
+        source, translated = result
+        try:
+            await message.reply(
+                f"-# {source} \N{RIGHTWARDS ARROW} {target}\n{translated}"[:2000],
+                mention_author=False,
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+        except discord.HTTPException:
+            return
 
 
 async def setup(bot: Bot) -> None:

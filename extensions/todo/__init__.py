@@ -422,13 +422,13 @@ class TodoPanel(BaseLayoutView):
         await self.refresh(interaction)
 
     async def _on_status(self, interaction: discord.Interaction, values: list[str]) -> None:
-        if item := self.selected:
-            await self.cog.update_task(self.author.id, item["id"], status=TodoStatus(values[0]))
+        if self.selected:
+            await self.cog.update_task(self.author.id, self.selected["id"], status=TodoStatus(values[0]))
         await self.refresh(interaction)
 
     async def _on_priority(self, interaction: discord.Interaction, values: list[str]) -> None:
-        if item := self.selected:
-            await self.cog.update_task(self.author.id, item["id"], priority=TodoPriority(values[0]))
+        if self.selected:
+            await self.cog.update_task(self.author.id, self.selected["id"], priority=TodoPriority(values[0]))
         await self.refresh(interaction)
 
     async def _on_due(self, interaction: discord.Interaction, values: list[str]) -> None:
@@ -478,8 +478,8 @@ class TodoPanel(BaseLayoutView):
         await self.redraw(interaction)
 
     async def _confirm_delete(self, interaction: discord.Interaction) -> None:
-        if item := self.selected:
-            await self.cog.delete_task(self.author.id, item)
+        if self.selected:
+            await self.cog.delete_task(self.author.id, self.selected)
         self.selected_id = None
         self.confirming_delete = False
         await self.refresh(interaction)

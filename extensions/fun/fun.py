@@ -1386,10 +1386,8 @@ class Fun(commands.Cog, ColorHandler):
         scoreboard_embed.description = scoreboard
         await channel.send(embed=scoreboard_embed)
 
-        if missed := [ans for ans in game.solutions if ans not in game.claimed_answers]:
-            missed_text = "Flights everyone missed:\n" + "\n".join(f"{ans}" for ans in missed)
-        else:
-            missed_text = "All the flights were found!"
+        missed = [ans for ans in game.solutions if ans not in game.claimed_answers]
+        missed_text = "Flights everyone missed:\n" + "\n".join(f"{ans}" for ans in missed) if missed else "All the flights were found!"
         await self.append_to_found_embed(game, f"\n{missed_text}")
 
     @duck_start_game.command(name="help")

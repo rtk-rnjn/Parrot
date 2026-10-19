@@ -146,7 +146,8 @@ def profile_card(
 
     _panel(img, (PAD, PAD, W - PAD, 185))
     text_x = PAD + 24
-    if art := _load(portrait, (130, 130)):
+    art = _load(portrait, (130, 130))
+    if art is not None:
         img.alpha_composite(art, (PAD + 16 + (130 - art.width) // 2, PAD + 12 + (130 - art.height) // 2))
         text_x = PAD + 170
 
@@ -174,7 +175,8 @@ def profile_card(
         total = len(strip) * strip_size[0] + (len(strip) - 1) * spacing
         x = (W - total) // 2
         for data in strip:
-            if sprite := _load(data, strip_size):
+            sprite = _load(data, strip_size)
+            if sprite is not None:
                 img.alpha_composite(
                     sprite,
                     (x + (strip_size[0] - sprite.width) // 2, strip_top + (STRIP_H - sprite.height) // 2),
@@ -201,7 +203,8 @@ def deck_card(theme: Theme, *, title: str, subtitle: str, slots: Sequence[DeckSl
         x = PAD + column * (cell_w + GAP)
         y = top + row * (cell_h + GAP)
         _panel(img, (x, y, x + cell_w, y + cell_h))
-        if sprite := _load(slot.image, (cell_w - 30, 185)):
+        sprite = _load(slot.image, (cell_w - 30, 185))
+        if sprite is not None:
             img.alpha_composite(sprite, (x + (cell_w - sprite.width) // 2, y + 16 + (185 - sprite.height) // 2))
         if slot.elixir is not None:
             draw.ellipse((x + 8, y + 8, x + 52, y + 52), fill=(196, 64, 224, 255), outline=WHITE, width=3)

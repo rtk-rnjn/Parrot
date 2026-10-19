@@ -35,7 +35,7 @@ class Linter(commands.Cog):
         flag: Flake8Converter = commands.parameter(description="The code or flags to lint with flake8."),  # noqa: B008
     ):
         """Lint code with flake8."""
-        linter = LintCode(flag).set_linttype("flake8")
+        linter = LintCode(flag).configure_lint_type("flake8")
         await linter.lint(ctx)
 
     @commands.command(name="flake8", aliases=["f8", "flake"])
@@ -47,7 +47,7 @@ class Linter(commands.Cog):
         code: str = commands.parameter(description="The code to lint with flake8."),
     ):
         """Shortcut for `lintcode flake8` with no flags, just the code."""
-        linter = LintCode(code).set_linttype("flake8")
+        linter = LintCode(code).configure_lint_type("flake8")
         await linter.lint_with_flake8(ctx)
 
     @lintcode.command(name="pylint", aliases=["pyl"])
@@ -59,7 +59,7 @@ class Linter(commands.Cog):
         flag: PyLintConverter = commands.parameter(description="The code or flags to lint with pylint."),  # noqa: B008
     ):
         """Lint code with pylint."""
-        linter = LintCode(flag).set_linttype("pylint")
+        linter = LintCode(flag).configure_lint_type("pylint")
         await linter.lint(ctx)
 
     @commands.command(name="pylint", aliases=["pyl"])
@@ -71,7 +71,7 @@ class Linter(commands.Cog):
         code: str = commands.parameter(description="The code to lint with pylint."),
     ):
         """Shortcut for `lintcode pylint` with no flags, just the code."""
-        linter = LintCode(code).set_linttype("pylint")
+        linter = LintCode(code).configure_lint_type("pylint")
         await linter.lint_with_pylint(ctx)
 
     @lintcode.command(name="mypy", aliases=["mp"])
@@ -83,7 +83,7 @@ class Linter(commands.Cog):
         flag: MypyConverter = commands.parameter(description="The code or flags to lint with mypy."),  # noqa: B008
     ):
         """Lint code with mypy."""
-        linter = LintCode(flag).set_linttype("mypy")
+        linter = LintCode(flag).configure_lint_type("mypy")
         await linter.lint(ctx)
 
     @lintcode.command(name="bandit", aliases=["bd"])
@@ -95,7 +95,7 @@ class Linter(commands.Cog):
         flag: BanditConverter = commands.parameter(description="The code or flags to lint with bandit."),  # noqa: B008
     ):
         """Lint code with bandit."""
-        linter = LintCode(flag).set_linttype("bandit")
+        linter = LintCode(flag).configure_lint_type("bandit")
         await linter.lint(ctx)
 
     @commands.command(name="bandit", aliases=["bd"])
@@ -107,7 +107,7 @@ class Linter(commands.Cog):
         code: str = commands.parameter(description="The code to lint with bandit."),
     ):
         """Shortcut for `lintcode bandit` with no flags, just the code."""
-        linter = LintCode(code).set_linttype("bandit")
+        linter = LintCode(code).configure_lint_type("bandit")
         await linter.lint_with_bandit(ctx)
 
     @lintcode.command(name="black", aliases=["fmt"])
@@ -179,7 +179,7 @@ class Linter(commands.Cog):
         code: PyrightConverter = commands.parameter(description="The code or flags to lint with pyright."),  # noqa: B008
     ):
         """Lint code with pyright."""
-        linter = LintCode(code).set_linttype("pyright")
+        linter = LintCode(code).configure_lint_type("pyright")
         await linter.lint(ctx)
 
     @commands.command(name="pyright", aliases=["pyr"])
@@ -191,7 +191,7 @@ class Linter(commands.Cog):
         code: str = commands.parameter(description="The code to lint with pyright."),
     ):
         """Shortcut for `lintcode pyright` with no flags, just the code."""
-        linter = LintCode(code).set_linttype("pyright")
+        linter = LintCode(code).configure_lint_type("pyright")
         await linter.lint_with_pyright(ctx)
 
     @lintcode.command(name="ruff", aliases=["rf"])
@@ -203,7 +203,7 @@ class Linter(commands.Cog):
         flag: RuffConverter = commands.parameter(description="The code or flags to lint with ruff."),  # noqa: B008
     ):
         """Lint code with ruff."""
-        linter = LintCode(flag).set_linttype("ruff")
+        linter = LintCode(flag).configure_lint_type("ruff")
         await linter.lint(ctx)
 
     @commands.command(name="ruff", aliases=["rf"])
@@ -215,7 +215,7 @@ class Linter(commands.Cog):
         code: str = commands.parameter(description="The code to lint with ruff."),
     ):
         """Shortcut for `lintcode ruff` with no flags, just the code."""
-        linter = LintCode(code).set_linttype("ruff")
+        linter = LintCode(code).configure_lint_type("ruff")
         await linter.lint_with_ruff(ctx)
 
 

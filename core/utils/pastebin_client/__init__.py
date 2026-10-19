@@ -185,9 +185,6 @@ class QuotaExceededError(PastebinAPIError):
         super().__init__(message)
 
 
-# --------------------------------------------------------------------------- #
-# Enums & models
-# --------------------------------------------------------------------------- #
 class Visibility(enum.IntEnum):
     PUBLIC = 0
     UNLISTED = 1

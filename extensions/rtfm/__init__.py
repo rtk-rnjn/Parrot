@@ -4,29 +4,25 @@ import asyncio
 import hashlib
 import inspect
 import logging
-import pathlib
+import os
 import re
 import unicodedata
 import urllib.parse
 from html import unescape
-from typing import TYPE_CHECKING, Annotated, Any, Literal
-from urllib.parse import quote, quote_plus
+from typing import TYPE_CHECKING, Annotated, Literal
+from urllib.parse import quote_plus
 
-import aiohttp
-import arrow
 import discord
 import rapidfuzz
 from bs4 import BeautifulSoup, Tag
 from bs4.element import NavigableString
 from discord.ext import commands, tasks
 from jishaku.codeblocks import Codeblock, codeblock_converter
-from rapidfuzz.process import extractOne
 
-from core.utils import PaginationView, natural_time
+from core.utils import PaginationView
 
 from .cheat_sh import CheatSheet
 from .constants import (
-    GITHUB_API_URL,
     MINIMUM_CERTAINTY,
     REAL_PYTHON_ARTICLE_URL,
     REAL_PYTHON_ROOT_API,
@@ -38,7 +34,10 @@ from .constants import (
     WTF_PYTHON_RAW_URL,
 )
 from .docs import Docs
+from .github import GitHub
 from .kontests import Kontests
+from .packages import Packages
+from .python import Python
 from .syntax import Syntax
 from .used import build_embeds, execute_run, parse_man_page
 
@@ -50,8 +49,6 @@ except ImportError:
     HTML_PARSER = "html.parser"
 
 if TYPE_CHECKING:
-    import frontmatter
-
     from core import Bot
 
 
@@ -61,36 +58,26 @@ EMBED_FIELD_LIMIT = 1024
 MIN_TUTORIAL_SCORE = 50
 DISCORD_MESSAGE_LIMIT = 2000
 
+DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python]
 
-class Developer(commands.Cog):
+
+class Developer(*DEPENDENCIES, commands.Cog):
     """To test code and check docs."""
 
     help_emoji = "\N{PERSONAL COMPUTER}"
 
     def __init__(self, bot: Bot) -> None:
+        for Cog in DEPENDENCIES:
+            Cog.__init__(self, bot)
+
         self.bot = bot
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
         self.wtf_section_links: dict[str, str] = {}
-        self.fetch_readme.start()
-        self._python_tags: dict[str, frontmatter.Post] = {}
 
         self.cheat_repository = CheatSheet(self.bot)
+        self.github_access_token = os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN")
 
         _log.debug("Cog loaded: %s", self.__class__.__name__)
-
-    @property
-    def python_tags(self) -> dict[str, frontmatter.Post]:
-        if self._python_tags:
-            return self._python_tags
-
-        tags_path = pathlib.Path("assets/python_tags")
-        for tag_file in tags_path.glob("*.md"):
-            with tag_file.open(encoding="utf-8") as file:
-                post = frontmatter.load(file)
-                tag_name = tag_file.stem
-                self._python_tags[tag_name] = post
-
-        return self._python_tags
 
     @tasks.loop(minutes=60)
     async def fetch_readme(self) -> None:
@@ -146,214 +133,6 @@ class Developer(commands.Cog):
     @property
     def session(self):
         return self.bot.http_session
-
-    async def get_pypi_package(self, url: str):
-        return await self.session.get(url=url)
-
-    @commands.group(
-        name="python-tutorial",
-        aliases=["pytut", "python3-tutorial"],
-        invoke_without_command=True,
-    )
-    async def python(
-        self,
-        ctx: commands.Context[Bot],
-        *,
-        text: str = commands.parameter(description="The tutorial to search for."),
-    ) -> discord.Message:
-        """Search for a python tutorial."""
-        matched_tutorial = await asyncio.to_thread(extractOne, text, self.python_tags.keys())
-        if matched_tutorial is None:
-            return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
-
-        if matched_tutorial[1] < MIN_TUTORIAL_SCORE:
-            return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
-
-        data = self.python_tags[matched_tutorial[0]]
-        return await ctx.reply(embed=discord.Embed(description=data.content))
-
-    @python.command(name="list", aliases=["ls", "all"])
-    async def python_list(self, ctx: commands.Context[Bot]) -> discord.Message:
-        """List the available Python tutorials.
-
-        This command displays the tutorial names that can be searched with the parent command.
-        """
-        return await ctx.reply(
-            embed=discord.Embed(
-                title="List of available tutorials",
-                description="`" + "`, `".join(self.python_tags.keys()) + "`",
-            )
-        )
-
-    @commands.command(aliases=["pypi"])
-    async def pypisearch(
-        self,
-        ctx: commands.Context[Bot],
-        package: str = commands.parameter(description="The package to search for."),
-    ) -> discord.Message:
-        """Get info about a Python package directly from PyPi."""
-        res_raw = await self.get_pypi_package(f"https://pypi.org/pypi/{package}/json")
-
-        try:
-            res_json: dict = await res_raw.json()
-        except aiohttp.ContentTypeError as e:
-            error_message = f"An error occurred while fetching package data: {e!s}"
-            return await ctx.reply(error_message)
-
-        res = res_json.get("info", "Unknown")
-
-        def getval(key: str):
-            return res.get(key, "Unknown")
-
-        name = getval("name")
-        author = getval("author")
-        author_email = getval("author_email")
-
-        description = getval("summary")
-        home_page = getval("home_page")
-
-        project_url = getval("project_url")
-        version = getval("version")
-        _license = getval("license")
-
-        embed = (
-            discord.Embed(
-                title=f"{name} PyPi Stats",
-                description=description,
-                color=discord.Color.teal(),
-            )
-            .add_field(name="Author", value=author, inline=True)
-            .add_field(name="Author Email", value=author_email, inline=True)
-            .add_field(name="Version", value=version, inline=False)
-            .add_field(name="License", value=_license, inline=True)
-            .add_field(name="Project Url", value=project_url, inline=False)
-            .add_field(name="Home Page", value=home_page)
-            .set_thumbnail(url="https://i.imgur.com/syDydkb.png")
-        )
-
-        return await ctx.reply(embed=embed)
-
-    @commands.command(aliases=["npm"])
-    async def npmsearch(
-        self,
-        ctx: commands.Context[Bot],
-        package: str = commands.parameter(description="The package to search for."),
-    ) -> discord.Message:
-        """Get info about a NPM package directly from the NPM Registry."""
-        res_raw = await self.get_pypi_package(f"https://registry.npmjs.org/{package}/")
-
-        res_json = await res_raw.json()
-
-        if res_json.get("error"):
-            error_message = "NPM package not found."
-            return await ctx.reply(error_message)
-
-        latest_version: str = res_json["dist-tags"]["latest"]
-        latest_info: dict = res_json["versions"][latest_version]
-
-        def getval(*keys: str) -> str:
-            list_keys = list(keys)
-            val: dict = latest_info.get(list_keys.pop(0)) or {}
-
-            result: str | None = None
-
-            for i in list_keys:
-                try:
-                    result = val.get(i)
-                except TypeError:
-                    result = "Unknown"
-
-            return result or "Unknown"
-
-        pkg_name = getval("name")
-        description = getval("description")
-
-        author = getval("author", "name")
-        author_email = getval("author", "email")
-
-        repository = getval("repository", "url").removeprefix("git+").removesuffix(".git")
-
-        homepage = getval("homepage")
-        _license = getval("license")
-
-        em = (
-            discord.Embed(title=f"{pkg_name} NPM Stats", description=description, color=0xCC3534)
-            .add_field(name="Author", value=author, inline=True)
-            .add_field(name="Author Email", value=author_email, inline=True)
-            .add_field(name="Latest Version", value=latest_version, inline=False)
-            .add_field(name="License", value=_license, inline=True)
-            .add_field(name="Repository", value=repository, inline=False)
-            .add_field(name="Homepage", value=homepage, inline=True)
-            .set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Npm-logo.svg/800px-Npm-logo.svg.png")
-        )
-
-        return await ctx.reply(embed=em)
-
-    @commands.command(aliases=["crates"])
-    async def crate(
-        self,
-        ctx: commands.Context[Bot],
-        package: str = commands.parameter(description="The package to search for."),
-    ) -> discord.Message:
-        """Get info about a Rust package directly from the Crates.IO Registry."""
-        res_raw = await self.get_pypi_package(f"https://crates.io/api/v1/crates/{package}")
-
-        res_json = await res_raw.json()
-
-        if res_json.get("errors"):
-            error_message = "Crate not found."
-            return await ctx.reply(error_message)
-
-        main_info = res_json["crate"]
-        latest_info = res_json["versions"][0]
-
-        def getmainval(key):
-            return main_info[key] or "Unknown"
-
-        def getversionvals(*keys):
-            keys = list(keys)
-            val: dict = latest_info.get(keys.pop(0)) or {}
-
-            value = None
-
-            if keys:
-                for i in keys:
-                    try:
-                        value = val.get(i)
-                    except TypeError:
-                        return "Unknown"
-
-            return value or "Unknown"
-
-        pkg_name = getmainval("name")
-        description = getmainval("description")
-        downloads = getmainval("downloads")
-
-        publisher = getversionvals("published_by", "name")
-        latest_version = getversionvals("num")
-        repository = getmainval("repository")
-
-        homepage = getmainval("homepage")
-        _license = getversionvals("license")
-
-        em = (
-            discord.Embed(
-                title=f"{pkg_name} crates.io Stats",
-                description=description,
-                color=0xE03D29,
-            )
-            .add_field(name="Published By", value=publisher, inline=True)
-            .add_field(name="Downloads", value=f"{downloads:,}", inline=True)
-            .add_field(name="Latest Version", value=latest_version, inline=False)
-            .add_field(name="License", value=_license, inline=True)
-            .add_field(name="Repository", value=repository, inline=False)
-            .add_field(name="Homepage", value=homepage, inline=True)
-            .set_thumbnail(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Rust_programming_language_black_logo.svg/2048px-Rust_programming_language_black_logo.svg.png"
-            )
-        )
-
-        return await ctx.reply(embed=em)
 
     @commands.command()
     async def run(
@@ -502,145 +281,6 @@ class Developer(commands.Cog):
         if len(msg) > DISCORD_MESSAGE_LIMIT:
             return await ctx.reply("Output too long to display.")
         return await ctx.reply(msg)
-
-    async def fetch_data(self, url: str) -> dict[str, Any]:
-        """Retrieve data as a dictionary."""
-        async with self.bot.http_session.get(url) as r:
-            return await r.json()
-
-    @commands.group(name="github", aliases=["gh"])  # Thanks `will.#0021` (211756205721255947)
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def github_group(self, ctx: commands.Context[Bot]) -> discord.Message | None:
-        """Commands for finding information related to GitHub."""
-        if ctx.invoked_subcommand is None:
-            return await ctx.send_help(ctx.command)
-        return None
-
-    @github_group.command(name="user", aliases=["userinfo", "u"])  # Thanks `will.#0021` (211756205721255947)
-    async def github_user_info(
-        self,
-        ctx: commands.Context[Bot],
-        username: str = commands.parameter(description="The GitHub username to fetch information for."),
-    ) -> discord.Message:
-        """Fetches a user's GitHub information."""
-        async with ctx.typing():
-            user_data = await self.fetch_data(f"{GITHUB_API_URL}/users/{quote_plus(username)}")
-
-            # User_data will not have a message key if the user exists
-            if "message" in user_data:
-                embed = discord.Embed(
-                    title="404!!",
-                    description=f"The profile for `{username}` was not found.",
-                    colour=ctx.author.color,
-                )
-
-                return await ctx.reply(embed=embed)
-
-            gists = user_data["public_gists"]
-
-            # Forming blog link
-            if user_data["blog"].startswith("http"):  # Blog link is complete
-                blog = user_data["blog"]
-            elif user_data["blog"]:  # Blog exists but the link is not complete
-                blog = f"https://{user_data['blog']}"
-            else:
-                blog = "No website link available"
-
-            embed = (
-                discord.Embed(
-                    title=f"`{user_data['login']}`'s GitHub profile info",
-                    description=(f"```\n{user_data['bio']}\n```\n" if user_data["bio"] else ""),
-                    colour=discord.Colour.og_blurple(),
-                    url=user_data["html_url"],
-                    timestamp=arrow.get(user_data["created_at"]).datetime,
-                )
-                .set_thumbnail(url=user_data["avatar_url"])
-                .set_footer(text="Account created at")
-                .add_field(
-                    name="Public repos",
-                    value=f"[{user_data['public_repos']}]({user_data['html_url']}?tab=repositories)",
-                )
-                .add_field(name="Website", value=blog)
-            )
-
-            if user_data["type"] == "User":
-                embed.add_field(
-                    name="Followers",
-                    value=f"[{user_data['followers']}]({user_data['html_url']}?tab=followers)",
-                ).add_field(
-                    name="Following",
-                    value=f"[{user_data['following']}]({user_data['html_url']}?tab=following)",
-                )
-
-            if user_data["type"] == "User":
-                embed.add_field(
-                    name="Gists",
-                    value=f"[{gists}](https://gist.github.com/{quote_plus(username, safe='')})",
-                )
-
-        return await ctx.reply(embed=embed)
-
-    @github_group.command(name="repository", aliases=["repo", "r"])  # Thanks ``willdn`` (will.#0021 - 211756205721255947)
-    async def github_repo_info(self, ctx: commands.Context[Bot], *repository: str) -> discord.Message:
-        """Fetches a repositories' GitHub information.
-        The repository should look like `user/reponame` or `user reponame`.
-        """
-        repo = "/".join(repository)
-        if repo.count("/") != 1:
-            embed = discord.Embed(
-                title="Invalid",
-                description="The repository should look like `user/reponame` or `user reponame`.",
-                colour=ctx.author.color,
-            )
-
-            return await ctx.reply(embed=embed)
-
-        async with ctx.typing():
-            repo_data = await self.fetch_data(f"{GITHUB_API_URL}/repos/{quote(repo)}")
-
-            # There won't be a message key if this repo exists
-            if "message" in repo_data:
-                embed = discord.Embed(
-                    title="404",
-                    description="The requested repository was not found.",
-                    colour=ctx.author.color,
-                )
-
-                return await ctx.reply(embed=embed)
-
-        embed = discord.Embed(
-            title=repo_data["name"],
-            description=repo_data["description"],
-            colour=discord.Colour.og_blurple(),
-            url=repo_data["html_url"],
-        )
-
-        # If it's a fork, then it will have a parent key
-        try:
-            parent = repo_data["parent"]
-            embed.description = f"{embed.description}\n\nForked from [{parent['full_name']}]({parent['html_url']})"
-
-        except KeyError:
-            pass
-
-        repo_owner = repo_data["owner"]
-
-        embed.set_author(
-            name=repo_owner["login"],
-            url=repo_owner["html_url"],
-            icon_url=repo_owner["avatar_url"],
-        )
-
-        repo_created_at = natural_time(arrow.get(repo_data["created_at"]).datetime)
-        last_pushed = natural_time(arrow.get(repo_data["pushed_at"]).datetime)
-
-        embed.set_footer(
-            text=(
-                f"{repo_data['forks_count']} \N{OCR FORK} \N{BULLET} {repo_data['stargazers_count']} \N{WHITE MEDIUM STAR} \N{BULLET} Created At {repo_created_at} \N{BULLET} Last Commit {last_pushed}"
-            )
-        )
-
-        return await ctx.reply(embed=embed)
 
     @commands.command(aliases=["rp"])
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
@@ -853,11 +493,22 @@ class Developer(commands.Cog):
 
     async def cog_unload(self) -> None:
         """Unload the cog and cancel the task."""
-        self.fetch_readme.cancel()
+        if self.fetch_readme.is_running():
+            self.fetch_readme.cancel()
+
+        for Cog in DEPENDENCIES:
+            await Cog.cog_unload(self)
+
+    async def cog_load(self) -> None:
+        """Load the cog and start the task."""
+        if self.fetch_readme.is_running():
+            self.fetch_readme.restart()
+        else:
+            self.fetch_readme.start()
+
+        for Cog in DEPENDENCIES:
+            await Cog.cog_load(self)
 
 
 async def setup(bot: Bot) -> None:
     await bot.add_cog(Developer(bot))
-    await bot.add_cog(Docs(bot))
-    await bot.add_cog(Syntax(bot))
-    await bot.add_cog(Kontests(bot))

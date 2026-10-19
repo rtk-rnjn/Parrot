@@ -124,7 +124,7 @@ class LintCode:
 
         return self.source
 
-    def set_linttype(self, lint_type: str) -> LintCode:
+    def configure_lint_type(self, lint_type: str) -> LintCode:
         self.lint_type = lint_type
         return self
 

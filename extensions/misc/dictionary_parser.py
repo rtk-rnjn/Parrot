@@ -146,10 +146,6 @@ _ATOMIC_POS_PATTERN = (
 POS_FULL_REGEX = rf"{_ATOMIC_POS_PATTERN}(?:\s*(?:,|&|or)\s*{_ATOMIC_POS_PATTERN})*"
 
 
-# ---------------------------------------------------------------------------
-# 2. Inline Grammar, Usage, Register, & Etymology Abbreviation Expansions
-# ---------------------------------------------------------------------------
-
 INLINE_ABBR_EXPANSIONS: list[tuple[re.Pattern, str]] = [
     # Multi-word grammatical notes first
     (re.compile(r"\busu\.\s+foll\.\s+by\b", re.IGNORECASE), "usually followed by"),

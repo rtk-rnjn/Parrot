@@ -580,7 +580,6 @@ class W3Schools(commands.Cog, name="W3Schools", command_attrs={"hidden": True}):
         self._topics: dict[str, tuple[float, str, list[Topic]]] = {}
         self._pages: dict[str, tuple[float, PageData]] = {}
 
-    # -- network --
     async def fetch(self, url: str) -> str:
         if urlparse(url).netloc.lower() not in {"www.w3schools.com", "w3schools.com"}:
             msg = "Refusing to fetch a non-W3Schools URL."
@@ -635,7 +634,6 @@ class W3Schools(commands.Cog, name="W3Schools", command_attrs={"hidden": True}):
         self._pages[url] = (time.monotonic(), data)
         return data
 
-    # -- commands --
     @commands.group(
         name="w3schools",
         aliases=["w3", "w3s", "w3school"],

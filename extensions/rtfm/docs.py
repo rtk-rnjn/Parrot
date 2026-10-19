@@ -779,10 +779,14 @@ class Docs(commands.Cog, command_attrs={"hidden": True}, name="Documentation"):
         self._locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
     async def cog_load(self) -> None:
-        self.refresh.start()
+        if self.refresh.is_running():
+            self.refresh.restart()
+        else:
+            self.refresh.start()
 
     async def cog_unload(self) -> None:
-        self.refresh.cancel()
+        if self.refresh.is_running():
+            self.refresh.cancel()
 
     @tasks.loop(hours=12)
     async def refresh(self) -> None:

@@ -300,7 +300,6 @@ class CheatView(discord.ui.View):
         self.message: discord.Message | None = None
         self._sync()
 
-    # -- rendering --
     def build_embed(self) -> discord.Embed:
         req = self.req
         body = self.pages[self.index]

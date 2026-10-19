@@ -719,7 +719,8 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
     async def on_thread_create(self, thread: discord.Thread) -> None:
         if is_bot_or_webhook(thread.owner):
             return
-        if thread.owner_id and (owner := thread.guild.get_member(thread.owner_id)) and is_bot_or_webhook(owner):
+        owner = thread.guild.get_member(thread.owner_id)
+        if is_bot_or_webhook(owner):
             return
 
         webhook = await self._webhook(thread.guild.id, "on_thread_create")

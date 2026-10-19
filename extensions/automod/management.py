@@ -146,10 +146,10 @@ class RuleListView(BaseLayoutView):
         rules = sorted(await instance._list_rules(guild_id), key=lambda rule: (-rule.priority, rule.name.casefold()))
         view = cls(author, instance, guild_id, rules, page=page)
         if select is not None:
-            match = next((rule for rule in rules if rule.name == select), None)
-            if match is not None:
-                view.selected = match
-                view.show_detail(match)
+            selected_rule = next((rule for rule in rules if rule.name == select), None)
+            if selected_rule is not None:
+                view.selected = selected_rule
+                view.show_detail(selected_rule)
         return view
 
     @property

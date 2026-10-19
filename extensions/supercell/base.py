@@ -180,7 +180,8 @@ class Supercell(commands.Cog):
 
         player_tag = await self.resolve_tag(ctx, None, user)
         player = await self.api.get(f"/players/{enc(player_tag)}", ttl=120)
-        if not (clan := player.get("clan")):
+        clan = player.get("clan")
+        if not clan:
             message = f"**{discord.utils.escape_markdown(player['name'])}** isn't in a clan."
             raise NotFound(message)
         return clan["tag"]
@@ -191,7 +192,8 @@ class Supercell(commands.Cog):
             raise SupercellError(message)
 
         data = await self.api.get("/clans", params={"name": name.strip(), "limit": 25, **params}, ttl=300)
-        if not (items := data.get("items")):
+        items = data.get("items")
+        if not items:
             message = f"No clans matched `{name}`."
             raise NotFound(message)
 

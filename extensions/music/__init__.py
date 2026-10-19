@@ -414,7 +414,8 @@ class Music(commands.Cog):
     @commands.command(name="queue", aliases=["q"])
     async def queue(self, ctx: Context[Bot]) -> None:
         """Opens the panel on the queue tab."""
-        if (player := await self._require_player(ctx)) is None or player.panel is None:
+        player = await self._require_player(ctx)
+        if player is None or player.panel is None:
             return
         player.text_channel = ctx.channel
         await player.panel.open(Tab.queue)
@@ -422,7 +423,8 @@ class Music(commands.Cog):
     @commands.command(name="nowplaying", aliases=["np"])
     async def now_playing(self, ctx: Context[Bot]) -> None:
         """Brings the music panel down to the bottom of this channel."""
-        if (player := await self._require_player(ctx)) is None or player.panel is None:
+        player = await self._require_player(ctx)
+        if player is None or player.panel is None:
             return
         player.text_channel = ctx.channel
         await player.panel.open(Tab.player)
@@ -536,30 +538,31 @@ class Music(commands.Cog):
         await ctx.reply(view=Notice.success("Filter removed." if key == "off" else f"Applied **{PRESETS[key].label}**."))
         await player.refresh_panel()
 
-    # @commands.command(name="remove")
-    # async def remove(
-    #     self,
-    #     ctx: Context[Bot],
-    #     position: Annotated[int, commands.Range[int, 1]] = commands.parameter(description="The queue position to remove."),
-    # ) -> None:
-    #     """Removes a track from the queue. The DJ or the person who requested it can do this."""
-    #     if (got := await self._controls(ctx)) is None:
-    #         return
-    #     player, member = got
+    @commands.command(name="remove")
+    async def remove(
+        self,
+        ctx: Context[Bot],
+        position: Annotated[int, commands.Range[int, 1]] = commands.parameter(description="The queue position to remove."),
+    ) -> None:
+        """Removes a track from the queue. The DJ or the person who requested it can do this."""
+        got = await self._controls(ctx)
+        if got is None:
+            return
+        player, member = got
 
-    #     async with player.lock:
-    #         if position > len(player.queue):
-    #             await ctx.reply(view=Notice.warning(f"The queue only has {plural(len(player.queue)):track}."))
-    #             return
+        async with player.lock:
+            if position > len(player.queue):
+                await ctx.reply(view=Notice.warning(f"The queue only has {plural(len(player.queue)):track}."))
+                return
 
-    #         song = player.queue[position - 1]
-    #         if not (player.is_dj(member) or (song.requester is not None and song.requester.id == member.id)):
-    #             await ctx.reply(view=Notice.error("Only the DJ or the person who requested it can remove that."))
-    #             return
-    #         player.queue.remove(position - 1)
+            song = player.queue[position - 1]
+            if not (player.is_dj(member) or (song.requester is not None and song.requester.id == member.id)):
+                await ctx.reply(view=Notice.error("Only the DJ or the person who requested it can remove that."))
+                return
+            player.queue.remove(position - 1)
 
-    #     await ctx.reply(view=Notice.success(f"Removed {describe_song(song)}."))
-    #     await player.refresh_panel()
+        await ctx.reply(view=Notice.success(f"Removed {describe_song(song)}."))
+        await player.refresh_panel()
 
     @commands.command(name="clear")
     async def clear(self, ctx: Context[Bot]) -> None:

@@ -368,8 +368,8 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
                 thumb_list.append(f"{image_url}{filename}?width=100")
 
         extract = snake_info.get("extract", "")
-        match = self.wiki_brief.match(extract)
-        info = match.group(1) if match else None
+        wiki_excerpt_matcher = self.wiki_brief.match(extract)
+        info = wiki_excerpt_matcher.group(1) if wiki_excerpt_matcher else None
 
         snake_info["info"] = info.replace("\n", "\n\n") if info else None
 

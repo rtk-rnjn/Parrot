@@ -33,9 +33,9 @@ def parse_duration(
         seconds = 0
     else:
         argument = f"{text}{default_unit}" if text.isdecimal() else text
-        match = ShortTime.compiled.fullmatch(argument)
+        duration_match = ShortTime.compiled.fullmatch(argument)
         allowed_fields = {_UNIT_FIELDS[unit] for unit in units}
-        if match is None or any(match.group(field) and field not in allowed_fields for field in _UNIT_FIELDS.values()):
+        if duration_match is None or any(duration_match.group(field) and field not in allowed_fields for field in _UNIT_FIELDS.values()):
             msg = f"**{name}** must look like `30m`, `12h`, `7d` or `1d 12h` (units: {', '.join(units)})."
             raise error(msg)
 

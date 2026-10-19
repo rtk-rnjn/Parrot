@@ -57,7 +57,7 @@ The second flight is valid because there are no 2:1 splits; each feature is eith
 """
 
 
-def assemble_board_image(board: list[tuple[int]], rows: int, columns: int) -> Image.Image:
+def assemble_board_image(board: Sequence[tuple[int]], rows: int, columns: int) -> Image.Image:
     """Cut and paste images representing the given cards into an image representing the board."""
     new_im = Image.new("RGBA", (CARD_WIDTH * columns, CARD_HEIGHT * rows))
     draw = ImageDraw.Draw(new_im)
@@ -125,7 +125,7 @@ class DuckGame:
             self.board = random.sample(DECK, size)
 
         self.board_msg: discord.Message | None = None
-        self.found_msg: discord.Message | None = None
+        self.found_message: discord.Message | None = None
 
     @property
     def board(self) -> Sequence[tuple[int]]:

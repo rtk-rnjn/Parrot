@@ -102,16 +102,16 @@ class Developer(commands.Cog):
 
     def parse_readme(self, data: str) -> None:
         # Match the start of examples, until the end of the table of contents (toc)
-        match = re.search(r"\[\N{EYES} Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)
-        if not match:
+        example_section_match = re.search(r"\[\N{EYES} Examples\]\(#-examples\)\n([\w\W]*)<!-- tocstop -->", data)
+        if not example_section_match:
             return
-        table_of_contents = match[0].split("\n")
+        table_of_contents = example_section_match[0].split("\n")
 
         for header in list(map(str.strip, table_of_contents)):
-            match = re.search(r"\[\N{BLACK RIGHT-POINTING TRIANGLE} (.*)\]\((.*)\)", header)
-            if match:
-                hyper_link = match[0].split("(")[1].replace(")", "")
-                self.wtf_section_links[match[0]] = f"{WTF_PYTHON_BASE_URL}/{hyper_link}"
+            example_section_match = re.search(r"\[\N{BLACK RIGHT-POINTING TRIANGLE} (.*)\]\((.*)\)", header)
+            if example_section_match:
+                hyper_link = example_section_match[0].split("(")[1].replace(")", "")
+                self.wtf_section_links[example_section_match[0]] = f"{WTF_PYTHON_BASE_URL}/{hyper_link}"
 
     def wtf_fuzzy_match_header(self, query: str) -> str | None:
         data = rapidfuzz.process.extractOne(query, self.wtf_section_links.keys())
@@ -162,14 +162,14 @@ class Developer(commands.Cog):
         text: str = commands.parameter(description="The tutorial to search for."),
     ) -> discord.Message:
         """Search for a python tutorial."""
-        match = await asyncio.to_thread(extractOne, text, self.python_tags.keys())
-        if match is None:
+        matched_tutorial = await asyncio.to_thread(extractOne, text, self.python_tags.keys())
+        if matched_tutorial is None:
             return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
 
-        if match[1] < MIN_TUTORIAL_SCORE:
+        if matched_tutorial[1] < MIN_TUTORIAL_SCORE:
             return await ctx.reply(embed=discord.Embed(description="No such tutorial found in the search query."))
 
-        data = self.python_tags[match[0]]
+        data = self.python_tags[matched_tutorial[0]]
         return await ctx.reply(embed=discord.Embed(description=data.content))
 
     @python.command(name="list", aliases=["ls", "all"])
@@ -837,17 +837,17 @@ class Developer(commands.Cog):
             )
             return await ctx.reply(embed=no_query_embed)
 
-        match = self.wtf_fuzzy_match_header(query)
+        fuzzy_match_result = self.wtf_fuzzy_match_header(query)
 
-        if match is None:
+        if fuzzy_match_result is None:
             error_message = "No matching section found for the given query."
             raise commands.BadArgument(error_message)
 
         embed = discord.Embed(
             title="WTF Python?!",
             colour=ctx.author.color,
-            description=f"""Search result for '{query}': {match.split("]")[0].replace("[", "")}
-            [Go to Repository Section]({self.wtf_section_links[match]})""",
+            description=f"""Search result for '{query}': {fuzzy_match_result.split("]")[0].replace("[", "")}
+            [Go to Repository Section]({self.wtf_section_links[fuzzy_match_result]})""",
         )
         return await ctx.reply(embed=embed)
 

@@ -33,7 +33,11 @@ SETTLE_SECONDS = 1.5  # a skip is ignored this soon after a track change: it was
 TICK_SECONDS = 15  # how often the progress bar is refreshed while playing
 VOLUME_STEP = 10
 
-LOOP_EMOJI = {LoopMode.off: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}", LoopMode.track: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY}", LoopMode.queue: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"}
+LOOP_EMOJI = {
+    LoopMode.off: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
+    LoopMode.track: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY}",
+    LoopMode.queue: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}",
+}
 
 type Handler = Callable[[discord.Member], Awaitable[Notice | None]]
 
@@ -284,7 +288,9 @@ class MusicPanel(discord.ui.LayoutView):
             extras.append(f"Loop: {player.loop_mode.value}")
         if player.preset_key in PRESETS:
             extras.append(f"{PRESETS[player.preset_key].emoji} {PRESETS[player.preset_key].label}")
-        meta = " \N{MIDDLE DOT} ".join([f"Requested by {requester}", f"{plural(len(player.queue)):track} queued", f"Vol {player.volume_level}%", *extras])
+        meta = " \N{MIDDLE DOT} ".join(
+            [f"Requested by {requester}", f"{plural(len(player.queue)):track} queued", f"Vol {player.volume_level}%", *extras]
+        )
 
         return [head, discord.ui.TextDisplay(f"-# {meta}"), discord.ui.Separator(), self._controls_row()]
 
@@ -308,7 +314,9 @@ class MusicPanel(discord.ui.LayoutView):
                 label=f"Skip {skip_votes}/{player.required_votes}" if skip_votes else "Skip",
                 emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\N{VARIATION SELECTOR-16}",
             ),
-            self._button("mp:stop", self._stop, label="Stop", emoji="\N{BLACK SQUARE FOR STOP}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger),
+            self._button(
+                "mp:stop", self._stop, label="Stop", emoji="\N{BLACK SQUARE FOR STOP}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger
+            ),
             self._button(
                 "mp:loop",
                 self._cycle_loop,
@@ -353,8 +361,12 @@ class MusicPanel(discord.ui.LayoutView):
             select.callback = on_remove
             children.append(discord.ui.ActionRow(select))
 
-        previous: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:prev", emoji="\N{BLACK LEFT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}", disabled=self.page == 0)
-        following: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:next", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}", disabled=self.page >= pages - 1)
+        previous: discord.ui.Button[Any] = discord.ui.Button(
+            custom_id="mp:prev", emoji="\N{BLACK LEFT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}", disabled=self.page == 0
+        )
+        following: discord.ui.Button[Any] = discord.ui.Button(
+            custom_id="mp:next", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}", disabled=self.page >= pages - 1
+        )
         indicator: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:page", label=f"{self.page + 1}/{pages}", disabled=True)
         previous.callback = self._page_callback(-1)  # type: ignore[method-assign]
         following.callback = self._page_callback(1)  # type: ignore[method-assign]
@@ -389,7 +401,9 @@ class MusicPanel(discord.ui.LayoutView):
             discord.SelectOption(label=preset.label, value=preset.key, description=preset.description, emoji=preset.emoji, default=preset is active)
             for preset in PRESETS.values()
         ]
-        select: discord.ui.Select[Any] = discord.ui.Select(custom_id="mp:filter", placeholder="Choose a filter\N{HORIZONTAL ELLIPSIS}", options=options)
+        select: discord.ui.Select[Any] = discord.ui.Select(
+            custom_id="mp:filter", placeholder="Choose a filter\N{HORIZONTAL ELLIPSIS}", options=options
+        )
 
         async def on_pick(interaction: discord.Interaction) -> None:
             value = select.values[0]

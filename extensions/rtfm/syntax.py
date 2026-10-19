@@ -162,11 +162,11 @@ async def load_mdbook(session: aiohttp.ClientSession, base: str, role: str) -> E
         return None
     script = next((attr(tag, "src") for tag in soup_of(index).select("script[src]") if "toc-" in attr(tag, "src")), None)
     data = await fetch(session, urljoin(f"{base}/", script)) if script else None
-    match = TOC_SCRIPT.search(data.decode("utf-8", "replace")) if data else None
-    if match is None:
+    toc_script_match = TOC_SCRIPT.search(data.decode("utf-8", "replace")) if data else None
+    if toc_script_match is None:
         return None
     entries: Entries = {}
-    for anchor in soup_of(match[1].replace("\\'", "'")).select("a[href]"):
+    for anchor in soup_of(toc_script_match[1].replace("\\'", "'")).select("a[href]"):
         for number in anchor.select("strong"):
             number.decompose()
         name, href = " ".join(anchor.get_text().split()), attr(anchor, "href")

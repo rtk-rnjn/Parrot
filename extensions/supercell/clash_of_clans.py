@@ -323,7 +323,8 @@ class ClashOfClans(SupercellCog, command_attrs={"hidden": True}):
 
         lines = ["### War log"]
         for war in data.get("items", []):
-            if not (result := war.get("result")):
+            result = war.get("result")
+            if not result:
                 continue
             clan, opponent = war.get("clan") or {}, war.get("opponent") or {}
             ended = parse_time(war.get("endTime"))

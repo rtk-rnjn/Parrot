@@ -173,8 +173,8 @@ def _clean(text: str) -> str:
 
 def _level(tag: Tag) -> int:
     style = tag.get("style")
-    match = _MARGIN_RE.search(style if isinstance(style, str) else "")
-    return 1 if match and int(match[1]) >= MIN_MARGIN_PERCENT else 0
+    margin_match = _MARGIN_RE.search(style if isinstance(style, str) else "")
+    return 1 if margin_match and int(margin_match[1]) >= MIN_MARGIN_PERCENT else 0
 
 
 def _code_block(tag: Tag) -> str:

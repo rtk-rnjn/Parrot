@@ -124,23 +124,27 @@ class ClashRoyale(SupercellCog, command_attrs={"hidden": True}):
             cards = await self._cards()
             by_name = {c["name"].casefold(): c for c in cards}
             needle = name.casefold()
-            match = by_name.get(needle) or next((c for key, c in by_name.items() if needle in key), None)
-            if match is None and (close := difflib.get_close_matches(needle, by_name, n=1, cutoff=0.5)):
-                match = by_name[close[0]]
-            if match is None:
+            card_match = by_name.get(needle) or next((c for key, c in by_name.items() if needle in key), None)
+            close = difflib.get_close_matches(needle, by_name, n=1, cutoff=0.5)
+
+            if card_match is None and close:
+                card_match = by_name[close[0]]
+            if card_match is None:
                 message = f"No card called `{name}`."
                 raise NotFound(message)
 
         lines = [
-            f"**Elixir** {match.get('elixirCost', '-')}",
-            f"**Rarity** {str(match.get('rarity', '-')).title()}",
-            f"**Max level** {match.get('maxLevel', '-')}",
+            f"**Elixir** {card_match.get('elixirCost', '-')}",
+            f"**Rarity** {str(card_match.get('rarity', '-')).title()}",
+            f"**Max level** {card_match.get('maxLevel', '-')}",
         ]
-        if match.get("maxEvolutionLevel"):
+        if card_match.get("maxEvolutionLevel"):
             lines.append("**Evolution** available")
 
-        embed = discord.Embed(title=match["name"], description="\n".join(lines), colour=RARITY_COLOURS.get(str(match.get("rarity", "")).lower()))
-        embed.set_thumbnail(url=(match.get("iconUrls") or {}).get("medium"))
+        embed = discord.Embed(
+            title=card_match["name"], description="\n".join(lines), colour=RARITY_COLOURS.get(str(card_match.get("rarity", "")).lower())
+        )
+        embed.set_thumbnail(url=(card_match.get("iconUrls") or {}).get("medium"))
         await ctx.reply(embed=embed)
 
     @cr.command(name="leaderboard", aliases=["lb", "top"])

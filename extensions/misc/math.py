@@ -142,16 +142,16 @@ def tokenize(text: str) -> list[Token]:
     position = 0
 
     while position < len(text):
-        match = _TOKEN_RE.match(text, position)
+        token_match = _TOKEN_RE.match(text, position)
 
-        if match is None:
+        if token_match is None:
             character = text[position:].lstrip()[0]
             msg = f"Unsupported character {character!r}."
             raise MathParseError(msg)
 
-        kind = match.lastgroup
-        tokens.append((kind, match.group(kind)))  # type: ignore[arg-type]
-        position = match.end()
+        kind = token_match.lastgroup
+        tokens.append((kind, token_match.group(kind)))  # type: ignore[arg-type]
+        position = token_match.end()
 
     return tokens
 

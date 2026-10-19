@@ -645,9 +645,9 @@ class WeatherClient:
             msg = "Please provide a location name, postal code, or `lat, lon` coordinates."
             raise LocationNotFound(msg)
 
-        match = _COORD_RE.match(cleaned)
-        if match:
-            lat, lon = float(match.group(1)), float(match.group(2))
+        coordinate_match = _COORD_RE.match(cleaned)
+        if coordinate_match:
+            lat, lon = float(coordinate_match.group(1)), float(coordinate_match.group(2))
             if not (-90 <= lat <= 90 and -180 <= lon <= 180):
                 msg = "Coordinates must be between -90..90 latitude and -180..180 longitude."
                 raise WeatherError(msg)

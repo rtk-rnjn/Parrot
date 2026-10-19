@@ -122,8 +122,8 @@ class DocConverter(MarkdownConverter):
         # The language may sit on the <pre>, its <code> (mdBook), or a wrapper div (Sphinx, cppreference).
         carriers = (el, el.find("code"), el.parent, el.parent.parent if el.parent is not None else None)
         classes = " ".join(attr(node, "class") for node in carriers if isinstance(node, Tag))
-        match = re.search(r"(?:brush:|language-|lang-)\s*([\w+#]+)", classes) or re.search(r"highlight-([\w+#]+)", classes)
-        lang = match[1] if match else ""
+        language_match = re.search(r"(?:brush:|language-|lang-)\s*([\w+#]+)", classes) or re.search(r"highlight-([\w+#]+)", classes)
+        lang = language_match[1] if language_match else ""
         return f"\n```{FENCE_LANGUAGES.get(lang, lang)}\n{code}\n```\n"
 
     def convert_img(self, el: Tag, text: str, *args: Any, **kwargs: Any) -> str:

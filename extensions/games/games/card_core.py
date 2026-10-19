@@ -545,7 +545,8 @@ class HandPanel(discord.ui.LayoutView):
             button.callback = self._on_button(button_spec.id)
             buttons.append(button)
 
-        if (select := spec.select) and select.options:
+        select = spec.select
+        if select and select.options:
             pages = math.ceil(len(select.options) / SELECT_PAGE)
             self.page = min(self.page, pages - 1)
             options = select.options[self.page * SELECT_PAGE : (self.page + 1) * SELECT_PAGE]

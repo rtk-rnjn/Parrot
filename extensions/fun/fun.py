@@ -1280,7 +1280,7 @@ class Fun(commands.Cog, ColorHandler):
         self.current_duck_games[ctx.channel.id] = game
 
         game.board_msg = await self.send_board_embed(ctx, game)
-        game.found_msg = await self.send_found_embed(ctx)
+        game.found_message = await self.send_found_embed(ctx)
         await asyncio.sleep(GAME_DURATION)
 
         # Checking for the channel ID in the currently running games is not sufficient.
@@ -1318,9 +1318,10 @@ class Fun(commands.Cog, ColorHandler):
             return
 
         # Valid answers contain 3 numbers.
-        if not (match := re.match(ANSWER_REGEX, msg.content)):
+        matched_answer = re.match(ANSWER_REGEX, msg.content)
+        if not matched_answer:
             return
-        answer = tuple(sorted(int(m) for m in match.groups()))
+        answer = tuple(sorted(int(m) for m in matched_answer.groups()))
 
         # Be forgiving for answers that use indices not on the board.
         if any(0 <= n < len(game.board) for n in answer):
@@ -1363,10 +1364,13 @@ class Fun(commands.Cog, ColorHandler):
     async def append_to_found_embed(self, game: DuckGame, text: str) -> None:
         """Append text to the claimed answers embed."""
         async with game.editing_embed:
-            (found_embed,) = game.found_msg.embeds
+            if TYPE_CHECKING:
+                assert game.found_message is not None
+
+            (found_embed,) = game.found_message.embeds
             old_desc = found_embed.description or ""
             found_embed.description = f"{old_desc.rstrip()}\n{text}"
-            await game.found_msg.edit(embed=found_embed)
+            await game.found_message.edit(embed=found_embed)
 
     async def end_game(self, channel: discord.abc.Messageable, game: DuckGame, end_message: str) -> None:
         """Edit the game embed to reflect the end of the game and mark the game as not running."""

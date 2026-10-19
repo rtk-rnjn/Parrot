@@ -127,11 +127,11 @@ def parse_sphinx(data: bytes, base: str) -> Entries:
     body = zlib.decompress(stream.read()).decode("utf-8")
     entries: Entries = {}
     for line in body.splitlines():
-        match = SPHINX_ENTRY.match(line)
-        if not match:
+        entry_match = SPHINX_ENTRY.match(line)
+        if not entry_match:
             continue
 
-        name, directive, _priority, location, dispname = match.groups()
+        name, directive, _priority, location, dispname = entry_match.groups()
         domain, _, subdirective = directive.partition(":")
 
         if directive == "std:doc":  # most pages have a label
@@ -302,13 +302,13 @@ def _convert_directives(text: str) -> str:
     out: list[str] = []
     i = 0
     while i < len(lines):
-        match = DIRECTIVE.match(lines[i])
-        if not match:
+        directive_match = DIRECTIVE.match(lines[i])
+        if not directive_match:
             out.append(lines[i])
             i += 1
             continue
 
-        indent, name, arg = match.groups()
+        indent, name, arg = directive_match.groups()
         j = i + 1
         body_lines: list[str] = []
         while j < len(lines) and (not lines[j].strip() or len(lines[j]) - len(lines[j].lstrip()) > len(indent)):

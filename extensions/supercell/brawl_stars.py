@@ -104,10 +104,11 @@ class BrawlStars(SupercellCog, command_attrs={"hidden": True}):
             brawlers = await self._brawlers()
             by_name = {b["name"].casefold(): b for b in brawlers}
             needle = name.casefold()
-            match = by_name.get(needle) or next((b for key, b in by_name.items() if needle in key), None)
-            if match is None and (close := difflib.get_close_matches(needle, by_name, n=1, cutoff=0.5)):
-                match = by_name[close[0]]
-            if match is None:
+            matched_brawler = by_name.get(needle) or next((b for key, b in by_name.items() if needle in key), None)
+            close = difflib.get_close_matches(needle, by_name, n=1, cutoff=0.5)
+            if matched_brawler is None and close:
+                matched_brawler = by_name[close[0]]
+            if matched_brawler is None:
                 message = f"No brawler called `{name}`."
                 raise NotFound(message)
 
@@ -116,11 +117,11 @@ class BrawlStars(SupercellCog, command_attrs={"hidden": True}):
 
         body = "\n".join(
             [
-                f"**Gadgets** {names(match.get('gadgets', []))}",
-                f"**Star powers** {names(match.get('starPowers', []))}",
+                f"**Gadgets** {names(matched_brawler.get('gadgets', []))}",
+                f"**Star powers** {names(matched_brawler.get('starPowers', []))}",
             ]
         )
-        view = NoticeLayout(body, title=match["name"].title(), colour=self.game.colour, thumbnail=_brawler_icon(match["id"]))
+        view = NoticeLayout(body, title=matched_brawler["name"].title(), colour=self.game.colour, thumbnail=_brawler_icon(matched_brawler["id"]))
         await ctx.reply(view=view)
 
     @bs.command(name="events", aliases=["rotation"])
@@ -177,7 +178,8 @@ class BrawlStars(SupercellCog, command_attrs={"hidden": True}):
     async def _club_tag_for(self, ctx: commands.Context[Bot], user: discord.User | None) -> str:
         player_tag = await self.resolve_tag(ctx, None, user)
         player = await self.api.get(f"/players/{enc(player_tag)}", ttl=120)
-        if not (club := player.get("club")) or not club.get("tag"):
+        club = player.get("club")
+        if not club or not club.get("tag"):
             message = f"**{discord.utils.escape_markdown(player['name'])}** isn't in a club."
             raise NotFound(message)
         return club["tag"]
@@ -189,7 +191,8 @@ class BrawlStars(SupercellCog, command_attrs={"hidden": True}):
             "Brawlers": lambda: self._brawlers_page(player),
             "Battles": lambda: self._battles(tag),
         }
-        if (club := player.get("club")) and club.get("tag"):
+        club = player.get("club")
+        if club and club.get("tag"):
             tabs["Club"] = lambda: self._club_overview(club["tag"])
         return tabs
 

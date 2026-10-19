@@ -127,7 +127,12 @@ class HubPanel(discord.ui.LayoutView):
             del self.cog.panels[self.channel.id]
 
         self.clear_items()
-        self.add_item(discord.ui.Container(discord.ui.TextDisplay(f"## \N{SPEAKER WITH THREE SOUND WAVES} Channel panel closed\n{reason}"), accent_colour=discord.Colour.dark_grey()))
+        self.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay(f"## \N{SPEAKER WITH THREE SOUND WAVES} Channel panel closed\n{reason}"),
+                accent_colour=discord.Colour.dark_grey(),
+            )
+        )
         if self.message is not None:
             with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
@@ -290,7 +295,12 @@ class HubPanel(discord.ui.LayoutView):
                     label="Make private" if self.is_public else "Make public",
                     emoji="\N{LOCK}" if self.is_public else "\N{GLOBE WITH MERIDIANS}",
                 ),
-                self._button("hub:visibility", self.toggle_hidden, label="Show" if self.is_hidden else "Hide", emoji="\N{EYE}\N{VARIATION SELECTOR-16}" if self.is_hidden else "\N{SEE-NO-EVIL MONKEY}"),
+                self._button(
+                    "hub:visibility",
+                    self.toggle_hidden,
+                    label="Show" if self.is_hidden else "Hide",
+                    emoji="\N{EYE}\N{VARIATION SELECTOR-16}" if self.is_hidden else "\N{SEE-NO-EVIL MONKEY}",
+                ),
             ),
         ]
 
@@ -355,13 +365,27 @@ class HubPanel(discord.ui.LayoutView):
             children.append(discord.ui.TextDisplay("**Delete this channel for good?**"))
             children.append(
                 discord.ui.ActionRow(
-                    self._button("hub:delete-yes", self.delete_channel, label="Yes, delete it", emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger),
+                    self._button(
+                        "hub:delete-yes",
+                        self.delete_channel,
+                        label="Yes, delete it",
+                        emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}",
+                        style=discord.ButtonStyle.danger,
+                    ),
                     self._button("hub:delete-no", self.cancel_delete, label="Cancel"),
                 )
             )
         else:
             children.append(
-                discord.ui.ActionRow(self._button("hub:delete", self.ask_delete, label="Delete channel", emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger))
+                discord.ui.ActionRow(
+                    self._button(
+                        "hub:delete",
+                        self.ask_delete,
+                        label="Delete channel",
+                        emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}",
+                        style=discord.ButtonStyle.danger,
+                    )
+                )
             )
         return children
 

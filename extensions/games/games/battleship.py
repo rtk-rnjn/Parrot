@@ -237,9 +237,9 @@ class BattleShip:
 
     def get_coords(self, inp: str) -> tuple[str, Coords]:
         inp = re.sub(r"\s+", "", inp).lower()
-        match = self.inputpat.match(inp)
-        assert match is not None
-        x, y = match.group(1), match.group(2)
+        input_match = self.inputpat.match(inp)
+        assert input_match is not None
+        x, y = input_match.group(1), input_match.group(2)
         return (inp, (self.to_num(x), int(y)))
 
     def who_won(self) -> Player | None:

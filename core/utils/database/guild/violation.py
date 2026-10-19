@@ -99,16 +99,16 @@ class _GuildViolationMixin(DatabaseMixin):
         active_only: bool = False,
     ) -> list[UserViolation]:
         """Violations of one user, newest first. ``active_only`` drops expired ones (``expires_at`` in the past)."""
-        match = {"user_id": user_id, "violation_name": violation_name}
+        violation_filter = {"user_id": user_id, "violation_name": violation_name}
         if active_only:
-            match["$or"] = [{"expires_at": None}, {"expires_at": {"$gt": datetime.now(UTC)}}]
+            violation_filter["$or"] = [{"expires_at": None}, {"expires_at": {"$gt": datetime.now(UTC)}}]
 
         cursor = await self.guilds_collection.aggregate(
             [
                 {"$match": {"_id": guild_id}},
                 {"$unwind": "$user_violations"},
                 {"$replaceRoot": {"newRoot": "$user_violations"}},
-                {"$match": match},
+                {"$match": violation_filter},
                 {"$sort": {"issued_at": -1}},
             ]
         )

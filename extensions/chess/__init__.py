@@ -113,7 +113,8 @@ class ChessClient:
     async def get(self, path: str, *, ttl: int = 60, fresh: bool = False) -> Any:
         """GET ``path``; ``fresh`` skips the cache read. Serves a stale copy if chess.com is unreachable."""
         key = f"chesscom:{path}"
-        if not fresh and (hit := await self._redis.get(key)) is not None:
+        hit = await self._redis.get(key)
+        if not fresh and hit is not None:
             return json.loads(hit)
 
         try:

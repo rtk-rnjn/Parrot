@@ -1561,7 +1561,7 @@ class Mod(commands.Cog, name="Moderation"):
 
         return predicates
 
-    @commands.command(aliases=["remove"])
+    @commands.command(aliases=["bulkdelete"])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)

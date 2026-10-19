@@ -251,7 +251,10 @@ ETYMOLOGY_EXPANSIONS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\bfr\.", re.IGNORECASE), "from"),
 ]
 
-SUPERSCRIPT_DIGITS = str.maketrans("0123456789", "\N{SUPERSCRIPT ZERO}\N{SUPERSCRIPT ONE}\N{SUPERSCRIPT TWO}\N{SUPERSCRIPT THREE}\N{SUPERSCRIPT FOUR}\N{SUPERSCRIPT FIVE}\N{SUPERSCRIPT SIX}\N{SUPERSCRIPT SEVEN}\N{SUPERSCRIPT EIGHT}\N{SUPERSCRIPT NINE}")
+SUPERSCRIPT_DIGITS = str.maketrans(
+    "0123456789",
+    "\N{SUPERSCRIPT ZERO}\N{SUPERSCRIPT ONE}\N{SUPERSCRIPT TWO}\N{SUPERSCRIPT THREE}\N{SUPERSCRIPT FOUR}\N{SUPERSCRIPT FIVE}\N{SUPERSCRIPT SIX}\N{SUPERSCRIPT SEVEN}\N{SUPERSCRIPT EIGHT}\N{SUPERSCRIPT NINE}",
+)
 
 
 @dataclass
@@ -472,17 +475,17 @@ def _extract_trailing_derivatives(body: str) -> tuple[str, list[tuple[str, str]]
     deriv_pattern = re.compile(rf"(?:^|(?<=[\.\?!])\s+)([A-Z][a-zA-Z\-']+(?:\s*\([^)]+\))?)\s+({_ATOMIC_POS_PATTERN})\s*$")
     remaining = body.strip()
     while True:
-        match = deriv_pattern.search(remaining)
-        if not match:
+        found_derivative = deriv_pattern.search(remaining)
+        if not found_derivative:
             break
-        word_part = match.group(1).strip()
-        pos_part = match.group(2).strip()
+        word_part = found_derivative.group(1).strip()
+        pos_part = found_derivative.group(2).strip()
         if len(word_part.split()) > 2:
             break
         full_pos, _, _ = expand_pos_tag(pos_part)
         short_pos = re.sub(r"\s*\([^)]*\)", "", full_pos)
         derivatives.insert(0, (word_part, short_pos))
-        remaining = remaining[: match.start()].strip()
+        remaining = remaining[: found_derivative.start()].strip()
 
     return remaining, derivatives
 

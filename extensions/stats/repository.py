@@ -186,10 +186,10 @@ class StatsRepository:
     ) -> dict[str, int]:
         """messages / voice_ms / commands / failed / rejected for the scope (guild, user or channel)."""
         extra = {k: v for k, v in (("user_id", user_id), ("channel_id", channel_id)) if v}
-        match = {"$match": _range(guild_id, start, end, **extra)}
+        filter_criteria = {"$match": _range(guild_id, start, end, **extra)}
 
         async def total(coll: str, **fields: str) -> dict[str, int]:
-            rows = await self._aggregate(coll, [match, {"$group": {"_id": None, **{k: {"$sum": f"${v}"} for k, v in fields.items()}}}])
+            rows = await self._aggregate(coll, [filter_criteria, {"$group": {"_id": None, **{k: {"$sum": f"${v}"} for k, v in fields.items()}}}])
             return {k: int(rows[0][k]) if rows else 0 for k in fields}
 
         out = {

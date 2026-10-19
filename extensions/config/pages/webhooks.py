@@ -16,8 +16,8 @@ _WEBHOOK_ID_RE = re.compile(r"/webhooks/(\d+)/")
 
 
 def webhook_id_from_uri(uri: str) -> int | None:
-    match = _WEBHOOK_ID_RE.search(uri)
-    return int(match[1]) if match else None
+    webhook_id_match = _WEBHOOK_ID_RE.search(uri)
+    return int(webhook_id_match[1]) if webhook_id_match else None
 
 
 def can_manage_webhooks(channel: discord.TextChannel) -> bool:

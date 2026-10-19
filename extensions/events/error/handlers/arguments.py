@@ -114,10 +114,10 @@ def _with_hint(error: commands.BadArgument, ctx: Context, spec: _ArgumentSpecifi
     if spec.pool is None or not isinstance(argument, str):
         return spec.description
 
-    match = find_closest(argument, spec.pool(ctx))
-    if match is None:
+    closest_match = find_closest(argument, spec.pool(ctx))
+    if closest_match is None:
         return spec.description
-    return f"{spec.description}\nDid you mean: `{match.name}`?\n-# Confidence: {match.score}%"
+    return f"{spec.description}\nDid you mean: `{closest_match.name}`?\n-# Confidence: {closest_match.score}%"
 
 
 def bad_argument(ctx: Context, error: commands.BadArgument) -> ErrorResponse:

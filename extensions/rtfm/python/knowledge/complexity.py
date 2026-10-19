@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass
 
 
@@ -37,7 +38,20 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "`lst[a:b]`: **O(b - a)** slice copy",
             "`lst.sort()` / `sorted(lst)`: **O(n log n)** worst, **O(n)** best (Timsort / Powersort)",
         ),
-        example="from collections import deque\n# Use deque instead of list.pop(0) for queues:\nqueue = deque([1, 2, 3])\nqueue.append(4)          # O(1)\nfirst = queue.popleft()  # O(1)",
+        example=inspect.cleandoc(
+            r"""
+            from collections import deque
+
+            # Use deque instead of list.pop(0) for queues:
+            queue = deque([1, 2, 3])
+            queue.append(4)          # O(1)
+            first = queue.popleft()  # O(1)
+
+            queue = deque([1, 2, 3])
+            queue.append(4)          # O(1)
+            first = queue.popleft()  # O(1)
+            """
+        ),
     ),
     ComplexityInfo(
         key="dict",
@@ -108,7 +122,16 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "`rotate(k)`: **O(k)**",
             "`d[i]` (random access in the middle): **O(n)**",
         ),
-        example="from collections import deque\nwindow = deque(maxlen=3)  # bounded sliding window\nfor x in [1, 2, 3, 4]:\n    window.append(x)  # automatically drops oldest in O(1)",
+        example=inspect.cleandoc(
+            """
+            from collections import deque
+
+            window = deque(maxlen=3)  # bounded sliding window
+
+            for x in [1, 2, 3, 4]:
+                window.append(x)  # automatically drops oldest in O(1)
+            """
+        ),
     ),
     ComplexityInfo(
         key="heapq",
@@ -126,7 +149,17 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "`heapq.heapify(lst)`: **O(n)** bottom-up Floyd construction (faster than $n$ pushes!)",
             "`heapq.nlargest(k, it)` / `nsmallest(k, it)`: **O(n log k)**",
         ),
-        example="import heapq\nnums = [5, 1, 8, 3]\nheapq.heapify(nums)          # O(n) in-place\nlowest = heapq.heappop(nums) # -> 1 in O(log n)",
+        example=inspect.cleandoc(
+            """
+            import heapq
+
+            nums = [5, 1, 8, 3]
+
+            heapq.heapify(nums)          # O(n) in-place
+            lowest = heapq.heappop(nums) # -> 1 in O(log n)
+            heapq.heappush(nums, 2)      # O(log n)
+            """
+        ),
     ),
     ComplexityInfo(
         key="timsort",
@@ -159,7 +192,20 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "3-way Dutch National Flag partitioning handles duplicate keys in **O(n)**",
             "In Python, built-in C `list.sort()` (Timsort) is almost always faster than a pure-Python Quicksort",
         ),
-        example="def quicksort(arr: list[int]) -> list[int]:\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    mid = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + mid + quicksort(right)",
+        example=inspect.cleandoc(
+            """
+            def quicksort(arr: list[int]) -> list[int]:
+                if len(arr) <= 1:
+                    return arr
+                pivot = arr[len(arr) // 2]
+
+                left = [x for x in arr if x < pivot]
+                mid = [x for x in arr if x == pivot]
+                right = [x for x in arr if x > pivot]
+
+                return quicksort(left) + mid + quicksort(right)
+            """
+        ),
     ),
     ComplexityInfo(
         key="binary-search",
@@ -176,7 +222,15 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "`bisect.insort(a, x)`: **O(log n)** search + **O(n)** list shift = **O(n)** total",
             "Supports `key=` parameter in Python 3.10+",
         ),
-        example="import bisect\ndef index_of(sorted_items: list[int], target: int) -> int:\n    i = bisect.bisect_left(sorted_items, target)\n    return i if i < len(sorted_items) and sorted_items[i] == target else -1",
+        example=inspect.cleandoc(
+            """
+            import bisect
+
+            def index_of(sorted_items: list[int], target: int) -> int:
+                i = bisect.bisect_left(sorted_items, target)
+                return i if i < len(sorted_items) and sorted_items[i] == target else -1
+            """
+        ),
     ),
     ComplexityInfo(
         key="bfs",
@@ -192,7 +246,22 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "Always use `collections.deque` for BFS (`popleft()` is **O(1)**; `list.pop(0)` makes BFS **O(V²)**!)",
             "Mark nodes `visited` when **enqueuing** (not when popping) to avoid duplicate queue entries",
         ),
-        example="from collections import deque\ndef bfs(adj: dict[int, list[int]], start: int) -> set[int]:\n    visited = {start}\n    queue = deque([start])\n    while queue:\n        node = queue.popleft()\n        for nxt in adj.get(node, ()):\n            if nxt not in visited:\n                visited.add(nxt)\n                queue.append(nxt)\n    return visited",
+        example=inspect.cleandoc(
+            r"""
+            from collections import deque
+
+            def bfs(adj: dict[int, list[int]], start: int) -> set[int]:
+                visited = {start}
+                queue = deque([start])
+                while queue:
+                    node = queue.popleft()
+                    for nxt in adj.get(node, ()):
+                        if nxt not in visited:
+                            visited.add(nxt)
+                            queue.append(nxt)
+                return visited
+            """
+        ),
     ),
     ComplexityInfo(
         key="dijkstra",
@@ -208,7 +277,24 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
             "Requires **non-negative** edge weights (use Bellman-Ford $O(V \\cdot E)$ if negative weights exist)",
             "Skip stale heap entries with `if d > dist[u]: continue` rather than decrease-key",
         ),
-        example="import heapq\ndef dijkstra(adj: dict[int, list[tuple[int, int]]], src: int) -> dict[int, int]:\n    dist = {src: 0}\n    pq = [(0, src)]\n    while pq:\n        d, u = heapq.heappop(pq)\n        if d > dist.get(u, float('inf')):\n            continue\n        for v, w in adj.get(u, ()):\n            if d + w < dist.get(v, float('inf')):\n                dist[v] = d + w\n                heapq.heappush(pq, (d + w, v))\n    return dist",
+        example=inspect.cleandoc(
+            r"""
+            import heapq
+
+            def dijkstra(adj: dict[int, list[tuple[int, int]]], src: int) -> dict[int, int]:
+                dist = {src: 0}
+                pq = [(0, src)]
+                while pq:
+                    d, u = heapq.heappop(pq)
+                    if d > dist.get(u, float('inf')):
+                        continue
+                    for v, w in adj.get(u, ()):
+                        if d + w < dist.get(v, float('inf')):
+                            dist[v] = d + w
+                            heapq.heappush(pq, (d + w, v))
+                return dist
+            """
+        ),
     ),
     ComplexityInfo(
         key="union-find",
@@ -216,15 +302,28 @@ COMPLEXITY_DB: tuple[ComplexityInfo, ...] = (
         aliases=("union-find", "dsu", "disjoint set", "kruskal"),
         category="Graph / Set Data Structure",
         best="O(1)",
-        average="O(α(n)) ≈ O(1) amortized",
-        worst="O(α(n)) with path compression + union by rank/size",
+        average="O(\N{GREEK SMALL LETTER ALPHA}(n)) ≈ O(1) amortized",
+        worst="O(\N{GREEK SMALL LETTER ALPHA}(n)) with path compression + union by rank/size",
         space="O(n) parent & size arrays",
         summary="Tracks elements partitioned into disjoint subsets with near-constant $O(\\alpha(n))$ time for `find` and `union`, where $\\alpha$ is the inverse Ackermann function ($\\alpha(n) \\le 4$).",
         notes=(
             "**Path compression** flattens tree pointers during `find(x)`",
             "**Union by size/rank** attaches the smaller tree under the larger tree's root",
         ),
-        example="class DisjointSet:\n    def __init__(self, n: int) -> None:\n        self.parent = list(range(n))\n        self.size = [1] * n\n    def find(self, x: int) -> int:\n        while self.parent[x] != x:\n            self.parent[x] = self.parent[self.parent[x]]\n            x = self.parent[x]\n        return x",
+        example=inspect.cleandoc(
+            """
+            class DisjointSet:
+                def __init__(self, n: int) -> None:
+                    self.parent = list(range(n))
+                    self.size = [1] * n
+
+                def find(self, x: int) -> int:
+                    while self.parent[x] != x:
+                        self.parent[x] = self.parent[self.parent[x]]
+                        x = self.parent[x]
+                    return x
+            """
+        ),
     ),
     ComplexityInfo(
         key="big-o",

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import contextlib
 import hashlib
+import html
 import inspect
+import json
 import logging
 import os
 import re
@@ -14,6 +18,7 @@ from urllib.parse import quote_plus
 
 import discord
 import rapidfuzz
+import re2
 from bs4 import BeautifulSoup, Tag
 from bs4.element import NavigableString
 from discord.ext import commands, tasks
@@ -491,6 +496,39 @@ class Developer(*DEPENDENCIES, commands.Cog):
         )
         return await ctx.reply(embed=embed)
 
+    def _format_codeblock(self, content: str, lang: str = "") -> str:
+        """Safely wraps output in a codeblock and truncates if over Discord's 2000-char limit."""
+        # Prevent breaking out of the codeblock
+        safe_content = content.replace("```", "`\u200b``")
+        max_len = 1950 - len(lang)
+        if len(safe_content) > max_len:
+            safe_content = safe_content[:max_len] + "\n... [Output Truncated]"
+        return f"```{lang}\n{safe_content}\n```"
+
+    @staticmethod
+    def _int_to_base(n: int, base: int) -> str:
+        """Converts a base-10 integer to any base between 2 and 36."""
+        if n == 0:
+            return "0"
+        digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        sign = "-" if n < 0 else ""
+        n = abs(n)
+        result = []
+        while n:
+            result.append(digits[n % base])
+            n //= base
+        return sign + "".join(reversed(result))
+
+    @staticmethod
+    def _clean_json_input(text: str) -> str:
+        """Strips surrounding markdown codeblocks if a user pasted formatted JSON."""
+        text = text.strip()
+        if text.startswith("```") and text.endswith("```"):
+            lines = text.splitlines()
+            if len(lines) >= 2:
+                return "\n".join(lines[1:-1]).strip()
+        return text
+
     async def cog_unload(self) -> None:
         """Unload the cog and cancel the task."""
         if self.fetch_readme.is_running():
@@ -498,6 +536,191 @@ class Developer(*DEPENDENCIES, commands.Cog):
 
         for Cog in DEPENDENCIES:
             await Cog.cog_unload(self)
+
+    @commands.group(name="base64", invoke_without_command=True)
+    async def base64_group(self, ctx: commands.Context[Bot]):
+        """Encode or decode Base64 strings."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @base64_group.command(name="encode")
+    async def base64_encode(self, ctx: commands.Context[Bot], *, text: str = commands.parameter(description="The text to encode into Base64")):
+        """Encode plain text into Base64."""
+        encoded = base64.b64encode(text.encode("utf-8")).decode("utf-8")
+        await ctx.send(self._format_codeblock(encoded))
+
+    @base64_group.command(name="decode")
+    async def base64_decode(self, ctx: commands.Context[Bot], *, text: str = commands.parameter(description="The Base64 string to decode")):
+        """Decode a Base64 string into plain text."""
+        try:
+            # Handle missing padding automatically
+            padded = text.strip() + "=" * (-len(text.strip()) % 4)
+            decoded = base64.b64decode(padded).decode("utf-8")
+            await ctx.send(self._format_codeblock(decoded))
+        except Exception as e:
+            await ctx.send(f"Failed to decode Base64: `{e}`", ephemeral=True)
+
+    @commands.group(name="url", invoke_without_command=True)
+    async def url_group(self, ctx: commands.Context[Bot]):
+        """Encode or decode URL components."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @url_group.command(name="encode")
+    async def url_encode(self, ctx: commands.Context[Bot], *, text: str = commands.parameter(description="The string to URL-encode")):
+        """Percent-encode a string for safe inclusion in URLs."""
+        encoded = urllib.parse.quote(text, safe="")
+        await ctx.send(self._format_codeblock(encoded))
+
+    @url_group.command(name="decode")
+    async def url_decode(self, ctx: commands.Context[Bot], *, text: str = commands.parameter(description="The URL-encoded string to decode")):
+        """Decode a percent-encoded URL component."""
+        decoded = urllib.parse.unquote(text)
+        await ctx.send(self._format_codeblock(decoded))
+
+    @commands.command(name="json")
+    async def json_cmd(self, ctx: commands.Context[Bot], *, text: str = commands.parameter(description="The JSON string to validate and format")):
+        """Validate and pretty-print JSON."""
+        cleaned = self._clean_json_input(text)
+        try:
+            parsed = json.loads(cleaned)
+            formatted = json.dumps(parsed, indent=2, ensure_ascii=False)
+            await ctx.send(self._format_codeblock(formatted, "json"))
+        except json.JSONDecodeError as e:
+            await ctx.send(
+                f"**Invalid JSON:** `{e.msg}` at line `{e.lineno}`, column `{e.colno}`.",
+                ephemeral=True,
+            )
+
+    @commands.command(name="regex", aliases=["re", "re2"])
+    async def regex_cmd(
+        self,
+        ctx: commands.Context[Bot],
+        pattern: str = commands.parameter(description="The regular expression pattern to test."),
+        *,
+        text: str = commands.parameter(description="The text to test the regex against."),
+    ):
+        """Test a regular expression against a text block.
+
+        This is not a full regex debugger, it uses google's re2 engine which is safe against catastrophic backtracking.
+        Read here: <https://github.com/google/re2>
+        """
+
+        def _evaluate_regex():
+            matches = list(re2.finditer(pattern, text))
+            if not matches:
+                return None
+            lines = []
+            for idx, m in enumerate(matches[:15], 1):
+                line = f"{idx}. Match: {m.group(0)!r} (Span: {m.start()}-{m.end()})"
+                if m.groups():
+                    line += f" | Groups: {m.groups()}"
+                if m.groupdict():
+                    line += f" | Named: {m.groupdict()}"
+                lines.append(line)
+            if len(matches) > 15:
+                lines.append(f"... and {len(matches) - 15} more matches.")
+            return len(matches), "\n".join(lines)
+
+        try:
+            # Run with a strict timeout in a separate thread to mitigate catastrophic backtracking (ReDoS)
+            result = await asyncio.wait_for(asyncio.to_thread(_evaluate_regex), timeout=2.0)
+        except re.error as e:
+            await ctx.send(f"**Invalid Regex Pattern:** `{e}`", ephemeral=True)
+            return
+        except TimeoutError:
+            await ctx.send(
+                "**Timeout:** Regex evaluation took too long (possible catastrophic backtracking).",
+                ephemeral=True,
+            )
+            return
+
+        if result is None:
+            await ctx.send("No matches found.")
+        else:
+            count, output = result
+            await ctx.send(f"Found **{count}** match(es):\n{self._format_codeblock(output, 'py')}")
+
+    @commands.command(name="base")
+    async def base_cmd(
+        self,
+        ctx: commands.Context[Bot],
+        number: str,
+        from_base: Annotated[int, commands.Range[int, 2, 36]] = commands.parameter(description="Source base (2-36)", displayed_name="from"),
+        to_base: Annotated[int, commands.Range[int, 2, 36]] = commands.parameter(description="Target base (2-36)", displayed_name="to"),
+    ):
+        """Convert a number between bases (supports bases 2 through 36)."""
+        try:
+            clean_num = number.strip().replace("_", "")
+            decimal_val = int(clean_num, from_base)
+            converted = self._int_to_base(decimal_val, to_base)
+            await ctx.send(f"**Base {from_base}:** `{number}`\n**Base {to_base}:** {self._format_codeblock(converted)}")
+        except ValueError:
+            await ctx.send(
+                f"`{number}` is not a valid integer in base **{from_base}**.",
+                ephemeral=True,
+            )
+
+    @commands.command(name="escape")
+    async def escape_cmd(
+        self,
+        ctx: commands.Context[Bot],
+        fmt: Literal["all", "python", "json", "html"] = commands.parameter(description="The format to escape for (default: all)", default="all"),
+        *,
+        text: str = commands.parameter(description="The text to escape"),
+    ):
+        """Escape strings for Python, JSON, or HTML."""
+        py_escaped = repr(text)
+        json_escaped = json.dumps(text)
+        html_escaped = html.escape(text, quote=True)
+
+        if fmt == "python":
+            await ctx.send(self._format_codeblock(py_escaped, "py"))
+        elif fmt == "json":
+            await ctx.send(self._format_codeblock(json_escaped, "json"))
+        elif fmt == "html":
+            await ctx.send(self._format_codeblock(html_escaped, "html"))
+        else:
+            output = f"# Python\n{py_escaped}\n\n# JSON\n{json_escaped}\n\n# HTML\n{html_escaped}"
+            await ctx.send(self._format_codeblock(output, "py"))
+
+    @commands.command(name="unescape")
+    async def unescape_cmd(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        text: str = commands.parameter(description="The escaped string (HTML, JSON, or Python style)"),
+    ):
+        """Reverse HTML, JSON, or Python string escaping."""
+        raw = text.strip()
+
+        # 1. Try JSON string literal if wrapped in double quotes
+        if raw.startswith('"') and raw.endswith('"'):
+            try:
+                res = json.loads(raw)
+                if isinstance(res, str):
+                    await ctx.send(self._format_codeblock(res))
+                    return
+            except json.JSONDecodeError:
+                pass
+
+        # 2. Try raw JSON escape sequences (e.g. \n, \t, \uXXXX without outer quotes)
+        try:
+            escaped_quotes = raw.replace('"', '\\"')
+            res = json.loads(f'"{escaped_quotes}"')
+            if res != raw:
+                await ctx.send(self._format_codeblock(res))
+                return
+        except json.JSONDecodeError:
+            pass
+
+        # 3. Fallback to HTML unescaping (&amp;, &#39;, etc.) and unicode_escape
+        res = html.unescape(raw)
+        if res == raw and "\\" in raw:
+            with contextlib.suppress(json.JSONDecodeError):
+                res = raw.encode("utf-8").decode("unicode_escape")
+
+        await ctx.send(self._format_codeblock(res))
 
     async def cog_load(self) -> None:
         """Load the cog and start the task."""

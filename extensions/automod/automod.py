@@ -60,7 +60,6 @@ class Automod(commands.Cog, name="Auto Moderation"):
         self.__trigger_environment: TriggerEnv = TriggerEnv(bot=self.bot)
 
     @commands.group(name="automod", invoke_without_command=True)
-    @commands.has_permissions(administrator=True)
     async def automod(self, ctx: commands.Context[Bot]) -> None:
         """Shows the help message for the automod feature."""
         if ctx.invoked_subcommand is None:
@@ -155,6 +154,7 @@ class Automod(commands.Cog, name="Auto Moderation"):
         view.message = await ctx.reply(view=view)
 
     @automod.command(name="list", aliases=["show", "view", "display", "ls"])
+    @commands.has_permissions(administrator=True)
     async def automod_list(self, ctx: commands.Context[Bot]) -> None:
         """Browse the server's automod rules with their status, trigger, conditions and effects."""
         if TYPE_CHECKING:

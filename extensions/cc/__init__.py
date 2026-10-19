@@ -781,11 +781,10 @@ class CC(commands.Cog, name="Custom Commands"):
         await ctx.reply(view=layout, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.group(name="cc", aliases=["customcommand"], invoke_without_command=True)
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
     async def cc(self, ctx: commands.Context[Bot]) -> None:
         """Manage custom commands."""
-        await self.open_panel(ctx)
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
 
     @cc.command(name="manage")
     @commands.has_permissions(administrator=True)

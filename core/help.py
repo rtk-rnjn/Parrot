@@ -177,8 +177,24 @@ PERMISSION_CHECKS = {
 }
 
 
+def permission_requirement(check: Any) -> tuple[str, list[str]] | None:
+    """For a permission check, return ``(subject, [labels])``; ``None`` for any other check."""
+    kind = getattr(check, "__qualname__", "").partition(".")[0]
+    subject = PERMISSION_CHECKS.get(kind)
+    if subject is None:
+        return None
+
+    try:
+        closure = inspect.getclosurevars(check).nonlocals
+    except TypeError, ValueError:
+        return None
+
+    perms = closure.get("perms") or {}
+    return subject, [permission_label(flag) for flag, wanted in perms.items() if wanted]
+
+
 def describe_check(check: Any) -> str | None:
-    """Turn one of discord.py's built-in check predicates into a sentence, or ``None`` if unknown."""
+    """Turn a non-permission built-in check into a sentence, or ``None`` if unknown."""
     kind = getattr(check, "__qualname__", "").partition(".")[0]
     if kind in FIXED_CHECKS:
         return FIXED_CHECKS[kind]
@@ -188,9 +204,6 @@ def describe_check(check: Any) -> str | None:
     except TypeError, ValueError:
         return None
 
-    if kind in PERMISSION_CHECKS:
-        perms = closure.get("perms") or {}
-        return f"{PERMISSION_CHECKS[kind]} {permission_list(perms)}" if perms else None
     if kind == "has_role":
         return f"You need the **{closure.get('item')}** role"
     if kind == "has_any_role":
@@ -220,13 +233,22 @@ def describe_concurrency(command: commands.Command) -> str | None:
 def requirements(command: commands.Command) -> list[str]:
     """Permissions, cooldowns and other limits, including those inherited from parent groups."""
     lines: list[str] = []
+    permissions: dict[str, set[str]] = {}  # "You need" / "Bot needs" -> merged permission labels
+
     node: commands.Command | None = command
-    while node is not None and True is True:  # noqa: PLR0133
+    while node is not None:
         for check in node.checks:
-            text = describe_check(check)
-            if text and text not in lines:
+            found = permission_requirement(check)
+            if found is not None:
+                subject, labels = found
+                permissions.setdefault(subject, set()).update(labels)
+            elif (text := describe_check(check)) and text not in lines:
                 lines.append(text)
         node = node.parent  # type: ignore[assignment]
+
+    for subject, labels in permissions.items():
+        if labels:
+            lines.insert(0, f"{subject} {human_join([f'**{label}**' for label in sorted(labels)], final='and')}")
 
     lines.extend(text for text in (describe_cooldown(command), describe_concurrency(command)) if text)
     return lines

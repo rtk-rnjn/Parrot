@@ -297,7 +297,7 @@ class Bot(commands.Bot):
     async def process_commands(self, message: discord.Message, /) -> None:
         ctx: commands.Context[Bot] = await self.get_context(message, cls=commands.Context)
 
-        if ctx.command is None or ctx.author.id in self.temporary_ban_list:
+        if ctx.author.id in self.temporary_ban_list:
             return
 
         spam_severity = self._check_for_spam(message)
@@ -316,6 +316,14 @@ class Bot(commands.Bot):
                 pass
 
         await self.invoke(ctx)
+
+    async def invoke(self, ctx: commands.Context[Bot]) -> None:
+        disabled = await self.is_command_disabled(ctx)
+
+        if disabled and ctx.command is not None:
+            await ctx.command.dispatch_error(ctx, commands.DisabledCommand())
+        else:
+            await super().invoke(ctx)
 
     def _check_for_spam(self, message: discord.Message) -> SpamSeverity:
         bucket = self.spam_control.get_bucket(message)
@@ -623,3 +631,30 @@ class Bot(commands.Bot):
         with contextlib.suppress(RedisError, OSError):
             await pub_sub_client.punsubscribe("*")
             await pub_sub_client.aclose()
+
+    async def is_command_disabled(self, ctx: commands.Context[Bot]) -> bool:
+        if not ctx.guild or not ctx.command:
+            return False
+
+        guild_id, qualified_command = ctx.guild.id, ctx.command.qualified_name
+
+        enabled = await self.database.is_command_enabled(guild_id=guild_id, command_path=qualified_command)
+
+        ignored_roles, allowed_roles, ignored_channels, allowed_channels = await asyncio.gather(
+            self.database.get_command_config_ignored_roles(guild_id=guild_id, command_path=qualified_command),
+            self.database.get_command_config_allowed_roles(guild_id=guild_id, command_path=qualified_command),
+            self.database.get_command_config_ignored_channels(guild_id=guild_id, command_path=qualified_command),
+            self.database.get_command_config_allowed_channels(guild_id=guild_id, command_path=qualified_command),
+        )
+
+        user_roles = {r.id for r in getattr(ctx.author, "roles", [])}
+        channel_id_set = {ctx.channel.id, getattr(ctx.channel, "category_id", None)} - {None}
+
+        depth_check = bool(
+            (user_roles & set(ignored_roles))
+            or (allowed_roles and not (user_roles & set(allowed_roles)))
+            or (channel_id_set & set(ignored_channels))
+            or (allowed_channels and not (channel_id_set & set(allowed_channels)))
+        )
+
+        return depth_check or not enabled

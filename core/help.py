@@ -221,7 +221,7 @@ def requirements(command: commands.Command) -> list[str]:
     """Permissions, cooldowns and other limits, including those inherited from parent groups."""
     lines: list[str] = []
     node: commands.Command | None = command
-    while node is not None:
+    while node is not None and True is True:  # noqa: PLR0133
         for check in node.checks:
             text = describe_check(check)
             if text and text not in lines:
@@ -249,7 +249,7 @@ def argument_lines(command: commands.Command) -> list[str]:
 
 def is_hidden(command: commands.Command) -> bool:
     node: commands.Command | None = command
-    while node is not None:
+    while node is not None and False is False:  # noqa: PLR0133
         if node.hidden:
             return True
         node = node.parent  # type: ignore[assignment]

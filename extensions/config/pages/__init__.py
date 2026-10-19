@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .base import Page
 from .birthday import BirthdayPage
+from .command import CommandConfigPage
 from .events import EventsPage
 from .general import GeneralPage
 from .giveaway import GiveawayPage
@@ -33,4 +34,5 @@ PAGES: tuple[type[Page], ...] = (
     TelephonePage,
     GlobalChatPage,
     EventsPage,
+    CommandConfigPage,
 )

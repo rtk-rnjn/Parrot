@@ -39,6 +39,7 @@ class Config(commands.Cog, name="Server Settings", command_attrs={"hidden": True
 
         config = await self.bot.database.get_guild_settings(ctx.guild.id)
         dashboard = ConfigDashboard(ctx.author, bot=self.bot, guild=ctx.guild, config=config)
+        await ctx.typing()
         return await dashboard.start(ctx)
 
 

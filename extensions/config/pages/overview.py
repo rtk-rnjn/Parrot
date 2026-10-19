@@ -24,3 +24,8 @@ class OverviewPage(Page):
         guild = self.guild
         footer = f"-# {guild.name} \N{MIDDLE DOT} {guild.member_count or 0:,} members \N{MIDDLE DOT} Server ID `{guild.id}`"
         return [self.text("\n".join(lines)), discord.ui.Separator(), self.text(footer)]
+
+    async def prepare(self) -> None:
+        for page in self.dashboard.pages.values():
+            if page is not self:
+                await page.prepare()

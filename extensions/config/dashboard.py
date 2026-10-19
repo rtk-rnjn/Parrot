@@ -52,14 +52,14 @@ class ConfigDashboard(BaseLayoutView):
     """
 
     def __init__(self, author: discord.Member | discord.User, *, bot: Bot, guild: discord.Guild, config: GuildConfiguration) -> None:
-        super().__init__(author, timeout=TIMEOUT_SECONDS)
+        super().__init__(author, timeout=TIMEOUT_SECONDS, required_permission=discord.Permissions(administrator=True))
         self.bot = bot
         self.guild = guild
         self.config = config
 
         self.pages: dict[str, Page] = {}
-        for page_cls in PAGES:
-            self.pages[page_cls.key] = page_cls(self)
+        for PageClass in PAGES:
+            self.pages[PageClass.key] = PageClass(self)
 
         self.current_key = OverviewPage.key
         self.notice: str | None = None

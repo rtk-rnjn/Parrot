@@ -124,9 +124,6 @@ def fits_in_discord(text: str, limit: int = DISCORD_MESSAGE_LIMIT) -> bool:
     return len(text) <= limit
 
 
-# --------------------------------------------------------------------------- #
-# Exceptions
-# --------------------------------------------------------------------------- #
 class PastebinError(Exception):
     """Base class for every error raised by this module."""
 

@@ -8,82 +8,82 @@ import discord
 # Maps canonical lowercase POS tokens to (Full Human-Readable Label, Emoji Icon, Hex Color)
 POS_CANONICAL_MAP: dict[str, tuple[str, str, int]] = {
     # Nouns
-    "n.": ("Noun", "📘", 0x5865F2),
-    "n.pl.": ("Plural Noun", "📘", 0x5865F2),
-    "n. pl.": ("Plural Noun", "📘", 0x5865F2),
-    "pl. n.": ("Plural Noun", "📘", 0x5865F2),
-    "pl.n.": ("Plural Noun", "📘", 0x5865F2),
-    "n.sing.": ("Singular Noun", "📘", 0x5865F2),
-    "n. sing.": ("Singular Noun", "📘", 0x5865F2),
-    "sing. n.": ("Singular Noun", "📘", 0x5865F2),
-    "prop. n.": ("Proper Noun", "📘", 0x5865F2),
+    "n.": ("Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "n.pl.": ("Plural Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "n. pl.": ("Plural Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "pl. n.": ("Plural Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "pl.n.": ("Plural Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "n.sing.": ("Singular Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "n. sing.": ("Singular Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "sing. n.": ("Singular Noun", "\N{BLUE BOOK}", 0x5865F2),
+    "prop. n.": ("Proper Noun", "\N{BLUE BOOK}", 0x5865F2),
     # Verbs
-    "v.": ("Verb", "⚡", 0xF59E0B),
-    "v.intr.": ("Intransitive Verb", "⚡", 0xF59E0B),
-    "v. intr.": ("Intransitive Verb", "⚡", 0xF59E0B),
-    "intr. v.": ("Intransitive Verb", "⚡", 0xF59E0B),
-    "v.tr.": ("Transitive Verb", "⚡", 0xF59E0B),
-    "v. tr.": ("Transitive Verb", "⚡", 0xF59E0B),
-    "tr. v.": ("Transitive Verb", "⚡", 0xF59E0B),
-    "v.aux.": ("Auxiliary Verb", "⚡", 0xF59E0B),
-    "v. aux.": ("Auxiliary Verb", "⚡", 0xF59E0B),
-    "aux. v.": ("Auxiliary Verb", "⚡", 0xF59E0B),
-    "v.refl.": ("Reflexive Verb", "⚡", 0xF59E0B),
-    "v. refl.": ("Reflexive Verb", "⚡", 0xF59E0B),
-    "refl. v.": ("Reflexive Verb", "⚡", 0xF59E0B),
-    "v.impers.": ("Impersonal Verb", "⚡", 0xF59E0B),
-    "v. impers.": ("Impersonal Verb", "⚡", 0xF59E0B),
-    "past": ("Past Tense", "⚡", 0xF59E0B),
-    "past.": ("Past Tense", "⚡", 0xF59E0B),
-    "past part.": ("Past Participle", "⚡", 0xF59E0B),
-    "pres. part.": ("Present Participle", "⚡", 0xF59E0B),
-    "past & past part.": ("Past Tense & Past Participle", "⚡", 0xF59E0B),
-    "3rd sing. pres.": ("3rd Person Singular Present", "⚡", 0xF59E0B),
+    "v.": ("Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v.intr.": ("Intransitive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v. intr.": ("Intransitive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "intr. v.": ("Intransitive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v.tr.": ("Transitive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v. tr.": ("Transitive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "tr. v.": ("Transitive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v.aux.": ("Auxiliary Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v. aux.": ("Auxiliary Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "aux. v.": ("Auxiliary Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v.refl.": ("Reflexive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v. refl.": ("Reflexive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "refl. v.": ("Reflexive Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v.impers.": ("Impersonal Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "v. impers.": ("Impersonal Verb", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "past": ("Past Tense", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "past.": ("Past Tense", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "past part.": ("Past Participle", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "pres. part.": ("Present Participle", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "past & past part.": ("Past Tense & Past Participle", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
+    "3rd sing. pres.": ("3rd Person Singular Present", "\N{HIGH VOLTAGE SIGN}", 0xF59E0B),
     # Adjectives
-    "adj.": ("Adjective", "🎨", 0x10B981),
-    "predic. adj.": ("Predicative Adjective (after a verb)", "🎨", 0x10B981),
-    "attrib. adj.": ("Attributive Adjective (before a noun)", "🎨", 0x10B981),
-    "poss. adj.": ("Possessive Adjective", "🎨", 0x10B981),
-    "dem. adj.": ("Demonstrative Adjective", "🎨", 0x10B981),
-    "interrog. adj.": ("Interrogative Adjective", "🎨", 0x10B981),
-    "rel. adj.": ("Relative Adjective", "🎨", 0x10B981),
-    "indef. adj.": ("Indefinite Adjective", "🎨", 0x10B981),
-    "compar. adj.": ("Comparative Adjective", "🎨", 0x10B981),
-    "superl. adj.": ("Superlative Adjective", "🎨", 0x10B981),
+    "adj.": ("Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "predic. adj.": ("Predicative Adjective (after a verb)", "\N{ARTIST PALETTE}", 0x10B981),
+    "attrib. adj.": ("Attributive Adjective (before a noun)", "\N{ARTIST PALETTE}", 0x10B981),
+    "poss. adj.": ("Possessive Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "dem. adj.": ("Demonstrative Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "interrog. adj.": ("Interrogative Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "rel. adj.": ("Relative Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "indef. adj.": ("Indefinite Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "compar. adj.": ("Comparative Adjective", "\N{ARTIST PALETTE}", 0x10B981),
+    "superl. adj.": ("Superlative Adjective", "\N{ARTIST PALETTE}", 0x10B981),
     # Adverbs
-    "adv.": ("Adverb", "⏩", 0x8B5CF6),
-    "interrog. adv.": ("Interrogative Adverb", "⏩", 0x8B5CF6),
-    "rel. adv.": ("Relative Adverb", "⏩", 0x8B5CF6),
-    "sentence adv.": ("Sentence Adverb", "⏩", 0x8B5CF6),
+    "adv.": ("Adverb", "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}", 0x8B5CF6),
+    "interrog. adv.": ("Interrogative Adverb", "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}", 0x8B5CF6),
+    "rel. adv.": ("Relative Adverb", "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}", 0x8B5CF6),
+    "sentence adv.": ("Sentence Adverb", "\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE}", 0x8B5CF6),
     # Prepositions, Conjunctions, Pronouns, Determiners, Articles
-    "prep.": ("Preposition", "🧭", 0x06B6D4),
-    "conj.": ("Conjunction", "🔗", 0x06B6D4),
-    "pron.": ("Pronoun", "👤", 0xEC4899),
-    "pers. pron.": ("Personal Pronoun", "👤", 0xEC4899),
-    "poss. pron.": ("Possessive Pronoun", "👤", 0xEC4899),
-    "refl. pron.": ("Reflexive Pronoun", "👤", 0xEC4899),
-    "rel. pron.": ("Relative Pronoun", "👤", 0xEC4899),
-    "interrog. pron.": ("Interrogative Pronoun", "👤", 0xEC4899),
-    "dem. pron.": ("Demonstrative Pronoun", "👤", 0xEC4899),
-    "indef. pron.": ("Indefinite Pronoun", "👤", 0xEC4899),
-    "det.": ("Determiner", "📌", 0x06B6D4),
-    "art.": ("Article", "📌", 0x06B6D4),
-    "def. art.": ("Definite Article", "📌", 0x06B6D4),
-    "indef. art.": ("Indefinite Article", "📌", 0x06B6D4),
+    "prep.": ("Preposition", "\N{COMPASS}", 0x06B6D4),
+    "conj.": ("Conjunction", "\N{LINK SYMBOL}", 0x06B6D4),
+    "pron.": ("Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "pers. pron.": ("Personal Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "poss. pron.": ("Possessive Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "refl. pron.": ("Reflexive Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "rel. pron.": ("Relative Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "interrog. pron.": ("Interrogative Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "dem. pron.": ("Demonstrative Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "indef. pron.": ("Indefinite Pronoun", "\N{BUST IN SILHOUETTE}", 0xEC4899),
+    "det.": ("Determiner", "\N{PUSHPIN}", 0x06B6D4),
+    "art.": ("Article", "\N{PUSHPIN}", 0x06B6D4),
+    "def. art.": ("Definite Article", "\N{PUSHPIN}", 0x06B6D4),
+    "indef. art.": ("Indefinite Article", "\N{PUSHPIN}", 0x06B6D4),
     # Interjections / Exclamations
-    "int.": ("Interjection / Exclamation", "💬", 0xEF4444),
-    "interj.": ("Interjection / Exclamation", "💬", 0xEF4444),
-    "excl.": ("Exclamation", "💬", 0xEF4444),
+    "int.": ("Interjection / Exclamation", "\N{SPEECH BALLOON}", 0xEF4444),
+    "interj.": ("Interjection / Exclamation", "\N{SPEECH BALLOON}", 0xEF4444),
+    "excl.": ("Exclamation", "\N{SPEECH BALLOON}", 0xEF4444),
     # Word-building & Symbols
-    "abbr.": ("Abbreviation", "🔤", 0xEAB308),
-    "contr.": ("Contraction", "🔤", 0xEAB308),
-    "symb.": ("Symbol", "🔣", 0xEAB308),
-    "prefix": ("Prefix", "🧩", 0xEAB308),
-    "suffix": ("Suffix", "🧩", 0xEAB308),
-    "comb. form": ("Combining Form", "🧩", 0xEAB308),
-    "comb.form": ("Combining Form", "🧩", 0xEAB308),
-    "compar.": ("Comparative", "📈", 0x10B981),
-    "superl.": ("Superlative", "📈", 0x10B981),
+    "abbr.": ("Abbreviation", "\N{INPUT SYMBOL FOR LATIN LETTERS}", 0xEAB308),
+    "contr.": ("Contraction", "\N{INPUT SYMBOL FOR LATIN LETTERS}", 0xEAB308),
+    "symb.": ("Symbol", "\N{INPUT SYMBOL FOR SYMBOLS}", 0xEAB308),
+    "prefix": ("Prefix", "\N{JIGSAW PUZZLE PIECE}", 0xEAB308),
+    "suffix": ("Suffix", "\N{JIGSAW PUZZLE PIECE}", 0xEAB308),
+    "comb. form": ("Combining Form", "\N{JIGSAW PUZZLE PIECE}", 0xEAB308),
+    "comb.form": ("Combining Form", "\N{JIGSAW PUZZLE PIECE}", 0xEAB308),
+    "compar.": ("Comparative", "\N{CHART WITH UPWARDS TREND}", 0x10B981),
+    "superl.": ("Superlative", "\N{CHART WITH UPWARDS TREND}", 0x10B981),
 }
 
 # Individual modifier/token fallback map for composite POS tags
@@ -251,7 +251,7 @@ ETYMOLOGY_EXPANSIONS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\bfr\.", re.IGNORECASE), "from"),
 ]
 
-SUPERSCRIPT_DIGITS = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+SUPERSCRIPT_DIGITS = str.maketrans("0123456789", "\N{SUPERSCRIPT ZERO}\N{SUPERSCRIPT ONE}\N{SUPERSCRIPT TWO}\N{SUPERSCRIPT THREE}\N{SUPERSCRIPT FOUR}\N{SUPERSCRIPT FIVE}\N{SUPERSCRIPT SIX}\N{SUPERSCRIPT SEVEN}\N{SUPERSCRIPT EIGHT}\N{SUPERSCRIPT NINE}")
 
 
 @dataclass
@@ -300,7 +300,7 @@ def expand_pos_tag(raw_pos: str) -> tuple[str, str, int]:
     parts = [p.strip() for p in re.split(r"\s*(?:,|&|\bor\b)\s*", cleaned) if p.strip()]
     if len(parts) > 1:
         expanded_parts: list[str] = []
-        primary_icon = "📘"
+        primary_icon = "\N{BLUE BOOK}"
         primary_color = 0x5865F2
         for idx, part in enumerate(parts):
             label, icon, color = expand_pos_tag(part)
@@ -323,7 +323,7 @@ def expand_pos_tag(raw_pos: str) -> tuple[str, str, int]:
     for key, (_, icon, color) in POS_CANONICAL_MAP.items():
         if key in cleaned:
             return label, icon, color
-    return label, "📘", 0x5865F2
+    return label, "\N{BLUE BOOK}", 0x5865F2
 
 
 def expand_inline_abbreviations(text: str) -> str:
@@ -346,10 +346,9 @@ def expand_inline_abbreviations(text: str) -> str:
         result,
     )
 
-    # Format *cross-reference words (e.g. *abide -> `🔗 abide`)
     result = re.sub(
         r"\*([A-Za-z0-9\-']+(?:\d+)?)",
-        lambda m: f"`🔗 {m.group(1).rstrip('0123456789')}`",
+        lambda m: f"`\N{LINK SYMBOL} {m.group(1).rstrip('0123456789')}`",
         result,
     )
 
@@ -491,7 +490,7 @@ def _extract_trailing_derivatives(body: str) -> tuple[str, list[tuple[str, str]]
 def _parse_senses(body: str) -> list[SenseItem]:  # noqa: PLR0912
     """
     Splits a POS block body into numbered senses (1, 2, 3...) and lettered
-    sub-senses (a, B, C... — noting uppercase B/C after periods in the dataset).
+    sub-senses (a, B, C... \N{EM DASH} noting uppercase B/C after periods in the dataset).
     """
     text = body.strip()
     if not text:
@@ -612,14 +611,14 @@ def parse_dictionary_entry(raw_key: str, raw_value: str) -> ParsedDictionaryEntr
             POSBlock(
                 raw_pos="",
                 expanded_pos="Definition",
-                icon="📖",
+                icon="\N{OPEN BOOK}",
                 color=0x5865F2,
                 senses=[SenseItem(number=None, main_text=expanded_body)],
             )
         )
     else:
         if pos_matches[0].start() > 0:
-            raw_intro = working[: pos_matches[0].start()].strip(" -—")
+            raw_intro = working[: pos_matches[0].start()].strip(" -\N{EM DASH}")
             if raw_intro:
                 intro_note = expand_inline_abbreviations(raw_intro)
 
@@ -629,7 +628,7 @@ def parse_dictionary_entry(raw_key: str, raw_value: str) -> ParsedDictionaryEntr
 
             block_start = pm.end()
             block_end = pos_matches[idx + 1].start() if idx + 1 < len(pos_matches) else len(working)
-            block_body = working[block_start:block_end].strip(" -—")
+            block_body = working[block_start:block_end].strip(" -\N{EM DASH}")
 
             # Extract optional inflection/form notes in parentheses right after the POS
             inflection_note: str | None = None
@@ -692,7 +691,7 @@ def _chunk_lines_for_embed_field(lines: list[str], max_len: int = 1024) -> list[
     if current_lines:
         chunks.append("\n".join(current_lines))
 
-    return chunks or ["—"]
+    return chunks or ["\N{EM DASH}"]
 
 
 def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # noqa: PLR0912
@@ -706,7 +705,7 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
     # 1. Title & Color
     superscript = entry.homograph_num.translate(SUPERSCRIPT_DIGITS) if entry.homograph_num else ""
     title_suffix = f" {superscript}" if superscript else ""
-    title = f"📖 {entry.headword.capitalize()}{title_suffix}"
+    title = f"\N{OPEN BOOK} {entry.headword.capitalize()}{title_suffix}"
 
     primary_color = entry.pos_blocks[0].color if entry.pos_blocks else 0x5865F2
 
@@ -720,7 +719,7 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
 
     desc_parts: list[str] = []
     if pos_pills:
-        desc_parts.append("**Part of Speech:** " + "  •  ".join(pos_pills))
+        desc_parts.append("**Part of Speech:** " + "  \N{BULLET}  ".join(pos_pills))
     if entry.intro_note:
         desc_parts.append(f"*{entry.intro_note}*")
 
@@ -738,11 +737,11 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
 
         field_lines: list[str] = []
         if block.inflection_note:
-            field_lines.append(f"📝 *{block.inflection_note}*")
+            field_lines.append(f"\N{MEMO} *{block.inflection_note}*")
 
         for sense in block.senses:
             if sense.subsenses:
-                header_prefix = f"**{sense.number}.**" if sense.number else "•"
+                header_prefix = f"**{sense.number}.**" if sense.number else "\N{BULLET}"
                 if sense.main_text:
                     field_lines.append(f"{header_prefix} {sense.main_text}")
                 else:
@@ -752,7 +751,7 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
             elif sense.number:
                 field_lines.append(f"**{sense.number}.** {sense.main_text}")
             elif sense.main_text:
-                field_lines.append(f"• {sense.main_text}")
+                field_lines.append(f"\N{BULLET} {sense.main_text}")
 
         chunks = _chunk_lines_for_embed_field(field_lines, max_len=1024)
         base_field_name = f"{block.icon} {block.expanded_pos}"
@@ -766,18 +765,18 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
     # 4. Derived Words & Phrases Field (if present)
     if all_derivatives and len(embed.fields) < 25:
         deriv_items = [f"**{word}** *({pos})*" for word, pos in all_derivatives]
-        deriv_value = "  •  ".join(deriv_items)
+        deriv_value = "  \N{BULLET}  ".join(deriv_items)
         if len(deriv_value) > 1024:
             deriv_value = deriv_value[:1021] + "..."
         embed.add_field(
-            name="🌿 Derived Words & Related Forms",
+            name="\N{HERB} Derived Words & Related Forms",
             value=deriv_value,
             inline=False,
         )
 
     # 5. Etymology Footer
     if entry.etymology:
-        footer_text = f"🏛️ Word Origin: {entry.etymology}"
+        footer_text = f"\N{CLASSICAL BUILDING}\N{VARIATION SELECTOR-16} Word Origin: {entry.etymology}"
         embed.set_footer(text=footer_text[:2048])
 
     return embed

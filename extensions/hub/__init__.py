@@ -47,10 +47,10 @@ def guest_overwrite() -> discord.PermissionOverwrite:
 
 
 class Tab(enum.Enum):
-    overview = ("Overview", "🏠")
-    access = ("Access", "🔑")
-    members = ("Members", "👥")
-    settings = ("Settings", "⚙️")
+    overview = ("Overview", "\N{HOUSE BUILDING}")
+    access = ("Access", "\N{KEY}")
+    members = ("Members", "\N{BUSTS IN SILHOUETTE}")
+    settings = ("Settings", "\N{GEAR}\N{VARIATION SELECTOR-16}")
 
     @property
     def label(self) -> str:
@@ -127,7 +127,7 @@ class HubPanel(discord.ui.LayoutView):
             del self.cog.panels[self.channel.id]
 
         self.clear_items()
-        self.add_item(discord.ui.Container(discord.ui.TextDisplay(f"## 🔊 Channel panel closed\n{reason}"), accent_colour=discord.Colour.dark_grey()))
+        self.add_item(discord.ui.Container(discord.ui.TextDisplay(f"## \N{SPEAKER WITH THREE SOUND WAVES} Channel panel closed\n{reason}"), accent_colour=discord.Colour.dark_grey()))
         if self.message is not None:
             with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
@@ -265,18 +265,18 @@ class HubPanel(discord.ui.LayoutView):
         limit = f"{len(channel.members)}/{channel.user_limit}" if channel.user_limit else f"{len(channel.members)} (no limit)"
         text = "\n".join(
             [
-                f"## 🔊 {discord.utils.escape_markdown(channel.name)}",
+                f"## \N{SPEAKER WITH THREE SOUND WAVES} {discord.utils.escape_markdown(channel.name)}",
                 f"Owner: {self.owner.mention}",
-                f"Access: {'🌐 Public, anyone can join' if self.is_public else '🔒 Private, only permitted people can join'}",
-                f"Visibility: {'🙈 Hidden from the channel list' if self.is_hidden else '👁️ Visible to everyone'}",
-                f"In channel: {limit} · Bitrate: {channel.bitrate // 1000} kbps",
+                f"Access: {'\N{GLOBE WITH MERIDIANS} Public, anyone can join' if self.is_public else '\N{LOCK} Private, only permitted people can join'}",
+                f"Visibility: {'\N{SEE-NO-EVIL MONKEY} Hidden from the channel list' if self.is_hidden else '\N{EYE}\N{VARIATION SELECTOR-16} Visible to everyone'}",
+                f"In channel: {limit} \N{MIDDLE DOT} Bitrate: {channel.bitrate // 1000} kbps",
             ]
         )
 
         async def open_rename(interaction: discord.Interaction) -> None:
             await interaction.response.send_modal(RenameModal(self))
 
-        rename: discord.ui.Button = discord.ui.Button(custom_id="hub:rename", label="Rename", emoji="✏️")
+        rename: discord.ui.Button = discord.ui.Button(custom_id="hub:rename", label="Rename", emoji="\N{PENCIL}\N{VARIATION SELECTOR-16}")
         rename.callback = open_rename
 
         return [
@@ -288,9 +288,9 @@ class HubPanel(discord.ui.LayoutView):
                     "hub:privacy",
                     self.toggle_public,
                     label="Make private" if self.is_public else "Make public",
-                    emoji="🔒" if self.is_public else "🌐",
+                    emoji="\N{LOCK}" if self.is_public else "\N{GLOBE WITH MERIDIANS}",
                 ),
-                self._button("hub:visibility", self.toggle_hidden, label="Show" if self.is_hidden else "Hide", emoji="👁️" if self.is_hidden else "🙈"),
+                self._button("hub:visibility", self.toggle_hidden, label="Show" if self.is_hidden else "Hide", emoji="\N{EYE}\N{VARIATION SELECTOR-16}" if self.is_hidden else "\N{SEE-NO-EVIL MONKEY}"),
             ),
         ]
 
@@ -308,9 +308,9 @@ class HubPanel(discord.ui.LayoutView):
         return [
             discord.ui.TextDisplay(text),
             discord.ui.TextDisplay("-# Permitted people can join even when the channel is private. Blocking also removes them if they are inside."),
-            self._user_select("hub:permit", "Permit people…", self.permit),
-            self._user_select("hub:block", "Block people…", self.block),
-            discord.ui.ActionRow(self._button("hub:reset", self.reset_guests, label="Clear permit and block lists", emoji="🧹")),
+            self._user_select("hub:permit", "Permit people\N{HORIZONTAL ELLIPSIS}", self.permit),
+            self._user_select("hub:block", "Block people\N{HORIZONTAL ELLIPSIS}", self.block),
+            discord.ui.ActionRow(self._button("hub:reset", self.reset_guests, label="Clear permit and block lists", emoji="\N{BROOM}")),
         ]
 
     def _members_tab(self) -> list[discord.ui.Item]:
@@ -325,11 +325,11 @@ class HubPanel(discord.ui.LayoutView):
             return children
 
         options = [discord.SelectOption(label=m.display_name[:100], value=str(m.id)) for m in others[:25]]
-        children.append(self._text_select("hub:kick", "Remove someone from the channel…", options, self.kick))
+        children.append(self._text_select("hub:kick", "Remove someone from the channel\N{HORIZONTAL ELLIPSIS}", options, self.kick))
 
         humans = [option for option, member in zip(options, others[:25], strict=True) if not member.bot]
         if humans:
-            children.append(self._text_select("hub:transfer", "Give ownership to…", humans, self.transfer))
+            children.append(self._text_select("hub:transfer", "Give ownership to\N{HORIZONTAL ELLIPSIS}", humans, self.transfer))
         return children
 
     def _settings_tab(self) -> list[discord.ui.Item]:
@@ -355,13 +355,13 @@ class HubPanel(discord.ui.LayoutView):
             children.append(discord.ui.TextDisplay("**Delete this channel for good?**"))
             children.append(
                 discord.ui.ActionRow(
-                    self._button("hub:delete-yes", self.delete_channel, label="Yes, delete it", emoji="🗑️", style=discord.ButtonStyle.danger),
+                    self._button("hub:delete-yes", self.delete_channel, label="Yes, delete it", emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger),
                     self._button("hub:delete-no", self.cancel_delete, label="Cancel"),
                 )
             )
         else:
             children.append(
-                discord.ui.ActionRow(self._button("hub:delete", self.ask_delete, label="Delete channel", emoji="🗑️", style=discord.ButtonStyle.danger))
+                discord.ui.ActionRow(self._button("hub:delete", self.ask_delete, label="Delete channel", emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger))
             )
         return children
 

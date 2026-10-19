@@ -177,8 +177,8 @@ class DocConverter(MarkdownConverter):
         if len(cells) == 3 and cells[1] == "-":  # cppreference's parameter tables: name, dash, description
             return f"**{cells[0]}** - {cells[2]}\n"
         if el.find("th") is not None and len(cells) > 1:
-            return f"{cells[0]} - {' · '.join(cells[1:])}\n"
-        return " · ".join(cells) + "\n"
+            return f"{cells[0]} - {' \N{MIDDLE DOT} '.join(cells[1:])}\n"
+        return " \N{MIDDLE DOT} ".join(cells) + "\n"
 
     def convert_table(self, el: Tag, text: str, *args: Any, **kwargs: Any) -> str:
         return f"\n{text.strip()}\n\n"
@@ -431,7 +431,7 @@ async def detail_cppreference(session: aiohttp.ClientSession, entry: Entry) -> D
         note = " ".join(part for part in (number, version) if part)
         lines.append(f"{code}  // {note}" if note else code)
     if len(rows) > MAX_DECLARATIONS:
-        lines.append(f"// … {len(rows) - MAX_DECLARATIONS} more overloads on the page")
+        lines.append(f"// \N{HORIZONTAL ELLIPSIS} {len(rows) - MAX_DECLARATIONS} more overloads on the page")
     signature = "\n".join(lines) or None
     language = "c" if "/w/c/" in entry.url else "cpp"
 

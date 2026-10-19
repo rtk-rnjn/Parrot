@@ -306,7 +306,7 @@ class Music(commands.Cog):
         else:
             body = f"Queued {describe_song(resolved.songs[0])}."
 
-        footer = f"{plural(len(player.queue)):track} waiting in the queue · via {resolved.via}"
+        footer = f"{plural(len(player.queue)):track} waiting in the queue \N{MIDDLE DOT} via {resolved.via}"
         await ctx.reply(view=Notice.success(body, footer=footer, thumbnail=resolved.songs[0].thumbnail))
 
     @commands.command(name="search")

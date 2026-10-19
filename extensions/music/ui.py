@@ -15,13 +15,13 @@ MAX_TITLE_LENGTH = 80
 def format_progress(position: float, length: float, *, is_stream: bool = False, width: int = PROGRESS_BAR_WIDTH) -> str:
     """A slider with timestamps. Streams and unknown lengths get no slider."""
     if is_stream:
-        return f"\N{LARGE RED CIRCLE} LIVE · {format_clock_duration(position)}"
+        return f"\N{LARGE RED CIRCLE} LIVE \N{MIDDLE DOT} {format_clock_duration(position)}"
     if length <= 0:
         return format_clock_duration(position)
 
     ratio = min(max(position / length, 0.0), 1.0)
     filled = min(int(ratio * width), width - 1)
-    bar = "▬" * filled + "🔘" + "▬" * (width - 1 - filled)
+    bar = "\N{BLACK RECTANGLE}" * filled + "\N{RADIO BUTTON}" + "\N{BLACK RECTANGLE}" * (width - 1 - filled)
     return f"{bar} {format_clock_duration(position)} / {format_clock_duration(length)}"
 
 

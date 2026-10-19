@@ -78,7 +78,7 @@ CUSTOM_COMMAND_VARIABLES_PAGES = [
         **`message` (Triggering Message)**
         - `message.id`: Discord message ID (`int`)
         - `message.content`: Raw message text (`str`)
-        - `{% do message.add_reaction('👋') %}`: Adds an emoji reaction to the message
+        - `{% do message.add_reaction('\N{WAVING HAND SIGN}') %}`: Adds an emoji reaction to the message
         """),
     ),
     _make_help_embed(
@@ -199,21 +199,21 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         inspect.cleandoc("""
         **Welcome Reply + Reaction**
         ```jinja
-        {% do message.add_reaction('👋') -%}
+        {% do message.add_reaction('\N{WAVING HAND SIGN}') -%}
         Welcome to **{{ guild.name }}**, {{ author.mention }}! You are one of our **{{ guild.member_count }}** members.
         ```
 
         **Silent Reaction-Only Autoresponder (Untick *Require prefix*)**
         ```jinja
-        {% do message.add_reaction('🔥') %}
+        {% do message.add_reaction('\N{FIRE}') %}
         ```
 
         **Server Status Card**
         ```jinja
-        📊 **{{ guild.name }}**
-        • Members: **{{ guild.member_count }}** ({{ 1000 - (guild.member_count or 0) }} until 1,000!)
-        • Boosts: **{{ guild.premium_subscription_count or 0 }}** (Tier {{ guild.premium_tier }})
-        {% if guild.vanity_url %}• Invite: [https://discord.gg/](https://discord.gg/){{ guild.vanity_url }}{% endif %}
+        \N{BAR CHART} **{{ guild.name }}**
+        \N{BULLET} Members: **{{ guild.member_count }}** ({{ 1000 - (guild.member_count or 0) }} until 1,000!)
+        \N{BULLET} Boosts: **{{ guild.premium_subscription_count or 0 }}** (Tier {{ guild.premium_tier }})
+        {% if guild.vanity_url %}\N{BULLET} Invite: [https://discord.gg/](https://discord.gg/){{ guild.vanity_url }}{% endif %}
         ```
         """),
     ),
@@ -226,9 +226,9 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         ```jinja
         {% set args = message.content.split()[1:] -%}
         {% if not args -%}
-          ❌ Usage: `say <your message>`
+          \N{CROSS MARK} Usage: `say <your message>`
         {% else -%}
-          📣 **{{ author.display_name }} says:** {{ args | join(' ') }}
+          \N{CHEERING MEGAPHONE} **{{ author.display_name }} says:** {{ args | join(' ') }}
         {% endif %}
         ```
 
@@ -236,7 +236,7 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         ```jinja
         {% set text = message.content.split()[1:] | join(' ') -%}
         {% if text -%}
-          🔊 {{ text | upper }}!!! ({{ text.split() | length }} words, {{ text | length }} chars)
+          \N{SPEAKER WITH THREE SOUND WAVES} {{ text | upper }}!!! ({{ text.split() | length }} words, {{ text | length }} chars)
         {% else -%}
           Give me something to shout!
         {% endif %}
@@ -281,7 +281,7 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         ```jinja
         {% set total = (database.get('cookie_jar', '0') | int) + 1 -%}
         {% do database.set('cookie_jar', total) -%}
-        🍪 {{ author.display_name }} added a cookie! The jar now has **{{ total }}** cookies.
+        \N{COOKIE} {{ author.display_name }} added a cookie! The jar now has **{{ total }}** cookies.
         ```
 
         **Per-User Check-In Counter**
@@ -289,7 +289,7 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         {% set key = 'checkins_' ~ author.id -%}
         {% set count = (database.get(key, '0') | int) + 1 -%}
         {% do database.set(key, count) -%}
-        ✅ **{{ author.display_name }}**, you have checked in **{{ count }}** time{{ '' if count == 1 else 's' }}!
+        \N{WHITE HEAVY CHECK MARK} **{{ author.display_name }}**, you have checked in **{{ count }}** time{{ '' if count == 1 else 's' }}!
         ```
 
         **Configurable Server Notice (`!notice` to view, `!notice <text>` to update)**
@@ -297,9 +297,9 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         {% set new_notice = message.content.split()[1:] | join(' ') -%}
         {% if new_notice -%}
           {% do database.set('server_notice', new_notice) -%}
-          📌 Updated the server notice!
+          \N{PUSHPIN} Updated the server notice!
         {% else -%}
-          📌 **Current Notice:** {{ database.get('server_notice', 'No notice set yet.') }}
+          \N{PUSHPIN} **Current Notice:** {{ database.get('server_notice', 'No notice set yet.') }}
         {% endif %}
         ```
         """),
@@ -314,7 +314,7 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         {% if channel.name != 'bot-commands' -%}
           Please use this command inside `#bot-commands` instead of {{ channel.mention }}!
         {% else -%}
-          ✅ Running command in {{ channel.mention }}!
+          \N{WHITE HEAVY CHECK MARK} Running command in {{ channel.mention }}!
         {% endif %}
         ```
 
@@ -322,9 +322,9 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         ```jinja
         {% set msg = message.content | lower -%}
         {% if 'apply' in msg or 'staff' in msg -%}
-          📝 Looking to apply for staff, {{ author.display_name }}? Check the pinned message in `#applications`!
+          \N{MEMO} Looking to apply for staff, {{ author.display_name }}? Check the pinned message in `#applications`!
         {% elif 'support' in msg or 'ticket' in msg -%}
-          🎫 Need help? Open a ticket in `#support` and a moderator will be right with you.
+          \N{TICKET} Need help? Open a ticket in `#support` and a moderator will be right with you.
         {% endif %}
         ```
         """),
@@ -336,7 +336,7 @@ CUSTOM_COMMAND_EXAMPLES_PAGES = [
         Add a hyphen (`-%}`) to the end of `{% set %}` or `{% do %}` tags so they don't add blank lines to your message:
         ```jinja
         {% set name = author.nick or author.display_name -%}
-        {% do message.add_reaction('✨') -%}
+        {% do message.add_reaction('\N{SPARKLES}') -%}
         Hello, {{ name }}!
         ```
 
@@ -355,7 +355,7 @@ def trigger_text(command: CustomCommandModel, prefix: str) -> str:
 
 def preview(response: str) -> str:
     flat = " ".join(response.split()).replace("`", "'")
-    return flat if len(flat) <= PREVIEW_LIMIT else f"{flat[: PREVIEW_LIMIT - 1]}…"
+    return flat if len(flat) <= PREVIEW_LIMIT else f"{flat[: PREVIEW_LIMIT - 1]}\N{HORIZONTAL ELLIPSIS}"
 
 
 class PanelButton(discord.ui.Button):
@@ -566,7 +566,7 @@ class CustomCommandPanel(BaseLayoutView):
             badges.append("disabled")
         if not command.get("require_prefix", True):
             badges.append("no prefix")
-        suffix = f" · {' · '.join(badges)}" if badges else ""
+        suffix = f" \N{MIDDLE DOT} {' \N{MIDDLE DOT} '.join(badges)}" if badges else ""
         return f"**`{trigger_text(command, self.prefix)}`**{suffix}\n-# {preview(command['response'])}"
 
     def list_items(self) -> list[discord.ui.Item]:
@@ -575,7 +575,7 @@ class CustomCommandPanel(BaseLayoutView):
         chunk = self.custom_commands[self.page * PAGE_SIZE : (self.page + 1) * PAGE_SIZE]
 
         items: list[discord.ui.Item] = [
-            discord.ui.TextDisplay(f"## Custom Commands\n-# {len(self.custom_commands)} total · prefix `{self.prefix}`"),
+            discord.ui.TextDisplay(f"## Custom Commands\n-# {len(self.custom_commands)} total \N{MIDDLE DOT} prefix `{self.prefix}`"),
             discord.ui.Separator(),
         ]
 
@@ -593,9 +593,9 @@ class CustomCommandPanel(BaseLayoutView):
         if pages > 1:
             items.append(
                 discord.ui.ActionRow(
-                    PanelButton(self.previous_page, label="◀", disabled=self.page == 0),
+                    PanelButton(self.previous_page, label="\N{BLACK LEFT-POINTING TRIANGLE}", disabled=self.page == 0),
                     discord.ui.Button(label=f"{self.page + 1}/{pages}", disabled=True),
-                    PanelButton(self.next_page, label="▶", disabled=self.page >= pages - 1),
+                    PanelButton(self.next_page, label="\N{BLACK RIGHT-POINTING TRIANGLE}", disabled=self.page >= pages - 1),
                 )
             )
 
@@ -618,12 +618,12 @@ class CustomCommandPanel(BaseLayoutView):
         enabled = command.get("enabled", True)
         require_prefix = command.get("require_prefix", True)
         response = command["response"]
-        shown = response if len(response) <= DETAIL_RESPONSE_LIMIT else f"{response[:DETAIL_RESPONSE_LIMIT]}\n…"
+        shown = response if len(response) <= DETAIL_RESPONSE_LIMIT else f"{response[:DETAIL_RESPONSE_LIMIT]}\n\N{HORIZONTAL ELLIPSIS}"
 
         items: list[discord.ui.Item] = [
             discord.ui.TextDisplay(
                 f"## `{trigger_text(command, self.prefix)}`\n"
-                f"-# {'enabled' if enabled else 'disabled'} · "
+                f"-# {'enabled' if enabled else 'disabled'} \N{MIDDLE DOT} "
                 f"{'requires the prefix' if require_prefix else 'triggers without a prefix'}"
             ),
             discord.ui.TextDisplay(f"```jinja\n{shown.replace('```', chr(39) * 3)}\n```"),

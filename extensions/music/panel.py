@@ -33,16 +33,16 @@ SETTLE_SECONDS = 1.5  # a skip is ignored this soon after a track change: it was
 TICK_SECONDS = 15  # how often the progress bar is refreshed while playing
 VOLUME_STEP = 10
 
-LOOP_EMOJI = {LoopMode.off: "🔁", LoopMode.track: "🔂", LoopMode.queue: "🔁"}
+LOOP_EMOJI = {LoopMode.off: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}", LoopMode.track: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY}", LoopMode.queue: "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}"}
 
 type Handler = Callable[[discord.Member], Awaitable[Notice | None]]
 
 
 class Tab(enum.Enum):
-    player = ("Player", "🎵")
-    queue = ("Queue", "📜")
-    filters = ("Filters", "🎛️")
-    settings = ("Settings", "⚙️")
+    player = ("Player", "\N{MUSICAL NOTE}")
+    queue = ("Queue", "\N{SCROLL}")
+    filters = ("Filters", "\N{CONTROL KNOBS}\N{VARIATION SELECTOR-16}")
+    settings = ("Settings", "\N{GEAR}\N{VARIATION SELECTOR-16}")
 
     @property
     def label(self) -> str:
@@ -141,7 +141,7 @@ class MusicPanel(discord.ui.LayoutView):
         self.clear_items()
         self.add_item(
             discord.ui.Container(
-                discord.ui.TextDisplay(f"## 🎵 Music session ended\n{reason}"),
+                discord.ui.TextDisplay(f"## \N{MUSICAL NOTE} Music session ended\n{reason}"),
                 accent_colour=discord.Colour.dark_grey(),
             )
         )
@@ -269,10 +269,10 @@ class MusicPanel(discord.ui.LayoutView):
         if song is None:
             return [
                 discord.ui.TextDisplay("## Nothing playing\nQueue something with `play <url or search>`."),
-                discord.ui.TextDisplay(f"-# {plural(len(player.queue)):track} queued · via {player.backend_name}"),
+                discord.ui.TextDisplay(f"-# {plural(len(player.queue)):track} queued \N{MIDDLE DOT} via {player.backend_name}"),
             ]
 
-        state = "⏸️ **Paused**\n" if player.paused else ""
+        state = "\N{DOUBLE VERTICAL BAR}\N{VARIATION SELECTOR-16} **Paused**\n" if player.paused else ""
         body = f"## Now Playing\n{describe_song(song)}\n{state}{format_progress(player.position_ms, song.length, is_stream=song.is_stream)}"
         head: discord.ui.Item[Any] = discord.ui.TextDisplay(body)
         if song.thumbnail:
@@ -284,7 +284,7 @@ class MusicPanel(discord.ui.LayoutView):
             extras.append(f"Loop: {player.loop_mode.value}")
         if player.preset_key in PRESETS:
             extras.append(f"{PRESETS[player.preset_key].emoji} {PRESETS[player.preset_key].label}")
-        meta = " · ".join([f"Requested by {requester}", f"{plural(len(player.queue)):track} queued", f"Vol {player.volume_level}%", *extras])
+        meta = " \N{MIDDLE DOT} ".join([f"Requested by {requester}", f"{plural(len(player.queue)):track} queued", f"Vol {player.volume_level}%", *extras])
 
         return [head, discord.ui.TextDisplay(f"-# {meta}"), discord.ui.Separator(), self._controls_row()]
 
@@ -299,23 +299,23 @@ class MusicPanel(discord.ui.LayoutView):
                 "mp:pause",
                 self._toggle_pause,
                 label="Resume" if paused else "Pause",
-                emoji="▶️" if paused else "⏸️",
+                emoji="\N{BLACK RIGHT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}" if paused else "\N{DOUBLE VERTICAL BAR}\N{VARIATION SELECTOR-16}",
                 style=discord.ButtonStyle.success if paused else discord.ButtonStyle.secondary,
             ),
             self._button(
                 "mp:skip",
                 self._skip,
                 label=f"Skip {skip_votes}/{player.required_votes}" if skip_votes else "Skip",
-                emoji="⏭️",
+                emoji="\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\N{VARIATION SELECTOR-16}",
             ),
-            self._button("mp:stop", self._stop, label="Stop", emoji="⏹️", style=discord.ButtonStyle.danger),
+            self._button("mp:stop", self._stop, label="Stop", emoji="\N{BLACK SQUARE FOR STOP}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger),
             self._button(
                 "mp:loop",
                 self._cycle_loop,
                 emoji=LOOP_EMOJI[loop],
                 style=discord.ButtonStyle.secondary if loop is LoopMode.off else discord.ButtonStyle.primary,
             ),
-            self._button("mp:shuffle", self._shuffle, emoji="🔀"),
+            self._button("mp:shuffle", self._shuffle, emoji="\N{TWISTED RIGHTWARDS ARROWS}"),
         )
 
     def _queue_tab(self) -> list[discord.ui.Item[Any]]:
@@ -331,7 +331,7 @@ class MusicPanel(discord.ui.LayoutView):
         )
         now = f"-# Now playing: {describe_song(player.song)}" if player.song is not None else "-# Nothing is playing."
         children: list[discord.ui.Item[Any]] = [
-            discord.ui.TextDisplay(f"## Queue\n{plural(len(items)):track} · {format_clock_duration(player.queue.total_length)}"),
+            discord.ui.TextDisplay(f"## Queue\n{plural(len(items)):track} \N{MIDDLE DOT} {format_clock_duration(player.queue.total_length)}"),
             discord.ui.TextDisplay(body),
             discord.ui.TextDisplay(now),
         ]
@@ -339,7 +339,7 @@ class MusicPanel(discord.ui.LayoutView):
         if chunk:
             select: discord.ui.Select[Any] = discord.ui.Select(
                 custom_id="mp:remove",
-                placeholder="Remove a track…",
+                placeholder="Remove a track\N{HORIZONTAL ELLIPSIS}",
                 options=[
                     discord.SelectOption(label=truncate(f"{start + offset}. {song.title}", 100), value=str(song.uid))
                     for offset, song in enumerate(chunk, start=1)
@@ -353,8 +353,8 @@ class MusicPanel(discord.ui.LayoutView):
             select.callback = on_remove
             children.append(discord.ui.ActionRow(select))
 
-        previous: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:prev", emoji="◀️", disabled=self.page == 0)
-        following: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:next", emoji="▶️", disabled=self.page >= pages - 1)
+        previous: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:prev", emoji="\N{BLACK LEFT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}", disabled=self.page == 0)
+        following: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:next", emoji="\N{BLACK RIGHT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}", disabled=self.page >= pages - 1)
         indicator: discord.ui.Button[Any] = discord.ui.Button(custom_id="mp:page", label=f"{self.page + 1}/{pages}", disabled=True)
         previous.callback = self._page_callback(-1)  # type: ignore[method-assign]
         following.callback = self._page_callback(1)  # type: ignore[method-assign]
@@ -364,8 +364,8 @@ class MusicPanel(discord.ui.LayoutView):
                 previous,
                 indicator,
                 following,
-                self._button("mp:q-shuffle", self._shuffle, emoji="🔀"),
-                self._button("mp:clear", self._clear, emoji="🗑️", style=discord.ButtonStyle.danger),
+                self._button("mp:q-shuffle", self._shuffle, emoji="\N{TWISTED RIGHTWARDS ARROWS}"),
+                self._button("mp:clear", self._clear, emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}", style=discord.ButtonStyle.danger),
             )
         )
         return children
@@ -384,12 +384,12 @@ class MusicPanel(discord.ui.LayoutView):
         status = f"{active.emoji} **{active.label}**: {active.description}" if active is not None else "No filter active."
         how = "Applied by Lavalink." if player.backend_name == "Lavalink" else "Applied through FFmpeg (fallback backend)."
 
-        options = [discord.SelectOption(label="No filter", value="off", emoji="🚫", default=active is None)]
+        options = [discord.SelectOption(label="No filter", value="off", emoji="\N{NO ENTRY SIGN}", default=active is None)]
         options += [
             discord.SelectOption(label=preset.label, value=preset.key, description=preset.description, emoji=preset.emoji, default=preset is active)
             for preset in PRESETS.values()
         ]
-        select: discord.ui.Select[Any] = discord.ui.Select(custom_id="mp:filter", placeholder="Choose a filter…", options=options)
+        select: discord.ui.Select[Any] = discord.ui.Select(custom_id="mp:filter", placeholder="Choose a filter\N{HORIZONTAL ELLIPSIS}", options=options)
 
         async def on_pick(interaction: discord.Interaction) -> None:
             value = select.values[0]
@@ -413,7 +413,7 @@ class MusicPanel(discord.ui.LayoutView):
             "## Settings",
             f"Backend: {backend}",
             f"Voice channel: {channel.mention if channel is not None else 'none'}",
-            f"DJ: {dj.display_name if dj is not None else 'nobody'} · {plural(len(player.listeners)):listener}",
+            f"DJ: {dj.display_name if dj is not None else 'nobody'} \N{MIDDLE DOT} {plural(len(player.listeners)):listener}",
         ]
 
         loop_select: discord.ui.Select[Any] = discord.ui.Select(
@@ -433,9 +433,9 @@ class MusicPanel(discord.ui.LayoutView):
             discord.ui.TextDisplay("\n".join(lines)),
             discord.ui.Separator(),
             discord.ui.ActionRow(
-                self._button("mp:vol-down", lambda member: self._volume(member, -VOLUME_STEP), emoji="🔉"),
+                self._button("mp:vol-down", lambda member: self._volume(member, -VOLUME_STEP), emoji="\N{SPEAKER WITH ONE SOUND WAVE}"),
                 volume_label,
-                self._button("mp:vol-up", lambda member: self._volume(member, VOLUME_STEP), emoji="🔊"),
+                self._button("mp:vol-up", lambda member: self._volume(member, VOLUME_STEP), emoji="\N{SPEAKER WITH THREE SOUND WAVES}"),
                 self._button("mp:leave", self._leave, label="Disconnect", style=discord.ButtonStyle.danger),
             ),
             discord.ui.ActionRow(loop_select),
@@ -538,13 +538,13 @@ class SearchView(discord.ui.LayoutView):
         self.message: discord.Message | None = None
 
         self.select: discord.ui.Select[Any] = discord.ui.Select(
-            placeholder="Pick up to 5 tracks…",
+            placeholder="Pick up to 5 tracks\N{HORIZONTAL ELLIPSIS}",
             min_values=1,
             max_values=min(5, len(songs)),
             options=[
                 discord.SelectOption(
                     label=truncate(f"{index}. {song.title}", 100),
-                    description=truncate(f"{song.author} · {format_clock_duration(song.length)}", 100),
+                    description=truncate(f"{song.author} \N{MIDDLE DOT} {format_clock_duration(song.length)}", 100),
                     value=str(index - 1),
                 )
                 for index, song in enumerate(songs, start=1)

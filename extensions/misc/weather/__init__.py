@@ -170,7 +170,7 @@ class LocationModal(ui.Modal, title="Change Weather Location"):
 
     query = ui.TextInput(
         label="City, postal/zip code, or coordinates",
-        placeholder="e.g. Tokyo, JP  •  10001,US  •  28.6139, 77.2090",
+        placeholder="e.g. Tokyo, JP  \N{BULLET}  10001,US  \N{BULLET}  28.6139, 77.2090",
         min_length=2,
         max_length=100,
         required=True,
@@ -564,7 +564,7 @@ class WeatherDashboard(ui.LayoutView):
 
         source_note = "One Call 3.0" if self.data.get("_source") == "onecall" else "OpenWeather 2.5"
         page_label = PAGE_META.get(self.page, ("Day detail", "", ""))[0]
-        container.add_item(ui.TextDisplay(f"-# {page_label} • {self.units.label} • {source_note}"))
+        container.add_item(ui.TextDisplay(f"-# {page_label} \N{BULLET} {self.units.label} \N{BULLET} {source_note}"))
 
         self.add_item(container)
 
@@ -641,7 +641,7 @@ class WeatherDashboard(ui.LayoutView):
         view = CardLayoutView(
             heading=f"### \N{MEMO} Weather Overview \N{EM DASH} {self.place.title}",
             body=payload.get("weather_overview") or "No overview text available.",
-            footer=f"{src} • {date_str} • {self.units.label}",
+            footer=f"{src} \N{BULLET} {date_str} \N{BULLET} {self.units.label}",
             colour=_accent_colour(weather["id"], weather["icon"].endswith("n")),
             thumbnail_url=icon_url(weather["icon"]),
         )
@@ -1219,7 +1219,7 @@ class Weather(commands.Cog, command_attrs={"hidden": True}):
                     f"**{when:%A, %d %B %Y} at {render.clock(point['dt'], offset)}**\n"
                     f"**{units.temp(point['temp'])}** ({weather['description'].title()}, feels like {units.temp(point['feels_like'])})"
                 ),
-                footer=f"OpenWeather Time Machine • {units.label}",
+                footer=f"OpenWeather Time Machine \N{BULLET} {units.label}",
                 colour=_accent_colour(weather["id"], weather["icon"].endswith("n")),
                 thumbnail_url=icon_url(weather["icon"]),
                 filename=filename,
@@ -1246,7 +1246,7 @@ class Weather(commands.Cog, command_attrs={"hidden": True}):
                     f"Low **{units.temp(day_dict['temp']['min'])}**  \N{MIDDLE DOT}  "
                     f"Afternoon **{units.temp(day_dict['temp']['day'])}**"
                 ),
-                footer=f"OpenWeather Daily Aggregation • {units.label}",
+                footer=f"OpenWeather Daily Aggregation \N{BULLET} {units.label}",
                 colour=_accent_colour(weather["id"], False),
                 thumbnail_url=icon_url(weather["icon"]),
                 filename=filename,
@@ -1385,7 +1385,7 @@ class Weather(commands.Cog, command_attrs={"hidden": True}):
         view = CardLayoutView(
             heading=f"### \N{MEMO} AI Weather Overview \N{EM DASH} {place.title}",
             body=overview_data.get("weather_overview") or "No overview available.",
-            footer=f"OpenWeather One Call 3.0 Overview • {units.label}",
+            footer=f"OpenWeather One Call 3.0 Overview \N{BULLET} {units.label}",
             colour=_accent_colour(weather["id"], weather["icon"].endswith("n")),
             thumbnail_url=icon_url(weather["icon"]),
             filename=filename,

@@ -166,8 +166,7 @@ class PaginationMixin[PageT: discord.Embed | list[discord.ui.Item]]:
         self.stop()
         await interaction.response.defer()
         if interaction.message is not None:
-            with contextlib.suppress(discord.HTTPException):
-                await interaction.message.delete()
+            await interaction.message.delete(delay=0)
 
     async def update_page(self, interaction: discord.Interaction[Bot]) -> None:
         raise NotImplementedError

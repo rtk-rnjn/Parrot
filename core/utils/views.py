@@ -148,14 +148,12 @@ class DeleteMessageButtonView(BaseView):
         if message is None:
             return
 
-        with contextlib.suppress(discord.HTTPException):
-            await message.delete()
+        await message.delete(delay=0)
 
         # The bot replies with ctx.reply, so the reference resolves to the invoking message.
         reference = message.reference.resolved if message.reference is not None else None
         if isinstance(reference, discord.Message):
-            with contextlib.suppress(discord.HTTPException):
-                await reference.delete()
+            await reference.delete(delay=0)
 
 
 class DisabledButtonView(BaseView):

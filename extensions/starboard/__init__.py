@@ -450,8 +450,7 @@ class Starboard(commands.Cog):
                 pass  # deleted meanwhile, post a fresh one
             except discord.HTTPException:
                 # Entries made by an embed-based version cannot be turned into Components V2 messages.
-                with contextlib.suppress(discord.HTTPException):
-                    await partial.delete()
+                await partial.delete(delay=0)
 
         try:
             sent = await board.send(view=StarboardEntryView(message, stars, emoji), allowed_mentions=NO_MENTIONS)
@@ -463,7 +462,7 @@ class Starboard(commands.Cog):
     @staticmethod
     async def _delete_board_message(board: discord.TextChannel, board_id: int) -> None:
         with contextlib.suppress(discord.NotFound, discord.Forbidden):
-            await board.get_partial_message(board_id).delete()
+            await board.get_partial_message(board_id).delete(delay=0)
 
     @commands.group(name="starboard", aliases=["sb"], invoke_without_command=True)
     @commands.guild_only()

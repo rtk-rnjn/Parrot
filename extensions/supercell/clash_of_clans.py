@@ -73,8 +73,7 @@ class ClashOfClans(SupercellCog, command_attrs={"hidden": True}):
         verified = False
         if token:
             if ctx.interaction is None:
-                with contextlib.suppress(discord.HTTPException):
-                    await ctx.message.delete()
+                await ctx.message.delete(delay=0)
             result = await self.api.post(f"/players/{enc(tag)}/verifytoken", {"token": token.strip()})
             if result.get("status") != "ok":
                 message = "That API token doesn't belong to this account."

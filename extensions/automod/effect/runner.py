@@ -224,7 +224,7 @@ def resolve_role(ctx: EffectContext, role_id: int | None) -> discord.Role:
 async def delete_message(config: object, ctx: EffectContext) -> str | None:
     message = require_message(ctx)
     require_permissions(permissions_in(ctx, message.channel), "manage_messages")
-    await message.delete()
+    await message.delete(delay=0)
     return None
 
 

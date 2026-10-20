@@ -31,6 +31,7 @@ class GiveawayEntry(TypedDict):
     entrants: list[int]
     ended: bool
     created_at: datetime
+    winner_ids: list[int]
 
 
 class WelcomeConfig(TypedDict):

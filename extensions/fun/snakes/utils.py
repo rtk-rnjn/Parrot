@@ -421,7 +421,7 @@ class SnakeAndLaddersGame:
                 elif reaction.emoji == START_EMOJI and self.ctx.author == user:
                     self.started = True
                     await self.start_game(user)
-                    await startup.delete()
+                    await startup.delete(delay=0)
                     break
 
                 await startup.remove_reaction(reaction.emoji, user)
@@ -558,12 +558,12 @@ class SnakeAndLaddersGame:
 
         # Delete the previous messages
         if self.board and self.positions:
-            await self.board.delete()
-            await self.positions.delete()
+            await self.board.delete(delay=0)
+            await self.positions.delete(delay=0)
 
         # remove the roll messages
         for roll in self.rolls:
-            await roll.delete()
+            await roll.delete(delay=0)
         self.rolls = []
 
         # Save new messages

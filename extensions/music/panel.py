@@ -107,8 +107,7 @@ class MusicPanel(discord.ui.LayoutView):
             return
 
         if message is not None:
-            with contextlib.suppress(discord.HTTPException):
-                await message.delete()
+            await message.delete(delay=0)
             self.message = None
 
         try:

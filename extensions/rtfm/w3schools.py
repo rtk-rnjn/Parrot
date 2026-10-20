@@ -541,7 +541,7 @@ class PageView(OwnedView):
     async def delete(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         await interaction.response.defer()
         if interaction.message:
-            await interaction.message.delete()
+            await interaction.message.delete(delay=0)
         self.stop()
 
 

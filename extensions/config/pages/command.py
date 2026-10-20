@@ -363,10 +363,10 @@ class CommandConfigPage(Page):
         return ChannelSelect(
             self._channel_handler(key),
             placeholder=placeholder,
-            channel_types=list(CHANNEL_TYPES),
+            channel_types=[*list(CHANNEL_TYPES), discord.ChannelType.category],
             min_values=0,
             max_values=MAX_SELECT,
-            default_values=channels[:MAX_SELECT],
+            default_values=channels,
         )
 
     def role_rule_select(self, key: str, placeholder: str) -> discord.ui.Item:
@@ -376,7 +376,7 @@ class CommandConfigPage(Page):
             placeholder=placeholder,
             min_values=0,
             max_values=MAX_SELECT,
-            default_values=roles[:MAX_SELECT],
+            default_values=roles,
         )
 
     def _channel_handler(self, key: str) -> Callable[[Interaction, list[int]], Awaitable[None]]:

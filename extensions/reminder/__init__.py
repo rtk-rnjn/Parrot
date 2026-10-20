@@ -261,7 +261,7 @@ class ReminderPanel(BaseLayoutView):
         when = as_utc(timer["expires_at"])
         details = [clip(metadata["reminder_text"], 80)]
         if metadata.get("repeat") in REPEAT_STEPS:
-            details.append(f"\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS} {REPEAT_LABELS[metadata['repeat']]}")
+            details.append(f"\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS} {REPEAT_LABELS[metadata['repeat']]}")  # pyright: ignore[reportTypedDictNotRequiredAccess]
         text = f"**{number}. {discord.utils.format_dt(when, 'R')}** \N{MIDDLE DOT} {discord.utils.format_dt(when, 'f')}\n-# {' \N{MIDDLE DOT} '.join(details)}"
         return discord.ui.Section(
             discord.ui.TextDisplay(text),
@@ -398,7 +398,7 @@ class TimezoneView(BaseView):
     def __init__(self, *, author: discord.User | discord.Member) -> None:
         super().__init__(author=author)
         options = [discord.SelectOption(label=label, value=key, description=key) for label, key in POPULAR_TIMEZONES]
-        self.add_item(make_select("Choose your timezone\N{HORIZONTAL ELLIPSIS}", options, self._pick))
+        self.add_item(make_select("Choose your timezone\N{HORIZONTAL ELLIPSIS}", options, self._pick))  # pyright: ignore[reportArgumentType]
 
     async def _pick(self, interaction: discord.Interaction[Bot], values: list[str]) -> None:
         key = values[0]
@@ -535,21 +535,12 @@ class Reminder(commands.Cog):
 
         channel = self.bot.get_channel(metadata["channel_id"]) if metadata["channel_id"] else None
         if isinstance(channel, discord.abc.Messageable) and can_send(channel):
-            # reference = (
-            #     discord.MessageReference(
-            #         message_id=metadata["message_id"],
-            #         channel_id=metadata["channel_id"],
-            #         guild_id=metadata["guild_id"] or None,
-            #         fail_if_not_exists=False,
-            #     )
-            #     if metadata["message_id"]
-            #     else None
-            # )
+            partial_message = channel.get_partial_message(metadata["message_id"])
             with contextlib.suppress(discord.HTTPException):
                 view.message = await channel.send(
                     content,
                     view=view,
-                    # reference=reference,
+                    reference=partial_message,
                     allowed_mentions=discord.AllowedMentions(users=[discord.Object(id=user_id)]),
                 )
                 return

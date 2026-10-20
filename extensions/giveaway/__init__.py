@@ -492,13 +492,16 @@ class Giveaway(commands.Cog):
         when = (giveaway.get("ended_at") or giveaway["ends_at"]) if giveaway["ended"] else giveaway["ends_at"]
         mode = giveaway.get("entry_mode", "reaction")
 
-        embed = discord.Embed(title=shorten(giveaway["prize"], 200), colour=discord.Colour.blurple(), url=message_url(giveaway))
-        embed.add_field(name="Status", value=status)
-        embed.add_field(name="Hosted by", value=f"<@{giveaway['host_id']}>")
-        embed.add_field(name="Winners", value=str(giveaway["winners"]))
-        embed.add_field(name="Ended" if giveaway["ended"] else "Ends", value=discord.utils.format_dt(when, "R"))
-        embed.add_field(name="Entries", value=str(len(giveaway["entrants"])))
-        embed.add_field(name="Entry", value="Button" if mode == "button" else f"Reaction {GIVEAWAY_EMOJI}")
+        embed = (
+            discord.Embed(title=shorten(giveaway["prize"], 200), colour=discord.Colour.blurple(), url=message_url(giveaway))
+            .add_field(name="Status", value=status)
+            .add_field(name="Hosted by", value=f"<@{giveaway['host_id']}>")
+            .add_field(name="Winners", value=str(giveaway["winners"]))
+            .add_field(name="Ended" if giveaway["ended"] else "Ends", value=discord.utils.format_dt(when, "R"))
+            .add_field(name="Entries", value=str(len(giveaway["entrants"])))
+            .add_field(name="Entry", value="Button" if mode == "button" else f"Reaction {GIVEAWAY_EMOJI}")
+        )
+
         if giveaway.get("winner_ids"):
             embed.add_field(name="Winner(s)", value=", ".join(f"<@{user_id}>" for user_id in giveaway["winner_ids"]), inline=False)
         if mode == "reaction" and not giveaway["ended"]:

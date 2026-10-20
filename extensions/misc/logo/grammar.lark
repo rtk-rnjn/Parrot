@@ -18,19 +18,19 @@ procedure: _TO NAME parameter* statement* _END
 
 parameter: VARIABLE
 
-procedure_call: NAME expression*
+procedure_call: NAME unary*
 
-?command: _FD expression              -> forward
-        | _BK expression              -> backward
-        | _RT expression              -> right
-        | _LT expression              -> left
+?command: _FD expression               -> forward
+        | _BK expression               -> backward
+        | _RT expression               -> right
+        | _LT expression               -> left
         | _PU                          -> pen_up
         | _PD                          -> pen_down
         | _HOME                        -> home
         | _CS                          -> clear_screen
         | _SETPC WORD                  -> set_pen_color
         | _SETWIDTH expression         -> set_pen_width
-        | _SETXY expression expression -> set_xy
+        | _SETXY unary unary           -> set_xy
         | _SETH expression             -> set_heading
 
 ?expression: comparison

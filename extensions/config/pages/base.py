@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 import discord
 
-from core.utils import CallbackButton, CallbackChannelSelect, CallbackRoleSelect, CallbackStringSelect, truncate
+from core.utils import CallbackButton, CallbackChannelSelect, CallbackMentionableSelect, CallbackRoleSelect, CallbackStringSelect, truncate
 
 if TYPE_CHECKING:
     from core import Bot
@@ -40,6 +40,7 @@ type Interaction = discord.Interaction[Bot]
 type ButtonHandler = Callable[[Interaction], Awaitable[None]]
 type ToggleHandler = Callable[[Interaction, bool], Awaitable[None]]
 type ChannelHandler = Callable[[Interaction, list[int]], Awaitable[None]]
+type MentionableHandler = Callable[[Interaction, list[discord.abc.Snowflake]], Awaitable[None]]
 type RoleHandler = Callable[[Interaction, list[discord.Role]], Awaitable[None]]
 type StringHandler = Callable[[Interaction, list[str]], Awaitable[None]]
 
@@ -112,10 +113,26 @@ def _role_defaults(guild: discord.Guild, role_ids: Sequence[int]) -> list[discor
     return [role for role in roles if role is not None]
 
 
+def _mentionable_defaults(guild: discord.Guild, mentionable_ids: Sequence[int]) -> list[discord.abc.Snowflake]:
+    """Return a list of mentionables (roles or members) that exist in the guild."""
+    mentionables: list[discord.abc.Snowflake] = []
+    for mentionable_id in mentionable_ids:
+        role = guild.get_role(mentionable_id)
+        if role is not None:
+            mentionables.append(role)
+            continue
+        member = guild.get_member(mentionable_id)
+        if member is not None:
+            mentionables.append(member)
+
+    return mentionables
+
+
 Button = CallbackButton
 ChannelSelect = CallbackChannelSelect
 RoleSelect = CallbackRoleSelect
 StringSelect = CallbackStringSelect
+MentionableSelect = CallbackMentionableSelect
 
 
 class PageModal(discord.ui.Modal):
@@ -282,4 +299,54 @@ class Page(abc.ABC):
             min_values=1,
             max_values=max(1, max_values),
             disabled=disabled,
+        )
+
+    def channels_select(
+        self,
+        placeholder: str,
+        handler: ChannelHandler,
+        *,
+        current: Sequence[int] = (),
+        channel_types: Sequence[discord.ChannelType] = TEXT_CHANNELS,
+        max_values: int = 25,
+    ) -> ChannelSelect:
+        return ChannelSelect(
+            handler,
+            placeholder=placeholder,
+            channel_types=list(channel_types),
+            min_values=0,
+            max_values=max(1, max_values),
+            default_values=[channel for channel in (_channel_defaults(self.guild, cid) for cid in current) if channel],
+        )
+
+    def roles_select(
+        self,
+        placeholder: str,
+        handler: RoleHandler,
+        *,
+        current: Sequence[int] = (),
+        max_values: int = 25,
+    ) -> RoleSelect:
+        return RoleSelect(
+            handler,
+            placeholder=placeholder,
+            min_values=0,
+            max_values=max(1, max_values),
+            default_values=_role_defaults(self.guild, current),
+        )
+
+    def mentionables_select(
+        self,
+        placeholder: str,
+        handler: MentionableHandler,
+        *,
+        current: Sequence[int] = (),
+        max_values: int = 25,
+    ) -> MentionableSelect:
+        return MentionableSelect(
+            handler,
+            placeholder=placeholder,
+            min_values=0,
+            max_values=max(1, max_values),
+            default_values=_mentionable_defaults(self.guild, current),
         )

@@ -68,8 +68,20 @@ class RedisKeys(StrEnum):
     GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_CHANNEL_ID = "guild:{guild_id}:welcome_config:on_member_leave_channel_id"
     GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID = "guild:{guild_id}:welcome_config:on_member_join_role_id"
 
-    GUILD_STARBOARD_CONFIG = "guild:{guild_id}:starboard_config"
-    GUILD_STARBOARD_BOARD_MESSAGES = "guild:{guild_id}:starboard_board_messages"
+    GUILD_STARBOARD_CONFIG_ENABLED = "guild:{guild_id}:starboard_config:enabled"
+    GUILD_STARBOARD_CONFIG_CHANNEL_ID = "guild:{guild_id}:starboard_config:channel_id"
+    GUILD_STARBOARD_CONFIG_THRESHOLD = "guild:{guild_id}:starboard_config:threshold"
+    GUILD_STARBOARD_CONFIG_EMOJI = "guild:{guild_id}:starboard_config:emoji"
+    GUILD_STARBOARD_CONFIG_SELF_STAR = "guild:{guild_id}:starboard_config:self_star"
+    GUILD_STARBOARD_CONFIG_ALLOW_NSFW = "guild:{guild_id}:starboard_config:allow_nsfw"
+    GUILD_STARBOARD_CONFIG_DELETE_ORIGINAL = "guild:{guild_id}:starboard_config:delete_original"
+    GUILD_STARBOARD_CONFIG_DELETE_BELOW_THRESHOLD = "guild:{guild_id}:starboard_config:delete_below_threshold"
+    GUILD_STARBOARD_CONFIG_MAX_AGE_DAYS = "guild:{guild_id}:starboard_config:max_age_days"
+    GUILD_STARBOARD_CONFIG_IGNORED_CHANNELS = "guild:{guild_id}:starboard_config:ignored_channels"
+    GUILD_STARBOARD_CONFIG_IGNORED_ROLES = "guild:{guild_id}:starboard_config:ignored_roles"
+    GUILD_STARBOARD_CONFIG_IGNORED_USERS = "guild:{guild_id}:starboard_config:ignored_users"
+
+    GUILD_STARBOARD_ENTRY = "guild:{guild_id}:starboard_entry:{message_id}"
 
     GUILD_BIRTHDAY_CONFIG_ENABLED = "guild:{guild_id}:birthday_config:enabled"
     GUILD_BIRTHDAY_CONFIG_CHANNEL_ID = "guild:{guild_id}:birthday_config:channel_id"

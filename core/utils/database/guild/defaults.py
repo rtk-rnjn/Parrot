@@ -16,7 +16,7 @@ load_dotenv()
 
 DEFAULT_PREFIX = os.getenv("DEFAULT_PREFIX", "$")
 
-EVENT_NAMES: tuple[EVENT_NAME, ...] = get_args(EVENT_NAME)
+EVENT_NAMES = get_args(EVENT_NAME)
 
 __all__ = ("DEFAULT_PREFIX", "EVENT_NAMES", "default_guild_configuration")
 
@@ -78,7 +78,12 @@ def default_guild_configuration(guild_id: int, /) -> GuildConfiguration:
             "channel_id": None,
             "threshold": 3,
             "emoji": "\N{WHITE MEDIUM STAR}",
-            "board_messages": {},
+            "allow_nsfw": False,
+            "self_star": False,
+            "max_age_days": 30,
+            "ignored_channels": [],
+            "ignored_roles": [],
+            "ignored_users": [],
         },
         "birthday_config": {"enabled": False, "channel_id": None},
         "ticket_config": {
@@ -90,7 +95,7 @@ def default_guild_configuration(guild_id: int, /) -> GuildConfiguration:
         "custom_commands": [],
         "tags": [],
         "afk_users": {},
-        "events": {name: _default_event() for name in EVENT_NAMES},  # type: ignore[typeddict-item]
+        "events": {name: _default_event() for name in EVENT_NAMES},  # pyright: ignore[reportReturnType]
         "leveling_data": {},
         "telephone_config": {
             "enabled": False,

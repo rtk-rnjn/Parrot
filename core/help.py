@@ -417,6 +417,7 @@ class HelpView(BaseLayoutView):
         self.category: Category | None = None
         self.command: commands.Command | None = None
         self.page = 0
+        self.sub_page = 0
         self.command_enabled = True
         self.configuring = False
         self.config_rows: list[CommandConfig] = []
@@ -456,10 +457,11 @@ class HelpView(BaseLayoutView):
             await self.load_config()
         await asyncio.to_thread(self.render)
 
-    async def show_command(self, command: commands.Command) -> None:
+    async def show_command(self, command: commands.Command, *, sub_page: int = 0) -> None:
         self.category = self.category_for(command)
         self.command = command
         self.configuring = False
+        self.sub_page = sub_page
         if self.ctx.guild is not None:
             if self.is_admin(self.ctx.author):
                 await self.load_config()
@@ -467,6 +469,14 @@ class HelpView(BaseLayoutView):
             else:
                 self.command_enabled = await self.ctx.bot.database.is_command_enabled(guild_id=self.ctx.guild.id, command_path=command.qualified_name)
         await asyncio.to_thread(self.render)
+
+    def subcommand_page(self, command: commands.Command) -> tuple[list[commands.Command], int, int]:
+        """Return ``(subcommands on this page, total subcommands, page count)`` and clamp ``sub_page``."""
+        children = subcommands_of(command, include_hidden=self.include_hidden)
+        pages = max(1, -(-len(children) // COMMANDS_PER_PAGE))
+        self.sub_page = min(self.sub_page, pages - 1)
+        start = self.sub_page * COMMANDS_PER_PAGE
+        return children[start : start + COMMANDS_PER_PAGE], len(children), pages
 
     async def edit(self, interaction: discord.Interaction) -> None:
         await interaction.response.edit_message(view=self)
@@ -633,9 +643,10 @@ class HelpView(BaseLayoutView):
         if isinstance(examples, list | tuple) and examples:
             sections.append("### Examples\n" + "\n".join(f"`{self.prefix}{example}`" for example in examples))
 
-        children = subcommands_of(command, include_hidden=self.include_hidden)
-        if children:
-            sections.append("### Subcommands\n" + "\n".join(f"`{child.name}` - {child.short_doc or 'No description.'}" for child in children))
+        shown, total, pages = self.subcommand_page(command)
+        if shown:
+            title = f"### Subcommands ({total})" if pages == 1 else f"### Subcommands (page {self.sub_page + 1} of {pages}, {total} total)"
+            sections.append(title + "\n" + "\n".join(f"`{child.name}` - {child.short_doc or 'No description.'}" for child in shown))
 
         # The description gets whatever room the structured sections leave.
         reserved = sum(len(section) + 1 for section in sections)
@@ -647,20 +658,41 @@ class HelpView(BaseLayoutView):
         self.container.add_item(discord.ui.TextDisplay(self.command_text(command)))
         self.container.add_item(discord.ui.Separator())
 
-        children = subcommands_of(command, include_hidden=self.include_hidden)
-        if children:
+        shown, _, pages = self.subcommand_page(command)
+        if shown:
             options = [
                 discord.SelectOption(label=child.name[:100], value=str(index), description=truncate(child.short_doc, 100) or None)
-                for index, child in enumerate(children[:SELECT_LIMIT])
+                for index, child in enumerate(shown)
             ]
             select = discord.ui.Select(placeholder="Open a subcommand", options=options)
 
             async def pick(interaction: discord.Interaction) -> None:
-                await self.show_command(children[int(select.values[0])])
+                await self.show_command(shown[int(select.values[0])])
                 await self.edit(interaction)
 
             select.callback = pick
             self.container.add_item(discord.ui.ActionRow(select))
+
+            if pages > 1:
+
+                async def turn(interaction: discord.Interaction, step: int) -> None:
+                    self.sub_page += step
+                    await asyncio.to_thread(self.render)
+                    await self.edit(interaction)
+
+                async def previous(interaction: discord.Interaction) -> None:
+                    await turn(interaction, -1)
+
+                async def following(interaction: discord.Interaction) -> None:
+                    await turn(interaction, 1)
+
+                self.container.add_item(
+                    discord.ui.ActionRow(
+                        self.button("Previous", previous, emoji="\N{BLACK LEFT-POINTING TRIANGLE}", disabled=self.sub_page == 0),
+                        self.button(f"Page {self.sub_page + 1} of {pages}", previous, disabled=True),
+                        self.button("Next", following, emoji="\N{BLACK RIGHT-POINTING TRIANGLE}", disabled=self.sub_page >= pages - 1),
+                    )
+                )
 
         demo = command.extras.get("usage_demo")
         if isinstance(demo, str) and demo:
@@ -668,7 +700,9 @@ class HelpView(BaseLayoutView):
 
         async def back(interaction: discord.Interaction) -> None:
             if command.parent is not None:
-                await self.show_command(command.parent)  # type: ignore[arg-type]
+                siblings = subcommands_of(command.parent, include_hidden=self.include_hidden)  # type: ignore[arg-type]
+                index = siblings.index(command) if command in siblings else 0
+                await self.show_command(command.parent, sub_page=index // COMMANDS_PER_PAGE)  # type: ignore[arg-type]
             elif self.category is not None:
                 await self.show_category(self.category)
             else:

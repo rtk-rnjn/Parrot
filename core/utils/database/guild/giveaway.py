@@ -11,11 +11,11 @@ from pymongo.results import InsertOneResult
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
-from ..models import Giveaway, GiveawayConfig
+from ..models import GiveawayConfig, GiveawayEntry
 
 
 class _GuildGiveawayMixin(DatabaseMixin):
-    giveaways_collection: AsyncCollection[Giveaway]
+    giveaways_collection: AsyncCollection[GiveawayEntry]
 
     async def __cache_giveaway_config(self, *, guild_id: int, config: GiveawayConfig) -> None:
         key = RedisKeys.GUILD_GIVEAWAY_CONFIG_ENABLED.format(guild_id=guild_id)
@@ -124,7 +124,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
         ends_at: datetime,
         entry_mode: Literal["button", "reaction"],
     ) -> InsertOneResult:
-        giveaway: Giveaway = {
+        giveaway: GiveawayEntry = {
             "_id": ObjectId(),
             "guild_id": guild_id,
             "channel_id": channel_id,
@@ -140,13 +140,13 @@ class _GuildGiveawayMixin(DatabaseMixin):
         }
         return await self.giveaways_collection.insert_one(giveaway)
 
-    async def get_giveaway(self, giveaway_id: ObjectId, /) -> Giveaway | None:
+    async def get_giveaway(self, giveaway_id: ObjectId, /) -> GiveawayEntry | None:
         return await self.giveaways_collection.find_one({"_id": giveaway_id})
 
-    async def get_giveaway_by_message(self, *, guild_id: int, message_id: int) -> Giveaway | None:
+    async def get_giveaway_by_message(self, *, guild_id: int, message_id: int) -> GiveawayEntry | None:
         return await self.giveaways_collection.find_one({"guild_id": guild_id, "message_id": message_id})
 
-    async def get_giveaways(self, *, guild_id: int | None = None) -> list[Giveaway]:
+    async def get_giveaways(self, *, guild_id: int | None = None) -> list[GiveawayEntry]:
         query = {"guild_id": guild_id} if guild_id is not None else {}
         return await self.giveaways_collection.find(query).to_list(length=None)
 
@@ -154,7 +154,7 @@ class _GuildGiveawayMixin(DatabaseMixin):
         result = await self.giveaways_collection.update_one({"_id": giveaway_id, "ended": False}, {"$addToSet": {"entrants": user_id}})
         return result.modified_count > 0
 
-    async def end_giveaway(self, giveaway_id: ObjectId, /) -> Giveaway | None:
+    async def end_giveaway(self, giveaway_id: ObjectId, /) -> GiveawayEntry | None:
         return await self.giveaways_collection.find_one_and_update(
             {"_id": giveaway_id, "ended": False},
             {"$set": {"ended": True}},

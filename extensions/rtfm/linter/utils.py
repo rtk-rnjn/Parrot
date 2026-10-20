@@ -3,13 +3,12 @@ from __future__ import annotations
 import asyncio
 import importlib.metadata as pkg_resources
 import io
-import os
 import re
 import tempfile
 import threading
 import time
 from functools import partial
-from typing import TypeVar
+from pathlib import Path
 
 import arrow
 import autopep8
@@ -39,6 +38,12 @@ from .ruff import RuffConverter
 from .ruff import validate_flag as ruff_validate_flag
 
 DISCORD_MESSAGE_LIMIT = 2000
+
+
+def delete_file(filename: str) -> None:
+    """Delete a file if it exists."""
+    if Path(filename).exists():
+        Path(filename).unlink()
 
 
 async def lint(cmd: str, filename: str) -> dict[str, str]:
@@ -72,21 +77,12 @@ async def lint(cmd: str, filename: str) -> dict[str, str]:
     if stderr:
         payload["stderr"] = stderr.decode()
 
-    threading.Thread(target=partial(os.remove, filename)).start()
+    threading.Thread(target=partial(delete_file, filename)).start()
 
     return payload
 
 
-FlagT = TypeVar(
-    "FlagT",
-    Flake8Converter,
-    MypyConverter,
-    PyLintConverter,
-    BanditConverter,
-    PyrightConverter,
-    RuffConverter,
-    str,
-)
+type FlagT = Flake8Converter | MypyConverter | PyLintConverter | BanditConverter | PyrightConverter | RuffConverter | str
 
 
 async def code_to_file(code: str) -> str:

@@ -4,7 +4,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from redis.asyncio import Redis
 
-from .models import CommandConfig, Giveaway, GuildConfiguration, ModAction, UserConfiguration
+from .models import CommandConfig, GiveawayEntry, GuildConfiguration, ModAction, StarboardEntry, UserConfiguration
 
 
 class DatabaseMixin:
@@ -21,7 +21,9 @@ class DatabaseMixin:
     guilds_collection: AsyncCollection[GuildConfiguration]
     users_collection: AsyncCollection[UserConfiguration]
 
-    giveaways_collection: AsyncCollection[Giveaway]
+    giveaways_collection: AsyncCollection[GiveawayEntry]
+    starboards_collection: AsyncCollection[StarboardEntry]
+
     mod_actions_collection: AsyncCollection[ModAction]
 
     commands_config_collection: AsyncCollection[CommandConfig]

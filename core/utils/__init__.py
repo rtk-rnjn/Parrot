@@ -35,7 +35,7 @@ from .formats import (
     safe_text,
     truncate,
 )
-from .items import CallbackButton, CallbackChannelSelect, CallbackRoleSelect, CallbackStringSelect
+from .items import CallbackButton, CallbackChannelSelect, CallbackMentionableSelect, CallbackRoleSelect, CallbackStringSelect
 from .paginator import PaginationLayout, PaginationView
 from .pastebin_client import PastebinClient
 from .scheduling import DUE_PRESETS, WhenModal, as_utc, clip, format_due, get_user_tz, local_text, make_button, make_select, parse_future, preset_due
@@ -51,6 +51,7 @@ __all__ = (
     "BaseView",
     "CallbackButton",
     "CallbackChannelSelect",
+    "CallbackMentionableSelect",
     "CallbackRoleSelect",
     "CallbackStringSelect",
     "ConfirmationLayout",

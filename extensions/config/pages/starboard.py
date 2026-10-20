@@ -42,6 +42,15 @@ class StarboardModal(PageModal):
             min_length=1,
             max_length=64,
         )
+        self.self_star_input = discord.ui.Checkbox(default=bool(starboard.get("self_star")))
+        self.allow_nsfw_input = discord.ui.Checkbox(default=bool(starboard.get("allow_nsfw")))
+        self.max_days_age_input = discord.ui.TextInput(
+            placeholder="30",
+            default=str(starboard.get("max_age_days") or ""),
+            min_length=1,
+            max_length=len(str(MAX_THRESHOLD)),
+        )
+
         self.add_item(
             discord.ui.Label(text="Reactions needed", description=f"Between {MIN_THRESHOLD} and {MAX_THRESHOLD}.", component=self.threshold_input)
         )
@@ -50,6 +59,27 @@ class StarboardModal(PageModal):
                 text="Reaction emoji",
                 description="A standard emoji, or a custom emoji from this server such as <:name:id>.",
                 component=self.emoji_input,
+            )
+        )
+        self.add_item(
+            discord.ui.Label(
+                text="Allow self-star",
+                description="Whether the author of a message can star their own message.",
+                component=self.self_star_input,
+            )
+        )
+        self.add_item(
+            discord.ui.Label(
+                text="Allow NSFW",
+                description="Whether messages in NSFW channels can be starred.",
+                component=self.allow_nsfw_input,
+            )
+        )
+        self.add_item(
+            discord.ui.Label(
+                text="Max age (days)",
+                description="Messages older than this many days will not be starred. Leave blank for no limit.",
+                component=self.max_days_age_input,
             )
         )
 
@@ -69,7 +99,19 @@ class StarboardModal(PageModal):
             await self.page.commit(interaction, "That does not look like a single emoji.", level=NoticeLevel.ERROR)
             return
 
-        await self.page.db.edit_starboard_config(guild_id=self.page.guild.id, threshold=threshold, emoji=emoji)
+        try:
+            max_days_age = int(self.max_days_age_input.value.strip()) if self.max_days_age_input.value.strip() else None
+        except ValueError:
+            max_days_age = None
+
+        await self.page.db.edit_starboard_config(
+            guild_id=self.page.guild.id,
+            threshold=threshold,
+            emoji=emoji,
+            self_star=self.self_star_input.value,
+            allow_nsfw=self.allow_nsfw_input.value,
+            max_age_days=max_days_age,
+        )
         await self.page.commit(interaction, f"Messages now need {threshold} {emoji} reaction{'' if threshold == 1 else 's'} to reach the starboard.")
 
 
@@ -113,6 +155,9 @@ class StarboardPage(Page):
                     ("Starboard channel", channel_text(self.guild, self.channel_id)),
                     ("Reactions needed", f"{threshold}" if threshold else "*Not set*"),
                     ("Reaction emoji", starboard.get("emoji") or "*Not set*"),
+                    ("Allow self-star", "Yes" if starboard.get("self_star") else "No"),
+                    ("Allow NSFW", "Yes" if starboard.get("allow_nsfw") else "No"),
+                    ("Max age (days)", str(starboard.get("max_age_days")) if starboard.get("max_age_days") is not None else "*Not set*"),
                 ]
             ),
             self.row(
@@ -123,6 +168,15 @@ class StarboardPage(Page):
                 self.reset_button(),
             ),
             self.row(self.channel_select("Starboard channel\N{HORIZONTAL ELLIPSIS}", self.set_channel, current=self.channel_id)),
+            self.row(
+                self.channels_select(
+                    "Ignored channels\N{HORIZONTAL ELLIPSIS}", self.set_ignored_channels, current=starboard.get("ignored_channels") or []
+                )
+            ),
+            self.row(self.roles_select("Ignored roles\N{HORIZONTAL ELLIPSIS}", self.set_ignored_roles, current=starboard.get("ignored_roles") or [])),
+            self.row(
+                self.mentionables_select("Ignored users\N{HORIZONTAL ELLIPSIS}", self.set_ignored_users, current=starboard.get("ignored_users") or [])
+            ),
         ]
 
     async def set_enabled(self, interaction: Interaction, enabled: bool) -> None:
@@ -145,3 +199,17 @@ class StarboardPage(Page):
 
     async def open_rules_modal(self, interaction: Interaction) -> None:
         await interaction.response.send_modal(StarboardModal(self))
+
+    async def set_ignored_channels(self, interaction: Interaction, channel_ids: list[int]) -> None:
+        await self.db.edit_starboard_config(guild_id=self.guild.id, ignored_channels=channel_ids)
+        await self.commit(interaction, f"Starboard will ignore {len(channel_ids)} channel{'' if len(channel_ids) == 1 else 's'}.")
+
+    async def set_ignored_roles(self, interaction: Interaction, roles: list[discord.Role]) -> None:
+        role_ids = [role.id for role in roles]
+        await self.db.edit_starboard_config(guild_id=self.guild.id, ignored_roles=role_ids)
+        await self.commit(interaction, f"Starboard will ignore {len(role_ids)} role{'' if len(role_ids) == 1 else 's'}.")
+
+    async def set_ignored_users(self, interaction: Interaction, mentionables: list[discord.abc.Snowflake]) -> None:
+        user_ids = [mentionable.id for mentionable in mentionables]
+        await self.db.edit_starboard_config(guild_id=self.guild.id, ignored_users=user_ids)
+        await self.commit(interaction, f"Starboard will ignore {len(user_ids)} user{'' if len(user_ids) == 1 else 's'}.")

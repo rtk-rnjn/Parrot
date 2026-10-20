@@ -5,12 +5,13 @@ from typing import Any
 
 import discord
 
-__all__ = ("CallbackButton", "CallbackChannelSelect", "CallbackRoleSelect", "CallbackStringSelect")
+__all__ = ("CallbackButton", "CallbackChannelSelect", "CallbackMentionableSelect", "CallbackRoleSelect", "CallbackStringSelect")
 
 type ButtonHandler = Callable[[discord.Interaction[Any]], Awaitable[None]]
 type ChannelHandler = Callable[[discord.Interaction[Any], list[int]], Awaitable[None]]
 type RoleHandler = Callable[[discord.Interaction[Any], list[discord.Role]], Awaitable[None]]
 type StringHandler = Callable[[discord.Interaction[Any], list[str]], Awaitable[None]]
+type MentionableHandler = Callable[[discord.Interaction[Any], list[discord.abc.Snowflake]], Awaitable[None]]
 
 
 class CallbackButton(discord.ui.Button):
@@ -50,6 +51,17 @@ class CallbackStringSelect(discord.ui.Select):
     """A plain select menu that hands the chosen values to a coroutine."""
 
     def __init__(self, handler: StringHandler, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._handler = handler
+
+    async def callback(self, interaction: discord.Interaction[Any]) -> None:
+        await self._handler(interaction, list(self.values))
+
+
+class CallbackMentionableSelect(discord.ui.MentionableSelect):
+    """A mentionable picker that hands the chosen mentionables to a coroutine."""
+
+    def __init__(self, handler: MentionableHandler, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._handler = handler
 

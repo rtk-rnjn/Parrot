@@ -18,7 +18,7 @@ class GiveawayConfig(TypedDict):
     giveaway_role_id: int | None
 
 
-class Giveaway(TypedDict):
+class GiveawayEntry(TypedDict):
     _id: ObjectId
     guild_id: int
     channel_id: int
@@ -45,9 +45,27 @@ class WelcomeConfig(TypedDict):
 class StarboardConfig(TypedDict):
     enabled: bool
     channel_id: int | None
-    threshold: int | None
-    emoji: str | None
-    board_messages: dict[str, int]
+    threshold: int
+    emoji: str
+    self_star: bool
+    allow_nsfw: bool
+    max_age_days: int
+    ignored_channels: list[int]
+    ignored_roles: list[int]
+    ignored_users: list[int]
+
+
+class StarboardEntry(TypedDict):
+    _id: ObjectId
+    guild_id: int
+    source_message_id: int
+    board_message_id: int
+    source_channel_id: int
+    author_id: int
+    is_nsfw: bool
+    star_count: int
+    created_at: datetime
+    users: list[int]
 
 
 class BirthdayConfig(TypedDict):

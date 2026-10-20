@@ -14,7 +14,7 @@ from redis.asyncio.client import PubSub
 from .cache_keys import RedisKeys
 from .guild import EVENT_NAMES, SETTING_SECTIONS, GuildSettingSection, _GuildMixin
 from .mixin import DatabaseMixin
-from .models import CommandConfig, Giveaway, GuildConfiguration, ModAction, UserConfiguration
+from .models import CommandConfig, GiveawayEntry, GuildConfiguration, ModAction, StarboardEntry, UserConfiguration
 from .scam_links import _ScamLinksMixin
 from .user import _UserMixin
 
@@ -82,7 +82,8 @@ class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMi
         self.guilds_collection: Final[AsyncCollection[GuildConfiguration]] = self.mongo_db["guilds"]
         self.users_collection: Final[AsyncCollection[UserConfiguration]] = self.mongo_db["users"]
 
-        self.giveaways_collection: Final[AsyncCollection[Giveaway]] = self.mongo_db["giveaways"]
+        self.giveaways_collection: Final[AsyncCollection[GiveawayEntry]] = self.mongo_db["giveaways"]
+        self.starboards_collection: Final[AsyncCollection[StarboardEntry]] = self.mongo_db["starboards"]
         self.mod_actions_collection: Final[AsyncCollection[ModAction]] = self.mongo_db["mod_actions"]
 
         self.commands_config_collection: Final[AsyncCollection[CommandConfig]] = self.mongo_db["commands_config"]

@@ -9,7 +9,7 @@ from bson import ObjectId
 from discord.ext import commands
 
 from core import FutureTime
-from core.utils.database.models import Giveaway as GiveawayModel
+from core.utils.database.models import GiveawayEntry as GiveawayModel
 
 if TYPE_CHECKING:
     from core import Bot

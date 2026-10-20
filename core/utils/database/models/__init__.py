@@ -32,7 +32,7 @@ from .automod import (
 )
 from .chat import GlobalChatConfig, TelephoneConfig, TicketConfig
 from .commands import CustomCommand
-from .community import BirthdayConfig, Giveaway, GiveawayConfig, LevelingConfig, StarboardConfig, WelcomeConfig
+from .community import BirthdayConfig, GiveawayConfig, GiveawayEntry, LevelingConfig, StarboardConfig, StarboardEntry, WelcomeConfig
 from .events import Events, EventsConfig
 from .guild import CommandConfig, GuildConfiguration, ModAction, ModeratorConfig, UserViolation
 from .tags import Tag, TagUserUsage, TagUserUsageRow, TopTagUsage, TopTagUsageRow
@@ -56,8 +56,8 @@ __all__ = (
     "EffectDict",
     "Events",
     "EventsConfig",
-    "Giveaway",
     "GiveawayConfig",
+    "GiveawayEntry",
     "GlobalChatConfig",
     "GuildConfiguration",
     "Highlight",
@@ -77,6 +77,7 @@ __all__ = (
     "SendMessageConfigDict",
     "SlowmodeConfigDict",
     "StarboardConfig",
+    "StarboardEntry",
     "SupercellAccount",
     "SupercellGame",
     "Tag",

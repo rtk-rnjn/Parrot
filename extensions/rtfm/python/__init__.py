@@ -113,186 +113,6 @@ class SphinxEntry:
         }.get(role, role)
 
 
-DEFAULT_TUTORIALS: dict[str, TutorialTag] = {
-    "list-comprehension": TutorialTag(
-        name="list-comprehension",
-        content=(
-            "**List Comprehensions** provide a concise way to create lists from iterables.\n\n"
-            "```py\n"
-            "# Basic syntax: [expression for item in iterable if condition]\n"
-            "squares = [x * x for x in range(10) if x % 2 == 0]\n"
-            "# -> [0, 4, 16, 36, 64]\n\n"
-            "# Nested comprehension (flattening a 2D matrix)\n"
-            "flat = [num for row in matrix for num in row]\n"
-            "```\n"
-            "For large datasets where you don't need the full list in memory at once, "
-            "prefer a **generator expression**: `sum(x * x for x in range(1_000_000))`."
-        ),
-        url=f"{PYTHON_DOCS_URL}/tutorial/datastructures.html#list-comprehensions",
-    ),
-    "decorators": TutorialTag(
-        name="decorators",
-        content=(
-            "**Decorators** wrap a function or class to modify or extend its behavior without permanently "
-            "changing its source code.\n\n"
-            "```py\n"
-            "from functools import wraps\n"
-            "import time\n\n"
-            "def timer(func):\n"
-            "    @wraps(func)\n"
-            "    def wrapper(*args, **kwargs):\n"
-            "        start = time.perf_counter()\n"
-            "        try:\n"
-            "            return func(*args, **kwargs)\n"
-            "        finally:\n"
-            "            elapsed = time.perf_counter() - start\n"
-            "            print(f'{func.__name__} took {elapsed:.4f}s')\n"
-            "    return wrapper\n"
-            "```\n"
-            "Always apply `@functools.wraps(func)` so the wrapped function preserves its `__name__`, `__doc__`, and type annotations."
-        ),
-        url=f"{PYTHON_DOCS_URL}/glossary.html#term-decorator",
-    ),
-    "async-await": TutorialTag(
-        name="async-await",
-        content=(
-            "**Asynchronous Programming (`async` / `await`)** lets Python run concurrent I/O-bound tasks "
-            "on a single thread via an event loop.\n\n"
-            "```py\n"
-            "import asyncio\n\n"
-            "async def fetch_item(i: int) -> int:\n"
-            "    await asyncio.sleep(0.1)\n"
-            "    return i * 2\n\n"
-            "async def main() -> None:\n"
-            "    async with asyncio.TaskGroup() as tg:\n"
-            "        tasks = [tg.create_task(fetch_item(i)) for i in range(5)]\n"
-            "    results = [t.result() for t in tasks]\n"
-            "```\n"
-            "Avoid calling blocking I/O (`time.sleep`, `requests.get`, heavy CPU loops) inside `async def` functions; "
-            "offload CPU/blocking work with `await asyncio.to_thread(fn, ...)`."
-        ),
-        url=f"{PYTHON_DOCS_URL}/library/asyncio-task.html",
-    ),
-    "context-managers": TutorialTag(
-        name="context-managers",
-        content=(
-            "**Context Managers (`with` statement)** guarantee setup and cleanup of resources (files, locks, network sessions) "
-            "even when exceptions occur.\n\n"
-            "```py\n"
-            "from contextlib import contextmanager\n\n"
-            "@contextmanager\n"
-            "def managed_resource(name: str):\n"
-            "    print(f'Acquiring {name}')\n"
-            "    try:\n"
-            "        yield name\n"
-            "    finally:\n"
-            "        print(f'Releasing {name}')\n"
-            "```\n"
-            "Async context managers use `async with` and `@contextlib.asynccontextmanager` (or `__aenter__` / `__aexit__`)."
-        ),
-        url=f"{PYTHON_DOCS_URL}/library/contextlib.html",
-    ),
-    "generators": TutorialTag(
-        name="generators",
-        content=(
-            "**Generators** produce values lazily one at a time using `yield`, keeping memory usage $O(1)$.\n\n"
-            "```py\n"
-            "def chunked(iterable, size: int):\n"
-            "    batch = []\n"
-            "    for item in iterable:\n"
-            "        batch.append(item)\n"
-            "        if len(batch) == size:\n"
-            "            yield batch\n"
-            "            batch = []\n"
-            "    if batch:\n"
-            "        yield batch\n"
-            "```\n"
-            "In Python 3.12+, `itertools.batched(iterable, n)` is built right into the standard library!"
-        ),
-        url=f"{PYTHON_DOCS_URL}/tutorial/classes.html#generators",
-    ),
-    "type-hints": TutorialTag(
-        name="type-hints",
-        content=(
-            "**Type Hints** document expected types for static checkers (`mypy`, `pyright`) and IDEs.\n\n"
-            "```py\n"
-            "from collections.abc import Sequence\n\n"
-            "# Python 3.12+ generic syntax (PEP 695)\n"
-            "type Point = tuple[float, float]\n\n"
-            "def first_or_default[T](items: Sequence[T], default: T | None = None) -> T | None:\n"
-            "    return items[0] if items else default\n"
-            "```"
-        ),
-        url=f"{PYTHON_DOCS_URL}/library/typing.html",
-    ),
-    "dataclasses": TutorialTag(
-        name="dataclasses",
-        content=(
-            "**`@dataclass`** automatically generates `__init__`, `__repr__`, and `__eq__` for data-holding classes.\n\n"
-            "```py\n"
-            "from dataclasses import dataclass, field\n\n"
-            "@dataclass(frozen=True, slots=True)\n"
-            "class UserProfile:\n"
-            "    id: int\n"
-            "    username: str\n"
-            "    roles: list[str] = field(default_factory=list)\n"
-            "```\n"
-            "Use `slots=True` for lower memory usage and faster attribute access, and `frozen=True` for immutability."
-        ),
-        url=f"{PYTHON_DOCS_URL}/library/dataclasses.html",
-    ),
-    "pattern-matching": TutorialTag(
-        name="pattern-matching",
-        content=(
-            "**Structural Pattern Matching (`match` / `case`)** (PEP 634) destructures sequences, mappings, and objects.\n\n"
-            "```py\n"
-            "match command.split():\n"
-            "    case ['quit' | 'exit']:\n"
-            "        close_app()\n"
-            "    case ['move', ('north' | 'south' | 'east' | 'west') as direction]:\n"
-            "        move_player(direction)\n"
-            "    case ['move', *rest]:\n"
-            "        print(f'Unknown destination: {rest}')\n"
-            "    case _:\n"
-            "        print('Unknown command')\n"
-            "```"
-        ),
-        url=f"{PYTHON_DOCS_URL}/tutorial/controlflow.html#match-statements",
-    ),
-    "args-kwargs": TutorialTag(
-        name="args-kwargs",
-        content=(
-            "**`*args` and `**kwargs`** allow functions to accept arbitrary positional and keyword arguments, "
-            "while `/` and `*` enforce positional-only and keyword-only parameters.\n\n"
-            "```py\n"
-            "def request(method: str, url: str, /, *args, timeout: float = 10.0, **headers: str) -> None:\n"
-            "    # method & url are positional-only (/)\n"
-            "    # timeout is keyword-only (*)\n"
-            "    ...\n"
-            "```"
-        ),
-        url=f"{PYTHON_DOCS_URL}/tutorial/controlflow.html#special-parameters",
-    ),
-    "virtual-environments": TutorialTag(
-        name="virtual-environments",
-        content=(
-            "**Virtual Environments (`venv`)** isolate project dependencies from the system Python installation.\n\n"
-            "```sh\n"
-            "# Create a virtual environment in .venv\n"
-            "python3 -m venv .venv\n\n"
-            "# Activate on Linux / macOS\n"
-            "source .venv/bin/activate\n\n"
-            "# Activate on Windows (PowerShell)\n"
-            ".venv\\Scripts\\Activate.ps1\n\n"
-            "# Install packages inside the isolated environment\n"
-            "python -m pip install -U pip\n"
-            "```"
-        ),
-        url=f"{PYTHON_DOCS_URL}/library/venv.html",
-    ),
-}
-
-
 def safe(text_value: str | None, limit: int = 200) -> str:
     """One escaped, mention-free line of user-provided text."""
     flat = " ".join((text_value or "").split())
@@ -1251,7 +1071,7 @@ class Python(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def pyversions_command(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Show supported Python versions and release status."""
-        return await self.deliver(ctx, self.versions_view(ctx))
+        return await self.deliver(ctx, self.fetch_python_versions(ctx))
 
     @python.command(
         name="versions",
@@ -1261,9 +1081,9 @@ class Python(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def python_versions(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Show supported Python versions and release status."""
-        return await self.deliver(ctx, self.versions_view(ctx))
+        return await self.deliver(ctx, self.fetch_python_versions(ctx))
 
-    async def versions_view(self, ctx: commands.Context[Bot]) -> PythonView:
+    async def fetch_python_versions(self, ctx: commands.Context[Bot]) -> PythonView:
         try:
             data = await self.fetch_json(ENDOFLIFE_PYTHON_URL)
             cycles = data if isinstance(data, list) and data else FALLBACK_PYTHON_CYCLES
@@ -1431,9 +1251,9 @@ class Python(commands.Cog):
         name: str = commands.parameter(description="The built-in function, type, or constant (e.g. `enumerate`, `zip`, `len`)."),
     ) -> discord.Message:
         """Look up built-in functions and types."""
-        return await self.deliver(ctx, self.builtin_view(ctx, name))
+        return await self.deliver(ctx, self.get_builtin_info(ctx, name))
 
-    async def builtin_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
+    async def get_builtin_info(self, ctx: commands.Context[Bot], query: str) -> PythonView:
         cleaned = query.strip().strip("`").rstrip("()")
         public_builtins = {k: v for k, v in vars(builtins).items() if not k.startswith("_")}
         lower_map = {k.casefold(): k for k in public_builtins}
@@ -1512,9 +1332,9 @@ class Python(commands.Cog):
         ),
     ) -> discord.Message:
         """Explain common algorithmic and data-structure complexity."""
-        return await self.deliver(ctx, self.complexity_view(ctx, algorithm))
+        return await self.deliver(ctx, self.fetch_complexity_info(ctx, algorithm))
 
-    async def complexity_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
+    async def fetch_complexity_info(self, ctx: commands.Context[Bot], query: str) -> PythonView:
         cleaned = query.strip().strip("`").casefold()
         selected: ComplexityInfo | None = None
         for entry in COMPLEXITY_DB:

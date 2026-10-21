@@ -3,6 +3,9 @@ from __future__ import annotations
 import asyncio
 import io
 import logging
+import re
+import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
@@ -10,8 +13,6 @@ from typing import TYPE_CHECKING, Annotated
 import aiohttp
 import arrow
 import discord
-import matplotlib
-import matplotlib.pyplot as plt
 import sympy
 from discord.ext import commands, tasks
 from jishaku.codeblocks import Codeblock, codeblock_converter
@@ -31,8 +32,6 @@ from .news import NEWS_API_KEY, NEWS_CATEGORIES, NewsError, NewsView, fetch_news
 from .ttg import Truths, TTFlag
 from .weather import Weather
 
-matplotlib.use("Agg")
-
 if TYPE_CHECKING:
     from core import Bot
 
@@ -41,13 +40,14 @@ DEFAULT_AFK_REASON = "AFK"
 
 BIRTHDAY_DATE_FORMAT = "MM-DD"
 
-LATEX_API_URL = "https://rtex.probablyaweb.site/api/v2"
-
-
 _log = logging.getLogger(__name__)
 EMBED_FIELD_LIMIT = 1024
 DISCORD_MESSAGE_LIMIT = 1900
-
+WORKER = Path(__file__).with_name("latex_worker.py")
+MAX_INPUT_LEN = 500
+MAX_OUTPUT_BYTES = 4 * 1024 * 1024
+RENDER_TIMEOUT = 10  # seconds
+_CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 
 with Path("assets/dictionary.json").open(encoding="utf-8") as file:
     DICTIONARY: dict[str, str] = discord.utils._from_json(file.read())
@@ -57,12 +57,25 @@ def parse_birthday(value: str) -> str:
     return arrow.get(value).format(BIRTHDAY_DATE_FORMAT)
 
 
-class InvalidLatexError(Exception):
-    """Represents an error caused by invalid latex."""
+class LatexError(Exception):
+    """Error whose message is safe to show to users."""
 
-    def __init__(self, logs: str | None) -> None:
-        super().__init__(logs)
-        self.logs = logs
+
+def validate_latex(latex: str) -> str:
+    latex = latex.strip()
+    if not latex:
+        msg = "LaTeX input cannot be empty."
+        raise LatexError(msg)
+    if len(latex) > MAX_INPUT_LEN:
+        msg = f"Input too long (max {MAX_INPUT_LEN} characters)."
+        raise LatexError(msg)
+    if _CONTROL.search(latex):
+        msg = "Input contains invalid characters."
+        raise LatexError(msg)
+    if "$" in latex:
+        msg = "Don't include `$`; the equation is already in math mode."
+        raise LatexError(msg)
+    return " ".join(latex.split())  # collapse newlines/whitespace
 
 
 class WrappedMessageConverter(commands.MessageConverter):  # pylint: disable=too-few-public-methods
@@ -656,57 +669,66 @@ class Misc(commands.Cog, name="Miscellaneous"):
 
         await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 
-    def render_latex(self, latex: str, dpi: int = 200) -> Image.Image:
-        if not isinstance(latex, str) or not latex.strip():
-            message = "LaTeX input cannot be empty"
-            raise ValueError(message)
+    async def render_latex(self, latex: str) -> bytes:
+        latex = validate_latex(latex)
 
-        fig = None
-
-        try:
-            fig = plt.figure()
-            fig.text(0, 0, f"${latex}$", fontsize=20)
-
-            buffer = io.BytesIO()
-            fig.savefig(
-                buffer,
-                format="png",
-                dpi=dpi,
-                transparent=True,
-                bbox_inches="tight",
-                pad_inches=0.1,
+        with tempfile.TemporaryDirectory(prefix="parrot-mplconfig-") as mpl_config_dir:
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable,
+                "-I",
+                str(WORKER),
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+                env={"MPLCONFIGDIR": mpl_config_dir, "PATH": "/usr/bin:/bin"},
             )
-            buffer.seek(0)
+            try:
+                out, _ = await asyncio.wait_for(proc.communicate(latex.encode()), timeout=RENDER_TIMEOUT)
+            except TimeoutError:
+                proc.kill()
+                await proc.wait()
+                msg = "Rendering took too long."
+                raise LatexError(msg) from None
 
-            with Image.open(buffer) as image:
-                return image.convert("RGBA")
+        if proc.returncode == 3:
+            msg = "That equation is too large to render."
+            raise LatexError(msg)
+        if proc.returncode != 0 or not out.startswith(b"\x89PNG"):
+            msg = "Couldn't render that LaTeX. Check your syntax."
+            raise LatexError(msg)
+        if len(out) > MAX_OUTPUT_BYTES:
+            msg = "The rendered image is too large."
+            raise LatexError(msg)
+        return out
 
-        except Exception as exc:
-            raise ValueError() from exc
-
-        finally:
-            if fig is not None:
-                plt.close(fig)
-
-    @commands.command()
-    @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
+    @commands.command(name="latex", aliases=["tex"], extras={"examples": [r"latex \frac{-b \pm \sqrt{b^2-4ac}}{2a}"]})
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.max_concurrency(2, commands.BucketType.guild, wait=False)
     async def latex(
         self,
         ctx: commands.Context[Bot],
         *,
-        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The LaTeX source, optionally inside a code block"),  # noqa: B008
+        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(  # noqa: B008
+            description="The LaTeX source, optionally inside a code block"
+        ),
     ) -> None:
         """Renders the text in latex and sends the image."""
-        try:
-            image = await asyncio.to_thread(self.render_latex, code.content.strip())
-            buffer = io.BytesIO()
+        async with ctx.typing():
+            try:
+                png = await self.render_latex(code.content)
+            except LatexError as exc:
+                await ctx.reply(
+                    str(exc),
+                    mention_author=False,
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
+                return
 
-            await asyncio.to_thread(image.save, buffer, format="PNG")
-            buffer.seek(0)
-
-            await ctx.send(file=discord.File(buffer, filename="equation.png"))
-        except ValueError as exc:
-            await ctx.reply(str(exc), mention_author=False)
+        await ctx.reply(
+            file=discord.File(io.BytesIO(png), filename="equation.png"),
+            mention_author=False,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @commands.command(name="afk")
     async def afk(

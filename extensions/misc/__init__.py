@@ -26,7 +26,7 @@ from .constants import LANGUAGE_CODES, TRANSLATE_API, TRANSLATE_HEADERS, TRANSLA
 from .dictionary_parser import build_definition_embed
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
-from .logo import LogoInterpreter, LogoParser, build_logo_guide
+from .logo import LogoError, build_logo_guide, run_logo_sandboxed_async
 from .news import NEWS_API_KEY, NEWS_CATEGORIES, NewsError, NewsView, fetch_news
 from .ttg import Truths, TTFlag
 from .weather import Weather
@@ -535,24 +535,59 @@ class Misc(commands.Cog, name="Miscellaneous"):
             await ctx.reply(f"{ctx.author.mention} Provided equation was invalid; check your syntax.\nError: {e}")
 
     @commands.group(name="logo", aliases=["turtle", "turtle-graphics"], invoke_without_command=True)
-    async def _logo(
+    async def turtle(self, ctx: commands.Context[Bot]) -> None:
+        """Interprets the provided code as Logo programming language code and returns the resulting image."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @turtle.command(name="run", aliases=["execute", "eval", "evaluate", "draw"])
+    async def turtle_run(
         self,
         ctx: commands.Context[Bot],
         *,
         code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
     ) -> None:
         """Interprets the provided code as Logo programming language code and returns the resulting image."""
-        parser = LogoParser()
-        program = parser.parse(code.content)
+        clean_code = code.content.strip()
 
-        interpreter = LogoInterpreter()
-        await asyncio.to_thread(interpreter.execute, program)
+        try:
+            result = await run_logo_sandboxed_async(
+                clean_code,
+                animate_gif=False,
+            )
+        except LogoError as exc:
+            await ctx.reply(f"Logo error: {exc}", mention_author=False)
+            return
 
-        image_buffer = await asyncio.to_thread(interpreter.turtle.render)
-        await ctx.reply(file=discord.File(image_buffer, filename="logo.png"))
+        file = discord.File(io.BytesIO(result.image_bytes), filename="turtle.png")
+        caption = "\n".join(result.output[:10]) if result.output else None
+        await ctx.reply(content=caption, file=file, mention_author=False)
 
-    @_logo.command(name="guide", aliases=["help", "tutorial"])
-    async def _logo_guide(self, ctx: commands.Context[Bot]) -> None:
+    @turtle.command(name="animate", aliases=["gif", "draw-gif"])
+    async def turtle_animate(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
+    ) -> None:
+        """Interprets the provided code as Logo programming language code and returns the resulting animated GIF."""
+        clean_code = code.content.strip()
+
+        try:
+            result = await run_logo_sandboxed_async(
+                clean_code,
+                animate_gif=True,
+            )
+        except LogoError as exc:
+            await ctx.reply(f"Logo error: {exc}", mention_author=False)
+            return
+
+        file = discord.File(io.BytesIO(result.image_bytes), filename="turtle.png")
+        caption = "\n".join(result.output[:10]) if result.output else None
+        await ctx.reply(content=caption, file=file, mention_author=False)
+
+    @turtle.command(name="guide", aliases=["help", "tutorial"])
+    async def turtle_guide(self, ctx: commands.Context[Bot]) -> None:
         """Sends a guide on how to use the Logo programming language."""
         embeds = build_logo_guide()
         view = PaginationView(author=ctx.author, items=embeds)

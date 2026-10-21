@@ -6,238 +6,361 @@ EMBED_COLOR = discord.Color.blurple()
 
 
 def build_logo_guide() -> list[discord.Embed]:
-    pages: list[discord.Embed] = []
+    raw_pages: list[tuple[str, discord.Embed]] = []
 
-    # 1. Intro
-    embed = discord.Embed(
-        title="\N{TURTLE} Logo Guide (1/8): Introduction",
-        description=(
-            "Logo lets you draw pictures by giving commands to a **turtle**.\n"
-            "The turtle walks around a canvas and leaves a line behind it.\n\n"
-            "**Quick facts**\n"
-            "\N{BULLET} Commands are **not case-sensitive** (`fd` = `FD`)\n"
-            "\N{BULLET} The canvas is **1000\N{MULTIPLICATION SIGN}800**, and the turtle starts in the center\n"
-            "\N{BULLET} The turtle starts facing **up** (0\N{DEGREE SIGN} = north, 90\N{DEGREE SIGN} = east)\n"
-            "\N{BULLET} Comments start with `;`\n\n"
-            "**Your first program**\n"
-            "```logo\n"
-            "REPEAT 4 [FD 100 RT 90] ; draw a square\n"
-            "```"
-        ),
-        color=EMBED_COLOR,
-    )
-    pages.append(embed)
-
-    # 2. Movement
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (2/8): Movement",
-            description="Move and turn the turtle. Values can be numbers or expressions.",
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Commands",
-            value=(
-                "`FD n` / `FORWARD n`: move forward\n"
-                "`BK n` / `BACK n`: move backward\n"
-                "`RT n` / `RIGHT n`: turn right *n* degrees\n"
-                "`LT n` / `LEFT n`: turn left *n* degrees"
+    # 1. Introduction
+    raw_pages.append(
+        (
+            "Introduction",
+            discord.Embed(
+                title="Logo Guide: Introduction",
+                description=(
+                    "Logo lets you draw vector graphics by giving commands to a **turtle**.\n"
+                    "The turtle walks around the canvas and leaves a trail behind it.\n\n"
+                    "**Quick facts**\n"
+                    "\N{BULLET} Commands are **not case-sensitive** (`fd 50` = `FD 50`)\n"
+                    "\N{BULLET} The canvas is **1000\N{MULTIPLICATION SIGN}800**, and `(0, 0)` is the center\n"
+                    "\N{BULLET} The turtle starts facing **up** (`0\N{DEGREE SIGN}` = north, `90\N{DEGREE SIGN}` = east)\n"
+                    "\N{BULLET} Comments start with `;` and run to the end of the line\n\n"
+                    "**Your first programs**\n"
+                    "```logo\n"
+                    "REPEAT 4 [FD 100 RT 90]   ; draw a square\n"
+                    "REPEAT 5 [FD 120 RT 144]  ; draw a 5-pointed star\n"
+                    "```"
+                ),
+                color=EMBED_COLOR,
             ),
-            inline=False,
-        )
-        .add_field(
-            name="Example: a triangle",
-            value="```logo\nFD 100 RT 120\nFD 100 RT 120\nFD 100 RT 120\n```",
-            inline=False,
         )
     )
-    pages.append(embed)
 
-    # 3. Pen
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (3/8): Pen & Colors",
-            description="Control whether the turtle draws, and how the line looks.",
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Commands",
-            value=(
-                "`PU` / `PENUP`: lift the pen (move without drawing)\n"
-                "`PD` / `PENDOWN`: put the pen down (draw again)\n"
-                '`SETPC "COLOR` / `SETPENCOLOR`: change color\n'
-                "`SETWIDTH n` / `SETW n`: line width (1 to 50)"
+    # 2. Movement, Position & Heading
+    raw_pages.append(
+        (
+            "Movement & Position",
+            discord.Embed(
+                title="Logo Guide: Movement & Position",
+                description=(
+                    "Walk relative to the turtle's direction or jump straight to `(x, y)` coordinates "
+                    "(positive **x** goes right, positive **y** goes up)."
+                ),
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Walking & Turning",
+                value=(
+                    "`FD n` / `FORWARD n`: move forward *n* pixels\n"
+                    "`BK n` / `BACK n`: move backward *n* pixels\n"
+                    "`RT n` / `RIGHT n`: turn clockwise *n* degrees\n"
+                    "`LT n` / `LEFT n`: turn counter-clockwise *n* degrees"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Jumping, Clearing & Reporters",
+                value=(
+                    "`HOME`: go to `(0, 0)` facing `0\N{DEGREE SIGN}` (draws if pen is down)\n"
+                    "`SETXY x y` / `SETPOS [x y]`: move to `(x, y)`\n"
+                    "`SETX x` / `SETY y`: move horizontally or vertically\n"
+                    "`SETH n` / `SETHEADING n`: face compass angle *n*\n"
+                    "`CS` / `CLEARSCREEN`: erase everything **and** reset to `(0, 0)`\n"
+                    "`CLEAN`: erase lines **without** moving the turtle\n"
+                    "`ST` / `HT`: show or hide the turtle cursor\n"
+                    "`XCOR`, `YCOR`, `POS`, `HEADING`, `TOWARDS [x y]`, `DIST [x y]`"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Example",
+                value="```logo\nPU SETXY -100 50 PD\nSETH 90\nFD 200\n```",
+                inline=False,
             ),
-            inline=False,
-        )
-        .add_field(
-            name="Colors",
-            value=(
-                "Write a **single quote before the name**, no closing quote.\n"
-                "```\n"
-                "BLACK, WHITE, RED, GREEN, BLUE, YELLOW,\n"
-                "CYAN, MAGENTA, ORANGE, PURPLE, PINK, BROWN\n"
-                "```"
-            ),
-            inline=False,
-        )
-        .add_field(
-            name="Example",
-            value='```logo\nSETPC "RED\nSETWIDTH 5\nFD 100\nPU FD 30 PD\nSETPC "BLUE\nFD 100\n```',
-            inline=False,
         )
     )
-    pages.append(embed)
 
-    # 4. Position
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (4/8): Position & Heading",
-            description="Jump straight to a spot or direction instead of walking there.",
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Commands",
-            value=(
-                "`HOME`: return to the center, facing up\n"
-                "`SETXY x y`: go to coordinates (`0 0` is the center)\n"
-                "`SETH n` / `SETHEADING n`: face a compass direction\n"
-                "`CS` / `CLEARSCREEN`: erase all lines"
+    # 3. Pen & Colors
+    raw_pages.append(
+        (
+            "Pen & Colors",
+            discord.Embed(
+                title="Logo Guide: Pen & Colors",
+                description="Control whether the turtle draws, its stroke width, and canvas/pen colors.",
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Pen Commands",
+                value=(
+                    "`PU` / `PENUP`: lift pen (move without drawing)\n"
+                    "`PD` / `PENDOWN` / `PPT`: normal drawing mode\n"
+                    "`PE` / `PENERASE`: erase mode (draws with background color)\n"
+                    "`PX` / `PENREVERSE`: invert underlying pixel colors\n"
+                    "`SETPENSIZE n` / `SETWIDTH n`: line width (`1` to `50`)"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Color Commands (`SETPC`, `SETBG`, `SETFC`)",
+                value=(
+                    '`SETPC "NAME`: named color (single quote before name, no closing quote)\n'
+                    '`SETPC "#RRGGBB`: hex color (`"#FF5733` or `"#F80`)\n'
+                    "`SETPC [r g b]`: RGB list (`0` to `255`, e.g. `SETPC [255 87 51]`)\n"
+                    "`SETPC n`: MSWLogo palette index (`0` to `15`)\n"
+                    "`SETBG ...` / `SETSC ...`: set canvas background color\n"
+                    "`SETFC ...`: set flood-fill color"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Named Colors",
+                value=(
+                    "```\n"
+                    "BLACK, WHITE, RED, GREEN, LIME, BLUE, YELLOW, CYAN, AQUA,\n"
+                    "MAGENTA, ORANGE, PURPLE, VIOLET, PINK, BROWN, TAN, FOREST,\n"
+                    "SALMON, GRAY, SILVER, NAVY, TEAL, MAROON, OLIVE, GOLD, CORAL\n"
+                    "```"
+                ),
+                inline=False,
             ),
-            inline=False,
-        )
-        .add_field(
-            name="Coordinates",
-            value="Positive **x** goes right and positive **y** goes up.",
-            inline=False,
-        )
-        .add_field(
-            name="Note",
-            value="`SETXY` draws a line if the pen is down. Use `PU` first to jump without drawing.",
-            inline=False,
-        )
-        .add_field(
-            name="Example",
-            value="```logo\nPU SETXY -100 50 PD\nSETH 90\nFD 200\n```",
-            inline=False,
         )
     )
-    pages.append(embed)
 
-    # 5. Repeat
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (5/8): Repeating Things",
-            description=("`REPEAT n [ ... ]` runs the commands inside the brackets *n* times.\nLoops can be nested."),
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Hexagon",
-            value="```logo\nREPEAT 6 [FD 80 RT 60]\n```",
-            inline=False,
-        )
-        .add_field(
-            name="Flower (nested loops)",
-            value="```logo\nREPEAT 12 [\n  REPEAT 4 [FD 60 RT 90]\n  RT 30\n]\n```",
-            inline=False,
-        )
-        .add_field(name="Limit", value="`n` must be between 0 and 10,000.", inline=False)
-    )
-    pages.append(embed)
-
-    # 6. Variables & math
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (6/8): Variables & Math",
-            description=("Store numbers with `MAKE` and read them with a colon: `:NAME`.\nVariables can change, and that's how you build spirals."),
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Operators",
-            value=("`+`  `-`  `*`  `/`  and parentheses `( )`\nComparisons `=` `<` `>` give `1` (true) or `0` (false)"),
-            inline=False,
-        )
-        .add_field(
-            name="Example: square spiral",
-            value="```logo\nMAKE :S 5\nREPEAT 40 [\n  FD :S RT 90\n  MAKE :S :S + 5\n]\n```",
-            inline=False,
-        )
-        .add_field(
-            name="Example: math in commands",
-            value="```logo\nMAKE :SIZE 50\nFD :SIZE * 2\nRT 360 / 5\n```",
-            inline=False,
+    # 4. Shapes, Fills & Labels
+    raw_pages.append(
+        (
+            "Shapes, Fills & Text",
+            discord.Embed(
+                title="Logo Guide: Shapes, Fills & Text",
+                description="Draw curves, filled polygons, flood-fills, and text labels.",
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Commands",
+                value=(
+                    "`CIRCLE r`: draw a full circle of radius *r* around the turtle\n"
+                    "`ARC angle r`: draw an arc sweeping clockwise from current heading\n"
+                    "`ELLIPSE rx ry`: draw an ellipse with radii *rx* and *ry*\n"
+                    "`DOT` / `(DOT [x y])`: plot a dot of the current pen width\n"
+                    "`FILLED color [ ... ]`: fill the polygon traced by the commands inside `[ ... ]`\n"
+                    "`FILL`: flood-fill the enclosed region around the turtle\n"
+                    '`LABEL "text`: draw text at the turtle (`SETLABELHEIGHT n` sets font size `4..100`)'
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Example: Filled Sunburst",
+                value=('```logo\nSETBG "NAVY\nSETPC "ORANGE\nFILLED "GOLD [\n  REPEAT 18 [FD 120 RT 160]\n]\n```'),
+                inline=False,
+            ),
         )
     )
-    pages.append(embed)
 
-    # 7. Procedures
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (7/8): Procedures",
-            description=("Define your own commands with `TO name :param ... END`, then call them by name. Arguments come after the name."),
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Example",
-            value=(
-                "```logo\n"
-                "TO SQUARE :SIZE\n"
-                "  REPEAT 4 [FD :SIZE RT 90]\n"
-                "END\n\n"
-                "TO FLOWER :SIZE\n"
-                "  REPEAT 12 [SQUARE :SIZE RT 30]\n"
-                "END\n\n"
-                'SETPC "PURPLE\n'
-                "FLOWER 80\n"
-                "```"
+    # 5. Loops
+    raw_pages.append(
+        (
+            "Loops & Iteration",
+            discord.Embed(
+                title="Logo Guide: Loops (`REPEAT`, `FOR`, `WHILE`, `FOREACH`)",
+                description="Run a bracketed list `[ ... ]` multiple times. Inside any loop, `REPCOUNT` (or `#`) gives the 1-based step number.",
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Loop Primitives",
+                value=(
+                    "`REPEAT n [ ... ]`: run body *n* times\n"
+                    "`FOR [var start end] [ ... ]`: count from *start* to *end*\n"
+                    "`FOR [var start end step] [ ... ]`: count with custom *step*\n"
+                    "`WHILE [cond] [ ... ]`: repeat while *cond* is true\n"
+                    "`UNTIL [cond] [ ... ]`: repeat until *cond* becomes true\n"
+                    "`FOREACH list [ ... ]`: run body for each item (`?` reads current item)"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Examples",
+                value=(
+                    "```logo\n"
+                    "; Rainbow spiral using FOR\n"
+                    "FOR [S 5 150 3] [\n"
+                    "  SETPC MODULO REPCOUNT 15 + 1\n"
+                    "  FD :S RT 89\n"
+                    "]\n\n"
+                    "; Cycle through colors with FOREACH\n"
+                    "FOREACH [RED GOLD LIME CYAN] [\n"
+                    "  SETPC ? FD 80 RT 90\n"
+                    "]\n"
+                    "```"
+                ),
+                inline=False,
             ),
-            inline=False,
-        )
-        .add_field(
-            name="Good to know",
-            value=(
-                "\N{BULLET} Procedures can be defined anywhere in your program\n"
-                "\N{BULLET} You must pass exactly as many arguments as parameters\n"
-                "\N{BULLET} Procedures can call other procedures"
-            ),
-            inline=False,
         )
     )
-    pages.append(embed)
 
-    # 8. Limits & errors
-    embed = (
-        discord.Embed(
-            title="\N{TURTLE} Logo Guide (8/8): Limits & Troubleshooting",
-            description="Programs are sandboxed so nobody can freeze the bot.",
-            color=EMBED_COLOR,
-        )
-        .add_field(
-            name="Limits",
-            value=(
-                "\N{BULLET} Max **100,000** operations per program\n"
-                "\N{BULLET} `REPEAT` count: 0 to **10,000**\n"
-                "\N{BULLET} Procedure nesting depth: **100**\n"
-                "\N{BULLET} Pen width: 1 to **50**"
+    # 6. Conditionals & Logic
+    raw_pages.append(
+        (
+            "Conditionals & Logic",
+            discord.Embed(
+                title="Logo Guide: Conditionals (`IF`, `IFELSE`, `TEST`)",
+                description='Branch based on comparisons. In Logo, `1` (or `"TRUE`) is true and `0` (or `"FALSE`) is false.',
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Conditionals & Operators",
+                value=(
+                    "`IF cond [then_list]`: run if *cond* is true\n"
+                    "`IFELSE cond [then_list] [else_list]`: run first list if true, second if false\n"
+                    "`TEST cond` \N{RIGHTWARDS ARROW} `IFTRUE [...]` / `IFFALSE [...]`\n"
+                    "**Comparisons**: `=`  `<>` (or `!=`)  `<`  `>`  `<=`  `>=`\n"
+                    "**Logic**: `AND a b`, `OR a b`, `NOT a` (or variadic `(AND a b c)`)"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Example: Alternating Star",
+                value=('```logo\nREPEAT 12 [\n  IFELSE (REPCOUNT % 2) = 0 [SETPC "RED] [SETPC "CYAN]\n  FD 100 RT 150\n]\n```'),
+                inline=False,
             ),
-            inline=False,
-        )
-        .add_field(
-            name="Common errors",
-            value=(
-                "**Syntax error**: check for a missing `]` or `END`\n"
-                "**Unknown variable**: use `MAKE :X 1` before `:X`\n"
-                "**Unknown color**: pick one from the color list\n"
-                "**Expects N argument(s)**: wrong argument count in a procedure call"
-            ),
-            inline=False,
-        )
-        .add_field(
-            name="Tip",
-            value="Wrap your code in a code block and test small pieces first.",
-            inline=False,
         )
     )
-    pages.append(embed)
 
-    return pages
+    # 7. Variables & Math
+    raw_pages.append(
+        (
+            "Variables & Math",
+            discord.Embed(
+                title="Logo Guide: Variables & Math",
+                description=('Set variables with a **quoted word** (`MAKE "NAME val`) and read them with a **colon** (`:NAME` or `THING "NAME`).'),
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Arithmetic & Math Functions",
+                value=(
+                    "**Infix**: `+`  `-`  `*`  `/`  `%` (remainder)  `^` (power)\n"
+                    "**Functions**: `SUM`, `DIFFERENCE`, `PRODUCT`, `QUOTIENT`, `REMAINDER`, `MODULO`, "
+                    "`SQRT`, `POWER`, `ABS`, `INT`, `ROUND`, `SIGN`, `SIN`, `COS`, `TAN`, `ARCTAN`, `PI`\n"
+                    "**Random**: `RANDOM n` (`0..n-1`), `(RANDOM min max)`, `RERANDOM seed`"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Example: Square Spiral",
+                value=('```logo\nMAKE "S 5\nREPEAT 40 [\n  FD :S RT 90\n  MAKE "S :S + 4\n]\n```'),
+                inline=False,
+            ),
+        )
+    )
+
+    # 8. Procedures & Recursion
+    raw_pages.append(
+        (
+            "Procedures & Recursion",
+            discord.Embed(
+                title="Logo Guide: Procedures (`TO ... END`, `OUTPUT`, `STOP`)",
+                description=("Define your own commands or value-returning functions with `TO name :p1 :p2 ... END`."),
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Procedure Tools",
+                value=(
+                    "`STOP`: exit the current procedure immediately\n"
+                    "`OUTPUT val` / `OP val`: exit and return *val* to the caller\n"
+                    '`LOCAL "X` / `LOCALMAKE "X val`: keep variables local to the procedure\n'
+                    "*Tail-recursive procedures are automatically optimized (TCO)!*"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Example: Recursive Fractal Tree",
+                value=(
+                    "```logo\n"
+                    "TO TREE :LEN\n"
+                    "  IF :LEN < 8 [STOP]\n"
+                    "  FD :LEN\n"
+                    "  LT 30 TREE :LEN * 0.7 RT 60\n"
+                    "  TREE :LEN * 0.7 LT 30\n"
+                    "  PU BK :LEN PD\n"
+                    "END\n\n"
+                    'PU SETXY 0 -200 PD SETPC "FOREST\n'
+                    "TREE 90\n"
+                    "```"
+                ),
+                inline=False,
+            ),
+        )
+    )
+
+    # 9. Lists, Words & Multi-Turtle
+    raw_pages.append(
+        (
+            "Lists & Multi-Turtle",
+            discord.Embed(
+                title="Logo Guide: Lists, Words & Multiple Turtles",
+                description="Manipulate lists/words and command up to 16 turtles simultaneously.",
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Data & Output Primitives",
+                value=(
+                    "`LIST`, `SENTENCE`/`SE`, `WORD`, `FIRST`, `LAST`, `BUTFIRST`/`BF`, `BUTLAST`/`BL`\n"
+                    "`ITEM i x`, `PICK x`, `COUNT x`, `FPUT`, `LPUT`, `EMPTYP`, `MEMBERP`\n"
+                    "`PRINT x` / `(PRINT a b ...)`, `SHOW x`, `TYPE x`"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Multiple Turtles (`0` to `15`)",
+                value=(
+                    "`SETTURTLE n`: switch to turtle *n*\n"
+                    "`TELL [0 1 2 3]`: send movement/drawing commands to several turtles at once\n"
+                    "`ASK n [ ... ]`: temporarily run commands as turtle *n*\n"
+                    "`WHO`: returns the active turtle ID(s)"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Example: 4 Synchronized Turtles",
+                value=("```logo\nTELL [0 1 2 3]\nFOREACH [0 1 2 3] [ASK ? [SETH ? * 90 SETPC ? + 1]]\nREPEAT 36 [FD 15 RT 10]\n```"),
+                inline=False,
+            ),
+        )
+    )
+
+    # 10. Limits & Troubleshooting
+    raw_pages.append(
+        (
+            "Limits & Troubleshooting",
+            discord.Embed(
+                title="Logo Guide: Limits & Troubleshooting",
+                description="Every program runs in an isolated sandbox with strict resource caps.",
+                color=EMBED_COLOR,
+            )
+            .add_field(
+                name="Sandbox Limits",
+                value=(
+                    "\N{BULLET} Source length: **2,000** characters\n"
+                    "\N{BULLET} Execution budget: **200,000** operations (3s wall-clock timeout)\n"
+                    "\N{BULLET} Loop limit (`REPEAT`/`FOR`/`WHILE`): **10,000** iterations\n"
+                    "\N{BULLET} Drawn segments: **20,000**  |  `FILL` calls: **50**\n"
+                    "\N{BULLET} Non-tail call depth: **100**  |  Pen width: **1 to 50**"
+                ),
+                inline=False,
+            )
+            .add_field(
+                name="Common Errors & Fixes",
+                value=(
+                    '\N{BULLET} **Unknown variable `:X`**: set it first with `MAKE "X 10` (use a quote `"` on `MAKE`, colon `:` to read)\n'
+                    "\N{BULLET} **Two negative arguments (`SETXY 100 -50`)**: keep a space before `-50` and no space after `-` (`100 - 50` subtracts!)\n"
+                    '\N{BULLET} **Unknown color**: prefix hex codes with `#` (`SETPC "#ACE`) or use `[r g b]`'
+                ),
+                inline=False,
+            ),
+        )
+    )
+
+    total = len(raw_pages)
+    embeds: list[discord.Embed] = []
+    for idx, (section_label, embed) in enumerate(raw_pages, start=1):
+        embed.title = f"\N{TURTLE} Logo Guide ({idx}/{total}): {section_label}"
+        embed.set_footer(text=f"Page {idx} of {total} \N{MIDDLE DOT} Use the buttons or menu below to navigate")
+        embeds.append(embed)
+
+    return embeds

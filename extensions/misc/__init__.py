@@ -26,7 +26,7 @@ from .constants import LANGUAGE_CODES, TRANSLATE_API, TRANSLATE_HEADERS, TRANSLA
 from .dictionary_parser import build_definition_embed
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
-from .logo import LogoError, build_logo_guide, run_logo_sandboxed_async
+from .logo import LogoError, LogoInterpreter, LogoParser, build_logo_guide
 from .news import NEWS_API_KEY, NEWS_CATEGORIES, NewsError, NewsView, fetch_news
 from .ttg import Truths, TTFlag
 from .weather import Weather
@@ -551,17 +551,42 @@ class Misc(commands.Cog, name="Miscellaneous"):
         clean_code = code.content.strip()
 
         try:
-            result = await run_logo_sandboxed_async(
-                clean_code,
-                animate_gif=False,
-            )
-        except LogoError as exc:
-            await ctx.reply(f"Logo error: {exc}", mention_author=False)
+            ast = LogoParser().parse(clean_code)
+
+            interpreter = LogoInterpreter()
+            interpreter.execute(ast)
+        except LogoError as e:
+            await ctx.reply(f"Error: {e}")
             return
 
-        file = discord.File(io.BytesIO(result.image_bytes), filename="turtle.png")
-        caption = "\n".join(result.output[:10]) if result.output else None
-        await ctx.reply(content=caption, file=file, mention_author=False)
+        image_buffer = await asyncio.to_thread(interpreter.turtle.render)
+        file = discord.File(image_buffer, filename="turtle.png")
+        output = ""
+        omitted = False
+
+        for i, op in enumerate(interpreter.output):
+            line = f"{op}\n"
+            notice = "[Output omitted]"
+
+            if i >= 20:
+                omitted = True
+                break
+
+            if len(output) + len(line) + len(notice) > DISCORD_MESSAGE_LIMIT:
+                omitted = True
+                break
+
+            output += line
+
+        if omitted:
+            output += "[Output omitted]"
+
+        if not output:
+            output = "No output generated."
+
+        embed = discord.Embed(title="Turtle Output")
+        embed.set_image(url="attachment://turtle.png")
+        await ctx.reply(file=file, content=output, embed=embed)
 
     @turtle.command(name="animate", aliases=["gif", "draw-gif"])
     async def turtle_animate(
@@ -574,17 +599,42 @@ class Misc(commands.Cog, name="Miscellaneous"):
         clean_code = code.content.strip()
 
         try:
-            result = await run_logo_sandboxed_async(
-                clean_code,
-                animate_gif=True,
-            )
-        except LogoError as exc:
-            await ctx.reply(f"Logo error: {exc}", mention_author=False)
+            ast = LogoParser().parse(clean_code)
+
+            interpreter = LogoInterpreter()
+            interpreter.execute(ast)
+        except LogoError as e:
+            await ctx.reply(f"Error: {e}")
             return
 
-        file = discord.File(io.BytesIO(result.image_bytes), filename="turtle.png")
-        caption = "\n".join(result.output[:10]) if result.output else None
-        await ctx.reply(content=caption, file=file, mention_author=False)
+        image_buffer = await asyncio.to_thread(interpreter.turtle.render_gif)
+        file = discord.File(image_buffer, filename="turtle.gif")
+        output = ""
+        omitted = False
+
+        for i, op in enumerate(interpreter.output):
+            line = f"{op}\n"
+            notice = "[Output omitted]"
+
+            if i >= 20:
+                omitted = True
+                break
+
+            if len(output) + len(line) + len(notice) > DISCORD_MESSAGE_LIMIT:
+                omitted = True
+                break
+
+            output += line
+
+        if omitted:
+            output += "[Output omitted]"
+
+        if not output:
+            output = "No output generated."
+
+        embed = discord.Embed(title="Turtle Output")
+        embed.set_image(url="attachment://turtle.gif")
+        await ctx.reply(file=file, content=output, embed=embed)
 
     @turtle.command(name="guide", aliases=["help", "tutorial"])
     async def turtle_guide(self, ctx: commands.Context[Bot]) -> None:

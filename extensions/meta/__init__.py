@@ -351,10 +351,6 @@ class Meta(commands.Cog):
             and Redis latencies are reported individually, along with their
             combined latency.
         """
-        start_time = time.perf_counter()
-
-        message = await ctx.reply("Pinging...")
-
         mongo_start_time = time.perf_counter()
         await self.bot.database.ping_mongo_server()
         mongo_latency = (time.perf_counter() - mongo_start_time) * 1000
@@ -362,6 +358,10 @@ class Meta(commands.Cog):
         redis_start_time = time.perf_counter()
         await self.bot.database.ping_redis_server()
         redis_latency = (time.perf_counter() - redis_start_time) * 1000
+
+        start_time = time.perf_counter()
+
+        message = await ctx.reply("Pinging...")
 
         api_latency = (time.perf_counter() - start_time) * 1000
         database_latency = mongo_latency + redis_latency

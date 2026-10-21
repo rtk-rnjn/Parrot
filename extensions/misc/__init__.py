@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import io
 import logging
-import string
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, BinaryIO
+from typing import TYPE_CHECKING, Annotated
 
 import aiohttp
 import arrow
 import discord
+import matplotlib
+import matplotlib.pyplot as plt
 import sympy
 from discord.ext import commands, tasks
 from jishaku.codeblocks import Codeblock, codeblock_converter
@@ -31,6 +31,8 @@ from .news import NEWS_API_KEY, NEWS_CATEGORIES, NewsError, NewsView, fetch_news
 from .ttg import Truths, TTFlag
 from .weather import Weather
 
+matplotlib.use("Agg")
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -40,17 +42,6 @@ DEFAULT_AFK_REASON = "AFK"
 BIRTHDAY_DATE_FORMAT = "MM-DD"
 
 LATEX_API_URL = "https://rtex.probablyaweb.site/api/v2"
-
-THIS_DIR = Path(__file__).parent
-LATEX_CACHE_DIRECTORY = THIS_DIR / "_latex_cache"
-LATEX_CACHE_DIRECTORY.mkdir(exist_ok=True)
-LATEX_DOCUMENT_TEMPLATE = string.Template(r"""
-\documentclass{article}
-\begin{document}
-    \pagenumbering{gobble}
-    $text
-\end{document}
-""")
 
 
 _log = logging.getLogger(__name__)
@@ -120,16 +111,6 @@ class BookmarkForm(discord.ui.Modal):
         embed = Misc.build_bookmark_dm(target_message, title=title)
         message_url_view = discord.ui.View().add_item(discord.ui.Button(label="View Message", url=target_message.jump_url))
         await interaction.user.send(embed=embed, view=message_url_view)
-
-
-def _process_image(data: bytes, out_file: BinaryIO) -> None:
-    PAD = 10
-
-    image = Image.open(io.BytesIO(data)).convert("RGBA")
-    width, height = image.size
-    background = Image.new("RGBA", (width + 2 * PAD, height + 2 * PAD), "WHITE")
-    background.paste(image, (PAD, PAD), image)
-    background.save(out_file)
 
 
 class Misc(commands.Cog, name="Miscellaneous"):
@@ -675,16 +656,37 @@ class Misc(commands.Cog, name="Miscellaneous"):
 
         await ctx.reply(f"```{flags.table_format}\n{main}\n```")
 
-    async def _generate_image(self, query: str, out_file: BinaryIO) -> None:
-        """Make an API request and save the generated image to cache."""
-        payload = {"code": query, "format": "png"}
-        async with self.bot.http_session.post(LATEX_API_URL, data=payload, raise_for_status=True) as response:
-            response_json = await response.json()
-        if response_json["status"] != "success":
-            raise InvalidLatexError(logs=response_json.get("log"))
+    def render_latex(self, latex: str, dpi: int = 200) -> Image.Image:
+        if not isinstance(latex, str) or not latex.strip():
+            message = "LaTeX input cannot be empty"
+            raise ValueError(message)
 
-        async with self.bot.http_session.get(f"{LATEX_API_URL}/{response_json['filename']}", raise_for_status=True) as response:
-            await asyncio.to_thread(_process_image, await response.read(), out_file)
+        fig = None
+
+        try:
+            fig = plt.figure()
+            fig.text(0, 0, f"${latex}$", fontsize=20)
+
+            buffer = io.BytesIO()
+            fig.savefig(
+                buffer,
+                format="png",
+                dpi=dpi,
+                transparent=True,
+                bbox_inches="tight",
+                pad_inches=0.1,
+            )
+            buffer.seek(0)
+
+            with Image.open(buffer) as image:
+                return image.convert("RGBA")
+
+        except Exception as exc:
+            raise ValueError() from exc
+
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
     @commands.command()
     @commands.max_concurrency(1, commands.BucketType.guild, wait=True)
@@ -695,22 +697,16 @@ class Misc(commands.Cog, name="Miscellaneous"):
         code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The LaTeX source, optionally inside a code block"),  # noqa: B008
     ) -> None:
         """Renders the text in latex and sends the image."""
-        query = code.content
-        query_hash = hashlib.md5(query.encode()).hexdigest()  # nosec  # noqa: S324
-        image_path = LATEX_CACHE_DIRECTORY / f"{query_hash}.png"
-        if not image_path.exists():
-            try:
-                with image_path.open("wb") as out_file:
-                    await self._generate_image(LATEX_DOCUMENT_TEMPLATE.substitute(text=query), out_file)
-            except InvalidLatexError as err:
-                embed = discord.Embed(title="Failed to render input.")
-                if err.logs is None:
-                    embed.description = "No logs available"
+        try:
+            image = await asyncio.to_thread(self.render_latex, code.content.strip())
+            buffer = io.BytesIO()
 
-                await ctx.send(embed=embed)
-                image_path.unlink()
-                return
-        await ctx.send(file=discord.File(image_path, "latex.png"))
+            await asyncio.to_thread(image.save, buffer, format="PNG")
+            buffer.seek(0)
+
+            await ctx.send(file=discord.File(buffer, filename="equation.png"))
+        except ValueError as exc:
+            await ctx.reply(str(exc), mention_author=False)
 
     @commands.command(name="afk")
     async def afk(

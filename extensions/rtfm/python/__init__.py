@@ -2551,9 +2551,9 @@ class Python(commands.Cog):
         target: str = commands.parameter(description="A dotted standard-library name (e.g. `asyncio.run`, `collections.Counter`)."),
     ) -> discord.Message:
         """Link the CPython source (with line numbers) of a standard-library object."""
-        return await self.deliver(ctx, self.source_view(ctx, target))
+        return await self.deliver(ctx, self.retrieve_source_details(ctx, target))
 
-    async def source_view(self, ctx: commands.Context[Bot], raw: str) -> PythonView:
+    async def retrieve_source_details(self, ctx: commands.Context[Bot], raw: str) -> PythonView:
         cleaned = raw.strip().strip("`").removesuffix("()")
         if len(cleaned) > 80 or not DOTTED_NAME_PATTERN.match(cleaned):
             msg = "Give a dotted name like `asyncio.run` or `pathlib.Path.glob`."

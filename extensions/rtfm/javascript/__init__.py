@@ -1619,7 +1619,7 @@ class JavaScript(commands.Cog):
             entries = await asyncio.to_thread(parse_mdn_search_results, data, js_only=False)
         return entries
 
-    async def deliver(self, ctx: commands.Context[Bot], producer: Awaitable[JavaScriptView]) -> discord.Message:
+    async def dispatch_view(self, ctx: commands.Context[Bot], producer: Awaitable[JavaScriptView]) -> discord.Message:
         """Await the view, then send it. Any :class:`JavaScriptError` becomes an error notice instead."""
         none = discord.AllowedMentions.none()
         async with ctx.typing():
@@ -1662,7 +1662,7 @@ class JavaScript(commands.Cog):
         """Search for a JavaScript tutorial or invoke a JavaScript / ECMAScript / Node.js reference subcommand."""
         if not text:
             return await ctx.send_help(ctx.command)
-        return await self.deliver(ctx, self.tutorial_view(ctx, text))
+        return await self.dispatch_view(ctx, self.fetch_java_script_tutorial(ctx, text))
 
     @javascript.command(
         name="tutorial",
@@ -1677,9 +1677,9 @@ class JavaScript(commands.Cog):
         text: str = commands.parameter(description="The tutorial to search for."),
     ) -> discord.Message:
         """Search for a JavaScript tutorial."""
-        return await self.deliver(ctx, self.tutorial_view(ctx, text))
+        return await self.dispatch_view(ctx, self.fetch_java_script_tutorial(ctx, text))
 
-    async def tutorial_view(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def fetch_java_script_tutorial(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         if not self.js_tags:
             msg = "No JavaScript tutorials are currently loaded."
             raise JavaScriptError(msg)
@@ -1714,9 +1714,9 @@ class JavaScript(commands.Cog):
 
         This command displays the tutorial names that can be searched with the parent command.
         """
-        return await self.deliver(ctx, self.tutorial_list_view(ctx))
+        return await self.dispatch_view(ctx, self.fetch_js_tutorials(ctx))
 
-    async def tutorial_list_view(self, ctx: commands.Context[Bot]) -> JavaScriptView:
+    async def fetch_js_tutorials(self, ctx: commands.Context[Bot]) -> JavaScriptView:
         names = sorted(self.js_tags.keys())
         if not names:
             msg = "No JavaScript tutorials are currently available."
@@ -1745,7 +1745,7 @@ class JavaScript(commands.Cog):
         proposal: str = commands.parameter(description="The TC39 proposal name or topic (e.g. `Temporal`, `signals`, `decorators`)."),
     ) -> discord.Message:
         """Look up an ECMAScript (TC39) proposal by name, keyword, or stage."""
-        return await self.deliver(ctx, self.tc39_view(ctx, proposal))
+        return await self.dispatch_view(ctx, self.tc39_view(ctx, proposal))
 
     @javascript.command(
         name="tc39",
@@ -1760,7 +1760,7 @@ class JavaScript(commands.Cog):
         proposal: str = commands.parameter(description="The TC39 proposal name or topic (e.g. `Temporal`, `signals`, `decorators`)."),
     ) -> discord.Message:
         """Look up an ECMAScript (TC39) proposal by name, keyword, or stage."""
-        return await self.deliver(ctx, self.tc39_view(ctx, proposal))
+        return await self.dispatch_view(ctx, self.tc39_view(ctx, proposal))
 
     async def tc39_view(self, ctx: commands.Context[Bot], target: str) -> JavaScriptView:
         cleaned = target.strip().strip("`")
@@ -1846,7 +1846,7 @@ class JavaScript(commands.Cog):
         query: str = commands.parameter(description="The JavaScript object, method, statement, or Web API to look up on MDN."),
     ) -> discord.Message:
         """Retrieve JavaScript or Web API documentation from MDN Web Docs."""
-        return await self.deliver(ctx, self.mdn_view(ctx, query))
+        return await self.dispatch_view(ctx, self.retrieve_mdn_js_docs(ctx, query))
 
     @javascript.command(
         name="doc",
@@ -1861,9 +1861,9 @@ class JavaScript(commands.Cog):
         query: str = commands.parameter(description="The JavaScript object, method, statement, or Web API to look up on MDN."),
     ) -> discord.Message:
         """Retrieve JavaScript or Web API documentation from MDN Web Docs."""
-        return await self.deliver(ctx, self.mdn_view(ctx, query))
+        return await self.dispatch_view(ctx, self.retrieve_mdn_js_docs(ctx, query))
 
-    async def mdn_view(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def retrieve_mdn_js_docs(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`")
         if not cleaned:
             msg = "Provide a JavaScript object, method, or Web API name to look up."
@@ -1905,7 +1905,7 @@ class JavaScript(commands.Cog):
         module: str = commands.parameter(description="The Node.js built-in module name (e.g. `fs`, `path`, `crypto`, `stream`)."),
     ) -> discord.Message:
         """Explain a Node.js built-in module and link its documentation and source."""
-        return await self.deliver(ctx, self.stdlib_view(ctx, module))
+        return await self.dispatch_view(ctx, self.retrieve_node_api_reference(ctx, module))
 
     @javascript.command(
         name="stdlib",
@@ -1919,9 +1919,9 @@ class JavaScript(commands.Cog):
         module: str = commands.parameter(description="The Node.js built-in module name (e.g. `fs`, `path`, `crypto`, `stream`)."),
     ) -> discord.Message:
         """Explain a Node.js built-in module and link its documentation and source."""
-        return await self.deliver(ctx, self.stdlib_view(ctx, module))
+        return await self.dispatch_view(ctx, self.retrieve_node_api_reference(ctx, module))
 
-    async def stdlib_view(self, ctx: commands.Context[Bot], module: str) -> JavaScriptView:
+    async def retrieve_node_api_reference(self, ctx: commands.Context[Bot], module: str) -> JavaScriptView:
         cleaned = module.strip().strip("`").removeprefix("node:").split("/", 1)[0].split(".", 1)[0]
         known_modules = NODE_STDLIB_MODULES | frozenset(STDLIB_CURATED.keys())
 
@@ -1971,7 +1971,7 @@ class JavaScript(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def jsversions_command(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Show supported Node.js LTS versions and ECMAScript edition status."""
-        return await self.deliver(ctx, self.fetch_js_versions(ctx))
+        return await self.dispatch_view(ctx, self.fetch_js_versions(ctx))
 
     @javascript.command(
         name="versions",
@@ -1981,7 +1981,7 @@ class JavaScript(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def js_versions(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Show supported Node.js LTS versions and ECMAScript edition status."""
-        return await self.deliver(ctx, self.fetch_js_versions(ctx))
+        return await self.dispatch_view(ctx, self.fetch_js_versions(ctx))
 
     async def fetch_js_versions(self, ctx: commands.Context[Bot]) -> JavaScriptView:
         cycles = await self.get_cycles()
@@ -2025,9 +2025,9 @@ class JavaScript(commands.Cog):
         error_name: str = commands.parameter(description="The error name (e.g. `TypeError`, `ReferenceError`, `SyntaxError`, `RangeError`)."),
     ) -> discord.Message:
         """Explain common JavaScript runtime and syntax errors."""
-        return await self.deliver(ctx, self.error_view(ctx, error_name))
+        return await self.dispatch_view(ctx, self.fetch_java_script_error_info(ctx, error_name))
 
-    async def error_view(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def fetch_java_script_error_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`")
         lookup = {k.casefold(): k for k in ERRORS_DB}
 
@@ -2094,9 +2094,9 @@ class JavaScript(commands.Cog):
         name: str = commands.parameter(description="The operator symbol (e.g. `??`, `?.`, `===`, `=>`, `...`) or name (`nullish`, `spread`)."),
     ) -> discord.Message:
         """Explain a JavaScript operator and its precedence."""
-        return await self.deliver(ctx, self.fetch_operator_info(ctx, name))
+        return await self.dispatch_view(ctx, self.fetch_javas_cript_operator_info(ctx, name))
 
-    async def fetch_operator_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def fetch_javas_cript_operator_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`").casefold()
         selected: OperatorInfo | None = None
         for entry in OPERATORS_DB:
@@ -2141,9 +2141,9 @@ class JavaScript(commands.Cog):
         name: str = commands.parameter(description="The standard built-in object or global function (e.g. `Promise`, `Array`, `Map`, `Intl`)."),
     ) -> discord.Message:
         """Look up standard JavaScript built-in objects and global functions."""
-        return await self.deliver(ctx, self.get_builtin_info(ctx, name))
+        return await self.dispatch_view(ctx, self.get_java_script_builtin_info(ctx, name))
 
-    async def get_builtin_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def get_java_script_builtin_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`").rstrip("()")
         if cleaned.casefold() in {k.casefold() for k in JS_HARD_KEYWORDS}:
             msg = f"`{cleaned}` is a JavaScript reserved keyword, not a built-in global object. Use `js keyword {cleaned}` instead."
@@ -2151,7 +2151,7 @@ class JavaScript(commands.Cog):
 
         err_lookup = {k.casefold(): k for k in (set(ERRORS_DB) | set(JS_STANDARD_ERRORS))}
         if cleaned.casefold() in err_lookup:
-            return await self.error_view(ctx, err_lookup[cleaned.casefold()])
+            return await self.fetch_java_script_error_info(ctx, err_lookup[cleaned.casefold()])
 
         curated_map = {k.casefold(): k for k in BUILTINS_DB}
         std_map = {k.casefold(): k for k in JS_BUILTIN_OBJECTS}
@@ -2208,9 +2208,9 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Explain JavaScript / V8 data-structure and algorithmic time complexity."""
-        return await self.deliver(ctx, self.fetch_complexity_info(ctx, algorithm))
+        return await self.dispatch_view(ctx, self.fetch_java_script_complexity_info(ctx, algorithm))
 
-    async def fetch_complexity_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def fetch_java_script_complexity_info(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`").casefold()
         selected: ComplexityInfo | None = None
         for entry in COMPLEXITY_DB:
@@ -2342,7 +2342,7 @@ class JavaScript(commands.Cog):
         term: str = commands.parameter(description="The glossary term (e.g. `closure`, `hoisting`, `promise`, `prototype`)."),
     ) -> discord.Message:
         """Look up a JavaScript or Web term in the official MDN Glossary."""
-        return await self.deliver(ctx, self.fetch_mdn_glossary_view(ctx, term))
+        return await self.dispatch_view(ctx, self.fetch_mdn_glossary_view(ctx, term))
 
     async def fetch_mdn_glossary_view(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`")
@@ -2411,7 +2411,7 @@ class JavaScript(commands.Cog):
         word: str = commands.parameter(description="The reserved or contextual keyword (e.g. `const`, `let`, `async`, `using`)."),
     ) -> discord.Message:
         """Explain a JavaScript reserved or contextual keyword."""
-        return await self.deliver(ctx, self.get_java_script_keyword_details(ctx, word))
+        return await self.dispatch_view(ctx, self.get_java_script_keyword_details(ctx, word))
 
     async def get_java_script_keyword_details(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`")
@@ -2457,9 +2457,9 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Explain a JavaScript Well-Known Symbol or meta-programming protocol method."""
-        return await self.deliver(ctx, self.fetch_symbol_details(ctx, name))
+        return await self.dispatch_view(ctx, self.fetch_java_script_symbol_details(ctx, name))
 
-    async def fetch_symbol_details(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
+    async def fetch_java_script_symbol_details(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         info = lookup_symbol(query)
         if info is None:
             match = await asyncio.to_thread(extractOne, normalise_symbol(query), list(SYMBOLS_DB))
@@ -2495,7 +2495,7 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Show the headline features and Stage 4 proposals of an ECMAScript release."""
-        return await self.deliver(ctx, self.retrieve_js_editions_summary(ctx, edition))
+        return await self.dispatch_view(ctx, self.retrieve_js_editions_summary(ctx, edition))
 
     async def retrieve_js_editions_summary(self, ctx: commands.Context[Bot], edition: str | None) -> JavaScriptView:  # noqa: PLR0912
         current_year = str(datetime.now(tz=UTC).year)
@@ -2586,7 +2586,7 @@ class JavaScript(commands.Cog):
         name: str = commands.parameter(description="The JS feature or Node.js API (e.g. `Array.prototype.at`, `fs.promises`, `Object.groupBy`)."),
     ) -> discord.Message:
         """Show when a JavaScript feature or Node.js API was added, changed, or deprecated."""
-        return await self.deliver(ctx, self.fetch_java_script_feature_details(ctx, name))
+        return await self.dispatch_view(ctx, self.fetch_java_script_feature_details(ctx, name))
 
     async def fetch_java_script_feature_details(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
         cleaned = query.strip().strip("`")
@@ -2647,7 +2647,7 @@ class JavaScript(commands.Cog):
         version: str | None = commands.parameter(default=None, description="A specific version. Defaults to `latest`."),
     ) -> discord.Message:
         """Look up a package on the npm registry."""
-        return await self.deliver(ctx, self.fetch_npm_package_view(ctx, package, version))
+        return await self.dispatch_view(ctx, self.fetch_npm_package_view(ctx, package, version))
 
     async def fetch_npm_package_view(self, ctx: commands.Context[Bot], package: str, version: str | None) -> JavaScriptView:
         name = package.strip().strip("`")
@@ -2706,7 +2706,7 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """List known CVEs affecting a Node.js release, or look up one CVE."""
-        return await self.deliver(ctx, self.get_cve_details(ctx, target))
+        return await self.dispatch_view(ctx, self.get_cve_details(ctx, target))
 
     async def get_cve_details(self, ctx: commands.Context[Bot], target: str | None) -> JavaScriptView:
         cleaned = (target or "").strip().strip("`")
@@ -2751,7 +2751,7 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Link the official installers and binaries for a Node.js release."""
-        return await self.deliver(ctx, self.retrieve_node_distribution(ctx, version))
+        return await self.dispatch_view(ctx, self.retrieve_node_distribution(ctx, version))
 
     async def retrieve_node_distribution(self, ctx: commands.Context[Bot], raw: str | None) -> JavaScriptView:
         version, cycle = await self.resolve_release(raw)
@@ -2795,7 +2795,7 @@ class JavaScript(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def js_countdown(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Count down to upcoming Node.js release and LTS milestones."""
-        return await self.deliver(ctx, self.fetch_node_release_schedule(ctx))
+        return await self.dispatch_view(ctx, self.fetch_node_release_schedule(ctx))
 
     async def fetch_node_release_schedule(self, ctx: commands.Context[Bot]) -> JavaScriptView:
         data = await self.fetch_json(NODE_SCHEDULE_URL, missing="Could not load the Node.js Release schedule.")
@@ -2832,9 +2832,9 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Link and preview the Node.js core source code of a built-in module or symbol."""
-        return await self.deliver(ctx, self.source_view(ctx, target))
+        return await self.dispatch_view(ctx, self.fetch_java_script_source(ctx, target))
 
-    async def source_view(self, ctx: commands.Context[Bot], raw: str) -> JavaScriptView:
+    async def fetch_java_script_source(self, ctx: commands.Context[Bot], raw: str) -> JavaScriptView:
         cleaned = raw.strip().strip("`").removesuffix("()").removeprefix("node:")
         if len(cleaned) > 80 or not DOTTED_NAME_PATTERN.match(cleaned):
             msg = "Give a Node.js module or dotted symbol like `fs`, `events.EventEmitter`, or `util.promisify`."
@@ -2918,9 +2918,9 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Show a classic JavaScript pitfall with the fix."""
-        return await self.deliver(ctx, self.gotcha_view(ctx, topic))
+        return await self.dispatch_view(ctx, self.show_java_script_gotchas(ctx, topic))
 
-    async def gotcha_view(self, ctx: commands.Context[Bot], topic: str | None) -> JavaScriptView:
+    async def show_java_script_gotchas(self, ctx: commands.Context[Bot], topic: str | None) -> JavaScriptView:
         if not topic or not topic.strip():
             entries = [(g.key, g.title) for g in GOTCHAS_DB]
             return self.single(ctx, Page(partial(topic_list_items, "JavaScript Gotchas", "js gotcha", entries), colour=SECURITY_COLOUR))
@@ -2950,9 +2950,9 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Show an idiomatic modern JavaScript (ES6+) recipe."""
-        return await self.deliver(ctx, self.idiom_view(ctx, topic))
+        return await self.dispatch_view(ctx, self.retrieve_js_idiom_view(ctx, topic))
 
-    async def idiom_view(self, ctx: commands.Context[Bot], topic: str | None) -> JavaScriptView:
+    async def retrieve_js_idiom_view(self, ctx: commands.Context[Bot], topic: str | None) -> JavaScriptView:
         if not topic or not topic.strip():
             entries = [(i.key, i.title) for i in IDIOMS_DB]
             return self.single(ctx, Page(partial(topic_list_items, "JavaScript Idioms", "js idiom", entries), colour=ACTIVE_COLOUR))
@@ -2983,9 +2983,9 @@ class JavaScript(commands.Cog):
         ),
     ) -> discord.Message:
         """Cheat sheet for TypeScript and JSDoc type annotations."""
-        return await self.deliver(ctx, self.typing_view(ctx, topic))
+        return await self.dispatch_view(ctx, self.get_type_script_typing_info(ctx, topic))
 
-    async def typing_view(self, ctx: commands.Context[Bot], topic: str | None) -> JavaScriptView:
+    async def get_type_script_typing_info(self, ctx: commands.Context[Bot], topic: str | None) -> JavaScriptView:
         if not topic or not topic.strip():
             entries = [(t.key, t.title) for t in TYPING_DB]
             return self.single(ctx, Page(partial(topic_list_items, "TypeScript & JSDoc Typing", "js typing", entries), colour=TS_BLUE))
@@ -3010,9 +3010,9 @@ class JavaScript(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def js_zen(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Show the Laws and Principles of JavaScript."""
-        return await self.deliver(ctx, self.zen_view(ctx))
+        return await self.dispatch_view(ctx, self.show_tc39_guidelines(ctx))
 
-    async def zen_view(self, ctx: commands.Context[Bot]) -> JavaScriptView:
+    async def show_tc39_guidelines(self, ctx: commands.Context[Bot]) -> JavaScriptView:
         return self.single(
             ctx,
             Page(

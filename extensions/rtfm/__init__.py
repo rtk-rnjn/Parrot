@@ -14,8 +14,9 @@ import unicodedata
 import urllib.parse
 from html import unescape
 from typing import TYPE_CHECKING, Annotated, Literal
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urljoin
 
+import aiohttp
 import discord
 import rapidfuzz
 import re2
@@ -24,12 +25,12 @@ from bs4.element import NavigableString
 from discord.ext import commands, tasks
 from jishaku.codeblocks import Codeblock, codeblock_converter
 
-from core.utils import PaginationView
+from core.utils import PaginationView, truncate
 
 from .cheat_sh import CheatSheet
 from .constants import (
     MINIMUM_CERTAINTY,
-    REAL_PYTHON_ARTICLE_URL,
+    REAL_PYTHON_BASE_URL,
     REAL_PYTHON_ROOT_API,
     REAL_PYTHON_SEARCH_URL,
     STACKOVERFLOW_BASE_API,
@@ -293,52 +294,69 @@ class Developer(*DEPENDENCIES, commands.Cog):
     async def realpython(
         self,
         ctx: commands.Context[Bot],
-        amount: commands.Range[int, 1, 5] = commands.parameter(description="The amount of articles to fetch (1-5).", default=5),  # noqa: B008
         *,
         query: str = commands.parameter(description="The search terms to look for."),
     ) -> discord.Message:
-        """Send some articles from RealPython that match the search terms.
-        By default the top 5 matches are sent, this can be overwritten to a number between 1 and 5 by specifying an amount before the search query.
-        If no search query is specified by the user, the home page is sent.
-        """
+        """Send some articles from RealPython that match the search terms."""
 
-        params = {"q": query, "limit": amount, "kind": "article"}
-        async with self.bot.http_session.get(url=REAL_PYTHON_ROOT_API, params=params) as response:
-            if response.status != HTTP_OK:
-                return await ctx.reply(
-                    embed=discord.Embed(
-                        title="Error while searching Real Python",
-                        description="There was an error while trying to reach Real Python. Please try again shortly.",
-                        color=ctx.author.color,
-                    )
-                )
+        MAX_DESCRIPTION_LENGTH = 150
 
-            data = await response.json()
+        if not query.strip():
+            return await ctx.reply(
+                embed=discord.Embed(
+                    title="Real Python",
+                    url=REAL_PYTHON_BASE_URL,
+                    description="Learn Python with tutorials, courses and learning paths.",
+                    color=ctx.author.color,
+                ),
+                mention_author=False,
+            )
 
-        articles = data["results"]
+        params = {"q": query, "limit": 5, "kinds": "article"}
+        try:
+            async with self.bot.http_session.get(
+                REAL_PYTHON_ROOT_API,
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+        except aiohttp.ClientError, TimeoutError:
+            return await ctx.reply(
+                embed=discord.Embed(
+                    title="Error while searching Real Python",
+                    description="There was an error while trying to reach Real Python. Please try again shortly.",
+                    color=ctx.author.color,
+                ),
+                mention_author=False,
+            )
 
-        if len(articles) == 0:
-            no_articles = discord.Embed(title=f"No articles found for '{query}'", color=ctx.author.color)
-            return await ctx.reply(embed=no_articles)
+        articles = data.get("results", [])
+        if not articles:
+            return await ctx.reply(
+                embed=discord.Embed(title=f"No articles found for '{query}'", color=ctx.author.color),
+                mention_author=False,
+            )
 
-        article_description = "Here is the result:" if len(articles) == 1 else f"Here are the top {len(articles)} results:"
-
-        article_embed = discord.Embed(
+        total = data.get("total", len(articles))
+        embed = discord.Embed(
             title="Search results - Real Python",
-            url=REAL_PYTHON_SEARCH_URL.format(user_search=quote_plus(query)),
-            description=article_description,
+            url=REAL_PYTHON_SEARCH_URL.format(query=quote_plus(query)),
+            description="Here is the result:" if len(articles) == 1 else f"Here are the top {len(articles)} results:",
             color=ctx.author.color,
         )
 
         for article in articles:
-            article_embed.add_field(
-                name=unescape(article["title"]),
-                value=REAL_PYTHON_ARTICLE_URL.format(article_url=article["url"]),
+            link = urljoin(REAL_PYTHON_BASE_URL, article["url"])
+            description = truncate(article.get("description") or "", MAX_DESCRIPTION_LENGTH)
+            embed.add_field(
+                name=truncate(article["title"], 256),
+                value=f"{description}\n{link}" if description else link,
                 inline=False,
             )
-        article_embed.set_footer(text="Click the links to go to the articles.")
 
-        return await ctx.reply(embed=article_embed)
+        embed.set_footer(text=f"Showing {len(articles)} of {total} matches. Click the links to read more.")
+        return await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(aliases=["so"])
     @commands.cooldown(1, 15, commands.cooldowns.BucketType.user)

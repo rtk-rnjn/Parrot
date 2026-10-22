@@ -41,6 +41,7 @@ from .constants import (
 )
 from .docs import Docs
 from .github import GitHub
+from .hacker_news import HackerNews
 from .javascript import JavaScript
 from .kontests import Kontests
 from .packages import Packages
@@ -65,7 +66,7 @@ EMBED_FIELD_LIMIT = 1024
 MIN_TUTORIAL_SCORE = 50
 DISCORD_MESSAGE_LIMIT = 2000
 
-DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript]
+DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript, HackerNews]
 
 
 class Developer(*DEPENDENCIES, commands.Cog):

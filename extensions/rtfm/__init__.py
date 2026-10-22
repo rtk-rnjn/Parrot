@@ -40,6 +40,7 @@ from .constants import (
 )
 from .docs import Docs
 from .github import GitHub
+from .javascript import JavaScript
 from .kontests import Kontests
 from .packages import Packages
 from .python import Python
@@ -63,7 +64,7 @@ EMBED_FIELD_LIMIT = 1024
 MIN_TUTORIAL_SCORE = 50
 DISCORD_MESSAGE_LIMIT = 2000
 
-DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python]
+DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript]
 
 
 class Developer(*DEPENDENCIES, commands.Cog):

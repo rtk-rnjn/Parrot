@@ -1390,7 +1390,7 @@ IDIOMS_DB: tuple[IdiomInfo, ...] = (
         "Lazy list comprehension",
         ("generator", "yield", "memory-efficient", "comprehension"),
         "Use parentheses instead of brackets to process large datasets without blowing up memory.",
-        '# List comprehension: builds the entire list in memory\nsquares_list = [x*x for x in range(1_000_000)]\n\n# Generator expression: computes one item at a time\nsquares_gen = (x*x for x in range(1_000_000))\nsum_of_squares = sum(squares_gen)',
+        "# List comprehension: builds the entire list in memory\nsquares_list = [x*x for x in range(1_000_000)]\n\n# Generator expression: computes one item at a time\nsquares_gen = (x*x for x in range(1_000_000))\nsum_of_squares = sum(squares_gen)",
         "Generator expressions can only be iterated over once.",
     ),
     IdiomInfo(
@@ -1401,7 +1401,7 @@ IDIOMS_DB: tuple[IdiomInfo, ...] = (
         'def greet(name: str, age: int | None = None) -> str:\n    if age:\n        return f"Hi {name}, you are {age}."\n    return f"Hi {name}."\n\nnumbers: list[int] = [1, 2, 3]',
         "The `|` syntax for unions (e.g., `int | None`) was introduced in Python 3.10.",
         "3.5",
-    )
+    ),
 )
 
 

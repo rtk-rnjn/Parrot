@@ -2131,7 +2131,7 @@ class Python(commands.Cog):
         except TimeoutError, aiohttp.ClientError:
             return False
 
-    async def get_glossary(self) -> dict[str, GlossaryTerm]:
+    async def retrieve_glossary_data(self) -> dict[str, GlossaryTerm]:
         if self._glossary_cache is not None:
             return self._glossary_cache
         async with self._cache_lock:
@@ -2144,7 +2144,7 @@ class Python(commands.Cog):
                 self._glossary_cache = terms
             return self._glossary_cache
 
-    async def fetch_nvd(self, params: dict[str, Any]) -> dict[str, Any]:
+    async def get_nvd_vulnerabilities(self, params: dict[str, Any]) -> dict[str, Any]:
         headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
         try:
             async with self.bot.http_session.get(NVD_URL, params=params, headers=headers, timeout=NVD_TIMEOUT) as response:
@@ -2166,11 +2166,11 @@ class Python(commands.Cog):
             raise PythonError(msg)
         return data
 
-    async def nvd_records(self, key: str, params: dict[str, Any]) -> list[CveRecord]:
+    async def retrieve_cached_nvd_records(self, key: str, params: dict[str, Any]) -> list[CveRecord]:
         cached = self._cve_cache.get(key)
         if cached and time.monotonic() - cached[0] < CACHE_TTL:
             return cached[1]
-        records = await asyncio.to_thread(parse_nvd, await self.fetch_nvd(params))
+        records = await asyncio.to_thread(parse_nvd, await self.get_nvd_vulnerabilities(params))
         if len(self._cve_cache) >= 64:
             self._cve_cache.pop(min(self._cve_cache, key=lambda k: self._cve_cache[k][0]))
         self._cve_cache[key] = (time.monotonic(), records)
@@ -2189,10 +2189,10 @@ class Python(commands.Cog):
         term: str = commands.parameter(description="The glossary term (e.g. `decorator`, `GIL`, `iterable`)."),
     ) -> discord.Message:
         """Look up a term in the official Python glossary."""
-        return await self.deliver(ctx, self.glossary_view(ctx, term))
+        return await self.deliver(ctx, self.fetch_glossary_entry(ctx, term))
 
-    async def glossary_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
-        terms = await self.get_glossary()
+    async def fetch_glossary_entry(self, ctx: commands.Context[Bot], query: str) -> PythonView:
+        terms = await self.retrieve_glossary_data()
         cleaned = query.strip().strip("`").casefold()
         entry = terms.get(cleaned)
         if entry is None:
@@ -2224,9 +2224,9 @@ class Python(commands.Cog):
         word: str = commands.parameter(description="The keyword or soft keyword (e.g. `async`, `lambda`, `match`)."),
     ) -> discord.Message:
         """Explain a Python keyword or soft keyword."""
-        return await self.deliver(ctx, self.keyword_view(ctx, word))
+        return await self.deliver(ctx, self.fetch_keyword_details(ctx, word))
 
-    async def keyword_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
+    async def fetch_keyword_details(self, ctx: commands.Context[Bot], query: str) -> PythonView:
         cleaned = query.strip().strip("`")
         hard, soft = set(keyword.kwlist), set(keyword.softkwlist)
         known = hard | soft | set(KEYWORDS_DB)
@@ -2266,9 +2266,9 @@ class Python(commands.Cog):
         name: str = commands.parameter(description="The special method (e.g. `__init__`, `getitem`, `__radd__`)."),
     ) -> discord.Message:
         """Explain a data-model (dunder) method and what calls it."""
-        return await self.deliver(ctx, self.dunder_view(ctx, name))
+        return await self.deliver(ctx, self.get_special_methods(ctx, name))
 
-    async def dunder_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
+    async def get_special_methods(self, ctx: commands.Context[Bot], query: str) -> PythonView:
         info = lookup_dunder(query)
         if info is None:
             match = await asyncio.to_thread(extractOne, normalise_dunder(query), list(DUNDERS_DB))
@@ -2302,9 +2302,9 @@ class Python(commands.Cog):
         version: str | None = commands.parameter(default=None, description="The Python series (e.g. `3.13`). Defaults to the newest release."),
     ) -> discord.Message:
         """Show the headline features of a Python release."""
-        return await self.deliver(ctx, self.whatsnew_view(ctx, version))
+        return await self.deliver(ctx, self.get_python_release_notes(ctx, version))
 
-    async def whatsnew_view(self, ctx: commands.Context[Bot], version: str | None) -> PythonView:
+    async def get_python_release_notes(self, ctx: commands.Context[Bot], version: str | None) -> PythonView:
         cycles = await self.get_cycles()
         if version and version.strip():
             match = VERSION_ARG_PATTERN.match(version.strip())
@@ -2345,9 +2345,9 @@ class Python(commands.Cog):
         name: str = commands.parameter(description="The module, class, function or method (e.g. `asyncio.TaskGroup`)."),
     ) -> discord.Message:
         """Show when something was added, changed, deprecated or removed."""
-        return await self.deliver(ctx, self.since_view(ctx, name))
+        return await self.deliver(ctx, self.retrieve_sphinx_entry_view(ctx, name))
 
-    async def since_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
+    async def retrieve_sphinx_entry_view(self, ctx: commands.Context[Bot], query: str) -> PythonView:
         cleaned = query.strip().strip("`")
         if not cleaned:
             msg = "Provide a module, class, or function name to look up."
@@ -2424,17 +2424,17 @@ class Python(commands.Cog):
         ),
     ) -> discord.Message:
         """List known CVEs affecting a Python release, or look up one CVE."""
-        return await self.deliver(ctx, self.cve_view(ctx, target))
+        return await self.deliver(ctx, self.fetch_cve_info(ctx, target))
 
-    async def cve_view(self, ctx: commands.Context[Bot], target: str | None) -> PythonView:
+    async def fetch_cve_info(self, ctx: commands.Context[Bot], target: str | None) -> PythonView:
         cleaned = (target or "").strip().strip("`")
         if CVE_ID_PATTERN.match(cleaned):
             cve_id = cleaned.upper()
-            records = await self.nvd_records(f"id:{cve_id}", {"cveId": cve_id})
+            records = await self.retrieve_cached_nvd_records(f"id:{cve_id}", {"cveId": cve_id})
             label = cve_id
         else:
             version, _ = await self.resolve_release(cleaned or None)
-            records = await self.nvd_records(
+            records = await self.retrieve_cached_nvd_records(
                 f"cpe:{version}",
                 {"cpeName": f"cpe:2.3:a:python:python:{version}:*:*:*:*:*:*:*", "resultsPerPage": 200},
             )
@@ -2467,9 +2467,9 @@ class Python(commands.Cog):
         version: str | None = commands.parameter(default=None, description="A series (`3.13`) or exact release (`3.13.5`). Defaults to the newest."),
     ) -> discord.Message:
         """Link the installers and source for a Python release."""
-        return await self.deliver(ctx, self.download_view(ctx, version))
+        return await self.deliver(ctx, self.fetch_python_download_links(ctx, version))
 
-    async def download_view(self, ctx: commands.Context[Bot], raw: str | None) -> PythonView:
+    async def fetch_python_download_links(self, ctx: commands.Context[Bot], raw: str | None) -> PythonView:
         version, cycle = await self.resolve_release(raw)
         release_url = f"{PYTHON_RELEASES_URL}/python-{version.replace('.', '')}/"
         candidates = {

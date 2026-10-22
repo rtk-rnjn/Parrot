@@ -8,11 +8,10 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import aiohttp
-import arrow
 import discord
 import frontmatter
 from bs4 import BeautifulSoup, Tag
@@ -21,6 +20,19 @@ from rapidfuzz.process import extractOne
 
 from core.utils import BaseLayoutView, NoticeLayout, truncate
 
+from ..language_utils import code, collect, dated, facts, header, pack, safe, text, valid_url, when
+from .constants import (
+    CURATED_ES_HIGHLIGHTS,
+    FALLBACK_NODE_CYCLES,
+    JS_BUILTIN_OBJECTS,
+    JS_CONTEXTUAL_KEYWORDS,
+    JS_HARD_KEYWORDS,
+    JS_LAWS_LINES,
+    JS_STANDARD_ERRORS,
+    NODE_STDLIB_MODULES,
+    NOTE_LABELS,
+    SEVERITY_BADGES,
+)
 from .knowledge import (
     BUILTINS_DB,
     COMPLEXITY_DB,
@@ -123,254 +135,6 @@ TC39_STAGE_PATTERN = re.compile(r"^stage[-_\s]*(0|1|2\.7|2|3|4)$", re.IGNORECASE
 CVE_ID_PATTERN = re.compile(r"^CVE-\d{4}-\d{4,}$", re.IGNORECASE)
 DOTTED_NAME_PATTERN = re.compile(r"^(?:node:)?[A-Za-z_$][\w$]*(?:[./][A-Za-z_$][\w$]*)*$")
 
-JS_HARD_KEYWORDS = frozenset(
-    {
-        "break",
-        "case",
-        "catch",
-        "class",
-        "const",
-        "continue",
-        "debugger",
-        "default",
-        "delete",
-        "do",
-        "else",
-        "enum",
-        "export",
-        "extends",
-        "false",
-        "finally",
-        "for",
-        "function",
-        "if",
-        "import",
-        "in",
-        "instanceof",
-        "new",
-        "null",
-        "return",
-        "super",
-        "switch",
-        "this",
-        "throw",
-        "true",
-        "try",
-        "typeof",
-        "var",
-        "void",
-        "while",
-        "with",
-        "yield",
-    }
-)
-
-JS_CONTEXTUAL_KEYWORDS = frozenset(
-    {
-        "accessor",
-        "as",
-        "async",
-        "await",
-        "from",
-        "get",
-        "implements",
-        "interface",
-        "let",
-        "meta",
-        "of",
-        "package",
-        "private",
-        "protected",
-        "public",
-        "set",
-        "static",
-        "target",
-        "using",
-    }
-)
-
-NODE_STDLIB_MODULES = frozenset(
-    {
-        "assert",
-        "async_hooks",
-        "buffer",
-        "child_process",
-        "cluster",
-        "console",
-        "crypto",
-        "dgram",
-        "diagnostics_channel",
-        "dns",
-        "events",
-        "fs",
-        "http",
-        "http2",
-        "https",
-        "inspector",
-        "module",
-        "net",
-        "os",
-        "path",
-        "perf_hooks",
-        "process",
-        "punycode",
-        "querystring",
-        "readline",
-        "repl",
-        "sea",
-        "sqlite",
-        "stream",
-        "string_decoder",
-        "test",
-        "timers",
-        "tls",
-        "trace_events",
-        "tty",
-        "url",
-        "util",
-        "v8",
-        "vm",
-        "wasi",
-        "worker_threads",
-        "zlib",
-    }
-)
-
-JS_BUILTIN_OBJECTS: dict[str, tuple[str, str]] = {
-    "Array": ("Indexed Collection", "Array(element0, element1, /* …, */ elementN)"),
-    "Object": ("Fundamental Object", "Object(value)"),
-    "Function": ("Fundamental Object", "new Function(arg1, arg2, /* …, */ functionBody)"),
-    "Boolean": ("Fundamental Object", "Boolean(value)"),
-    "Symbol": ("Primitive / Well-Known Namespace", "Symbol(description)"),
-    "Number": ("Numbers & Dates", "Number(value)"),
-    "BigInt": ("Numbers & Dates", "BigInt(value)"),
-    "Math": ("Numbers & Dates Namespace", "Math.<method>(...)"),
-    "Date": ("Numbers & Dates", "new Date(year, monthIndex, day, hours, minutes, seconds, ms)"),
-    "Temporal": ("Modern Date/Time Namespace", "Temporal.Now.instant()"),
-    "String": ("Text Processing", "String(thing)"),
-    "RegExp": ("Text Processing", "new RegExp(pattern, flags)"),
-    "Map": ("Keyed Collection", "new Map(iterable)"),
-    "Set": ("Keyed Collection", "new Set(iterable)"),
-    "WeakMap": ("Keyed Collection", "new WeakMap(iterable)"),
-    "WeakSet": ("Keyed Collection", "new WeakSet(iterable)"),
-    "WeakRef": ("Memory Management", "new WeakRef(targetObject)"),
-    "FinalizationRegistry": ("Memory Management", "new FinalizationRegistry(callback)"),
-    "Promise": ("Control Abstraction", "new Promise((resolve, reject) => { ... })"),
-    "Iterator": ("Control Abstraction", "Iterator.from(object)"),
-    "AsyncIterator": ("Control Abstraction", "AsyncIterator"),
-    "Generator": ("Control Abstraction", "function* generator() { yield value; }"),
-    "AsyncFunction": ("Control Abstraction", "async function name(param0) { statements }"),
-    "Reflect": ("Reflection Namespace", "Reflect.<trap>(target, ...)"),
-    "Proxy": ("Reflection / Meta-programming", "new Proxy(target, handler)"),
-    "JSON": ("Structured Data Namespace", "JSON.parse(text) / JSON.stringify(value)"),
-    "ArrayBuffer": ("Structured Data", "new ArrayBuffer(length, options)"),
-    "SharedArrayBuffer": ("Structured Data", "new SharedArrayBuffer(length, options)"),
-    "DataView": ("Structured Data", "new DataView(buffer, byteOffset, byteLength)"),
-    "Atomics": ("Structured Data Namespace", "Atomics.<operation>(typedArray, index, value)"),
-    "TypedArray": ("Indexed Binary Collection", "new Int32Array(length) / new Uint8Array(buffer)"),
-    "Uint8Array": ("Indexed Binary Collection", "new Uint8Array(length)"),
-    "Int32Array": ("Indexed Binary Collection", "new Int32Array(length)"),
-    "Float64Array": ("Indexed Binary Collection", "new Float64Array(length)"),
-    "Intl": ("Internationalization Namespace", "new Intl.DateTimeFormat(locales, options)"),
-    "DisposableStack": ("Explicit Resource Management", "new DisposableStack()"),
-    "AsyncDisposableStack": ("Explicit Resource Management", "new AsyncDisposableStack()"),
-    "globalThis": ("Global Value Property", "globalThis"),
-    "undefined": ("Global Value Property", "undefined"),
-    "NaN": ("Global Value Property", "NaN"),
-    "Infinity": ("Global Value Property", "Infinity"),
-    "parseInt": ("Global Function", "parseInt(string, radix)"),
-    "parseFloat": ("Global Function", "parseFloat(string)"),
-    "isNaN": ("Global Function", "isNaN(value)"),
-    "isFinite": ("Global Function", "isFinite(value)"),
-    "encodeURI": ("Global Function", "encodeURI(uri)"),
-    "decodeURI": ("Global Function", "decodeURI(encodedURI)"),
-    "encodeURIComponent": ("Global Function", "encodeURIComponent(uriComponent)"),
-    "decodeURIComponent": ("Global Function", "decodeURIComponent(encodedURI)"),
-    "eval": ("Global Function", "eval(script)"),
-    "structuredClone": ("Web / WinterCG Global Function", "structuredClone(value, options)"),
-    "fetch": ("Web / WinterCG Global Function", "fetch(resource, options)"),
-    "queueMicrotask": ("Web / WinterCG Global Function", "queueMicrotask(callback)"),
-    "setTimeout": ("Timer Global Function", "setTimeout(functionRef, delay, ...params)"),
-    "setInterval": ("Timer Global Function", "setInterval(functionRef, delay, ...params)"),
-    "atob": ("Base64 Global Function", "atob(encodedData)"),
-    "btoa": ("Base64 Global Function", "btoa(stringToEncode)"),
-}
-
-JS_STANDARD_ERRORS: dict[str, tuple[str, str]] = {
-    "Error": ("`Object` \N{RIGHTWARDS ARROW} `Error`", "Base constructor for all standard and custom JavaScript runtime error objects."),
-    "TypeError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `TypeError`",
-        "Thrown when an operation cannot be performed because a value is not of the expected type (e.g. accessing a property on `undefined` or `null`).",
-    ),
-    "ReferenceError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `ReferenceError`",
-        "Thrown when referencing an undeclared variable or accessing a `let`/`const` binding inside its Temporal Dead Zone (TDZ).",
-    ),
-    "SyntaxError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `SyntaxError`",
-        "Thrown when the JavaScript engine or `JSON.parse()` encounters tokens that violate the grammar of the language.",
-    ),
-    "RangeError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `RangeError`",
-        "Thrown when a numeric value or call stack depth is outside the allowable range (e.g. `Maximum call stack size exceeded` or invalid `Array` length).",
-    ),
-    "URIError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `URIError`",
-        "Thrown when a global URI handling function (`decodeURIComponent`, `encodeURI`) is passed a malformed percent-encoded sequence.",
-    ),
-    "EvalError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `EvalError`",
-        "Historical error constructor related to the global `eval()` function; retained for backward compatibility in ECMAScript.",
-    ),
-    "AggregateError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `AggregateError`",
-        "Wraps multiple errors into a single object (e.g. thrown by `Promise.any()` when all input promises reject).",
-    ),
-    "SuppressedError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `SuppressedError`",
-        "Wraps an error thrown during explicit resource disposal (`using` / `[Symbol.dispose]()`) when another error was already active.",
-    ),
-    "InternalError": (
-        "`Object` \N{RIGHTWARDS ARROW} `Error` \N{RIGHTWARDS ARROW} `InternalError`",
-        "Non-standard SpiderMonkey error thrown when an internal engine limit is exceeded (such as excessive recursion or switch cases).",
-    ),
-}
-
-NOTE_LABELS = {
-    "added": "\N{HEAVY PLUS SIGN} Added",
-    "changed": "\N{ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS} Changed",
-    "deprecated": "\N{WARNING SIGN} Deprecated",
-    "removed": "\N{CROSS MARK} Removed",
-}
-SEVERITY_BADGES = {
-    "CRITICAL": "\N{LARGE RED CIRCLE}",
-    "HIGH": "\N{LARGE ORANGE CIRCLE}",
-    "MEDIUM": "\N{LARGE YELLOW CIRCLE}",
-    "LOW": "\N{LARGE GREEN CIRCLE}",
-}
-
-JS_LAWS_LINES = [
-    "Always bet on JavaScript. \N{EM DASH} Brendan Eich",
-    "Any application that can be written in JavaScript, will eventually be written in JavaScript. \N{EM DASH} Atwood's Law",
-    "Don't break the Web: existing valid JavaScript on the public Web must keep working.",
-    "One JavaScript (1JS): avoid versioned opt-in modes beyond `'use strict'` and ES modules.",
-    "Prefer `const` by default, `let` when rebinding is needed, and leave `var` in history.",
-    "Use strict equality (`===` and `!==`) so implicit type coercion never surprises you.",
-    "Never block the single-threaded event loop; offload heavy CPU work to Worker threads.",
-    "A Promise that is neither awaited nor `.catch()`-handled is a bug waiting to happen.",
-    "Nullish coalescing (`??`) and optional chaining (`?.`) beat deeply nested truthiness checks.",
-    "Objects and Arrays are compared and passed by reference, whereas primitives are compared by value.",
-    "Prototypes are live delegation chains, not static class blueprints copied at instantiation.",
-    "`this` depends on how a function is called, unless bound by an arrow function's lexical scope.",
-    "Mutating shared state across async `await` boundaries is the root of subtle race conditions.",
-    "Favour pure array transformations (`.map`, `.filter`, `.toSorted`) over in-place mutation.",
-    "Explicit resource management (`using` and `AbortController`) prevents leaked handles and zombie requests.",
-    "Parse, don't blindly trust external JSON payloads at runtime boundaries.",
-    "Every `npm install` is a supply-chain dependency decision; keep your dependency tree lean.",
-    "Write progressive, standards-based code that degrades gracefully across engines and runtimes.",
-    "First make it work, then make it clear, and let the JIT compiler make it fast.",
-]
-
 
 class JavaScriptError(Exception):
     """A problem that should be shown to the user as-is."""
@@ -448,74 +212,6 @@ class SourceInfo:
     end: int
     preview: str
     url: str
-
-
-def safe(text_value: str | None, limit: int = 200) -> str:
-    """One escaped, mention-free line of user-provided text."""
-    flat = " ".join((text_value or "").split())
-    return truncate(discord.utils.escape_markdown(discord.utils.escape_mentions(flat)), limit)
-
-
-def code(text_value: str, limit: int = 60) -> str:
-    return f"`{truncate(text_value.replace('`', chr(39)), limit)}`"
-
-
-def parse_time(iso: str | None) -> datetime | None:
-    if not iso or not isinstance(iso, str):
-        return None
-    try:
-        return arrow.get(iso).datetime
-    except ValueError, TypeError:
-        return None
-
-
-def when(iso: str | None, style: Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"] = "R") -> str | None:
-    moment = parse_time(iso)
-    return discord.utils.format_dt(moment, style) if moment else None
-
-
-def dated(iso: str | None) -> str | None:
-    return f"{when(iso, 'D')} ({when(iso)})" if parse_time(iso) else None
-
-
-def valid_url(url: str | None) -> bool:
-    return bool(url) and url.startswith(("http://", "https://")) and len(url) <= 512
-
-
-def text(content: str) -> discord.ui.TextDisplay:
-    return discord.ui.TextDisplay(content)
-
-
-def facts(*pairs: tuple[str, str | None]) -> discord.ui.TextDisplay | None:
-    lines = [f"**{label}**: {value}" for label, value in pairs if value]
-    return text("\n".join(lines)) if lines else None
-
-
-def collect(*items: discord.ui.Item | None) -> list[discord.ui.Item]:
-    return [item for item in items if item is not None]
-
-
-def header(title: str, subtitle: str | None = None, *extra: str, thumbnail: str | None = JS_ICON) -> discord.ui.Item:
-    """Title block, with an optional thumbnail on the right."""
-    parts = [text(f"## {title}" + (f"\n-# {subtitle}" if subtitle else ""))]
-    parts.extend(text(line) for line in extra if line)
-    if thumbnail and valid_url(thumbnail):
-        return discord.ui.Section(*parts, accessory=discord.ui.Thumbnail(thumbnail))
-    return text("\n".join(part.content for part in parts))
-
-
-def pack(entries: Sequence[str], limit: int = 900) -> str:
-    """Inline-code chips that fit in ``limit`` characters, followed by how many were left out."""
-    shown: list[str] = []
-    used = 0
-    for entry in entries:
-        piece = f"`{entry.replace('`', chr(39))}`"
-        if used + len(piece) + 1 > limit:
-            break
-        shown.append(piece)
-        used += len(piece) + 1
-    left = len(entries) - len(shown)
-    return " ".join(shown) + (f" *+{left} more*" if left else "")
 
 
 @dataclass(slots=True)
@@ -1084,74 +780,6 @@ def complexity_items(info: ComplexityInfo) -> list[discord.ui.Item]:
         notes_block,
         example_block,
     )
-
-
-# fmt: off
-FALLBACK_NODE_CYCLES: list[dict[str, Any]] = [
-    {"cycle": "26", "releaseDate": "2026-04-21", "eol": "2029-04-30", "latest": "26.12.1", "support": "2027-10-20", "lts": "Oxide"},
-    {"cycle": "25", "releaseDate": "2025-10-21", "eol": "2026-06-01", "latest": "25.9.0",  "support": "2026-04-01", "lts": False},
-    {"cycle": "24", "releaseDate": "2025-04-22", "eol": "2028-04-30", "latest": "24.11.0", "support": "2026-10-20", "lts": "Krypton"},
-    {"cycle": "23", "releaseDate": "2024-10-16", "eol": "2025-06-01", "latest": "23.11.0", "support": "2025-04-01", "lts": False},
-    {"cycle": "22", "releaseDate": "2024-04-24", "eol": "2027-04-30", "latest": "22.15.0", "support": "2025-10-21", "lts": "Jod"},
-    {"cycle": "21", "releaseDate": "2023-10-17", "eol": "2024-06-01", "latest": "21.7.3",  "support": "2024-04-01", "lts": False},
-    {"cycle": "20", "releaseDate": "2023-04-18", "eol": "2026-04-30", "latest": "20.19.0", "support": "2024-10-22", "lts": "Iron"},
-    {"cycle": "18", "releaseDate": "2022-04-19", "eol": "2025-04-30", "latest": "18.20.8", "support": "2023-10-18", "lts": "Hydrogen"},
-    {"cycle": "16", "releaseDate": "2021-04-20", "eol": "2023-09-11", "latest": "16.20.2", "support": "2022-10-18", "lts": "Gallium"},
-    {"cycle": "14", "releaseDate": "2020-04-21", "eol": "2023-04-30", "latest": "14.21.3", "support": "2021-10-19", "lts": "Fermium"},
-    {"cycle": "12", "releaseDate": "2019-04-23", "eol": "2022-04-30", "latest": "12.22.12", "support": "2020-10-20", "lts": "Erbium"},
-]
-
-CURATED_ES_HIGHLIGHTS: dict[str, tuple[str, ...]] = {
-    "2026": (
-        "Explicit Resource Management (`using` and `await using` declarations with `Symbol.dispose`)",
-        "`Error.isError()` reliable cross-realm error checking without `instanceof` pitfalls",
-        "`Array.fromAsync()` for materializing async iterables and promises into arrays",
-        "`RegExp.escape()` for safely escaping arbitrary user strings inside regular expressions",
-        "`Atomics.pause()` CPU hint for spinlock waiting in shared-memory worker threads",
-    ),
-    "2025": (
-        "Iterator Helpers (`Iterator.prototype.map`, `.filter`, `.take`, `.drop`, `.toArray`)",
-        "New `Set` mathematical methods (`.union`, `.intersection`, `.difference`, `.symmetricDifference`, `.isSubsetOf`)",
-        "Import Attributes (`import data from './config.json' with { type: 'json' }`)",
-        "`Promise.try()` for uniformly wrapping synchronous and asynchronous callbacks",
-        "Duplicate named capturing groups and inline pattern modifiers (`(?i:...)`) in `RegExp`",
-        "`Float16Array` typed array and `DataView.prototype.getFloat16` / `Math.f16round`",
-    ),
-    "2024": (
-        "`Object.groupBy()` and `Map.groupBy()` for grouping iterables without external libraries",
-        "`Promise.withResolvers()` for extracting `{ promise, resolve, reject }` cleanly",
-        "`RegExp` `/v` (`unicodeSets`) flag with set notation and string literal properties",
-        "`String.prototype.isWellFormed()` and `.toWellFormed()` for lone surrogate handling",
-        "`Atomics.waitAsync()` for non-blocking shared memory synchronization",
-        "Resizable `ArrayBuffer` and growable `SharedArrayBuffer` in-place",
-    ),
-    "2023": (
-        "Change Array by Copy (`.toSorted()`, `.toReversed()`, `.toSpliced()`, `.with()`)",
-        "Array find from last (`.findLast()` and `.findLastIndex()`)",
-        "Hashbang (`#!`) grammar support at the start of executable JS scripts",
-        "Symbols as `WeakMap` and `WeakSet` keys",
-    ),
-    "2022": (
-        "Top-level `await` in ECMAScript modules without an async IIFE wrapper",
-        "Public and private class fields (`#field`), private methods, and `static` initialization blocks",
-        "`Object.hasOwn(obj, prop)` as a safe replacement for `Object.prototype.hasOwnProperty.call`",
-        "`.at(-1)` negative indexing on `Array`, `String`, and `TypedArray`",
-        "Error `.cause` property (`new Error('Failed', { cause: err })`) for chaining exceptions",
-    ),
-    "2021": (
-        "`String.prototype.replaceAll()` without requiring global regex flags",
-        "`Promise.any()` and `AggregateError`",
-        "Logical assignment operators (`??=`, `&&=`, `||=`)",
-        "Numeric separators (`1_000_000`) and `WeakRef` / `FinalizationRegistry`",
-    ),
-    "2020": (
-        "Optional chaining (`?.`) and Nullish coalescing (`??`) operators",
-        "`BigInt` arbitrary-precision integers (`123n`)",
-        "`Promise.allSettled()` and `globalThis` universal global reference",
-        "Dynamic `import()` expressions and `import.meta`",
-    ),
-}
-# fmt: on
 
 
 def cycle_phase(cycle: dict[str, Any]) -> str:

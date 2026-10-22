@@ -136,7 +136,7 @@ class Bot(commands.Bot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             strip_after_prefix=True,
             shard_id=1,
-            max_messages=2**13,
+            max_messages=2**9,  # RAM issues guyz
             owner_ids={int(OWNER_ID)} if OWNER_ID else None,
             help_command=BotHelp(),
             **kwargs,
@@ -188,7 +188,7 @@ class Bot(commands.Bot):
         self.loop.create_task(self.connect_lavalink_node(), name=f"{self.__class__.__name__}: connect_lavalink_node")
 
     async def connect_lavalink_node(self) -> None:
-        """Attempt to connect to a Lavalink node, retrying up to 5 times on failure."""
+        """Attempt to connect to a Lavalink node"""
         try:
             await self.__create_lavalink_node()
             return

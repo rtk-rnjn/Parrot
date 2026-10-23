@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-UA = "MinecraftCog/1.0 (discord.py; +https://github.com/YOUR/REPO)"
 GREEN, RED, GOLD, BLUE, GREY = 0x5B8731, 0xB02E26, 0xFCA800, 0x3C8DBC, 0x6B6B6B
 VIEW_TIMEOUT = 300
 
@@ -1096,7 +1095,7 @@ class TTLCache:
         self._d[k] = (time.monotonic() + ttl, val)
 
 
-class Minecraft(commands.Cog):
+class Minecraft(commands.Cog, command_attrs={"hidden": True}):
     """Everything Minecraft: servers, players, wiki, items, and versions."""
 
     def __init__(self, bot: Bot) -> None:
@@ -1742,5 +1741,5 @@ class Minecraft(commands.Cog):
         await ctx.send(view=v, allowed_mentions=discord.AllowedMentions.none())
 
 
-async def setup(bot: commands.Bot) -> None:
+async def setup(bot: Bot) -> None:
     await bot.add_cog(Minecraft(bot))

@@ -63,6 +63,8 @@ LOADABLE_COGS = [
     "extensions.fun.fun",
     "extensions.fun.hanukkah",
     "extensions.fun.love",
+    "extensions.fun.meme",
+    "extensions.fun.minecraft",
     "extensions.fun.pride",
     "extensions.fun.snakes",
     "extensions.games",

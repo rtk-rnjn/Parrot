@@ -399,7 +399,7 @@ class Meta(commands.Cog):
 
         return await ctx.reply(f"{UPTIME_EMOJI} **Uptime:** {uptime}\n{STARTED_EMOJI} **Started:** {started}")
 
-    @commands.command(name="member_count", aliases=["member-count", "mc"])
+    @commands.command(name="member_count", aliases=["member-count"])
     @commands.cooldown(rate=1, per=5.0, type=commands.BucketType.user)
     async def member_count(self, ctx: commands.Context[Bot]) -> discord.Message:
         """Display the member count of the current server.

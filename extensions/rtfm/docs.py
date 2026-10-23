@@ -832,10 +832,14 @@ class Docs(commands.Cog, command_attrs={"hidden": True}, name="Documentation"):
     ):
         """Search documentation and open details in chat.
 
-        Python libraries come from their Sphinx inventories; `html`, `css`, `js`, `webapi` and `http` from MDN;
-        `c` and `cpp` from cppreference; `rust` from the std docs; `java` from the JDK 21 Javadoc, where
-        `System.out.println` follows the field to `PrintStream.println`; `sql` from PostgreSQL; `git` from
-        git-scm.com; `haskell` from Hoogle.
+        1. Python libraries come from their Sphinx inventories;
+        2. `html`, `css`, `js`, `webapi` and `http` from MDN;
+        3. `c` and `cpp` from cppreference;
+        4. `rust` from the std docs;
+        5. `java` from the JDK 21 Javadoc, where `System.out.println` follows the field to `PrintStream.println`;
+        6. `sql` from PostgreSQL;
+        7. `git` from git-scm.com;
+        8. `haskell` from Hoogle.
         """
         if site is None:
             await ctx.send("Available docs: " + ", ".join(f"`{n}`" for n in SITES))

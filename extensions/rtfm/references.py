@@ -627,6 +627,8 @@ LOADERS: dict[str, Loader] = {
 DETAILS: dict[str, Fetcher] = {
     "mdn": detail_mdn,
     "cppreference": detail_cppreference,
+    "cpp": detail_cppreference,
+    "c": detail_cppreference,
     "rust": detail_rust,
     "postgres": detail_postgres,
     "git": detail_git,

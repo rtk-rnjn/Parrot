@@ -7,7 +7,7 @@ import random as randomlib
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import aiohttp
 import discord
@@ -894,7 +894,7 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
 
     async def _request(
         self,
-        method: str,
+        method: Literal["GET", "POST"],
         endpoint: str,
         *,
         params: dict[str, Any] | None = None,
@@ -940,29 +940,29 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
         return templates
 
     async def search_templates(self, query: str) -> list[MemeTemplate]:
-        q = query.strip()
-        if not q:
+        query_string = query.strip()
+        if not query_string:
             return await self.get_memes()
 
         trending = await self.get_memes()
-        ql = q.lower()
+        query_lowercase = query_string.lower()
 
         scored: list[tuple[int, int, MemeTemplate]] = []
-        for idx, t in enumerate(trending):
-            nl = t.name.lower()
-            if t.id == q or nl == ql:
-                scored.append((0, idx, t))
-            elif nl.startswith(ql):
-                scored.append((1, idx, t))
-            elif ql in nl or all(tok in nl for tok in ql.split()):
-                scored.append((2, idx, t))
+        for idx, template in enumerate(trending):
+            nl = template.name.lower()
+            if template.id == query_string or nl == query_lowercase:
+                scored.append((0, idx, template))
+            elif nl.startswith(query_lowercase):
+                scored.append((1, idx, template))
+            elif query_lowercase in nl or all(tok in nl for tok in query_lowercase.split()):
+                scored.append((2, idx, template))
         scored.sort(key=lambda item: (item[0], item[1]))
         hits = [item[2] for item in scored]
 
-        if not hits and q.isdigit():
+        if not hits and query_string.isdigit():
             custom = MemeTemplate(
-                id=q,
-                name=f"Custom Template #{q}",
+                id=query_string,
+                name=f"Custom Template #{query_string}",
                 url="",
                 box_count=2,
             )

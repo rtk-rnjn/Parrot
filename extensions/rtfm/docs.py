@@ -621,9 +621,10 @@ class OwnedView(discord.ui.LayoutView):
 
     async def on_timeout(self) -> None:
         for item in self._live:
-            item.disabled = True  # type: ignore[attr-defined]
+            item.disabled = True  # type: ignore[assignment]
         if self.message is not None:
-            await self.message.edit(view=self)
+            with contextlib.suppress(discord.HTTPException):  # NotFound, Unknown Webhook, etc.
+                await self.message.edit(view=self)
 
     def button(self, label: str, callback, *, disabled: bool = False) -> discord.ui.Button:
         btn = discord.ui.Button(label=label, style=discord.ButtonStyle.secondary, disabled=disabled)
@@ -679,15 +680,21 @@ class ResultsView(OwnedView):
         self.add_item(container)
 
     async def show_details(self, entry: Entry, interaction: discord.Interaction) -> None:
-        await interaction.response.defer()  # first import of a big library can take a while
+        await interaction.response.defer()
         info = await self.cog.get_detail(self.site, entry)
         if info is None:
-            await interaction.followup.send("Bot could not load details for that entry. Use the link instead.", ephemeral=True)
+            with contextlib.suppress(discord.HTTPException):
+                await interaction.followup.send("Bot could not load details for that entry. Use the link instead.", ephemeral=True)
             return
         view = DocView(info, entry.url, self, self.author_id)
         view.message = interaction.message
         self.stop()
-        await interaction.edit_original_response(view=view)
+        try:
+            await interaction.edit_original_response(view=view)
+        except discord.NotFound:
+            # token invalid: fall back to editing the message directly
+            if interaction.message is not None:
+                await interaction.message.edit(view=view)
 
 
 class DocView(OwnedView):

@@ -39,16 +39,21 @@ def setup_logging() -> None:
     # Prevent duplicate handlers.
     root.handlers.clear()
 
-    console_handler = RichHandler(
-        level=logging.INFO,
-        rich_tracebacks=True,
-        show_time=True,
-        show_level=True,
-        show_path=True,
-        markup=True,
-        tracebacks_show_locals=False,
-    )
-    console_handler.setFormatter(logging.Formatter("%(message)s", DATE_FORMAT))
+    if os.getenv("USE_RICH_TRACEBACK", "True").lower() in ("true", "1", "yes"):
+        console_handler = RichHandler(
+            level=logging.INFO,
+            rich_tracebacks=True,
+            show_time=True,
+            show_level=True,
+            show_path=True,
+            markup=True,
+            tracebacks_show_locals=False,
+        )
+        console_handler.setFormatter(logging.Formatter("%(message)s", DATE_FORMAT))
+    else:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(logging.Formatter(LOG_FORMAT, DATE_FORMAT, style=r"{"))
 
     # Application logs.
     file_handler = logging.handlers.RotatingFileHandler(

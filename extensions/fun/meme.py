@@ -283,21 +283,21 @@ class CaptionModal(discord.ui.Modal):
             idx = start_index + offset
             default_val = self.current_boxes[idx] if idx < len(self.current_boxes) else ""
             if template.box_count == 2 and idx == 0:
-                lbl = "Top Text (Box 1)"
+                text_label = "Top Text (Box 1)"
             elif template.box_count == 2 and idx == 1:
-                lbl = "Bottom Text (Box 2)"
+                text_label = "Bottom Text (Box 2)"
             else:
-                lbl = f"Box #{idx + 1} Text"
-            inp = discord.ui.TextInput(
-                label=clip(lbl, 45),
+                text_label = f"Box #{idx + 1} Text"
+            text_input_field = discord.ui.TextInput(
+                label=clip(text_label, 45),
                 placeholder=f"Enter caption for box #{idx + 1}...",
                 default=default_val,
                 max_length=200,
                 required=(idx == 0 and start_index == 0),
                 style=discord.TextStyle.short,
             )
-            self.inputs.append((idx, inp))
-            self.add_item(discord.ui.Label(text=clip(lbl, 45), component=inp))
+            self.inputs.append((idx, text_input_field))
+            self.add_item(text_input_field)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         updated = list(self.current_boxes)

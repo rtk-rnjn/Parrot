@@ -53,8 +53,7 @@ FENCE_LANGUAGES = {"python3": "py", "pycon": "py", "pycon3": "py", "default": "p
 
 DEFAULT_CONTENT = ("main article", "article", "main", "[role=main]")
 BOILERPLATE = (
-    "nav, aside, footer, button, form, input, select, [role=navigation], "
-    "[aria-label=breadcrumb], .breadcrumb, .header-anchor, .hash-link, .edit-link"
+    "nav, aside, footer, button, form, input, select, [role=navigation], [aria-label=breadcrumb], .breadcrumb, .header-anchor, .hash-link, .edit-link"
 )
 MARK = "\x01"
 
@@ -198,7 +197,7 @@ async def fetch(session: aiohttp.ClientSession, url: str) -> bytes | None:
             if resp.status != HTTP_OK:
                 return None
             return await resp.read()
-    except (TimeoutError, aiohttp.ClientError):
+    except TimeoutError, aiohttp.ClientError:
         return None
 
 
@@ -435,7 +434,7 @@ async def detail_mdn(session: aiohttp.ClientSession, entry: Entry) -> DetailInfo
         return None
     try:
         doc = json.loads(data)["doc"]
-    except (ValueError, KeyError, TypeError):
+    except ValueError, KeyError, TypeError:
         return None
 
     base = "https://developer.mozilla.org"

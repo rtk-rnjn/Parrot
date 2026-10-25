@@ -29,8 +29,8 @@ from docstring_parser import parse as parse_docstring
 
 from .javadoc import JavaIndex, detail_javadoc
 from .references import DETAILS as REFERENCE_DETAILS
+from .references import HEADERS, PAGE_SITES, DetailInfo, Entries, Entry, detail_page, search_hoogle
 from .references import LOADERS as REFERENCE_LOADERS
-from .references import DetailInfo, Entries, Entry, search_hoogle
 from .search import Index, LiveIndex, SiteIndex
 
 if TYPE_CHECKING:
@@ -72,16 +72,25 @@ SITES: dict[str, DocSite] = {
     "pymongo": DocSite("https://pymongo.readthedocs.io/en/stable", ("mongo", "pym"), packages=("pymongo", "bson", "gridfs")),
     "django": DocSite("https://docs.djangoproject.com/en/stable", packages=("django",)),
     "sqlalchemy": DocSite("https://docs.sqlalchemy.org/en/20", ("sa",), packages=("sqlalchemy",)),
-    # Not Sphinx (links only, no inspect details):
-    "fastapi": DocSite("https://fastapi.tiangolo.com"),
-    "pydantic": DocSite("https://docs.pydantic.dev/latest"),
-    "httpx": DocSite("https://www.python-httpx.org"),
+    # MkDocs sites rendered in chat through PAGE_SITES (force mkdocs so objects.inv doesn't hijack them):
+    "fastapi": DocSite("https://fastapi.tiangolo.com", kind="mkdocs"),
+    "pydantic": DocSite("https://docs.pydantic.dev/latest", kind="mkdocs"),
+    "httpx": DocSite("https://www.python-httpx.org", kind="mkdocs"),
     # Web platform, from MDN's sitemap with per-page JSON for details.
     "html": DocSite("https://developer.mozilla.org/en-US/docs/Web/HTML", ("html5",), kind="mdn"),
     "css": DocSite("https://developer.mozilla.org/en-US/docs/Web/CSS", ("css3",), kind="mdn"),
     "js": DocSite("https://developer.mozilla.org/en-US/docs/Web/JavaScript", ("javascript", "ecmascript", "es"), kind="mdn"),
     "webapi": DocSite("https://developer.mozilla.org/en-US/docs/Web/API", ("dom", "api", "web"), kind="mdn"),
     "http": DocSite("https://developer.mozilla.org/en-US/docs/Web/HTTP", kind="mdn"),
+    # Frameworks and databases, rendered in chat through PAGE_SITES.
+    "react": DocSite("https://react.dev", ("reactjs",), kind="llms"),
+    "nextjs": DocSite("https://nextjs.org/docs", ("next",), kind="sitemap"),
+    "vue": DocSite("https://vuejs.org", ("vuejs",), kind="llms"),
+    "angular": DocSite("https://angular.dev", ("ng",), kind="llms"),
+    "mysql": DocSite("https://dev.mysql.com/doc/refman/8.4/en", kind="mysql"),
+    "sqlite": DocSite("https://www.sqlite.org", ("sqlite3",), kind="sqlite"),
+    "mongodb": DocSite("https://www.mongodb.com/docs/manual", kind="mongodb"),
+    "redis": DocSite("https://redis.io/docs/latest", kind="sitemap"),
     # Other languages and tools.
     "c": DocSite("https://en.cppreference.com/w/c", kind="cppreference"),
     "cpp": DocSite("https://en.cppreference.com/w/cpp", ("c++", "cxx"), kind="cppreference"),
@@ -101,7 +110,7 @@ for _name, _site in SITES.items():
 
 async def fetch(session: aiohttp.ClientSession, url: str) -> bytes | None:
     try:
-        async with session.get(url, timeout=REQUEST_TIMEOUT) as resp:
+        async with session.get(url, timeout=REQUEST_TIMEOUT, headers=HEADERS) as resp:
             if resp.status != HTTP_OK:
                 return None
             return await resp.read()
@@ -165,10 +174,12 @@ def parse_mkdocs(data: bytes, base: str) -> Entries:
         title, location = doc.get("title"), doc.get("location")
         if not title or location is None:
             continue
-        key = title
+        key = html.unescape(title).strip()
+        if not key:
+            continue
         if key in entries:  # sections often share titles ("Example", "Usage")
             page = location.split("#")[0].strip("/") or "index"
-            key = f"{title} \N{MIDDLE DOT} {page}"
+            key = f"{key} \N{MIDDLE DOT} {page}"
         entries[key] = Entry(url=urljoin(f"{base}/", location))
     return entries
 
@@ -178,15 +189,37 @@ async def load_mkdocs(session: aiohttp.ClientSession, base: str) -> Entries | No
     return await asyncio.to_thread(parse_mkdocs, data, base) if data else None
 
 
-LLMS_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+# Matches both absolute URLs and root/relative paths in llms.txt (e.g. Vue's `/guide/introduction.md`).
+LLMS_LINK = re.compile(r"\[([^\]]+)\]\(((?:https?://|/)[^)\s]+)\)")
+LLMS_ANCHOR_SUFFIX = re.compile(r"\s*\{#[^}]+\}\s*$")
+
+
+def _clean_llms_url(base: str, raw_url: str) -> str:
+    url = urljoin(f"{base}/", raw_url)
+    # Convert LLM markdown endpoints back to their human/HTML doc URLs for PAGE_SITES rendering.
+    if url.endswith("/index.html.md"):
+        url = url.removesuffix("index.html.md")
+    elif url.endswith(".html.md") or (url.endswith(".md") and "github.com" not in url):
+        url = url.removesuffix(".md")
+    return url
 
 
 async def load_llms(session: aiohttp.ClientSession, base: str) -> Entries | None:
-    data = await fetch(session, urljoin(base, "/llms.txt"))
+    data = None
+    for candidate in (f"{base}/llms.txt", urljoin(base, "/llms.txt")):
+        data = await fetch(session, candidate)
+        if data:
+            break
     if not data:
         return None
     text = data.decode("utf-8", "replace")
-    return {title: Entry(url=url) for title, url in LLMS_LINK.findall(text)}
+    entries: Entries = {}
+    for raw_title, raw_url in LLMS_LINK.findall(text):
+        title = LLMS_ANCHOR_SUFFIX.sub("", raw_title).strip()
+        if not title or raw_url.endswith("llms-full.txt"):
+            continue
+        entries[title] = Entry(url=_clean_llms_url(base, raw_url))
+    return entries or None
 
 
 SITEMAP_LOC = re.compile(r"<loc>\s*(.*?)\s*</loc>")
@@ -202,13 +235,14 @@ async def load_sitemap(session: aiohttp.ClientSession, base: str) -> Entries | N
         if data:
             break
     if not data:
-        return None
+        return await load_llms(session, base)
 
     text = data.decode("utf-8", "replace")
     urls = [html.unescape(u) for u in SITEMAP_LOC.findall(text)]
 
-    if "<sitemapindex" in text:  # one level of nesting is enough in practice
-        children = await asyncio.gather(*(fetch(session, u) for u in urls[:10]))
+    if "<sitemapindex" in text:  # prioritize child sitemaps under `base` before generic ones
+        prioritized = sorted(urls, key=lambda u: (not u.startswith(base), "docs" not in u))
+        children = await asyncio.gather(*(fetch(session, u) for u in prioritized[:20]))
         urls = [html.unescape(u) for child in children if child for u in SITEMAP_LOC.findall(child.decode("utf-8", "replace"))]
 
     entries: Entries = {}
@@ -218,7 +252,7 @@ async def load_sitemap(session: aiohttp.ClientSession, base: str) -> Entries | N
         key = url.removeprefix(base).strip("/").removesuffix(".html")
         if key:
             entries[key] = Entry(url=url)
-    return entries
+    return entries or await load_llms(session, base)
 
 
 LOADERS: dict[str, Callable[[aiohttp.ClientSession, str], Awaitable[Entries | None]]] = {
@@ -254,6 +288,9 @@ async def build_index(session: aiohttp.ClientSession, name: str, site: DocSite) 
         return index
 
     for kind in [site.kind] if site.kind else LOADERS:
+        if kind not in LOADERS:
+            log.warning("%s: unknown loader kind %r", name, kind)
+            continue
         try:
             entries = await LOADERS[kind](session, site.url)
         except Exception:
@@ -668,7 +705,7 @@ class ResultsView(OwnedView):
             text = f"[`{name}`]({entry.url})"
             if entry.role:
                 text += f"\n-# {entry.role}"
-            if entry.qualname or entry.detail:  # python object or reference page: offer in-chat details
+            if entry.qualname or entry.detail or self.site in PAGE_SITES:
                 accessory = self.button("Details", functools.partial(self.show_details, entry))
             else:
                 accessory = discord.ui.Button(label="Open", url=entry.url)
@@ -811,12 +848,16 @@ class Docs(commands.Cog, command_attrs={"hidden": True}, name="Documentation"):
             return self.indexes.get(name)
 
     async def get_detail(self, site: str, entry: Entry) -> DetailInfo | None:
-        if entry.qualname:
-            return await asyncio.to_thread(build_detail, site, entry.qualname, entry.role)
+        if entry.qualname and (SITES[site].packages or site == "python"):
+            info = await asyncio.to_thread(build_detail, site, entry.qualname, entry.role)
+            if info is not None:
+                return info
         fetcher = DETAILS.get(entry.detail or "")
-        if fetcher is None:
-            return None
-        return await fetcher(self.bot.http_session, entry)
+        if fetcher is not None:
+            return await fetcher(self.bot.http_session, entry)
+        if site in PAGE_SITES:
+            return await detail_page(self.bot.http_session, entry, PAGE_SITES[site])
+        return None
 
     @staticmethod
     def normalize(site: str, query: str) -> str:
@@ -837,17 +878,7 @@ class Docs(commands.Cog, command_attrs={"hidden": True}, name="Documentation"):
         *,
         query: str | None = commands.parameter(description="What to look for", default=None),
     ):
-        """Search documentation and open details in chat.
-
-        1. Python libraries come from their Sphinx inventories;
-        2. `html`, `css`, `js`, `webapi` and `http` from MDN;
-        3. `c` and `cpp` from cppreference;
-        4. `rust` from the std docs;
-        5. `java` from the JDK 21 Javadoc, where `System.out.println` follows the field to `PrintStream.println`;
-        6. `sql` from PostgreSQL;
-        7. `git` from git-scm.com;
-        8. `haskell` from Hoogle.
-        """
+        """Search documentation and open details in chat."""
         if site is None:
             await ctx.send("Available docs: " + ", ".join(f"`{n}`" for n in SITES))
             return

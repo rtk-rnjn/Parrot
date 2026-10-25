@@ -1,4 +1,4 @@
-"""Documentation sources beyond Sphinx: MDN, cppreference, Rust std, PostgreSQL, git and Hoogle.
+"""Documentation sources beyond Sphinx: MDN, cppreference, Rust std, PostgreSQL, MySQL, SQLite, MongoDB, git and Hoogle.
 
 Each source has a loader that builds a searchable index of names to URLs and a detail fetcher that turns one
 page into a :class:`DetailInfo` for in-chat display. Hoogle is searched live instead of indexed, and the JDK
@@ -8,16 +8,18 @@ Javadoc lives in :mod:`.javadoc` because it resolves dotted member chains throug
 from __future__ import annotations
 
 import asyncio
+import io
 import json
 import logging
 import re
 import textwrap
 import time
+import zlib
 from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
-from urllib.parse import quote, urljoin
+from urllib.parse import quote, unquote, urljoin
 
 import aiohttp
 from bs4 import BeautifulSoup, Tag
@@ -40,13 +42,21 @@ MAX_SIGNATURE = 800
 MAX_DECLARATIONS = 4
 MAX_PARAGRAPHS = 4
 SUBINDEX_CONCURRENCY = 4
-# cppreference sits behind Cloudflare and rejects bare client user agents.
+# cppreference and several doc CDNs sit behind Cloudflare and reject bare client user agents.
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Parrot-docs/1.0 (+https://github.com/rtk-rnjn/Parrot)"}
 
 MDN_SITEMAP = "https://developer.mozilla.org/sitemaps/en-us/sitemap.xml.gz"
 HOOGLE_URL = "https://hoogle.haskell.org/"
 CELL = "\x00"  # separates table cells until the row joins them
+DOT = " \N{MIDDLE DOT} "
 FENCE_LANGUAGES = {"python3": "py", "pycon": "py", "pycon3": "py", "default": "py", "none": "", "text": ""}  # Sphinx class names
+
+DEFAULT_CONTENT = ("main article", "article", "main", "[role=main]")
+BOILERPLATE = (
+    "nav, aside, footer, button, form, input, select, [role=navigation], "
+    "[aria-label=breadcrumb], .breadcrumb, .header-anchor, .hash-link, .edit-link"
+)
+MARK = "\x01"
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,6 +67,13 @@ class Entry:
     detail: str | None = None  # key into DETAILS for sources that render pages in chat
     signature: str | None = None  # prefilled by live sources
     summary: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PageSite:
+    language: str  # code fence for the signature
+    content: tuple[str, ...] = DEFAULT_CONTENT  # first selector that matches is the article body
+    drop: str = ""  # extra selectors to remove
 
 
 Entries = dict[str, Entry]  # display name -> entry
@@ -75,13 +92,113 @@ class DetailInfo:
 _shared: OrderedDict[str, tuple[float, bytes]] = OrderedDict()
 
 
+PAGE_SITES: dict[str, PageSite] = {
+    "react": PageSite("jsx"),
+    "nextjs": PageSite("tsx"),
+    "vue": PageSite("js", (".vp-doc", *DEFAULT_CONTENT)),
+    "angular": PageSite("ts", ("docs-viewer", ".docs-viewer", *DEFAULT_CONTENT)),
+    "mysql": PageSite("sql", ("#docs-body", "body"), "div.navheader, div.navfooter, div.toc"),
+    "sqlite": PageSite("sql", ("div.fancy", "body"), ".fancy_toc, #toc"),
+    "mongodb": PageSite("js"),
+    "redis": PageSite("sh"),
+    "fastapi": PageSite("py", ("article.md-content__inner", *DEFAULT_CONTENT)),
+    "pydantic": PageSite("py", ("article.md-content__inner", *DEFAULT_CONTENT)),
+    "httpx": PageSite("py", ("article.md-content__inner", *DEFAULT_CONTENT)),
+}
+
+
+def anchored(root: Tag, fragment: str) -> tuple[str, Tag] | None:
+    """One entry of a long page (`lang_corefunc.html#abs`): its term or heading, and what follows it."""
+    target = root.find(id=fragment) or root.find("a", attrs={"name": fragment})
+    if target is None:
+        return None
+    start = next((node for node in (target, *target.parents) if node.name == "dt" or node.name in HEADINGS), None)
+    if start is None and target.name == "a":  # an empty anchor placed just before its term or heading
+        start = target.find_next_sibling(["dt", *HEADINGS])
+    if start is None or start.name == "h1":
+        return None
+
+    for noise in start.select(NOISE):
+        noise.decompose()
+
+    body: list[Tag | NavigableString] = []
+    if start.name == "dt":
+        definition = start.find_next_sibling("dd")
+        body = [definition] if definition is not None else []
+    else:
+        level = int(start.name[1])
+        for sibling in start.next_siblings:
+            if isinstance(sibling, Tag) and sibling.name in HEADINGS and int(sibling.name[1]) <= level:
+                break
+            body.append(sibling)
+    holder = soup_of("").new_tag("div")
+    for node in body:
+        holder.append(node.extract())
+    return " ".join(start.get_text().split()), holder
+
+
+def render_page(data: bytes, url: str, fragment: str, role: str | None, site: PageSite) -> DetailInfo | None:
+    page = soup_of(data)
+    heading = page.select_one("h1")
+    if heading is not None:
+        for noise in heading.select(NOISE):
+            noise.decompose()
+    title = " ".join(heading.get_text().split()) if heading else url
+    root = next((node for selector in site.content if (node := page.select_one(selector)) is not None), page)
+    for tag in root.select(f"{BOILERPLATE}, {site.drop}" if site.drop else BOILERPLATE):
+        tag.decompose()
+
+    signature = None
+    found = anchored(root, fragment) if fragment else None
+    if found is not None:
+        title, root = found
+        signature = title if "(" in title else None
+    elif heading is not None:
+        heading.decompose()  # the title is already shown above the signature
+
+    # Sections follow h2, or h3 on pages that start at h3 (SQLite). Headings become markers so nested wrappers don't matter.
+    level = "h2" if root.find("h2") else "h3"
+    names: list[str] = []
+    for node in root.find_all(level):
+        for noise in node.select(NOISE):
+            noise.decompose()
+        names.append(" ".join(node.get_text().split()) or "Section")
+        marker = page.new_tag("p")
+        marker.string = f"{MARK}{len(names) - 1}{MARK}"
+        node.replace_with(marker)
+
+    chunks = re.split(rf"{MARK}(\d+){MARK}", to_markdown(root, url))
+    sections = {"Overview": chunks[0].strip()}
+    for index, body in zip(chunks[1::2], chunks[2::2], strict=True):
+        name, count = names[int(index)], 2
+        while name in sections:  # "Example" often repeats
+            name = f"{names[int(index)]} ({count})"
+            count += 1
+        sections[name] = body.strip()
+
+    if signature is None:  # a short code block right under the intro is the call form (`useState(initialState)`)
+        fence = re.search(r"```[^\n]*\n(.*?)```\n?", sections["Overview"], re.S)
+        if fence and fence[1].strip().count("\n") < 4:
+            signature = fence[1].strip()
+            sections["Overview"] = sections["Overview"].replace(fence[0], "", 1).strip()
+    return detail(title, role=role, signature=signature, sections=sections, language=site.language)
+
+
+async def detail_page(session: aiohttp.ClientSession, entry: Entry, site: PageSite) -> DetailInfo | None:
+    url, _, fragment = entry.url.partition("#")
+    data = await fetch_shared(session, url)  # shared cache: several entries live on the same SQLite or MySQL page
+    if not data:
+        return None
+    return await asyncio.to_thread(render_page, data, url, unquote(fragment), entry.role, site)
+
+
 async def fetch(session: aiohttp.ClientSession, url: str) -> bytes | None:
     try:
         async with session.get(url, timeout=REQUEST_TIMEOUT, headers=HEADERS) as resp:
             if resp.status != HTTP_OK:
                 return None
             return await resp.read()
-    except TimeoutError, aiohttp.ClientError:
+    except (TimeoutError, aiohttp.ClientError):
         return None
 
 
@@ -177,8 +294,8 @@ class DocConverter(MarkdownConverter):
         if len(cells) == 3 and cells[1] == "-":  # cppreference's parameter tables: name, dash, description
             return f"**{cells[0]}** - {cells[2]}\n"
         if el.find("th") is not None and len(cells) > 1:
-            return f"{cells[0]} - {' \N{MIDDLE DOT} '.join(cells[1:])}\n"
-        return " \N{MIDDLE DOT} ".join(cells) + "\n"
+            return f"{cells[0]} - {DOT.join(cells[1:])}\n"
+        return DOT.join(cells) + "\n"
 
     def convert_table(self, el: Tag, text: str, *args: Any, **kwargs: Any) -> str:
         return f"\n{text.strip()}\n\n"
@@ -196,7 +313,8 @@ def _fix_link(match: re.Match[str], base: str) -> str:
         return text
     if "://" not in href and not href.startswith("mailto:"):
         href = urljoin(base, href)
-    return f"[{text}]({href.replace('(', '%28').replace(')', '%29')})"  # a parenthesis would end the link early
+    escaped_href = href.replace("(", "%28").replace(")", "%29")
+    return f"[{text}]({escaped_href})"  # a parenthesis would end the link early
 
 
 def _has_content_after(heading: Tag) -> bool:
@@ -317,7 +435,7 @@ async def detail_mdn(session: aiohttp.ClientSession, entry: Entry) -> DetailInfo
         return None
     try:
         doc = json.loads(data)["doc"]
-    except ValueError, KeyError, TypeError:
+    except (ValueError, KeyError, TypeError):
         return None
 
     base = "https://developer.mozilla.org"
@@ -544,6 +662,100 @@ async def detail_postgres(session: aiohttp.ClientSession, entry: Entry) -> Detai
     )
 
 
+MYSQL_SECTION_NUM = re.compile(r"^\d+(?:\.\d+)*\s+")
+
+
+async def load_mysql(session: aiohttp.ClientSession, base: str) -> Entries | None:
+    pages = await asyncio.gather(
+        fetch(session, f"{base}/index.html"),
+        fetch(session, f"{base}/sql-statements.html"),
+        fetch(session, f"{base}/func-op-summary-ref.html"),
+    )
+    if not any(pages):
+        return None
+    entries: Entries = {}
+    for data in pages:
+        if not data:
+            continue
+        for anchor in soup_of(data).select("a[href]"):
+            href = attr(anchor, "href")
+            if not href or "://" in href or href.startswith("#") or not href.split("#")[0].endswith(".html"):
+                continue
+            text = MYSQL_SECTION_NUM.sub("", anchor.get_text(" ", strip=True))
+            if not text or text in ("Next", "Prev", "Up", "Home"):
+                continue
+            entries[unique_name(entries, text, None)] = Entry(url=urljoin(f"{base}/", href), role="MySQL manual")
+    return entries or None
+
+
+async def load_sqlite(session: aiohttp.ClientSession, base: str) -> Entries | None:
+    pages = await asyncio.gather(
+        fetch(session, f"{base}/keyword_index.html"),
+        fetch(session, f"{base}/doclist.html"),
+    )
+    if not any(pages):
+        return None
+    entries: Entries = {}
+    for data in pages:
+        if not data:
+            continue
+        for anchor in soup_of(data).select("a[href]"):
+            href = attr(anchor, "href")
+            text = anchor.get_text(" ", strip=True)
+            if not href or not text or href.startswith(("http://", "https://", "javascript:", "#")):
+                continue
+            if not href.split("#")[0].endswith(".html"):
+                continue
+            entries[unique_name(entries, text, None)] = Entry(url=urljoin(f"{base}/", href), role="SQLite docs")
+    return entries or None
+
+
+SPHINX_LINE = re.compile(r"(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
+LLMS_ENTRY = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+
+
+def _parse_mongodb_inv(data: bytes, base: str) -> Entries:
+    stream = io.BytesIO(data)
+    if stream.readline().strip() != b"# Sphinx inventory version 2":
+        return {}
+    stream.readline()
+    stream.readline()
+    if b"zlib" not in stream.readline():
+        return {}
+    body = zlib.decompress(stream.read()).decode("utf-8", "replace")
+    entries: Entries = {}
+    for line in body.splitlines():
+        match = SPHINX_LINE.match(line)
+        if not match:
+            continue
+        name, directive, _prio, location, dispname = match.groups()
+        if directive not in ("std:label", "std:doc", "mongodb:dbcommand", "mongodb:method", "mongodb:operator", "mongodb:pipeline"):
+            continue
+        if location.endswith("$"):
+            location = location[:-1] + name
+        title = name if dispname == "-" else dispname
+        role = directive.partition(":")[2]
+        entries[unique_name(entries, title, role)] = Entry(url=urljoin(f"{base}/", location), role=role)
+    return entries
+
+
+async def load_mongodb(session: aiohttp.ClientSession, base: str) -> Entries | None:
+    inv = await fetch(session, f"{base}/objects.inv")
+    if inv:
+        entries = await asyncio.to_thread(_parse_mongodb_inv, inv, base)
+        if entries:
+            return entries
+    llms = await fetch(session, "https://www.mongodb.com/docs/llms.txt")
+    if not llms:
+        return None
+    entries = {}
+    for title, url in LLMS_ENTRY.findall(llms.decode("utf-8", "replace")):
+        clean_url = url.removesuffix(".md")
+        if clean_url.startswith(base):
+            entries[unique_name(entries, title.strip(), None)] = Entry(url=clean_url, role="MongoDB manual")
+    return entries or None
+
+
 async def load_git(session: aiohttp.ClientSession, base: str) -> Entries | None:
     data = await fetch(session, base)
     if not data:
@@ -601,7 +813,7 @@ async def search_hoogle(session: aiohttp.ClientSession, query: str, limit: int) 
         seen.add(url)
         package = (item.get("package") or {}).get("name")
         module = (item.get("module") or {}).get("name")
-        role = " \N{MIDDLE DOT} ".join(part for part in (package, module) if part) or None
+        role = DOT.join(part for part in (package, module) if part) or None
         name = signature.split(" :: ", 1)[0]
         matches.append((name, Entry(url=url, role=role, detail="hoogle", signature=signature, summary=to_markdown(item.get("docs", ""), HOOGLE_URL))))
     return matches
@@ -613,14 +825,17 @@ async def detail_hoogle(session: aiohttp.ClientSession, entry: Entry) -> DetailI
     )
 
 
-type Loader = Callable[[aiohttp.ClientSession, str], Awaitable[Entries | None]]
-type Fetcher = Callable[[aiohttp.ClientSession, Entry], Awaitable[DetailInfo | None]]
+Loader = Callable[["aiohttp.ClientSession", str], "Awaitable[Entries | None]"]
+Fetcher = Callable[["aiohttp.ClientSession", Entry], "Awaitable[DetailInfo | None]"]
 
 LOADERS: dict[str, Loader] = {
     "mdn": load_mdn,
     "cppreference": load_cppreference,
     "rust": load_rust,
     "postgres": load_postgres,
+    "mysql": load_mysql,
+    "sqlite": load_sqlite,
+    "mongodb": load_mongodb,
     "git": load_git,
 }
 

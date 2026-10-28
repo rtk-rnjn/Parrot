@@ -25,10 +25,9 @@ class ArbitraryEvents(commands.Cog):
         try:
             entry.target  # noqa: B018
         except TypeError:
-            # I don't know why there is TypeError sometimes, but it happens. I think it's a bug in discord API itself.
-            # I did discussed with dpy helpers.
-            # Join: discord.gg/dpy
-            # https://discord.com/channels/336642139381301249/1153376123443494983/1153376123443494983
+            # Happens when role is moved or when a channel is moved.
+            # Happens on two cases: ROLE_POSITION_UPDATE and CHANNEL_POSITION_UPDATE.
+            # In both the cases the target can not be resolved.
             _log.error("Error occurred while processing audit log entry: %s", entry)
             return
 

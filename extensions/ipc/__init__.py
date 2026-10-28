@@ -15,13 +15,27 @@ from discord.ext import commands, tasks
 if TYPE_CHECKING:
     from core import Bot
 
+    from .type import (
+        IPCChannel,
+        IPCErrorReply,
+        IPCGuildDetail,
+        IPCGuildDetailResponse,
+        IPCGuildMissing,
+        IPCGuildSummary,
+        IPCMutualGuildsResponse,
+        IPCPingResponse,
+        IPCReply,
+        IPCSuccessReply,
+        IPCTelemetry,
+    )
+
 
 log = logging.getLogger(__name__)
 
-IPC_REQUEST_CHANNEL = "parrot:ipc:request"
-IPC_EVENTS_CHANNEL = "parrot:ipc:events"
-IPC_RESPONSE_PREFIX = "parrot:ipc:response"
-TELEMETRY_KEY = "parrot:telemetry:status"
+IPC_REQUEST_CHANNEL = "bot:ipc:request"
+IPC_EVENTS_CHANNEL = "bot:ipc:events"
+IPC_RESPONSE_PREFIX = "bot:ipc:response"
+TELEMETRY_KEY = "bot:telemetry:status"
 TELEMETRY_INTERVAL_SEC = 15.0
 TELEMETRY_TTL_SEC = 60
 MAX_DETAIL_CHANNELS = 25
@@ -90,9 +104,7 @@ def elapsed_ms(start: float) -> float:
     return round((time.perf_counter() - start) * 1000, 2)
 
 
-class ParrotRedisIPC(commands.Cog):
-    """Redis Pub/Sub Inter-Process Communication Cog for Parrot Bot."""
-
+class RedisIPCIntegration(commands.Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.redis = bot.database.redis_client
@@ -106,7 +118,6 @@ class ParrotRedisIPC(commands.Cog):
         await self._subscribe()
         self._start_listener()
         self.publish_telemetry.start()
-        log.info("ParrotRedisIPC subscribed to %s", IPC_REQUEST_CHANNEL)
 
     async def cog_unload(self) -> None:
         self.publish_telemetry.cancel()
@@ -124,7 +135,7 @@ class ParrotRedisIPC(commands.Cog):
         await self.pubsub.unsubscribe(IPC_REQUEST_CHANNEL)
 
     def _start_listener(self) -> None:
-        self._listener_task = asyncio.create_task(self._listen_loop(), name="parrot-redis-ipc")
+        self._listener_task = asyncio.create_task(self._listen_loop())
 
     def _stop_listener(self) -> None:
         if self._listener_task and not self._listener_task.done():
@@ -154,7 +165,7 @@ class ParrotRedisIPC(commands.Cog):
             return
         await self.redis.set(TELEMETRY_KEY, json.dumps(self._build_telemetry()), ex=TELEMETRY_TTL_SEC)
 
-    def _build_telemetry(self):
+    def _build_telemetry(self) -> IPCTelemetry:
         return {
             "bot_name": str(self.bot.user),
             "bot_id": str(self.bot.user.id) if self.bot.user else None,
@@ -209,7 +220,7 @@ class ParrotRedisIPC(commands.Cog):
         reply = await self._execute(request)
         await self._publish_reply(request, reply)
 
-    async def _execute(self, request: IPCRequest):
+    async def _execute(self, request: IPCRequest) -> IPCReply:
         t0 = time.perf_counter()
         try:
             handler = self._get_handler(request.op)
@@ -220,7 +231,7 @@ class ParrotRedisIPC(commands.Cog):
         return self._success_reply(request, data, t0)
 
     @staticmethod
-    def _success_reply(request: IPCRequest, data: dict[str, Any], t0: float):
+    def _success_reply(request: IPCRequest, data: dict[str, Any], t0: float) -> IPCSuccessReply:
         return {
             "corr_id": request.corr_id,
             "ok": True,
@@ -230,7 +241,7 @@ class ParrotRedisIPC(commands.Cog):
         }
 
     @staticmethod
-    def _error_reply(request: IPCRequest, exc: Exception):
+    def _error_reply(request: IPCRequest, exc: Exception) -> IPCErrorReply:
         return {
             "corr_id": request.corr_id,
             "ok": False,
@@ -238,14 +249,14 @@ class ParrotRedisIPC(commands.Cog):
             "error": str(exc),
         }
 
-    async def _publish_reply(self, request: IPCRequest, reply: dict[str, Any]) -> None:
+    async def _publish_reply(self, request: IPCRequest, reply: IPCReply) -> None:
         await self.redis.publish(request.response_channel, json.dumps(reply))
 
     @staticmethod
-    def _serialize_missing_guild(guild_id: int | str):
+    def _serialize_missing_guild(guild_id: int | str) -> IPCGuildMissing:
         return {"bot_present": False, "guild_id": str(guild_id)}
 
-    def _serialize_guild_summary(self, guild: discord.Guild, member: discord.Member | None):
+    def _serialize_guild_summary(self, guild: discord.Guild, member: discord.Member | None) -> IPCGuildSummary:
         return {
             "bot_present": True,
             "name": guild.name,
@@ -260,7 +271,7 @@ class ParrotRedisIPC(commands.Cog):
             "active_cogs": self._cog_names(),
         }
 
-    def _serialize_guild_detail(self, guild: discord.Guild):
+    def _serialize_guild_detail(self, guild: discord.Guild) -> IPCGuildDetail:
         return {
             "bot_present": True,
             "guild_id": str(guild.id),
@@ -271,7 +282,7 @@ class ParrotRedisIPC(commands.Cog):
         }
 
     @staticmethod
-    def _serialize_channels(guild: discord.Guild) -> list[dict[str, str]]:
+    def _serialize_channels(guild: discord.Guild) -> list[IPCChannel]:
         return [{"id": str(ch.id), "name": ch.name, "type": str(ch.type)} for ch in guild.channels[:MAX_DETAIL_CHANNELS]]
 
     @staticmethod
@@ -283,14 +294,14 @@ class ParrotRedisIPC(commands.Cog):
     def _lookup_member(self, guild: discord.Guild, user_id: int | None) -> discord.Member | None:
         return guild.get_member(user_id) if user_id else None
 
-    def _describe_guild_for_user(self, guild_id: int, user_id: int | None):
+    def _describe_guild_for_user(self, guild_id: int, user_id: int | None) -> IPCGuildSummary | IPCGuildMissing:
         guild = self.bot.get_guild(guild_id)
         if guild is None:
             return {"bot_present": False}
         return self._serialize_guild_summary(guild, self._lookup_member(guild, user_id))
 
     @ipc_op("PING")
-    async def _op_ping(self, _: Mapping):
+    async def _op_ping(self, _: Mapping) -> IPCPingResponse:
         return {
             "pong": True,
             "latency_ms": self._latency_ms(),
@@ -298,7 +309,7 @@ class ParrotRedisIPC(commands.Cog):
         }
 
     @ipc_op("GET_MUTUAL_GUILDS")
-    async def _op_get_mutual_guilds(self, payload: Mapping[str, Any]):
+    async def _op_get_mutual_guilds(self, payload: Mapping[str, Any]) -> IPCMutualGuildsResponse:
         user_id = parse_int(payload.get("user_id"))
         guilds: dict[str, Any] = {}
 
@@ -311,7 +322,7 @@ class ParrotRedisIPC(commands.Cog):
         return {"guilds": guilds, "bot_total_guilds": len(self.bot.guilds)}
 
     @ipc_op("GET_GUILD_DETAIL")
-    async def _op_get_guild_detail(self, payload: Mapping[str, Any]):
+    async def _op_get_guild_detail(self, payload: Mapping[str, Any]) -> IPCGuildDetailResponse | IPCGuildMissing:
         guild_id = require_int(payload, "guild_id")
         guild = self.bot.get_guild(guild_id)
         if guild is None:
@@ -320,4 +331,4 @@ class ParrotRedisIPC(commands.Cog):
 
 
 async def setup(bot: Bot) -> None:
-    await bot.add_cog(ParrotRedisIPC(bot))
+    await bot.add_cog(RedisIPCIntegration(bot))

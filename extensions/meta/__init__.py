@@ -35,7 +35,7 @@ _log = logging.getLogger(__name__)
 
 OWNER_ID = int(os.environ["OWNER_ID"])
 OWNER_UPI_ID = os.getenv("UPI_ID")
-REPO_SLUG = os.getenv("GITHUB_REPO", "rtk-rnjn/Parrot").removeprefix("https://github.com/").strip("/")
+REPO_SLUG = os.environ["GITHUB_REPO"].removeprefix("https://github.com/").strip("/")
 REPO_URL = f"https://github.com/{REPO_SLUG}"
 
 COMMIT_COUNT = 3

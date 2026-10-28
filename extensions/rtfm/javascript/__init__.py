@@ -58,7 +58,6 @@ if TYPE_CHECKING:
 
     from .knowledge import ComplexityInfo, GotchaInfo, IdiomInfo, OperatorInfo, StdlibMeta, SymbolInfo, TypingInfo
 
-USER_AGENT = "Parrot Discord bot (https://github.com/rtk-rnjn/Parrot)"
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
 
 MDN_BASE_URL = "https://developer.mozilla.org"
@@ -1176,9 +1175,8 @@ class JavaScript(commands.Cog):
         return self._js_tags
 
     async def fetch_bytes(self, url: str, *, missing: str = "JavaScript documentation could not find that.") -> bytes:
-        headers = {"User-Agent": USER_AGENT}
         try:
-            async with self.bot.http_session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as response:
+            async with self.bot.http_session.get(url, timeout=REQUEST_TIMEOUT) as response:
                 if response.status == 404:
                     raise JavaScriptError(missing)
                 if response.status >= 400:
@@ -1192,7 +1190,7 @@ class JavaScript(commands.Cog):
     async def fetch_json(
         self, url: str, *, params: dict[str, Any] | None = None, missing: str = "Requested JavaScript resource was not found."
     ) -> Any:
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        headers = {"Accept": "application/json"}
         try:
             async with self.bot.http_session.get(url, params=params, headers=headers, timeout=REQUEST_TIMEOUT) as response:
                 if response.status == 404:
@@ -1920,13 +1918,13 @@ class JavaScript(commands.Cog):
 
     async def url_exists(self, url: str) -> bool:
         try:
-            async with self.bot.http_session.head(url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT, allow_redirects=True) as response:
+            async with self.bot.http_session.head(url, timeout=REQUEST_TIMEOUT, allow_redirects=True) as response:
                 return response.status < 400
         except TimeoutError, aiohttp.ClientError:
             return False
 
     async def fetch_nvd(self, params: dict[str, Any]) -> dict[str, Any]:
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        headers = {"Accept": "application/json"}
         try:
             async with self.bot.http_session.get(NVD_URL, params=params, headers=headers, timeout=NVD_TIMEOUT) as response:
                 if response.status in {403, 429}:

@@ -15,13 +15,13 @@ if TYPE_CHECKING:
 
 async def ipc_request(op: str, payload: dict[str, Any], timeout: float = 3.0):
     """
-    Publish an IPC command to `parrot:ipc:request` and await the bot's reply
-    on `parrot:ipc:response:<corr_id>` via Redis Pub/Sub.
+    Publish an IPC command to `bot:ipc:request` and await the bot's reply
+    on `bot:ipc:response:<corr_id>` via Redis Pub/Sub.
     """
     redis_client: Redis = app.state.redis_client
 
     corr_id = uuid.uuid4().hex
-    response_channel = f"parrot:ipc:response:{corr_id}"
+    response_channel = f"bot:ipc:response:{corr_id}"
     pubsub = redis_client.pubsub()
     await pubsub.subscribe(response_channel)
 

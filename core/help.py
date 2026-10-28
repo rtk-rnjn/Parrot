@@ -30,7 +30,7 @@ __all__ = ("Help",)
 
 BOT_OWNER_ID = os.environ["OWNER_ID"]
 
-REPO_SLUG = os.getenv("GITHUB_REPO", "rtk-rnjn/Parrot").removeprefix("https://github.com/").strip("/")
+REPO_SLUG = os.environ["GITHUB_REPO"].removeprefix("https://github.com/").strip("/")
 REPO_URL = f"https://github.com/{REPO_SLUG}"
 
 COMMANDS_PER_PAGE = 8

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=20)
-HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Parrot-kontests/2.0 (+https://github.com/rtk-rnjn/Parrot)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Parrot/1.0 (+https://github.com/rtk-rnjn/Parrot)"}
 MAX_DESCRIPTION = 160
 
 type Status = Literal["ongoing", "upcoming", "ended"]

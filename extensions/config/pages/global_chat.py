@@ -7,7 +7,7 @@ from .webhooks import can_manage_webhooks, create_webhook, delete_webhook
 
 __all__ = ("GlobalChatPage",)
 
-WEBHOOK_NAME = "Parrot Global Chat"
+WEBHOOK_NAME = "Global Chat"
 
 
 class GlobalChatPage(Page):

@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 
 __all__ = ("Packages",)
 
-USER_AGENT = "Parrot Discord bot (https://github.com/rtk-rnjn/Parrot)"
 TIMEOUT = aiohttp.ClientTimeout(total=15)
 MAX_RESPONSE = 8 * 1024 * 1024
 MAX_PACKUMENT = 30 * 1024 * 1024  # the full npm document of a package can be huge
@@ -331,12 +330,10 @@ class Fetcher:
         source: str,
         missing: str,
         params: dict[str, Any] | None = None,
-        headers: dict[str, str] | None = None,
         limit: int = MAX_RESPONSE,
     ) -> bytes:
-        merged = {"User-Agent": USER_AGENT, **(headers or {})}
         try:
-            async with self.session.get(url, params=params, headers=merged, timeout=TIMEOUT) as response:
+            async with self.session.get(url, params=params, timeout=TIMEOUT) as response:
                 status = response.status
                 if status == 404:
                     raise RegistryError(missing)

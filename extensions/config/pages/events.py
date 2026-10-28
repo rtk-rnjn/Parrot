@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 __all__ = ("EventsPage",)
 
-WEBHOOK_NAME = "Parrot Event Logs"
+WEBHOOK_NAME = "Event Logs"
 ON = "\N{LARGE GREEN CIRCLE}"
 OFF = "\N{MEDIUM WHITE CIRCLE}"
 OPTION_DESCRIPTION_LENGTH = 100

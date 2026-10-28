@@ -54,7 +54,6 @@ if TYPE_CHECKING:
 
     from .knowledge import ComplexityInfo, DunderInfo, GotchaInfo, IdiomInfo, OperatorInfo, StdlibMeta, TypingInfo
 
-USER_AGENT = "Parrot Discord bot (https://github.com/rtk-rnjn/Parrot)"
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=15)
 
 PYTHON_DOCS_URL = "https://docs.python.org/3"
@@ -1260,9 +1259,8 @@ class Python(commands.Cog):
         return self._python_tags
 
     async def fetch_bytes(self, url: str, *, missing: str = "Python documentation could not find that.") -> bytes:
-        headers = {"User-Agent": USER_AGENT}
         try:
-            async with self.bot.http_session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as response:
+            async with self.bot.http_session.get(url, timeout=REQUEST_TIMEOUT) as response:
                 if response.status == 404:
                     raise PythonError(missing)
                 if response.status >= 400:
@@ -1274,7 +1272,7 @@ class Python(commands.Cog):
             raise PythonError(msg) from error
 
     async def fetch_json(self, url: str, *, missing: str = "Requested Python resource was not found.") -> Any:
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        headers = {"Accept": "application/json"}
         try:
             async with self.bot.http_session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as response:
                 if response.status == 404:
@@ -2058,7 +2056,7 @@ class Python(commands.Cog):
 
     async def url_exists(self, url: str) -> bool:
         try:
-            async with self.bot.http_session.head(url, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT, allow_redirects=True) as response:
+            async with self.bot.http_session.head(url, timeout=REQUEST_TIMEOUT, allow_redirects=True) as response:
                 return response.status < 400
         except TimeoutError, aiohttp.ClientError:
             return False
@@ -2077,7 +2075,7 @@ class Python(commands.Cog):
             return self._glossary_cache
 
     async def get_nvd_vulnerabilities(self, params: dict[str, Any]) -> dict[str, Any]:
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        headers = {"Accept": "application/json"}
         try:
             async with self.bot.http_session.get(NVD_URL, params=params, headers=headers, timeout=NVD_TIMEOUT) as response:
                 if response.status in {403, 429}:

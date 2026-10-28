@@ -19,7 +19,6 @@ from core.utils import BaseLayoutView
 if TYPE_CHECKING:
     from core import Bot
 
-USER_AGENT = "Parrot/1.0.0 (https://github.com/rtk-rnjn/Parrot; ritik0ranjan@gmail.com)"
 HTTP_OK = 200
 
 ACCENT = discord.Colour.from_rgb(51, 102, 204)
@@ -55,14 +54,14 @@ class PageData:
 class WikiClient:
     """Wraps wikipedia-api (sync, run in threads) and the MediaWiki HTTP API."""
 
-    def __init__(self, user_agent: str = USER_AGENT):
-        self.user_agent = user_agent
+    def __init__(self, session: aiohttp.ClientSession):
         self._wikis: dict[str, wikipediaapi.Wikipedia] = {}
-        self.session: aiohttp.ClientSession | None = None
+        self.session = session
 
     def _wiki(self, lang: str) -> wikipediaapi.Wikipedia:
+        user_agent = self.session.headers.get("User-Agent")
         if lang not in self._wikis:
-            self._wikis[lang] = wikipediaapi.Wikipedia(user_agent=self.user_agent, language=lang)
+            self._wikis[lang] = wikipediaapi.Wikipedia(user_agent=user_agent, language=lang)
         return self._wikis[lang]
 
     async def _api(self, lang: str, **params) -> dict:
@@ -299,10 +298,7 @@ class Wikipedia(commands.Cog, command_attrs={"hidden": True}):
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.client = WikiClient()
-
-    async def cog_load(self) -> None:
-        self.client.session = self.bot.http_session
+        self.client = WikiClient(bot.http_session)
 
     async def _reply(self, ctx: commands.Context, view: discord.ui.LayoutView) -> None:
         msg = await ctx.reply(view=view, mention_author=False)

@@ -15,8 +15,8 @@ DISCORD_REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI", "http://localhost:8000/
 REDIS_URI = os.getenv("REDIS_URI", os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 SESSION_SECRET = os.getenv("SESSION_SECRET", secrets.token_hex(32))
 
-IPC_REQUEST_CHANNEL = "parrot:ipc:request"
-TELEMETRY_KEY = "parrot:telemetry:status"
+IPC_REQUEST_CHANNEL = "bot:ipc:request"
+TELEMETRY_KEY = "bot:telemetry:status"
 
 MANAGE_GUILD, ADMINISTRATOR = 0x20, 0x8
 ALLOWED_OPS = {"PING", "GET_MUTUAL_GUILDS", "GET_GUILD_DETAIL"}

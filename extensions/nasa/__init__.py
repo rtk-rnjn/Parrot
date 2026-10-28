@@ -33,7 +33,6 @@ _log = logging.getLogger(__name__)
 NASA_API_KEY = os.getenv("NASA_API_KEY") or "DEMO_KEY"
 HOURLY_BUDGET = 25 if NASA_API_KEY == "DEMO_KEY" else 900
 NASA_BLUE = discord.Colour.from_rgb(11, 61, 145)
-USER_AGENT = "Mozilla/5.0 (compatible; ParrotBot; +https://github.com/rtk-rnjn/Parrot)"
 
 APOD_URL = "https://api.nasa.gov/planetary/apod"
 APOD_WP_URL = "https://science.nasa.gov/wp-json/wp/v2/apod-basic"
@@ -201,8 +200,9 @@ async def idle() -> None:
 
 
 class NasaClient:
-    def __init__(self) -> None:
-        self.session: aiohttp.ClientSession | None = None
+    def __init__(self, session: aiohttp.ClientSession) -> None:
+        self.session = session
+
         self.cache: dict[str, tuple[float, Any]] = {}
         self.stale_cache: dict[str, Any] = {}
         self.inflight: dict[str, asyncio.Task[Any]] = {}
@@ -210,17 +210,6 @@ class NasaClient:
         self.window: deque[float] = deque()
         self.blocked_until = 0.0
         self.remaining: int | None = None
-
-    async def start(self) -> None:
-        if self.session is None or self.session.closed:
-            self.session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=10, connect=4),
-                headers={"User-Agent": USER_AGENT},
-            )
-
-    async def close(self) -> None:
-        if self.session is not None and not self.session.closed:
-            await self.session.close()
 
     def reserve(self) -> None:
         now = time.monotonic()
@@ -281,8 +270,6 @@ class NasaClient:
             raise NasaError(msg, server_error=True) from None
 
     async def fetch(self, url: str, params: dict[str, Any], auth: bool, raw: bool = False) -> Any:
-        if self.session is None or self.session.closed:
-            await self.start()
         assert self.session is not None
         query = {key: str(value) for key, value in params.items() if value is not None}
         if auth:
@@ -1502,13 +1489,7 @@ class NASA(commands.Cog, description="NASA data: pictures, imagery, asteroids an
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self.client = NasaClient()
-
-    async def cog_load(self) -> None:
-        await self.client.start()
-
-    async def cog_unload(self) -> None:
-        await self.client.close()
+        self.client = NasaClient(self.bot.http_session)
 
     async def open_view(self, ctx: commands.Context[Bot], pages: dict[str, Page], start: str) -> None:
         view = NasaLayout(ctx, pages, start)

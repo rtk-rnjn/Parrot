@@ -672,7 +672,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
     async def render_latex(self, latex: str) -> bytes:
         latex = validate_latex(latex)
 
-        with tempfile.TemporaryDirectory(prefix="parrot-mplconfig-") as mpl_config_dir:
+        with tempfile.TemporaryDirectory(prefix=f"{self.bot.user.name}-mplconfig-") as mpl_config_dir:
             proc = await asyncio.create_subprocess_exec(
                 sys.executable,
                 "-I",

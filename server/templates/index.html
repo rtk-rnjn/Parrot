@@ -4,76 +4,106 @@
 
 {% block content %}
 <div id="parrot-app" class="page-shell">
+    <div class="ticker" aria-hidden="true"><span>★ ★ ★ WELCOME TO THE PARROT HOMEPAGE ★ ★ ★ Now serving [[ formatNumber(bot.telemetry.guild_count) ]] servers ★ Please
+            bookmark this page ★ ★ ★</span></div>
+
     <nav class="topbar" aria-label="Main navigation">
-        <a class="brand" href="/" aria-label="Parrot home"><span class="brand-mark" aria-hidden="true">P</span><span>parrot</span></a>
+        <a class="brand" href="/" aria-label="Parrot home"><span class="brand-mark" aria-hidden="true">P</span><span>Parrot.exe</span></a>
         <div class="topbar-actions">
-            <a class="nav-link" href="#commands">Commands</a>
-            <a class="nav-link" href="#extensions">Extensions</a>
-            <button class="button button-small button-quiet" @click="refresh" :disabled="loading"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            <a class="nav-link" href="#commands">[ Commands ]</a>
+            <a class="nav-link" href="#extensions">[ Extensions ]</a>
+            <button class="button button-small" @click="refresh" :disabled="loading">[[ loading ? 'Loading...' : 'Refresh' ]]</button>
         </div>
     </nav>
 
     <main>
         <section class="hero info-hero" aria-labelledby="hero-title">
             <div class="hero-copy">
-                <div class="eyebrow"><span class="status-dot" :class="{'is-down': !bot.connected}"></span> [[ bot.connected ? 'BOT CONNECTED' : 'BOT STATUS UNAVAILABLE' ]]</div>
-                <h1 id="hero-title">Meet your<br><span>Parrot.</span></h1>
-                <p class="hero-description">A modular Discord bot with tools for moderation, music, games, community and more. Browse what’s loaded and see the live bot status here.</p>
-                <div class="hero-actions"><a class="button button-primary" href="#commands">Browse commands <span aria-hidden="true">↓</span></a><span class="updated-label" v-if="lastUpdated">Updated [[ lastUpdated ]]</span></div>
+                <div class="eyebrow"><span class="status-dot" :class="{'is-down': !bot.connected}"></span> Status: [[ bot.connected ? 'BOT CONNECTED' : 'BOT STATUS
+                    UNAVAILABLE' ]]</div>
+                <h1 id="hero-title">Welcome to<br><span>Parrot!</span></h1>
+                <p class="hero-description"><span class="new-badge">NEW!</span> A modular Discord bot with tools for moderation, music, games, community and more. Browse
+                    what is loaded and see the live bot status below.</p>
+                <div class="hero-actions"><a class="button button-primary" href="#commands">Browse commands</a><span class="updated-label" v-if="lastUpdated">Last updated
+                        [[ lastUpdated ]]</span></div>
                 <p class="load-error" v-if="loadError">[[ loadError ]] <button class="link-button" @click="refresh">Try again</button></p>
             </div>
             <div class="hero-art" aria-label="Illustration of the Parrot mascot">
-                <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="sun"></div>
-                <div class="spark spark-one">✳</div><div class="spark spark-two">✦</div><div class="spark spark-three">·</div>
-                <div class="parrot-card">
-                    <div class="card-topline"><span>PARROT / LIVE STATUS</span><span class="card-live" :class="{offline: !bot.connected}"><i></i> [[ bot.connected ? 'ONLINE' : 'OFFLINE' ]]</span></div>
-                    <div class="bird-stage"><div class="bird-shadow"></div><div class="bird-tail"></div><div class="bird-body"><div class="wing"></div><div class="belly"></div></div><div class="bird-neck"></div><div class="bird-head"><div class="crest crest-a"></div><div class="crest crest-b"></div><div class="eye"></div><div class="beak"></div></div><div class="bird-foot foot-a"></div><div class="bird-foot foot-b"></div></div>
-                    <div class="card-caption"><strong>Good things happen together.</strong><span>Connected through bot ↔ server IPC.</span></div>
+                <div class="win parrot-card">
+                    <div class="win-title"><span>parrot_live.bmp</span><span class="card-live" :class="{offline: !bot.connected}">[[ bot.connected ? 'ONLINE' : 'OFFLINE'
+                            ]]</span></div>
+                    <div class="win-body bird-stage"><span class="bird" aria-hidden="true">🦜</span></div>
+                    <div class="card-caption"><strong>Good things happen together.</strong><span>Connected through bot &harr; server IPC.</span></div>
                 </div>
-                <div class="floating-chip chip-community"><span class="chip-icon"><i class="bi bi-hdd-network"></i></span><span><b>Live bot data</b><small>Read from the running bot</small></span><span class="chip-check">✓</span></div>
-                <div class="art-label">LIVE DATA OVER REDIS IPC</div>
             </div>
         </section>
 
+        <div class="construction" aria-hidden="true">🚧 This page is always under construction 🚧</div>
+
         <section class="stats-grid" aria-label="Live bot statistics">
-            <article class="stat-card"><span class="stat-icon purple"><i class="bi bi-hdd-stack"></i></span><span class="stat-label">SERVERS</span><strong>[[ formatNumber(bot.telemetry.guild_count) ]]</strong><small>Discord communities</small></article>
-            <article class="stat-card"><span class="stat-icon peach"><i class="bi bi-people"></i></span><span class="stat-label">MEMBERS</span><strong>[[ formatNumber(bot.telemetry.user_count) ]]</strong><small>Across connected servers</small></article>
-            <article class="stat-card"><span class="stat-icon mint"><i class="bi bi-speedometer2"></i></span><span class="stat-label">LATENCY</span><strong>[[ bot.telemetry.latency_ms == null ? '—' : Math.round(bot.telemetry.latency_ms) + ' ms' ]]</strong><small>Discord gateway response</small></article>
-            <article class="stat-card"><span class="stat-icon blue"><i class="bi bi-clock-history"></i></span><span class="stat-label">UPTIME</span><strong>[[ formatUptime(bot.telemetry.uptime_sec) ]]</strong><small>Since last restart</small></article>
+            <article class="stat-card"><span class="stat-label">Servers</span><strong>[[ formatNumber(bot.telemetry.guild_count) ]]</strong><small>Discord
+                    communities</small></article>
+            <article class="stat-card"><span class="stat-label">Members</span><strong>[[ formatNumber(bot.telemetry.user_count) ]]</strong><small>Across connected
+                    servers</small></article>
+            <article class="stat-card"><span class="stat-label">Latency</span><strong>[[ bot.telemetry.latency_ms == null ? '—' : Math.round(bot.telemetry.latency_ms) + '
+                    ms' ]]</strong><small>Discord gateway response</small></article>
+            <article class="stat-card"><span class="stat-label">Uptime</span><strong>[[ formatUptime(bot.telemetry.uptime_sec) ]]</strong><small>Since last
+                    restart</small></article>
         </section>
 
         <section class="section-block" id="commands">
-            <div class="section-heading"><div><div class="eyebrow">THE COMMAND LIBRARY</div><h2>Find your command.</h2><p>Search prefix and slash commands, read what they do, and see the usage shape.</p></div><span class="count-pill">[[ filteredCommands.length ]] commands</span></div>
+            <div class="section-heading">
+                <div>
+                    <h2>Command Library</h2>
+                    <p>Search prefix and slash commands, read what they do, and see how to use them.</p>
+                </div><span class="count-pill">[[ filteredCommands.length ]] commands</span>
+            </div>
             <div class="command-toolbar">
-                <label class="search-box"><i class="bi bi-search"></i><input v-model="query" type="search" placeholder="Search commands, descriptions, categories…" aria-label="Search commands"></label>
-                <div class="filter-tabs" role="group" aria-label="Filter command type"><button :class="{active: commandType === 'all'}" @click="commandType = 'all'">All</button><button :class="{active: commandType === 'prefix'}" @click="commandType = 'prefix'">Prefix</button><button :class="{active: commandType === 'slash'}" @click="commandType = 'slash'">Slash</button></div>
+                <label class="search-box"><span>Search:</span><input v-model="query" type="search" placeholder="commands, descriptions, categories"
+                        aria-label="Search commands"></label>
+                <div class="filter-tabs" role="group" aria-label="Filter command type"><button :class="{active: commandType === 'all'}"
+                        @click="commandType = 'all'">All</button><button :class="{active: commandType === 'prefix'}"
+                        @click="commandType = 'prefix'">Prefix</button><button :class="{active: commandType === 'slash'}" @click="commandType = 'slash'">Slash</button>
+                </div>
             </div>
             <div class="command-layout">
                 <div class="command-list">
-                    <button class="command-row" v-for="command in filteredCommands" :key="command.kind + command.name" :class="{selected: selectedCommand === command}" @click="selectedCommand = command">
-                        <span class="command-symbol" :class="command.kind">[[ command.kind === 'slash' ? '/' : '$' ]]</span><span class="command-main"><strong>[[ command.name ]]</strong><small>[[ command.description || 'No short description provided.' ]]</small></span><span class="command-category">[[ command.cog || 'General' ]]</span>
+                    <button class="command-row" v-for="command in filteredCommands" :key="command.kind + command.name" :class="{selected: selectedCommand === command}"
+                        @click="selectedCommand = command">
+                        <span class="command-symbol" :class="command.kind">[[ command.kind === 'slash' ? '/' : '$' ]]</span><span class="command-main"><strong>[[
+                                command.name ]]</strong><small>[[ command.description || 'No short description provided.' ]]</small></span><span
+                            class="command-category">[[ command.cog || 'General' ]]</span>
                     </button>
-                    <div class="empty-state" v-if="!filteredCommands.length"><i class="bi bi-search"></i><strong>No matching commands</strong><span>Try a different search or filter.</span></div>
+                    <div class="empty-state" v-if="!filteredCommands.length"><strong>No matching commands</strong><span>Try a different search or filter.</span></div>
                 </div>
-                <aside class="command-detail" aria-live="polite">
-                    <template v-if="selectedCommand"><span class="detail-kicker">[[ selectedCommand.kind === 'slash' ? 'SLASH COMMAND' : 'PREFIX COMMAND' ]] · [[ selectedCommand.cog || 'GENERAL' ]]</span><h3><span>[[ selectedCommand.kind === 'slash' ? '/' : commands.default_prefix ]]</span>[[ selectedCommand.name ]]</h3><p>[[ selectedCommand.help || selectedCommand.description || 'No detailed help is available for this command yet.' ]]</p><div class="usage-block"><span>USAGE</span><code>[[ usage(selectedCommand) ]]</code></div><div class="alias-block" v-if="selectedCommand.aliases && selectedCommand.aliases.length"><span>ALIASES</span><div><code v-for="alias in selectedCommand.aliases" :key="alias">[[ alias ]]</code></div></div><small class="prefix-note" v-if="selectedCommand.kind === 'prefix'">Showing the default prefix. A server can have its own configured prefix.</small></template>
-                    <div class="detail-empty" v-else><span class="detail-empty-icon"><i class="bi bi-terminal"></i></span><strong>Select a command</strong><span>Its description, usage and aliases will appear here.</span></div>
+                <aside class="command-detail win" aria-live="polite">
+                    <div class="win-title"><span>Command Properties</span></div>
+                    <div class="win-body">
+                        <template v-if="selectedCommand"><span class="detail-kicker">[[ selectedCommand.kind === 'slash' ? 'Slash command' : 'Prefix command' ]] from [[
+                                selectedCommand.cog || 'General' ]]</span>
+                            <h3><span>[[ selectedCommand.kind === 'slash' ? '/' : commands.default_prefix ]]</span>[[ selectedCommand.name ]]</h3>
+                            <p>[[ selectedCommand.help || selectedCommand.description || 'No detailed help is available for this command yet.' ]]</p>
+                            <div class="usage-block"><span>Usage:</span><code>[[ usage(selectedCommand) ]]</code></div>
+                            <div class="alias-block" v-if="selectedCommand.aliases && selectedCommand.aliases.length"><span>Aliases:</span>
+                                <div><code v-for="alias in selectedCommand.aliases" :key="alias">[[ alias ]]</code></div>
+                            </div><small class="prefix-note" v-if="selectedCommand.kind === 'prefix'">Showing the default prefix. A server can have its own configured
+                                prefix.</small>
+                        </template>
+                        <div class="detail-empty" v-else><strong>Select a command</strong><span>Its description, usage and aliases will appear here.</span></div>
+                    </div>
                 </aside>
             </div>
             <p class="catalog-note" v-if="!commands.ok">Command data is unavailable while the bot IPC connection is down.</p>
         </section>
-
-        <section class="section-block extensions-section" id="extensions">
-            <div class="section-heading"><div><div class="eyebrow">WHAT’S INSIDE</div><h2>Loaded extensions.</h2><p>Modules and cogs reported directly by the running bot.</p></div><span class="count-pill">[[ extensions.length ]] extensions · [[ cogs.length ]] cogs</span></div>
-            <div class="extension-tags" v-if="extensions.length"><span class="extension-tag" v-for="extension in extensions" :key="extension">[[ extension.replace(/^extensions\./, '') ]]</span></div>
-            <h3 class="cogs-label" v-if="cogs.length">Loaded cogs</h3>
-            <div class="extension-grid" v-if="cogs.length"><article class="extension-card" v-for="cog in cogs" :key="cog.name"><div class="extension-top"><span class="extension-glyph"><i class="bi bi-puzzle"></i></span><span class="extension-command-count">[[ cog.command_count ]] commands</span></div><h3>[[ cog.name ]]</h3><p>[[ cog.description || 'Loaded extension in the Parrot bot.' ]]</p></article></div>
-            <div class="empty-extensions" v-if="!extensions.length && !cogs.length"><i class="bi bi-plug"></i> Extension information appears when the bot is connected.</div>
-        </section>
     </main>
 
-    <footer class="footer"><a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">P</span><span>parrot</span></a><span>Live information from your Discord bot.</span><a href="#hero-title">Back to top ↑</a></footer>
+    <footer class="footer">
+        <span class="footer-badge">Best viewed at 800x600</span>
+        <span>Live information from your Discord bot.</span>
+        <a href="#hero-title">Back to top ▲</a>
+    </footer>
 </div>
 {% endblock %}
 
-{% block scripts %}<script src="{{ url_for('static', path='js/app.js') }}"></script>{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='js/app.js') }}"></script>{% endblock %}

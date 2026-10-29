@@ -23,6 +23,12 @@ load_dotenv()
 BOT_NAME = os.getenv("BOT_NAME") or "DiscordBot"
 USER_AGENT = os.getenv("BOT_USER_AGENT") or f"{BOT_NAME}/1.0.0 ({os.getenv('GITHUB_REPO')}; {os.getenv('EMAIL_ADDRESS')})"
 
+LIMITED_MEMORY = os.environ.get("LIMITED_MEMORY", "False").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+
 LOGS_ROOT = Path(os.getenv("LOGS_DIR", "logs"))
 LOG_FORMAT = "[{asctime}] [{levelname:<8}] {name}:{funcName}:{lineno} - {message}"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -227,7 +233,12 @@ async def start_server() -> None:
 
 async def runner() -> None:
     logger.info("Starting %s runner...", BOT_NAME)
-    await asyncio.gather(start_bot(), start_server())
+
+    start_tasks = [start_bot()]
+    if not LIMITED_MEMORY:
+        start_tasks.append(start_server())
+
+    await asyncio.gather(*start_tasks)
 
 
 def main() -> None:

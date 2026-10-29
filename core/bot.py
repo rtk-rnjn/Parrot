@@ -26,7 +26,16 @@ from pymongo.errors import PyMongoError
 from redis.exceptions import RedisError
 from watchfiles import awatch
 
-from .config import DISCORD_BOT_TOKEN, LAVALINK_PASSWORD, LOADABLE_COGS, OWNER_ID, RESTRICTED_MODE, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
+from .config import (
+    DISCORD_BOT_TOKEN,
+    LAVALINK_PASSWORD,
+    LIMITED_MEMORY,
+    LOADABLE_COGS,
+    OWNER_ID,
+    RESTRICTED_MODE,
+    SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET,
+)
 from .help import Help as BotHelp
 from .utils import AsyncTimerDispatcher, ConfirmationLayout, DatabaseManager, DisambiguatorView
 
@@ -65,6 +74,9 @@ class Bot(commands.Bot):
         intents.members = True
         intents.presences = True
 
+        if LIMITED_MEMORY:
+            intents.presences = False
+
         super().__init__(
             command_prefix=Bot.get_prefix,
             intents=intents,
@@ -76,7 +88,7 @@ class Bot(commands.Bot):
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             strip_after_prefix=True,
             shard_id=1,
-            max_messages=2**9,  # RAM issues guyz
+            max_messages=2**9 if LIMITED_MEMORY else 2**12,  # RAM issues guyz
             owner_ids={int(OWNER_ID)} if OWNER_ID else None,
             help_command=BotHelp(),
             **kwargs,
@@ -119,13 +131,14 @@ class Bot(commands.Bot):
 
         await self.event_scheduler.start()
 
-        self._cog_autoreload_task = self.loop.create_task(
-            self._autoreload_cogs(),
-            name=f"{self.__class__.__name__}: _autoreload_cogs",
-        )
+        if not LIMITED_MEMORY:
+            self._cog_autoreload_task = self.loop.create_task(
+                self._autoreload_cogs(),
+                name=f"{self.__class__.__name__}: _autoreload_cogs",
+            )
 
-        self._start_database_listeners()
-        self.loop.create_task(self.connect_lavalink_node(), name=f"{self.__class__.__name__}: connect_lavalink_node")
+            self._start_database_listeners()
+            self.loop.create_task(self.connect_lavalink_node(), name=f"{self.__class__.__name__}: connect_lavalink_node")
 
     async def connect_lavalink_node(self) -> None:
         """Attempt to connect to a Lavalink node"""

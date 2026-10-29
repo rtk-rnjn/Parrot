@@ -6,6 +6,12 @@ load_dotenv()
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
+LIMITED_MEMORY = os.environ.get("LIMITED_MEMORY", "False").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 
@@ -67,3 +73,17 @@ LOADABLE_COGS = [
     "extensions.todo",
     "extensions.welcomer",
 ]
+
+if LIMITED_MEMORY:
+    _cogs_to_remove = [
+        "extensions.music",
+        "extensions.rtfm",
+        "extensions.rtfm.linter",
+        "extensions.rtfm.w3schools",
+        "extensions.nsfw",
+        "extensions.stats",
+        "extensions.image",
+    ]
+    for cog in _cogs_to_remove:
+        if cog in LOADABLE_COGS:
+            LOADABLE_COGS.remove(cog)

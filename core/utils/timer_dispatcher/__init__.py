@@ -21,32 +21,14 @@ __all__ = ("AsyncTimerDispatcher", "TimerData")
 VALID_EVENT_NAMES = Literal["reminder", "mute", "todo_due", "giveaway", "automod_unban", "automod_role", "automod_slowmode"]
 
 
-class TimerData(TypedDict):
-    """Schema for a timer document stored in MongoDB.
-
-    ``_id`` is optional because a timer does not have a MongoDB-generated ID
-    until it has been inserted into the collection. Documents returned by
-    MongoDB will normally contain this field.
-
-    Attributes
-    ----------
-    _id:
-        MongoDB's unique identifier for the timer.
-    expires_at:
-        UTC timestamp at which the timer should be dispatched.
-    created_at:
-        UTC timestamp at which the timer was created.
-    event_name:
-        Base name of the event to dispatch when the timer expires.
-    metadata:
-        Arbitrary application-specific data passed to the dispatched event.
-    """
+class TimerData[T: Mapping[str, object]](TypedDict):
+    """Schema for a timer document stored in MongoDB."""
 
     _id: ObjectId
     expires_at: datetime
     created_at: datetime
     event_name: VALID_EVENT_NAMES
-    metadata: Mapping[str, object]
+    metadata: T
 
 
 class AsyncTimerDispatcher:
@@ -217,7 +199,7 @@ class AsyncTimerDispatcher:
 
         return insert_data
 
-    async def get(self, **filters: Unpack[TimerData]) -> TimerData | None:
+    async def get[T: Mapping[str, object]](self, **filters: Unpack[TimerData[T]]) -> TimerData[T] | None:
         """Return the first timer matching the supplied fields."""
         return await self.timers_collection.find_one(filters)
 
@@ -281,7 +263,7 @@ class AsyncTimerDispatcher:
             self.timer_task.cancel()
             self.timer_task = self.bot.loop.create_task(self._start(), name=f"{self.__class__.__name__}: start")
 
-    async def search(self, *, event_name: VALID_EVENT_NAMES, metadata_filter: Mapping[str, object]) -> list[TimerData]:
+    async def search[T: Mapping[str, object]](self, *, event_name: VALID_EVENT_NAMES, metadata_filter: T) -> list[TimerData[T]]:
         """Return all timers matching the supplied fields."""
         filters = {
             "event_name": event_name,

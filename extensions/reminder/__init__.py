@@ -20,6 +20,7 @@ from core.utils import (
     BaseLayoutView,
     BaseView,
     FriendlyTimeResult,
+    TimerData,
     UserFriendlyTime,
     WhenModal,
     as_utc,
@@ -30,7 +31,6 @@ from core.utils import (
     make_select,
     parse_future,
 )
-from core.utils import TimerData as Timer
 
 if TYPE_CHECKING:
     from core import Bot
@@ -192,7 +192,7 @@ class ReminderPanel(BaseLayoutView):
         self.cog = cog
         self.author = author
         self.page = 0
-        self.timers: list[Timer] = []
+        self.timers: list[TimerData[ReminderMetadata]] = []
         self.tz: datetime.tzinfo = datetime.UTC
 
     @classmethod
@@ -256,8 +256,8 @@ class ReminderPanel(BaseLayoutView):
         )
         self.add_item(discord.ui.Container(*children, accent_colour=discord.Colour.blurple()))
 
-    def _section(self, number: int, timer: Timer) -> discord.ui.Section:
-        metadata: ReminderMetadata = timer["metadata"]  # pyright: ignore[reportAssignmentType]
+    def _section(self, number: int, timer: TimerData[ReminderMetadata]) -> discord.ui.Section:
+        metadata = timer["metadata"]
         when = as_utc(timer["expires_at"])
         details = [clip(metadata["reminder_text"], 80)]
         if metadata.get("repeat") in REPEAT_STEPS:
@@ -289,8 +289,8 @@ class ReminderPanel(BaseLayoutView):
                 await self.cog.bot.event_scheduler.delete_by_id(ObjectId(value))
         await self.refresh(interaction)
 
-    async def _edit(self, timer: Timer, interaction: discord.Interaction) -> None:
-        metadata: ReminderMetadata = timer["metadata"]  # pyright: ignore[reportAssignmentType]
+    async def _edit(self, timer: TimerData[ReminderMetadata], interaction: discord.Interaction) -> None:
+        metadata = timer["metadata"]
         when = as_utc(timer["expires_at"])
         modal = ReminderModal(
             heading="Edit reminder",
@@ -302,8 +302,8 @@ class ReminderPanel(BaseLayoutView):
         )
         await interaction.response.send_modal(modal)
 
-    async def _apply_edit(self, timer: Timer, interaction: discord.Interaction, draft: ReminderDraft) -> None:
-        metadata = with_repeat(timer["metadata"], draft.repeat)  # pyright: ignore[reportArgumentType]
+    async def _apply_edit(self, timer: TimerData[ReminderMetadata], interaction: discord.Interaction, draft: ReminderDraft) -> None:
+        metadata = with_repeat(timer["metadata"], draft.repeat)
         metadata["reminder_text"] = draft.text
         metadata["due"] = int(draft.when.timestamp())
         updated = await self.cog.bot.event_scheduler.update(timer["_id"], expires_at=draft.when, metadata=metadata)

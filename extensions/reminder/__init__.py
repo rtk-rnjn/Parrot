@@ -237,12 +237,19 @@ class ReminderPanel(BaseLayoutView):
                     label=clip(f"{start + index + 1}. {timer['metadata']['reminder_text']}", 100),
                     description=local_text(timer["expires_at"], self.tz),
                     value=str(timer["_id"]),
+                    emoji="\N{WASTEBASKET}\N{VARIATION SELECTOR-16}",
                 )
                 for index, timer in enumerate(chunk)
             ]
+            children.append(discord.ui.Separator())
             children.append(
                 discord.ui.ActionRow(
-                    make_select("Select reminders to delete\N{HORIZONTAL ELLIPSIS}", delete_options, self._delete, max_values=len(delete_options))
+                    make_select(
+                        "\N{WARNING SIGN} Select reminders to delete\N{HORIZONTAL ELLIPSIS}",
+                        delete_options,
+                        self._delete,
+                        max_values=len(delete_options),
+                    )
                 )
             )
 
@@ -287,6 +294,7 @@ class ReminderPanel(BaseLayoutView):
         for value in values:
             if value in owned:
                 await self.cog.bot.event_scheduler.delete_by_id(ObjectId(value))
+
         await self.refresh(interaction)
 
     async def _edit(self, timer: TimerData[ReminderMetadata], interaction: discord.Interaction) -> None:

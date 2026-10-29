@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Mapping
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal, TypedDict, Unpack
@@ -15,6 +16,8 @@ from pymongo.results import DeleteResult, InsertOneResult
 if TYPE_CHECKING:
     from core import Bot
 
+
+_log = logging.getLogger(__name__)
 
 __all__ = ("AsyncTimerDispatcher", "TimerData")
 
@@ -127,17 +130,24 @@ class AsyncTimerDispatcher:
                 await asyncio.sleep(0)
 
         except OSError, discord.ConnectionClosed, ConnectionFailure:
+            _log.exception("Timer dispatcher lost its connection; restarting")
             await self.restart()
 
         except asyncio.CancelledError:
             # Task cancellation is a control-flow mechanism in asyncio, not
             # an error that should trigger automatic dispatcher recreation.
+            _log.debug("Timer dispatcher task cancelled")
+            raise
+
+        except Exception:
+            _log.exception("Timer dispatcher stopped unexpectedly", exc_info=True)
             raise
 
     async def start(self) -> None:
         """Start the dispatcher task if it is not already running."""
         if self.timer_task is None or self.timer_task.done():
             self.timer_task = self.bot.loop.create_task(self._start(), name=f"{self.__class__.__name__}: start")
+            _log.info("Timer dispatcher started")
 
     async def __call_timer(self, **data: Unpack[TimerData]) -> None:
         """Atomically consume an expired timer and dispatch its completion event.
@@ -153,8 +163,10 @@ class AsyncTimerDispatcher:
         deleted: DeleteResult = await self.timers_collection.delete_one({"_id": data.get("_id")})
 
         if deleted.deleted_count == 0:
+            _log.debug("Timer %s was already consumed; skipping dispatch", data.get("_id"))
             return
 
+        _log.info("Dispatching completed %s timer %s", data["event_name"], data.get("_id"))
         self.bot.dispatch(f"{data['event_name']}_timer_complete".lower(), metadata=data["metadata"])
 
     async def __dispatch_timer(self, **data: Unpack[TimerData]) -> None:
@@ -187,6 +199,7 @@ class AsyncTimerDispatcher:
         }
 
         insert_data = await self.timers_collection.insert_one(post)
+        _log.debug("Created %s timer %s for %s", event_name, post["_id"], expires_at.isoformat())
 
         # Wake a dispatcher currently blocked in Event.wait(). The Event
         # remains set while timers exist; it is not consumed by wait().
@@ -194,6 +207,7 @@ class AsyncTimerDispatcher:
 
         if self._current_timer and self._current_timer["expires_at"] > expires_at:
             self._current_timer = post
+            _log.debug("New timer %s expires before current timer; restarting dispatcher", post["_id"])
 
             await self.restart()
 
@@ -216,8 +230,10 @@ class AsyncTimerDispatcher:
             **{f"metadata.{k}": v for k, v in metadata_filter.items()},
         }
         if multiple:
+            _log.debug("Deleting all %s timers matching %s", event_name, metadata_filter)
             data = await self.timers_collection.delete_many(filters)
         else:
+            _log.debug("Deleting one %s timer matching %s", event_name, metadata_filter)
             data = await self.timers_collection.delete_one(filters)
 
         if data.deleted_count == 0:
@@ -229,6 +245,7 @@ class AsyncTimerDispatcher:
 
     async def delete_by_id(self, timer_id: ObjectId, /) -> bool:
         """Delete one timer by its MongoDB id. Returns ``False`` if it no longer exists."""
+        _log.debug("Deleting timer %s by id", timer_id)
         result = await self.timers_collection.delete_one({"_id": timer_id})
         if result.deleted_count == 0:
             return False
@@ -238,6 +255,7 @@ class AsyncTimerDispatcher:
 
     async def update(self, timer_id: ObjectId, /, *, expires_at: datetime, metadata: Mapping[str, object]) -> bool:
         """Change a timer's expiry and metadata. Returns ``False`` if it already fired."""
+        _log.debug("Updating timer %s to expire at %s with metadata %s", timer_id, expires_at.isoformat(), metadata)
         result = await self.timers_collection.update_one(
             {"_id": timer_id},
             {"$set": {"expires_at": expires_at, "metadata": dict(metadata)}},
@@ -260,6 +278,7 @@ class AsyncTimerDispatcher:
         self._current_timer = None
 
         if self.timer_task is not None:
+            _log.debug("Restarting timer dispatcher")
             self.timer_task.cancel()
             self.timer_task = self.bot.loop.create_task(self._start(), name=f"{self.__class__.__name__}: start")
 

@@ -234,6 +234,9 @@ async def start_server() -> None:
 async def runner() -> None:
     logger.info("Starting %s runner...", BOT_NAME)
 
+    if LIMITED_MEMORY:
+        logger.warning("LIMITED_MEMORY is enabled; the web server will not be started.")
+
     start_tasks = [start_bot()]
     if not LIMITED_MEMORY:
         start_tasks.append(start_server())

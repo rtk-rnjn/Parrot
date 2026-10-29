@@ -225,6 +225,8 @@ class IPCUserInfo(TypedDict):
 class IPCPrefixCommand(TypedDict):
     name: str
     description: str
+    help: str
+    signature: str
     aliases: list[str]
     cog: str | None
 
@@ -233,6 +235,7 @@ class IPCPrefixCommand(TypedDict):
 class IPCSlashCommand(TypedDict):
     name: str
     description: str
+    signature: str
     cog: str | None
 
 
@@ -240,6 +243,7 @@ class IPCSlashCommand(TypedDict):
 class IPCCommandsResponse(TypedDict):
     prefix: list[IPCPrefixCommand]
     slash: list[IPCSlashCommand]
+    default_prefix: str
 
 
 @type_check_only

@@ -22,7 +22,7 @@ LONG_MESSAGE_LIMIT = 100
 
 
 class Leveling(commands.Cog):
-    """Award message XP with Redis-backed buffering and periodic persistence."""
+    """Award message XP with persistence."""
 
     help_emoji = "\N{CHART WITH UPWARDS TREND}"
 

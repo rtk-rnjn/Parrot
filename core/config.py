@@ -42,6 +42,7 @@ LOADABLE_COGS = [
     "extensions.highlight",
     "extensions.hub",
     "extensions.image",
+    "extensions.ipc",
     "extensions.leveling",
     "extensions.meta",
     "extensions.misc",

@@ -461,6 +461,8 @@ class InterProcessIntegration(commands.Cog):
             {
                 "name": cmd.qualified_name,
                 "description": cmd.short_doc or "",
+                "help": (cmd.help or cmd.short_doc or "").strip(),
+                "signature": cmd.signature,
                 "aliases": list(cmd.aliases),
                 "cog": cmd.cog_name,
             }
@@ -471,12 +473,13 @@ class InterProcessIntegration(commands.Cog):
             {
                 "name": cmd.qualified_name,
                 "description": cmd.description,
+                "signature": " ".join(f"<{parameter.name}>" if parameter.required else f"[{parameter.name}]" for parameter in cmd.parameters),
                 "cog": getattr(cmd.binding, "qualified_name", None),
             }
             for cmd in self.bot.tree.walk_commands()
             if isinstance(cmd, app_commands.Command)
         ]
-        return {"prefix": prefix, "slash": slash}
+        return {"prefix": prefix, "slash": slash, "default_prefix": self.bot.DEFAULT_PREFIX}
 
     @ipc_op("GET_USER_INFO")
     async def _op_get_user_info(self, payload: Mapping[str, Any]) -> IPCUserInfo:

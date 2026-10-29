@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
 from pymongo.asynchronous.collection import AsyncCollection
@@ -72,21 +72,21 @@ class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMi
             health_check_interval=30,
         )
 
-        self.redis_client: Final[Redis] = Redis.from_pool(pool)
+        self.redis_client = Redis.from_pool(pool)
         self.__pub_sub_client: PubSub = self.redis_client.pubsub()
 
         # tz_aware=True returns timezone-aware datetimes.
-        self.mongo_client: Final[AsyncMongoClient] = AsyncMongoClient(MONGO_URI, tz_aware=True)
+        self.mongo_client = AsyncMongoClient(MONGO_URI, tz_aware=True)
         self.mongo_db = self.mongo_client["database"]
 
-        self.guilds_collection: Final[AsyncCollection[GuildConfiguration]] = self.mongo_db["guilds"]
-        self.users_collection: Final[AsyncCollection[UserConfiguration]] = self.mongo_db["users"]
+        self.guilds_collection: AsyncCollection[GuildConfiguration] = self.mongo_db["guilds"]
+        self.users_collection: AsyncCollection[UserConfiguration] = self.mongo_db["users"]
 
-        self.giveaways_collection: Final[AsyncCollection[GiveawayEntry]] = self.mongo_db["giveaways"]
-        self.starboards_collection: Final[AsyncCollection[StarboardEntry]] = self.mongo_db["starboards"]
-        self.mod_actions_collection: Final[AsyncCollection[ModAction]] = self.mongo_db["mod_actions"]
+        self.giveaways_collection: AsyncCollection[GiveawayEntry] = self.mongo_db["giveaways"]
+        self.starboards_collection: AsyncCollection[StarboardEntry] = self.mongo_db["starboards"]
+        self.mod_actions_collection: AsyncCollection[ModAction] = self.mongo_db["mod_actions"]
 
-        self.commands_config_collection: Final[AsyncCollection[CommandConfig]] = self.mongo_db["commands_config"]
+        self.commands_config_collection: AsyncCollection[CommandConfig] = self.mongo_db["commands_config"]
 
     @property
     def pub_sub_client(self) -> PubSub:

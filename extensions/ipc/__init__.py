@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 if TYPE_CHECKING:
@@ -17,16 +18,32 @@ if TYPE_CHECKING:
 
     from .type import (
         IPCChannel,
+        IPCCogsResponse,
+        IPCCommandsResponse,
         IPCErrorReply,
+        IPCEvent,
+        IPCGuildChannel,
+        IPCGuildChannelsResponse,
         IPCGuildDetail,
         IPCGuildDetailResponse,
         IPCGuildMissing,
+        IPCGuildRolesResponse,
         IPCGuildSummary,
+        IPCMember,
+        IPCMemberResponse,
+        IPCMemberSearchResponse,
         IPCMutualGuildsResponse,
+        IPCPermissionsResponse,
         IPCPingResponse,
+        IPCPrefixCommand,
+        IPCReloadResponse,
         IPCReply,
+        IPCRole,
+        IPCSendMessageResponse,
+        IPCSlashCommand,
         IPCSuccessReply,
         IPCTelemetry,
+        IPCUserInfo,
     )
 
 
@@ -39,6 +56,17 @@ TELEMETRY_KEY = "bot:telemetry:status"
 TELEMETRY_INTERVAL_SEC = 15.0
 TELEMETRY_TTL_SEC = 60
 MAX_DETAIL_CHANNELS = 25
+MAX_MESSAGE_LENGTH = 2000
+DEFAULT_MEMBER_LIMIT = 10
+MAX_MEMBER_LIMIT = 25
+
+
+class IPCError(ValueError):
+    """Expected, user-facing failure (bad payload, missing permission, ...).
+
+    Reported back to the caller as an error reply and logged as a warning
+    instead of a full traceback.
+    """
 
 
 def ipc_op(name: str):
@@ -96,7 +124,7 @@ def require_int(payload: Mapping[str, Any], key: str) -> int:
     value = parse_int(payload.get(key))
     if value is None:
         message = f"Missing or invalid '{key}' in payload: {payload}"
-        raise ValueError(message)
+        raise IPCError(message)
     return value
 
 
@@ -104,7 +132,7 @@ def elapsed_ms(start: float) -> float:
     return round((time.perf_counter() - start) * 1000, 2)
 
 
-class RedisIPCIntegration(commands.Cog):
+class InterProcessIntegration(commands.Cog):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.redis = bot.database.redis_client
@@ -147,8 +175,8 @@ class RedisIPCIntegration(commands.Cog):
 
     def _collect_handlers(self):
         return {
-            name: method
-            for name, method in inspect.getmembers(self, predicate=inspect.iscoroutinefunction)
+            getattr(method, "__ipc_operation__"): method  # noqa: B009
+            for _, method in inspect.getmembers(self, predicate=inspect.iscoroutinefunction)
             if getattr(method, "__ipc_operation__", None) is not None
         }
 
@@ -156,7 +184,7 @@ class RedisIPCIntegration(commands.Cog):
         handler = self._handlers.get(op)
         if handler is None:
             message = f"Unsupported IPC operation: {op}"
-            raise ValueError(message)
+            raise IPCError(message)
         return handler
 
     @tasks.loop(seconds=TELEMETRY_INTERVAL_SEC)
@@ -225,6 +253,9 @@ class RedisIPCIntegration(commands.Cog):
         try:
             handler = self._get_handler(request.op)
             data = await handler(request.payload)
+        except IPCError as exc:
+            log.warning("IPC op %s rejected: %s", request.op, exc)
+            return self._error_reply(request, exc)
         except Exception as exc:
             log.exception("Error executing IPC op %s", request.op)
             return self._error_reply(request, exc)
@@ -251,6 +282,27 @@ class RedisIPCIntegration(commands.Cog):
 
     async def _publish_reply(self, request: IPCRequest, reply: IPCReply) -> None:
         await self.redis.publish(request.response_channel, json.dumps(reply))
+
+    async def _publish_event(self, event: str, data: dict[str, str | int | None]) -> None:
+        payload: IPCEvent = {"event": event, "timestamp": int(time.time()), "data": data}  # type: ignore[typeddict-item]
+        try:
+            await self.redis.publish(IPC_EVENTS_CHANNEL, json.dumps(payload))
+        except Exception:
+            log.exception("Failed to publish IPC event %s", event)
+
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild: discord.Guild) -> None:
+        await self._publish_event(
+            "GUILD_JOIN",
+            {"guild_id": str(guild.id), "name": guild.name, "member_count": guild.member_count},
+        )
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        await self._publish_event(
+            "GUILD_REMOVE",
+            {"guild_id": str(guild.id), "name": guild.name, "member_count": guild.member_count},
+        )
 
     @staticmethod
     def _serialize_missing_guild(guild_id: int | str) -> IPCGuildMissing:
@@ -286,6 +338,55 @@ class RedisIPCIntegration(commands.Cog):
         return [{"id": str(ch.id), "name": ch.name, "type": str(ch.type)} for ch in guild.channels[:MAX_DETAIL_CHANNELS]]
 
     @staticmethod
+    def _serialize_guild_channel(guild: discord.Guild, channel: discord.abc.GuildChannel) -> IPCGuildChannel:
+        bot_can_send: bool | None = None
+        if isinstance(channel, discord.TextChannel) and guild.me is not None:
+            bot_can_send = channel.permissions_for(guild.me).send_messages
+
+        category = channel.category
+        return {
+            "id": str(channel.id),
+            "name": channel.name,
+            "type": str(channel.type),
+            "category_id": str(category.id) if category else None,
+            "category": category.name if category else None,
+            "position": channel.position,
+            "bot_can_send": bot_can_send,
+        }
+
+    @staticmethod
+    def _serialize_role(guild: discord.Guild, role: discord.Role) -> IPCRole:
+        bot_top = guild.me.top_role if guild.me else None
+        assignable = bool(bot_top and not role.is_default() and not role.managed and role < bot_top)
+        return {
+            "id": str(role.id),
+            "name": role.name,
+            "color": role.colour.value,
+            "position": role.position,
+            "hoist": role.hoist,
+            "managed": role.managed,
+            "mentionable": role.mentionable,
+            "is_default": role.is_default(),
+            "assignable": assignable,
+            # String: 64-bit bitfields lose precision as JS numbers.
+            "permissions": str(role.permissions.value),
+        }
+
+    @staticmethod
+    def _serialize_member(guild: discord.Guild, member: discord.Member) -> IPCMember:
+        return {
+            "id": str(member.id),
+            "username": member.name,
+            "display_name": member.display_name,
+            "avatar_url": member.display_avatar.url,
+            "bot": member.bot,
+            "is_owner": member.id == guild.owner_id,
+            "top_role": member.top_role.name,
+            "role_ids": [str(r.id) for r in member.roles if not r.is_default()],
+            "joined_at": member.joined_at.isoformat() if member.joined_at else None,
+        }
+
+    @staticmethod
     def _bot_joined_at(guild: discord.Guild) -> str | None:
         if guild.me and guild.me.joined_at:
             return guild.me.joined_at.isoformat()
@@ -293,6 +394,48 @@ class RedisIPCIntegration(commands.Cog):
 
     def _lookup_member(self, guild: discord.Guild, user_id: int | None) -> discord.Member | None:
         return guild.get_member(user_id) if user_id else None
+
+    async def _resolve_member(self, guild: discord.Guild, user_id: int) -> discord.Member | None:
+        """Cache first, then fall back to an API fetch. None if not in the guild."""
+        member = guild.get_member(user_id)
+        if member is not None:
+            return member
+        try:
+            return await guild.fetch_member(user_id)
+        except discord.NotFound:
+            return None
+
+    @staticmethod
+    def _can_manage(member: discord.Member) -> bool:
+        perms = member.guild_permissions
+        return perms.administrator or perms.manage_guild
+
+    async def _require_manager(self, guild: discord.Guild, user_id: int) -> discord.Member:
+        """Bot-side authorization for mutating ops. Raises IPCError if not allowed."""
+        member = await self._resolve_member(guild, user_id)
+        if member is None or not self._can_manage(member):
+            message = "User needs the Manage Server permission in this guild"
+            raise IPCError(message)
+        return member
+
+    @staticmethod
+    def _build_embed(raw: Any) -> discord.Embed | None:
+        if not raw:
+            return None
+        if not isinstance(raw, Mapping):
+            message = "'embed' must be an object"
+            raise IPCError(message)
+
+        title, description = raw.get("title"), raw.get("description")
+        if not (title or description):
+            message = "Embed needs a title or description"
+            raise IPCError(message)
+
+        embed = discord.Embed(title=title, description=description)
+        color = parse_int(raw.get("color"))
+        if color is not None:
+            embed.colour = discord.Colour(color)
+        return embed
 
     def _describe_guild_for_user(self, guild_id: int, user_id: int | None) -> IPCGuildSummary | IPCGuildMissing:
         guild = self.bot.get_guild(guild_id)
@@ -306,6 +449,53 @@ class RedisIPCIntegration(commands.Cog):
             "pong": True,
             "latency_ms": self._latency_ms(),
             "guild_count": len(self.bot.guilds),
+        }
+
+    @ipc_op("GET_TELEMETRY")
+    async def _op_get_telemetry(self, _: Mapping) -> IPCTelemetry:
+        return self._build_telemetry()
+
+    @ipc_op("GET_COMMANDS")
+    async def _op_get_commands(self, _: Mapping) -> IPCCommandsResponse:
+        prefix: list[IPCPrefixCommand] = [
+            {
+                "name": cmd.qualified_name,
+                "description": cmd.short_doc or "",
+                "aliases": list(cmd.aliases),
+                "cog": cmd.cog_name,
+            }
+            for cmd in self.bot.walk_commands()
+            if not cmd.hidden
+        ]
+        slash: list[IPCSlashCommand] = [
+            {
+                "name": cmd.qualified_name,
+                "description": cmd.description,
+                "cog": getattr(cmd.binding, "qualified_name", None),
+            }
+            for cmd in self.bot.tree.walk_commands()
+            if isinstance(cmd, app_commands.Command)
+        ]
+        return {"prefix": prefix, "slash": slash}
+
+    @ipc_op("GET_USER_INFO")
+    async def _op_get_user_info(self, payload: Mapping[str, Any]) -> IPCUserInfo:
+        user_id = require_int(payload, "user_id")
+        user = self.bot.get_user(user_id)
+        if user is None:
+            try:
+                user = await self.bot.fetch_user(user_id)
+            except discord.NotFound as exc:
+                message = "User not found"
+                raise IPCError(message) from exc
+
+        return {
+            "id": str(user.id),
+            "username": user.name,
+            "global_name": user.global_name,
+            "avatar_url": user.display_avatar.url,
+            "bot": user.bot,
+            "created_at": user.created_at.isoformat(),
         }
 
     @ipc_op("GET_MUTUAL_GUILDS")
@@ -329,6 +519,196 @@ class RedisIPCIntegration(commands.Cog):
             return self._serialize_missing_guild(guild_id)
         return self._serialize_guild_detail(guild)
 
+    @ipc_op("GET_GUILD_CHANNELS")
+    async def _op_get_guild_channels(self, payload: Mapping[str, Any]) -> IPCGuildChannelsResponse | IPCGuildMissing:
+        guild_id = require_int(payload, "guild_id")
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return self._serialize_missing_guild(guild_id)
+
+        types = payload.get("types")
+        if types is not None and not isinstance(types, list):
+            message = "'types' must be a list of channel type names"
+            raise IPCError(message)
+
+        channels = [ch for ch in guild.channels if types is None or str(ch.type) in types]
+        channels.sort(key=lambda ch: ch.position)
+
+        return {
+            "bot_present": True,
+            "guild_id": str(guild.id),
+            "channels": [self._serialize_guild_channel(guild, ch) for ch in channels],
+        }
+
+    @ipc_op("GET_GUILD_ROLES")
+    async def _op_get_guild_roles(self, payload: Mapping[str, Any]) -> IPCGuildRolesResponse | IPCGuildMissing:
+        guild_id = require_int(payload, "guild_id")
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return self._serialize_missing_guild(guild_id)
+
+        # Highest role first, like the Discord UI.
+        roles = sorted(guild.roles, key=lambda r: r.position, reverse=True)
+        return {
+            "bot_present": True,
+            "guild_id": str(guild.id),
+            "roles": [self._serialize_role(guild, role) for role in roles],
+        }
+
+    @ipc_op("GET_GUILD_MEMBER")
+    async def _op_get_guild_member(self, payload: Mapping[str, Any]) -> IPCMemberResponse | IPCGuildMissing:
+        guild_id = require_int(payload, "guild_id")
+        user_id = require_int(payload, "user_id")
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return self._serialize_missing_guild(guild_id)
+
+        member = await self._resolve_member(guild, user_id)
+        return {
+            "bot_present": True,
+            "member": self._serialize_member(guild, member) if member else None,
+        }
+
+    @ipc_op("SEARCH_GUILD_MEMBERS")
+    async def _op_search_guild_members(self, payload: Mapping[str, Any]) -> IPCMemberSearchResponse | IPCGuildMissing:
+        guild_id = require_int(payload, "guild_id")
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return self._serialize_missing_guild(guild_id)
+
+        query = str(payload.get("query") or "").strip()
+        if not query:
+            message = "'query' is required"
+            raise IPCError(message)
+
+        limit = parse_int(payload.get("limit")) or DEFAULT_MEMBER_LIMIT
+        limit = max(1, min(limit, MAX_MEMBER_LIMIT))
+
+        # Matches usernames/nicknames that START with the query. Needs the members intent.
+        members = await guild.query_members(query=query, limit=limit)
+        return {
+            "bot_present": True,
+            "members": [self._serialize_member(guild, m) for m in members],
+        }
+
+    @ipc_op("CHECK_PERMISSIONS")
+    async def _op_check_permissions(self, payload: Mapping[str, Any]) -> IPCPermissionsResponse | IPCGuildMissing:
+        guild_id = require_int(payload, "guild_id")
+        user_id = require_int(payload, "user_id")
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return self._serialize_missing_guild(guild_id)
+
+        member = await self._resolve_member(guild, user_id)
+        if member is None:
+            return {
+                "bot_present": True,
+                "is_member": False,
+                "is_owner": False,
+                "administrator": False,
+                "manage_guild": False,
+                "can_manage": False,
+                "permissions": "0",
+            }
+
+        perms = member.guild_permissions
+        return {
+            "bot_present": True,
+            "is_member": True,
+            "is_owner": member.id == guild.owner_id,
+            "administrator": perms.administrator,
+            "manage_guild": perms.manage_guild,
+            "can_manage": self._can_manage(member),
+            "permissions": str(perms.value),
+        }
+
+    @ipc_op("SEND_MESSAGE")
+    async def _op_send_message(self, payload: Mapping[str, Any]) -> IPCSendMessageResponse | IPCGuildMissing:
+        guild_id = require_int(payload, "guild_id")
+        channel_id = require_int(payload, "channel_id")
+        user_id = require_int(payload, "user_id")
+
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return self._serialize_missing_guild(guild_id)
+
+        member = await self._require_manager(guild, user_id)
+
+        channel = guild.get_channel(channel_id)
+        if not isinstance(channel, discord.TextChannel):
+            message = "Channel not found in this guild or is not a text channel"
+            raise IPCError(message)
+
+        if not channel.permissions_for(member).send_messages:
+            message = "User cannot send messages in that channel"
+            raise IPCError(message)
+        if guild.me is None or not channel.permissions_for(guild.me).send_messages:
+            message = "Bot cannot send messages in that channel"
+            raise IPCError(message)
+
+        content = payload.get("content") or discord.utils.MISSING
+        embed = self._build_embed(payload.get("embed")) or discord.utils.MISSING
+        if content is None and embed is None:
+            message = "Message needs 'content' or an 'embed'"
+            raise IPCError(message)
+        if content is not None and len(content) > MAX_MESSAGE_LENGTH:
+            message = f"'content' exceeds {MAX_MESSAGE_LENGTH} characters"
+            raise IPCError(message)
+
+        sent = await channel.send(
+            content=content,
+            embed=embed,
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+        log.info("IPC SEND_MESSAGE by user %s in guild %s channel %s", user_id, guild_id, channel_id)
+
+        return {
+            "bot_present": True,
+            "message_id": str(sent.id),
+            "channel_id": str(channel.id),
+            "jump_url": sent.jump_url,
+        }
+
+    async def _require_owner(self, user_id: int) -> None:
+        # Bot.is_owner only reads `.id`, so a bare Object is enough.
+        if not await self.bot.is_owner(discord.Object(id=user_id)):  # type: ignore[arg-type]
+            message = "Bot owner only"
+            raise IPCError(message)
+
+    @ipc_op("GET_COGS")
+    async def _op_get_cogs(self, _: Mapping) -> IPCCogsResponse:
+        return {
+            "cogs": [
+                {
+                    "name": name,
+                    "description": cog.description or "",
+                    "command_count": len(cog.get_commands()),
+                }
+                for name, cog in self.bot.cogs.items()
+            ],
+            "extensions": sorted(self.bot.extensions),
+        }
+
+    @ipc_op("RELOAD_EXTENSION")
+    async def _op_reload_extension(self, payload: Mapping[str, Any]) -> IPCReloadResponse:
+        user_id = require_int(payload, "user_id")
+        await self._require_owner(user_id)
+
+        extension = str(payload.get("extension") or "")
+        if extension not in self.bot.extensions:
+            message = f"Extension not loaded: {extension!r}"
+            raise IPCError(message)
+
+        # Reloading this cog cancels the very task that is handling this request,
+        # so the reply would never be sent.
+        if extension == self.__module__:
+            message = "The IPC extension can't reload itself over IPC"
+            raise IPCError(message)
+
+        await self.bot.reload_extension(extension)
+        log.warning("IPC RELOAD_EXTENSION %s by owner %s", extension, user_id)
+        return {"extension": extension, "reloaded": True}
+
 
 async def setup(bot: Bot) -> None:
-    await bot.add_cog(RedisIPCIntegration(bot))
+    await bot.add_cog(InterProcessIntegration(bot))

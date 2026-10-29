@@ -202,7 +202,7 @@ class ReminderPanel(BaseLayoutView):
         return panel
 
     async def reload(self) -> None:
-        self.timers = await self.cog.bot.event_scheduler.search(event_name="reminder", metadata_filter={"user_id": self.author.id})
+        self.timers = await self.cog.bot.event_scheduler.search(event_name="reminder", metadata_filter={"user_id": self.author.id})  # pyright: ignore[reportAttributeAccessIssue]
         self.tz = await get_user_tz(self.cog.bot, self.author.id)
         self.render()
 

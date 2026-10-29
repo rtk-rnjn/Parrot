@@ -44,7 +44,7 @@ def parse_clock(text: str) -> int | None:
 
 
 class Music(commands.Cog):
-    """Music with a live control panel. Lavalink first, yt-dlp + FFmpeg when Lavalink is unavailable."""
+    """Music with a live control panel."""
 
     help_emoji = "\N{MUSICAL NOTE}"
 

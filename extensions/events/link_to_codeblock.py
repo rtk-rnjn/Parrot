@@ -246,7 +246,3 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
         message_to_send = await self._parse_snippets(message.content)
         if 0 < len(message_to_send) < DISCORD_MESSAGE_LIMIT and message.guild.me.guild_permissions.send_messages:
             await message.reply(message_to_send, mention_author=False)
-
-
-async def setup(bot: Bot) -> None:
-    await bot.add_cog(LinkToCodeblock(bot))

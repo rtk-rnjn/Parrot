@@ -248,7 +248,3 @@ class ScamLinkDetection(commands.Cog, command_attrs={"hidden": True}):
             await ctx.message.delete(delay=0)
         except TimeoutError:
             await ctx.message.clear_reaction("\N{WASTEBASKET}")
-
-
-async def setup(bot: Bot):
-    await bot.add_cog(ScamLinkDetection(bot))

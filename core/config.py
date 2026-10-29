@@ -76,6 +76,8 @@ LOADABLE_COGS = [
 
 if LIMITED_MEMORY:
     _cogs_to_remove = [
+        "extensions.automod",
+        "extensions.cc",
         "extensions.music",
         "extensions.rtfm",
         "extensions.rtfm.linter",
@@ -83,6 +85,10 @@ if LIMITED_MEMORY:
         "extensions.nsfw",
         "extensions.stats",
         "extensions.image",
+        "extensions.supercell",
+        "extensions.misc.math",
+        "extensions.misc.wiki",
+        "extensions.nasa",
     ]
     for cog in _cogs_to_remove:
         if cog in LOADABLE_COGS:

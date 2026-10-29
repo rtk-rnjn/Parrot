@@ -33,7 +33,3 @@ class ArbitraryEvents(commands.Cog):
 
         if entry.target and isinstance(entry.target.id, int) and entry.target.id == self.bot.user.id:
             self.bot.dispatch("bot_activity")
-
-
-async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(ArbitraryEvents(bot))

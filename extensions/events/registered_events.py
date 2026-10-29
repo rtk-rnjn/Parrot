@@ -341,7 +341,7 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
 
         await asyncio.sleep(AUDIT_DELAY)
         try:
-            async for entry in guild.audit_logs(limit=15, action=actions[0] if len(actions) == 1 else None):
+            async for entry in guild.audit_logs(limit=15, action=actions[0] if len(actions) == 1 else discord.utils.MISSING):
                 if (discord.utils.utcnow() - entry.created_at).total_seconds() > window:
                     break
                 if actions and entry.action not in actions:
@@ -551,7 +551,7 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
         add(embed, "Sent", stamp(sent))
         self._message_fields(embed, message)
 
-        if entry is not None and getattr(entry.extra, "channel", None) is not None and entry.extra.channel.id == payload.channel_id:
+        if entry is not None and getattr(entry.extra, "channel", None) is not None and entry.extra.channel.id == payload.channel_id:  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
             self._add_audit(embed, entry, label="Deleted by")
         await self._send(guild.id, "on_message_delete", webhook, embed)
 
@@ -981,7 +981,3 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
             add(embed, "Time in channel", human_timedelta(since, accuracy=3, suffix=False), inline=True)
         add(embed, "Active flags", self._voice_flags(after if after.channel is not None else before), inline=True)
         await self._send(member.guild.id, event, webhook, embed)
-
-
-async def setup(bot: Bot) -> None:
-    await bot.add_cog(RegisteredEvents(bot))

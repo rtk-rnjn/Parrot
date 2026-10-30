@@ -28,7 +28,7 @@ os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
 os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 os.environ["JISHAKU_FORCE_PAGINATOR"] = "True"
 
-LOADABLE_COGS = [
+LOADABLE_COGS = {
     "extensions.automod",
     "extensions.cc",
     "extensions.chess",
@@ -72,10 +72,10 @@ LOADABLE_COGS = [
     "extensions.ticket",
     "extensions.todo",
     "extensions.welcomer",
-]
+}
 
 if LIMITED_MEMORY:
-    _cogs_to_remove = [
+    _cogs_to_remove = {
         "extensions.automod",
         "extensions.cc",
         "extensions.music",
@@ -89,7 +89,6 @@ if LIMITED_MEMORY:
         "extensions.misc.math",
         "extensions.misc.wiki",
         "extensions.nasa",
-    ]
-    for cog in _cogs_to_remove:
-        if cog in LOADABLE_COGS:
-            LOADABLE_COGS.remove(cog)
+    }
+
+    LOADABLE_COGS = LOADABLE_COGS - _cogs_to_remove

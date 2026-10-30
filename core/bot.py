@@ -90,6 +90,7 @@ class Bot(commands.Bot):
             shard_id=1,
             max_messages=2**9 if LIMITED_MEMORY else 2**12,  # RAM issues guyz
             owner_ids={int(OWNER_ID)} if OWNER_ID else None,
+            enable_debug_events=not LIMITED_MEMORY,
             help_command=BotHelp(),
             **kwargs,
         )
@@ -110,6 +111,8 @@ class Bot(commands.Bot):
 
         self.message_cache: dict[int, discord.Message] = {}
         self._cog_autoreload_task: asyncio.Task[None] | None = None
+
+        self.socket_stats = Counter[str]()
 
         self.spam_control = commands.CooldownMapping.from_cooldown(3, 6, commands.BucketType.user)
         self.spam_counter = Counter[int]()

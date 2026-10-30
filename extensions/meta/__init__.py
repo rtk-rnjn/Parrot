@@ -833,6 +833,35 @@ class Meta(commands.Cog):
 
         return path, f"https://github.com/{slug}/blob/{branch}/{path}#L{first}-L{last}", first, last
 
+    @commands.Cog.listener()
+    async def on_socket_event_type(self, event_type: str) -> None:
+        self.bot.socket_stats[event_type] += 1
+
+    @commands.command(name="socketstats", aliases=["socket_stats"], hidden=True)
+    async def socket_stats(self, ctx: commands.Context[Bot]) -> discord.Message:
+        """Display the counts of socket events received by the bot.
+
+        The response includes a list of socket event types along with their
+        corresponding counts, sorted in descending order of count. This command
+        is intended for debugging and monitoring purposes.
+        """
+        if not self.bot.socket_stats:
+            return await ctx.reply("No socket events have been recorded yet.")
+
+        sorted_stats = sorted(self.bot.socket_stats.items(), key=lambda item: item[1], reverse=True)
+        stats_lines = [f"{index}. {event_type}: {count}" for index, (event_type, count) in enumerate(sorted_stats, start=1)]
+        stats_text = "\n".join(stats_lines)
+
+        embed = discord.Embed(
+            title="Socket Event Statistics",
+            description=stats_text,
+            color=discord.Color.blurple(),
+            timestamp=discord.utils.utcnow(),
+        )
+        embed.set_footer(text=f"Total unique event types: {len(self.bot.socket_stats)}")
+
+        return await ctx.reply(embed=embed)
+
 
 async def setup(bot: Bot) -> None:
     """Load the Meta cog."""

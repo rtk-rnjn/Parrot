@@ -391,7 +391,7 @@ class Bot(commands.Bot):
         /,
         *,
         matches: list[T],
-        entry: Callable[[T], str] = str,
+        entry: Callable[[T], str | discord.SelectOption] = str,
         ephemeral: bool = False,
         embed: discord.Embed | None = None,
     ) -> T:

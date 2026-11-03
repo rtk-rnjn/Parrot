@@ -27,6 +27,7 @@ from jishaku.codeblocks import Codeblock, codeblock_converter
 
 from core.utils import PaginationView, truncate
 
+from .arch import Arch
 from .cheat_sh import CheatSheet
 from .constants import (
     MINIMUM_CERTAINTY,
@@ -49,13 +50,6 @@ from .python import Python
 from .syntax import Syntax
 from .used import build_embeds, execute_run, parse_man_page
 
-try:
-    import lxml  # noqa: F401  # pylint: disable=unused-import
-
-    HTML_PARSER = "lxml"
-except ImportError:
-    HTML_PARSER = "html.parser"
-
 if TYPE_CHECKING:
     from core import Bot
 
@@ -66,7 +60,7 @@ EMBED_FIELD_LIMIT = 1024
 MIN_TUTORIAL_SCORE = 50
 DISCORD_MESSAGE_LIMIT = 2000
 
-DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript, HackerNews]
+DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript, HackerNews, Arch]
 
 
 class Developer(*DEPENDENCIES, commands.Cog):

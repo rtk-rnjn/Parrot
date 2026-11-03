@@ -236,7 +236,7 @@ class DisambiguatorView[T](BaseView):
         self,
         ctx: commands.Context[Bot],
         data: list[T],
-        entry: Callable[[T], str] = str,
+        entry: Callable[[T], str | discord.SelectOption] = str,
     ):
         super().__init__(author=ctx.author)
         self.ctx = ctx

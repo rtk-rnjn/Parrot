@@ -19,18 +19,18 @@ if TYPE_CHECKING:
 
     type Context = commands.Context[Bot]
 
-ALL_VIDS: dict = loads(Path(r"assets/easter/april_fools_vids.json").read_text("utf-8"))
-BUNNY_NAMES: dict = loads(Path(r"assets/easter/bunny_names.json").read_text("utf8"))
-RIDDLE_QUESTIONS: dict = loads(Path(r"assets/easter/easter_riddle.json").read_text("utf8"))
-EGG_FACTS: dict = loads(Path(r"assets/easter/easter_egg_facts.json").read_text("utf8"))
-EGGHEAD_QUESTIONS: dict = loads(Path(r"assets/easter/egghead_questions.json").read_text("utf8"))
-TRADITIONS: dict = loads(Path(r"assets/easter/traditions.json").read_text("utf8"))
+ALL_VIDS: dict = loads((Path(r"assets") / "easter" / "april_fools_vids.json").read_text("utf-8"))
+BUNNY_NAMES: dict = loads((Path(r"assets") / "easter" / "bunny_names.json").read_text("utf8"))
+RIDDLE_QUESTIONS: dict = loads((Path(r"assets") / "easter" / "easter_riddle.json").read_text("utf8"))
+EGG_FACTS: dict = loads((Path(r"assets") / "easter" / "easter_egg_facts.json").read_text("utf8"))
+EGGHEAD_QUESTIONS: dict = loads((Path(r"assets") / "easter" / "egghead_questions.json").read_text("utf8"))
+TRADITIONS: dict = loads((Path(r"assets") / "easter" / "traditions.json").read_text("utf8"))
 
 TIMELIMIT = 10
 MIN_EGG_COLOURS = 2
 EGG_COLOUR_COUNT = 8
-HTML_COLOURS: dict = loads(Path(r"assets/html_colours.json").read_text("utf8"))
-XKCD_COLOURS: dict = loads(Path(r"assets/xkcd_colours.json").read_text("utf8"))
+HTML_COLOURS: dict = loads((Path(r"assets") / "html_colours.json").read_text("utf8"))
+XKCD_COLOURS: dict = loads((Path(r"assets") / "xkcd_colours.json").read_text("utf8"))
 
 COLOURS = [
     (255, 0, 0, 255),

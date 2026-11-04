@@ -10,7 +10,7 @@ from rapidfuzz import fuzz, process
 
 from core import human_join
 
-QUOTES_PATH = Path("assets/random_quotes.txt")
+QUOTES_PATH = Path("assets") / "random_quotes.txt"
 
 
 class Named(Protocol):

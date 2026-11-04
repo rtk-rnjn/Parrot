@@ -375,9 +375,10 @@ class Bot(commands.Bot):
     @property
     def http_session(self) -> aiohttp.ClientSession:
         """Return the aiohttp ClientSession used by the bot."""
-        if self._http_session is None:
-            message = "HTTP session is not initialized. Ensure that the bot is started and the HTTP session is set up."
-            raise RuntimeError(message)
+        if self._http_session is None or self._http_session.closed:
+            session = aiohttp.ClientSession()
+            self.set_http_session(session)
+            return session
 
         return self._http_session
 

@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 HTTP_OK = 200
-REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=25)
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=60, sock_connect=10)
 SHARED_CACHE_TTL = 3600
 SHARED_CACHE_SIZE = 32
 MAX_SECTION = 16_000  # DocView pages this, so verbose references stay readable instead of being clipped
@@ -43,7 +43,11 @@ MAX_DECLARATIONS = 4
 MAX_PARAGRAPHS = 4
 SUBINDEX_CONCURRENCY = 4
 # cppreference and several doc CDNs sit behind Cloudflare and reject bare client user agents.
-HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Parrot/1.0 (+https://github.com/rtk-rnjn/Parrot)"}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Parrot/1.0 (+https://github.com/rtk-rnjn/Parrot)",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 MDN_SITEMAP = "https://developer.mozilla.org/sitemaps/en-us/sitemap.xml.gz"
 HOOGLE_URL = "https://hoogle.haskell.org/"
@@ -191,14 +195,20 @@ async def detail_page(session: aiohttp.ClientSession, entry: Entry, site: PageSi
     return await asyncio.to_thread(render_page, data, url, unquote(fragment), entry.role, site)
 
 
-async def fetch(session: aiohttp.ClientSession, url: str) -> bytes | None:
-    try:
-        async with session.get(url, timeout=REQUEST_TIMEOUT, headers=HEADERS) as resp:
-            if resp.status != HTTP_OK:
-                return None
-            return await resp.read()
-    except TimeoutError, aiohttp.ClientError:
-        return None
+async def fetch(session: aiohttp.ClientSession, url: str, *, retries: int = 2) -> bytes | None:
+    for attempt in range(retries + 1):
+        try:
+            async with session.get(url, timeout=REQUEST_TIMEOUT, headers=HEADERS) as resp:
+                if resp.status == HTTP_OK:
+                    return await resp.read()
+                log.warning("GET %s -> HTTP %s", url, resp.status)  # 404 included, while debugging
+                if resp.status not in (429, 500, 502, 503, 504):
+                    return None
+        except (TimeoutError, aiohttp.ClientError) as exc:
+            log.warning("GET %s failed (attempt %d): %s: %s", url, attempt + 1, type(exc).__name__, exc)
+        if attempt < retries:
+            await asyncio.sleep(1.5 * (attempt + 1))
+    return None
 
 
 async def fetch_shared(session: aiohttp.ClientSession, url: str) -> bytes | None:

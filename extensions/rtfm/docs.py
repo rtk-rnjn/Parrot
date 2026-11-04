@@ -7,14 +7,12 @@ import functools
 import html
 import importlib
 import inspect
-import io
 import json
 import logging
 import platform
 import re
 import sys
 import textwrap
-import zlib
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
@@ -29,9 +27,10 @@ from docstring_parser import parse as parse_docstring
 
 from .javadoc import JavaIndex, detail_javadoc
 from .references import DETAILS as REFERENCE_DETAILS
-from .references import HEADERS, PAGE_SITES, DetailInfo, Entries, Entry, detail_page, search_hoogle
 from .references import LOADERS as REFERENCE_LOADERS
+from .references import PAGE_SITES, DetailInfo, Entries, Entry, detail_page, fetch, search_hoogle
 from .search import Index, LiveIndex, SiteIndex
+from .utils import parse_sphinx_inventory
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -57,24 +56,24 @@ class DocSite:
     kind: str | None = None  # force a loader: sphinx | mkdocs | llms | sitemap
     # Top-level import names that are allowed to be inspected for this site.
     packages: tuple[str, ...] = ()
+    fallbacks: tuple[str, ...] = ()
 
 
 SITES: dict[str, DocSite] = {
-    "discord": DocSite("https://discordpy.readthedocs.io/en/latest", ("dpy", "discord.py"), packages=("discord",)),
-    "python": DocSite("https://docs.python.org/3", ("py",)),  # stdlib + builtins handled in is_allowed
-    "aiohttp": DocSite("https://docs.aiohttp.org/en/latest", packages=("aiohttp",)),
-    "requests": DocSite("https://requests.readthedocs.io/en/latest", ("req", "request"), packages=("requests",)),
-    "numpy": DocSite("https://numpy.org/doc/stable", ("np",), packages=("numpy",)),
-    "pandas": DocSite("https://pandas.pydata.org/docs", ("pd",), packages=("pandas",)),
-    "matplotlib": DocSite("https://matplotlib.org/stable", ("plt", "mat", "matlab"), packages=("matplotlib", "mpl_toolkits")),
-    "pil": DocSite("https://pillow.readthedocs.io/en/stable", ("pillow",), packages=("PIL",)),
-    "flask": DocSite("https://flask.palletsprojects.com/en/latest", packages=("flask",)),
-    "pymongo": DocSite("https://pymongo.readthedocs.io/en/stable", ("mongo", "pym"), packages=("pymongo", "bson", "gridfs")),
-    "django": DocSite("https://docs.djangoproject.com/en/stable", packages=("django",)),
-    "sqlalchemy": DocSite("https://docs.sqlalchemy.org/en/20", ("sa",), packages=("sqlalchemy",)),
-    # MkDocs sites rendered in chat through PAGE_SITES (force mkdocs so objects.inv doesn't hijack them):
-    "fastapi": DocSite("https://fastapi.tiangolo.com", kind="mkdocs"),
-    "pydantic": DocSite("https://docs.pydantic.dev/latest", kind="mkdocs"),
+    "discord": DocSite("https://discordpy.readthedocs.io/en/latest", ("dpy", "discord.py"), packages=("discord",), kind="sphinx"),
+    "python": DocSite("https://docs.python.org/3", ("py",)),
+    "aiohttp": DocSite("https://docs.aiohttp.org/en/latest", packages=("aiohttp",), kind="sphinx"),
+    "requests": DocSite("https://requests.readthedocs.io/en/latest", ("req", "request"), packages=("requests",), kind="sphinx"),
+    "numpy": DocSite("https://numpy.org/doc/stable", ("np",), packages=("numpy",), kind="sphinx"),
+    "pandas": DocSite("https://pandas.pydata.org/docs", ("pd",), packages=("pandas",), kind="sphinx"),
+    "matplotlib": DocSite("https://matplotlib.org/stable", ("plt", "mat", "matlab"), packages=("matplotlib", "mpl_toolkits"), kind="sphinx"),
+    "pil": DocSite("https://pillow.readthedocs.io/en/stable", ("pillow",), packages=("PIL",), kind="sphinx"),
+    "flask": DocSite("https://flask.palletsprojects.com/en/latest", packages=("flask",), kind="sphinx"),
+    "pymongo": DocSite("https://pymongo.readthedocs.io/en/stable", ("mongo", "pym"), packages=("pymongo", "bson", "gridfs"), kind="sphinx"),
+    "django": DocSite("https://docs.djangoproject.com/en/stable", packages=("django",), kind="sphinx"),
+    "sqlalchemy": DocSite("https://docs.sqlalchemy.org/en/20", ("sa",), packages=("sqlalchemy",), kind="sphinx"),
+    "fastapi": DocSite("https://fastapi.tiangolo.com", kind="mkdocs", packages=("fastapi",), fallbacks=("llms", "sitemap")),
+    "pydantic": DocSite("https://docs.pydantic.dev/latest", kind="mkdocs", packages=("pydantic",), fallbacks=("llms", "sitemap")),
     "httpx": DocSite("https://www.python-httpx.org", kind="mkdocs"),
     # Web platform, from MDN's sitemap with per-page JSON for details.
     "html": DocSite("https://developer.mozilla.org/en-US/docs/Web/HTML", ("html5",), kind="mdn"),
@@ -108,56 +107,20 @@ for _name, _site in SITES.items():
         ALIASES[_alias] = _name
 
 
-async def fetch(session: aiohttp.ClientSession, url: str) -> bytes | None:
-    try:
-        async with session.get(url, timeout=REQUEST_TIMEOUT, headers=HEADERS) as resp:
-            if resp.status != HTTP_OK:
-                return None
-            return await resp.read()
-    except TimeoutError, aiohttp.ClientError:
-        return None
-
-
 SPHINX_ENTRY = re.compile(r"(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
 
 
 def parse_sphinx(data: bytes, base: str) -> Entries:
-    stream = io.BytesIO(data)
-    if stream.readline().strip() != b"# Sphinx inventory version 2":
-        msg = "not a v2 Sphinx inventory"
-        raise ValueError(msg)
-
-    stream.readline()  # "# Project: <name>" is next, version line after
-    project = stream.readline().decode().strip()[11:]
-    if b"zlib" not in stream.readline():
-        msg = "inventory is not zlib compressed"
-        raise ValueError(msg)
-
-    body = zlib.decompress(stream.read()).decode("utf-8")
     entries: Entries = {}
-    for line in body.splitlines():
-        entry_match = SPHINX_ENTRY.match(line)
-        if not entry_match:
-            continue
-
-        name, directive, _priority, location, dispname = entry_match.groups()
-        domain, _, subdirective = directive.partition(":")
-
-        if directive == "std:doc":  # most pages have a label
-            subdirective = "label"
-        if location.endswith("$"):
-            location = location[:-1] + name
-
-        key = name if dispname == "-" else dispname
-        if domain == "std":
-            key = f"{subdirective}:{key}"
-        if project == "discord.py":
-            key = key.replace("discord.ext.commands.", "").replace("discord.", "")
+    for item in parse_sphinx_inventory(data, base):
+        key = item.dispname
+        if item.domain == "std":
+            key = f"{item.role}:{key}"
 
         entries[key] = Entry(
-            url=urljoin(f"{base}/", location),
-            qualname=name if domain == "py" else None,  # full name, even if `key` was trimmed
-            role=subdirective,
+            url=item.url,
+            qualname=item.name if item.domain == "py" else None,
+            role=item.role,
         )
     return entries
 

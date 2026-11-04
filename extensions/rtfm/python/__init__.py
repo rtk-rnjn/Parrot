@@ -13,7 +13,6 @@ import re
 import sys
 import sysconfig
 import time
-import zlib
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import partial
@@ -31,6 +30,7 @@ from rapidfuzz.process import extractOne
 from core.utils import BaseLayoutView, NoticeLayout, truncate
 
 from ..language_utils import code, collect, dated, facts, header, pack, safe, text, valid_url, when
+from ..utils import SphinxEntry, parse_sphinx_inventory
 from .knowledge import (
     COMPLEXITY_DB,
     DUNDERS_DB,
@@ -87,7 +87,6 @@ PEP_STATUS_COLOURS: dict[str, discord.Colour] = {
     "Superseded": DRAFT_COLOUR,
 }
 
-SPHINX_INV_LINE = re.compile(r"(?x)(.+?)\s+(\S+:\S+)\s+(-?\d+)\s+(\S+)\s+(.*)")
 PEP_ARG_PATTERN = re.compile(r"^(?:pep[-#\s]*)?(\d{1,5})$", re.IGNORECASE)
 TUTORIAL_DIR = Path("extra/tutorials/python")
 
@@ -165,32 +164,6 @@ class TutorialTag:
     name: str
     content: str
     url: str | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class SphinxEntry:
-    name: str
-    domain_role: str
-    priority: int
-    url: str
-    dispname: str
-
-    @property
-    def role_label(self) -> str:
-        _, _, role = self.domain_role.partition(":")
-        return {
-            "module": "module",
-            "function": "function",
-            "class": "class",
-            "method": "method",
-            "classmethod": "classmethod",
-            "staticmethod": "staticmethod",
-            "exception": "exception",
-            "attribute": "attribute",
-            "data": "constant / data",
-            "label": "section",
-            "term": "glossary term",
-        }.get(role, role)
 
 
 @dataclass(frozen=True, slots=True)
@@ -294,39 +267,6 @@ class PythonView(BaseLayoutView):
 
         button.callback = callback
         return button
-
-
-def parse_sphinx_inventory(raw: bytes, base_url: str) -> list[SphinxEntry]:
-    """Parse a Sphinx v2 ``objects.inv`` file into structured :class:`SphinxEntry` items."""
-    lines = raw.splitlines()
-    if len(lines) < 4 or not lines[0].startswith(b"# Sphinx inventory version 2"):
-        return []
-    compressed = b"\n".join(lines[4:])
-    try:
-        decompressed = zlib.decompress(compressed).decode("utf-8", "replace")
-    except zlib.error:
-        return []
-
-    entries: list[SphinxEntry] = []
-    for line in decompressed.splitlines():
-        match = SPHINX_INV_LINE.match(line.strip())
-        if not match:
-            continue
-        name, domain_role, prio_str, location, dispname = match.groups()
-        if location.endswith("$"):
-            location = location[:-1] + name
-        if dispname == "-":
-            dispname = name
-        entries.append(
-            SphinxEntry(
-                name=name,
-                domain_role=domain_role,
-                priority=int(prio_str),
-                url=f"{base_url.rstrip('/')}/{location.lstrip('/')}",
-                dispname=dispname,
-            )
-        )
-    return entries
 
 
 def extract_pep_abstract(html: str) -> str | None:

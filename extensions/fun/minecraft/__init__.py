@@ -21,6 +21,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from core.utils import clip_text as clip
+from core.utils import esc
+
 from .wiki_scrapper import WIKI_LANGS, SearchPage, WikiArticle, WikiClient, WikiError, WikiTable, paginate
 
 if TYPE_CHECKING:
@@ -50,15 +53,6 @@ DISCLAIMER = "-# Not an official Minecraft product. Not approved by or associate
 
 class MCError(Exception):
     """User-facing error."""
-
-
-def esc(s: Any) -> str:
-    return discord.utils.escape_mentions(discord.utils.escape_markdown(str(s)))
-
-
-def clip(s: Any, n: int) -> str:
-    s = str(s)
-    return s if len(s) <= n else s[: n - 1].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
 
 
 def bar(cur: int, mx: int, w: int = 10) -> str:

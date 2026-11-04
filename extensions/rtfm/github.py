@@ -15,7 +15,7 @@ import arrow
 import discord
 from discord.ext import commands
 
-from core.utils import BaseLayoutView, NoticeLayout, truncate
+from core.utils import BaseLayoutView, NoticeLayout, code, file_size, safe, truncate, valid_url
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
@@ -118,16 +118,6 @@ class GistConverter(commands.Converter[str]):
         return candidate
 
 
-def safe(text: str | None, limit: int = 200) -> str:
-    """One escaped, mention-free line of user-provided text."""
-    flat = " ".join((text or "").split())
-    return truncate(discord.utils.escape_markdown(discord.utils.escape_mentions(flat)), limit)
-
-
-def code(text: str, limit: int = 60) -> str:
-    return f"`{truncate(text.replace('`', chr(39)), limit)}`"
-
-
 def clean_markdown(text: str | None, limit: int) -> str:
     """Turn a GitHub-flavoured markdown body into something that renders well in Discord and fits ``limit``."""
     if not text:
@@ -152,25 +142,12 @@ def compact(number: int) -> str:
     return str(number)
 
 
-def file_size(size: int) -> str:
-    value = float(size)
-    for unit in ("B", "KB", "MB", "GB"):
-        if value < 1024 or unit == "GB":
-            return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
-        value /= 1024
-    return f"{size} B"
-
-
 def when(iso: str | None, style: Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"] = "R") -> str | None:
     return discord.utils.format_dt(arrow.get(iso).datetime, style) if iso else None
 
 
 def dated(iso: str | None) -> str | None:
     return f"{when(iso, 'D')} ({when(iso)})" if iso else None
-
-
-def valid_url(url: str | None) -> bool:
-    return bool(url) and url.startswith(("http://", "https://")) and len(url) <= 512
 
 
 def user_link(user: dict[str, Any] | None) -> str:

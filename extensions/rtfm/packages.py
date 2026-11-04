@@ -19,7 +19,7 @@ from discord.ext import commands
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import InvalidVersion, Version
 
-from core.utils import BaseLayoutView, NoticeLayout, truncate
+from core.utils import BaseLayoutView, NoticeLayout, code, file_size, safe, truncate, valid_url
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
@@ -185,29 +185,11 @@ class SearchResult:
     note: str | None = None
 
 
-def safe(text: str | None, limit: int = 200) -> str:
-    flat = " ".join((text or "").split())
-    return truncate(discord.utils.escape_markdown(discord.utils.escape_mentions(flat)), limit)
-
-
-def code(text: str, limit: int = 60) -> str:
-    return f"`{truncate(text.replace('`', chr(39)), limit)}`"
-
-
 def compact(number: int) -> str:
     for threshold, suffix in ((1_000_000_000, "B"), (1_000_000, "M"), (1_000, "k")):
         if number >= threshold:
             return f"{number / threshold:.1f}".rstrip("0").rstrip(".") + suffix
     return str(number)
-
-
-def file_size(size: int) -> str:
-    value = float(size)
-    for unit in ("B", "KB", "MB", "GB"):
-        if value < 1024 or unit == "GB":
-            return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
-        value /= 1024
-    return f"{size} B"
 
 
 def parse_time(iso: str | None) -> datetime | None:
@@ -231,10 +213,6 @@ def dated(iso: str | None) -> str | None:
 def day(iso: str | None) -> str | None:
     moment = parse_time(iso)
     return moment.strftime("%Y-%m-%d") if moment else None
-
-
-def valid_url(url: str | None) -> bool:
-    return bool(url) and url.startswith(("http://", "https://")) and len(url) <= 512
 
 
 def pick_url(urls: dict[str, str], keys: Sequence[str]) -> str | None:

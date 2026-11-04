@@ -15,6 +15,9 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
+from core.utils import clip_text as clip
+from core.utils import esc
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -57,15 +60,6 @@ DISCLAIMER = "-# Powered by the free Imgflip Meme Generator API (imgflip.com/api
 
 class MemeError(Exception):
     """User-facing error raised by the Meme cog."""
-
-
-def esc(s: Any) -> str:
-    return discord.utils.escape_mentions(discord.utils.escape_markdown(str(s)))
-
-
-def clip(s: Any, n: int) -> str:
-    s = str(s)
-    return s if len(s) <= n else s[: n - 1].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
 
 
 def split_captions(raw: str) -> list[str]:

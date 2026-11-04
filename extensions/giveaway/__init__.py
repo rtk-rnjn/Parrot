@@ -13,6 +13,7 @@ from bson.errors import InvalidId
 from discord.ext import commands
 
 from core import FutureTime
+from core.utils import message_url, shorten
 from core.utils.database.models import GiveawayEntry as GiveawayModel
 
 if TYPE_CHECKING:
@@ -34,15 +35,6 @@ def parse_object_id(value: str) -> ObjectId | None:
         return ObjectId(value)
     except InvalidId, TypeError:
         return None
-
-
-def shorten(text: str, limit: int) -> str:
-    text = text.strip()
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
-
-
-def message_url(giveaway: GiveawayModel) -> str:
-    return f"https://discord.com/channels/{giveaway['guild_id']}/{giveaway['channel_id']}/{giveaway['message_id']}"
 
 
 class EnterButton(discord.ui.DynamicItem[discord.ui.Button], template=r"giveaway:enter:(?P<id>[0-9a-f]{24})"):
@@ -467,7 +459,7 @@ class Giveaway(commands.Cog):
             return
 
         lines = [
-            f"[{discord.utils.escape_markdown(shorten(item['prize'], 40))}]({message_url(item)})\n"
+            f"[{discord.utils.escape_markdown(shorten(item['prize'], 40))}]({message_url(item['guild_id'], item['channel_id'], item['message_id'])})\n"
             f"-# {item['winners']} winner(s){DOT}ends {discord.utils.format_dt(item['ends_at'], 'R')}{DOT}`{item['_id']}`"
             for item in giveaways[:LIST_LIMIT]
         ]
@@ -493,7 +485,11 @@ class Giveaway(commands.Cog):
         mode = giveaway.get("entry_mode", "reaction")
 
         embed = (
-            discord.Embed(title=shorten(giveaway["prize"], 200), colour=discord.Colour.blurple(), url=message_url(giveaway))
+            discord.Embed(
+                title=shorten(giveaway["prize"], 200),
+                colour=discord.Colour.blurple(),
+                url=message_url(giveaway["guild_id"], giveaway["channel_id"], giveaway["message_id"]),
+            )
             .add_field(name="Status", value=status)
             .add_field(name="Hosted by", value=f"<@{giveaway['host_id']}>")
             .add_field(name="Winners", value=str(giveaway["winners"]))

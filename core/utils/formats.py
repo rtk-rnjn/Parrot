@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Sequence
+from typing import Any
 
 import discord
 import humanfriendly
@@ -11,6 +12,10 @@ import humanize
 from dateutil.relativedelta import relativedelta
 
 __all__ = (
+    "clip_text",
+    "code",
+    "esc",
+    "file_size",
     "format_clock_duration",
     "format_compact_duration",
     "format_count",
@@ -18,10 +23,14 @@ __all__ = (
     "format_friendly_duration",
     "human_join",
     "human_timedelta",
+    "message_url",
     "natural_time",
     "plural",
+    "safe",
     "safe_text",
+    "shorten",
     "truncate",
+    "valid_url",
 )
 
 _UTC = datetime.UTC
@@ -125,6 +134,47 @@ def safe_text(text: str, limit: int = 40) -> str:
     characters but may end in the middle of an escape sequence.
     """
     return truncate(discord.utils.escape_markdown(discord.utils.escape_mentions(text)), limit)
+
+
+def safe(text: str | None, limit: int = 200) -> str:
+    """One escaped, mention-free line of user-provided text."""
+    flat = " ".join((text or "").split())
+    return truncate(discord.utils.escape_markdown(discord.utils.escape_mentions(flat)), limit)
+
+
+def code(text: str, limit: int = 60) -> str:
+    return f"`{truncate(text.replace('`', chr(39)), limit)}`"
+
+
+def file_size(size: int) -> str:
+    value = float(size)
+    for unit in ("B", "KB", "MB", "GB"):
+        if value < 1024 or unit == "GB":
+            return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
+        value /= 1024
+    return f"{size} B"
+
+
+def valid_url(url: str | None) -> bool:
+    return bool(url) and url.startswith(("http://", "https://")) and len(url) <= 512
+
+
+def esc(value: Any) -> str:
+    return discord.utils.escape_mentions(discord.utils.escape_markdown(str(value)))
+
+
+def clip_text(value: Any, limit: int) -> str:
+    text = str(value)
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
+
+
+def shorten(text: str, limit: int) -> str:
+    text = text.strip()
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
+
+
+def message_url(guild_id: int, channel_id: int, message_id: int) -> str:
+    return f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
 
 
 def _as_utc(dt: datetime.datetime) -> datetime.datetime:

@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING, Annotated, Any
 import discord
 from discord.ext import commands, tasks
 
+from core.utils import message_url, shorten
+
 if TYPE_CHECKING:
     from core import Bot
     from core.utils.database.models import StarboardConfig, StarboardEntry
@@ -39,19 +41,10 @@ MEDALS = ("\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MED
 DOT = " \N{MIDDLE DOT} "
 
 
-def shorten(text: str, limit: int) -> str:
-    text = text.strip()
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "\N{HORIZONTAL ELLIPSIS}"
-
-
 def parse_message_id(text: str) -> int | None:
     """Accepts a bare id or a full message link; the message id is always the last number."""
     numbers = re.findall(r"\d{15,21}", text)
     return int(numbers[-1]) if numbers else None
-
-
-def message_url(guild_id: int, channel_id: int, message_id: int) -> str:
-    return f"https://discord.com/channels/{guild_id}/{channel_id}/{message_id}"
 
 
 def guild_of(ctx: commands.Context[Bot]) -> discord.Guild:

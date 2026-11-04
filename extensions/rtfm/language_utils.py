@@ -7,17 +7,7 @@ from typing import Literal
 import arrow
 import discord
 
-from core.utils import truncate
-
-
-def safe(text_value: str | None, limit: int = 200) -> str:
-    """One escaped, mention-free line of user-provided text."""
-    flat = " ".join((text_value or "").split())
-    return truncate(discord.utils.escape_markdown(discord.utils.escape_mentions(flat)), limit)
-
-
-def code(text_value: str, limit: int = 60) -> str:
-    return f"`{truncate(text_value.replace('`', chr(39)), limit)}`"
+from core.utils import code, safe, valid_url  # noqa: F401
 
 
 def parse_time(iso: str | None) -> datetime | None:
@@ -49,10 +39,6 @@ def text(content: str) -> discord.ui.TextDisplay:
 def facts(*pairs: tuple[str, str | None]) -> discord.ui.TextDisplay | None:
     lines = [f"**{label}**: {value}" for label, value in pairs if value]
     return text("\n".join(lines)) if lines else None
-
-
-def valid_url(url: str | None) -> bool:
-    return bool(url) and url.startswith(("http://", "https://")) and len(url) <= 512
 
 
 def header(title: str, subtitle: str | None = None, *extra: str, thumbnail: str | None = None) -> discord.ui.Item:

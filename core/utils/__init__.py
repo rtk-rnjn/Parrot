@@ -22,6 +22,10 @@ from .database import DatabaseManager
 from .date import BadDateTransform, DateTransformer, HumanDate
 from .enum_docstrings import enum_docstrings
 from .formats import (
+    clip_text,
+    code,
+    esc,
+    file_size,
     format_clock_duration,
     format_compact_duration,
     format_count,
@@ -29,10 +33,14 @@ from .formats import (
     format_friendly_duration,
     human_join,
     human_timedelta,
+    message_url,
     natural_time,
     plural,
+    safe,
     safe_text,
+    shorten,
     truncate,
+    valid_url,
 )
 from .paginator import PaginationLayout, PaginationView
 from .pastebin_client import PastebinClient
@@ -74,8 +82,12 @@ __all__ = (
     "WhenModal",
     "as_utc",
     "clip",
+    "clip_text",
+    "code",
     "enum_docstrings",
+    "esc",
     "everyday_at",
+    "file_size",
     "format_clock_duration",
     "format_compact_duration",
     "format_count",
@@ -100,6 +112,7 @@ __all__ = (
     "local_text",
     "make_button",
     "make_select",
+    "message_url",
     "natural_time",
     "parse_future",
     "plural",
@@ -107,7 +120,10 @@ __all__ = (
     "resolve_current_day",
     "resolve_current_month",
     "resolve_current_time",
+    "safe",
     "safe_text",
     "seasonal_task",
+    "shorten",
     "truncate",
+    "valid_url",
 )

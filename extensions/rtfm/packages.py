@@ -5,21 +5,19 @@ import asyncio
 import json
 import re
 from dataclasses import dataclass, field
-from datetime import datetime
 from email.utils import parseaddr
 from functools import partial
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar
 from urllib.parse import quote
 
 import aiohttp
-import arrow
 import discord
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import InvalidVersion, Version
 
-from core.utils import BaseLayoutView, NoticeLayout, code, file_size, safe, truncate, valid_url
+from core.utils import BaseLayoutView, NoticeLayout, code, dated, file_size, parse_time, safe, truncate, valid_url, when
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
@@ -190,24 +188,6 @@ def compact(number: int) -> str:
         if number >= threshold:
             return f"{number / threshold:.1f}".rstrip("0").rstrip(".") + suffix
     return str(number)
-
-
-def parse_time(iso: str | None) -> datetime | None:
-    if not iso:
-        return None
-    try:
-        return arrow.get(iso).datetime
-    except ValueError, TypeError:
-        return None
-
-
-def when(iso: str | None, style: Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"] = "R") -> str | None:
-    moment = parse_time(iso)
-    return discord.utils.format_dt(moment, style) if moment else None
-
-
-def dated(iso: str | None) -> str | None:
-    return f"{when(iso, 'D')} ({when(iso)})" if parse_time(iso) else None
 
 
 def day(iso: str | None) -> str | None:

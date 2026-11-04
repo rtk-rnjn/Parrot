@@ -27,7 +27,7 @@ def handles(*kinds: C) -> Callable[[Handler], Handler]:
 @dataclass(frozen=True, slots=True)
 class Subject:
     now: datetime
-    user: discord.Member
+    user: discord.Member | discord.User
     message: discord.Message | None = None
     edited: bool | None = None
 
@@ -185,7 +185,7 @@ def evaluate(
         msg = f"no check is registered for {kind.value!r}"
         raise NotImplementedError(msg)
 
-    user = member if member is not None else message.author
+    user = member or (message.author if message is not None else None)
     if edited is None and message is not None:
         edited = message.edited_at is not None
 

@@ -237,7 +237,7 @@ class WelcomePage(Page):
                 self.role_select(
                     "Role given on join\N{HORIZONTAL ELLIPSIS}",
                     self.set_join_role,
-                    current=[welcome["on_member_join_role_id"]] if welcome.get("on_member_join_role_id") else (),
+                    current=[welcome["on_member_join_role_id"]] if welcome.get("on_member_join_role_id") else [],
                 )
             ),
             self.row(

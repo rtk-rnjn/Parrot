@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal
 
+import arrow
 import discord
 import humanfriendly
 import humanize
@@ -14,6 +15,7 @@ from dateutil.relativedelta import relativedelta
 __all__ = (
     "clip_text",
     "code",
+    "dated",
     "esc",
     "file_size",
     "format_clock_duration",
@@ -25,12 +27,14 @@ __all__ = (
     "human_timedelta",
     "message_url",
     "natural_time",
+    "parse_time",
     "plural",
     "safe",
     "safe_text",
     "shorten",
     "truncate",
     "valid_url",
+    "when",
 )
 
 _UTC = datetime.UTC
@@ -125,6 +129,24 @@ def format_friendly_duration(seconds: float) -> str:
 def natural_time(value: datetime.datetime, *, when: datetime.datetime | None = None) -> str:
     """Format a datetime relative to ``when`` (default: now) using humanize."""
     return humanize.naturaltime(value, when=when)
+
+
+def parse_time(iso: str | None) -> datetime.datetime | None:
+    if not iso or not isinstance(iso, str):
+        return None
+    try:
+        return arrow.get(iso).datetime
+    except ValueError, TypeError:
+        return None
+
+
+def when(iso: str | None, style: Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"] = "R") -> str | None:
+    moment = parse_time(iso)
+    return discord.utils.format_dt(moment, style) if moment else None
+
+
+def dated(iso: str | None) -> str | None:
+    return f"{when(iso, 'D')} ({when(iso)})" if parse_time(iso) else None
 
 
 def safe_text(text: str, limit: int = 40) -> str:

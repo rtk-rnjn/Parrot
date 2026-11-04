@@ -24,6 +24,7 @@ from .enum_docstrings import enum_docstrings
 from .formats import (
     clip_text,
     code,
+    dated,
     esc,
     file_size,
     format_clock_duration,
@@ -35,12 +36,14 @@ from .formats import (
     human_timedelta,
     message_url,
     natural_time,
+    parse_time,
     plural,
     safe,
     safe_text,
     shorten,
     truncate,
     valid_url,
+    when,
 )
 from .paginator import PaginationLayout, PaginationView
 from .pastebin_client import PastebinClient
@@ -84,6 +87,7 @@ __all__ = (
     "clip",
     "clip_text",
     "code",
+    "dated",
     "enum_docstrings",
     "esc",
     "everyday_at",
@@ -115,6 +119,7 @@ __all__ = (
     "message_url",
     "natural_time",
     "parse_future",
+    "parse_time",
     "plural",
     "preset_due",
     "resolve_current_day",
@@ -126,4 +131,5 @@ __all__ = (
     "shorten",
     "truncate",
     "valid_url",
+    "when",
 )

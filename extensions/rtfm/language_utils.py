@@ -1,31 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import datetime
-from typing import Literal
 
-import arrow
 import discord
 
-from core.utils import code, safe, valid_url  # noqa: F401
-
-
-def parse_time(iso: str | None) -> datetime | None:
-    if not iso or not isinstance(iso, str):
-        return None
-    try:
-        return arrow.get(iso).datetime
-    except ValueError, TypeError:
-        return None
-
-
-def when(iso: str | None, style: Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"] = "R") -> str | None:
-    moment = parse_time(iso)
-    return discord.utils.format_dt(moment, style) if moment else None
-
-
-def dated(iso: str | None) -> str | None:
-    return f"{when(iso, 'D')} ({when(iso)})" if parse_time(iso) else None
+from core.utils import valid_url
 
 
 def collect(*items: discord.ui.Item | None) -> list[discord.ui.Item]:

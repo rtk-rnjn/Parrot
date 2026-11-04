@@ -260,8 +260,8 @@ class StatisticsCog(commands.Cog, name="Statistics"):
             self._enqueue_all(self.tracker.close_guild(str(guild.id), utcnow()))
 
     @commands.Cog.listener()
-    async def on_command(self, ctx: commands.Context) -> None:
-        ctx._stats_started = time.perf_counter()  # fires before checks: duration includes check/parse time
+    async def on_command(self, ctx: commands.Context[Bot]) -> None:
+        ctx._stats_started = time.perf_counter()  # pyright: ignore[reportAttributeAccessIssue] # fires before checks: duration includes check/parse time
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx: commands.Context) -> None:

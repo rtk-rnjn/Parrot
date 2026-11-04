@@ -27,9 +27,9 @@ from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
 from rapidfuzz.process import extractOne
 
-from core.utils import BaseLayoutView, NoticeLayout, truncate
+from core.utils import BaseLayoutView, NoticeLayout, code, dated, safe, truncate, when
 
-from ..language_utils import code, collect, dated, facts, header, pack, safe, text, valid_url, when
+from ..language_utils import collect, facts, header, pack, text, valid_url
 from ..utils import SphinxEntry, parse_sphinx_inventory
 from .knowledge import (
     COMPLEXITY_DB,

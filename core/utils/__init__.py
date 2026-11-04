@@ -18,7 +18,6 @@ from .checks import (
     resolve_current_time,
     seasonal_task,
 )
-from .confirm import ConfirmationLayout
 from .database import DatabaseManager
 from .date import BadDateTransform, DateTransformer, HumanDate
 from .enum_docstrings import enum_docstrings
@@ -40,7 +39,7 @@ from .pastebin_client import PastebinClient
 from .scheduling import DUE_PRESETS, WhenModal, as_utc, clip, format_due, get_user_tz, local_text, make_button, make_select, parse_future, preset_due
 from .time import FriendlyTimeResult, FutureTime, HumanTime, RelativeDelta, ShortTime, Time, UserFriendlyTime
 from .timer_dispatcher import AsyncTimerDispatcher, TimerData
-from .views import BaseLayoutView, BaseView, DeleteMessageButtonView, DisabledButtonView, DisambiguatorView, NoticeLayout
+from .views import BaseLayoutView, BaseView, ConfirmationLayout, DeleteMessageButtonView, DisabledButtonView, DisambiguatorView, NoticeLayout
 
 __all__ = (
     "DUE_PRESETS",

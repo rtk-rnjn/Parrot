@@ -42,12 +42,8 @@ MAX_SIGNATURE = 800
 MAX_DECLARATIONS = 4
 MAX_PARAGRAPHS = 4
 SUBINDEX_CONCURRENCY = 4
-# cppreference and several doc CDNs sit behind Cloudflare and reject bare client user agents.
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Parrot/1.0 (+https://github.com/rtk-rnjn/Parrot)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7",
-    "Accept-Language": "en-US,en;q=0.9",
-}
+
+HEADERS = {}
 
 MDN_SITEMAP = "https://developer.mozilla.org/sitemaps/en-us/sitemap.xml.gz"
 HOOGLE_URL = "https://hoogle.haskell.org/"

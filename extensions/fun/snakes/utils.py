@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from .snakes import Snakes
 
-SNAKE_RESOURCES = Path("assets/snakes").absolute()
+SNAKE_RESOURCES = (Path("assets") / "snakes").absolute()
 MAX_PLAYER_TILE = 100
 
 h1 = r"""```

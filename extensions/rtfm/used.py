@@ -38,10 +38,10 @@ quickmap: dict[str, str] = {
     "python": "python",
 }
 
-with Path("assets/default_langs.yml").open(encoding="utf-8") as file:
+with (Path("assets") / "default_langs.yml").open(encoding="utf-8") as file:
     default_langs = yaml_load(file)
 
-with Path("assets/lang.txt").open(encoding="utf-8") as file:
+with (Path("assets") / "lang.txt").open(encoding="utf-8") as file:
     languages = {line.strip() for line in file}
 
 

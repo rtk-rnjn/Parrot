@@ -1,26 +1,23 @@
 from __future__ import annotations
 
 import asyncio
-import pathlib
 import re
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import partial
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import aiohttp
 import discord
-import frontmatter
 from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
 from rapidfuzz.process import extractOne
 
-from core.utils import BaseLayoutView, NoticeLayout, truncate
+from core.utils import BaseLayoutView, NoticeLayout, code, dated, safe, truncate, when
 
-from ..language_utils import code, collect, dated, facts, header, pack, safe, text, valid_url, when
+from ..language_utils import collect, facts, header, pack, text, valid_url
 from .constants import (
     CURATED_ES_HIGHLIGHTS,
     FALLBACK_NODE_CYCLES,
@@ -114,7 +111,6 @@ TC39_STAGE_LABELS: dict[str, str] = {
     "-1": "Inactive / Withdrawn",
 }
 
-TUTORIAL_DIR = Path("extra/tutorials/javascript")
 
 NPM_REGISTRY_URL = "https://registry.npmjs.org"
 NPM_PACKAGE_URL = "https://www.npmjs.com/package"
@@ -1150,7 +1146,6 @@ class JavaScript(commands.Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self._js_tags: dict[str, frontmatter.Post] = {}
 
         self._tc39_cache: tuple[float, list[dict[str, Any]]] | None = None
         self._cache_lock = asyncio.Lock()
@@ -1158,21 +1153,6 @@ class JavaScript(commands.Cog):
         self._cve_cache: dict[str, tuple[float, list[CveRecord]]] = {}
         self._cycles_cache: tuple[float, list[dict[str, Any]]] | None = None
         self._glossary_cache: dict[str, GlossaryTerm] = {}
-
-    @property
-    def js_tags(self) -> dict[str, frontmatter.Post]:
-        if self._js_tags:
-            return self._js_tags
-
-        tags_path = pathlib.Path("assets/javascript_tags")
-        if tags_path.exists():
-            for tag_file in tags_path.glob("*.md"):
-                with tag_file.open(encoding="utf-8") as file:
-                    post = frontmatter.load(file)
-                    tag_name = tag_file.stem
-                    self._js_tags[tag_name] = post
-
-        return self._js_tags
 
     async def fetch_bytes(self, url: str, *, missing: str = "JavaScript documentation could not find that.") -> bytes:
         try:
@@ -1266,97 +1246,15 @@ class JavaScript(commands.Cog):
         name="javascript",
         aliases=["js", "ecmascript", "es", "js-tutorial", "jstut"],
         invoke_without_command=True,
-        extras={
-            "examples": [
-                "js closures",
-                "js-tutorial promises",
-                "js list",
-                "js error TypeError",
-                "js operator ??",
-                "js builtin Promise",
-                "js complexity map",
-            ]
-        },
     )
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def javascript(
         self,
         ctx: commands.Context[Bot],
-        *,
-        text: str | None = commands.parameter(default=None, description="The tutorial to search for."),
-    ) -> discord.Message | None:
+    ):
         """Search for a JavaScript tutorial or invoke a JavaScript / ECMAScript / Node.js reference subcommand."""
-        if not text:
-            return await ctx.send_help(ctx.command)
-        return await self.dispatch_view(ctx, self.fetch_java_script_tutorial(ctx, text))
-
-    @javascript.command(
-        name="tutorial",
-        aliases=["tut"],
-        extras={"examples": ["js tutorial promises", "js tutorial event-loop"]},
-    )
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def js_tutorial(
-        self,
-        ctx: commands.Context[Bot],
-        *,
-        text: str = commands.parameter(description="The tutorial to search for."),
-    ) -> discord.Message:
-        """Search for a JavaScript tutorial."""
-        return await self.dispatch_view(ctx, self.fetch_java_script_tutorial(ctx, text))
-
-    async def fetch_java_script_tutorial(self, ctx: commands.Context[Bot], query: str) -> JavaScriptView:
-        if not self.js_tags:
-            msg = "No JavaScript tutorials are currently loaded."
-            raise JavaScriptError(msg)
-
-        matched_tutorial = await asyncio.to_thread(extractOne, query.strip(), list(self.js_tags.keys()))
-        if matched_tutorial is None or matched_tutorial[1] < MIN_TUTORIAL_SCORE:
-            available = ", ".join(f"`{k}`" for k in list(self.js_tags.keys())[:10])
-            msg = f"No such tutorial found for {code(query, 40)}. Try `js list` ({available})."
-            raise JavaScriptError(msg)
-
-        key, score = matched_tutorial[0], float(matched_tutorial[1])
-        data = self.js_tags[key]
-        content = data.content if hasattr(data, "content") else str(data)
-        url = getattr(data, "url", None) or f"{MDN_JS_URL}/Guide"
-        return self.single(
-            ctx,
-            Page(
-                partial(tutorial_items, key, content, score),
-                url=url,
-                label="MDN JavaScript Guide",
-                links=[("All Guides", f"{MDN_JS_URL}/Guide")],
-            ),
-        )
-
-    @javascript.command(
-        name="list",
-        aliases=["ls", "all"],
-        extras={"examples": ["js list", "js-tutorial list"]},
-    )
-    async def js_list(self, ctx: commands.Context[Bot]) -> discord.Message:
-        """List the available JavaScript tutorials.
-
-        This command displays the tutorial names that can be searched with the parent command.
-        """
-        return await self.dispatch_view(ctx, self.fetch_js_tutorials(ctx))
-
-    async def fetch_js_tutorials(self, ctx: commands.Context[Bot]) -> JavaScriptView:
-        names = sorted(self.js_tags.keys())
-        if not names:
-            msg = "No JavaScript tutorials are currently available."
-            raise JavaScriptError(msg)
-
-        pages = [
-            Page(
-                partial(tutorial_list_items, names, names[start : start + ITEMS_PER_PAGE], len(names)),
-                url=f"{MDN_JS_URL}/Guide",
-                label="MDN JavaScript Guide",
-            )
-            for start in range(0, len(names), ITEMS_PER_PAGE)
-        ]
-        return JavaScriptView(ctx.author, pages)
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
 
     @commands.command(
         name="tc39",

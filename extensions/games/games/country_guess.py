@@ -46,7 +46,7 @@ class CountryGuesser:
 
         self.light_mode = False if self.is_flags else light_mode
 
-        self._countries_path = Path("assets/country-flags" if self.is_flags else "assets/country-data")
+        self._countries_path = Path("assets") / ("country-flags" if self.is_flags else "country-data")
 
         self.all_countries = [country.name for country in self._countries_path.iterdir()]
 

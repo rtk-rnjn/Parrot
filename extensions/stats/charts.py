@@ -46,7 +46,7 @@ THEME = Theme()
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    path = Path("assets/DejaVuSansMNerdFontMono-Regular.ttf")
+    path = Path("assets") / "DejaVuSansMNerdFontMono-Regular.ttf"
     try:
         return ImageFont.truetype(path, size)
     except OSError:  # pragma: no cover - fallback

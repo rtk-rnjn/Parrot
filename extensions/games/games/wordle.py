@@ -51,7 +51,7 @@ class Wordle:
     def __init__(self, word: str | None = None, *, text_size: int = 55) -> None:
         self.embed_color: DiscordColor | None = None
 
-        with pathlib.Path("assets/words.txt").open(encoding="utf-8") as f:
+        with (pathlib.Path("assets") / "words.txt").open(encoding="utf-8") as f:
             self._valid_words = tuple(f.read().splitlines())
         self._text_size = text_size
         self._font = ImageFont.truetype("assets/HelveticaNeuBold.ttf", self._text_size)

@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 loads = discord.utils._from_json
 
-NAMES: dict = loads(Path(r"assets/pride/drag_queen_names.json").read_text("utf8"))
-VIDEOS: dict = loads(Path(r"assets/pride/anthems.json").read_text("utf8"))
-FACTS: dict = loads(Path(r"assets/pride/facts.json").read_text("utf8"))
+NAMES: dict = loads((Path("assets") / "pride" / "drag_queen_names.json").read_text("utf8"))
+VIDEOS: dict = loads((Path("assets") / "pride" / "anthems.json").read_text("utf8"))
+FACTS: dict = loads((Path("assets") / "pride" / "facts.json").read_text("utf8"))
 
-PRIDE_RESOURCE: dict = loads(Path(r"assets/pride/prideleader.json").read_text("utf8"))
+PRIDE_RESOURCE: dict = loads((Path("assets") / "pride" / "prideleader.json").read_text("utf8"))
 MINIMUM_FUZZ_RATIO = 40
 
 _log = logging.getLogger(__name__)

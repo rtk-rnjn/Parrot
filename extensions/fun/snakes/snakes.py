@@ -141,7 +141,7 @@ CARD = {
     "top": Image.open("assets/snakes/snake_cards/card_top.png"),
     "frame": Image.open("assets/snakes/snake_cards/card_frame.png"),
     "bottom": Image.open("assets/snakes/snake_cards/card_bottom.png"),
-    "backs": [Image.open(file) for file in pathlib.Path("assets/snakes/snake_cards/backs").iterdir()],
+    "backs": [Image.open(file) for file in (pathlib.Path("assets") / "snakes" / "snake_cards" / "backs").iterdir()],
     "font": ImageFont.truetype("assets/snakes/snake_cards/expressway.ttf", 20),
 }
 

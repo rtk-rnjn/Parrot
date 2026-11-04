@@ -120,7 +120,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._pickup_lines:
             return self._pickup_lines
 
-        with Path("assets/valentine/pickup_lines.json").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "pickup_lines.json").open(encoding="utf-8") as file:
             pickup_lines = loads(file.read())
             self._pickup_lines = pickup_lines
             return pickup_lines
@@ -130,7 +130,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._valenstates:
             return self._valenstates
 
-        with Path("assets/valentine/valenstates").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "valenstates").open(encoding="utf-8") as file:
             self._valenstates = loads(file.read())
             return self._valenstates
 
@@ -139,7 +139,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._valentine_facts:
             return self._valentine_facts
 
-        with Path("assets/valentine/valentine_facts").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "valentine_facts").open(encoding="utf-8") as file:
             valentine_facts = loads(file.read())
             self._valentine_facts = valentine_facts
             return valentine_facts
@@ -149,7 +149,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._valentines_date_ideas:
             return self._valentines_date_ideas
 
-        with Path("assets/valentine/date_ideas").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "date_ideas").open(encoding="utf-8") as file:
             data: ValentineDateIdeas = loads(file.read())
             self._valentines_date_ideas = data["ideas"]
             return self._valentines_date_ideas
@@ -159,7 +159,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._love_matches:
             return self._love_matches
 
-        with Path("assets/valentine/love_matches.json").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "love_matches.json").open(encoding="utf-8") as file:
             self._love_matches = loads(file.read())
             return self._love_matches
 
@@ -168,7 +168,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._zodiac_compatibility:
             return self._zodiac_compatibility
 
-        with Path("assets/valentine/zodiac_compatibility.json").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "zodiac_compatibility.json").open(encoding="utf-8") as file:
             self._zodiac_compatibility = loads(file.read())
             return self._zodiac_compatibility
 
@@ -177,7 +177,7 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
         if self._zodiac_explanation:
             return self._zodiac_explanation
 
-        with Path("assets/valentine/zodiac_explanation.json").open(encoding="utf-8") as file:
+        with (Path("assets") / "valentine" / "zodiac_explanation.json").open(encoding="utf-8") as file:
             self._zodiac_explanation = loads(file.read())
             return self._zodiac_explanation
 

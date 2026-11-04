@@ -88,8 +88,6 @@ PEP_STATUS_COLOURS: dict[str, discord.Colour] = {
 }
 
 PEP_ARG_PATTERN = re.compile(r"^(?:pep[-#\s]*)?(\d{1,5})$", re.IGNORECASE)
-TUTORIAL_DIR = Path("extra/tutorials/python")
-
 
 PYPI_JSON_URL = "https://pypi.org/pypi"
 NVD_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
@@ -1189,7 +1187,7 @@ class Python(commands.Cog):
         if self._python_tags:
             return self._python_tags
 
-        tags_path = pathlib.Path("assets/python_tags")
+        tags_path = pathlib.Path("assets") / "python_tags"
         for tag_file in tags_path.glob("*.md"):
             with tag_file.open(encoding="utf-8") as file:
                 post = frontmatter.load(file)

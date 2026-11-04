@@ -49,7 +49,7 @@ MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 RENDER_TIMEOUT = 10  # seconds
 _CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 
-with Path("assets/dictionary.json").open(encoding="utf-8") as file:
+with (Path("assets") / "dictionary.json").open(encoding="utf-8") as file:
     DICTIONARY: dict[str, str] = discord.utils._from_json(file.read())
 
 

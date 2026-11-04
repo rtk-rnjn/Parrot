@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from core import Bot
 
 
-with pathlib.Path("assets/random_sentences.txt").open(encoding="utf-8") as file:
+with (pathlib.Path("assets") / "random_sentences.txt").open(encoding="utf-8") as file:
     random_sentences = [line.strip() for line in file]
 
 

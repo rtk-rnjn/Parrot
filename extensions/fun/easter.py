@@ -290,7 +290,7 @@ class Easter(commands.Cog, command_attrs={"hidden": True}):
                 colours = colours * repeat_count + colours[:remainder]
 
             design_number = random.randint(1, 6)
-            image = Image.open(Path(f"assets/easter/easter_eggs/design{design_number}.png"))
+            image = Image.open(Path("assets") / "easter" / "easter_eggs" / f"design{design_number}.png")
             pixel_data = cast(list[tuple[int, int, int, int]], image.getdata())
 
             replaceable_colours = {pixel for pixel in pixel_data if pixel not in IRREPLACEABLE}

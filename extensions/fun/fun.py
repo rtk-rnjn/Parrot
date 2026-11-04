@@ -71,7 +71,7 @@ CHARACTER_VALUES = {
 }
 # fmt: on
 
-with Path("assets/color_names.json").open(encoding="utf-8") as file:
+with (Path("assets") / "color_names.json").open(encoding="utf-8") as file:
     color_names: dict[str, str] = discord.utils._from_json(file.read())
 
 
@@ -1161,7 +1161,7 @@ class Fun(commands.Cog, ColorHandler):
 
     @staticmethod
     def _load_templates() -> list[MadlibsTemplate]:
-        madlibs_stories = Path("assets/madlibs_templates.json")
+        madlibs_stories = Path("assets") / "madlibs_templates.json"
 
         return discord.utils._from_json(madlibs_stories.read_bytes()) if madlibs_stories.exists() else []
 

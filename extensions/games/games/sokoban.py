@@ -8,7 +8,7 @@ from enum import StrEnum
 import discord
 from discord.ext import commands
 
-LEVELS_DIR = pathlib.Path("assets/sokoban")
+LEVELS_DIR = pathlib.Path("assets") / "sokoban"
 
 
 EMOTES = {

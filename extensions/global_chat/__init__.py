@@ -22,7 +22,7 @@ class ProfaneWord(TypedDict):
     intensity: int
 
 
-with Path("assets/profane_words.json").open() as file:
+with (Path("assets") / "profane_words.json").open() as file:
     profane_words: list[ProfaneWord] = loads(file.read())
 
 

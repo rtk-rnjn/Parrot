@@ -100,7 +100,7 @@ def stamp(moment: datetime | None) -> str | None:
     return f"{discord.utils.format_dt(moment, 'F')} ({discord.utils.format_dt(moment, 'R')})"
 
 
-def ident(obj: Any) -> str:
+def ident(obj: discord.User | discord.Member) -> str:
     return f"{getattr(obj, 'mention', obj)} (`{obj.id}`)"
 
 

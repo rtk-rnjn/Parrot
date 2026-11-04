@@ -2,16 +2,13 @@ import os
 
 from dotenv import load_dotenv
 
+from limited_memory import is_limited_memory
+
 load_dotenv()
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
-LIMITED_MEMORY = os.environ.get("LIMITED_MEMORY", "False").lower() in (
-    "true",
-    "1",
-    "yes",
-)
-
+LIMITED_MEMORY = is_limited_memory()
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 

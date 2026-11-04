@@ -16,6 +16,7 @@ from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
 from dotenv import load_dotenv
 
 from core import Bot
+from limited_memory import is_limited_memory
 from server import app
 
 load_dotenv()
@@ -23,11 +24,7 @@ load_dotenv()
 BOT_NAME = os.getenv("BOT_NAME") or "DiscordBot"
 USER_AGENT = os.getenv("BOT_USER_AGENT") or f"{BOT_NAME}/1.0.0 ({os.getenv('GITHUB_REPO')}; {os.getenv('EMAIL_ADDRESS')})"
 
-LIMITED_MEMORY = os.environ.get("LIMITED_MEMORY", "False").lower() in (
-    "true",
-    "1",
-    "yes",
-)
+LIMITED_MEMORY = True
 
 LOGS_ROOT = Path(os.getenv("LOGS_DIR", "logs"))
 LOG_FORMAT = "[{asctime}] [{levelname:<8}] {name}:{funcName}:{lineno} - {message}"
@@ -234,8 +231,13 @@ async def start_server() -> None:
 async def runner() -> None:
     logger.info("Starting %s runner...", BOT_NAME)
 
-    if LIMITED_MEMORY:
-        logger.warning("LIMITED_MEMORY is enabled; the web server will not be started.")
+    system_is_limited = is_limited_memory()
+
+    if system_is_limited:
+        LIMITED_MEMORY = True
+        logger.warning("System has limited memory; enabling LIMITED_MEMORY mode.")
+    else:
+        LIMITED_MEMORY = False
 
     start_tasks = [start_bot()]
     if not LIMITED_MEMORY:

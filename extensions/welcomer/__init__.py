@@ -415,7 +415,7 @@ class Welcomer(commands.Cog):
             return message
 
     @commands.command(name="testwelcome", aliases=["testgoodbye"], hidden=True)
-    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
     async def test_welcome(self, ctx: commands.Context) -> None:
         """Test the welcome / goodbye message in this channel."""
         if TYPE_CHECKING:

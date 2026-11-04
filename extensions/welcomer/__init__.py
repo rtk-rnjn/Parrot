@@ -281,11 +281,11 @@ class Welcomer(commands.Cog):
                 db.get_welcome_leave_message(guild.id),
                 db.get_welcome_leave_style(guild.id),
             )
-        if channel_id is None or message is None:
+        if channel_id is None:
             return
 
         channel = guild.get_channel(channel_id)
-        if not isinstance(channel, discord.TextChannel):
+        if not isinstance(channel, discord.abc.Messageable):
             return
         me = guild.me
         if me is None:
@@ -303,7 +303,7 @@ class Welcomer(commands.Cog):
         if style == "embed" and not perms.embed_links:
             style = "text"
 
-        if style == "text":
+        if style == "text" and text is not None:
             await channel.send(text, allowed_mentions=discord.AllowedMentions.none())
             return
 
@@ -326,6 +326,7 @@ class Welcomer(commands.Cog):
 
         kwargs = {"embed": embed, "allowed_mentions": discord.AllowedMentions.none()}
         kwargs["file"] = file or discord.utils.MISSING
+
         await channel.send(**kwargs)
 
     async def _accent_color(self, guild_id: int, kind: Kind) -> int:
@@ -392,7 +393,9 @@ class Welcomer(commands.Cog):
         return data
 
     @staticmethod
-    def _format_message(message: str, member: discord.Member) -> str:
+    def _format_message(message: str | None, member: discord.Member) -> str | None:
+        if message is None:
+            return None
         try:
             return Template(message).safe_substitute(
                 member_mention=member.mention,
@@ -400,6 +403,8 @@ class Welcomer(commands.Cog):
                 member_display_name=member.display_name,
                 server_name=member.guild.name,
                 count=member.guild.member_count,
+                member_id=member.id,
+                server_id=member.guild.id,
             )
         except KeyError, ValueError:
             _log.warning(
@@ -408,6 +413,16 @@ class Welcomer(commands.Cog):
                 exc_info=True,
             )
             return message
+
+    @commands.command(name="testwelcome", aliases=["testgoodbye"], hidden=True)
+    @commands.guild_only()
+    async def test_welcome(self, ctx: commands.Context) -> None:
+        """Test the welcome / goodbye message in this channel."""
+        if TYPE_CHECKING:
+            assert isinstance(ctx.author, discord.Member)
+
+        kind = "join" if ctx.invoked_with == "testwelcome" else "leave"
+        await self._announce(ctx.author, kind)
 
 
 async def setup(bot: Bot) -> None:

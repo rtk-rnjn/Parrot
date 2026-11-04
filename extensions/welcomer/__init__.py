@@ -21,7 +21,7 @@ _log = logging.getLogger(__name__)
 Kind = Literal["join", "leave"]
 Style = Literal["text", "embed", "card"]
 
-FONT_DIR = Path("assets") / "fonts"
+FONT_DIR = Path("assets")
 FONT_BOLD = FONT_DIR / "Poppins-Bold.ttf"
 FONT_REGULAR = FONT_DIR / "Poppins-Regular.ttf"
 
@@ -326,8 +326,11 @@ class Welcomer(commands.Cog):
 
         kwargs = {"embed": embed, "allowed_mentions": discord.AllowedMentions.none()}
         kwargs["file"] = file or discord.utils.MISSING
+        args = []
+        if text is not None:
+            args.append(text)
 
-        await channel.send(**kwargs)
+        await channel.send(*args, **kwargs)
 
     async def _accent_color(self, guild_id: int, kind: Kind) -> int:
         if kind == "leave":

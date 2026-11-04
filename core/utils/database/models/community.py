@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 from bson import ObjectId
 
@@ -41,6 +41,11 @@ class WelcomeConfig(TypedDict):
     on_member_join_role_id: int | None
     on_member_leave_message: str | None
     on_member_leave_channel_id: int | None
+
+    on_member_join_style: NotRequired[Literal["text", "embed", "card"]]
+    on_member_leave_style: NotRequired[Literal["text", "embed", "card"]]
+    accent_color: NotRequired[int | None]
+    banner_url: NotRequired[str | None]
 
 
 class StarboardConfig(TypedDict):

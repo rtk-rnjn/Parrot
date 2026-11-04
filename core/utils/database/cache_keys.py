@@ -67,6 +67,10 @@ class RedisKeys(StrEnum):
     GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_MESSAGE = "guild:{guild_id}:welcome_config:on_member_leave_message"
     GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_CHANNEL_ID = "guild:{guild_id}:welcome_config:on_member_leave_channel_id"
     GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_ROLE_ID = "guild:{guild_id}:welcome_config:on_member_join_role_id"
+    GUILD_WELCOME_CONFIG_ON_MEMBER_JOIN_STYLE = "guild:{guild_id}:welcome_config:on_member_join_style"
+    GUILD_WELCOME_CONFIG_ON_MEMBER_LEAVE_STYLE = "guild:{guild_id}:welcome_config:on_member_leave_style"
+    GUILD_WELCOME_CONFIG_ACCENT_COLOR = "guild:{guild_id}:welcome_config:accent_color"
+    GUILD_WELCOME_CONFIG_BANNER_URL = "guild:{guild_id}:welcome_config:banner_url"
 
     GUILD_STARBOARD_CONFIG_ENABLED = "guild:{guild_id}:starboard_config:enabled"
     GUILD_STARBOARD_CONFIG_CHANNEL_ID = "guild:{guild_id}:starboard_config:channel_id"

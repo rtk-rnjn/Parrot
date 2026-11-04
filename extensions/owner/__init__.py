@@ -5,8 +5,11 @@ import io
 import logging
 import traceback
 from collections import Counter, deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from fnmatch import fnmatchcase
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
@@ -19,10 +22,13 @@ from humanfriendly import InvalidTimespan, parse_timespan
 from jishaku.codeblocks import codeblock_converter
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
+from rapidfuzz import fuzz, process
 
 from .panel import OwnerPanel
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+
     from core import Bot
 
 
@@ -45,8 +51,8 @@ def pool_snapshot(session: aiohttp.ClientSession | None) -> tuple[int, int, bool
     connector = session.connector
     if connector is None:
         return 0, 0, session.closed
-    in_use = len(getattr(connector, "_acquired", ()))
-    idle = sum(len(v) for v in getattr(connector, "_conns", {}).values())
+    in_use = len(connector._acquired)
+    idle = sum(len(v) for v in connector._conns.values())
     return in_use, idle, session.closed
 
 
@@ -81,12 +87,20 @@ PANEL = "#1e1f22"
 FG = "#dbdee1"
 GRID = "#3f4147"
 PALETTE = [
-    "#5865f2", "#57f287", "#fee75c", "#eb459e", "#ed4245",
-    "#3ba5ff", "#f59e0b", "#a78bfa", "#2dd4bf", "#94a3b8",
-]  # fmt: skip
+    "#5865f2",
+    "#57f287",
+    "#fee75c",
+    "#eb459e",
+    "#ed4245",
+    "#3ba5ff",
+    "#f59e0b",
+    "#a78bfa",
+    "#2dd4bf",
+    "#94a3b8",
+]
 
 
-def _style(ax, title: str, ylabel: str | None = None) -> None:
+def _style(ax: Axes, title: str, ylabel: str | None = None) -> None:
     ax.set_facecolor(PANEL)
     ax.set_title(title, color=FG, fontsize=11, loc="left", pad=8)
     ax.tick_params(colors=FG, labelsize=8)
@@ -98,26 +112,64 @@ def _style(ax, title: str, ylabel: str | None = None) -> None:
         ax.set_ylabel(ylabel, color=FG, fontsize=8)
 
 
-def _legend(ax, **kw: Any) -> None:
+def _legend(ax: Axes, **kw: Any) -> None:
     ax.legend(fontsize=7, facecolor=BG, edgecolor=GRID, labelcolor=FG, **kw)
 
 
-def _plot_socket(ax, samples: list[Sample], top_n: int) -> None:
+def _annotate_peak(ax: Axes, xs: list[datetime], ys: list[int], color: str) -> None:
+    peak = max(ys, default=0)
+    if peak <= 0:
+        return
+    idx = ys.index(peak)
+    right = idx > len(ys) / 2  # keep the label inside the plot
+    ax.plot([xs[idx]], [peak], marker="o", color=color)
+    ax.annotate(
+        f"peak {peak:,} @ {xs[idx]:%H:%M} UTC",
+        xy=(xs[idx], peak),
+        xytext=(-10 if right else 10, -16),
+        textcoords="offset points",
+        ha="right" if right else "left",
+        color=FG,
+        fontsize=8,
+        arrowprops={"arrowstyle": "-", "color": color},
+    )
+
+
+def _plot_socket(ax: Axes, samples: list[Sample], top_n: int, events: list[str] | None = None) -> None:
+    """One line per event type. `events` selects specific ones, otherwise the busiest `top_n`."""
     xs = [s.ts for s in samples]
     totals: Counter[str] = Counter()
     for s in samples:
         totals.update(s.socket_delta)
 
-    top = [name for name, _ in totals.most_common(top_n)]
-    series = [[s.socket_delta.get(name, 0) for s in samples] for name in top]
-    other = [sum(v for k, v in s.socket_delta.items() if k not in top) for s in samples]
-    if any(other):
-        series.append(other)
-        top.append("other")
+    names = list(events) if events else [name for name, _ in totals.most_common(top_n)]
+    ceiling = 1
+    for i, name in enumerate(names):
+        ys = [s.socket_delta.get(name, 0) for s in samples]
+        ceiling = max(ceiling, *ys)
+        color = PALETTE[i % len(PALETTE)]
+        ax.plot(xs, ys, color=color, linewidth=1.4, label=f"{name} ({totals[name]:,})")
+        if len(names) == 1:
+            ax.fill_between(xs, ys, color=color, alpha=0.15)
+            _annotate_peak(ax, xs, ys, color)
 
-    if series:
-        ax.stackplot(xs, *series, labels=top, colors=PALETTE[: len(series)], alpha=0.9)
-        _legend(ax, loc="upper left", ncol=2)
+    if names:
+        # headroom so the legend sits above the lines instead of on top of them
+        rows = -(-len(names) // 2) if len(names) > 4 else len(names)
+        ax.set_ylim(0, ceiling * (1.12 + 0.045 * rows))
+        _legend(ax, loc="upper left", ncol=2 if len(names) > 4 else 1)
+
+
+def _event_summary(samples: list[Sample], names: list[str]) -> str:
+    """Text table: total / average / peak minute per event."""
+    width = max(len(n) for n in names)
+    lines = []
+    for name in names:
+        ys = [s.socket_delta.get(name, 0) for s in samples]
+        total, peak = sum(ys), max(ys)
+        at = samples[ys.index(peak)].ts
+        lines.append(f"{name:<{width}}  total {total:>9,}  avg {total / len(ys):>8.1f}/min  peak {peak:>6,} @ {at:%H:%M} UTC")
+    return "```\n" + "\n".join(lines) + "\n```"
 
 
 def _finish(fig: Figure, title: str) -> io.BytesIO:
@@ -130,20 +182,19 @@ def _finish(fig: Figure, title: str) -> io.BytesIO:
     return buf
 
 
-def render_dashboard(samples: list[Sample], title: str) -> io.BytesIO:
-    fig = Figure(figsize=(13, 9), dpi=100, facecolor=BG)
-    axes = fig.subplots(3, 2)
-    xs = [s.ts for s in samples]
+DrawFn = Callable[[Any, "list[Sample]"], None]
 
-    # CPU
-    ax = axes[0][0]
+
+def _draw_cpu(ax: Axes, samples: list[Sample]) -> None:
+    xs = [s.ts for s in samples]
     _style(ax, "CPU", "%")
     ax.plot(xs, [s.proc_cpu for s in samples], color=PALETTE[0], label="bot (% of 1 core)")
     ax.plot(xs, [s.sys_cpu for s in samples], color=PALETTE[1], label="system (% total)")
     _legend(ax, loc="upper left")
 
-    # Memory
-    ax = axes[0][1]
+
+def _draw_memory(ax: Axes, samples: list[Sample]) -> None:
+    xs = [s.ts for s in samples]
     _style(ax, "Memory", "bot RSS (MB)")
     ax.plot(xs, [s.rss_mb for s in samples], color=PALETTE[0], label="bot RSS")
     ax2 = ax.twinx()
@@ -155,43 +206,67 @@ def render_dashboard(samples: list[Sample], title: str) -> io.BytesIO:
     _legend(ax, loc="upper left")
     _legend(ax2, loc="upper right")
 
-    # Latency / loop lag
-    ax = axes[1][0]
+
+def _draw_latency(ax, samples: list[Sample]) -> None:
+    xs = [s.ts for s in samples]
     _style(ax, "Latency & event-loop lag", "ms")
     ax.plot(xs, [s.latency_ms for s in samples], color=PALETTE[5], label="gateway latency")
     ax.plot(xs, [s.loop_lag_ms for s in samples], color=PALETTE[4], label="worst loop lag")
     _legend(ax, loc="upper left")
 
-    # Socket events
-    ax = axes[1][1]
-    _style(ax, "Gateway events / min", "events")
-    _plot_socket(ax, samples, top_n=6)
 
-    # HTTP traffic
-    ax = axes[2][0]
+def _draw_socket(ax, samples: list[Sample], top_n: int = 6) -> None:
+    _style(ax, "Gateway events / min", "events")
+    _plot_socket(ax, samples, top_n=top_n)
+
+
+def _draw_http(ax: Axes, samples: list[Sample]) -> None:
+    xs = [s.ts for s in samples]
     _style(ax, "aiohttp / min", "count")
     ax.plot(xs, [s.http_requests for s in samples], color=PALETTE[0], label="requests")
     ax.plot(xs, [s.http_new_conns for s in samples], color=PALETTE[1], label="new conns")
     ax.plot(xs, [s.http_reused_conns for s in samples], color=PALETTE[2], label="reused conns")
     ax.plot(xs, [s.http_errors for s in samples], color=PALETTE[4], label="errors")
+    ax.plot(xs, [s.http_queued for s in samples], color=PALETTE[6], label="queued (pool full)")
     _legend(ax, loc="upper left", ncol=2)
 
-    # Runtime gauges
-    ax = axes[2][1]
+
+def _draw_runtime(ax: Axes, samples: list[Sample]) -> None:
+    xs = [s.ts for s in samples]
     _style(ax, "Runtime gauges", "count")
     ax.plot(xs, [s.tasks for s in samples], color=PALETTE[3], label="asyncio tasks")
     ax.plot(xs, [s.threads for s in samples], color=PALETTE[6], label="threads")
     ax.plot(xs, [s.http_in_use + s.http_idle for s in samples], color=PALETTE[8], label="http pool conns")
     _legend(ax, loc="upper left")
 
+
+def render_dashboard(samples: list[Sample], title: str) -> io.BytesIO:
+    fig = Figure(figsize=(13, 9), dpi=100, facecolor=BG)
+    axes = fig.subplots(3, 2)
+
+    _draw_cpu(axes[0][0], samples)
+    _draw_memory(axes[0][1], samples)
+    _draw_latency(axes[1][0], samples)
+    _draw_socket(axes[1][1], samples, top_n=6)
+    _draw_http(axes[2][0], samples)
+    _draw_runtime(axes[2][1], samples)
+
     return _finish(fig, title)
 
 
-def render_socket_chart(samples: list[Sample], title: str) -> io.BytesIO:
+def render_panel(draw: DrawFn, samples: list[Sample], title: str) -> io.BytesIO:
+    """Render a single graph full-size."""
     fig = Figure(figsize=(13, 6), dpi=100, facecolor=BG)
     ax = fig.subplots(1, 1)
-    _style(ax, "Gateway events / min (top 9 + other)", "events")
-    _plot_socket(ax, samples, top_n=9)
+    draw(ax, samples)
+    return _finish(fig, title)
+
+
+def render_socket_chart(samples: list[Sample], title: str, events: list[str] | None = None) -> io.BytesIO:
+    fig = Figure(figsize=(13, 6), dpi=100, facecolor=BG)
+    ax = fig.subplots(1, 1)
+    _style(ax, "Gateway events / min" + ("" if events else " (top 9)"), "events")
+    _plot_socket(ax, samples, top_n=9, events=events)
     return _finish(fig, title)
 
 
@@ -263,7 +338,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         d = {k: http_now[k] - self._prev_http.get(k, 0) for k in http_now}
         self._prev_http = http_now
 
-        in_use, idle, _ = pool_snapshot(getattr(self.bot, "http_session", None))
+        in_use, idle, _ = pool_snapshot(self.bot.http_session)
 
         lag_ms = self._max_lag * 1000
         self._max_lag = 0.0
@@ -309,6 +384,13 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             buf = await asyncio.to_thread(fn, samples, title)
         return discord.File(buf, filename="metrics.png")
 
+    async def _send_panel(self, ctx: commands.Context[Bot], draw: DrawFn, name: str, window: str) -> None:
+        """Shared body for every single-graph subcommand."""
+        samples, label = self._window(window)
+        async with ctx.typing():
+            file = await self._render(partial(render_panel, draw), samples, f"{name}, last {label} (UTC)")
+        await ctx.reply(file=file)
+
     @commands.group(name="perf", aliases=["vitals"], invoke_without_command=True)
     async def metrics(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """Runtime dashboard (CPU, RAM, latency, loop lag, gateway events, aiohttp)."""
@@ -333,13 +415,110 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         embed.set_footer(text=f"{len(self.samples)}/{RETENTION_MINUTES} samples held in memory")
         await ctx.reply(embed=embed, file=file)
 
+    @metrics.command(name="cpu")
+    async def metrics_cpu(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
+        """Bot and system CPU usage."""
+        await self._send_panel(ctx, _draw_cpu, "CPU", window)
+
+    @metrics.command(name="memory", aliases=["ram", "mem"])
+    async def metrics_memory(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
+        """Bot RSS and system memory usage."""
+        await self._send_panel(ctx, _draw_memory, "Memory", window)
+
+    @metrics.command(name="latency", aliases=["lag", "ping"])
+    async def metrics_latency(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
+        """Gateway latency and worst event-loop lag."""
+        await self._send_panel(ctx, _draw_latency, "Latency & loop lag", window)
+
+    @metrics.command(name="http", aliases=["aiohttp", "net"])
+    async def metrics_http(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
+        """aiohttp requests, connections and errors per minute."""
+        await self._send_panel(ctx, _draw_http, "aiohttp", window)
+
+    @metrics.command(name="runtime", aliases=["tasks", "gauges"])
+    async def metrics_runtime(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
+        """asyncio tasks, threads and HTTP pool size."""
+        await self._send_panel(ctx, _draw_runtime, "Runtime gauges", window)
+
+    def _resolve_events(self, queries: tuple[str, ...]) -> tuple[list[str], list[str]]:
+        """Map user input to known event names. Returns (resolved, problem messages).
+
+        Case-insensitive, supports globs (`MESSAGE_*`), and fuzzy-suggests for unknown names.
+        """
+        known = list(self.bot.socket_stats)
+        resolved: list[str] = []
+        problems: list[str] = []
+
+        for raw in queries:
+            query = raw.upper().replace("-", "_")
+            if "*" in query or "?" in query:
+                matches = sorted(n for n in known if fnmatchcase(n, query))
+            else:
+                matches = [query] if query in self.bot.socket_stats else []
+
+            if matches:
+                for name in matches:
+                    if name not in resolved:
+                        resolved.append(name)
+                continue
+
+            close = process.extract(query, known, scorer=fuzz.WRatio, limit=3, score_cutoff=60)
+            if close:
+                options = " or ".join(f"`{name}`" for name, _, _ in close)
+                problems.append(f"`{query}` hasn't been received since startup. Did you mean {options}?")
+            else:
+                problems.append(f"`{query}` hasn't been received since startup, and nothing similar is known.")
+
+        return resolved, problems
+
     @metrics.command(name="socket", aliases=["sockets", "gateway"])
-    async def metrics_socket(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
-        """Gateway events per minute, stacked by event type."""
+    async def metrics_socket(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW, *events: str) -> None:
+        """Gateway events per minute as lines, optionally filtered.
+
+        Examples: `socket`, `socket 6h`, `socket 1h MESSAGE_CREATE`,
+        `socket 1h MESSAGE_CREATE TYPING_START`, `socket 1h MESSAGE_*`.
+        """
+        # Be forgiving: `socket MESSAGE_CREATE` (no window) works too.
+        try:
+            parse_timespan(window)
+        except InvalidTimespan:
+            events = (window, *events)
+            window = DEFAULT_WINDOW
+
         samples, label = self._window(window)
+
+        if not events:
+            async with ctx.typing():
+                file = await self._render(render_socket_chart, samples, f"Gateway events, last {label} (UTC)")
+            await ctx.reply(file=file)
+            return
+
+        if not self.bot.socket_stats:
+            await ctx.reply("No socket events have been recorded yet.")
+            return
+
+        resolved, notes = self._resolve_events(events)
+
+        totals: Counter[str] = Counter()
+        for s in samples:
+            totals.update(s.socket_delta)
+
+        active = [n for n in resolved if totals[n]]
+        notes += [f"`{n}` was received since startup, but not in the last {label}." for n in resolved if not totals[n]]
+
+        if not active:
+            await ctx.reply("\n".join(notes))
+            return
+
+        if len(active) > len(PALETTE):
+            active = sorted(active, key=totals.__getitem__, reverse=True)[: len(PALETTE)]
+            notes.append(f"Showing the {len(PALETTE)} busiest matches.")
+
+        title = f"{', '.join(active) if len(active) <= 3 else f'{len(active)} events'}, last {label} (UTC)"
         async with ctx.typing():
-            file = await self._render(render_socket_chart, samples, f"Gateway events, last {label} (UTC)")
-        await ctx.reply(file=file)
+            file = await self._render(partial(render_socket_chart, events=active), samples, title)
+
+        await ctx.reply("\n".join([_event_summary(samples, active), *notes]), file=file)
 
     async def cog_check(self, ctx: commands.Context[Bot]) -> bool:
         if await self.bot.is_owner(ctx.author):

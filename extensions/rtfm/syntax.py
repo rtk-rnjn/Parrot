@@ -78,7 +78,11 @@ class Extractor:
     junk: str = ""
 
     def find_root(self, page: BeautifulSoup) -> Tag:
-        return next((found for selector in self.root.split(",") if (found := page.select_one(selector.strip()))), None) or page.body or page
+        for selector in self.root.split(","):
+            found = page.select_one(selector.strip())
+            if found:
+                return found
+        return page.body or page
 
 
 EXTRACTORS: dict[str, Extractor] = {
@@ -356,10 +360,12 @@ def split_sections(nodes: list[PageElement], base: str) -> tuple[str | None, dic
             current = clean_heading(node) or current
             sections.setdefault(current, [])
             continue
-        if is_section(node) and (heading := node.find(HEADINGS)) is not None:
-            current = clean_heading(heading) or current
-            sections.setdefault(current, [])
-            heading.decompose()
+        if is_section(node):
+            heading = node.find(HEADINGS)
+            if heading is not None:
+                current = clean_heading(heading) or current
+                sections.setdefault(current, [])
+                heading.decompose()
         markdown = to_markdown(node, base)
         if markdown:
             sections[current].append(markdown)

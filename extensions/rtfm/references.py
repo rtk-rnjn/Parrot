@@ -136,14 +136,19 @@ def anchored(root: Tag, fragment: str) -> tuple[str, Tag] | None:
     return " ".join(start.get_text().split()), holder
 
 
-def render_page(data: bytes, url: str, fragment: str, role: str | None, site: PageSite) -> DetailInfo | None:
+def render_page(data: bytes, url: str, fragment: str, role: str | None, site: PageSite) -> DetailInfo | None:  # noqa: PLR0912
     page = soup_of(data)
     heading = page.select_one("h1")
     if heading is not None:
         for noise in heading.select(NOISE):
             noise.decompose()
     title = " ".join(heading.get_text().split()) if heading else url
-    root = next((node for selector in site.content if (node := page.select_one(selector)) is not None), page)
+    root = page
+    for selector in site.content:
+        selected = page.select_one(selector)
+        if selected is not None:
+            root = selected
+            break
     for tag in root.select(f"{BOILERPLATE}, {site.drop}" if site.drop else BOILERPLATE):
         tag.decompose()
 

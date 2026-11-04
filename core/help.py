@@ -242,8 +242,10 @@ def requirements(command: commands.Command) -> list[str]:
             if found is not None:
                 subject, labels = found
                 permissions.setdefault(subject, set()).update(labels)
-            elif (text := describe_check(check)) and text not in lines:
-                lines.append(text)
+            else:
+                text = describe_check(check)
+                if text and text not in lines:
+                    lines.append(text)
         node = node.parent  # type: ignore[assignment]
 
     for subject, labels in permissions.items():
@@ -315,10 +317,12 @@ class BulkToggleModal(discord.ui.Modal):
             command = view.ctx.bot.get_command(name)
             if command is not None:
                 targets.append(command)  # aliases resolve here; only qualified_name is stored
-            elif category := next((c for c in view.categories if c.name.casefold() == name.casefold()), None):
-                targets.extend(category.commands)
             else:
-                unknown.append(name)
+                category = next((c for c in view.categories if c.name.casefold() == name.casefold()), None)
+                if category is not None:
+                    targets.extend(category.commands)
+                else:
+                    unknown.append(name)
 
         note = f"\nNot found: {', '.join(f'`{name}`' for name in unknown)}" if unknown else ""
         await view.apply(interaction, targets, self.enabled, note=note)

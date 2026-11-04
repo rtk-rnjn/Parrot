@@ -126,7 +126,8 @@ class CommandConfigPage(Page):
             self.section_name = None
 
         self.listed = []
-        if (section := self.current_section) is not None:
+        section = self.current_section
+        if section is not None:
             seen: dict[str, commands.Command] = {}
             for root in section.roots:
                 for command in visible_tree(root):
@@ -156,8 +157,10 @@ class CommandConfigPage(Page):
         section = self.current_section
         if section is None:
             return []
-        if self.command_path is not None and (command := self.lookup.get(self.command_path)) is not None:
-            return [command]
+        if self.command_path is not None:
+            command = self.lookup.get(self.command_path)
+            if command is not None:
+                return [command]
         return section.roots
 
     @property
@@ -359,7 +362,11 @@ class CommandConfigPage(Page):
         return self.string_select("Or pick one command or group\N{HORIZONTAL ELLIPSIS}", options, self.pick_command)
 
     def channel_rule_select(self, key: str, placeholder: str) -> discord.ui.Item:
-        channels = [channel for item in self.shared(key) or [] if (channel := self.guild.get_channel_or_thread(item)) is not None]
+        channels = []
+        for item in self.shared(key) or []:
+            channel = self.guild.get_channel_or_thread(item)
+            if channel is not None:
+                channels.append(channel)
         return ChannelSelect(
             self._channel_handler(key),
             placeholder=placeholder,
@@ -370,7 +377,11 @@ class CommandConfigPage(Page):
         )
 
     def role_rule_select(self, key: str, placeholder: str) -> discord.ui.Item:
-        roles = [role for item in self.shared(key) or [] if (role := self.guild.get_role(item)) is not None]
+        roles = []
+        for item in self.shared(key) or []:
+            role = self.guild.get_role(item)
+            if role is not None:
+                roles.append(role)
         return RoleSelect(
             self._role_handler(key),
             placeholder=placeholder,

@@ -155,7 +155,8 @@ class JavaIndex:
         members: defaultdict[str, defaultdict[str, list[Member]]] = defaultdict(lambda: defaultdict(list))
         for item in sorted(js_index(members_js), key=lambda item: package_rank(item.get("p", ""))):
             package, owner, label = item.get("p"), item.get("c"), item.get("l")
-            if not package or not owner or not label or (jtype := types.get(f"{package}.{owner}")) is None:
+            jtype = types.get(f"{package}.{owner}")
+            if not package or not owner or not label or jtype is None:
                 continue
             anchor = unquote(item.get("u") or label)
             if "(" not in label:
@@ -239,7 +240,8 @@ class JavaIndex:
             if page is None:
                 return None
             link = next((a for a in page.select("div.inherited-list a[href]") if a.get_text(strip=True).lower() == bare), None)
-            if link is None or (parent := self.type_for(qualname, attr(link, "href"))) in (None, qualname):
+            parent = self.type_for(qualname, attr(link, "href")) if link is not None else None
+            if link is None or parent in (None, qualname):
                 return None
             qualname = parent
         return None

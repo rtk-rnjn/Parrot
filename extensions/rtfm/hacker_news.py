@@ -77,8 +77,10 @@ def parse_item_id(argument: str) -> int:
     argument = argument.strip().strip("<>")
     if argument.isdecimal():
         return int(argument)
-    if "ycombinator.com" in argument and (match := ITEM_ID_RE.search(argument)):
-        return int(match[1])
+    if "ycombinator.com" in argument:
+        match = ITEM_ID_RE.search(argument)
+        if match:
+            return int(match[1])
     msg = "Give me an item ID or a `news.ycombinator.com/item?id=...` link."
     raise commands.BadArgument(msg)
 
@@ -152,8 +154,10 @@ def story_text(rank: int, item: Item) -> str:
     link = url if url and _is_http(url) else item_url(item["id"])
 
     heading = f"**{rank}. [{title}]({_safe_url(link)})**"
-    if url and (host := urlparse(url).hostname):
-        heading += f" ({_escape(host.removeprefix('www.'))})"
+    if url:
+        host = urlparse(url).hostname
+        if host:
+            heading += f" ({_escape(host.removeprefix('www.'))})"
     return f"{heading}\n-# {_meta(item)}"
 
 
@@ -328,9 +332,10 @@ class ItemView(BaseLayoutView):
 
         container = discord.ui.Container(discord.ui.TextDisplay(f"{heading}\n-# {_meta(item)}"), accent_colour=HN_COLOUR)
 
-        if text := item.get("text"):
+        item_text = item.get("text")
+        if item_text:
             container.add_item(discord.ui.Separator())
-            container.add_item(discord.ui.TextDisplay(truncate(html_to_markdown(text), 1800)))
+            container.add_item(discord.ui.TextDisplay(truncate(html_to_markdown(item_text), 1800)))
 
         buttons: list[discord.ui.Button] = []
         if url and _is_http(url) and len(url) <= MAX_BUTTON_URL:
@@ -559,7 +564,8 @@ class HackerNewsHub(PaginationLayout):
             f"**Joined:** {discord.utils.format_dt(created, style='D')} ({discord.utils.format_dt(created, style='R')})",
             f"**Posts and comments:** {format_count(len(user.get('submitted', [])))}",
         ]
-        if about := user.get("about"):
+        about = user.get("about")
+        if about:
             lines.append(f"\n{truncate(html_to_markdown(about), 1000)}")
         lines.append(f"\n[View profile]({user_url(user['id'])})")
 

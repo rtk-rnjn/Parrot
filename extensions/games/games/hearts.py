@@ -173,16 +173,20 @@ class Hearts(CardGame):
         if not self.trick:
             if self.trick_no == 1:
                 return [TWO_CLUBS]
-            if not self.hearts_broken and (safe := [c for c in hand if suit_of(c) != "H"]):
-                return safe
+            if not self.hearts_broken:
+                safe_cards = [c for c in hand if suit_of(c) != "H"]
+                if safe_cards:
+                    return safe_cards
             return list(hand)
 
         led = suit_of(self.trick[0][1])
         follow = [c for c in hand if suit_of(c) == led]
         if follow:
             return follow
-        if self.trick_no == 1 and (safe := [c for c in hand if not is_point(c)]):
-            return safe
+        if self.trick_no == 1:
+            safe_cards = [c for c in hand if not is_point(c)]
+            if safe_cards:
+                return safe_cards
         return list(hand)
 
     async def choose_card(self, seat: Seat) -> str:

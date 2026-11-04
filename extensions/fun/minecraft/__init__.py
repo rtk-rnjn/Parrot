@@ -508,8 +508,9 @@ class PlayerView(BaseView):
         info_container.add_item(sep())
         if self.tab == "overview":
             info_container.add_item(text("\n".join(info)))
-            if g := gallery(f"{HEADS}/player/{uid}/400"):
-                info_container.add_item(g)
+            gallery_item = gallery(f"{HEADS}/player/{uid}/400")
+            if gallery_item:
+                info_container.add_item(gallery_item)
         elif self.tab == "skin":
             info_container.add_item(
                 text(
@@ -517,12 +518,14 @@ class PlayerView(BaseView):
                     + (f"[Texture URL]({p.skin_url})" if p.skin_url else "Default skin.")
                 )
             )
-            if g := gallery(p.skin_url or f"{HEADS}/skin/{uid}", f"{HEADS}/body/{uid}/300"):
-                info_container.add_item(g)
+            gallery_item = gallery(p.skin_url or f"{HEADS}/skin/{uid}", f"{HEADS}/body/{uid}/300")
+            if gallery_item:
+                info_container.add_item(gallery_item)
         elif self.tab == "head":
             info_container.add_item(text("## \N{MOYAI} Head\n3D head and flat avatar."))
-            if g := gallery(f"{HEADS}/head/{uid}/300", f"{HEADS}/avatar/{uid}/300"):
-                info_container.add_item(g)
+            gallery_item = gallery(f"{HEADS}/head/{uid}/300", f"{HEADS}/avatar/{uid}/300")
+            if gallery_item:
+                info_container.add_item(gallery_item)
         elif p.cape_url:
             info_container.add_item(text("## \N{SCARF} Cape\nRaw cape texture atlas (the part facing you is the front-left panel)."))
             info_container.add_item(gallery(p.cape_url))  # type: ignore[arg-type]
@@ -740,8 +743,9 @@ class WikiView(BaseView):
             article_instance = self.article
             label = next((label_text for entry_key, label_text, _ in self.entries if entry_key == self.key), "")
             meta = [f"{WIKI_LANGS.get(article_instance.lang, article_instance.lang)} edition"]
-            if article_instance.last_modified and (t := epoch(article_instance.last_modified)):
-                meta.append(f"edited <t:{t}:R>" + (f" by {esc(article_instance.last_editor)}" if article_instance.last_editor else ""))
+            timestamp = epoch(article_instance.last_modified) if article_instance.last_modified else None
+            if timestamp:
+                meta.append(f"edited <t:{timestamp}:R>" + (f" by {esc(article_instance.last_editor)}" if article_instance.last_editor else ""))
             sep_dot = " \N{MIDDLE DOT} "
             container.add_item(
                 head(
@@ -1117,8 +1121,10 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
         fresh: bool = False,
     ) -> tuple[int, Any]:
         key = (method, url, tuple(sorted((params or {}).items())))
-        if not fresh and (hit := self.cache.get(key)) is not None:
-            return hit
+        if not fresh:
+            hit = self.cache.get(key)
+            if hit is not None:
+                return hit
         assert self.session
         try:
             async with self.session.request(method, url, params=params) as r:
@@ -1478,9 +1484,10 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
                 vals = f": {', '.join(map(str, s['values'][:8]))}" if s.get("values") else f" ({s['num_values']} values)"
                 formatted_item_details.append(f"\N{BULLET} state `{s['name']}` *{s['type']}*{vals}")
         foods = await self.mc_opt_index(ver, "foods")
-        if fd := foods.get(name):
+        food = foods.get(name)
+        if food:
             formatted_item_details.append(
-                f"\n**\N{MEAT ON BONE} Food** restores {fd['foodPoints']} hunger ({fd['foodPoints'] / 2:g} drumsticks) \N{MIDDLE DOT} saturation {fd['saturation']}"
+                f"\n**\N{MEAT ON BONE} Food** restores {food['foodPoints']} hunger ({food['foodPoints'] / 2:g} drumsticks) \N{MIDDLE DOT} saturation {food['saturation']}"
             )
         if item:
             try:

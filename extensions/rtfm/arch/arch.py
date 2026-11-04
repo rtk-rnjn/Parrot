@@ -556,7 +556,8 @@ class ArchScraper:
         items: list[NewsItem] = []
         for node in root.iterfind("./channel/item"):
             published = None
-            if raw_date := node.findtext("pubDate"):
+            raw_date = node.findtext("pubDate")
+            if raw_date:
                 try:
                     published = parsedate_to_datetime(raw_date)
                 except TypeError, ValueError:

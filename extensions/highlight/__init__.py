@@ -359,7 +359,8 @@ class Highlights(commands.Cog):
             rows = await self.bot.database.get_guild_highlights(guild_id=guild_id)
             cached = {}
             for user_id, words in rows.items():
-                if pattern := _compile(list(words)):
+                pattern = _compile(list(words))
+                if pattern:
                     cached[user_id] = pattern
             self._patterns[guild_id] = cached
         return cached

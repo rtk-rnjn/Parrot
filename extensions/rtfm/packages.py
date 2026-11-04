@@ -387,7 +387,8 @@ class PyPIRegistry(Registry):
 
     @staticmethod
     def license_of(info: dict[str, Any]) -> str | None:
-        if expression := info.get("license_expression"):
+        expression = info.get("license_expression")
+        if expression:
             return expression
         for classifier in info.get("classifiers") or []:
             if classifier.startswith("License :: "):
@@ -493,7 +494,8 @@ class PyPIRegistry(Registry):
 
             marker = str(requirement.marker) if requirement.marker else ""
             label = f"{requirement.name}{requirement.specifier}"
-            if extras := EXTRA_MARKER.findall(marker):
+            extras = EXTRA_MARKER.findall(marker)
+            if extras:
                 for extra in dict.fromkeys(extras):
                     groups.setdefault(f"Extra: {extra}", []).append(label)
             else:
@@ -927,7 +929,8 @@ def version_line(entry: VersionEntry, latest: str | None) -> str:
         parts.append("\N{NO ENTRY SIGN} yanked")
     if entry.deprecated:
         parts.append("\N{WARNING SIGN}\N{VARIATION SELECTOR-16} deprecated")
-    if stamp := when(entry.released):
+    stamp = when(entry.released)
+    if stamp:
         parts.append(stamp)
     if entry.note:
         parts.append(entry.note)

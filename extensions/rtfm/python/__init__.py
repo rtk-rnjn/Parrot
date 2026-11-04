@@ -930,7 +930,12 @@ def whatsnew_detail_items(series: str, wn: WhatsNew, url: str) -> list[discord.u
 
 
 def since_items(entry: SphinxEntry, notes: list[tuple[str, str]]) -> list[discord.ui.Item]:
-    added = next((m[1] for _, body in notes if (m := VERSION_ADDED_PATTERN.search(body))), None)
+    added = None
+    for _, body in notes:
+        match = VERSION_ADDED_PATTERN.search(body)
+        if match:
+            added = match[1]
+            break
     if notes:
         lines = "\n\n".join(f"**{NOTE_LABELS[kind]}**\n{body}" for kind, body in notes)
     else:
@@ -990,10 +995,12 @@ def pypi_items(data: dict[str, Any]) -> list[discord.ui.Item]:
     files = data.get("urls") or []
     released = next((f.get("upload_time_iso_8601") for f in files if f.get("upload_time_iso_8601")), None)
     kinds = sorted({str(f.get("packagetype", "")).replace("bdist_wheel", "wheel").replace("sdist", "sdist") for f in files if f.get("packagetype")})
-    versions = sorted(
-        {m[1] for c in info.get("classifiers") or [] if (m := PYPI_CLASSIFIER_PATTERN.match(str(c)))},
-        key=lambda v: tuple(int(p) for p in v.split(".")),
-    )
+    versions_set = set()
+    for classifier in info.get("classifiers") or []:
+        match = PYPI_CLASSIFIER_PATTERN.match(str(classifier))
+        if match:
+            versions_set.add(match[1])
+    versions = sorted(versions_set, key=lambda version: tuple(int(part) for part in version.split(".")))
     deps = pypi_dependencies(info.get("requires_dist"))
     vulns = data.get("vulnerabilities") or []
     author = info.get("author") or info.get("maintainer")
@@ -2378,7 +2385,11 @@ class Python(commands.Cog):
 
     async def countdown_view(self, ctx: commands.Context[Bot]) -> PythonView:
         peps = await self.get_peps_index()
-        schedules = [((int(m[1]), int(m[2])), entry) for entry in peps.values() if (m := SCHEDULE_TITLE_PATTERN.match(str(entry.get("title", ""))))]
+        schedules = []
+        for entry in peps.values():
+            match = SCHEDULE_TITLE_PATTERN.match(str(entry.get("title", "")))
+            if match:
+                schedules.append(((int(match[1]), int(match[2])), entry))
         if not schedules:
             msg = "Could not find a Python release-schedule PEP."
             raise PythonError(msg)

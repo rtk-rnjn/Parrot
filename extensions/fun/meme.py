@@ -596,7 +596,7 @@ class MemeStudioView(BaseView):
             lines.append(f"-# \N{HORIZONTAL ELLIPSIS} and {len(chunk) - 12} more in the dropdown menu below.")
         return "\n".join(lines)
 
-    def render(self) -> None:
+    def render(self) -> None:  # noqa: PLR0915
         self.clear_items()
         t = self.template
         accent = GREEN if self.generated else PURPLE
@@ -620,8 +620,9 @@ class MemeStudioView(BaseView):
         c.add_item(text(body_fn()))
 
         img_url = self.generated.url if self.generated else t.url
-        if g := gallery(img_url):
-            c.add_item(g)
+        gallery_item = gallery(img_url)
+        if gallery_item:
+            c.add_item(gallery_item)
 
         c.add_item(sep())
 
@@ -922,8 +923,10 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
         return payload.get("data") or {}
 
     async def get_memes(self, *, fresh: bool = False) -> list[MemeTemplate]:
-        if not fresh and (cached := self.cache.get("trending_memes")) is not None:
-            return cached
+        if not fresh:
+            cached = self.cache.get("trending_memes")
+            if cached is not None:
+                return cached
         data = await self._request("GET", "/get_memes")
         raw_list = data.get("memes") or []
         templates = [MemeTemplate.from_dict(m) for m in raw_list if isinstance(m, dict) and m.get("id")]

@@ -46,8 +46,10 @@ def evaluate(cards: Sequence[str]) -> tuple[int, ...]:  # noqa: PLR0911
     flush_suit = next((s for s, n in suits.items() if n >= 5), None)
     flush_ranks = sorted((rank_of(c) for c in cards if suit_of(c) == flush_suit), reverse=True) if flush_suit else []
 
-    if flush_ranks and (high := _straight_high(set(flush_ranks))) is not None:
-        return (STRAIGHT_FLUSH, high)
+    if flush_ranks:
+        high = _straight_high(set(flush_ranks))
+        if high is not None:
+            return (STRAIGHT_FLUSH, high)
 
     groups = sorted(Counter(ranks).items(), key=lambda item: (item[1], item[0]), reverse=True)
     (top, count), *rest = groups

@@ -153,7 +153,11 @@ async def _resolve_local(query: str, requester: discord.abc.User, limit: int) ->
     info = await asyncio.to_thread(_extract, target, flat=True)
 
     entries = [entry for entry in (info.get("entries") or [info]) if entry]
-    songs = [song for entry in entries if (song := _to_song(entry, requester)) is not None]
+    songs = []
+    for entry in entries:
+        song = _to_song(entry, requester)
+        if song is not None:
+            songs.append(song)
     if not songs:
         return None
 

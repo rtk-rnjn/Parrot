@@ -71,7 +71,12 @@ class EventsPage(Page):
         return self._event(name).get("webhook_uri")
 
     def _all_uris(self) -> set[str]:
-        return {uri for name in EVENT_NAMES if (uri := self.uri(name))}
+        uris = set()
+        for name in EVENT_NAMES:
+            uri = self.uri(name)
+            if uri:
+                uris.add(uri)
+        return uris
 
     async def prepare(self) -> None:
         self._channels = await resolve_webhook_channels(self.guild, self._all_uris())
@@ -212,7 +217,11 @@ class EventsPage(Page):
     async def _assign(self, names: list[EVENT_NAME], channel_id: int | None, interaction: Interaction) -> None:
         await self.dashboard.acknowledge(interaction)
         labels = event_label(names[0]) if len(names) == 1 else f"{len(names)} events"
-        previous = {uri for name in names if (uri := self.uri(name))}
+        previous = set()
+        for name in names:
+            uri = self.uri(name)
+            if uri:
+                previous.add(uri)
 
         if channel_id is None:
             await self.db.edit_events(self.guild.id, event_names=names, enabled=False, webhook_uri=None)

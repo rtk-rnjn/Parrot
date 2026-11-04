@@ -242,10 +242,14 @@ class Giveaway(commands.Cog):
         assert ctx.guild is not None
         database = self.bot.database
         giveaway = None
-        if (match := OBJECT_ID_RE.search(text)) and (object_id := parse_object_id(match.group())):
+        match = OBJECT_ID_RE.search(text)
+        object_id = parse_object_id(match.group()) if match else None
+        if object_id:
             giveaway = await database.get_giveaway(object_id)
-        if giveaway is None and (numbers := SNOWFLAKE_RE.findall(text)):
-            giveaway = await database.get_giveaway_by_message(guild_id=ctx.guild.id, message_id=int(numbers[-1]))
+        if giveaway is None:
+            numbers = SNOWFLAKE_RE.findall(text)
+            if numbers:
+                giveaway = await database.get_giveaway_by_message(guild_id=ctx.guild.id, message_id=int(numbers[-1]))
         return giveaway if giveaway is not None and giveaway["guild_id"] == ctx.guild.id else None
 
     @commands.Cog.listener("on_raw_reaction_add")

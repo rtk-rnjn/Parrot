@@ -42,7 +42,12 @@ def parse_row(row: Tag) -> Contest | None:
     start = datetime.datetime.strptime(cells[0].get_text(strip=True), "%Y-%m-%d %H:%M:%S%z")  # "2026-10-17 21:00:00+0900"
     hours, _, minutes = cells[2].get_text(strip=True).partition(":")
     duration = datetime.timedelta(hours=int(hours or 0), minutes=int(minutes or 0))
-    kind = next((str(title) for span in cells[1].find_all("span") if (title := span.get("title"))), None)
+    kind = None
+    for span in cells[1].find_all("span"):
+        title = span.get("title")
+        if title:
+            kind = str(title)
+            break
     return Contest(
         name=link.get_text(" ", strip=True),
         url=f"{BASE}{href}" if isinstance(href, str) else BASE,

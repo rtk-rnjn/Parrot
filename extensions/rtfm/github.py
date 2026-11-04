@@ -265,7 +265,8 @@ def repository_items(data: dict[str, Any], languages: dict[str, int]) -> list[di
         badges.append("\N{LOCK} Private")
 
     description = safe(data.get("description"), 500) if data.get("description") else "*No description provided.*"
-    if parent := data.get("parent"):
+    parent = data.get("parent")
+    if parent:
         description += f"\nForked from [{parent['full_name']}]({parent['html_url']})"
 
     title = f"[{data['full_name']}]({data['html_url']})"
@@ -544,7 +545,8 @@ def compare_items(repo: RepoRef, base: str, head: str, data: dict[str, Any]) -> 
     )
 
     commit_block = None
-    if commits := data.get("commits"):
+    commits = data.get("commits")
+    if commits:
         newest = commits[-5:][::-1]
         commit_block = text("**Latest commits**\n" + "\n".join(commit_line(entry).split("\n", 1)[0] for entry in newest))
 

@@ -153,7 +153,7 @@ class RedisTab(Tab):
 
     def __init__(self, panel: OwnerPanel) -> None:
         super().__init__(panel)
-        self.info: dict[str, Any] = {}
+        self.info = {}
         self.latency_ms: float | None = None
         self.config_result: tuple[str, dict[str, Any]] | None = None
 

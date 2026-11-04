@@ -376,9 +376,8 @@ class Bot(commands.Bot):
     def http_session(self) -> aiohttp.ClientSession:
         """Return the aiohttp ClientSession used by the bot."""
         if self._http_session is None or self._http_session.closed:
-            session = aiohttp.ClientSession()
-            self.set_http_session(session)
-            return session
+            message = "HTTP session is not set or has been closed."
+            raise RuntimeError(message)
 
         return self._http_session
 

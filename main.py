@@ -8,8 +8,10 @@ import os
 import queue
 import signal
 import socket
+from collections import Counter
 from pathlib import Path
 
+import aiohttp
 import discord
 import uvicorn
 from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
@@ -29,6 +31,61 @@ LIMITED_MEMORY = True
 LOGS_ROOT = Path(os.getenv("LOGS_DIR", "logs"))
 LOG_FORMAT = "[{asctime}] [{levelname:<8}] {name}:{funcName}:{lineno} - {message}"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+class HTTPStats:
+    """Counters fed by aiohttp's TraceConfig. Pass ``trace_config()`` to ClientSession."""
+
+    def __init__(self) -> None:
+        self.requests = 0
+        self.responses = 0
+        self.errors = 0
+        self.conns_created = 0
+        self.conns_reused = 0
+        self.conns_queued = 0  # had to wait because the pool limit was hit
+        self.status_classes: Counter[str] = Counter()  # "2xx", "4xx", ...
+
+    @property
+    def in_flight(self) -> int:
+        return max(self.requests - self.responses - self.errors, 0)
+
+    def snapshot(self) -> dict[str, int]:
+        return {
+            "requests": self.requests,
+            "errors": self.errors,
+            "created": self.conns_created,
+            "reused": self.conns_reused,
+            "queued": self.conns_queued,
+        }
+
+    def trace_config(self) -> aiohttp.TraceConfig:
+        tc = aiohttp.TraceConfig()
+        tc.on_request_start.append(self._request_start)
+        tc.on_request_end.append(self._request_end)
+        tc.on_request_exception.append(self._request_exception)
+        tc.on_connection_create_end.append(self._conn_created)
+        tc.on_connection_reuseconn.append(self._conn_reused)
+        tc.on_connection_queued_end.append(self._conn_queued)
+        return tc
+
+    async def _request_start(self, session, ctx, params) -> None:
+        self.requests += 1
+
+    async def _request_end(self, session, ctx, params: aiohttp.TraceRequestEndParams) -> None:
+        self.responses += 1
+        self.status_classes[f"{params.response.status // 100}xx"] += 1
+
+    async def _request_exception(self, session, ctx, params) -> None:
+        self.errors += 1
+
+    async def _conn_created(self, session, ctx, params) -> None:
+        self.conns_created += 1
+
+    async def _conn_reused(self, session, ctx, params) -> None:
+        self.conns_reused += 1
+
+    async def _conn_queued(self, session, ctx, params) -> None:
+        self.conns_queued += 1
 
 
 class PerModuleFileHandler(logging.Handler):
@@ -171,24 +228,30 @@ def install_signal_handlers(stop: asyncio.Event) -> None:
 
 
 async def start_bot() -> None:
-    bot = Bot()
     stop = asyncio.Event()
     install_signal_handlers(stop)
 
     try:
-        logger.debug("Initializing database connections (Redis & MongoDB)...")
-        await bot.database.invalidate_redis()
-        await bot.database.ping_mongo_server()
-        await bot.database.ping_redis_server()
-
         timeout = ClientTimeout(total=30, connect=10, sock_connect=10, sock_read=20)
         connector = TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET, ttl_dns_cache=300)
+        http_stats = HTTPStats()
 
         async with (
-            ClientSession(timeout=timeout, connector=connector, headers={"User-Agent": USER_AGENT}) as session,
-            bot,
+            ClientSession(
+                timeout=timeout,
+                connector=connector,
+                headers={"User-Agent": USER_AGENT},
+                trace_configs=[http_stats.trace_config()],
+            ) as session,
+            Bot() as bot,
         ):
             bot.set_http_session(session)
+            logger.debug("Initializing database connections (Redis & MongoDB)...")
+
+            await bot.database.invalidate_redis()
+            await bot.database.ping_mongo_server()
+            await bot.database.ping_redis_server()
+
             running = asyncio.create_task(bot.start(), name="Bot: start")
             stopping = asyncio.create_task(stop.wait(), name="Bot: wait for shutdown signal")
             done, _ = await asyncio.wait({running, stopping}, return_when=asyncio.FIRST_COMPLETED)

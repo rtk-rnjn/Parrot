@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import gzip
 import io
 import json
 import logging
@@ -420,6 +421,8 @@ async def load_mdn(session: aiohttp.ClientSession, base: str) -> Entries | None:
     data = await fetch_shared(session, MDN_SITEMAP)
     if not data:
         return None
+    if data[:2] == b"\x1f\x8b":
+        data = await asyncio.to_thread(gzip.decompress, data)
     prefix = base.rstrip("/") + "/"
     entries: Entries = {}
     for url in SITEMAP_LOC.findall(data.decode("utf-8", "replace")):
@@ -495,9 +498,10 @@ def _cpp_symbols(page: BeautifulSoup, lang: str) -> dict[str, str]:
     symbols: dict[str, str] = {}
     for anchor in content.select("a[href]"):
         href, text = attr(anchor, "href"), anchor.get_text(strip=True)
-        if not href.startswith(f"/{lang}/") or "symbol_index" in href or not text:
+        rel = href.removeprefix("/w")
+        if not rel.startswith(f"/{lang}/") or "symbol_index" in href or not text:
             continue
-        symbols.setdefault(text.removesuffix("()").removesuffix("<>()").removesuffix("<>"), href)
+        symbols.setdefault(text.removesuffix("()").removesuffix("<>()").removesuffix("<>"), rel)
     return symbols
 
 
@@ -509,23 +513,23 @@ async def load_cppreference(session: aiohttp.ClientSession, base: str) -> Entrie
     page = soup_of(data)
     symbols = _cpp_symbols(page, lang)
 
-    sub_pages = sorted({attr(a, "href") for a in page.select("#mw-content-text a[href]") if "/symbol_index/" in attr(a, "href")})
+    sub_pages = sorted({attr(a, "href").removeprefix("/w") for a in page.select("#mw-content-text a[href]") if "/symbol_index/" in attr(a, "href")})
     semaphore = asyncio.Semaphore(SUBINDEX_CONCURRENCY)
 
-    async def load_sub(href: str) -> dict[str, str]:
+    async def load_sub(rel: str) -> dict[str, str]:
         async with semaphore:
-            sub = await fetch(session, f"{CPP_ORIGIN}{href}")
+            sub = await fetch(session, f"{CPP_ORIGIN}{rel}")
         return _cpp_symbols(soup_of(sub), lang) if sub else {}
 
-    for found in await asyncio.gather(*(load_sub(href) for href in sub_pages)):
-        for name, href in found.items():
-            symbols.setdefault(name, href)
+    for found in await asyncio.gather(*(load_sub(rel) for rel in sub_pages)):
+        for name, rel in found.items():
+            symbols.setdefault(name, rel)
 
     entries: Entries = {}
-    for name, href in symbols.items():
-        parts = href.strip("/").split("/")
+    for name, rel in symbols.items():
+        parts = rel.strip("/").split("/")
         role = parts[1].replace("_", " ") if len(parts) > 2 else None
-        entries[unique_name(entries, name, role)] = Entry(url=f"{CPP_ORIGIN}{href}", role=role, detail="cppreference")
+        entries[unique_name(entries, name, role)] = Entry(url=f"{CPP_ORIGIN}{rel}", role=role, detail="cppreference")
     return entries
 
 

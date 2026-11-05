@@ -62,6 +62,8 @@ JAVA_TUTORIAL = "https://docs.oracle.com/javase/tutorial/"
 JLS = "https://docs.oracle.com/javase/specs/jls/se21/html/"
 RUST = "https://doc.rust-lang.org"
 
+TOC_SCRIPT = re.compile(r"innerHTML\s*=\s*(['\"])(.*?</ol>)\1", re.S)
+
 type Loader = Callable[[aiohttp.ClientSession], Awaitable[Entries | None]]
 
 
@@ -85,7 +87,7 @@ EXTRACTORS: dict[str, Extractor] = {
     "oracle": Extractor("#PageContent"),
     "jls": Extractor("div.chapter, body", ".navheader, .navfooter"),
     "cppreference": Extractor("#mw-content-text .mw-parser-output, #mw-content-text", ".t-navbar, .toc, .t-example-live-link"),
-    "mdbook": Extractor("main", ".rule, .grammar-railroad, .buttons"),
+    "mdbook": Extractor("main", ".rule, .grammar-railroad, .buttons, .boring"),
     "go": Extractor("article, main"),
 }
 
@@ -155,23 +157,41 @@ async def load_headings(session: aiohttp.ClientSession, page_url: str, root: str
 
 
 async def load_mdbook(session: aiohttp.ClientSession, base: str, role: str) -> Entries | None:
-    """An mdBook's table of contents, which lives in a hashed `toc-*.js` named by the index page."""
-    index = await fetch(session, f"{base}/index.html")
-    if not index:
-        return None
-    script = next((attr(tag, "src") for tag in soup_of(index).select("script[src]") if "toc-" in attr(tag, "src")), None)
-    data = await fetch(session, urljoin(f"{base}/", script)) if script else None
-    toc_script_match = TOC_SCRIPT.search(data.decode("utf-8", "replace")) if data else None
-    if toc_script_match is None:
+    """An mdBook's table of contents from `toc.html`, `toc*.js`, or inline `#sidebar`."""
+    toc_html = await fetch(session, f"{base}/toc.html")
+    if toc_html:
+        toc_soup = soup_of(toc_html)
+    else:
+        index = await fetch(session, f"{base}/index.html")
+        if not index:
+            return None
+        index_soup = soup_of(index)
+        iframe = index_soup.select_one("iframe.sidebar-iframe-outer[src]")
+        if iframe and attr(iframe, "src"):
+            frame_data = await fetch(session, urljoin(f"{base}/", attr(iframe, "src")))
+            toc_soup = soup_of(frame_data) if frame_data else None
+        else:
+            toc_soup = None
+
+        if toc_soup is None:
+            script = next(
+                (attr(tag, "src") for tag in index_soup.select("script[src]") if re.search(r"(?:^|/)toc(?:-[^/]+)?\.js$", attr(tag, "src"))),
+                None,
+            )
+            data = await fetch(session, urljoin(f"{base}/", script)) if script else None
+            match = TOC_SCRIPT.search(data.decode("utf-8", "replace")) if data else None
+            toc_soup = soup_of(match[2].replace("\\'", "'").replace('\\"', '"')) if match is not None else index_soup.select_one("#sidebar")
+
+    if toc_soup is None:
         return None
     entries: Entries = {}
-    for anchor in soup_of(toc_script_match[1].replace("\\'", "'")).select("a[href]"):
+    for anchor in toc_soup.select("a[href]"):
         for number in anchor.select("strong"):
             number.decompose()
         name, href = " ".join(anchor.get_text().split()), attr(anchor, "href")
         if name and href and not href.startswith(("http", "#")):
             entries[unique_name(entries, name, role)] = Entry(url=urljoin(f"{base}/", href), role=role, detail="mdbook")
-    return entries
+    return entries or None
 
 
 async def load_mdn_language(session: aiohttp.ClientSession) -> Entries | None:
@@ -188,7 +208,10 @@ def tutorial_url(href: str) -> str | None:
 
 
 def cppreference_url(href: str) -> str | None:
-    return f"{CPP_ORIGIN}{href}" if href.startswith("/") else None
+    if not href.startswith("/"):
+        return None
+    clean = href if href.startswith("/w/") else f"/w{href}"
+    return f"https://en.cppreference.com{clean}"
 
 
 LANGUAGES: dict[str, Language] = {
@@ -226,7 +249,7 @@ LANGUAGES: dict[str, Language] = {
             functools.partial(
                 load_links,
                 page_url=f"{CPP_ORIGIN}/c/language",
-                selector="#mw-content-text a[href^='/c/language/']",
+                selector="#mw-content-text a[href*='/c/language/']",
                 role="language",
                 kind="cppreference",
                 resolve=cppreference_url,
@@ -240,7 +263,7 @@ LANGUAGES: dict[str, Language] = {
             functools.partial(
                 load_links,
                 page_url=f"{CPP_ORIGIN}/cpp/language",
-                selector="#mw-content-text a[href^='/cpp/language/']",
+                selector="#mw-content-text a[href*='/cpp/language/']",
                 role="language",
                 kind="cppreference",
                 resolve=cppreference_url,

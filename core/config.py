@@ -73,19 +73,7 @@ LOADABLE_COGS = {
 
 if LIMITED_MEMORY:
     _cogs_to_remove = {
-        "extensions.automod",
-        "extensions.cc",
         "extensions.music",
-        "extensions.rtfm",
-        "extensions.rtfm.linter",
-        "extensions.rtfm.w3schools",
-        "extensions.nsfw",
-        "extensions.stats",
-        "extensions.image",
-        "extensions.supercell",
-        "extensions.misc.math",
-        "extensions.misc.wiki",
-        "extensions.nasa",
     }
 
     LOADABLE_COGS = LOADABLE_COGS - _cogs_to_remove

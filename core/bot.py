@@ -41,6 +41,7 @@ from .utils import AsyncTimerDispatcher, ConfirmationLayout, DatabaseManager, Di
 
 if TYPE_CHECKING:
     from extensions.reminder import Reminder
+    from main import HTTPStats
 
 _ = load_dotenv()
 
@@ -120,6 +121,7 @@ class Bot(commands.Bot):
 
         self.__mongodb_watcher = None
         self._listener_tasks: list[asyncio.Task[None]] = []
+        self.http_stats: HTTPStats | None = None
 
     @override
     async def setup_hook(self) -> None:

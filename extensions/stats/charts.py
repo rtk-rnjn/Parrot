@@ -15,6 +15,8 @@ from typing import Any
 import matplotlib
 
 matplotlib.use("Agg")
+
+from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.dates import AutoDateLocator, ConciseDateFormatter
 from matplotlib.figure import Figure
@@ -53,7 +55,7 @@ def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         return ImageFont.load_default()
 
 
-def _style_axes(ax: Any, theme: Theme) -> None:
+def _style_axes(ax: Axes, theme: Theme) -> None:
     ax.set_facecolor(theme.bg)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)

@@ -207,7 +207,7 @@ def _draw_memory(ax: Axes, samples: list[Sample]) -> None:
     _legend(ax2, loc="upper right")
 
 
-def _draw_latency(ax, samples: list[Sample]) -> None:
+def _draw_latency(ax: Axes, samples: list[Sample]) -> None:
     xs = [s.ts for s in samples]
     _style(ax, "Latency & event-loop lag", "ms")
     ax.plot(xs, [s.latency_ms for s in samples], color=PALETTE[5], label="gateway latency")
@@ -215,7 +215,7 @@ def _draw_latency(ax, samples: list[Sample]) -> None:
     _legend(ax, loc="upper left")
 
 
-def _draw_socket(ax, samples: list[Sample], top_n: int = 6) -> None:
+def _draw_socket(ax: Axes, samples: list[Sample], top_n: int = 6) -> None:
     _style(ax, "Gateway events / min", "events")
     _plot_socket(ax, samples, top_n=top_n)
 
@@ -319,7 +319,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         await self.bot.wait_until_ready()
         # Baselines so the first delta isn't "everything since boot".
         self._prev_socket = Counter(self.bot.socket_stats)
-        stats = getattr(self.bot, "http_stats", None)
+        stats = self.bot.http_stats
         self._prev_http = stats.snapshot() if stats else {}
 
     def _collect(self) -> Sample:
@@ -333,7 +333,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         socket_delta = dict(current_socket - self._prev_socket)
         self._prev_socket = current_socket
 
-        stats = getattr(self.bot, "http_stats", None)
+        stats = self.bot.http_stats
         http_now = stats.snapshot() if stats else {}
         d = {k: http_now[k] - self._prev_http.get(k, 0) for k in http_now}
         self._prev_http = http_now
@@ -396,7 +396,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         """Runtime dashboard (CPU, RAM, latency, loop lag, gateway events, aiohttp)."""
         samples, label = self._window(window)
         last = samples[-1]
-        in_use, idle, closed = pool_snapshot(getattr(self.bot, "http_session", None))
+        in_use, idle, closed = pool_snapshot(self.bot.http_session)
 
         async with ctx.typing():
             file = await self._render(render_dashboard, samples, f"Bot metrics, last {label} ({len(samples)} samples, UTC)")

@@ -246,6 +246,8 @@ async def start_bot() -> None:
             Bot() as bot,
         ):
             bot.set_http_session(session)
+            bot.http_stats = http_stats
+
             logger.debug("Initializing database connections (Redis & MongoDB)...")
 
             await bot.database.invalidate_redis()

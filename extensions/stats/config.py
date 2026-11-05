@@ -1,22 +1,18 @@
-"""Configuration for the statistics extension.
-
-All values have production-safe defaults. Override them by assigning a
-``StatsConfig`` (or a plain ``dict``) to ``bot.stats_config`` *before* the
-extension is loaded; see ``StatsConfig.from_bot``.
-"""
-
 from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from core import Bot
 
 
 @dataclass(frozen=True, slots=True)
 class StatsConfig:
     # fmt: off
     database_name: str = "database"           # only needed if it cannot be discovered
-    collection_prefix: str = "stats_"               # e.g. "stats_" to namespace collections
+    collection_prefix: str = "stats_"         # e.g. "stats_" to namespace collections
 
     track_messages: bool = True
     track_voice: bool = True
@@ -87,7 +83,7 @@ class StatsConfig:
         return cls(**dict(data))
 
     @classmethod
-    def from_bot(cls, bot: Any) -> StatsConfig:
+    def from_bot(cls, bot: Bot) -> StatsConfig:
         """Read ``bot.stats_config`` (StatsConfig or dict); fall back to defaults."""
         raw = getattr(bot, "stats_config", None)
         if raw is None:

@@ -1,8 +1,4 @@
-"""JDK Javadoc: packages, types and members from its search indexes, with dotted chains resolved through the pages.
-
-``System.out.println`` walks from ``System`` through the type of its ``out`` field to ``PrintStream.println``, and a
-member a class only inherits is followed to the class that declares it.
-"""
+# javadoc.py
 
 from __future__ import annotations
 

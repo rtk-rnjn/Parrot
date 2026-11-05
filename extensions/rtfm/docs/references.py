@@ -1,9 +1,4 @@
-"""Documentation sources beyond Sphinx: MDN, cppreference, Rust std, PostgreSQL, MySQL, SQLite, MongoDB, git and Hoogle.
-
-Each source has a loader that builds a searchable index of names to URLs and a detail fetcher that turns one
-page into a :class:`DetailInfo` for in-chat display. Hoogle is searched live instead of indexed, and the JDK
-Javadoc lives in :mod:`.javadoc` because it resolves dotted member chains through the pages.
-"""
+# references.py
 
 from __future__ import annotations
 
@@ -17,7 +12,7 @@ import time
 import zlib
 from collections import OrderedDict
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, unquote, urljoin
 
@@ -47,7 +42,7 @@ HEADERS = {}
 
 MDN_SITEMAP = "https://developer.mozilla.org/sitemaps/en-us/sitemap.xml.gz"
 HOOGLE_URL = "https://hoogle.haskell.org/"
-CELL = "\x00"  # separates table cells until the row joins them
+CELL = "\x00"
 DOT = " \N{MIDDLE DOT} "
 FENCE_LANGUAGES = {"python3": "py", "pycon": "py", "pycon3": "py", "default": "py", "none": "", "text": ""}  # Sphinx class names
 
@@ -154,6 +149,8 @@ def render_page(data: bytes, url: str, fragment: str, role: str | None, site: Pa
 
     signature = None
     found = anchored(root, fragment) if fragment else None
+    if fragment and found is None:
+        return None
     if found is not None:
         title, root = found
         signature = title if "(" in title else None
@@ -859,3 +856,329 @@ DETAILS: dict[str, Fetcher] = {
     "git": detail_git,
     "hoogle": detail_hoogle,
 }
+
+
+NODE_PAGES_SKIPPED = frozenset({"index.html", "all.html"})
+NODE_PREFIX = re.compile(r"^(Class|Event|Type|Static method|Namespace|Constructor)\s*:\s*(.+)$")
+NODE_HEADINGS = "h1, h2, h3, h4, h5"
+
+
+def _node_entries(data: bytes, page: str) -> list[tuple[str, str, str]]:
+    """``(name, role, anchor)`` for every heading of one API page. The anchor is empty for the page itself."""
+    module = page.removesuffix(".html")
+    root = soup_of(data)
+    content = root.select_one("#apicontent") or root
+    found: list[tuple[str, str, str]] = []
+    owner = module  # events are named after the class they sit under: `net.Socket 'close'`
+    for heading in content.select(NODE_HEADINGS):
+        mark = heading.select_one("a.mark[id]")
+        if mark is None:
+            continue
+        text = " ".join(heading.get_text().split()).rstrip("#").strip()
+        if not text:
+            continue
+        anchor = attr(mark, "id")
+        if heading.name == "h1":
+            found.append((module, "module", ""))
+            if text.lower() != module.lower():
+                found.append((text, "module", ""))
+            continue
+
+        prefixed = NODE_PREFIX.match(text)
+        if prefixed:
+            role, name = prefixed[1].lower(), prefixed[2]
+        elif text.startswith("new "):
+            role, name = "constructor", text[4:]
+        elif "(" in text:
+            role, name = "method", text
+        elif " " not in text and "." in text:  # `process.argv`
+            role, name = "property", text
+        else:
+            found.append((f"{module}: {text}", "section", anchor))
+            continue
+
+        name = name.split("(", 1)[0].strip() or name
+        if role == "class":
+            owner = name
+        elif role == "event":
+            name = f"{owner} {name}"
+        found.append((name, role, anchor))
+    return found
+
+
+async def load_nodejs(session: aiohttp.ClientSession, base: str) -> Entries | None:
+    index = await fetch(session, f"{base}/index.html")
+    if not index:
+        return None
+    pages: list[str] = []
+    for anchor in soup_of(index).select("a[href$='.html']"):
+        href = attr(anchor, "href").partition("#")[0]
+        if href and "/" not in href and href not in NODE_PAGES_SKIPPED and href not in pages:
+            pages.append(href)
+
+    semaphore = asyncio.Semaphore(SUBINDEX_CONCURRENCY)
+
+    async def load_page(page: str) -> tuple[str, list[tuple[str, str, str]]]:
+        async with semaphore:
+            data = await fetch(session, f"{base}/{page}")
+        return page, (await asyncio.to_thread(_node_entries, data, page) if data else [])
+
+    entries: Entries = {}
+    for page, found in await asyncio.gather(*(load_page(page) for page in pages)):
+        module = page.removesuffix(".html")
+        for name, role, anchor in found:
+            url = f"{base}/{page}" + (f"#{anchor}" if anchor else "")
+            entries[unique_name(entries, name, module)] = Entry(url=url, role=role)
+    return entries or None
+
+
+GO_ORIGIN = "https://pkg.go.dev"
+GO_API_LISTING = "https://api.github.com/repos/golang/go/contents/api"
+GO_API_RAW = "https://raw.githubusercontent.com/golang/go/master/api"
+GO_API_FILE = re.compile(r"go1(?:\.\d+)?\.txt")
+GO_API_LINE = re.compile(r"^pkg (\S+?)(?: \([^)]*\))?, (const|func|method|type|var) (.+)$")  # `(darwin-amd64)` is optional
+GO_NAME = re.compile(r"\w+")
+GO_METHOD = re.compile(r"\(\*?(\w+)(?:\[[^\]]*\])?\)\s*(\w+)")
+GO_TYPE_MEMBER = re.compile(r"\w+(?:\[.*?\])?\s+(?:struct|interface),")  # `type Header struct, Name string`
+GO_VERSION_SEGMENT = re.compile(r"v\d+")
+GO_API_CDN = "https://cdn.jsdelivr.net/gh/golang/go@master/api"
+GO_SITE = PageSite(
+    "go",
+    (".Documentation-content", ".UnitDetails-content", *DEFAULT_CONTENT),
+    ".Documentation-sinceVersion, .Documentation-idLink, .Documentation-exampleButtonsContainer",
+)
+
+
+def _go_symbols(text: str) -> dict[tuple[str, str], tuple[str, str]]:
+    """One ``api/*.txt`` file as ``{(package, anchor): (kind, signature)}``."""
+    found: dict[tuple[str, str], tuple[str, str]] = {}
+    for line in text.splitlines():
+        match = GO_API_LINE.match(line)
+        if match is None:
+            continue
+        package, kind, rest = match.groups()
+        if kind == "method":
+            parts = GO_METHOD.match(rest)
+            if parts is None:
+                continue
+            anchor = f"{parts[1]}.{parts[2]}"
+        else:
+            if kind == "type" and GO_TYPE_MEMBER.match(rest):  # a field or interface method, not the type itself
+                continue
+            name = GO_NAME.match(rest)
+            if name is None:
+                continue
+            anchor = name[0]
+        signature = f"func {rest}" if kind in ("func", "method") else f"{kind} {rest}"
+        found.setdefault((package, anchor), (kind, signature))
+    return found
+
+
+def _go_short(package: str) -> str:
+    """`net/http` is called `http`, and `math/rand/v2` is called `rand`."""
+    parts = package.split("/")
+    return parts[-2] if len(parts) > 1 and GO_VERSION_SEGMENT.fullmatch(parts[-1]) else parts[-1]
+
+
+async def load_go(session: aiohttp.ClientSession, base: str) -> Entries | None:
+    listing = await fetch(session, GO_API_LISTING)
+    try:
+        parsed = json.loads(listing) if listing else []
+        names = [item["name"] for item in parsed if isinstance(item, dict) and "name" in item] if isinstance(parsed, list) else []
+    except ValueError, KeyError, TypeError:
+        names = []
+    files = [name for name in names if GO_API_FILE.fullmatch(name)]
+    if not files:
+        files = ["go1.txt", *(f"go1.{version}.txt" for version in range(1, 28))]
+
+    semaphore = asyncio.Semaphore(SUBINDEX_CONCURRENCY)
+
+    async def load_file(name: str) -> dict[tuple[str, str], tuple[str, str]]:
+        async with semaphore:
+            data = await fetch(session, f"{GO_API_RAW}/{name}", retries=1)
+            if not data:
+                data = await fetch(session, f"{GO_API_CDN}/{name}", retries=1)
+        return await asyncio.to_thread(_go_symbols, data.decode("utf-8", "replace")) if data else {}
+
+    symbols: dict[tuple[str, str], tuple[str, str]] = {}
+    for found in await asyncio.gather(*(load_file(name) for name in files)):
+        for key, value in found.items():
+            symbols.setdefault(key, value)
+
+    entries: Entries = {}
+    if symbols:
+        for package in sorted({package for package, _ in symbols}):
+            entries[unique_name(entries, package, "package")] = Entry(url=f"{GO_ORIGIN}/{package}", role="package", detail="go")
+        for (package, anchor), (kind, signature) in sorted(symbols.items()):
+            name = unique_name(entries, f"{_go_short(package)}.{anchor}", package)
+            entries[name] = Entry(
+                url=f"{GO_ORIGIN}/{package}#{anchor}",
+                role=f"{kind} {DOT} {package}",
+                detail="go",
+                signature=signature,
+            )
+        return entries
+
+    # Fallback: scrape standard library packages from https://pkg.go.dev/std if GitHub/CDN are unreachable
+    std_page = await fetch(session, base)
+    if not std_page:
+        return None
+    for anchor in soup_of(std_page).select("div.StdLib-directories a[href], table a[href]"):
+        pkg = attr(anchor, "href").strip("/")
+        if pkg and not pkg.startswith(("http", "std", "internal")) and "/internal" not in pkg:
+            entries[unique_name(entries, pkg, "package")] = Entry(url=f"{GO_ORIGIN}/{pkg}", role="package", detail="go")
+    return entries or None
+
+
+async def detail_go(session: aiohttp.ClientSession, entry: Entry) -> DetailInfo | None:
+    path, _, anchor = entry.url.removeprefix(f"{GO_ORIGIN}/").partition("#")
+    title = f"{path}.{anchor}" if anchor else path
+    info = await detail_page(session, entry, GO_SITE)
+    if info is None:
+        if not entry.signature:
+            return None
+        text = f"Documented in the [{path}]({GO_ORIGIN}/{path}) package."
+        return detail(title, role=entry.role, signature=entry.signature, sections={"Overview": text}, language="go")
+    return replace(info, qualname=title, signature=info.signature or entry.signature)
+
+
+PHP_SKIPPED_SECTIONS = frozenset({"See Also", "User Contributed Notes"})
+PHP_NAMESPACE_OR_UNDERSCORE = re.compile(r"[\\_]")
+
+PHP_SITE = PageSite(
+    "php",
+    ("#layout-content", *DEFAULT_CONTENT),
+    "#usernotes, .manualnavbar, .page-tools, .up, .prev, .next",
+)
+
+
+def _php_entries(data: bytes, base: str) -> Entries:
+    page = soup_of(data)
+    root = page.select_one("#layout-content") or page
+    entries: Entries = {}
+    classes: set[str] = set()
+    for item in root.select("li"):
+        link = item.find("a", href=True)
+        if link is None:
+            continue
+        href = attr(link, "href")
+        if not href.endswith(".php") or "/" in href or "://" in href:
+            continue
+        name = link.get_text(strip=True).removesuffix("()")
+        if not name:
+            continue
+        if "::" in name:
+            role = "method"
+            classes.add(name.partition("::")[0])
+        else:
+            role = "function"
+        entries[unique_name(entries, name, role)] = Entry(url=f"{base}/{href}", role=role, detail="php")
+
+    for name in sorted(classes):  # the index lists methods only, so derive the class pages from them
+        slug = PHP_NAMESPACE_OR_UNDERSCORE.sub("-", name.lower())
+        entries.setdefault(name, Entry(url=f"{base}/class.{slug}.php", role="class", detail="php"))
+    return entries
+
+
+async def load_php(session: aiohttp.ClientSession, base: str) -> Entries | None:
+    data = await fetch(session, f"{base}/indexes.functions.php")
+    if not data:
+        return None
+    entries = await asyncio.to_thread(_php_entries, data, base)
+    return entries or None
+
+
+def _php_code_blocks(page: BeautifulSoup) -> None:
+    """php.net writes code as `<div class="phpcode"><code>..<br/>..</code></div>`, which would flatten to one line."""
+    for block in page.select("div.phpcode, div.cdata"):
+        for line_break in block.find_all("br"):
+            line_break.replace_with("\n")
+        code = block.get_text().replace("\xa0", " ").strip("\n")
+        pre = page.new_tag("pre", attrs={"class": "language-php"})
+        pre.string = code
+        block.replace_with(pre)
+
+
+def _render_php(data: bytes, entry: Entry) -> DetailInfo | None:
+    page = soup_of(data)
+    refsections = page.select("div.refsect1")
+    if not refsections:  # class pages and book pages have no refentry
+        return None
+    heading = page.select_one("h1.refname") or page.select_one("h1")
+    purpose = page.select_one(".refpurpose .dc-title")
+    synopsis = page.select_one("div.methodsynopsis")
+    signature = " ".join(synopsis.get_text().split()) if synopsis is not None else None
+    _php_code_blocks(page)
+
+    sections: dict[str, str] = {"Overview": purpose.get_text(" ", strip=True) if purpose is not None else ""}
+    for section in refsections:
+        title = section.select_one("h3.title")
+        label = " ".join(title.get_text().split()) if title is not None else "Section"
+        if label in PHP_SKIPPED_SECTIONS:
+            continue
+        if title is not None:
+            title.decompose()
+        for shown in section.select("div.methodsynopsis"):  # already used as the signature
+            shown.decompose()
+        text = to_markdown(section, entry.url)
+        if not text:
+            continue
+        if label == "Description":
+            sections["Overview"] = f"{sections['Overview']}\n\n{text}".strip()
+        else:
+            sections[label] = text
+    name = heading.get_text(strip=True) if heading is not None else entry.url
+    return detail(name, role=entry.role, signature=signature, sections=sections, language="php")
+
+
+async def detail_php(session: aiohttp.ClientSession, entry: Entry) -> DetailInfo | None:
+    data = await fetch(session, entry.url)
+    if not data:
+        return None
+    info = await asyncio.to_thread(_render_php, data, entry)
+    return info if info is not None else await detail_page(session, entry, PHP_SITE)
+
+
+EXTRA_LOADERS = {
+    "nodejs": load_nodejs,
+    "go": load_go,
+    "php": load_php,
+}
+
+EXTRA_DETAILS = {
+    "go": detail_go,
+    "php": detail_php,
+}
+
+MKDOCS_CONTENT = ("article.md-content__inner", *DEFAULT_CONTENT)
+
+# Sites rendered by the generic page renderer. Python-library sites are listed too so their code fences are right.
+EXTRA_PAGE_SITES: dict[str, PageSite] = {
+    "nodejs": PageSite("js", ("#apicontent", *DEFAULT_CONTENT)),
+    "php": PHP_SITE,
+    "go": GO_SITE,
+    "svelte": PageSite("js"),
+    "typescript": PageSite("ts"),
+    "tailwind": PageSite("css"),
+    "bootstrap": PageSite("html"),
+    "starlette": PageSite("py", MKDOCS_CONTENT),
+    "uvicorn": PageSite("py", MKDOCS_CONTENT),
+    "typer": PageSite("py", MKDOCS_CONTENT),
+    "sqlmodel": PageSite("py", MKDOCS_CONTENT),
+    "textual": PageSite("py", MKDOCS_CONTENT),
+    "ruff": PageSite("py", MKDOCS_CONTENT),
+    "uv": PageSite("sh", MKDOCS_CONTENT),
+    "mkdocs": PageSite("py", MKDOCS_CONTENT),
+}
+
+GENERIC_SITE = PageSite(
+    "py",
+    ("article.md-content__inner", "[role=main]", "article.bd-article", "div.body", "main", "article"),
+    ".viewcode-link, .sphinxsidebar",
+)
+GENERIC_KINDS = frozenset({"sphinx", "mkdocs", "llms", "sitemap"})
+
+# Inject
+PAGE_SITES: dict[str, PageSite] = {**EXTRA_PAGE_SITES, **dict.fromkeys(GENERIC_KINDS, GENERIC_SITE)}
+LOADERS: dict[str, Loader] = {**LOADERS, **EXTRA_LOADERS}
+DETAILS: dict[str, Fetcher] = {**DETAILS, **EXTRA_DETAILS}

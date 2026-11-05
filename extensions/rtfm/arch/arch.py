@@ -7,7 +7,6 @@ import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
-from types import TracebackType
 from typing import Any, Literal, Self
 from urllib.parse import quote
 
@@ -317,7 +316,7 @@ class ArchScraper:
 
     def __init__(
         self,
-        session: aiohttp.ClientSession | None = None,
+        session: aiohttp.ClientSession,
         *,
         user_agent: str = DEFAULT_USER_AGENT,
         timeout: float = 15.0,
@@ -327,7 +326,6 @@ class ArchScraper:
         cache_size: int = 256,
     ) -> None:
         self._session = session
-        self._owns_session = session is None
         self._headers = {"User-Agent": user_agent}
         self._timeout = aiohttp.ClientTimeout(total=timeout)
         self._retries = max(1, retries)
@@ -337,32 +335,10 @@ class ArchScraper:
     async def __aenter__(self) -> Self:
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
-        await self.close()
-
-    async def close(self) -> None:
-        """Close the session, but only if this scraper created it."""
-        if self._owns_session and self._session is not None:
-            if not self._session.closed:
-                await self._session.close()
-            self._session = None
-
     def clear_cache(self) -> None:
         self._cache.clear()
 
     def _get_session(self) -> aiohttp.ClientSession:
-        if self._session is None:
-            self._session = aiohttp.ClientSession()
-            self._owns_session = True
-        elif self._session.closed:
-            msg = "The aiohttp session passed to ArchScraper is closed."
-            raise ArchScraperError(msg)
-
         return self._session
 
     async def _fetch_once(

@@ -115,20 +115,7 @@ class Arch(commands.Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self._arch_scraper: ArchScraper | None = None
-
-    @property
-    def arch_scraper(self) -> ArchScraper:
-        """The scraper, built on first use so it picks up the bot's HTTP session once that exists."""
-        if self._arch_scraper is None:
-            self._arch_scraper = ArchScraper(self.bot.http_session)
-        return self._arch_scraper
-
-    async def cog_unload(self) -> None:
-        # The scraper only closes a session it created itself, so the bot's shared session is left alone.
-        if self._arch_scraper is not None:
-            await self._arch_scraper.close()
-            self._arch_scraper = None
+        self.arch_scraper: ArchScraper = ArchScraper(self.bot.http_session)
 
     @commands.group(invoke_without_command=True, aliases=["archlinux"])
     async def arch(self, ctx: commands.Context[Bot]) -> None:

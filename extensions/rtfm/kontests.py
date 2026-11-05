@@ -152,15 +152,15 @@ class Kontests(commands.Cog, name="Contests"):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self._cache: dict[str, Snapshot] = {}
-        self._locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
+        self._snapshot_cache: dict[str, Snapshot] = {}
+        self._resource_locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
     async def snapshot(self, platform: Platform) -> Snapshot:
-        cached = self._cache.get(platform.key)
+        cached = self._snapshot_cache.get(platform.key)
         if cached is not None and not cached.expired:
             return cached
-        async with self._locks[platform.key]:
-            cached = self._cache.get(platform.key)
+        async with self._resource_locks[platform.key]:
+            cached = self._snapshot_cache.get(platform.key)
             if cached is not None and not cached.expired:  # another caller refreshed it first
                 return cached
             now = datetime.datetime.now(datetime.UTC)
@@ -171,7 +171,7 @@ class Kontests(commands.Cog, name="Contests"):
                 fresh = Snapshot(platform, [], now, error="The site did not answer as expected; try again in a minute.")
             else:
                 fresh = Snapshot(platform, order(contests, now), now)
-            self._cache[platform.key] = fresh
+            self._snapshot_cache[platform.key] = fresh
             return fresh
 
     @commands.command(name="kontests", aliases=["contests"])
@@ -187,5 +187,5 @@ class Kontests(commands.Cog, name="Contests"):
     @commands.is_owner()
     async def kontest_reload(self, ctx: commands.Context[Bot]) -> None:
         """Forget the cached contest listings so the next `kontests` fetches every site again."""
-        self._cache.clear()
+        self._snapshot_cache.clear()
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")

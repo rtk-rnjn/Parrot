@@ -1,9 +1,4 @@
-"""Language syntax and concepts: `$syntax rust match` finds the reference section, not an API entry.
-
-Each curated language has a few references (specifications, tutorials, guides) indexed by section title, and the
-matching section is rendered in chat. When none of them covers the topic, or the language is not curated, the web is
-searched for documentation instead.
-"""
+# syntax.py
 
 from __future__ import annotations
 
@@ -20,9 +15,9 @@ import aiohttp
 import discord
 from bs4 import Tag
 from bs4.element import Comment, NavigableString
-from discord.ext import commands, tasks
+from discord.ext import commands
 
-from .docs import ResultsView, parse_sphinx
+from . import ResultsView, parse_sphinx
 from .references import (
     CPP_ORIGIN,
     HEADERS,
@@ -467,34 +462,20 @@ class Syntax(commands.Cog, command_attrs={"hidden": True}, name="Language Syntax
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self.indexes: dict[str, SiteIndex] = {}
+        self.site_index_map: dict[str, SiteIndex] = {}
         self._locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 
-    async def cog_load(self) -> None:
-        if self.refresh.is_running():
-            self.refresh.restart()
-        else:
-            self.refresh.start()
-
-    async def cog_unload(self) -> None:
-        if self.refresh.is_running():
-            self.refresh.cancel()
-
-    @tasks.loop(hours=12)
-    async def refresh(self) -> None:
-        await asyncio.gather(*(self.load_language(name, force=True) for name in LANGUAGES))
-
     async def load_language(self, name: str, *, force: bool = False) -> SiteIndex | None:
-        if not force and name in self.indexes:
-            return self.indexes[name]
+        if not force and name in self.site_index_map:
+            return self.site_index_map[name]
         async with self._locks[name]:
-            if not force and name in self.indexes:
-                return self.indexes[name]
+            if not force and name in self.site_index_map:
+                return self.site_index_map[name]
             index = await build_language(self.bot.http_session, name)
             if index is not None:  # on failure keep the old index
-                self.indexes[name] = index
+                self.site_index_map[name] = index
                 log.info("%s syntax: %s", name, index.describe())
-            return self.indexes.get(name)
+            return self.site_index_map.get(name)
 
     async def get_detail(self, site: str, entry: Entry) -> DetailInfo | None:
         if entry.detail == "mdn":

@@ -120,7 +120,7 @@ class Bot(commands.Bot):
         self.temporary_ban_list: dict[int, float] = {}  # user_id -> timestamp of when the ban expires
 
         self.__mongodb_watcher = None
-        self._listener_tasks: list[asyncio.Task[None]] = []
+        self._database_listener_tasks: list[asyncio.Task[None]] = []
         self.http_stats: HTTPStats | None = None
 
     @override
@@ -566,19 +566,19 @@ class Bot(commands.Bot):
                 _log.warning("Redis listener stopped; key events will not be dispatched: %s", error)
 
     def _start_database_listeners(self) -> None:
-        self._listener_tasks = [
+        self._database_listener_tasks = [
             self.loop.create_task(self.__start_mongodb_listener(), name=f"{self.__class__.__name__}: __start_mongodb_listener"),
             self.loop.create_task(self.__start_redis_listener(), name=f"{self.__class__.__name__}: __start_redis_listener"),
         ]
 
     async def _stop_database_listeners(self) -> None:
         # Cancel the consumers first so closing the stream underneath them cannot surface as a task error.
-        for task in self._listener_tasks:
+        for task in self._database_listener_tasks:
             task.cancel()
-        for task in self._listener_tasks:
+        for task in self._database_listener_tasks:
             with contextlib.suppress(asyncio.CancelledError, PyMongoError, RedisError):
                 await task
-        self._listener_tasks = []
+        self._database_listener_tasks = []
 
         if self.__mongodb_watcher is not None:
             with contextlib.suppress(PyMongoError):

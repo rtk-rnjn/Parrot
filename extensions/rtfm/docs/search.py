@@ -1,4 +1,4 @@
-"""Fuzzy search over a documentation index, shared by every source."""
+# search.py
 
 from __future__ import annotations
 

@@ -41,13 +41,13 @@ from .constants import (
     WTF_PYTHON_RAW_URL,
 )
 from .docs import Docs
+from .docs.syntax import Syntax
 from .github import GitHub
 from .hacker_news import HackerNews
 from .javascript import JavaScript
 from .kontests import Kontests
 from .packages import Packages
 from .python import Python
-from .syntax import Syntax
 from .used import build_embeds, execute_run, parse_man_page
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ EMBED_FIELD_LIMIT = 1024
 MIN_TUTORIAL_SCORE = 50
 DISCORD_MESSAGE_LIMIT = 2000
 
-DEPENDENCIES = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript, HackerNews, Arch]
+DEPENDENCIES: list[type[commands.Cog]] = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript, HackerNews, Arch]
 
 
 class Developer(*DEPENDENCIES, commands.Cog):
@@ -131,10 +131,6 @@ class Developer(*DEPENDENCIES, commands.Cog):
             content = f"{content[:1021]}..."
 
         return re.sub(r" +", " ", content)
-
-    @property
-    def session(self):
-        return self.bot.http_session
 
     @commands.command()
     async def run(

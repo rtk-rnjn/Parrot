@@ -1179,6 +1179,6 @@ GENERIC_SITE = PageSite(
 GENERIC_KINDS = frozenset({"sphinx", "mkdocs", "llms", "sitemap"})
 
 # Inject
-PAGE_SITES: dict[str, PageSite] = {**EXTRA_PAGE_SITES, **dict.fromkeys(GENERIC_KINDS, GENERIC_SITE)}
+PAGE_SITES: dict[str, PageSite] = {**PAGE_SITES, **EXTRA_PAGE_SITES, **dict.fromkeys(GENERIC_KINDS, GENERIC_SITE)}
 LOADERS: dict[str, Loader] = {**LOADERS, **EXTRA_LOADERS}
 DETAILS: dict[str, Fetcher] = {**DETAILS, **EXTRA_DETAILS}

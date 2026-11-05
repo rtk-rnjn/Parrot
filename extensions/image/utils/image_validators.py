@@ -1,18 +1,3 @@
-"""Validation, clamping and parsing helpers shared by every image module.
-
-Nothing in this module knows about Discord. Every message carried by
-:class:`ImageValidationError` is written to be safe to show to end users.
-
-Policy
-------
-* Numeric parameters that are *numbers but out of range* are clamped.
-* Parameters that are *not numbers / not finite / not an allowed choice* raise
-  :class:`ImageValidationError`.
-* Image bytes are never trusted: the real format is detected from magic bytes,
-  cross-checked against what Pillow decodes, and size / dimension / frame
-  limits are enforced *before* any pixel data is decoded.
-"""
-
 from __future__ import annotations
 
 import io
@@ -56,6 +41,9 @@ class ImageInfo:
     width: int
     height: int
     frames: int
+    size_bytes: int = 0
+    mode: str = "RGBA"
+    is_animated: bool = False
 
 
 def sniff_format(data: bytes) -> str | None:
@@ -96,6 +84,8 @@ def inspect_image(data: bytes) -> ImageInfo:
             fmt = "JPEG" if img.format == "MPO" else img.format
             width, height = img.size
             frames = int(getattr(img, "n_frames", 1))
+            mode = str(img.mode)
+            is_anim = bool(getattr(img, "is_animated", frames > 1))
     except Image.DecompressionBombError as exc:
         msg = "The image has too many pixels."
         raise ImageValidationError(msg) from exc
@@ -115,7 +105,15 @@ def inspect_image(data: bytes) -> ImageInfo:
     if frames > MAX_INPUT_FRAMES or width * height * frames > MAX_TOTAL_INPUT_PIXELS:
         msg = "The animation has too many frames or is too large."
         raise ImageValidationError(msg)
-    return ImageInfo(format=fmt, width=width, height=height, frames=max(1, frames))
+    return ImageInfo(
+        format=fmt,
+        width=width,
+        height=height,
+        frames=max(1, frames),
+        size_bytes=len(data),
+        mode=mode,
+        is_animated=is_anim,
+    )
 
 
 def clamp_int(value: object, low: int, high: int, name: str = "value") -> int:
@@ -202,7 +200,7 @@ def parse_hex_color(text: object, name: str = "color") -> Color:
 
 
 def parse_color_list(text: str | None, *, min_count: int = 2, max_count: int = 12, name: str = "colors") -> list[Color]:
-    """Parse a comma/space separated list of colours. Blank or ``None`` \N{RIGHTWARDS ARROW} ``[]``."""
+    """Parse a comma/space separated list of colours. Blank or ``None`` -> ``[]``."""
     if text is None or not text.strip():
         return []
     tokens = [t for t in re.split(r"[,\s;]+", text.strip()) if t]

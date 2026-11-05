@@ -501,7 +501,7 @@ class Music(commands.Cog):
         await ctx.reply(view=Notice.success(f"Jumped to **{position}**."))
         await player.refresh_panel()
 
-    @commands.command(name="filter", aliases=["fx"])
+    @commands.command(name="filter")
     async def filter(
         self,
         ctx: Context[Bot],

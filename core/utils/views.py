@@ -83,7 +83,7 @@ class BaseView(discord.ui.View):
         self,
         author: Author,
         *,
-        timeout: float | None = None,
+        timeout: float | None = 600,
         required_permission: discord.Permissions | None = None,
     ) -> None:
         super().__init__(timeout=timeout)

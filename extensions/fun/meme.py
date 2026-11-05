@@ -1040,7 +1040,7 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
         c = current.lower().strip()
         return [app_commands.Choice(name=lbl, value=val) for val, lbl, _ in FONTS if not c or c in val or c in lbl.lower()][:25]
 
-    @commands.group(name="meme", aliases=["memes", "imgflip"], invoke_without_command=True)
+    @commands.group(name="imgflip", aliases=["memes"], invoke_without_command=True)
     @commands.cooldown(2, 8.0, commands.BucketType.user)
     async def meme(
         self,

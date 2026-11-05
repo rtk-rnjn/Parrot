@@ -982,7 +982,6 @@ class LogoInterpreter:
             )
 
     def _register_all_primitives(self) -> None:  # noqa: PLR0915
-        # --- Turtle Movement & Position ---
         self._reg(
             ("FD", "FORWARD"),
             1,
@@ -1042,7 +1041,6 @@ class LogoInterpreter:
             lambda a, e, t: 1.0 if self.turtle.pen_down else 0.0,
         )
 
-        # --- Turtle Shapes, Fills, Labels & Colors ---
         self._reg(
             "ARC",
             2,
@@ -1105,7 +1103,6 @@ class LogoInterpreter:
         )
         self._reg("PENSIZE", 0, lambda a, e, t: float(self.turtle.pen_width))
 
-        # --- Multi-Turtle Commands (Tier 2 with hard cap) ---
         self._reg(
             "SETTURTLE",
             1,
@@ -1117,7 +1114,6 @@ class LogoInterpreter:
         self._reg("TELL", 1, self._prim_tell)
         self._reg("ASK", 2, self._prim_ask)
 
-        # --- Control Flow ---
         self._reg("REPEAT", 2, self._prim_repeat)
         self._reg("REPCOUNT", 0, lambda a, e, t: float(e.get_repcount()))
         self._reg("IF", 2, self._prim_if, min_arity=2, max_arity=3)
@@ -1134,7 +1130,6 @@ class LogoInterpreter:
         self._reg(("OUTPUT", "OP"), 1, self._prim_output)
         self._reg("IGNORE", 1, lambda a, e, t: None)
 
-        # --- Variables & Scope ---
         self._reg("MAKE", 2, self._prim_make, raw_first_var_fallback=True)
         self._reg(
             "LOCAL",
@@ -1148,7 +1143,6 @@ class LogoInterpreter:
         self._reg("THING", 1, self._prim_thing)
         self._reg(("NAMEP", "NAME?"), 1, self._prim_namep)
 
-        # --- Math & Logic ---
         self._reg("SUM", 2, self._prim_sum, min_arity=0, max_arity=-1)
         self._reg("DIFFERENCE", 2, lambda a, e, t: self._apply_binary_op("-", a[0], a[1]))
         self._reg(
@@ -1241,7 +1235,6 @@ class LogoInterpreter:
         self._reg("TRUE", 0, lambda a, e, t: 1.0)
         self._reg("FALSE", 0, lambda a, e, t: 0.0)
 
-        # --- Data (List & Word) Primitives ---
         self._reg(
             "LIST",
             2,
@@ -1278,12 +1271,10 @@ class LogoInterpreter:
         self._reg("ASCII", 1, self._prim_ascii)
         self._reg("CHAR", 1, self._prim_char)
 
-        # --- Output Primitives ---
         self._reg(("PRINT", "PR"), 1, self._prim_print, min_arity=0, max_arity=-1)
         self._reg("TYPE", 1, self._prim_type, min_arity=0, max_arity=-1)
         self._reg("SHOW", 1, self._prim_show, min_arity=0, max_arity=-1)
 
-    # --- Turtle Primitive Implementations ---
     def _prim_setpos(self, args: list[Any], env: Environment, is_tail: bool) -> None:
         lst = self._require_list(args[0], "SETPOS")
         vals = lst.values
@@ -1374,7 +1365,6 @@ class LogoInterpreter:
         finally:
             self.turtle._active_ids = prev_active
 
-    # --- Control Flow Primitive Implementations ---
     def _prim_repeat(self, args: list[Any], env: Environment, is_tail: bool) -> None:
         count = self._require_int(args[0], "REPEAT")
         if count < 0 or count > self._max_repeat:
@@ -1537,7 +1527,6 @@ class LogoInterpreter:
     def _prim_output(self, args: list[Any], env: Environment, is_tail: bool) -> None:
         raise _OutputSignal(args[0])
 
-    # --- Variable & Scope Implementations ---
     def _extract_var_name(self, raw: Any, context: str) -> str:
         name = self._to_word_str(raw).strip().lstrip(":").lstrip('"').upper()
         if not name:
@@ -1570,7 +1559,6 @@ class LogoInterpreter:
         name = self._extract_var_name(args[0], "NAMEP")
         return 1.0 if env.has(name) else 0.0
 
-    # --- Math & Logic Implementations ---
     def _prim_sum(self, args: list[Any], env: Environment, is_tail: bool) -> float:
         total = 0.0
         for a in args:
@@ -1706,7 +1694,6 @@ class LogoInterpreter:
                 return 1.0
         return 0.0
 
-    # --- Data (Word & List) Implementations ---
     def _prim_sentence(self, args: list[Any], env: Environment, is_tail: bool) -> LogoList:
         flat: list[Any] = []
         for arg in args:
@@ -1883,7 +1870,6 @@ class LogoInterpreter:
             raise LogoRuntimeError(msg)
         return chr(code)
 
-    # --- Output Primitives ---
     def _append_output(self, line: str) -> None:
         if len(self.output) >= self._max_output_lines:
             msg = f"Maximum output lines ({self._max_output_lines}) exceeded."

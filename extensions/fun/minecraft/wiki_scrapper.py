@@ -617,7 +617,6 @@ class WikiClient:
         msg = f"Could not reach {self.base_url}: {last_exc}"
         raise WikiError(msg)
 
-    # -- search
     async def opensearch(self, query: str, limit: int = 15) -> list[str]:
         """Prefix autocomplete (titles). Cached briefly; cheap enough for Discord autocomplete."""
         if not query.strip():
@@ -675,7 +674,6 @@ class WikiClient:
             msg = "Couldn't pick a random page."
             raise WikiError(msg) from exc
 
-    # -- article
     async def get_article(self, title: str, *, raw_wikitext: bool = False) -> WikiArticle:
         title = unquote(title).replace("_", " ").strip()
         props = "text|categories|revid|displaytitle" + ("|wikitext" if raw_wikitext else "")

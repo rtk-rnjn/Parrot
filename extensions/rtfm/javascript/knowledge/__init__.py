@@ -118,7 +118,6 @@ class TypingInfo:
 
 
 BUILTINS_DB: dict[str, BuiltinInfo] = {
-    # --- Fundamental Objects ---
     "Object": BuiltinInfo(
         name="Object",
         category="Fundamental Object",
@@ -200,7 +199,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "Symbol.prototype.description",
         ),
     ),
-    # --- Numbers, Math & Dates ---
     "Number": BuiltinInfo(
         name="Number",
         category="Numbers & Dates",
@@ -309,7 +307,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "Temporal.Duration",
         ),
     ),
-    # --- Text Processing ---
     "String": BuiltinInfo(
         name="String",
         category="Text Processing",
@@ -366,7 +363,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "RegExp.prototype.sticky",
         ),
     ),
-    # --- Indexed Collections ---
     "Array": BuiltinInfo(
         name="Array",
         category="Indexed Collection",
@@ -493,7 +489,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "Float16Array.prototype.slice",
         ),
     ),
-    # --- Keyed Collections ---
     "Map": BuiltinInfo(
         name="Map",
         category="Keyed Collection",
@@ -556,7 +551,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "WeakSet.prototype.delete",
         ),
     ),
-    # --- Control Abstraction & Async ---
     "Promise": BuiltinInfo(
         name="Promise",
         category="Control Abstraction",
@@ -630,7 +624,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "AsyncFunction.prototype.call",
         ),
     ),
-    # --- Structured Data & Binary Buffers ---
     "JSON": BuiltinInfo(
         name="JSON",
         category="Structured Data Namespace",
@@ -715,7 +708,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "Atomics.xor",
         ),
     ),
-    # --- Reflection & Meta-Programming ---
     "Proxy": BuiltinInfo(
         name="Proxy",
         category="Reflection / Meta-programming",
@@ -754,7 +746,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "Reflect.setPrototypeOf",
         ),
     ),
-    # --- Memory & Explicit Resource Management ---
     "WeakRef": BuiltinInfo(
         name="WeakRef",
         category="Memory Management",
@@ -800,7 +791,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "AsyncDisposableStack.prototype.disposed",
         ),
     ),
-    # --- Internationalization ---
     "Intl": BuiltinInfo(
         name="Intl",
         category="Internationalization Namespace",
@@ -821,7 +811,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
             "Intl.supportedValuesOf",
         ),
     ),
-    # --- Global Properties & Functions ---
     "globalThis": BuiltinInfo(
         name="globalThis",
         category="Global Value Property",
@@ -913,7 +902,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
         summary="Executes a string of JavaScript code in the current scope; strongly discouraged due to code-injection security risks and JIT deoptimization.",
         methods=(),
     ),
-    # --- Web / WinterCG Standard Runtime Globals ---
     "structuredClone": BuiltinInfo(
         name="structuredClone",
         category="Web / WinterCG Global Function",
@@ -1002,7 +990,6 @@ BUILTINS_DB: dict[str, BuiltinInfo] = {
 
 
 ERRORS_DB: dict[str, ErrorInfo] = {
-    # --- Standard ECMAScript Built-in Errors ---
     "Error": ErrorInfo(
         name="Error",
         category="Base Runtime Error",
@@ -1132,7 +1119,6 @@ ERRORS_DB: dict[str, ErrorInfo] = {
         example="// Catch both RangeError (V8/JSC) and InternalError (SpiderMonkey) on recursion:\ntry {\n  deepWalk(tree);\n} catch (err) {\n  console.error('Stack limit reached:', err.name);\n}",
         anchor="InternalError",
     ),
-    # --- Web / WinterCG / DOMException Errors ---
     "DOMException": ErrorInfo(
         name="DOMException",
         category="Web / WinterCG API Exception",
@@ -1228,7 +1214,6 @@ ERRORS_DB: dict[str, ErrorInfo] = {
         example="if (ws.readyState === WebSocket.OPEN) {\n  ws.send(JSON.stringify(message));\n}",
         anchor="Error",
     ),
-    # --- WebAssembly Errors ---
     "CompileError": ErrorInfo(
         name="CompileError",
         category="WebAssembly Error (`WebAssembly.CompileError`)",
@@ -1266,7 +1251,6 @@ ERRORS_DB: dict[str, ErrorInfo] = {
         example="try {\n  instance.exports.processBuffer(ptr, len);\n} catch (err) {\n  if (err instanceof WebAssembly.RuntimeError) console.error('WASM trap:', err);\n}",
         anchor="Error",
     ),
-    # --- Node.js Core, System & Module Errors ---
     "AssertionError": ErrorInfo(
         name="AssertionError",
         category="Node.js Test & Invariant Error (`node:assert`)",
@@ -1391,7 +1375,6 @@ ERRORS_DB: dict[str, ErrorInfo] = {
 }
 
 OPERATORS_DB: tuple[OperatorInfo, ...] = (
-    # --- Member Access, Optional Chaining & Instantiation ---
     OperatorInfo(
         symbol="?.",
         name="Optional Chaining Operator",
@@ -1428,7 +1411,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="new",
         aliases=("construct", "new.target", "instance"),
     ),
-    # --- Postfix & Prefix Unary Operators ---
     OperatorInfo(
         symbol="++",
         name="Increment Operator (Prefix & Postfix)",
@@ -1525,7 +1507,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="await",
         aliases=("async-await",),
     ),
-    # --- Arithmetic Operators ---
     OperatorInfo(
         symbol="**",
         name="Exponentiation Operator",
@@ -1598,7 +1579,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="Subtraction",
         aliases=("minus", "subtract", "negate", "-="),
     ),
-    # --- Bitwise Shift Operators ---
     OperatorInfo(
         symbol="<<",
         name="Left Shift Operator",
@@ -1635,7 +1615,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="Unsigned_right_shift",
         aliases=("urshift", "unsigned-right-shift", "zero-fill-right-shift", ">>>="),
     ),
-    # --- Relational & Type-Testing Operators ---
     OperatorInfo(
         symbol="<",
         name="Relational Comparison Operators (`<`, `<=`, `>`, `>=`)",
@@ -1672,7 +1651,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="instanceof",
         aliases=("instance-of", "isprototypeof"),
     ),
-    # --- Equality Operators ---
     OperatorInfo(
         symbol="===",
         name="Strict Equality Operator",
@@ -1697,7 +1675,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="Equality",
         aliases=("loose-equals", "double-equals", "!="),
     ),
-    # --- Bitwise Binary Operators ---
     OperatorInfo(
         symbol="&",
         name="Bitwise AND Operator",
@@ -1734,7 +1711,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="Bitwise_OR",
         aliases=("bitwise-or", "bit-or", "|="),
     ),
-    # --- Logical & Short-Circuit Operators ---
     OperatorInfo(
         symbol="&&",
         name="Logical AND Operator",
@@ -1783,7 +1759,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="Conditional_operator",
         aliases=("ternary", "?:", "conditional"),
     ),
-    # --- Assignment & Logical Assignment Operators ---
     OperatorInfo(
         symbol="=",
         name="Assignment & Destructuring Assignment",
@@ -1832,7 +1807,6 @@ OPERATORS_DB: tuple[OperatorInfo, ...] = (
         anchor="Logical_AND_assignment",
         aliases=("and-assign", "logical-and-assignment"),
     ),
-    # --- Functions, Spread, Yield & Sequence ---
     OperatorInfo(
         symbol="=>",
         name="Arrow Function Expression",

@@ -2299,8 +2299,6 @@ class Packages(commands.Cog, name="Packages"):
         """Searches PyPI for packages matching your query."""
         return await self.deliver(ctx, self.search_view(ctx, PYPI, query))
 
-    # --- npm ---
-
     @commands.group(name="npmsearch", aliases=["npm"], invoke_without_command=True, extras={"examples": ["npmsearch react", "npmsearch @types/node"]})
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def npmsearch(
@@ -2582,8 +2580,6 @@ class Packages(commands.Cog, name="Packages"):
         """Searches NuGet.org for .NET packages matching your query."""
         return await self.deliver(ctx, self.search_view(ctx, NUGET, query))
 
-    # --- pub.dev (Dart / Flutter) ---
-
     @commands.group(
         name="pub",
         aliases=["pubdev", "pubsearch", "flutter"],
@@ -2677,8 +2673,6 @@ class Packages(commands.Cog, name="Packages"):
     ) -> discord.Message:
         """Searches Hex.pm for Elixir and Erlang packages matching your query."""
         return await self.deliver(ctx, self.search_view(ctx, HEX, query))
-
-    # --- Unified `package` / `pkg` group ---
 
     @commands.group(name="package", aliases=["pkg"], invoke_without_command=True)
     @commands.cooldown(1, 5, commands.BucketType.user)

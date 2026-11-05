@@ -254,11 +254,6 @@ class PerlinNoiseFactory:
         ret /= 2 - 2 ** (1 - self.octaves)
 
         if self.unbias:
-            # The output of the plain Perlin noise algorithm has a fairly
-            # strong bias towards the center due to the central limit theorem
-            # -- in fact the top and bottom 1/8 virtually never happen.  That's
-            # a quarter of our entire output range!  If only we had a function
-            # in [0..1] that could introduce a bias towards the endpoints...
             r = (ret + 1) / 2
             # Doing it this many times is a completely made-up heuristic.
             for _ in range(int(self.octaves / 2 + 0.5)):

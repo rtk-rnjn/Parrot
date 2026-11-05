@@ -7,6 +7,20 @@ from collections.abc import Callable, Sequence
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
+from .image_effects_basic import _luminance, _sample_bilinear, duotone, edge, glitch, grayscale, invert, mirror, pixelate, posterize, spin
+from .image_effects_distortions import bulge as distortion_bulge
+from .image_effects_distortions import chromatic as distortion_chromatic
+from .image_effects_distortions import crt as distortion_crt
+from .image_effects_distortions import fisheye as distortion_fisheye
+from .image_effects_distortions import gaussian_blur as distortion_gaussian_blur
+from .image_effects_distortions import melt as distortion_melt
+from .image_effects_distortions import motion_blur as distortion_motion_blur
+from .image_effects_distortions import radial_blur as distortion_radial_blur
+from .image_effects_distortions import ripple as distortion_ripple
+from .image_effects_distortions import swirl as distortion_swirl
+from .image_effects_distortions import tilt_shift as distortion_tilt_shift
+from .image_effects_distortions import vhs as distortion_vhs
+from .image_effects_distortions import zoom_blur as distortion_zoom_blur
 from .image_utils import (
     EncodedImage,
     Frame,
@@ -40,172 +54,6 @@ from .image_validators import (
 )
 
 EffectFunc = Callable[..., Image.Image]
-_LUMA = np.array([0.299, 0.587, 0.114], dtype=np.float32)
-ASCII_RAMP = " .:-=+*#%@"
-MIRROR_MODES = ("left", "right", "top", "bottom", "quad")
-
-
-def _luminance(rgb: np.ndarray) -> np.ndarray:
-    """Rec.601 luma of an ``(H, W, 3)`` array as float32 in 0..255."""
-    return rgb.astype(np.float32) @ _LUMA
-
-
-def _sample_bilinear(arr: np.ndarray, xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
-    """Fast vectorized bilinear coordinate remapping for ``(H, W, C)`` uint8 arrays."""
-    h, w = arr.shape[:2]
-    x = np.clip(xs, 0.0, w - 1.001)
-    y = np.clip(ys, 0.0, h - 1.001)
-    x0 = np.floor(x).astype(np.int32)
-    y0 = np.floor(y).astype(np.int32)
-    x1 = np.minimum(x0 + 1, w - 1)
-    y1 = np.minimum(y0 + 1, h - 1)
-    wx = (x - x0)[..., None].astype(np.float32)
-    wy = (y - y0)[..., None].astype(np.float32)
-    c00 = arr[y0, x0].astype(np.float32)
-    c10 = arr[y0, x1].astype(np.float32)
-    c01 = arr[y1, x0].astype(np.float32)
-    c11 = arr[y1, x1].astype(np.float32)
-    top = c00 * (1.0 - wx) + c10 * wx
-    bot = c01 * (1.0 - wx) + c11 * wx
-    return np.clip(np.rint(top * (1.0 - wy) + bot * wy), 0, 255).astype(np.uint8)
-
-
-def pixelate(img: Image.Image, pixel_size: int = 8) -> Image.Image:
-    """Pixelate by box-averaging then nearest-neighbour upscaling."""
-    size = clamp_int(pixel_size, 2, 128, "pixel_size")
-    rgba = to_rgba(img)
-    width, height = rgba.size
-    small = (max(1, width // size), max(1, height // size))
-    reduced = resize_rgba(rgba, small, Image.Resampling.BOX)
-    return reduced.resize((width, height), Image.Resampling.NEAREST)
-
-
-def glitch(img: Image.Image, intensity: float = 0.5, seed: int | None = None) -> Image.Image:
-    """Digital-corruption effect combining block shifts, RGB split, scanlines, and noise."""
-    k = clamp_float(intensity, 0.0, 1.0, "intensity")
-    rng = make_rng(seed)
-    arr = to_array(img)
-    h, w = arr.shape[:2]
-
-    max_shift = int(w * 0.18 * k)
-    for _ in range(int(2 + 18 * k)):
-        band = int(rng.integers(max(1, h // 64), max(2, h // 8) + 1))
-        band = min(band, h)
-        y = int(rng.integers(0, h - band + 1))
-        shift = int(rng.integers(-max_shift, max_shift + 1)) if max_shift > 0 else 0
-        arr[y : y + band] = np.roll(arr[y : y + band], shift, axis=1)
-
-    split = round(w * 0.03 * k)
-    if split:
-        arr[..., 0] = np.roll(arr[..., 0], split, axis=1)
-        arr[..., 2] = np.roll(arr[..., 2], -split, axis=1)
-        arr[..., 1] = np.roll(arr[..., 1], round(h * 0.01 * k), axis=0)
-
-    arr[::3, :, :3] = (arr[::3, :, :3] * (1.0 - 0.45 * k)).astype(np.uint8)
-
-    for _ in range(round(10 * k)):
-        bh = min(h, int(rng.integers(1, max(2, h // 10) + 1)))
-        bw = min(w, int(rng.integers(1, max(2, w // 4) + 1)))
-        y = int(rng.integers(0, h - bh + 1))
-        x = int(rng.integers(0, w - bw + 1))
-        if rng.random() < 0.5:
-            sy = int(rng.integers(0, h - bh + 1))
-            sx = int(rng.integers(0, w - bw + 1))
-            arr[y : y + bh, x : x + bw] = arr[sy : sy + bh, sx : sx + bw].copy()
-        else:
-            noise = rng.integers(0, 256, (bh, bw, 3), dtype=np.uint8)
-            region = arr[y : y + bh, x : x + bw]
-            visible = region[..., 3:4] > 0
-            region[..., :3] = np.where(visible, noise, region[..., :3])
-    return from_array(arr)
-
-
-def invert(img: Image.Image) -> Image.Image:
-    """Invert RGB while leaving alpha untouched."""
-    arr = to_array(img)
-    arr[..., :3] = 255 - arr[..., :3]
-    return from_array(arr)
-
-
-def grayscale(img: Image.Image) -> Image.Image:
-    """Convert to grayscale (Rec.601 luma), preserving alpha."""
-    arr = to_array(img)
-    luma = np.rint(_luminance(arr[..., :3])).astype(np.uint8)
-    return join_rgb_alpha(np.repeat(luma[..., None], 3, axis=2), arr[..., 3])
-
-
-def posterize(img: Image.Image, levels: int = 4) -> Image.Image:
-    """Quantise each colour channel to ``levels`` evenly spaced values (2..32)."""
-    n = clamp_int(levels, 2, 32, "levels")
-    arr = to_array(img)
-    steps = n - 1
-    rgb = np.rint(np.rint(arr[..., :3] / 255.0 * steps) * 255.0 / steps)
-    return join_rgb_alpha(rgb.astype(np.uint8), arr[..., 3])
-
-
-def duotone(
-    img: Image.Image,
-    shadow_color: Color = (20, 10, 60),
-    highlight_color: Color = (255, 200, 80),
-) -> Image.Image:
-    """Map luminance onto a gradient from ``shadow_color`` to ``highlight_color``."""
-    if isinstance(shadow_color, str):
-        shadow_color = parse_hex_color(shadow_color, "shadow_color")
-    if isinstance(highlight_color, str):
-        highlight_color = parse_hex_color(highlight_color, "highlight_color")
-    shadow = np.asarray([clamp_int(c, 0, 255, "shadow_color") for c in shadow_color], np.float32)
-    light = np.asarray([clamp_int(c, 0, 255, "highlight_color") for c in highlight_color], np.float32)
-    if shadow.shape != (3,) or light.shape != (3,):
-        msg = "Colours must have exactly three RGB components."
-        raise ImageValidationError(msg)
-    arr = to_array(img)
-    t = (_luminance(arr[..., :3]) / 255.0)[..., None]
-    rgb = shadow + t * (light - shadow)
-    return join_rgb_alpha(np.clip(np.rint(rgb), 0, 255).astype(np.uint8), arr[..., 3])
-
-
-def _mirror_axis(arr: np.ndarray, axis: int, keep_first: bool) -> np.ndarray:
-    moved = np.moveaxis(arr, axis, 0)
-    n = moved.shape[0]
-    half = n // 2
-    first, mid, last = moved[:half], moved[half : n - half], moved[n - half :]
-    out = np.concatenate([first, mid, first[::-1]], axis=0) if keep_first else np.concatenate([last[::-1], mid, last], axis=0)
-    return np.moveaxis(out, 0, axis)
-
-
-def mirror(img: Image.Image, mode: str = "left") -> Image.Image:
-    """Create a symmetrical composition (`left`, `right`, `top`, `bottom`, `quad`)."""
-    mode = validate_choice(mode, MIRROR_MODES, "mode")
-    arr = to_array(img)
-    if mode in ("left", "right"):
-        out = _mirror_axis(arr, 1, mode == "left")
-    elif mode in ("top", "bottom"):
-        out = _mirror_axis(arr, 0, mode == "top")
-    else:
-        out = _mirror_axis(_mirror_axis(arr, 1, True), 0, True)
-    return from_array(out)
-
-
-def spin(img: Image.Image, angle: float = 90.0, expand: bool = True) -> Image.Image:
-    """Rotate counter-clockwise by ``angle`` degrees with transparent padding."""
-    a = clamp_float(angle, -360.0, 360.0, "angle")
-    premultiplied = to_rgba(img).convert("RGBa")
-    rotated = premultiplied.rotate(a, resample=Image.Resampling.BICUBIC, expand=bool(expand), fillcolor=(0, 0, 0, 0))
-    return rotated.convert("RGBA")
-
-
-def edge(img: Image.Image, strength: float = 1.0) -> Image.Image:
-    """Sobel edge detection: light edges on black, alpha preserved."""
-    gain = clamp_float(strength, 0.1, 5.0, "strength")
-    arr = to_array(img)
-    p = np.pad(_luminance(arr[..., :3]) / 255.0, 1, mode="edge")
-    gx = (p[:-2, 2:] + 2 * p[1:-1, 2:] + p[2:, 2:]) - (p[:-2, :-2] + 2 * p[1:-1, :-2] + p[2:, :-2])
-    gy = (p[2:, :-2] + 2 * p[2:, 1:-1] + p[2:, 2:]) - (p[:-2, :-2] + 2 * p[:-2, 1:-1] + p[:-2, 2:])
-    magnitude = np.hypot(gx, gy)
-    peak = float(np.percentile(magnitude, 99))
-    scaled = magnitude / peak if peak > 1e-6 else np.zeros_like(magnitude)
-    gray = np.rint(np.clip(scaled * gain, 0.0, 1.0) * 255).astype(np.uint8)
-    return join_rgb_alpha(np.repeat(gray[..., None], 3, axis=2), arr[..., 3])
 
 
 def gaussian_blur(img: Image.Image, radius: float = 6.0) -> Image.Image:
@@ -457,7 +305,6 @@ _BAYER_4X4 = (
         ],
         dtype=np.float32,
     )
-    / 16.0
     - 0.5
 )
 
@@ -933,383 +780,6 @@ def bg_remove(img: Image.Image, tolerance: int = 42) -> Image.Image:
     return from_array(arr)
 
 
-def ascii_art(
-    img: Image.Image,
-    columns: int = 60,
-    *,
-    ramp: str = ASCII_RAMP,
-    invert_ramp: bool = False,
-    max_chars: int = 1900,
-) -> str:
-    """Render an image as ASCII text that is guaranteed to fit ``max_chars``."""
-    cols = clamp_int(columns, 8, 120, "columns")
-    cap = clamp_int(max_chars, 100, 4000, "max_chars")
-    if not isinstance(ramp, str) or len(ramp) < 2 or "`" in ramp:
-        msg = "The ASCII ramp needs at least two characters and no backticks."
-        raise ImageValidationError(msg)
-    chars = np.array(list(ramp[::-1] if invert_ramp else ramp))
-    rgba = to_rgba(img)
-    w, h = rgba.size
-
-    def rows_for(c: int) -> int:
-        return max(1, round(h / w * c * 0.5))
-
-    while cols > 8 and rows_for(cols) * (cols + 1) - 1 > cap:
-        cols -= 1
-    rows = rows_for(cols)
-    arr = to_array(resize_rgba(rgba, (cols, rows), Image.Resampling.BOX))
-    index = np.rint(_luminance(arr[..., :3]) / 255.0 * (len(chars) - 1)).astype(np.intp)
-    grid = chars[index]
-    grid[arr[..., 3] < 40] = " "
-    lines = ["".join(row) for row in grid]
-    max_rows = max(1, (cap + 1) // (cols + 1))
-    return "\n".join(lines[:max_rows])
-
-
-_ANSI_PALETTE = np.array(
-    [
-        (30, (79, 84, 92)),  # Gray
-        (31, (220, 50, 47)),  # Red
-        (32, (133, 153, 0)),  # Green
-        (33, (181, 137, 0)),  # Yellow
-        (34, (38, 139, 210)),  # Blue
-        (35, (211, 54, 130)),  # Magenta
-        (36, (42, 161, 152)),  # Cyan
-        (37, (255, 255, 255)),  # White
-    ],
-    dtype=object,
-)
-
-
-def colored_ascii_from_bytes(data: bytes, columns: int = 38, max_chars: int = 1850) -> str:
-    """Render an image as ANSI-coloured ASCII art for Discord ```ansi code blocks."""
-    img = load_image(data, max_dim=256)
-    cols = clamp_int(columns, 8, 56, "columns")
-    w, h = img.size
-    rows = max(1, round(h / w * cols * 0.5))
-    arr = to_array(resize_rgba(img, (cols, rows), Image.Resampling.BOX))
-    chars = list(ASCII_RAMP)
-    ansi_codes = [int(item[0]) for item in _ANSI_PALETTE]
-    ansi_rgbs = np.array([item[1] for item in _ANSI_PALETTE], dtype=np.float32)
-
-    lines: list[str] = []
-    total_len = 0
-    for y in range(rows):
-        row_parts: list[str] = []
-        last_code: int | None = None
-        for x in range(cols):
-            r, g, b, a = arr[y, x]
-            if a < 40:
-                row_parts.append(" ")
-                continue
-            luma = 0.299 * r + 0.587 * g + 0.114 * b
-            ch = chars[round(luma / 255.0 * (len(chars) - 1))]
-            dists = np.sum((ansi_rgbs - np.array([r, g, b], dtype=np.float32)) ** 2, axis=1)
-            code = ansi_codes[int(np.argmin(dists))]
-            if code != last_code:
-                row_parts.append(f"\x1b[{code}m{ch}")
-                last_code = code
-            else:
-                row_parts.append(ch)
-        row_str = "".join(row_parts) + "\x1b[0m"
-        if total_len + len(row_str) + 1 > max_chars and lines:
-            break
-        lines.append(row_str)
-        total_len += len(row_str) + 1
-    return "\n".join(lines)
-
-
-_BRAILLE_DOTS = (
-    (0, 0, 0x01),
-    (1, 0, 0x02),
-    (2, 0, 0x04),
-    (0, 1, 0x08),
-    (1, 1, 0x10),
-    (2, 1, 0x20),
-    (3, 0, 0x40),
-    (3, 1, 0x80),
-)
-
-
-def braille_from_bytes(data: bytes, columns: int = 44, invert_dots: bool = False, max_chars: int = 1900) -> str:
-    """Render an image as high-density Unicode Braille art (2x4 subpixels per character)."""
-    img = load_image(data, max_dim=256)
-    cols = clamp_int(columns, 8, 80, "columns")
-    w, h = img.size
-    rows = max(1, round(h / w * cols * 0.5))
-    while cols > 8 and rows * (cols + 1) > max_chars:
-        cols -= 1
-        rows = max(1, round(h / w * cols * 0.5))
-    arr = to_array(resize_rgba(img, (cols * 2, rows * 4), Image.Resampling.BOX))
-    luma = _luminance(arr[..., :3])
-    thresh = float(np.median(luma))
-    active = (luma < thresh) if invert_dots else (luma >= thresh)
-    active &= arr[..., 3] >= 40
-    lines: list[str] = []
-    for r in range(rows):
-        chars: list[str] = []
-        for c in range(cols):
-            mask = 0
-            for dy, dx, bit in _BRAILLE_DOTS:
-                if active[r * 4 + dy, c * 2 + dx]:
-                    mask |= bit
-            chars.append(chr(0x2800 + mask))
-        lines.append("".join(chars))
-    return "\n".join(lines)
-
-
-_EMOJI_SWATCHES: list[tuple[str, Color]] = [
-    ("\N{LARGE RED SQUARE}", (221, 46, 68)),
-    ("\N{LARGE ORANGE SQUARE}", (244, 144, 12)),
-    ("\N{LARGE YELLOW SQUARE}", (253, 203, 88)),
-    ("\N{LARGE GREEN SQUARE}", (120, 177, 89)),
-    ("\N{LARGE BLUE SQUARE}", (85, 172, 238)),
-    ("\N{LARGE PURPLE SQUARE}", (170, 142, 214)),
-    ("\N{LARGE BROWN SQUARE}", (193, 105, 79)),
-    ("\N{BLACK LARGE SQUARE}", (49, 55, 61)),
-    ("\N{WHITE LARGE SQUARE}", (230, 231, 232)),
-]
-
-
-def emoji_mosaic_from_bytes(data: bytes, columns: int = 22) -> str:
-    """Rebuild an image as a grid of Discord colour-square emojis."""
-    img = load_image(data, max_dim=256)
-    cols = clamp_int(columns, 6, 30, "columns")
-    w, h = img.size
-    rows = max(1, min(26, round(h / w * cols)))
-    arr = to_array(resize_rgba(img, (cols, rows), Image.Resampling.BOX))
-    emojis = [e for e, _ in _EMOJI_SWATCHES]
-    rgbs = np.array([rgb for _, rgb in _EMOJI_SWATCHES], dtype=np.float32)
-    lines: list[str] = []
-    for y in range(rows):
-        row_chars: list[str] = []
-        for x in range(cols):
-            r, g, b, a = arr[y, x]
-            if a < 40:
-                row_chars.append("⬛")
-                continue
-            dists = np.sum((rgbs - np.array([r, g, b], dtype=np.float32)) ** 2, axis=1)
-            row_chars.append(emojis[int(np.argmin(dists))])
-        lines.append("".join(row_chars))
-    return "\n".join(lines)
-
-
-def ascii_from_bytes(
-    data: bytes,
-    columns: int = 60,
-    *,
-    invert_ramp: bool = False,
-    max_chars: int = 1900,
-) -> str:
-    """Decode the first frame of ``data`` and return ASCII art that fits ``max_chars``."""
-    img = load_image(data, max_dim=256)
-    return ascii_art(img, columns, invert_ramp=invert_ramp, max_chars=max_chars)
-
-
-ANIMATION_KINDS = (
-    "spin",
-    "pixelate",
-    "rainbow",
-    "shake",
-    "bounce",
-    "pulse",
-    "petpet",
-    "wiggle",
-    "zoom",
-    "sweep",
-)
-
-
-def _spin(img: Image.Image, t: float, **_: object) -> Image.Image:
-    return spin(img, angle=t * 360.0, expand=False)
-
-
-def _pixelate(img: Image.Image, t: float, **_: object) -> Image.Image:
-    wave = 0.5 - 0.5 * math.cos(2.0 * math.pi * t)
-    return pixelate(img, max(2, round(2 + wave * 26)))
-
-
-def _rainbow(img: Image.Image, t: float, **_: object) -> Image.Image:
-    return hue_shift(img, degrees=t * 360.0)
-
-
-def _shake(
-    img: Image.Image,
-    t: float,
-    rng: np.random.Generator,
-    **_: object,
-) -> Image.Image:
-    w, h = img.size
-    dx = int(rng.integers(-max(2, w // 18), max(3, w // 18) + 1))
-    dy = int(rng.integers(-max(2, h // 18), max(3, h // 18) + 1))
-
-    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    canvas.paste(img, (dx, dy))
-    return canvas
-
-
-def _bounce(img: Image.Image, t: float, **_: object) -> Image.Image:
-    w, h = img.size
-    arc = abs(math.sin(math.pi * t))
-    squash = 1.0 - 0.18 * math.cos(2.0 * math.pi * t)
-
-    nw = max(8, round(w * (2.0 - squash)))
-    nh = max(8, round(h * squash))
-
-    scaled = resize_rgba(img, (min(w, nw), min(h, nh)))
-    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-
-    ox = (w - scaled.width) // 2
-    oy = max(0, h - scaled.height - round(arc * h * 0.25))
-
-    canvas.alpha_composite(scaled, (ox, oy))
-    return canvas
-
-
-def _pulse(img: Image.Image, t: float, **_: object) -> Image.Image:
-    w, h = img.size
-    beat = math.sin(2.0 * math.pi * t) ** 4
-    scale = 0.84 + 0.16 * beat
-
-    nw, nh = max(8, round(w * scale)), max(8, round(h * scale))
-    scaled = resize_rgba(img, (nw, nh))
-
-    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    canvas.alpha_composite(scaled, ((w - nw) // 2, (h - nh) // 2))
-    return canvas
-
-
-def _petpet(img: Image.Image, t: float, **_: object) -> Image.Image:
-    w, h = img.size
-    s = math.sin(2.0 * math.pi * t)
-
-    sw = max(8, round(w * (0.82 + 0.10 * s)))
-    sh = max(8, round(h * (0.76 - 0.12 * s)))
-
-    avatar = resize_rgba(img, (min(w, sw), min(h, sh)))
-    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-
-    ax = (w - avatar.width) // 2
-    ay = h - avatar.height
-    canvas.alpha_composite(avatar, (ax, ay))
-
-    draw = ImageDraw.Draw(canvas)
-    hx = w // 2 + round(math.cos(2.0 * math.pi * t) * w * 0.08)
-    hy = max(6, ay - round(h * 0.04))
-
-    hr_x, hr_y = max(12, w // 4), max(8, h // 9)
-
-    draw.ellipse(
-        (hx - hr_x, hy - hr_y, hx + hr_x, hy + hr_y),
-        fill=(255, 224, 178, 235),
-        outline=(90, 60, 40, 255),
-        width=2,
-    )
-    return canvas
-
-
-def _wiggle(img: Image.Image, t: float, **_: object) -> Image.Image:
-    w, h = img.size
-    arr = to_array(img)
-
-    xs, ys = np.meshgrid(
-        np.arange(w, dtype=np.float32),
-        np.arange(h, dtype=np.float32),
-    )
-
-    sx = xs + (w * 0.04) * np.sin(2.0 * math.pi * (ys / max(h * 0.5, 1.0) + t))
-
-    return from_array(_sample_bilinear(arr, sx, ys))
-
-
-def _zoom(img: Image.Image, t: float, **_: object) -> Image.Image:
-    w, h = img.size
-    scale = 1.0 + 1.2 * t
-
-    cw, ch = max(8, round(w / scale)), max(8, round(h / scale))
-    cropped = img.crop(((w - cw) // 2, (h - ch) // 2, (w + cw) // 2, (h + ch) // 2))
-
-    return resize_rgba(cropped, (w, h))
-
-
-def _sweep(
-    img: Image.Image,
-    t: float,
-    sweep_effect: str,
-    seed: int,
-    frame_index: int,
-    **_: object,
-) -> Image.Image:
-    wave = 0.5 - 0.5 * math.cos(2.0 * math.pi * t)
-
-    handlers = {
-        "swirl": lambda: swirl(img, strength=(wave * 2.0 - 1.0) * 6.0),
-        "pixelate": lambda: pixelate(img, pixel_size=max(2, round(2 + wave * 28))),
-        "hue": lambda: hue_shift(img, degrees=t * 360.0),
-        "glitch": lambda: glitch(
-            img,
-            intensity=0.05 + 0.85 * wave,
-            seed=seed + frame_index,
-        ),
-    }
-
-    return handlers.get(sweep_effect, handlers["glitch"])()
-
-
-AnimationHandler = Callable[..., Image.Image]
-
-_ANIMATION_HANDLERS: dict[str, AnimationHandler] = {
-    "spin": _spin,
-    "pixelate": _pixelate,
-    "rainbow": _rainbow,
-    "shake": _shake,
-    "bounce": _bounce,
-    "pulse": _pulse,
-    "petpet": _petpet,
-    "wiggle": _wiggle,
-    "zoom": _zoom,
-    "sweep": _sweep,
-}
-
-
-def render_animated_effect(
-    data: bytes,
-    kind: str = "spin",
-    *,
-    frames_count: int = 16,
-    duration_ms: int = 60,
-    sweep_effect: str = "glitch",
-    seed: int | None = None,
-) -> EncodedImage:
-    """Generate a looping GIF animation from a static or animated image."""
-    kind = validate_choice(kind, ANIMATION_KINDS, "kind")
-    n = clamp_int(frames_count, 6, MAX_OUTPUT_FRAMES, "frames_count")
-    dur = clamp_int(duration_ms, 25, 250, "duration_ms")
-
-    src_frames = load_frames(data, max_frames=n, max_dim=320)
-    rng = make_rng(seed)
-
-    handler = _ANIMATION_HANDLERS[kind]
-    actual_seed = seed if seed is not None else 42
-
-    out_frames = [
-        Frame(
-            handler(
-                src_frames[i % len(src_frames)].image,
-                i / n,
-                rng=rng,
-                sweep_effect=sweep_effect,
-                seed=actual_seed,
-                frame_index=i,
-            ),
-            dur,
-        )
-        for i in range(n)
-    ]
-
-    return encode_animation(out_frames)
-
-
 EFFECT_REGISTRY: dict[str, EffectFunc] = {
     # Original
     "pixelate": pixelate,
@@ -1322,21 +792,21 @@ EFFECT_REGISTRY: dict[str, EffectFunc] = {
     "spin": spin,
     "edge": edge,
     # Blur family
-    "gaussian": gaussian_blur,
-    "motionblur": motion_blur,
-    "zoomblur": zoom_blur,
-    "radialblur": radial_blur,
-    "tiltshift": tilt_shift,
+    "gaussian": distortion_gaussian_blur,
+    "motionblur": distortion_motion_blur,
+    "zoomblur": distortion_zoom_blur,
+    "radialblur": distortion_radial_blur,
+    "tiltshift": distortion_tilt_shift,
     # Distortions
-    "swirl": swirl,
-    "bulge": bulge,
-    "fisheye": fisheye,
-    "ripple": ripple,
-    "melt": melt,
+    "swirl": distortion_swirl,
+    "bulge": distortion_bulge,
+    "fisheye": distortion_fisheye,
+    "ripple": distortion_ripple,
+    "melt": distortion_melt,
     # Retro
-    "crt": crt,
-    "vhs": vhs,
-    "chromatic": chromatic,
+    "crt": distortion_crt,
+    "vhs": distortion_vhs,
+    "chromatic": distortion_chromatic,
     "halftone": halftone,
     "dither": dither,
     "gameboy": gameboy,

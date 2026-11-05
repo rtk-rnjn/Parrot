@@ -14,13 +14,13 @@ import sys
 import sysconfig
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import aiohttp
+import arrow
 import discord
 import frontmatter
 from bs4 import BeautifulSoup, Tag
@@ -455,7 +455,7 @@ def stdlib_items(
 
 
 def generate_python_release_info(cycles: list[dict[str, Any]], *, active_view: bool) -> list[discord.ui.Item]:
-    now_str = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+    now_str = arrow.utcnow().format("YYYY-MM-DD")
     heading = "Supported Python Releases" if active_view else "Historical / End-of-Life Python Releases"
     subtitle = f"Runtime: Python `{platform.python_version()}`{DOT}Data from endoflife.date & python.org"
 
@@ -612,7 +612,7 @@ def clean_text(node: Tag | None) -> str:
 
 
 def today_iso() -> str:
-    return datetime.now(tz=UTC).strftime("%Y-%m-%d")
+    return arrow.utcnow().format("YYYY-MM-DD")
 
 
 def normalise_key(value: str) -> str:
@@ -1663,7 +1663,7 @@ class Python(commands.Cog):
         except PythonError:
             cycles = FALLBACK_PYTHON_CYCLES
 
-        now_str = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+        now_str = arrow.utcnow().format("YYYY-MM-DD")
         active = [c for c in cycles if not (isinstance(c.get("eol"), str) and c["eol"] <= now_str)]
         eol_list = [c for c in cycles if isinstance(c.get("eol"), str) and c["eol"] <= now_str][:8]
 

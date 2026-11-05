@@ -10,10 +10,10 @@ import platform
 import time
 import urllib.parse
 from collections import Counter
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
 
+import arrow
 import discord
 import psutil
 import pygit2
@@ -85,7 +85,7 @@ def _recent_commits() -> tuple[str | None, str | None]:
         repo = pygit2.Repository(".git")
         lines = []
         for commit in itertools.islice(repo.walk(repo.head.target), COMMIT_COUNT):
-            when = datetime.fromtimestamp(commit.commit_time, tz=UTC)
+            when = arrow.get(commit.commit_time).datetime
             summary = _short(commit.message.partition("\n")[0], COMMIT_SUMMARY_LIMIT)
             lines.append(f"[`{str(commit.id)[:7]}`]({REPO_URL}/commit/{commit.id}) {summary} ({discord.utils.format_dt(when, 'R')})")
         return repo.head.shorthand, "\n".join(lines) or None
@@ -212,7 +212,7 @@ class Meta(commands.Cog):
             memory = self.process.memory_info().rss / 1024**2
             process_cpu = self.process.cpu_percent(interval=None)
             threads = self.process.num_threads()
-            created = datetime.fromtimestamp(self.process.create_time(), tz=UTC)
+            created = arrow.get(self.process.create_time()).datetime
         system_memory = psutil.virtual_memory()
         system_cpu = psutil.cpu_percent(interval=None)
 

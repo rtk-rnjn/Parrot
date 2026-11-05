@@ -5,11 +5,11 @@ import json
 import logging
 import re
 import secrets
-from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Annotated, Any, Literal
 from urllib.parse import quote
 
 import aiohttp
+import arrow
 import discord
 from discord.ext import commands
 
@@ -90,13 +90,13 @@ def _slug(value: str) -> str:
 def _when(timestamp: int | None, style: Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"] = "R") -> str:
     if not timestamp:
         return "-"
-    return discord.utils.format_dt(datetime.fromtimestamp(timestamp, UTC), style)
+    return discord.utils.format_dt(arrow.get(timestamp).datetime, style)
 
 
 def _date(timestamp: int | None) -> str:
     if not timestamp:
         return "-"
-    return datetime.fromtimestamp(timestamp, UTC).strftime("%d %b %Y")
+    return arrow.get(timestamp).strftime("%d %b %Y")
 
 
 class ChessClient:

@@ -4,12 +4,12 @@ import asyncio
 import re
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from functools import partial
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import aiohttp
+import arrow
 import discord
 from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
@@ -286,7 +286,7 @@ def clean_html_snippet(raw_html: str | None, limit: int = 800) -> str:
 
 
 def today_iso() -> str:
-    return datetime.now(tz=UTC).strftime("%Y-%m-%d")
+    return arrow.utcnow().format("YYYY-MM-DD")
 
 
 def normalise_key(value: str) -> str:
@@ -646,7 +646,7 @@ def stdlib_items(
 
 
 def generate_node_release_info(cycles: list[dict[str, Any]], *, active_view: bool) -> list[discord.ui.Item]:
-    now_str = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+    now_str = arrow.utcnow().format("YYYY-MM-DD")
     heading = "Supported Node.js Releases & ECMAScript Editions" if active_view else "Historical / End-of-Life Node.js Releases"
     subtitle = f"ECMAScript Standard: `ES2026` (ECMA-262 17th Ed.){DOT}Data from endoflife.date & nodejs.org"
 
@@ -1509,7 +1509,7 @@ class JavaScript(commands.Cog):
 
     async def fetch_js_versions(self, ctx: commands.Context[Bot]) -> JavaScriptView:
         cycles = await self.get_cycles()
-        now_str = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+        now_str = arrow.utcnow().format("YYYY-MM-DD")
         active = [c for c in cycles if not (isinstance(c.get("eol"), str) and c["eol"] <= now_str)]
         eol_list = [c for c in cycles if isinstance(c.get("eol"), str) and c["eol"] <= now_str][:8]
 
@@ -2022,7 +2022,7 @@ class JavaScript(commands.Cog):
         return await self.dispatch_view(ctx, self.retrieve_js_editions_summary(ctx, edition))
 
     async def retrieve_js_editions_summary(self, ctx: commands.Context[Bot], edition: str | None) -> JavaScriptView:  # noqa: PLR0912
-        current_year = str(datetime.now(tz=UTC).year)
+        current_year = str(arrow.utcnow().year)
         if edition and edition.strip():
             match = ES_EDITION_PATTERN.match(edition.strip())
             if not match:

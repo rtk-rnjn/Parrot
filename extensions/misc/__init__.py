@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import datetime
+import http as std_http
 import io
 import ipaddress
 import itertools
@@ -34,7 +35,7 @@ from core.utils import HumanDate, PaginationView
 
 from .birthday_card import birthday_card_file
 from .chemistry import Chemistry
-from .constants import LANGUAGE_CODES, TRANSLATE_API, TRANSLATE_HEADERS, TRANSLATION_FLAG_MAP
+from .constants import HTTP_STATUS_CODES, LANGUAGE_CODES, TRANSLATE_API, TRANSLATE_HEADERS, TRANSLATION_FLAG_MAP
 from .dictionary_parser import build_definition_embed
 from .events import PingMessageListner, SnipeMessageListener
 from .graphing import boxplot, plotfn
@@ -2427,6 +2428,80 @@ class Misc(commands.Cog, name="Miscellaneous"):
             .add_field(name="Tags", value=tags, inline=False)
         )
         await ctx.reply(embed=embed)
+
+    def _build_http_embed(self, code: int, animal: str = "cat") -> discord.Embed:
+        if code in HTTP_STATUS_CODES:
+            phrase, description = HTTP_STATUS_CODES[code]
+        else:
+            try:
+                status = std_http.HTTPStatus(code)
+                phrase = status.phrase
+                description = status.description or "Standard HTTP status code."
+            except ValueError:
+                if 100 <= code <= 599:
+                    phrase = "Unassigned / Custom Status Code"
+                    description = "This HTTP status code is non-standard or unassigned by IANA."
+                else:
+                    msg = f"`{code}` is not a valid HTTP status code (must be between 100 and 599)."
+                    raise commands.BadArgument(msg) from None
+
+        categories = {
+            1: ("1xx Informational", discord.Color.blue()),
+            2: ("2xx Success", discord.Color.green()),
+            3: ("3xx Redirection", discord.Color.gold()),
+            4: ("4xx Client Error", discord.Color.orange()),
+            5: ("5xx Server Error", discord.Color.red()),
+        }
+        cat_label, color = categories.get(code // 100, ("HTTP Status", discord.Color.blurple()))
+        mdn_url = f"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/{code}"
+        img_url = f"https://http.dog/{code}.jpg" if animal == "dog" else f"https://http.cat/{code}.jpg"
+
+        embed = discord.Embed(
+            title=f"HTTP {code} — {phrase}",
+            url=mdn_url,
+            description=description,
+            color=color,
+        )
+        embed.add_field(name="Category", value=f"`{cat_label}`", inline=True)
+        embed.add_field(name="Reference", value=f"[MDN Web Docs]({mdn_url})", inline=True)
+        embed.set_image(url=img_url)
+        return embed
+
+    @commands.group(name="http", aliases=["httpstatus", "httpcode"], invoke_without_command=True)
+    async def http(
+        self,
+        ctx: commands.Context[Bot],
+        code: int = commands.parameter(description="The HTTP status code to look up.", default=404),
+    ) -> None:
+        """Display information about HTTP status codes."""
+        await ctx.reply(embed=self._build_http_embed(code, animal="cat"))
+
+    @http.command(name="cat", aliases=["cats"])
+    async def http_cat(
+        self,
+        ctx: commands.Context[Bot],
+        code: int = commands.parameter(description="The HTTP status code to look up.", default=404),
+    ) -> None:
+        """Display an HTTP status code with an HTTP cat image (http.cat)."""
+        await ctx.reply(embed=self._build_http_embed(code, animal="cat"))
+
+    @http.command(name="dog", aliases=["dogs"])
+    async def http_dog(
+        self,
+        ctx: commands.Context[Bot],
+        code: int = commands.parameter(description="The HTTP status code to look up.", default=404),
+    ) -> None:
+        """Display an HTTP status code with an HTTP dog image (http.dog)."""
+        await ctx.reply(embed=self._build_http_embed(code, animal="dog"))
+
+    @commands.command(name="httpdog", aliases=["doghttp"])
+    async def httpdog_shortcut(
+        self,
+        ctx: commands.Context[Bot],
+        code: int = commands.parameter(description="The HTTP status code to look up.", default=404),
+    ) -> None:
+        """Display an HTTP status code with an HTTP dog image (http.dog)."""
+        await ctx.reply(embed=self._build_http_embed(code, animal="dog"))
 
 
 async def setup(bot: Bot) -> None:

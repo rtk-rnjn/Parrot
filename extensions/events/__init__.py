@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from core.config import LIMITED_MEMORY
-
 from .arbitrary import ArbitraryEvents
 from .error import CommandError
 from .link_to_codeblock import LinkToCodeblock
@@ -18,9 +16,7 @@ if TYPE_CHECKING:
 async def setup(bot: Bot) -> None:
     await bot.add_cog(CommandError(bot))
     await bot.add_cog(RegisteredEvents(bot))
-
-    if not LIMITED_MEMORY:
-        await bot.add_cog(ScamLinkDetection(bot))
-        await bot.add_cog(LinkToCodeblock(bot))
-        await bot.add_cog(ArbitraryEvents(bot))
-        await bot.add_cog(GuildEventListener(bot))
+    await bot.add_cog(ScamLinkDetection(bot))
+    await bot.add_cog(LinkToCodeblock(bot))
+    await bot.add_cog(ArbitraryEvents(bot))
+    await bot.add_cog(GuildEventListener(bot))

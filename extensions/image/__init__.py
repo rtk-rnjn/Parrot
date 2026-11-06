@@ -1725,7 +1725,9 @@ class ImageCog(ImageCogBase, commands.Cog, name="Image"):
             self._fetch_avatar(user_b, animated=False, size=256),
         )
         enc = await asyncio.to_thread(render_ship, data_a, data_b, user_a.display_name, user_b.display_name)
-        await self._send_image(ctx, enc, "Ship Compatibility", {"Pair": f"{user_a.display_name} ❤️ {user_b.display_name}"}, stem="ship")
+        await self._send_image(
+            ctx, enc, "Ship Compatibility", {"Pair": f"{user_a.display_name} \N{HEAVY BLACK HEART} {user_b.display_name}"}, stem="ship"
+        )
 
     @commands.command(name="compare", aliases=["versus", "vs"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1833,7 +1835,7 @@ class ImageCog(ImageCogBase, commands.Cog, name="Image"):
             self._fetch_avatar(other, animated=False, size=256),
         )
         enc = await asyncio.to_thread(render_avatar_swap, data_a, data_b, ctx.author.display_name, other.display_name)
-        await self._send_image(ctx, enc, "Avatar Swap", {"Swapped": f"{ctx.author.display_name} ↔ {other.display_name}"}, stem="avatarswap")
+        await self._send_image(ctx, enc, "Avatar Swap", {"Swapped": f"{ctx.author.display_name} <-> {other.display_name}"}, stem="avatarswap")
 
     @commands.command(name="pride")
     @commands.max_concurrency(1, per=commands.BucketType.user)

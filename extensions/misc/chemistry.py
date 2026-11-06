@@ -150,8 +150,12 @@ class ElementView(BaseLayoutView):
         )
         history = _lines(("Discovered by", el.get("discovered_by")), ("Named by", el.get("named_by")))
 
-        prev_btn = discord.ui.Button(label=f"◀ {prev_el['name']}" if prev_el else "◀", disabled=prev_el is None)
-        next_btn = discord.ui.Button(label=f"{next_el['name']} ▶" if next_el else "▶", disabled=next_el is None)
+        prev_btn = discord.ui.Button(
+            label=f"\N{BLACK LEFT-POINTING TRIANGLE} {prev_el['name']}" if prev_el else "\N{BLACK LEFT-POINTING TRIANGLE}", disabled=prev_el is None
+        )
+        next_btn = discord.ui.Button(
+            label=f"{next_el['name']} \N{BLACK RIGHT-POINTING TRIANGLE}" if next_el else "\N{BLACK RIGHT-POINTING TRIANGLE}", disabled=next_el is None
+        )
         prev_btn.callback = partial(self._go, -1)
         next_btn.callback = partial(self._go, +1)
         nav = discord.ui.ActionRow(prev_btn, next_btn)

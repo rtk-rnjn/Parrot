@@ -167,7 +167,7 @@ def emoji_mosaic_from_bytes(data: bytes, columns: int = 22) -> str:
         for x in range(cols):
             r, g, b, a = arr[y, x]
             if a < 40:
-                row_chars.append("⬛")
+                row_chars.append("\N{BLACK LARGE SQUARE}")
                 continue
             dists = np.sum((rgbs - np.array([r, g, b], dtype=np.float32)) ** 2, axis=1)
             row_chars.append(emojis[int(np.argmin(dists))])

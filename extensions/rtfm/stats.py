@@ -8,7 +8,7 @@ import math
 import re
 import time
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import aiohttp
 import discord
@@ -30,9 +30,6 @@ LC_ORANGE = 0xFFA116
 CF_API = "https://codeforces.com/api"
 CF_MIN_INTERVAL = 2.1  # Codeforces allows 1 request / 2 s
 
-AOC_CACHE_TTL = 15 * 60
-AOC_FAILURE_TTL = 2 * 60  # also cache failures, so we never hammer AoC
-AOC_TOP = 20
 
 LC_DAILY_QUERY = """
 query questionOfToday {
@@ -338,78 +335,8 @@ def render_rating_graph(history: list[dict[str, Any]]) -> bytes:
     return buffer.getvalue()
 
 
-def aoc_default_year() -> int:
-    """The event runs in December; before that the latest finished event is last year's."""
-    now = _now()
-    return now.year if now.month == 12 else now.year - 1
-
-
-def _aoc_name(member: dict[str, Any]) -> str:
-    name = member.get("name") or f"anon #{member['id']}"
-    return name.replace("`", "'")
-
-
-def aoc_leaderboard_embed(year: int, board: int, data: dict[str, Any], order: str) -> discord.Embed:
-    members = list(data.get("members", {}).values())
-    if not members:
-        msg = "That leaderboard has no members yet."
-        raise LookupFailed(msg)
-    sort_keys = {
-        "local": lambda m: (-m["local_score"], -m["stars"], m.get("last_star_ts", 0)),
-        "stars": lambda m: (-m["stars"], m.get("last_star_ts", 0)),
-        "global": lambda m: (-m["global_score"], -m["local_score"]),
-    }
-    members.sort(key=sort_keys[order])
-    top = members[:AOC_TOP]
-
-    lines = [f"{'#':>2}  {'Name':<16} {'Local':>6} {'Global':>6} {'Stars':>5}"]
-    lines += [f"{i:>2}. {_aoc_name(m):<16.16} {m['local_score']:>6} {m['global_score']:>6} {m['stars']:>5}" for i, m in enumerate(top, 1)]
-    embed = discord.Embed(
-        title=f"Advent of Code {year} \N{BULLET} leaderboard",
-        url=f"https://adventofcode.com/{year}/leaderboard/private/view/{board}",
-        description="```\n" + "\n".join(lines) + "\n```",
-        colour=0x00CC00,
-    )
-    embed.set_footer(text=f"Sorted by {order} \N{BULLET} top {len(top)} of {len(members)} \N{BULLET} cached up to 15 min")
-    return embed
-
-
-def aoc_progress_embed(year: int, board: int, data: dict[str, Any]) -> discord.Embed:
-    members = list(data.get("members", {}).values())
-    if not members:
-        msg = "That leaderboard has no members yet."
-        raise LookupFailed(msg)
-    members.sort(key=lambda m: (-m["local_score"], -m["stars"], m.get("last_star_ts", 0)))
-    top = members[:16]
-    days = max((int(d) for m in top for d in m.get("completion_day_level", {})), default=1)
-
-    lines = [f"{'':<12} " + "".join(str(d % 10) for d in range(1, days + 1))]
-    for m in top:
-        done = m.get("completion_day_level", {})
-        cells = (
-            "\N{BLACK STAR}" if "2" in done.get(str(d), {}) else "\N{WHITE STAR}" if "1" in done.get(str(d), {}) else "\N{MIDDLE DOT}"
-            for d in range(1, days + 1)
-        )
-        lines.append(f"{_aoc_name(m):<12.12} " + "".join(cells))
-    embed = discord.Embed(
-        title=f"Advent of Code {year} \N{BULLET} progress",
-        url=f"https://adventofcode.com/{year}/leaderboard/private/view/{board}",
-        description="```\n" + "\n".join(lines) + "\n```",
-        colour=0x00CC00,
-    )
-    embed.set_footer(
-        text="\N{BLACK STAR} both parts \N{BULLET} \N{WHITE STAR} part 1 only \N{BULLET} \N{MIDDLE DOT} none (column = last digit of the day)"
-    )
-    return embed
-
-
-class AocFlags(commands.FlagConverter, prefix="--", delimiter=" ", case_insensitive=True):
-    board: int | None = commands.flag(default=None, description="Leaderboard id (must be one the bot is configured for)")
-    order: Literal["local", "global", "stars"] = commands.flag(default="local", description="Sort order")
-
-
-class CodingStats(commands.Cog, name="Coding Stats"):
-    """LeetCode, Codeforces and Advent of Code lookups."""
+class CodingStats(commands.Cog):
+    """LeetCode and Codeforces lookups."""
 
     help_emoji = "\N{TROPHY}"
 

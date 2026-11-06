@@ -149,7 +149,7 @@ class Games(commands.Cog):
         opponent = await self.wait_for_player(ctx)
         await Chess(white=ctx.author, black=opponent).start(ctx)
 
-    @commands.command(name="connect_four", aliases=["cf", "connect4", "connect-four", "c4"])
+    @commands.command(name="connect_four", aliases=["connect4", "connect-four", "c4"])
     async def connect_four(self, ctx: commands.Context[Bot]) -> None:
         """Play Connect Four: drop pieces and connect four horizontally, vertically, or diagonally."""
         opponent = await self.wait_for_player(ctx)

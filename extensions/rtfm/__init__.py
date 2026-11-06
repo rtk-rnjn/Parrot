@@ -48,6 +48,7 @@ from .javascript import JavaScript
 from .kontests import Kontests
 from .packages import Packages
 from .python import Python
+from .stats import CodingStats
 from .used import build_embeds, execute_run, parse_man_page
 
 if TYPE_CHECKING:
@@ -60,7 +61,18 @@ EMBED_FIELD_LIMIT = 1024
 MIN_TUTORIAL_SCORE = 50
 DISCORD_MESSAGE_LIMIT = 2000
 
-DEPENDENCIES: list[type[commands.Cog]] = [Packages, GitHub, Docs, Kontests, Syntax, Python, JavaScript, HackerNews, Arch]
+DEPENDENCIES: list[type[commands.Cog]] = [
+    CodingStats,
+    Packages,
+    GitHub,
+    Docs,
+    Kontests,
+    Syntax,
+    Python,
+    JavaScript,
+    HackerNews,
+    Arch,
+]
 
 
 class Developer(*DEPENDENCIES, commands.Cog):

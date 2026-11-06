@@ -37,6 +37,7 @@ LOADABLE_COGS = {
     "extensions.fun.love",
     "extensions.fun.meme",
     "extensions.fun.minecraft",
+    "extensions.fun.pokemon",
     "extensions.fun.pride",
     "extensions.fun.snakes",
     "extensions.games",

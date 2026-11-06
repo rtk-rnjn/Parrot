@@ -379,7 +379,8 @@ class PubChemClient:
             raise PubChemNotFound(value)
 
         key = f"compound:{namespace}:{value.lower()}"
-        if (cached := self._recall(key)) is not None:
+        cached = self._recall(key)
+        if cached is not None:
             return cached
 
         encoded = quote(value, safe="")  # percent-encode everything, SMILES contain / # ( ) = etc.
@@ -430,7 +431,8 @@ class PubChemClient:
     async def autocomplete(self, query: str, limit: int = 25) -> list[str]:
         """PubChem's name autocomplete. Not a documented PUG endpoint, so best effort (errors -> [])."""
         key = f"autocomplete:{limit}:{query.lower()}"
-        if (cached := self._recall(key)) is not None:
+        cached = self._recall(key)
+        if cached is not None:
             return cached
         try:
             data = await self._get_json(f"{self.BASE}/autocomplete/compound/{quote(query, safe='')}/json?limit={limit}")
@@ -470,7 +472,8 @@ class PubChemClient:
 
     async def synonyms(self, cid: int) -> list[str]:
         key = f"synonyms:{cid}"
-        if (cached := self._recall(key)) is not None:
+        cached = self._recall(key)
+        if cached is not None:
             return cached
         data = await self._get_json(f"{self.BASE}/pug/compound/cid/{cid}/synonyms/JSON")
         info = (data.get("InformationList", {}).get("Information") or [{}])[0]
@@ -480,7 +483,8 @@ class PubChemClient:
 
     async def experimental(self, cid: int) -> dict[str, list[str]]:
         key = f"experimental:{cid}"
-        if (cached := self._recall(key)) is not None:
+        cached = self._recall(key)
+        if cached is not None:
             return cached
         try:
             data = await self._get_json(f"{self.BASE}/pug_view/data/compound/{cid}/JSON?heading=Experimental+Properties")
@@ -492,7 +496,8 @@ class PubChemClient:
 
     async def ghs(self, cid: int) -> dict[str, Any] | None:
         key = f"ghs:{cid}"
-        if (cached := self._recall(key)) is not None:
+        cached = self._recall(key)
+        if cached is not None:
             return cached or None
         try:
             data = await self._get_json(f"{self.BASE}/pug_view/data/compound/{cid}/JSON?heading=GHS+Classification")

@@ -106,7 +106,8 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
         }
-        if token := os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN"):
+        token = os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN")
+        if token:
             self.api_request_headers["Authorization"] = f"Bearer {token}"
         self._cache: dict[Target, tuple[float, discord.Embed]] = {}
         self._replies: dict[int, discord.Message] = {}
@@ -323,9 +324,11 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
                 name="Changes",
                 value=f"+{data['additions']} \N{MINUS SIGN}{data['deletions']} \N{BULLET} {data['changed_files']} files",
             )
-        if labels := ", ".join(lbl["name"] for lbl in data.get("labels", [])[:6]):
+        labels = ", ".join(lbl["name"] for lbl in data.get("labels", [])[:6])
+        if labels:
             embed.add_field(name="Labels", value=labels, inline=False)
-        if user := data.get("user"):
+        user = data.get("user")
+        if user:
             embed.set_author(name=user["login"], url=user["html_url"], icon_url=user["avatar_url"])
         embed.set_footer(text=repo)
         return embed
@@ -357,7 +360,8 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
 
     async def _embed_for(self, target: Target) -> discord.Embed | None:
         now = time.monotonic()
-        if (hit := self._cache.get(target)) and now - hit[0] < CACHE_TTL:
+        hit = self._cache.get(target)
+        if hit and now - hit[0] < CACHE_TTL:
             return hit[1].copy()
 
         kind, repo, ident = target
@@ -397,7 +401,8 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             return
 
         results = await asyncio.gather(*(self._embed_for(t) for t in targets))
-        if not (embeds := [e for e in results if e is not None]):
+        embeds = [e for e in results if e is not None]
+        if not embeds:
             return
 
         try:
@@ -414,6 +419,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message) -> None:
         """If the user deletes their message, delete our embed reply too."""
-        if reply := self._replies.pop(message.id, None):
+        reply = self._replies.pop(message.id, None)
+        if reply:
             with contextlib.suppress(discord.HTTPException):
                 await reply.delete()

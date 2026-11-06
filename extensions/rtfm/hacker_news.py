@@ -77,7 +77,8 @@ def parse_item_id(argument: str) -> int:
     argument = argument.strip().strip("<>")
     if argument.isdecimal():
         return int(argument)
-    if "ycombinator.com" in argument:
+    parsed = urlparse(argument)
+    if parsed.hostname == "news.ycombinator.com" and parsed.path == "/item":
         match = ITEM_ID_RE.search(argument)
         if match:
             return int(match[1])

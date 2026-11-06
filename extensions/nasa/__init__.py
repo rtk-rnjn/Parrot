@@ -161,8 +161,10 @@ def secure(value: object) -> str | None:
 def is_image_url(url: str | None) -> bool:
     if not url:
         return False
-    path = urllib.parse.urlsplit(url).path.lower()
-    return path.endswith(IMAGE_EXTENSIONS) or "assets.science.nasa.gov" in url or "images-assets.nasa.gov" in url
+    parsed = urllib.parse.urlsplit(url)
+    path = parsed.path.lower()
+    host = (parsed.hostname or "").lower()
+    return path.endswith(IMAGE_EXTENSIONS) or host in {"assets.science.nasa.gov", "images-assets.nasa.gov"}
 
 
 def number(value: object) -> float:

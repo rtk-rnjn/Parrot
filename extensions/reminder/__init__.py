@@ -505,7 +505,7 @@ class Reminder(commands.Cog):
     async def schedule(self, metadata: ReminderMetadata, when: datetime.datetime) -> ScheduledReminder:
         """Persist a reminder timer, recording its intended time in the metadata."""
         full: ReminderMetadata = {**metadata, "due": int(when.timestamp())}
-        result = await self.bot.event_scheduler.create_timer(event_name="reminder", expires_at=when, metadata=full)
+        result, _ = await self.bot.event_scheduler.create_timer(event_name="reminder", expires_at=when, metadata=full)
         return ScheduledReminder(timer_id=result.inserted_id, when=when, metadata=full)
 
     async def prompt_new_reminder(

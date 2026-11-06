@@ -74,6 +74,11 @@ CHARACTER_VALUES = {
 with (Path("assets") / "color_names.json").open(encoding="utf-8") as file:
     color_names: dict[str, str] = discord.utils._from_json(file.read())
 
+TRUTHS = (Path("assets") / "truth.txt").read_text(encoding="utf-8").splitlines()
+DARES = (Path("assets") / "dare.txt").read_text(encoding="utf-8").splitlines()
+NEVER_HAVE_I_EVER = (Path("assets") / "nhie.txt").read_text(encoding="utf-8").splitlines()
+FORTUNE_COOKIES = (Path("assets") / "fortunes.txt").read_text(encoding="utf-8").splitlines()
+
 
 class QuizData(TypedDict):
     category: str
@@ -567,6 +572,18 @@ class Fun(commands.Cog, ColorHandler):
             "`UUID v8:` " + str(uuid.uuid8()),
         ]
         await ctx.reply("\n".join(contents))
+
+    @random_command.command(name="dice", aliases=["roll"])
+    async def random_dice(
+        self,
+        ctx: commands.Context[Bot],
+        number_of_dice: Annotated[int, commands.Range[int, 1, 100]] = commands.parameter(description="The number of dice to roll.", default=1),
+        number_of_sides: Annotated[int, commands.Range[int, 2, 100]] = commands.parameter(description="The number of sides on the dice.", default=6),
+    ):
+        """Roll a specified number of dice with a specified number of sides."""
+
+        results = [random.randint(1, number_of_sides) for _ in range(number_of_dice)]
+        await ctx.reply(f"\N{GAME DIE} You rolled: {', '.join(map(str, results))}")
 
     @commands.command(name="guess-the-number", aliases=["gtn"])
     @commands.max_concurrency(1, per=commands.BucketType.user)
@@ -1422,6 +1439,69 @@ class Fun(commands.Cog, ColorHandler):
         embed.set_image(url="attachment://help.png")
         embed.set_footer(text="Tip: using Discord's compact message display mode can help keep the board on the screen")
         return await ctx.send(file=file, embed=embed)
+
+    @commands.command(name="truth", aliases=["dare"])
+    async def truth_or_dare(
+        self,
+        ctx: Context[Bot],
+        *,
+        member: discord.Member | None = commands.parameter(description="The member to play with.", default=None),  # noqa: B008
+    ):
+        """Play a game of truth or dare."""
+        _m = member or ctx.author
+        seed = _m.id + int(arrow.utcnow().format("mm"))
+        random.seed(seed)
+
+        invoked_with = ctx.invoked_with.lower() if ctx.invoked_with else "truth"
+        prompt = random.choice(TRUTHS) if invoked_with == "truth" else random.choice(DARES)
+
+        embed = discord.Embed(
+            title=f"Truth or Dare - {invoked_with.title()}",
+            description=prompt,
+            color=discord.Color.random(),
+        )
+        if member:
+            embed.set_footer(text=f"Challenge for {member.display_name}")
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="neverhaveiever", aliases=["nhie"])
+    async def never_have_i_ever(
+        self,
+        ctx: Context[Bot],
+        *,
+        member: discord.Member | None = commands.parameter(description="The member to play with.", default=None),  # noqa: B008
+    ):
+        """Play a game of Never Have I Ever."""
+        _m = member or ctx.author
+        seed = _m.id + int(arrow.utcnow().format("mm"))
+        random.seed(seed)
+
+        prompt = random.choice(NEVER_HAVE_I_EVER)
+
+        embed = discord.Embed(
+            title="Never Have I Ever",
+            description=prompt,
+            color=discord.Color.random(),
+        )
+        if member:
+            embed.set_footer(text=f"Challenge for {member.display_name}")
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="fortune", aliases=["fortunecookie", "cookie"])
+    async def fortune_cookie(self, ctx: commands.Context[Bot]) -> None:
+        """Crack open a fortune cookie with lucky numbers."""
+        seed = ctx.author.id + int(arrow.utcnow().format("YYYYMMDD"))
+        random.seed(seed)
+
+        fortune = random.choice(FORTUNE_COOKIES)
+        lucky_numbers = sorted(random.sample(range(1, 70), k=6))
+        embed = discord.Embed(
+            title="\N{FORTUNE COOKIE} Your Fortune Cookie",
+            description=f'*"{fortune}"*',
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Lucky Numbers", value=", ".join(f"`{n}`" for n in lucky_numbers))
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot: Bot) -> None:

@@ -4,7 +4,7 @@ import asyncio
 import logging
 from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal, TypedDict, Unpack
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, Unpack
 
 import discord
 import pymongo
@@ -24,7 +24,7 @@ __all__ = ("AsyncTimerDispatcher", "TimerData")
 VALID_EVENT_NAMES = Literal["reminder", "mute", "todo_due", "giveaway", "automod_unban", "automod_role", "automod_slowmode"]
 
 
-class TimerData[T: Mapping[str, object]](TypedDict):
+class TimerData[T: Mapping[str, Any]](TypedDict):
     """Schema for a timer document stored in MongoDB."""
 
     _id: ObjectId
@@ -42,10 +42,10 @@ class AsyncTimerDispatcher:
     interval, the task sleeps until the current timer expires.
     """
 
-    def __init__(self, bot: Bot, /) -> None:
+    def __init__(self, bot: Bot, /, *, collection: AsyncCollection[Any] | None = None) -> None:
         """Initialize the timer manager using the bot's MongoDB and event loop."""
 
-        self.timers_collection: AsyncCollection[TimerData] = bot.database.mongo_db["timers"]
+        self.timers_collection: AsyncCollection[TimerData] = collection or bot.database.mongo_db["timers"]
 
         # Event used to put the dispatcher to sleep while there are no timers.
         # Unlike an asyncio.Queue, the event does not carry the timer itself;
@@ -176,13 +176,13 @@ class AsyncTimerDispatcher:
 
         await self.__call_timer(**data)
 
-    async def create_timer(
+    async def create_timer[T: Mapping[str, Any]](
         self,
         *,
         event_name: VALID_EVENT_NAMES,
         expires_at: datetime,
-        metadata: Mapping[str, object],
-    ) -> InsertOneResult:
+        metadata: T,
+    ) -> tuple[InsertOneResult, TimerData[T]]:
         """Persist a timer and notify the dispatcher that timer data exists.
 
         If the new timer expires before the timer currently being awaited,
@@ -211,9 +211,9 @@ class AsyncTimerDispatcher:
 
             await self.restart()
 
-        return insert_data
+        return insert_data, post
 
-    async def get[T: Mapping[str, object]](self, **filters: Unpack[TimerData[T]]) -> TimerData[T] | None:
+    async def get[T: Mapping[str, Any]](self, **filters: Unpack[TimerData[T]]) -> TimerData[T] | None:
         """Return the first timer matching the supplied fields."""
         return await self.timers_collection.find_one(filters)
 
@@ -221,7 +221,7 @@ class AsyncTimerDispatcher:
         self,
         *,
         event_name: VALID_EVENT_NAMES,
-        metadata_filter: Mapping[str, object],
+        metadata_filter: Mapping[str, Any],
         multiple: bool = False,
     ) -> DeleteResult:
         """Delete a matching timer and restart the dispatcher if necessary."""
@@ -253,7 +253,7 @@ class AsyncTimerDispatcher:
         await self.restart()
         return True
 
-    async def update(self, timer_id: ObjectId, /, *, expires_at: datetime, metadata: Mapping[str, object]) -> bool:
+    async def update(self, timer_id: ObjectId, /, *, expires_at: datetime, metadata: Mapping[str, Any]) -> bool:
         """Change a timer's expiry and metadata. Returns ``False`` if it already fired."""
         _log.debug("Updating timer %s to expire at %s with metadata %s", timer_id, expires_at.isoformat(), metadata)
         result = await self.timers_collection.update_one(
@@ -282,7 +282,7 @@ class AsyncTimerDispatcher:
             self.timer_task.cancel()
             self.timer_task = self.bot.loop.create_task(self._start(), name=f"{self.__class__.__name__}: start")
 
-    async def search[T: Mapping[str, object]](self, *, event_name: VALID_EVENT_NAMES, metadata_filter: T) -> list[TimerData[T]]:
+    async def search[T: Mapping[str, Any]](self, *, event_name: VALID_EVENT_NAMES, metadata_filter: T) -> list[TimerData[T]]:
         """Return all timers matching the supplied fields."""
         filters = {
             "event_name": event_name,

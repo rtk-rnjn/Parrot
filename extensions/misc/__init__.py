@@ -1,14 +1,24 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import datetime
 import io
+import ipaddress
+import itertools
 import logging
+import math
+import os
+import random
 import re
+import socket
+import ssl
 import sys
 import tempfile
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
+from urllib.parse import quote, urlparse
 
 import aiohttp
 import arrow
@@ -23,6 +33,7 @@ from core.constants import INVITE_RE, LINKS_RE
 from core.utils import HumanDate, PaginationView
 
 from .birthday_card import birthday_card_file
+from .chemistry import Chemistry
 from .constants import LANGUAGE_CODES, TRANSLATE_API, TRANSLATE_HEADERS, TRANSLATION_FLAG_MAP
 from .dictionary_parser import build_definition_embed
 from .events import PingMessageListner, SnipeMessageListener
@@ -49,8 +60,187 @@ MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 RENDER_TIMEOUT = 10  # seconds
 _CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 
+TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
+LASTFM_API_KEY = os.getenv("LASTFM_API_KEY", "")
+USER_AGENT = "DiscordBot/1.0 (+https://discord.com)"
+
 with (Path("assets") / "dictionary.json").open(encoding="utf-8") as file:
     DICTIONARY: dict[str, str] = discord.utils._from_json(file.read())
+
+ANAGRAM_INDEX: dict[str, list[str]] = {}
+for _word in DICTIONARY:
+    _clean = _word.strip().lower()
+    if _clean.isalpha():
+        ANAGRAM_INDEX.setdefault("".join(sorted(_clean)), []).append(_word)
+
+TAROT_DECK: list[tuple[str, str, str]] = [
+    ("0 - The Fool", "New beginnings, innocence, spontaneity, a free spirit", "Holding back, recklessness, risk-taking"),
+    ("I - The Magician", "Manifestation, resourcefulness, power, inspired action", "Manipulation, poor planning, untapped talents"),
+    (
+        "II - The High Priestess",
+        "Intuition, sacred knowledge, divine feminine, the subconscious mind",
+        "Secrets, disconnected from intuition, withdrawal",
+    ),
+    ("III - The Empress", "Femininity, beauty, nature, nurturing, abundance", "Creative block, dependence on others"),
+    ("IV - The Emperor", "Authority, establishment, structure, a father figure", "Domination, excessive control, lack of discipline"),
+    ("V - The Hierophant", "Spiritual wisdom, religious beliefs, conformity, tradition", "Personal beliefs, freedom, challenging the status quo"),
+    ("VI - The Lovers", "Love, harmony, relationships, values alignment, choices", "Self-love, disharmony, imbalance, misalignment of values"),
+    ("VII - The Chariot", "Control, willpower, success, action, determination", "Self-discipline, opposition, lack of direction"),
+    ("VIII - Strength", "Strength, courage, persuasion, influence, compassion", "Inner strength, self-doubt, low energy, raw emotion"),
+    ("IX - The Hermit", "Soul-searching, introspection, being alone, inner guidance", "Isolation, loneliness, withdrawal"),
+    ("X - Wheel of Fortune", "Good luck, karma, life cycles, destiny, a turning point", "Bad luck, resistance to change, breaking cycles"),
+    ("XI - Justice", "Justice, fairness, truth, cause and effect, law", "Unfairness, lack of accountability, dishonesty"),
+    ("XII - The Hanged Man", "Pause, surrender, letting go, new perspectives", "Delays, resistance, stalling, indecision"),
+    ("XIII - Death", "Endings, change, transformation, transition", "Resistance to change, personal transformation, inner purging"),
+    ("XIV - Temperance", "Balance, moderation, patience, purpose", "Imbalance, excess, self-healing, Re-alignment"),
+    (
+        "XV - The Devil",
+        "Shadow self, attachment, addiction, restriction, sexuality",
+        "Releasing limiting beliefs, exploring dark thoughts, detachment",
+    ),
+    ("XVI - The Tower", "Sudden change, upheaval, chaos, revelation, awakening", "Personal transformation, fear of change, averting disaster"),
+    ("XVII - The Star", "Hope, faith, purpose, renewal, spirituality", "Lack of faith, despair, self-trust, disconnection"),
+    ("XVIII - The Moon", "Illusion, fear, anxiety, subconscious, intuition", "Release of fear, repressed emotion, inner confusion"),
+    ("XIX - The Sun", "Positivity, fun, warmth, success, vitality", "Inner child, feeling down, overly optimistic"),
+    ("XX - Judgement", "Judgement, rebirth, inner calling, absolution", "Self-doubt, inner critic, ignoring the call"),
+    ("XXI - The World", "Completion, integration, accomplishment, travel", "Seeking personal closure, short-cuts, delays"),
+]
+
+ROMAN_NUMERAL_MAP: list[tuple[str, int]] = [
+    ("M", 1000),
+    ("CM", 900),
+    ("D", 500),
+    ("CD", 400),
+    ("C", 100),
+    ("XC", 90),
+    ("L", 50),
+    ("XL", 40),
+    ("X", 10),
+    ("IX", 9),
+    ("V", 5),
+    ("IV", 4),
+    ("I", 1),
+]
+ROMAN_REGEX = re.compile(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", re.IGNORECASE)
+
+ANILIST_QUERY = """
+query ($search: String, $type: MediaType) {
+  Media (search: $search, type: $type) {
+    id
+    title {
+      romaji
+      english
+      native
+    }
+    format
+    status
+    description(asHtml: false)
+    episodes
+    chapters
+    volumes
+    averageScore
+    genres
+    siteUrl
+    coverImage {
+      large
+      color
+    }
+    startDate {
+      year
+      month
+      day
+    }
+  }
+}
+"""
+
+
+def int_to_roman(n: int) -> str:
+    if not 1 <= n <= 3999:
+        msg = "Number must be between 1 and 3999."
+        raise ValueError(msg)
+    result = []
+    for numeral, value in ROMAN_NUMERAL_MAP:
+        count, n = divmod(n, value)
+        result.append(numeral * count)
+    return "".join(result)
+
+
+def roman_to_int(s: str) -> int:
+    s = s.strip().upper()
+    if not s or not ROMAN_REGEX.match(s):
+        msg = "Invalid Roman numeral."
+        raise ValueError(msg)
+    values = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+    total = 0
+    prev = 0
+    for char in reversed(s):
+        curr = values[char]
+        if curr < prev:
+            total -= curr
+        else:
+            total += curr
+        prev = curr
+    return total
+
+
+def calculate_moon_phase(dt: datetime.datetime) -> tuple[str, str, float, float]:
+    """Return (phase_name, emoji, illumination_pct, age_days)."""
+    ref = datetime.datetime(2000, 1, 6, 18, 14, tzinfo=datetime.UTC)
+    synodic_month = 29.53058867
+    days = (dt - ref).total_seconds() / 86400.0
+    age = days % synodic_month
+    frac = age / synodic_month
+    illumination = (1 - math.cos(2 * math.pi * frac)) / 2 * 100
+
+    phases = [
+        (1.84566, "New Moon", "\N{NEW MOON SYMBOL}"),
+        (5.53699, "Waxing Crescent", "\N{WAXING CRESCENT MOON SYMBOL}"),
+        (9.22831, "First Quarter", "\N{FIRST QUARTER MOON SYMBOL}"),
+        (12.91963, "Waxing Gibbous", "\N{WAXING GIBBOUS MOON SYMBOL}"),
+        (16.61096, "Full Moon", "\N{FULL MOON SYMBOL}"),
+        (20.30228, "Waning Gibbous", "\N{WANING GIBBOUS MOON SYMBOL}"),
+        (23.99361, "Last Quarter", "\N{LAST QUARTER MOON SYMBOL}"),
+        (27.68493, "Waning Crescent", "\N{WANING CRESCENT MOON SYMBOL}"),
+        (synodic_month, "New Moon", "\N{NEW MOON SYMBOL}"),
+    ]
+    for limit, name, emoji in phases:
+        if age < limit:
+            return name, emoji, illumination, age
+    return "New Moon", "\N{NEW MOON SYMBOL}", illumination, age
+
+
+def is_public_host(hostname: str) -> bool:
+    """Validate that a hostname does not resolve to private or loopback IP space."""
+    if not hostname or hostname.lower() == "localhost":
+        return False
+    try:
+        ip = ipaddress.ip_address(hostname)
+        return not (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved)
+    except ValueError:
+        return True
+
+
+def fetch_ssl_cert(hostname: str, port: int = 443) -> dict:
+    ctx = ssl.create_default_context()
+    with socket.create_connection((hostname, port), timeout=8) as sock, ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
+        cert = ssock.getpeercert()
+        cipher = ssock.cipher()
+        version = ssock.version()
+        return {"cert": cert or {}, "cipher": cipher, "version": version}
+
+
+async def query_whois_server(server: str, query: str) -> str:
+    reader, writer = await asyncio.wait_for(asyncio.open_connection(server, 43), timeout=8)
+    try:
+        writer.write(f"{query}\r\n".encode())
+        await writer.drain()
+        data = await asyncio.wait_for(reader.read(65536), timeout=8)
+        return data.decode("utf-8", errors="replace")
+    finally:
+        writer.close()
+        with contextlib.suppress(Exception):
+            await writer.wait_closed()
 
 
 def parse_birthday(value: str) -> str:
@@ -483,7 +673,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         pages = []
         for message in cog.get_ghost_pings(ctx.author.id):
             relative_dt = discord.utils.format_dt(message.created_at, style="R")
-            pages.append(f"[{relative_dt}] {message.author} - {self.sanitise(message.content)}")
+            pages.append(f"[{relative_dt}] {message.author}: {self.sanitise(message.content)}")
 
         if not pages:
             return await ctx.reply("You haven't been ghost pinged.")
@@ -1066,9 +1256,1182 @@ class Misc(commands.Cog, name="Miscellaneous"):
         except discord.HTTPException:
             return
 
+    @commands.command(name="rhyme", aliases=["rhymes"])
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def rhyme(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        word: str = commands.parameter(description="The word to find rhymes for."),
+    ) -> None:
+        """Find words that rhyme with the given word using Datamuse."""
+        word = word.strip()
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    "https://api.datamuse.com/words",
+                    params={"rel_rhy": word, "max": 60},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Failed to fetch rhymes right now.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to the rhyme service.")
+                return
+
+        if not data:
+            await ctx.reply(f"No rhymes found for **{discord.utils.escape_markdown(word)}**.")
+            return
+
+        words = [item["word"] for item in data if "word" in item]
+        embed = discord.Embed(
+            title=f"Words that rhyme with '{word}'",
+            description=", ".join(words)[:4000],
+            color=discord.Color.blurple(),
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="synonyms", aliases=["synonym", "syn", "thesaurus"])
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def synonyms(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        word: str = commands.parameter(description="The word to find synonyms and antonyms for."),
+    ) -> None:
+        """Find synonyms and antonyms for a given word."""
+        word = word.strip()
+        async with ctx.typing():
+            try:
+                async with (
+                    self.bot.http_session.get(
+                        "https://api.datamuse.com/words",
+                        params={"rel_syn": word, "max": 35},
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as syn_resp,
+                    self.bot.http_session.get(
+                        "https://api.datamuse.com/words",
+                        params={"rel_ant": word, "max": 20},
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as ant_resp,
+                ):
+                    syns = await syn_resp.json() if syn_resp.status == 200 else []
+                    ants = await ant_resp.json() if ant_resp.status == 200 else []
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to the thesaurus service.")
+                return
+
+        if not syns and not ants:
+            await ctx.reply(f"No synonyms or antonyms found for **{discord.utils.escape_markdown(word)}**.")
+            return
+
+        embed = discord.Embed(title=f"Thesaurus: {word.capitalize()}", color=discord.Color.blurple())
+        if syns:
+            embed.add_field(
+                name="Synonyms",
+                value=", ".join(item["word"] for item in syns)[:1024],
+                inline=False,
+            )
+        if ants:
+            embed.add_field(
+                name="Antonyms",
+                value=", ".join(item["word"] for item in ants)[:1024],
+                inline=False,
+            )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="anagram", aliases=["anagrams", "unscramble"])
+    async def anagram(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        letters: str = commands.parameter(description="The letters or word to solve anagrams for."),
+    ) -> None:
+        """Find valid dictionary anagrams and sub-anagrams from given letters."""
+        cleaned = "".join(c.lower() for c in letters if c.isalpha())
+        if not cleaned or len(cleaned) > 15:
+            await ctx.reply("Please provide between 1 and 15 alphabetical characters.")
+            return
+
+        key = "".join(sorted(cleaned))
+        exact_matches = sorted(set(ANAGRAM_INDEX.get(key, [])))
+
+        sub_matches: set[str] = set()
+        if len(cleaned) <= 9:
+            for length in range(len(cleaned) - 1, max(2, len(cleaned) - 3), -1):
+                for comb in set(itertools.combinations(key, length)):
+                    sub_key = "".join(comb)
+                    if sub_key in ANAGRAM_INDEX:
+                        sub_matches.update(ANAGRAM_INDEX[sub_key])
+
+        sub_list = sorted(sub_matches - set(exact_matches), key=lambda w: (-len(w), w))
+
+        if not exact_matches and not sub_list:
+            await ctx.reply(f"No anagrams found for `{cleaned}`.")
+            return
+
+        embed = discord.Embed(title=f"Anagrams for '{letters}'", color=discord.Color.green())
+        if exact_matches:
+            embed.add_field(
+                name=f"Exact Matches ({len(exact_matches)})",
+                value=", ".join(exact_matches)[:1024],
+                inline=False,
+            )
+        if sub_list:
+            embed.add_field(
+                name=f"Sub-anagrams ({len(sub_list)})",
+                value=", ".join(sub_list[:50])[:1024],
+                inline=False,
+            )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="grammar", aliases=["grammarcheck", "proofread"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def grammar(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        text: str | None = commands.parameter(
+            description="The text to check for grammar and spelling.",
+            default=None,
+        ),
+    ) -> None:
+        """Check grammar and spelling using LanguageTool. Reply to a message or provide text."""
+        if not text and ctx.message.reference:
+            ref = ctx.message.reference.resolved
+            if isinstance(ref, discord.Message):
+                text = ref.content
+
+        if not text or not text.strip():
+            await ctx.reply("Please provide text to check or reply to a message.")
+            return
+
+        text = text.strip()[:1500]
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.post(
+                    "https://api.languagetool.org/v2/check",
+                    data={"text": text, "language": "auto"},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Grammar check service is currently unavailable.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to reach the grammar checking service.")
+                return
+
+        matches = data.get("matches", [])
+        if not matches:
+            embed = discord.Embed(
+                title="Grammar Check",
+                description="\N{WHITE HEAVY CHECK MARK} No grammar or spelling issues found!",
+                color=discord.Color.green(),
+            )
+            await ctx.reply(embed=embed)
+            return
+
+        corrected = list(text)
+        lines: list[str] = []
+        for match in reversed(matches):
+            offset = match.get("offset", 0)
+            length = match.get("length", 0)
+            replacements = match.get("replacements", [])
+            if replacements:
+                best = replacements[0]["value"]
+                corrected[offset : offset + length] = list(best)
+
+        for match in matches[:10]:
+            msg = match.get("message", "Issue detected")
+            offset = match.get("offset", 0)
+            length = match.get("length", 0)
+            snippet = text[offset : offset + length]
+            reps = [r["value"] for r in match.get("replacements", [])[:3]]
+            rep_str = f" \N{RIGHTWARDS ARROW} `{', '.join(reps)}`" if reps else ""
+            lines.append(f"• `{snippet}`: {msg}{rep_str}")
+
+        embed = discord.Embed(
+            title=f"Grammar Check ({len(matches)} issue{'s' if len(matches) != 1 else ''})",
+            color=discord.Color.orange(),
+        )
+        embed.add_field(name="Suggested Text", value="".join(corrected)[:1024], inline=False)
+        embed.add_field(name="Details", value="\n".join(lines)[:1024], inline=False)
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="wotd", aliases=["wordoftheday"])
+    async def word_of_the_day(self, ctx: commands.Context[Bot]) -> None:
+        """Display the Word of the Day from the dictionary."""
+        today_str = arrow.utcnow().format("YYYY-MM-DD")
+        rng = random.Random(today_str)
+        keys = list(DICTIONARY.keys())
+        word = rng.choice(keys)
+        definition = DICTIONARY[word]
+        embed = build_definition_embed(word, definition)
+        embed.title = f"\N{OPEN BOOK} Word of the Day ({today_str}): {word}"
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="ip", aliases=["iplookup", "geoip"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def ip_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        target: str = commands.parameter(description="The IP address or domain to look up."),
+    ) -> None:
+        """Look up geolocation and network info for an IP address or domain."""
+        target = target.strip()
+        if not is_public_host(target):
+            await ctx.reply("Please provide a valid public IP address or domain.")
+            return
+
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    f"http://ip-api.com/json/{quote(target)}",
+                    params={"fields": "status,message,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query"},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to query IP information service.")
+                return
+
+        if data.get("status") != "success":
+            await ctx.reply(f"Lookup failed: {data.get('message', 'Unknown error')}.")
+            return
+
+        location = ", ".join(filter(None, [data.get("city"), data.get("regionName"), data.get("country")]))
+
+        embed = (
+            discord.Embed(
+                title=f"IP Lookup: {data.get('query', target)}",
+                color=discord.Color.blue(),
+            )
+            .add_field(name="Location", value=location or "Unknown", inline=True)
+            .add_field(name="Coordinates", value=f"{data.get('lat')}, {data.get('lon')}", inline=True)
+            .add_field(name="Timezone", value=data.get("timezone") or "Unknown", inline=True)
+            .add_field(name="ISP", value=data.get("isp") or "Unknown", inline=True)
+            .add_field(name="Organization", value=data.get("org") or "Unknown", inline=True)
+            .add_field(name="ASN", value=data.get("as") or "Unknown", inline=False)
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="dns", aliases=["dig", "nslookup"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def dns_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        domain: str = commands.parameter(description="The domain name to query."),
+        record_type: str = commands.parameter(description="Record type (A, AAAA, MX, TXT, NS, CNAME) or 'ALL'.", default="ALL"),
+    ) -> None:
+        """Perform a DNS lookup for a domain using Cloudflare DNS-over-HTTPS."""
+        domain = domain.strip().lower()
+        record_type = record_type.strip().upper()
+        valid_types = ["A", "AAAA", "CNAME", "MX", "NS", "TXT", "SOA"]
+        types_to_query = valid_types if record_type == "ALL" else [record_type]
+
+        if any(t not in valid_types for t in types_to_query):
+            await ctx.reply(f"Unsupported record type. Choose from: `{', '.join(valid_types)}` or `ALL`.")
+            return
+
+        embed = discord.Embed(title=f"DNS Records for {domain}", color=discord.Color.teal())
+        async with ctx.typing():
+            for rtype in types_to_query:
+                try:
+                    async with self.bot.http_session.get(
+                        "https://cloudflare-dns.com/dns-query",
+                        params={"name": domain, "type": rtype},
+                        headers={"Accept": "application/dns-json"},
+                        timeout=aiohttp.ClientTimeout(total=8),
+                    ) as resp:
+                        if resp.status != 200:
+                            continue
+                        data = await resp.json(content_type=None)
+                        answers = data.get("Answer", [])
+                        if answers:
+                            values = [f"`{ans.get('data')}` (TTL {ans.get('TTL')}s)" for ans in answers[:10]]
+                            embed.add_field(name=rtype, value="\n".join(values)[:1024], inline=False)
+                except aiohttp.ClientError, TimeoutError:
+                    continue
+
+        if not embed.fields:
+            await ctx.reply(f"No DNS records found for **{discord.utils.escape_markdown(domain)}**.")
+            return
+
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="whois")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def whois_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        domain: str = commands.parameter(description="The domain or IP to query via WHOIS."),
+    ) -> None:
+        """Perform a WHOIS lookup for a domain or IP address."""
+        domain = urlparse(domain).netloc or domain.strip().lower().split("/")[0]
+        if not domain or not is_public_host(domain):
+            await ctx.reply("Please provide a valid public domain or IP.")
+            return
+
+        async with ctx.typing():
+            try:
+                iana_resp = await query_whois_server("whois.iana.org", domain)
+                refer_match = re.search(r"refer:\s*(\S+)", iana_resp, re.IGNORECASE)
+                whois_server = refer_match.group(1) if refer_match else "whois.verisign-grs.com"
+                raw_whois = await query_whois_server(whois_server, domain)
+            except Exception as exc:
+                await ctx.reply(f"WHOIS lookup failed: {exc}")
+                return
+
+        important_keys = (
+            "Domain Name",
+            "Registrar",
+            "Creation Date",
+            "Updated Date",
+            "Registry Expiry Date",
+            "Registrar Registration Expiration Date",
+            "Name Server",
+            "Domain Status",
+            "Registrant Organization",
+            "OrgName",
+            "NetRange",
+            "CIDR",
+        )
+        extracted: list[str] = []
+        seen: set[str] = set()
+        for line in raw_whois.splitlines():
+            line_s = line.strip()
+            if any(line_s.lower().startswith(k.lower() + ":") for k in important_keys) and line_s not in seen:
+                seen.add(line_s)
+                extracted.append(line_s)
+
+        summary = "\n".join(extracted[:25]) if extracted else raw_whois[:1800]
+        embed = discord.Embed(
+            title=f"WHOIS: {domain}",
+            description=f"```yaml\n{summary[:1900]}\n```",
+            color=discord.Color.dark_blue(),
+        )
+        embed.set_footer(text=f"Server: {whois_server}")
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="ssl", aliases=["cert", "sslcheck"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def ssl_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        hostname: str = commands.parameter(description="The hostname to inspect SSL certificate for."),
+    ) -> None:
+        """Inspect the SSL/TLS certificate of a domain."""
+        hostname = urlparse(hostname).netloc or hostname.strip().split("/")[0]
+        hostname = hostname.split(":")[0]
+        if not hostname or not is_public_host(hostname):
+            await ctx.reply("Please provide a valid public hostname.")
+            return
+
+        async with ctx.typing():
+            try:
+                info = await asyncio.to_thread(fetch_ssl_cert, hostname)
+            except Exception as exc:
+                await ctx.reply(f"Could not retrieve SSL certificate for `{hostname}`: {exc}")
+                return
+
+        cert = info["cert"]
+        subject = dict(x[0] for x in cert.get("subject", []))
+        issuer = dict(x[0] for x in cert.get("issuer", []))
+        not_before = cert.get("notBefore", "Unknown")
+        not_after = cert.get("notAfter", "Unknown")
+        sans = [val for _, val in cert.get("subjectAltName", [])]
+
+        embed = (
+            discord.Embed(title=f"SSL Certificate: {hostname}", color=discord.Color.green())
+            .add_field(name="Common Name (CN)", value=subject.get("commonName", hostname), inline=True)
+            .add_field(name="Issuer", value=issuer.get("organizationName") or issuer.get("commonName") or "Unknown", inline=True)
+            .add_field(name="Protocol / Cipher", value=f"{info['version']} ({info['cipher'][0] if info['cipher'] else 'Unknown'})", inline=True)
+            .add_field(name="Valid From", value=not_before, inline=True)
+            .add_field(name="Valid Until", value=not_after, inline=True)
+        )
+        if sans:
+            embed.add_field(name=f"Subject Alt Names ({len(sans)})", value=", ".join(sans[:15])[:1024], inline=False)
+
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="isup", aliases=["updown", "pingweb", "statuscheck"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def website_up_check(
+        self,
+        ctx: commands.Context[Bot],
+        url: str = commands.parameter(description="The URL or domain to check."),
+    ) -> None:
+        """Check whether a website is up or down and measure response latency."""
+        url = url.strip()
+        if not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+
+        parsed = urlparse(url)
+        if not parsed.hostname or not is_public_host(parsed.hostname):
+            await ctx.reply("Please provide a valid public URL.")
+            return
+
+        async with ctx.typing():
+            start = time.perf_counter()
+            try:
+                async with self.bot.http_session.get(
+                    url,
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                    allow_redirects=True,
+                ) as resp:
+                    elapsed_ms = (time.perf_counter() - start) * 1000
+                    status = resp.status
+                    final_url = str(resp.url)
+            except Exception as exc:
+                embed = discord.Embed(
+                    title=f"\N{LARGE RED CIRCLE} {parsed.hostname} appears to be DOWN",
+                    description=f"Error: `{exc}`",
+                    color=discord.Color.red(),
+                )
+                await ctx.reply(embed=embed)
+                return
+
+        is_ok = 200 <= status < 400
+        color = discord.Color.green() if is_ok else discord.Color.orange()
+        icon = "\N{LARGE GREEN CIRCLE}" if is_ok else "\N{LARGE YELLOW CIRCLE}"
+        embed = (
+            discord.Embed(
+                title=f"{icon} {parsed.hostname} is UP",
+                color=color,
+            )
+            .add_field(name="HTTP Status", value=f"`{status}`", inline=True)
+            .add_field(name="Response Time", value=f"`{elapsed_ms:.0f} ms`", inline=True)
+            .add_field(name="Final URL", value=final_url, inline=False)
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="screenshot", aliases=["ss", "webshot"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def screenshot_url(
+        self,
+        ctx: commands.Context[Bot],
+        url: str = commands.parameter(description="The website URL to screenshot."),
+    ) -> None:
+        """Capture a screenshot of a public website URL."""
+        url = url.strip("<> ")
+        if not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+
+        parsed = urlparse(url)
+        if not parsed.hostname or not is_public_host(parsed.hostname):
+            await ctx.reply("Please provide a valid public website URL.")
+            return
+
+        screenshot_endpoint = f"https://image.thum.io/get/width/1280/crop/800/noanimate/{url}"
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    screenshot_endpoint,
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply(f"Failed to capture screenshot (HTTP {resp.status}).")
+                        return
+                    img_bytes = await resp.read()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Timed out while capturing the website screenshot.")
+                return
+
+        file = discord.File(io.BytesIO(img_bytes), filename="screenshot.png")
+        embed = discord.Embed(title=f"Screenshot: {parsed.hostname}", url=url, color=discord.Color.blurple())
+        embed.set_image(url="attachment://screenshot.png")
+        await ctx.reply(embed=embed, file=file)
+
+    @commands.command(name="moon", aliases=["moonphase"])
+    async def moon_phase(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        date: str | None = commands.parameter(description="Optional date (YYYY-MM-DD) to check moon phase for.", default=None),
+    ) -> None:
+        """Calculate the current moon phase, illumination, and lunar age."""
+        try:
+            target_dt = arrow.get(date).datetime if date else datetime.datetime.now(datetime.UTC)
+        except Exception:
+            await ctx.reply("Invalid date format. Try `YYYY-MM-DD`.")
+            return
+
+        if target_dt.tzinfo is None:
+            target_dt = target_dt.replace(tzinfo=datetime.UTC)
+
+        phase_name, emoji, illumination, age = calculate_moon_phase(target_dt)
+        embed = (
+            discord.Embed(
+                title=f"{emoji} Moon Phase: {phase_name}",
+                color=discord.Color.dark_gold(),
+                timestamp=target_dt,
+            )
+            .add_field(name="Illumination", value=f"`{illumination:.1f}%`", inline=True)
+            .add_field(name="Lunar Age", value=f"`{age:.1f} days`", inline=True)
+            .add_field(name="Next Full Moon", value=f"In `{(14.765 - age) % 29.53:.1f} days`", inline=True)
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="sun", aliases=["sunrise", "sunset", "daylight"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def sunrise_sunset(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        location: str = commands.parameter(description="City, address, or 'lat, lon' coordinates."),
+    ) -> None:
+        """Fetch sunrise, sunset, solar noon, and day length for a location."""
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={"q": location, "format": "json", "limit": 1},
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as geo_resp:
+                    geo_data = await geo_resp.json()
+                    if not geo_data:
+                        await ctx.reply(f"Could not find coordinates for **{discord.utils.escape_markdown(location)}**.")
+                        return
+                    lat = geo_data[0]["lat"]
+                    lon = geo_data[0]["lon"]
+                    display_name = geo_data[0]["display_name"]
+
+                async with self.bot.http_session.get(
+                    "https://api.sunrise-sunset.org/json",
+                    params={"lat": lat, "lng": lon, "formatted": 0},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as sun_resp:
+                    sun_data = await sun_resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to retrieve solar data right now.")
+                return
+
+        if sun_data.get("status") != "OK":
+            await ctx.reply("Could not calculate sunrise/sunset times for that location.")
+            return
+
+        res = sun_data["results"]
+        sunrise_dt = arrow.get(res["sunrise"]).datetime
+        sunset_dt = arrow.get(res["sunset"]).datetime
+        noon_dt = arrow.get(res["solar_noon"]).datetime
+        day_len = int(res["day_length"])
+        hours, remainder = divmod(day_len, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        embed = (
+            discord.Embed(
+                title=f"\N{SUNRISE OVER MOUNTAINS} Solar Times: {display_name[:180]}",
+                color=discord.Color.gold(),
+            )
+            .add_field(name="Sunrise", value=discord.utils.format_dt(sunrise_dt, style="t"), inline=True)
+            .add_field(name="Sunset", value=discord.utils.format_dt(sunset_dt, style="t"), inline=True)
+            .add_field(name="Solar Noon", value=discord.utils.format_dt(noon_dt, style="t"), inline=True)
+            .add_field(name="Day Length", value=f"`{hours}h {minutes}m {seconds}s`", inline=True)
+            .add_field(name="Coordinates", value=f"`{float(lat):.4f}, {float(lon):.4f}`", inline=True)
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="iss", aliases=["issloc", "spacestation"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def iss_location(self, ctx: commands.Context[Bot]) -> None:
+        """Track the current real-time position and velocity of the International Space Station."""
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    "https://api.wheretheiss.at/v1/satellites/25544",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Could not fetch ISS telemetry at the moment.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to reach the ISS tracking service.")
+                return
+
+        lat = data.get("latitude", 0.0)
+        lon = data.get("longitude", 0.0)
+        alt = data.get("altitude", 0.0)
+        vel = data.get("velocity", 0.0)
+        vis = str(data.get("visibility", "unknown")).capitalize()
+        maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+
+        embed = (
+            discord.Embed(
+                title="\N{SATELLITE} International Space Station (ISS) Live Tracker",
+                description=f"[View current ground point on Google Maps]({maps_url})",
+                color=discord.Color.blue(),
+                timestamp=datetime.datetime.fromtimestamp(data.get("timestamp", time.time()), tz=datetime.UTC),
+            )
+            .add_field(name="Latitude", value=f"`{lat:.4f}°`", inline=True)
+            .add_field(name="Longitude", value=f"`{lon:.4f}°`", inline=True)
+            .add_field(name="Altitude", value=f"`{alt:.2f} km`", inline=True)
+            .add_field(name="Velocity", value=f"`{vel:,.2f} km/h`", inline=True)
+            .add_field(name="Visibility", value=f"`{vis}`", inline=True)
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="launches", aliases=["rocket", "rockets", "spacelaunch"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def rocket_launches(self, ctx: commands.Context[Bot]) -> None:
+        """View upcoming orbital rocket launches around the world."""
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    "https://ll.thespacedevs.com/2.2.0/launch/upcoming/",
+                    params={"limit": 5},
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Rocket launch schedule service is currently busy or unavailable.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to fetch upcoming rocket launches.")
+                return
+
+        results = data.get("results", [])
+        if not results:
+            await ctx.reply("No upcoming rocket launches found.")
+            return
+
+        embeds: list[discord.Embed] = []
+        for item in results:
+            name = item.get("name", "Upcoming Launch")
+            provider = (item.get("launch_service_provider") or {}).get("name", "Unknown Provider")
+            pad = (item.get("pad") or {}).get("name", "Unknown Pad")
+            loc = ((item.get("pad") or {}).get("location") or {}).get("name", "Unknown Location")
+            net_str = item.get("net")
+            status_name = (item.get("status") or {}).get("name", "Scheduled")
+            mission_desc = (item.get("mission") or {}).get("description") or "No mission description available."
+
+            emb = discord.Embed(title=f"\N{ROCKET} {name}", description=mission_desc[:1000], color=discord.Color.orange())
+            emb.add_field(name="Provider", value=provider, inline=True)
+            emb.add_field(name="Status", value=status_name, inline=True)
+            if net_str:
+                try:
+                    net_dt = arrow.get(net_str).datetime
+                    emb.add_field(
+                        name="Window (NET)",
+                        value=f"{discord.utils.format_dt(net_dt, 'F')} ({discord.utils.format_dt(net_dt, 'R')})",
+                        inline=False,
+                    )
+                except Exception:
+                    emb.add_field(name="Window (NET)", value=net_str, inline=False)
+            emb.add_field(name="Launch Pad", value=f"{pad} — {loc}", inline=False)
+            if item.get("image"):
+                emb.set_thumbnail(url=item["image"])
+            embeds.append(emb)
+
+        view = PaginationView(author=ctx.author, items=embeds)
+        await view.start(ctx)
+
+    @commands.command(name="prime", aliases=["factor", "factors", "isprime"])
+    async def prime_factor_check(
+        self,
+        ctx: commands.Context[Bot],
+        number: Annotated[int, commands.Range[int, 1, 10**18]] = commands.parameter(description="The integer to test for primality and factorize."),
+    ) -> None:
+        """Check if a number is prime and compute its prime factorization."""
+        if number < 2:
+            await ctx.reply(f"**{number}** is neither prime nor composite.")
+            return
+
+        is_p = bool(sympy.isprime(number))
+        factors_dict: dict[int, int] = await asyncio.to_thread(sympy.factorint, number)
+        factor_parts = [f"{p}^{e}" if e > 1 else str(p) for p, e in sorted(factors_dict.items())]
+        divisor_count = math.prod(e + 1 for e in factors_dict.values())
+
+        embed = discord.Embed(
+            title=f"Number Analysis: {number:,}",
+            color=discord.Color.green() if is_p else discord.Color.blurple(),
+        )
+        embed.add_field(name="Is Prime?", value="\N{WHITE HEAVY CHECK MARK} Yes" if is_p else "\N{CROSS MARK} No", inline=True)
+        embed.add_field(name="Total Divisors", value=f"`{divisor_count:,}`", inline=True)
+        embed.add_field(name="Prime Factorization", value=f"`{' \N{MULTIPLICATION SIGN} '.join(factor_parts)}`", inline=False)
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="roman", aliases=["numeral", "romannumeral"])
+    async def roman_numeral(
+        self,
+        ctx: commands.Context[Bot],
+        value: str = commands.parameter(description="An integer (1-3999) or a Roman numeral (e.g. MMXXVI)."),
+    ) -> None:
+        """Convert between integers (1-3999) and Roman numerals."""
+        value = value.strip()
+        try:
+            if value.isdigit():
+                num = int(value)
+                roman = int_to_roman(num)
+                await ctx.reply(f"**{num:,}** in Roman numerals is **`{roman}`**.")
+            else:
+                num = roman_to_int(value)
+                await ctx.reply(f"**`{value.upper()}`** in standard integer form is **{num:,}**.")
+        except ValueError as exc:
+            await ctx.reply(str(exc))
+
+    @commands.command(name="tarot")
+    async def tarot_reading(
+        self,
+        ctx: commands.Context[Bot],
+        spread: int = commands.parameter(description="Number of cards to draw (1 or 3).", default=1),
+    ) -> None:
+        """Draw a single Tarot card or a 3-card Past/Present/Future spread."""
+        if spread not in (1, 3):
+            await ctx.reply("Please choose either a `1`-card draw or a `3`-card (Past / Present / Future) spread.")
+            return
+
+        drawn = random.sample(TAROT_DECK, k=spread)
+        positions = ["Single Draw"] if spread == 1 else ["Past", "Present", "Future"]
+
+        embed = discord.Embed(
+            title="\N{CRYSTAL BALL} Tarot Card Reading",
+            color=discord.Color.purple(),
+        )
+        for pos, (name, upright, reversed_meaning) in zip(positions, drawn, strict=False):
+            is_reversed = random.choice([False, True])
+            orientation = "Reversed \N{DOWNWARDS BLACK ARROW}" if is_reversed else "Upright \N{UPWARDS BLACK ARROW}"
+            meaning = reversed_meaning if is_reversed else upright
+            embed.add_field(
+                name=f"{pos}: {name} ({orientation})",
+                value=meaning,
+                inline=False,
+            )
+        embed.set_footer(text=f"Requested by {ctx.author.display_name}")
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="onthisday", aliases=["otd", "historytoday"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def on_this_day(
+        self,
+        ctx: commands.Context[Bot],
+        month: int | None = commands.parameter(description="Month number (1-12).", default=None),
+        day: int | None = commands.parameter(description="Day of month (1-31).", default=None),
+    ) -> None:
+        """Discover historical events that occurred on this day in history."""
+        now = arrow.utcnow()
+        m = month if month is not None else now.month
+        d = day if day is not None else now.day
+        if not (1 <= m <= 12 and 1 <= d <= 31):
+            await ctx.reply("Please provide a valid month (1-12) and day (1-31).")
+            return
+
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    f"https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/{m:02d}/{d:02d}",
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Failed to fetch historical events for that date.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to the Wikipedia history feed.")
+                return
+
+        events = data.get("events", [])
+        if not events:
+            await ctx.reply("No historical events found for that date.")
+            return
+
+        sampled = random.sample(events, k=min(6, len(events)))
+        sampled.sort(key=lambda e: e.get("year", 0))
+
+        lines = []
+        for ev in sampled:
+            year = ev.get("year", "?")
+            text = ev.get("text", "")
+            pages = ev.get("pages") or []
+            url = ((pages[0].get("content_urls") or {}).get("desktop") or {}).get("page") if pages else None
+            year_label = f"[**{year}**]({url})" if url else f"**{year}**"
+            lines.append(f"• {year_label}: {text}")
+
+        embed = discord.Embed(
+            title=f"\N{SCROLL} On This Day in History ({m:02d}/{d:02d})",
+            description="\n\n".join(lines)[:4000],
+            color=discord.Color.blurple(),
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="funfact", aliases=["fact", "randomfact"])
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def fun_fact(self, ctx: commands.Context[Bot]) -> None:
+        """Fetch a random verified fun fact."""
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    "https://uselessfacts.jsph.pl/api/v2/facts/random",
+                    params={"language": "en"},
+                    timeout=aiohttp.ClientTimeout(total=8),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Could not fetch a fun fact right now.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to the fun facts service.")
+                return
+
+        embed = discord.Embed(
+            title="\N{ELECTRIC LIGHT BULB} Did You Know?",
+            description=data.get("text", "No fact returned."),
+            color=discord.Color.teal(),
+        )
+        if data.get("source_url"):
+            embed.url = data["source_url"]
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="animal", aliases=["pet", "cat", "dog", "fox", "duck"])
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def random_animal(
+        self,
+        ctx: commands.Context[Bot],
+        species: str | None = commands.parameter(description="Animal species: cat, dog, fox, duck, or shiba.", default=None),
+    ) -> None:
+        """Fetch a random cute animal picture (cat, dog, fox, duck, or shiba)."""
+        invoked = ctx.invoked_with.lower() if ctx.invoked_with else ""
+        choice = (species or (invoked if invoked in ("cat", "dog", "fox", "duck") else random.choice(["cat", "dog", "fox", "duck"]))).lower()
+
+        endpoints = {
+            "cat": ("https://api.thecatapi.com/v1/images/search", lambda d: d[0]["url"]),
+            "dog": ("https://dog.ceo/api/breeds/image/random", lambda d: d["message"]),
+            "fox": ("https://randomfox.ca/floof/", lambda d: d["image"]),
+            "duck": ("https://random-d.uk/api/v2/random", lambda d: d["url"]),
+            "shiba": ("https://shibe.online/api/shibes?count=1", lambda d: d[0]),
+        }
+        if choice not in endpoints:
+            await ctx.reply(f"Unsupported animal `{choice}`. Choose from: `cat`, `dog`, `fox`, `duck`, `shiba`.")
+            return
+
+        url, extractor = endpoints[choice]
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Could not fetch an animal image right now.")
+                        return
+                    data = await resp.json()
+                    img_url = extractor(data)
+            except Exception:
+                await ctx.reply("Failed to fetch animal image.")
+                return
+
+        embed = discord.Embed(title=f"Random {choice.capitalize()}", color=discord.Color.random())
+        embed.set_image(url=img_url)
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="tmdb", aliases=["movie", "tv", "show", "series"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def media_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        query: str = commands.parameter(description="The movie or TV series title to search for."),
+    ) -> None:
+        """Look up movie or TV show details via TMDB (or TVMaze fallback if TMDB_API_KEY is unset)."""
+        query = query.strip()
+        async with ctx.typing():
+            if TMDB_API_KEY:
+                try:
+                    async with self.bot.http_session.get(
+                        "https://api.themoviedb.org/3/search/multi",
+                        params={"api_key": TMDB_API_KEY, "query": query, "include_adult": "false"},
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as resp:
+                        data = await resp.json() if resp.status == 200 else {}
+                except aiohttp.ClientError, TimeoutError:
+                    await ctx.reply("Failed to reach TMDB.")
+                    return
+
+                results = [r for r in data.get("results", []) if r.get("media_type") in ("movie", "tv")]
+                if not results:
+                    await ctx.reply(f"No movies or TV shows found on TMDB for **{discord.utils.escape_markdown(query)}**.")
+                    return
+
+                item = results[0]
+                mtype = item.get("media_type", "movie")
+                title = item.get("title") or item.get("name") or "Unknown"
+                date_str = item.get("release_date") or item.get("first_air_date") or "Unknown"
+                rating = item.get("vote_average", 0.0)
+                votes = item.get("vote_count", 0)
+                overview = item.get("overview") or "No synopsis available."
+                poster = item.get("poster_path")
+                tmdb_url = f"https://www.themoviedb.org/{mtype}/{item.get('id')}"
+
+                embed = discord.Embed(
+                    title=f"\N{CLAPPER BOARD} {title} ({mtype.upper()})",
+                    url=tmdb_url,
+                    description=overview[:2000],
+                    color=discord.Color.blue(),
+                )
+                embed.add_field(name="Release Date", value=date_str, inline=True)
+                embed.add_field(name="Rating", value=f"\N{WHITE MEDIUM STAR} `{rating:.1f}/10` ({votes:,} votes)", inline=True)
+                if poster:
+                    embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/w500{poster}")
+                await ctx.reply(embed=embed)
+                return
+
+            # Keyless fallback via TVMaze API for TV/Media lookup when TMDB_API_KEY is not configured
+            try:
+                async with self.bot.http_session.get(
+                    "https://api.tvmaze.com/singlesearch/shows",
+                    params={"q": query},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply(
+                            f"No results found for **{discord.utils.escape_markdown(query)}** "
+                            "(Set `TMDB_API_KEY` in environment for full movie & TV TMDB catalog)."
+                        )
+                        return
+                    show = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to reach the media lookup service.")
+                return
+
+        summary = re.sub(r"<[^>]+>", "", show.get("summary") or "No synopsis available.")
+        rating = (show.get("rating") or {}).get("average") or "N/A"
+        genres = ", ".join(show.get("genres") or []) or "Unknown"
+        embed = discord.Embed(
+            title=f"\N{TELEVISION} {show.get('name', query)}",
+            url=show.get("officialSite") or show.get("url"),
+            description=summary[:2000],
+            color=discord.Color.blue(),
+        )
+        embed.add_field(name="Premiered", value=show.get("premiered") or "Unknown", inline=True)
+        embed.add_field(name="Status", value=show.get("status") or "Unknown", inline=True)
+        embed.add_field(name="Rating", value=f"\N{WHITE MEDIUM STAR} `{rating}`", inline=True)
+        embed.add_field(name="Genres", value=genres, inline=False)
+        image_url = (show.get("image") or {}).get("original") or (show.get("image") or {}).get("medium")
+        if image_url:
+            embed.set_thumbnail(url=image_url)
+        await ctx.reply(embed=embed)
+
+    async def _query_anilist(self, ctx: commands.Context[Bot], query: str, media_type: str) -> None:
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.post(
+                    "https://graphql.anilist.co",
+                    json={"query": ANILIST_QUERY, "variables": {"search": query.strip(), "type": media_type}},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply(f"No {media_type.lower()} found on AniList for **{discord.utils.escape_markdown(query)}**.")
+                        return
+                    payload = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to AniList.")
+                return
+
+        media = (payload.get("data") or {}).get("Media")
+        if not media:
+            await ctx.reply(f"No {media_type.lower()} found for **{discord.utils.escape_markdown(query)}**.")
+            return
+
+        titles = media.get("title") or {}
+        display_title = titles.get("english") or titles.get("romaji") or titles.get("native") or query
+        desc = re.sub(r"<[^>]+>", "", media.get("description") or "No synopsis available.")
+        score = media.get("averageScore")
+        genres = ", ".join(media.get("genres") or []) or "Unknown"
+        status = (media.get("status") or "Unknown").replace("_", " ").title()
+
+        embed = discord.Embed(
+            title=f"{display_title} ({media.get('format', media_type)})",
+            url=media.get("siteUrl"),
+            description=desc[:1800],
+            color=discord.Color.blue(),
+        )
+        embed.add_field(name="Status", value=status, inline=True)
+        embed.add_field(name="Score", value=f"`{score}%`" if score else "N/A", inline=True)
+        if media_type == "ANIME":
+            embed.add_field(name="Episodes", value=str(media.get("episodes") or "?"), inline=True)
+        else:
+            embed.add_field(
+                name="Chapters / Volumes",
+                value=f"{media.get('chapters') or '?'} ch / {media.get('volumes') or '?'} vol",
+                inline=True,
+            )
+        embed.add_field(name="Genres", value=genres, inline=False)
+        cover = (media.get("coverImage") or {}).get("large")
+        if cover:
+            embed.set_thumbnail(url=cover)
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="anime", aliases=["ani"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def anime_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        query: str = commands.parameter(description="The anime title to search on AniList."),
+    ) -> None:
+        """Search for an anime on AniList."""
+        await self._query_anilist(ctx, query, "ANIME")
+
+    @commands.command(name="manga")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def manga_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        query: str = commands.parameter(description="The manga title to search on AniList."),
+    ) -> None:
+        """Search for a manga on AniList."""
+        await self._query_anilist(ctx, query, "MANGA")
+
+    @commands.command(name="book", aliases=["books", "openlibrary"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def book_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        query: str = commands.parameter(description="The book title or author to search on Open Library."),
+    ) -> None:
+        """Search for book metadata and editions via Open Library."""
+        async with ctx.typing():
+            try:
+                async with self.bot.http_session.get(
+                    "https://openlibrary.org/search.json",
+                    params={"q": query.strip(), "limit": 5},
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Failed to query Open Library.")
+                        return
+                    data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to Open Library.")
+                return
+
+        docs = data.get("docs", [])
+        if not docs:
+            await ctx.reply(f"No books found for **{discord.utils.escape_markdown(query)}**.")
+            return
+
+        book = docs[0]
+        title = book.get("title", "Unknown Title")
+        authors = ", ".join(book.get("author_name", ["Unknown Author"]))
+        first_year = book.get("first_publish_year", "Unknown")
+        editions = book.get("edition_count", 1)
+        pages = book.get("number_of_pages_median", "Unknown")
+        subjects = ", ".join((book.get("subject") or [])[:6]) or "Unlisted"
+        key = book.get("key", "")
+        book_url = f"https://openlibrary.org{key}" if key else "https://openlibrary.org"
+
+        embed = discord.Embed(
+            title=f"\N{BOOKS} {title}",
+            url=book_url,
+            color=discord.Color.dark_teal(),
+        )
+        embed.add_field(name="Author(s)", value=authors[:1024], inline=True)
+        embed.add_field(name="First Published", value=str(first_year), inline=True)
+        embed.add_field(name="Median Pages / Editions", value=f"{pages} pages ({editions} editions)", inline=True)
+        embed.add_field(name="Subjects", value=subjects[:1024], inline=False)
+        if book.get("cover_i"):
+            embed.set_thumbnail(url=f"https://covers.openlibrary.org/b/id/{book['cover_i']}-L.jpg")
+        await ctx.reply(embed=embed)
+
+    @commands.command(name="music", aliases=["song", "track", "musicbrainz", "lastfm"])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def music_lookup(
+        self,
+        ctx: commands.Context[Bot],
+        *,
+        query: str = commands.parameter(description="The song or artist to search on Last.fm / MusicBrainz."),
+    ) -> None:
+        """Look up track, artist, and release metadata via Last.fm or MusicBrainz."""
+        query = query.strip()
+        async with ctx.typing():
+            if LASTFM_API_KEY:
+                try:
+                    async with self.bot.http_session.get(
+                        "https://ws.audioscrobbler.com/2.0/",
+                        params={
+                            "method": "track.search",
+                            "track": query,
+                            "api_key": LASTFM_API_KEY,
+                            "format": "json",
+                            "limit": 1,
+                        },
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as resp:
+                        if resp.status == 200:
+                            lfm_data = await resp.json()
+                            tracks = (((lfm_data.get("results") or {}).get("trackmatches") or {}).get("track")) or []
+                            if tracks:
+                                tr = tracks[0]
+                                embed = discord.Embed(
+                                    title=f"\N{MUSICAL NOTE} {tr.get('name')} — {tr.get('artist')}",
+                                    url=tr.get("url"),
+                                    color=discord.Color.red(),
+                                )
+                                embed.add_field(name="Artist", value=tr.get("artist", "Unknown"), inline=True)
+                                embed.add_field(name="Listeners", value=f"{int(tr.get('listeners', 0)):,}", inline=True)
+                                await ctx.reply(embed=embed)
+                                return
+                except aiohttp.ClientError, TimeoutError, ValueError:
+                    pass
+
+            try:
+                async with self.bot.http_session.get(
+                    "https://musicbrainz.org/ws/2/recording",
+                    params={"query": query, "fmt": "json", "limit": 5},
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as resp:
+                    if resp.status != 200:
+                        await ctx.reply("Failed to query MusicBrainz.")
+                        return
+                    mb_data = await resp.json()
+            except aiohttp.ClientError, TimeoutError:
+                await ctx.reply("Failed to connect to MusicBrainz.")
+                return
+
+        recordings = mb_data.get("recordings", [])
+        if not recordings:
+            await ctx.reply(f"No music recordings found for **{discord.utils.escape_markdown(query)}**.")
+            return
+
+        rec = recordings[0]
+        title = rec.get("title", "Unknown Track")
+        artist_credits_list = rec.get("artist-credit") or []
+        artist_name = "".join(c.get("name", "") + c.get("joinphrase", "") for c in artist_credits_list) or "Unknown Artist"
+        releases = rec.get("releases") or []
+        album_title = releases[0].get("title", "Unknown Release") if releases else "Single / Unlisted"
+        release_date = rec.get("first-release-date", "Unknown")
+        length_ms = rec.get("length")
+        duration = f"{length_ms // 60000}:{(length_ms // 1000) % 60:02d}" if length_ms else "Unknown"
+        mbid = rec.get("id", "")
+        tags = ", ".join(t["name"] for t in (rec.get("tags") or [])[:6]) or "None listed"
+
+        embed = (
+            discord.Embed(
+                title=f"\N{MUSICAL NOTE} {title}",
+                url=f"https://musicbrainz.org/recording/{mbid}" if mbid else None,
+                color=discord.Color.purple(),
+            )
+            .add_field(name="Artist", value=artist_name, inline=True)
+            .add_field(name="Release / Album", value=album_title, inline=True)
+            .add_field(name="First Released", value=release_date, inline=True)
+            .add_field(name="Duration", value=f"`{duration}`", inline=True)
+            .add_field(name="Tags", value=tags, inline=False)
+        )
+        await ctx.reply(embed=embed)
+
 
 async def setup(bot: Bot) -> None:
     await bot.add_cog(Misc(bot))
     await bot.add_cog(SnipeMessageListener(bot))
     await bot.add_cog(PingMessageListner(bot))
     await bot.add_cog(Weather(bot))
+    await bot.add_cog(Chemistry(bot))

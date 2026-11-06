@@ -6,7 +6,7 @@ import logging
 import re
 import secrets
 from typing import TYPE_CHECKING, Annotated, Any, Literal
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 import aiohttp
 import arrow
@@ -75,8 +75,13 @@ class Username(commands.Converter[str]):
 
     async def convert(self, ctx: commands.Context[Bot], argument: str) -> str:
         argument = argument.strip()
-        if "chess.com" in argument:
-            argument = argument.rstrip("/").rsplit("/", 1)[-1]
+        if "://" in argument:
+            parsed = urlparse(argument)
+            host = (parsed.hostname or "").lower()
+            if host not in {"chess.com", "www.chess.com"}:
+                message = f"`{argument}` is not a valid chess.com username."
+                raise commands.BadArgument(message)
+            argument = parsed.path.rstrip("/").rsplit("/", 1)[-1]
         if not USERNAME_RE.fullmatch(argument):
             message = f"`{argument}` is not a valid chess.com username."
             raise commands.BadArgument(message)

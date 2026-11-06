@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass, field
 from functools import partial
 from typing import TYPE_CHECKING, Any
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 import aiohttp
 import arrow
@@ -892,8 +892,14 @@ def npm_links(data: dict[str, Any], ver_data: dict[str, Any], page_url: str) -> 
     repo_url = repo.get("url") if isinstance(repo, dict) else (repo if isinstance(repo, str) else None)
     if isinstance(repo_url, str):
         clean_repo = re.sub(r"^git\+", "", repo_url).removesuffix(".git")
-        if clean_repo.startswith("git://github.com/"):
-            clean_repo = "https://github.com/" + clean_repo.removeprefix("git://github.com/")
+        parsed_repo = urlparse(clean_repo)
+        if parsed_repo.scheme == "git" and parsed_repo.hostname == "github.com":
+            rebuilt = parsed_repo.path or ""
+            if parsed_repo.query:
+                rebuilt += f"?{parsed_repo.query}"
+            if parsed_repo.fragment:
+                rebuilt += f"#{parsed_repo.fragment}"
+            clean_repo = f"https://github.com{rebuilt}"
         if valid_url(clean_repo) and clean_repo not in {u for _, u in links}:
             links.append(("Repository", clean_repo))
 

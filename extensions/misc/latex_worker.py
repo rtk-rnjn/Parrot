@@ -28,8 +28,8 @@ def main() -> int:
 
     matplotlib.use("Agg")
     matplotlib.rcParams["text.usetex"] = False
-    lazy from matplotlib.backends.backend_agg import FigureCanvasAgg  # noqa: PLC0415
-    lazy from matplotlib.figure import Figure  # noqa: PLC0415
+    from matplotlib.backends.backend_agg import FigureCanvasAgg  # noqa: PLC0415
+    from matplotlib.figure import Figure  # noqa: PLC0415
 
     warm = Figure(dpi=50)
     FigureCanvasAgg(warm)

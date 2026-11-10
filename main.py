@@ -13,13 +13,10 @@ from pathlib import Path
 
 import aiohttp
 import discord
-import uvicorn
 from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
 from dotenv import load_dotenv
 
 from core import Bot
-from limited_memory import is_limited_memory
-from server import app
 
 load_dotenv()
 
@@ -281,32 +278,10 @@ async def start_bot() -> None:
             await bot.close()
 
 
-async def start_server() -> None:
-    config = uvicorn.Config(
-        app,
-        host="0.0.0.0",  # noqa: S104
-        port=8000,
-        log_level="debug",
-        log_config=None,  # Prevent Uvicorn from overriding root/per-module logging handlers
-    )
-    server = uvicorn.Server(config)
-    await server.serve()
-
-
 async def runner() -> None:
     logger.info("Starting %s runner...", BOT_NAME)
 
-    system_is_limited = is_limited_memory()
-
-    if system_is_limited:
-        LIMITED_MEMORY = True
-        logger.warning("System has limited memory; enabling LIMITED_MEMORY mode.")
-    else:
-        LIMITED_MEMORY = False
-
     start_tasks = [start_bot()]
-    if not LIMITED_MEMORY:
-        start_tasks.append(start_server())
 
     await asyncio.gather(*start_tasks)
 

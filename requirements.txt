@@ -31,18 +31,16 @@ sympy
 uvloop; sys_platform != "win32"
 wikipedia-api
 
-# web dashboard / API
+# web dashboard
 
-fastapi
 itsdangerous
 jinja2
-uvicorn[standard]
 
 # Dev
 
 autopep8
-bandit[baseline,sarif,toml,yaml]
-black[d]
+bandit[sarif]
+black
 flake8
 flake8-bandit
 isort

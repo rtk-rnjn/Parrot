@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import faulthandler
 import logging
 import logging.handlers
 import os
@@ -31,6 +32,9 @@ LIMITED_MEMORY = True
 LOGS_ROOT = Path(os.getenv("LOGS_DIR", "logs"))
 LOG_FORMAT = "[{asctime}] [{levelname:<8}] {name}:{funcName}:{lineno} - {message}"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+faulthandler.dump_traceback_later(10, repeat=True)
+faulthandler.register(signal.SIGUSR1)
 
 
 class HTTPStats:

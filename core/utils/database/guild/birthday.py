@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from discord.utils import MISSING
+from typing import Any
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
+
+MISSING: Any = sentinel("MISSING")
 
 
 class _GuildBirthdayMixin(DatabaseMixin):

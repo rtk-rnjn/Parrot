@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Literal
 import aiohttp
 import discord
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
+lazy from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 if TYPE_CHECKING:
     from core import Bot

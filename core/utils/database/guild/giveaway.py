@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal
 
 import pymongo
 from bson import ObjectId
-from discord.utils import MISSING
 from pymongo.results import InsertOneResult
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
 from ..models import GiveawayConfig, GiveawayEntry
+
+MISSING: Any = sentinel("MISSING")
 
 
 class _GuildGiveawayMixin(DatabaseMixin):

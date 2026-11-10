@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 import aiohttp
 import discord
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFont
+lazy from PIL import Image, ImageDraw, ImageFont
 
 if TYPE_CHECKING:
     from core import Bot

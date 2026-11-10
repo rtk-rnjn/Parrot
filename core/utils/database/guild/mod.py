@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from bson import ObjectId
-from discord.utils import MISSING
 from pymongo import ReturnDocument
 
 from ..cache_keys import RedisKeys
@@ -14,6 +13,7 @@ if TYPE_CHECKING:
     from ..models import ModAction
 
 MAX_MOD_ACTIONS_PER_GUILD = 1000
+MISSING: Any = sentinel("MISSING")
 
 
 class _GuildModeratorMixin(DatabaseMixin):

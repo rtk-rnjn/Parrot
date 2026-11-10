@@ -3,14 +3,16 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 import discord
-from discord.utils import MISSING
 
 from ..parsing import ParserSupport
 from .checks import evaluate
 from .configs import CategoriesConfig, ChannelsConfig, DurationConfig, NoConfig, RolesConfig
 from .mapping import _CONFIG_TYPES, ConditionConfig, ConditionType
+
+MISSING: Any = sentinel("MISSING")
 
 
 class ConditionParseError(ValueError):

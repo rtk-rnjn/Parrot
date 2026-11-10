@@ -15,8 +15,8 @@ from typing import TYPE_CHECKING, Any, Final, Literal, Self, override
 import aiohttp
 import discord
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFilter
 from rapidfuzz import fuzz, process
+lazy from PIL import Image, ImageDraw, ImageFilter
 
 from core.utils.formats import human_join, plural, safe_text, truncate
 from core.utils.views import Author, BaseLayoutView, NoticeLayout

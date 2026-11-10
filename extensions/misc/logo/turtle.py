@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from typing import Any, Literal
 
-from PIL import Image, ImageChops, ImageDraw, ImageFont
+lazy from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from .parser import LogoList
 from .utils import LogoRuntimeError, get_max_fills, get_max_gif_frames, get_max_pen_width, get_max_segments, get_max_turtles, get_max_word_length

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import numpy as np
-from PIL import Image
+lazy import numpy as np
+lazy from PIL import Image
 
 from .image_utils import load_image, resize_rgba, to_array, to_rgba
 from .image_validators import Color, ImageValidationError, clamp_int

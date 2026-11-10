@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, cast
 import discord
 from discord.ext import commands
 from discord.utils import _from_json as loads
-from PIL import Image
+lazy from PIL import Image
 
 if TYPE_CHECKING:
     from core import Bot

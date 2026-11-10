@@ -91,8 +91,6 @@ def default_guild_configuration(guild_id: int, /) -> GuildConfiguration:
             "bot_message_id": None,
             "bot_channel_channel_id": None,
         },
-        "custom_commands": [],
-        "tags": [],
         "afk_users": {},
         "events": {name: _default_event() for name in EVENT_NAMES},  # pyright: ignore[reportReturnType]
         "leveling_data": {},

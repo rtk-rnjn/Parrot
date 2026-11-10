@@ -4,11 +4,10 @@ import logging
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord.ext import commands
-from discord.utils import MISSING
 
 from core.utils import PaginationView
 
@@ -25,6 +24,8 @@ if TYPE_CHECKING:
     from core import Bot
 
 _log = logging.getLogger(__name__)
+
+MISSING: Any = sentinel("MISSING")
 
 
 class _ViolationManager:

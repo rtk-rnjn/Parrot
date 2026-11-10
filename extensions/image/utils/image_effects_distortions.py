@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import math
 
-import numpy as np
-from PIL import Image, ImageFilter
+lazy import numpy as np
+lazy from PIL import Image, ImageFilter
 
 from .image_effects_basic import _sample_bilinear
 from .image_utils import from_array, make_rng, to_array, to_rgba

@@ -4,8 +4,8 @@ from io import BytesIO
 from pathlib import Path
 
 import discord
-from jishaku.functools import executor_function
-from PIL import Image, ImageDraw, ImageFont
+lazy from jishaku.functools import executor_function
+lazy from PIL import Image, ImageDraw, ImageFont
 
 CARD_SIZE = (1000, 420)
 ASSETS_DIR = Path("assets")

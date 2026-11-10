@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Sequence
 
-from PIL import Image, ImageDraw
+lazy from PIL import Image, ImageDraw
 
 from .image_generator import gradient
 from .image_utils import (

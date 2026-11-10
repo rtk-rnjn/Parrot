@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Final
 
-import numpy as np
-from PIL import Image
+lazy import numpy as np
+lazy from PIL import Image
 
 from .image_utils import from_array, join_rgb_alpha, make_rng, resize_rgba, to_array, to_rgba
 from .image_validators import Color, ImageValidationError, clamp_float, clamp_int, parse_hex_color, validate_choice

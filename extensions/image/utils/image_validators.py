@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Final
 
-from PIL import Image, ImageColor
+lazy from PIL import Image, ImageColor
 
 Color = tuple[int, int, int]
 

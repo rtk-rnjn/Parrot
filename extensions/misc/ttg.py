@@ -3,11 +3,11 @@ from __future__ import annotations
 import itertools
 import re
 
-import numpy as np
-import pandas as pd
 import pyparsing
 from discord.ext import commands
-from tabulate import tabulate
+lazy import numpy as np
+lazy import pandas as pd
+lazy from tabulate import tabulate
 
 SINGLE_OPERAND_COUNT = 2
 

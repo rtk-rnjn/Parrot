@@ -21,8 +21,8 @@ import pyright
 from black import FileMode, format_str
 from colorama import Fore
 from discord.ext import commands
-from jishaku.paginators import PaginatorInterface
 from yapf.yapflib.yapf_api import FormatCode as yapf_format
+lazy from jishaku.paginators import PaginatorInterface
 
 from .bandit import BanditConverter
 from .bandit import validate_flag as bandit_validate_flag

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFont
+lazy from PIL import Image, ImageDraw, ImageFont
 
 from core.utils import BaseView
 

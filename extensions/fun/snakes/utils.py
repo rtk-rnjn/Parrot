@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
-from PIL import Image
 from PIL.ImageDraw import ImageDraw
+lazy from PIL import Image
 
 if TYPE_CHECKING:
     from core import Bot

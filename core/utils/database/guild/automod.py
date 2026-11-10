@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import json
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
-from discord.utils import MISSING
 from pymongo.errors import DuplicateKeyError
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
 from ..models import AutomodConfig, ConditionDict, EffectDict, RuleDict, TriggerDict
+
+MISSING: Any = sentinel("MISSING")
 
 # Stored in the rule-name set when a guild has no rules, so an empty result
 # is cached and we don't hit MongoDB on every message.

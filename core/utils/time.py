@@ -7,11 +7,11 @@ import re
 from typing import TYPE_CHECKING, Any, cast
 
 import arrow
-import dateparser
 import discord
 from dateutil.relativedelta import relativedelta
 from discord import app_commands
 from discord.ext import commands
+lazy import dateparser
 
 if TYPE_CHECKING:
     from core import Bot

@@ -3,8 +3,13 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TypedDict
 
+from bson import ObjectId
+
 
 class Tag(TypedDict):
+    _id: ObjectId
+    guild_id: int
+
     name: str
     content: str
     nsfw: bool

@@ -7,7 +7,6 @@ from enum import StrEnum
 from typing import Any
 
 from bson import ObjectId
-from discord.utils import MISSING
 from pymongo.asynchronous.collection import AsyncCollection
 
 from ..cache_keys import RedisKeys
@@ -19,6 +18,8 @@ CACHE_FIELD = "data"
 
 STATUS_RANK = {TodoStatus.IN_PROGRESS: 0, TodoStatus.PENDING: 1, TodoStatus.COMPLETED: 2}
 PRIORITY_RANK = {TodoPriority.HIGH: 0, TodoPriority.MEDIUM: 1, TodoPriority.LOW: 2, TodoPriority.NONE: 3}
+
+MISSING: Any = sentinel("MISSING")
 
 
 def _to_datetime(value: datetime | str | None) -> datetime | None:

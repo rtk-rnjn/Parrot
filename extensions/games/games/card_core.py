@@ -17,7 +17,7 @@ from io import BytesIO
 from typing import TYPE_CHECKING, ClassVar
 
 import discord
-from PIL import Image, ImageDraw
+lazy from PIL import Image, ImageDraw
 
 from core.utils.formats import truncate
 from core.utils.views import NoticeLayout

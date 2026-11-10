@@ -24,8 +24,8 @@ import discord
 from colorama import Fore
 from discord.ext import commands
 from discord.ext.commands import Context
-from PIL import Image, ImageColor
 from rapidfuzz.process import extractOne as rf_extract_one
+lazy from PIL import Image, ImageColor
 
 from core.utils import BaseLayoutView, PaginationView
 

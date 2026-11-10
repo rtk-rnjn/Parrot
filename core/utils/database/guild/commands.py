@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from discord.utils import MISSING
+from typing import Any
+
 from pymongo import UpdateOne
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
 from ..models import CommandConfig
+
+MISSING: Any = sentinel("MISSING")
 
 
 class _GuildCommandConfigMixin(DatabaseMixin):

@@ -8,10 +8,8 @@ from bson import ObjectId
 from ._common import DiscordId
 from .automod import AutomodConfig
 from .chat import GlobalChatConfig, TelephoneConfig, TicketConfig
-from .commands import CustomCommand
 from .community import BirthdayConfig, GiveawayConfig, LevelingConfig, StarboardConfig, WelcomeConfig
 from .events import Events
-from .tags import Tag
 
 
 class ModeratorConfig(TypedDict):
@@ -53,9 +51,6 @@ class GuildConfiguration(TypedDict):
     global_chat_config: GlobalChatConfig
     telephone_config: TelephoneConfig
     ticket_config: TicketConfig
-
-    custom_commands: list[CustomCommand]
-    tags: list[Tag]
 
     afk_users: dict[str, str]
 

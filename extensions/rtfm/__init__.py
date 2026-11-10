@@ -22,7 +22,7 @@ import rapidfuzz
 from bs4 import BeautifulSoup, Tag
 from bs4.element import NavigableString
 from discord.ext import commands, tasks
-from jishaku.codeblocks import Codeblock
+lazy from jishaku.codeblocks import Codeblock
 
 from core.utils import PaginationView, truncate
 

@@ -2,15 +2,17 @@ from __future__ import annotations
 
 from collections.abc import Callable, Hashable, Mapping
 from dataclasses import dataclass
+from typing import Any
 
 import discord
-from discord.utils import MISSING
 
 from ..constants import MAX_PERCENTAGE
 from ..parsing import ParserSupport
 from .checks import HANDLERS, TriggerEnv, TriggerEvent, evaluate
 from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, NoConfig, RegexConfig, TimeWindowConfig, ViolationConfig
 from .mapping import _CONFIG_TYPES, TriggerConfig, TriggerType
+
+MISSING: Any = sentinel("MISSING")
 
 
 class TriggerParseError(ValueError):

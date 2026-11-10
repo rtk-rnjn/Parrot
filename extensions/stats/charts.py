@@ -16,12 +16,12 @@ import matplotlib
 
 matplotlib.use("Agg")
 
-from matplotlib.axes import Axes
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.dates import AutoDateLocator, ConciseDateFormatter
-from matplotlib.figure import Figure
-from matplotlib.ticker import FuncFormatter, MaxNLocator
-from PIL import Image, ImageDraw, ImageFont
+lazy from matplotlib.axes import Axes
+lazy from matplotlib.backends.backend_agg import FigureCanvasAgg
+lazy from matplotlib.dates import AutoDateLocator, ConciseDateFormatter
+lazy from matplotlib.figure import Figure
+lazy from matplotlib.ticker import FuncFormatter, MaxNLocator
+lazy from PIL import Image, ImageDraw, ImageFont
 
 from core.utils.formats import format_count as fmt_count
 from core.utils.formats import truncate

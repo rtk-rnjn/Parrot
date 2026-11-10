@@ -872,17 +872,22 @@ class CC(commands.Cog, name="Custom Commands"):
         if not VALID_COMMAND_NAME.match(name):
             return
 
-        command = await self.bot.database.get_custom_command_cached(guild_id=message.guild.id, name=name)
-        if command is None or not command.get("enabled", True):
+        command_enabled = await self.bot.database.is_custom_command_enabled(guild_id=message.guild.id, name=name)
+        if not command_enabled:
             return
-        if command.get("require_prefix", True) != prefixed:
+
+        require_prefix = await self.bot.database.does_custom_command_require_prefix(guild_id=message.guild.id, name=name)
+        if require_prefix and not prefixed:
             return
+
+        ignored_channels = await self.bot.database.get_custom_command_ignored_channels(guild_id=message.guild.id, name=name)
+        ignored_roles = await self.bot.database.get_custom_command_ignored_roles(guild_id=message.guild.id, name=name)
 
         channel = message.channel
         channel_ids = {channel.id, getattr(channel, "parent_id", None), getattr(channel, "category_id", None)}
-        if channel_ids.intersection(command["ignored_channels"]):
+        if channel_ids.intersection(ignored_channels):
             return
-        if any(role.id in command["ignored_roles"] for role in message.author.roles):
+        if any(role.id in ignored_roles for role in message.author.roles):
             return
 
         bucket = self._cooldown_mapping.get_bucket(message)
@@ -897,7 +902,11 @@ class CC(commands.Cog, name="Custom Commands"):
             )
             return
 
-        rendered = await self._render_custom_command(context, command["response"], name)
+        response = await self.bot.database.get_custom_command_response(guild_id=message.guild.id, name=name)
+        if response is None:
+            return
+
+        rendered = await self._render_custom_command(context, response, name)
         if rendered is None:
             return
 

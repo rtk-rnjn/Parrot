@@ -7,12 +7,12 @@ from statistics import StatisticsError, mean, mode, quantiles
 from typing import TYPE_CHECKING
 
 import discord
-import matplotlib
-import numpy as np
-from jishaku.functools import executor_function
-from matplotlib import pyplot as plt
-from matplotlib.font_manager import FontProperties
-from sympy import lambdify, symbols, sympify
+lazy import matplotlib
+lazy import numpy as np
+lazy from jishaku.functools import executor_function
+lazy from matplotlib import pyplot as plt
+lazy from matplotlib.font_manager import FontProperties
+lazy from sympy import lambdify, symbols, sympify
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes

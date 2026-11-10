@@ -6,8 +6,8 @@ import pathlib
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
-import numpy as np
-from PIL import Image, ImageChops, ImageDraw, ImageFont
+lazy import numpy as np
+lazy from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from .image_validators import (
     MAX_OUTPUT_BYTES,

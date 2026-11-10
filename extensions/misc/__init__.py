@@ -21,14 +21,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
 from urllib.parse import quote, urlparse
 
-import aiohttp
 import arrow
 import discord
-import sympy
 from discord.ext import commands, tasks
-from jishaku.codeblocks import Codeblock
-from PIL import Image
 from rapidfuzz import fuzz, process
+lazy import aiohttp
+lazy import sympy
+lazy from jishaku.codeblocks import Codeblock
+lazy from PIL import Image
 
 from core.constants import INVITE_RE, LINKS_RE
 from core.utils import HumanDate, PaginationView

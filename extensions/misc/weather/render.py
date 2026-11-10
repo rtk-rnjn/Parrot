@@ -10,9 +10,9 @@ from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import cv2
-import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+lazy import cv2
+lazy import numpy as np
+lazy from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

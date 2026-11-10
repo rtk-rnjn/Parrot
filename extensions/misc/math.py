@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Protocol, cast
 
 import discord
 import mpmath
-import sympy
 from discord.ext import commands
-from sympy import Expr, Integer
-from sympy.parsing.sympy_parser import auto_number, auto_symbol, convert_xor, implicit_multiplication, parse_expr
+lazy import sympy
+lazy from sympy import Expr, Integer
+lazy from sympy.parsing.sympy_parser import auto_number, auto_symbol, convert_xor, implicit_multiplication, parse_expr
 
 if TYPE_CHECKING:
     from core import Bot

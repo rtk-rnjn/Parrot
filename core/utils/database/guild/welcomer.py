@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, get_args
-
-from discord.utils import MISSING
+from typing import Any, Literal, get_args
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
@@ -11,6 +9,8 @@ from ..models import WelcomeConfig
 WelcomeStyle = Literal["text", "embed", "card"]
 WELCOME_STYLES: tuple[str, ...] = get_args(WelcomeStyle)
 DEFAULT_WELCOME_STYLE: WelcomeStyle = "card"
+
+MISSING: Any = sentinel("MISSING")
 
 
 class _GuildWelcomerMixin(DatabaseMixin):

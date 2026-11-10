@@ -4,8 +4,8 @@ import io
 import math
 from collections.abc import Callable, Sequence
 
-import numpy as np
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
+lazy import numpy as np
+lazy from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
 from .image_effects_basic import _luminance, _sample_bilinear, duotone, edge, glitch, grayscale, invert, mirror, pixelate, posterize, spin
 from .image_effects_distortions import bulge as distortion_bulge

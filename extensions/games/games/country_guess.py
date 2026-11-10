@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
-from jishaku.functools import executor_function as executor
-from PIL import Image, ImageFilter, ImageOps
+lazy from jishaku.functools import executor_function as executor
+lazy from PIL import Image, ImageFilter, ImageOps
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player
 

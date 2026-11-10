@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Annotated, TypedDict, cast
 
 from discord import Embed, File, Member, Message, Reaction
 from discord.ext import commands
-from PIL import Image, ImageDraw, ImageFont
+lazy from PIL import Image, ImageDraw, ImageFont
 
 from core.constants import NEGATIVE_REPLIES as INCORRECT_GUESS
 from core.constants import POSITIVE_REPLIES as CORRECT_GUESS

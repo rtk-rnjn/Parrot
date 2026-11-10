@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 from io import BytesIO
 
-import aiohttp
 import discord
-from jishaku.functools import executor_function
-from PIL import Image, ImageDraw, ImageFont
+lazy import aiohttp
+lazy from jishaku.functools import executor_function
+lazy from PIL import Image, ImageDraw, ImageFont
 
 CARD_SIZE = (934, 282)
 AVATAR_SIZE = (170, 170)

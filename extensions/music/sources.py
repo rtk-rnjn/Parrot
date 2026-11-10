@@ -9,8 +9,8 @@ import shutil
 from typing import TYPE_CHECKING
 
 import discord
-import pomice
 from dotenv import load_dotenv
+lazy import pomice
 
 from .models import Song
 

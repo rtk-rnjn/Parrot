@@ -9,7 +9,7 @@ from itertools import product
 from pathlib import Path
 
 import discord
-from PIL import Image, ImageDraw, ImageFont
+lazy from PIL import Image, ImageDraw, ImageFont
 
 DECK = list(product(*[(0, 1, 2)] * 4))
 

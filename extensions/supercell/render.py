@@ -6,7 +6,7 @@ from functools import cache
 from io import BytesIO
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+lazy from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 __all__ = ("BRAWL_STARS", "CLASH_OF_CLANS", "CLASH_ROYALE", "Bar", "DeckSlot", "Theme", "bars_card", "deck_card", "profile_card")
 

@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import discord
-import pomice
+lazy import pomice
 
 from core.utils import NoticeLayout as Notice
 

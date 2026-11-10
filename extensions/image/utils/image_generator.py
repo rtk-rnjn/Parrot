@@ -6,8 +6,8 @@ import math
 import textwrap
 from collections.abc import Callable, Sequence
 
-import numpy as np
-from PIL import Image, ImageDraw, ImageFilter
+lazy import numpy as np
+lazy from PIL import Image, ImageDraw, ImageFilter
 
 from .image_utils import (
     EncodedImage,

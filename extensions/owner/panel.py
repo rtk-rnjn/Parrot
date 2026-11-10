@@ -13,9 +13,9 @@ from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple
 
 import aiohttp
 import discord
-import pomice
 import psutil
 from discord.ext import commands
+lazy import pomice
 
 from core.bot import LOADABLE_COGS
 from core.utils import BaseLayoutView, CallbackButton, CallbackStringSelect, format_friendly_duration, plural, truncate

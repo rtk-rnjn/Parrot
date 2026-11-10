@@ -3,8 +3,8 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 
-import numpy as np
-from PIL import Image, ImageDraw
+lazy import numpy as np
+lazy from PIL import Image, ImageDraw
 
 from .image_effects import glitch, hue_shift, pixelate, spin, swirl
 from .image_utils import EncodedImage, Frame, encode_animation, from_array, load_frames, make_rng, resize_rgba, to_array

@@ -15,16 +15,16 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
-import aiohttp
 import discord
-import jishaku
-import pomice
 from discord.ext import commands
 from dotenv import load_dotenv
 from pomice.exceptions import NodeConnectionFailure
 from pymongo.errors import PyMongoError
 from redis.exceptions import RedisError
 from watchfiles import awatch
+lazy import aiohttp
+lazy import jishaku
+lazy import pomice
 
 from .config import (
     DISCORD_BOT_TOKEN,

@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterable, Iterator
 from typing import Any
 
 import discord
-import pomice
+lazy import pomice
 
 __all__ = ("PRESETS", "LoopMode", "Preset", "Song", "TrackQueue")
 

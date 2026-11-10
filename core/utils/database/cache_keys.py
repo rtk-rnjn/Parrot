@@ -37,6 +37,7 @@ class RedisKeys(StrEnum):
     GUILD_CUSTOM_COMMAND_IGNORED_ROLES = "guild:{guild_id}:custom_command:{command_name}:ignored_roles"
     GUILD_CUSTOM_COMMAND_IGNORED_CHANNELS = "guild:{guild_id}:custom_command:{command_name}:ignored_channels"
     GUILD_CUSTOM_COMMAND_ENABLED = "guild:{guild_id}:custom_command:{command_name}:enabled"
+    GUILD_CUSTOM_COMMAND_REQUIRE_PREFIX = "guild:{guild_id}:custom_command:{command_name}:require_prefix"
     GUILD_CUSTOM_COMMAND_DB = "guild:{guild_id}:custom_command_db"
 
     GUILD_TAG_NAMES = "guild:{guild_id}:tag_names"

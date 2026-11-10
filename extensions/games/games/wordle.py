@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Final
 
 import discord
 from discord.ext import commands
-from jishaku.functools import executor_function as executor
-from PIL import Image, ImageDraw, ImageFont
+lazy from jishaku.functools import executor_function as executor
+lazy from PIL import Image, ImageDraw, ImageFont
 
 from .utils import DEFAULT_COLOR, BaseView, DiscordColor, Player
 

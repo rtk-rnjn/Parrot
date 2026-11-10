@@ -5,8 +5,8 @@ import weakref
 from typing import TYPE_CHECKING, Annotated
 
 import discord
-import pomice
 from discord.ext import commands
+lazy import pomice
 
 from core.utils import NoticeLayout as Notice
 from core.utils import plural

@@ -1,6 +1,6 @@
-from .configs import (  # noqa: F401
+from .configs import (
     AlertConfig,
-    BanConfig,
+    BanConfig,  # noqa: F401
     DeleteMessagesConfig,
     MessageConfig,
     MuteConfig,
@@ -14,4 +14,11 @@ from .configs import (  # noqa: F401
 )
 from .effect import Effect, EffectParseError, EffectType  # noqa: F401
 from .mapping import EffectConfig  # noqa: F401
-from .modals import CONFLICTS, EFFECT_GROUP, EFFECT_GROUP_NAMES, REPEATABLE, describe, get_effect_modal  # noqa: F401
+from .modals import (
+    CONFLICTS,
+    EFFECT_GROUP,
+    EFFECT_GROUP_NAMES,  # noqa: F401
+    REPEATABLE,
+    describe,
+    get_effect_modal,
+)

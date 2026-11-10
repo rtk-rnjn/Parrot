@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord
 from bson import ObjectId
-from discord.utils import MISSING
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
 
 if TYPE_CHECKING:
     from ..models import StarboardConfig, StarboardEntry
+
+MISSING: Any = sentinel("MISSING")
 
 
 class _GuildStarboardMixin(DatabaseMixin):

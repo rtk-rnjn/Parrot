@@ -9,7 +9,7 @@ from pymongo.asynchronous.mongo_client import AsyncMongoClient
 from pymongo.errors import CollectionInvalid
 from redis.asyncio import Redis
 
-from .models import CommandConfig, GiveawayEntry, GuildConfiguration, ModAction, StarboardEntry, UserConfiguration, UserViolation
+from .models import CommandConfig, CustomCommand, GiveawayEntry, GuildConfiguration, ModAction, StarboardEntry, Tag, UserConfiguration, UserViolation
 
 
 class DatabaseMixin:
@@ -29,6 +29,9 @@ class DatabaseMixin:
     giveaways_collection: AsyncCollection[GiveawayEntry]
     starboards_collection: AsyncCollection[StarboardEntry]
     user_violations_collection: AsyncCollection[UserViolation]
+
+    custom_commands_collection: AsyncCollection[CustomCommand]
+    tags_collection: AsyncCollection[Tag]
 
     mod_actions_collection: AsyncCollection[ModAction]
 
@@ -51,6 +54,16 @@ class IndexesMixin(DatabaseMixin):
             tg.create_task(self._ensure_violation_indexes())
             tg.create_task(self._ensure_mod_action_indexes())
             tg.create_task(self._ensure_command_config_indexes())
+            tg.create_task(self._ensure_tag_indexes())
+
+    async def _ensure_tag_indexes(self) -> None:
+        await self.tags_collection.create_indexes(
+            [
+                IndexModel([("guild_id", ASCENDING), ("name", ASCENDING)], name="tag_name", unique=True),
+                IndexModel([("guild_id", ASCENDING), ("aliases", ASCENDING)], name="tag_alias"),
+                IndexModel([("guild_id", ASCENDING), ("creator_id", ASCENDING)], name="tag_creator"),
+            ]
+        )
 
     async def _ensure_guild_indexes(self) -> None:
         await self.guilds_collection.create_indexes(
@@ -258,6 +271,20 @@ COMMAND_CONFIG = obj(
     }
 )
 
+TAG = obj(
+    {
+        "_id": OID,
+        "guild_id": INT,
+        "name": STR,
+        "content": STR,
+        "nsfw": BOOL,
+        "creator_id": INT,
+        "created_at": DATE,
+        "aliases": array_of(STR),
+        "used_count": dict_of(INT),
+    }
+)
+
 # Guild document: validate the shape, not every nested detail. NotRequired
 # fields (e.g. welcome_config.on_member_join_style) are listed in `properties`
 # but left out of `required`.
@@ -349,8 +376,6 @@ GUILD = obj(
         # only if listed, so list them (even loosely) or the guild insert fails:
         "welcome_config": {"bsonType": "object"},
         "events": {"bsonType": "object"},
-        "custom_commands": array_of({"bsonType": "object"}),
-        "tags": array_of({"bsonType": "object"}),
     }
 )
 
@@ -369,6 +394,7 @@ class SchemaMixin(DatabaseMixin):
                 (self.giveaways_collection, GIVEAWAY),
                 (self.starboards_collection, STARBOARD_ENTRY),
                 (self.commands_config_collection, COMMAND_CONFIG),
+                (self.tags_collection, TAG),
             ):
                 tg.create_task(self._apply_validator(collection, schema, level, action))
 

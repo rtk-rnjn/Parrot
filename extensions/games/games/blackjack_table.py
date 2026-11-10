@@ -6,7 +6,7 @@ from io import BytesIO
 from math import ceil
 from typing import TYPE_CHECKING, Final, Literal
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+lazy from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from extensions.supercell.api import IMAGE_DIRECTORY, ImageStore
 from extensions.supercell.render import font

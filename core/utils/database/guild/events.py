@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Literal
-
-from discord.utils import MISSING
+from typing import Any, Literal
 
 from ..cache_keys import RedisKeys
 from ..mixin import DatabaseMixin
+
+MISSING: Any = sentinel("MISSING")
 
 EVENT_NAME = Literal[
     "on_member_join",

@@ -8,7 +8,6 @@ from functools import lru_cache
 from typing import Any
 
 import discord
-import re2
 
 from core.constants import INVITE_RE
 
@@ -16,6 +15,11 @@ from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, Regex
 from .enum import TriggerType as T
 from .environment import Environment as TriggerEnv
 from .utils import RATE_LIMITS, count_letters, covered, link_hosts, mentioned_ids, words_of
+
+try:
+    import re2
+except ImportError:
+    import re as re2
 
 NEGATED = {T.MESSAGE_NOT_REGEX, T.NICKNAME_NOT_REGEX, T.JOIN_USERNAME_NOT_REGEX}
 ALLOWLISTS = {T.WORD_ALLOWLIST, T.NICKNAME_WORD_ALLOWLIST, T.JOIN_USERNAME_WORD_ALLOWLIST}

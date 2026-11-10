@@ -4,13 +4,14 @@ import asyncio
 import logging
 from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Literal, TypedDict, Unpack
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, Unpack, get_args
 
 import discord
 import pymongo
 from bson import ObjectId
+from pymongo import ASCENDING, IndexModel
 from pymongo.asynchronous.collection import AsyncCollection
-from pymongo.errors import ConnectionFailure
+from pymongo.errors import CollectionInvalid, ConnectionFailure
 from pymongo.results import DeleteResult, InsertOneResult
 
 if TYPE_CHECKING:
@@ -22,6 +23,32 @@ _log = logging.getLogger(__name__)
 __all__ = ("AsyncTimerDispatcher", "TimerData")
 
 VALID_EVENT_NAMES = Literal["reminder", "mute", "todo_due", "giveaway", "automod_unban", "automod_role", "automod_slowmode"]
+
+
+def obj(properties: dict[str, Any], *, required: list[str] | None = None):
+    """Closed object: unknown fields are rejected, so typos fail loudly."""
+    return {
+        "bsonType": "object",
+        "required": list(properties) if required is None else required,
+        "properties": properties,
+        "additionalProperties": False,
+    }
+
+
+OID = {"bsonType": "objectId"}
+DATE = {"bsonType": "date"}
+
+TIMER = obj(
+    {
+        "_id": OID,
+        "expires_at": DATE,
+        "created_at": DATE,
+        # Derived from the Literal, so adding a new event name updates the
+        # validator automatically on the next startup.
+        "event_name": {"enum": list(get_args(VALID_EVENT_NAMES))},
+        "metadata": {"bsonType": "object"},
+    }
+)
 
 
 class TimerData[T: Mapping[str, Any]](TypedDict):
@@ -65,6 +92,39 @@ class AsyncTimerDispatcher:
         # that cancellation and recreation happen in the same asyncio execution
         # context as the bot.
         self.bot = bot
+
+    async def ensure_indexes(self) -> None:
+        """Ensure that the timers collection has the correct indexes."""
+        await self.timers_collection.create_indexes(
+            [
+                IndexModel([("expires_at", ASCENDING)], name="timer_next"),
+                IndexModel([("event_name", ASCENDING), ("expires_at", ASCENDING)], name="timer_event_expiry"),
+            ]
+        )
+
+    async def ensure_schema(self) -> None:
+        """Ensure that the timers collection has a strict schema validator."""
+        collection = self.timers_collection
+        schema = TIMER
+
+        validator = {"$jsonSchema": schema}
+        db = collection.database
+        try:
+            await db.create_collection(
+                collection.name,
+                validator=validator,
+                validationLevel="strict",
+                validationAction="error",
+            )
+        except CollectionInvalid:
+            await db.command(
+                {
+                    "collMod": collection.name,
+                    "validator": validator,
+                    "validationLevel": "strict",
+                    "validationAction": "error",
+                }
+            )
 
     async def __get_active_timer(self) -> TimerData | None:
         """Return the timer that expires first."""

@@ -27,37 +27,28 @@ class _GuildViolationMixin(DatabaseMixin):
         metadata: dict[str, str] | None = None,
     ) -> None:
         """Add a violation for a user in a guild."""
-        violation = {
+        violation: UserViolation = {
             "_id": ObjectId(),
             "violation_name": violation_name,
             "user_id": user_id,
             "issued_at": issued_at,
+            "guild_id": guild_id,
             "issued_by": issued_by,
             "expires_at": expired_at,
             "metadata": metadata or {},
         }
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$push": {"user_violations": violation}},
-            upsert=True,
-        )
+        await self.user_violations_collection.insert_one(violation)
 
     async def reset_violations(self, *, guild_id: int, violation_name: str = "default", user_id: int) -> int:
         """Reset the violation count for a user in a guild and return the previous count."""
         previous_count = await self.get_violation_count(guild_id=guild_id, violation_name=violation_name, user_id=user_id)
 
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$pull": {"user_violations": {"violation_name": violation_name, "user_id": user_id}}},
-        )
+        await self.user_violations_collection.delete_many({"violation_name": violation_name, "user_id": user_id, "guild_id": guild_id})
 
         return previous_count
 
     async def delete_violation(self, *, guild_id: int, _id: ObjectId) -> None:
-        await self.guilds_collection.update_one(
-            {"_id": guild_id},
-            {"$pull": {"user_violations": {"_id": _id}}},
-        )
+        await self.user_violations_collection.delete_one({"_id": _id, "guild_id": guild_id})
 
     async def get_violation_count(
         self,
@@ -71,24 +62,14 @@ class _GuildViolationMixin(DatabaseMixin):
         filters = {
             "user_id": user_id,
             "violation_name": violation_name,
+            "guild_id": guild_id,
         }
         if issued_by is not MISSING:
             filters["issued_by"] = issued_by
         if within is not MISSING:
             filters["issued_at"] = {"$gte": datetime.now(UTC) - within} if within is not None else {"$eq": None}
 
-        cursor = await self.guilds_collection.aggregate(
-            [
-                {"$match": {"_id": guild_id}},
-                {"$unwind": "$user_violations"},
-                {"$match": {f"user_violations.{k}": v for k, v in filters.items()}},
-                {"$count": "count"},
-            ]
-        )
-        count = 0
-        async for doc in cursor:
-            count = doc.get("count", 0)
-        return count
+        return await self.user_violations_collection.count_documents(filters)
 
     async def get_violations(
         self,
@@ -99,17 +80,16 @@ class _GuildViolationMixin(DatabaseMixin):
         active_only: bool = False,
     ) -> list[UserViolation]:
         """Violations of one user, newest first. ``active_only`` drops expired ones (``expires_at`` in the past)."""
-        violation_filter = {"user_id": user_id, "violation_name": violation_name}
+        filters = {
+            "user_id": user_id,
+            "violation_name": violation_name,
+            "guild_id": guild_id,
+        }
         if active_only:
-            violation_filter["$or"] = [{"expires_at": None}, {"expires_at": {"$gt": datetime.now(UTC)}}]
-
-        cursor = await self.guilds_collection.aggregate(
-            [
-                {"$match": {"_id": guild_id}},
-                {"$unwind": "$user_violations"},
-                {"$replaceRoot": {"newRoot": "$user_violations"}},
-                {"$match": violation_filter},
-                {"$sort": {"issued_at": -1}},
+            filters["$or"] = [
+                {"expires_at": {"$eq": None}},
+                {"expires_at": {"$gt": datetime.now(UTC)}},
             ]
-        )
-        return [document async for document in cursor]  # pyright: ignore[reportReturnType]
+
+        cursor = self.user_violations_collection.find(filters).sort("issued_at", -1)
+        return await cursor.to_list(length=None)

@@ -19,11 +19,10 @@ from urllib.parse import quote_plus, urljoin
 import aiohttp
 import discord
 import rapidfuzz
-import re2
 from bs4 import BeautifulSoup, Tag
 from bs4.element import NavigableString
 from discord.ext import commands, tasks
-from jishaku.codeblocks import Codeblock, codeblock_converter
+from jishaku.codeblocks import Codeblock
 
 from core.utils import PaginationView, truncate
 
@@ -53,6 +52,11 @@ from .used import build_embeds, execute_run, parse_man_page
 
 if TYPE_CHECKING:
     from core import Bot
+
+try:
+    import re2
+except ImportError:
+    import re as re2
 
 
 _log = logging.getLogger(__name__)
@@ -149,7 +153,7 @@ class Developer(*DEPENDENCIES, commands.Cog):
         self,
         ctx: commands.Context[Bot],
         *,
-        codeblock: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="Code block to run."),  # noqa: B008
+        codeblock: Codeblock = commands.parameter(description="Code block to run."),  # noqa: B008
     ) -> discord.Message:
         """Run code in various languages."""
         language = codeblock.language

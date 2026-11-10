@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from bson import ObjectId
 
@@ -22,8 +22,9 @@ class ModeratorConfig(TypedDict):
 
 class UserViolation(TypedDict):
     _id: ObjectId
-    violation_name: str  # default name is "default"
+    violation_name: Literal["default"] | str  # default name is "default"
     user_id: int
+    guild_id: int
     issued_at: datetime
     issued_by: int | None  # moderator id, None if issued by automod
     expires_at: datetime | None
@@ -40,7 +41,6 @@ class GuildConfiguration(TypedDict):
     hub_channel_owners: dict[str, int]  # channel_id -> owner_id
 
     muted_members: list[int]
-    user_violations: list[UserViolation]
 
     moderator_config: ModeratorConfig
     automod: AutomodConfig

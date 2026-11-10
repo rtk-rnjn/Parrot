@@ -14,7 +14,7 @@
                 commandType: 'all',
                 selectedCommand: null,
                 bot: { connected: false, telemetry: {} },
-                commands: { ok: false, prefix: [], slash: [], default_prefix: '$' },
+                commands: { ok: false, prefix: [], slash: [], default_prefix: '?' },
                 cogs: [],
                 extensions: [],
             };
@@ -45,7 +45,7 @@
                     if (!response.ok) throw new Error(`The information endpoint returned ${response.status}.`);
                     const data = await response.json();
                     this.bot = data.bot || { connected: false, telemetry: {} };
-                    this.commands = data.commands || { ok: false, prefix: [], slash: [], default_prefix: '$' };
+                    this.commands = data.commands || { ok: false, prefix: [], slash: [], default_prefix: '?' };
                     this.cogs = data.cogs || [];
                     this.extensions = data.extensions || [];
                     this.selectedCommand = this.filteredCommands[0] || null;

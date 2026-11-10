@@ -13,8 +13,8 @@ from redis.asyncio.client import PubSub
 
 from .cache_keys import RedisKeys
 from .guild import EVENT_NAMES, SETTING_SECTIONS, GuildSettingSection, _GuildMixin
-from .mixin import DatabaseMixin
-from .models import CommandConfig, GiveawayEntry, GuildConfiguration, ModAction, StarboardEntry, UserConfiguration
+from .mixin import DatabaseMixin, IndexesMixin, SchemaMixin
+from .models import CommandConfig, GiveawayEntry, GuildConfiguration, ModAction, StarboardEntry, UserConfiguration, UserViolation
 from .scam_links import _ScamLinksMixin
 from .user import _UserMixin
 
@@ -49,7 +49,14 @@ class _DatabaseInfraMixin(DatabaseMixin):
         return await self.users_collection.find_one({"_id": user_id})
 
 
-class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMixin):
+class DatabaseManager(
+    _DatabaseInfraMixin,
+    _GuildMixin,
+    _UserMixin,
+    _ScamLinksMixin,
+    IndexesMixin,
+    SchemaMixin,
+):
     """Database facade composed from guild, user, bot, and infrastructure mixins.
 
     Domain methods use ``get_*``, ``set_*``, ``add_*``, ``remove_*``, and
@@ -85,6 +92,7 @@ class DatabaseManager(_DatabaseInfraMixin, _GuildMixin, _UserMixin, _ScamLinksMi
         self.giveaways_collection: AsyncCollection[GiveawayEntry] = self.mongo_db["giveaways"]
         self.starboards_collection: AsyncCollection[StarboardEntry] = self.mongo_db["starboards"]
         self.mod_actions_collection: AsyncCollection[ModAction] = self.mongo_db["mod_actions"]
+        self.user_violations_collection: AsyncCollection[UserViolation] = self.mongo_db["user_violations"]
 
         self.commands_config_collection: AsyncCollection[CommandConfig] = self.mongo_db["commands_config"]
 

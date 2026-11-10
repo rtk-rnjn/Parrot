@@ -39,7 +39,7 @@ async def api_public_info() -> JSONResponse:
                 "ok": commands.get("ok", False),
                 "prefix": commands.get("prefix", []),
                 "slash": commands.get("slash", []),
-                "default_prefix": commands.get("default_prefix", "$"),
+                "default_prefix": commands.get("default_prefix", "?"),
                 "error": commands.get("error"),
             },
             "cogs": cogs.get("cogs", []),

@@ -19,7 +19,7 @@ import psutil
 from colorama import Fore
 from discord.ext import commands, tasks
 from humanfriendly import InvalidTimespan, parse_timespan
-from jishaku.codeblocks import codeblock_converter
+from jishaku.codeblocks import Codeblock
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 from rapidfuzz import fuzz, process
@@ -552,7 +552,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 await msg.reply("\N{WAVING HAND SIGN} Exiting Redis REPL session.")
                 break
 
-            codeblock = codeblock_converter(msg.content)
+            codeblock = Codeblock.convert_raw(msg.content)
             try:
                 result = await self.bot.database.redis_client.execute_command(codeblock.content)
                 if len(str(result)) > REDIS_RESULT_LIMIT:

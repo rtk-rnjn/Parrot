@@ -14,7 +14,7 @@ from .events import EVENT_NAME
 
 load_dotenv()
 
-DEFAULT_PREFIX = os.getenv("DEFAULT_PREFIX", "$")
+DEFAULT_PREFIX = os.getenv("DEFAULT_PREFIX", "?")
 
 EVENT_NAMES = get_args(EVENT_NAME)
 
@@ -34,7 +34,6 @@ def default_guild_configuration(guild_id: int, /) -> GuildConfiguration:
         "suggestion_channel_id": None,
         "hub_channel_owners": {},
         "muted_members": [],
-        "user_violations": [],
         "global_chat_config": {
             "enabled": False,
             "channel_id": None,

@@ -26,7 +26,7 @@ import arrow
 import discord
 import sympy
 from discord.ext import commands, tasks
-from jishaku.codeblocks import Codeblock, codeblock_converter
+from jishaku.codeblocks import Codeblock
 from PIL import Image
 from rapidfuzz import fuzz, process
 
@@ -730,7 +730,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         self,
         ctx: commands.Context[Bot],
         *,
-        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
+        code: Codeblock = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
     ) -> None:
         """Interprets the provided code as Logo programming language code and returns the resulting image."""
         clean_code = code.content.strip()
@@ -778,7 +778,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         self,
         ctx: commands.Context[Bot],
         *,
-        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
+        code: Codeblock = commands.parameter(description="The code to interpret as Logo programming language code."),  # noqa: B008
     ) -> None:
         """Interprets the provided code as Logo programming language code and returns the resulting animated GIF."""
         clean_code = code.content.strip()
@@ -899,7 +899,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         self,
         ctx: commands.Context[Bot],
         *,
-        code: Annotated[Codeblock, codeblock_converter] = commands.parameter(  # noqa: B008
+        code: Codeblock = commands.parameter(  # noqa: B008
             description="The LaTeX source, optionally inside a code block"
         ),
     ) -> None:

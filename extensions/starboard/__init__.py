@@ -145,9 +145,6 @@ class Starboard(commands.Cog):
         self._settings_cache: dict[int, tuple[float, StarboardConfig]] = {}
 
     async def cog_load(self) -> None:
-        entries = self.bot.database.starboards_collection
-        await entries.create_index([("guild_id", 1), ("source_message_id", 1)], unique=True)
-        await entries.create_index([("guild_id", 1), ("board_message_id", 1)])
         self.flush.start()
 
     async def cog_unload(self) -> None:

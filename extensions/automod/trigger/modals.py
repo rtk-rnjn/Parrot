@@ -4,11 +4,15 @@ from collections.abc import Callable
 from typing import Protocol
 
 import discord
-import re2 as re
 
 from .configs import AllCapsConfig, CountConfig, LengthConfig, ListConfig, NoConfig, RegexConfig, TimeWindowConfig, ViolationConfig
 from .mapping import _CONFIG_TYPES as CONFIG_TYPES
 from .trigger import TriggerConfig, TriggerType
+
+try:
+    import re2 as re
+except ImportError:
+    import re
 
 TRIGGER_GROUP = {
     "message_content": [

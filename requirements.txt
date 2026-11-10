@@ -1,6 +1,5 @@
 # core
 
-aiohttp[speedups]
 akinator
 arrow
 chess
@@ -8,34 +7,36 @@ colorama
 discord.py[speed,voice]
 docstring_parser
 english-words
-fastapi[all]
 google-re2
 humanfriendly
 humanize
-itsdangerous
-jinja2
-jishaku[procinfo,voice]
-lxml[cssselect,html5,html_clean,htmlsoup]
+jishaku[procinfo]
+lxml
 markdownify
 matplotlib
 numpy
-opencv-python
+opencv-python-headless
 orjson
-pandas[performance,computation,parquet,feather,html,xml,plot,output-formatting,compression]
+pandas
 parsedatetime
-pillow[fpx,mic,xmp]
+pillow
 pomice
-psutil
 pygit2
-pymongo[encryption,snappy,zstd]
+pymongo
 python-dotenv
 python-frontmatter
 rapidfuzz
 redis[hiredis]
 sympy
-uvicorn[standard]
 uvloop; sys_platform != "win32"
 wikipedia-api
+
+# web dashboard / API
+
+fastapi
+itsdangerous
+jinja2
+uvicorn[standard]
 
 # Dev
 

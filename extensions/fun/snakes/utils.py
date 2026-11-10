@@ -246,16 +246,10 @@ class PerlinNoiseFactory:
                 new_point.append(coord)
             ret += self.get_plain_noise(*new_point) / o2
 
-        # Need to scale n back down since adding all those extra octaves has
-        # probably expanded it beyond \N{PLUS-MINUS SIGN}1
-        # 1 octave: \N{PLUS-MINUS SIGN}1
-        # 2 octaves: \N{PLUS-MINUS SIGN}1\N{VULGAR FRACTION ONE HALF}
-        # 3 octaves: \N{PLUS-MINUS SIGN}1\N{VULGAR FRACTION THREE QUARTERS}
         ret /= 2 - 2 ** (1 - self.octaves)
 
         if self.unbias:
             r = (ret + 1) / 2
-            # Doing it this many times is a completely made-up heuristic.
             for _ in range(int(self.octaves / 2 + 0.5)):
                 r = smoothstep(r)
             ret = r * 2 - 1

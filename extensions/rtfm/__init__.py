@@ -327,7 +327,7 @@ class Developer(*DEPENDENCIES, commands.Cog):
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
                 response.raise_for_status()
-                data = await response.json()
+                data = await response.json(loads=discord.utils._from_json)
         except aiohttp.ClientError, TimeoutError:
             return await ctx.reply(
                 embed=discord.Embed(
@@ -377,7 +377,7 @@ class Developer(*DEPENDENCIES, commands.Cog):
         params = {**STACKOVERFLOW_PARAMS, "q": query}
         async with self.bot.http_session.get(url=STACKOVERFLOW_BASE_API, params=params) as response:
             if response.status == HTTP_OK:
-                data = await response.json()
+                data = await response.json(loads=discord.utils._from_json)
             else:
                 return await ctx.reply(
                     embed=discord.Embed(

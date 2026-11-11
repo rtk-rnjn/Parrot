@@ -96,7 +96,7 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
         if response.status != HTTP_OK:
             msg = "Something went wrong with the API"
             raise commands.CommandError(msg)
-        url = (await response.json())["message"]
+        url = (await response.json(loads=discord.utils._from_json))["message"]
 
         return discord.Embed().set_image(url=url)
 
@@ -130,7 +130,7 @@ class NSFW(commands.Cog, command_attrs={"hidden": True}):
         await ctx.typing()
         r = await self.bot.http_session.get(f"https://scathach.redsplit.org/v3/nsfw/{endpoint}/")
         if r.status == HTTP_OK:
-            res = await r.json()
+            res = await r.json(loads=discord.utils._from_json)
             await ctx.reply(embed=discord.Embed().set_image(url=res["url"]))
         else:
             await ctx.reply(f"{ctx.author.mention} something not right? This is not us but the API")

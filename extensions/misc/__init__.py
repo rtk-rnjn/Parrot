@@ -1277,7 +1277,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Failed to fetch rhymes right now.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to the rhyme service.")
                 return
@@ -1318,8 +1318,8 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         timeout=aiohttp.ClientTimeout(total=10),
                     ) as ant_resp,
                 ):
-                    syns = await syn_resp.json() if syn_resp.status == 200 else []
-                    ants = await ant_resp.json() if ant_resp.status == 200 else []
+                    syns = await syn_resp.json(loads=discord.utils._from_json) if syn_resp.status == 200 else []
+                    ants = await ant_resp.json(loads=discord.utils._from_json) if ant_resp.status == 200 else []
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to the thesaurus service.")
                 return
@@ -1420,7 +1420,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Grammar check service is currently unavailable.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to reach the grammar checking service.")
                 return
@@ -1494,7 +1494,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     params={"fields": "status,message,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query"},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to query IP information service.")
                 return
@@ -1795,7 +1795,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     headers={"User-Agent": USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as geo_resp:
-                    geo_data = await geo_resp.json()
+                    geo_data = await geo_resp.json(loads=discord.utils._from_json)
                     if not geo_data:
                         await ctx.reply(f"Could not find coordinates for **{discord.utils.escape_markdown(location)}**.")
                         return
@@ -1808,7 +1808,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     params={"lat": lat, "lng": lon, "formatted": 0},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as sun_resp:
-                    sun_data = await sun_resp.json()
+                    sun_data = await sun_resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to retrieve solar data right now.")
                 return
@@ -1851,7 +1851,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Could not fetch ISS telemetry at the moment.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to reach the ISS tracking service.")
                 return
@@ -1893,7 +1893,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Rocket launch schedule service is currently busy or unavailable.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to fetch upcoming rocket launches.")
                 return
@@ -2034,7 +2034,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Failed to fetch historical events for that date.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to the Wikipedia history feed.")
                 return
@@ -2077,7 +2077,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Could not fetch a fun fact right now.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to the fun facts service.")
                 return
@@ -2120,7 +2120,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Could not fetch an animal image right now.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
                     img_url = extractor(data)
             except Exception:
                 await ctx.reply("Failed to fetch animal image.")
@@ -2148,7 +2148,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         params={"api_key": TMDB_API_KEY, "query": query, "include_adult": "false"},
                         timeout=aiohttp.ClientTimeout(total=10),
                     ) as resp:
-                        data = await resp.json() if resp.status == 200 else {}
+                        data = await resp.json(loads=discord.utils._from_json) if resp.status == 200 else {}
                 except aiohttp.ClientError, TimeoutError:
                     await ctx.reply("Failed to reach TMDB.")
                     return
@@ -2194,7 +2194,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                             "(Set `TMDB_API_KEY` in environment for full movie & TV TMDB catalog)."
                         )
                         return
-                    show = await resp.json()
+                    show = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to reach the media lookup service.")
                 return
@@ -2228,7 +2228,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply(f"No {media_type.lower()} found on AniList for **{discord.utils.escape_markdown(query)}**.")
                         return
-                    payload = await resp.json()
+                    payload = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to AniList.")
                 return
@@ -2309,7 +2309,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Failed to query Open Library.")
                         return
-                    data = await resp.json()
+                    data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to Open Library.")
                 return
@@ -2367,7 +2367,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         timeout=aiohttp.ClientTimeout(total=10),
                     ) as resp:
                         if resp.status == 200:
-                            lfm_data = await resp.json()
+                            lfm_data = await resp.json(loads=discord.utils._from_json)
                             tracks = (((lfm_data.get("results") or {}).get("trackmatches") or {}).get("track")) or []
                             if tracks:
                                 tr = tracks[0]
@@ -2393,7 +2393,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     if resp.status != 200:
                         await ctx.reply("Failed to query MusicBrainz.")
                         return
-                    mb_data = await resp.json()
+                    mb_data = await resp.json(loads=discord.utils._from_json)
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to MusicBrainz.")
                 return

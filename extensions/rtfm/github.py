@@ -674,7 +674,7 @@ class GitHub(commands.Cog):
         try:
             async with self.bot.http_session.get(f"{GITHUB_API_URL}{path}", params=params, headers=headers, timeout=REQUEST_TIMEOUT) as response:
                 if response.status < 400:
-                    return await response.json()
+                    return await response.json(loads=discord.utils._from_json)
 
                 status = response.status
                 remaining = response.headers.get("X-RateLimit-Remaining")

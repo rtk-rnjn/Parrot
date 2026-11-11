@@ -326,7 +326,7 @@ class PokemonDataService:
                 if response.status == 404:
                     return None
                 response.raise_for_status()
-                return await response.json()
+                return await response.json(loads=discord.utils._from_json)
         except (aiohttp.ClientError, TimeoutError) as exc:
             _log.warning("Pok\N{LATIN SMALL LETTER E WITH ACUTE}API request failed for %s: %s", url, exc)
             return None

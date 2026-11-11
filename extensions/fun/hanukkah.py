@@ -43,7 +43,7 @@ class Hanukkah(commands.Cog, command_attrs={"hidden": True}):
         self.hanukkah_dates = []
 
         async with self.bot.http_session.get(HEBCAL_URL) as response:
-            json_data = await response.json()
+            json_data = await response.json(loads=discord.utils._from_json)
 
         festivals = json_data["items"]
 

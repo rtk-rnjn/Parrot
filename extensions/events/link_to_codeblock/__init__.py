@@ -91,7 +91,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             if response_format == "text":
                 return await response.text()
             if response_format == "json":
-                return await response.json()
+                return await response.json(loads=discord.utils._from_json)
         return None
 
     def _find_ref(self, path: str, refs: tuple[dict[str, Any], ...] | list[dict[str, Any]]) -> tuple[str, str]:
@@ -308,7 +308,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             headers=self.api_request_headers,
             raise_for_status=True,
         ) as resp:
-            return await resp.json()
+            return await resp.json(loads=discord.utils._from_json)
 
     async def _fetch_issue_data(self, repo: str, kind: str, number: int) -> IssueOrCommitData:
         if kind == "pull":

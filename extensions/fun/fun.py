@@ -994,7 +994,7 @@ class Fun(commands.Cog, ColorHandler):
             if response.status != HTTP_OK:
                 return await ctx.reply("Failed to fetch definition from Urban Dictionary.")
 
-            data = await response.json()
+            data = await response.json(loads=discord.utils._from_json)
             if not data["list"]:
                 return await ctx.reply(f"No definition found for: `{term}`")
 
@@ -1091,7 +1091,7 @@ class Fun(commands.Cog, ColorHandler):
                 await message.edit(content="Failed to fetch quiz questions.")
                 return
 
-            data = await response.json()
+            data = await response.json(loads=discord.utils._from_json)
             response_code = data.get("response_code")
             if response_code != 0:
                 await message.edit(content="No questions found for the selected configuration.")

@@ -12,6 +12,7 @@ from functools import partial
 from io import BytesIO
 from typing import TYPE_CHECKING, Annotated, TypedDict, cast
 
+import discord
 from discord import Embed, File, Member, Message, Reaction
 from discord.ext import commands
 lazy from PIL import Image, ImageDraw, ImageFont
@@ -268,7 +269,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
 
         async with asyncio.timeout(10):
             async with self.bot.http_session.get(url, params=params) as response:
-                return await response.json()
+                return await response.json(loads=discord.utils._from_json)
 
     def _get_random_long_message(self, messages: list[str], retries: int = 10) -> str:
         """Fetch a message that's at least 3 words long, if possible to do so in retries attempts.

@@ -94,7 +94,7 @@ class ScamLinkManager:
         async with self.bot.http_session.get(self.source_commit_uri, headers=GITHUB_HEADERS) as response:
             if response.status != HTTP_OK:
                 return None
-            data = await response.json()
+            data = await response.json(loads=loads)
             if not isinstance(data, dict):
                 return None
             return data

@@ -665,7 +665,7 @@ class LavalinkTab(Tab):
     async def fetch_providers(self) -> list[LavalinkProvider]:
         async with self.bot.http_session.get(LAVALINK_LIST_URL) as response:
             response.raise_for_status()
-            data: list[dict[str, object]] = await response.json()
+            data: list[dict[str, object]] = await response.json(loads=discord.utils._from_json)
 
         providers: list[LavalinkProvider] = []
         for entry in data:

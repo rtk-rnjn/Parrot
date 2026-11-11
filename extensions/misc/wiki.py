@@ -69,7 +69,7 @@ class WikiClient:
         params["format"] = "json"
         async with self.session.get(f"https://{lang}.wikipedia.org/w/api.php", params=params) as r:
             r.raise_for_status()
-            return await r.json()
+            return await r.json(loads=discord.utils._from_json)
 
     def _fetch_page_sync(self, lang: str, title: str) -> PageData | None:
         page = self._wiki(lang).page(title)
@@ -92,7 +92,7 @@ class WikiClient:
             url = f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{quote(data.title, safe='')}"
             async with self.session.get(url) as response:
                 if response.status == HTTP_OK:
-                    summary_response = await response.json()
+                    summary_response = await response.json(loads=discord.utils._from_json)
                     data.description = summary_response.get("description")
                     data.thumbnail = (summary_response.get("thumbnail") or {}).get("source")
         except NETWORK_ERRORS:

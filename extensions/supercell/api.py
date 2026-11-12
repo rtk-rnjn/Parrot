@@ -103,7 +103,7 @@ BRAWL_STARS = Game(
     "brawl_stars",
     "Brawl Stars",
     "https://bsproxy.royaleapi.dev/v1",
-    "SUPERCELL_BRAWL_API",
+    "SUPERCELL_BRAWL_STARS_API",
     discord.Colour.from_rgb(255, 196, 0),
 )
 

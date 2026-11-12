@@ -13,21 +13,17 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Any, override
 
+import aiohttp
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
-from pomice.exceptions import NodeConnectionFailure
-from pymongo.errors import PyMongoError
-from redis.exceptions import RedisError
-from watchfiles import awatch
-lazy import aiohttp
-lazy import jishaku
-lazy import pomice
 
 from .config import (
+    DATABASE_EXTENSIONS,
     DISCORD_BOT_TOKEN,
+    EXTENSION_CAPABILITIES,
+    EXTENSION_ENVIRONMENT,
     LAVALINK_PASSWORD,
     LIMITED_MEMORY,
     LOADABLE_COGS,
@@ -36,14 +32,64 @@ from .config import (
     SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET,
 )
-from .help import Help as BotHelp
-from .utils import AsyncTimerDispatcher, ConfirmationLayout, DatabaseManager, DisambiguatorView
+from .environment import load_environment
+
+try:
+    from pomice.exceptions import NodeConnectionFailure  # type: ignore[assignment]
+except ImportError:
+
+    class NodeConnectionFailure(Exception):
+        pass
+
+
+try:
+    from pymongo.errors import PyMongoError  # type: ignore[assignment]
+except ImportError:
+
+    class PyMongoError(Exception):
+        pass
+
+
+try:
+    from redis.exceptions import RedisError  # type: ignore[assignment]
+except ImportError:
+
+    class RedisError(Exception):
+        pass
+
+
+try:
+    from watchfiles import awatch
+except ImportError:
+    awatch: Any = None
+
+try:
+    import jishaku
+except ImportError:
+    jishaku: Any = None
+
+try:
+    import pomice
+except ImportError:
+    pomice: Any = None
+
+
+try:
+    from .help import Help as BotHelp
+except ImportError:
+    BotHelp: Any = None
+
+try:
+    from .utils import ConfirmationLayout, DisambiguatorView
+except ImportError:
+    ConfirmationLayout: Any = None
+    DisambiguatorView: Any = None
 
 if TYPE_CHECKING:
     from extensions.reminder import Reminder
     from main import HTTPStats
 
-_ = load_dotenv()
+load_environment()
 
 
 _log = logging.getLogger(__name__)
@@ -92,13 +138,20 @@ class Bot(commands.Bot):
             max_messages=2**9 if LIMITED_MEMORY else 2**12,  # RAM issues guyz
             owner_ids={int(OWNER_ID)} if OWNER_ID else None,
             enable_debug_events=not LIMITED_MEMORY,
-            help_command=BotHelp(),
+            help_command=BotHelp() if BotHelp is not None else None,
             **kwargs,
         )
         self._BotBase__cogs = commands.core._CaseInsensitiveDict()
+        self.startup_capabilities: dict[str, bool] = {}
 
-        self.database = DatabaseManager(self)
-        self.event_scheduler = AsyncTimerDispatcher(self)
+        try:
+            from .utils import AsyncTimerDispatcher, DatabaseManager  # noqa: PLC0415
+        except ImportError:
+            self.database: Any = None
+            self.event_scheduler: Any = None
+        else:
+            self.database = DatabaseManager(self)
+            self.event_scheduler = AsyncTimerDispatcher(self)
 
         self._started_at: datetime | None = None
 
@@ -107,8 +160,8 @@ class Bot(commands.Bot):
 
         self._http_session: aiohttp.ClientSession | None = None
 
-        self.lavalink_node_pool = pomice.NodePool()
-        self.default_lavalink_node: pomice.Node | None = None
+        self.lavalink_node_pool: Any = pomice.NodePool() if pomice is not None else None
+        self.default_lavalink_node: Any = None
 
         self.message_cache: dict[int, discord.Message] = {}
         self._cog_autoreload_task: asyncio.Task[None] | None = None
@@ -125,39 +178,82 @@ class Bot(commands.Bot):
 
     @override
     async def setup_hook(self) -> None:
-        await self.database.ensure_indexes()
-        await self.database.ensure_schemas()
+        if self.database is not None:
+            await self.database.ensure_indexes()
+            await self.database.ensure_schemas()
 
-        await self.event_scheduler.ensure_indexes()
-        await self.event_scheduler.ensure_schema()
+        if self.event_scheduler is not None:
+            await self.event_scheduler.ensure_indexes()
+            await self.event_scheduler.ensure_schema()
 
-        await self.load_extension(jishaku.__name__)
+        if jishaku is not None:
+            await self.load_extension(jishaku.__name__)
+        else:
+            _log.warning("Skipping Jishaku: package is not installed.")
+
+        if self.lavalink_node_pool is not None and not LIMITED_MEMORY:
+            self.startup_capabilities["Lavalink service"] = await self.connect_lavalink_node()
 
         count = 0
-        for extention in LOADABLE_COGS:
-            await self.load_extension(extention)
-            count += 1
+        for extension in LOADABLE_COGS:
+            if await self._load_optional_extension(extension):
+                count += 1
 
         _log.info("Loaded %d extensions.", count)
 
-        await self.event_scheduler.start()
+        if self.event_scheduler is not None:
+            await self.event_scheduler.start()
 
-        if not LIMITED_MEMORY:
+        if not LIMITED_MEMORY and awatch is not None:
             self._cog_autoreload_task = self.loop.create_task(
                 self._autoreload_cogs(),
                 name=f"{self.__class__.__name__}: _autoreload_cogs",
             )
 
-            self._start_database_listeners()
-            self.loop.create_task(self.connect_lavalink_node(), name=f"{self.__class__.__name__}: connect_lavalink_node")
+            if (
+                self.database is not None
+                and self.startup_capabilities.get("MongoDB service", False)
+                and self.startup_capabilities.get("Redis service", False)
+            ):
+                self._start_database_listeners()
+            if self.lavalink_node_pool is not None and self.startup_capabilities.get("Lavalink service", False) is False:
+                _log.info("Lavalink is unavailable; music extension remains disabled.")
 
-    async def connect_lavalink_node(self) -> None:
+    async def _load_optional_extension(self, extension: str) -> bool:
+        required_environment = EXTENSION_ENVIRONMENT.get(extension, ())
+        missing_environment = [name for name in required_environment if not os.environ.get(name)]
+        if missing_environment:
+            _log.warning(
+                "Skipping extension %s: missing environment variable(s): %s",
+                extension,
+                ", ".join(missing_environment),
+            )
+            return False
+
+        required_capabilities = EXTENSION_CAPABILITIES.get(extension, ())
+        if extension in DATABASE_EXTENSIONS:
+            required_capabilities = (*required_capabilities, "MongoDB service", "Redis service")
+        missing_capabilities = [name for name in required_capabilities if not self.startup_capabilities.get(name, False)]
+        if missing_capabilities:
+            _log.warning("Skipping extension %s: unavailable capability(ies): %s", extension, ", ".join(missing_capabilities))
+            return False
+
+        try:
+            await self.load_extension(extension)
+        except Exception:  # pylint: disable=broad-exception-caught
+            _log.exception("Could not load optional extension: %s", extension)
+            return False
+
+        return True
+
+    async def connect_lavalink_node(self) -> bool:
         """Attempt to connect to a Lavalink node"""
         try:
             await self.__create_lavalink_node()
-            return
-        except NodeConnectionFailure:
-            _log.warning("Failed to connect to Lavalink node.")
+        except Exception:  # pylint: disable=broad-exception-caught
+            _log.warning("Failed to connect to Lavalink node.", exc_info=True)
+            return False
+        return True
 
     @staticmethod
     def _cog_extension_paths() -> dict[Path, str]:
@@ -233,7 +329,10 @@ class Bot(commands.Bot):
     @override
     async def get_prefix(self, message: discord.Message, /) -> list[str]:
         if message.guild is not None:
-            prefix = await self.database.get_command_prefix(guild_id=message.guild.id)
+            if self.database is None or not self.startup_capabilities.get("Redis service", False):
+                prefix = self.DEFAULT_PREFIX
+            else:
+                prefix = await self.database.get_command_prefix(guild_id=message.guild.id)
         else:
             prefix = self.DEFAULT_PREFIX
 
@@ -251,7 +350,10 @@ class Bot(commands.Bot):
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             if message.channel.permissions_for(message.guild.me).send_messages:
-                prefix = await self.database.get_command_prefix(guild_id=message.guild.id) or self.DEFAULT_PREFIX
+                if self.database is None or not self.startup_capabilities.get("Redis service", False):
+                    prefix = self.DEFAULT_PREFIX
+                else:
+                    prefix = await self.database.get_command_prefix(guild_id=message.guild.id) or self.DEFAULT_PREFIX
                 await message.channel.send(f"Prefix: `{prefix}`", reference=message)
 
             return
@@ -327,8 +429,9 @@ class Bot(commands.Bot):
             await ctx.bot.wait_until_ready()
             self.loop.create_task(ctx.guild.chunk())
 
-            await self.database.register_guild(ctx.guild.id)
-            await self.database.register_user(ctx.author.id)
+            if self.database is not None and self.startup_capabilities.get("MongoDB service", False):
+                await self.database.register_guild(ctx.guild.id)
+                await self.database.register_user(ctx.author.id)
 
     async def get_or_fetch_member(self, guild: discord.Guild, member_id: int) -> discord.Member | None:
         member = guild.get_member(member_id)
@@ -443,9 +546,11 @@ class Bot(commands.Bot):
         await self._shutdown_step("database listeners", self._stop_database_listeners())
         if self._http_session is not None:
             await self._shutdown_step("HTTP session", self._http_session.close())
-        await self._shutdown_step("Redis cache flush", self.database.invalidate_redis())
-        await self._shutdown_step("database connections", self.database.close())
-        await self._shutdown_step("Lavalink", self.lavalink_node_pool.disconnect())
+        if self.database is not None:
+            await self._shutdown_step("Redis cache flush", self.database.invalidate_redis())
+            await self._shutdown_step("database connections", self.database.close())
+        if self.lavalink_node_pool is not None:
+            await self._shutdown_step("Lavalink", self.lavalink_node_pool.disconnect())
 
     @staticmethod
     async def _shutdown_step(name: str, step: Awaitable[object]) -> None:
@@ -597,7 +702,7 @@ class Bot(commands.Bot):
             await pub_sub_client.aclose()
 
     async def is_command_disabled(self, ctx: commands.Context[Bot]) -> bool:
-        if not ctx.guild or not ctx.command:
+        if not ctx.guild or not ctx.command or self.database is None or not self.startup_capabilities.get("MongoDB service", False):
             return False
 
         guild_id, qualified_command = ctx.guild.id, ctx.command.qualified_name

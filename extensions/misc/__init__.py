@@ -2508,5 +2508,12 @@ async def setup(bot: Bot) -> None:
     await bot.add_cog(Misc(bot))
     await bot.add_cog(SnipeMessageListener(bot))
     await bot.add_cog(PingMessageListner(bot))
-    await bot.add_cog(Weather(bot))
+    capabilities = getattr(bot, "startup_capabilities", {})
+    if capabilities.get("OpenWeather API service", bool(os.getenv("OPEN_WEATHER_API_KEY"))):
+        await bot.add_cog(Weather(bot))
+    else:
+        _log.warning("Skipping weather commands: OPEN_WEATHER_API_KEY is missing or invalid.")
+    if not capabilities.get("News API service", bool(NEWS_API_KEY)):
+        bot.remove_command("news")
+        _log.warning("Skipping news commands: NEWS_API_KEY is missing or invalid.")
     await bot.add_cog(Chemistry(bot))

@@ -1,56 +1,106 @@
-from .callbacks import CallbackButton, CallbackChannelSelect, CallbackMentionableSelect, CallbackRoleSelect, CallbackStringSelect
-from .checks import (
-    everyday_at,
-    human_days,
-    human_months,
-    human_time,
-    in_day,
-    in_day_command,
-    in_day_listener,
-    in_month,
-    in_month_command,
-    in_month_listener,
-    in_time,
-    in_time_command,
-    in_time_listener,
-    resolve_current_day,
-    resolve_current_month,
-    resolve_current_time,
-    seasonal_task,
-)
-from .database import DatabaseManager
-from .date import BadDateTransform, DateTransformer, HumanDate
-from .enum_docstrings import enum_docstrings
-from .formats import (
-    clip_text,
-    code,
-    dated,
-    esc,
-    file_size,
-    format_clock_duration,
-    format_compact_duration,
-    format_count,
-    format_duration,
-    format_friendly_duration,
-    human_join,
-    human_timedelta,
-    message_url,
-    natural_time,
-    parse_time,
-    plural,
-    safe,
-    safe_text,
-    shorten,
-    truncate,
-    valid_url,
-    when,
-)
-from .paginator import PaginationLayout, PaginationView
-from .pastebin_client import PastebinClient
-from .scheduling import DUE_PRESETS, WhenModal, as_utc, clip, format_due, get_user_tz, local_text, make_button, make_select, parse_future, preset_due
-from .time import FriendlyTimeResult, FutureTime, HumanTime, RelativeDelta, ShortTime, Time, UserFriendlyTime
-from .timer_dispatcher import AsyncTimerDispatcher, TimerData
-from .views import BaseLayoutView, BaseView, ConfirmationLayout, DeleteMessageButtonView, DisabledButtonView, DisambiguatorView, NoticeLayout
+from importlib import import_module
+
+_EXPORT_MODULES = {
+    "CallbackButton": ".callbacks",
+    "CallbackChannelSelect": ".callbacks",
+    "CallbackMentionableSelect": ".callbacks",
+    "CallbackRoleSelect": ".callbacks",
+    "CallbackStringSelect": ".callbacks",
+    "DatabaseManager": ".database",
+    "AsyncTimerDispatcher": ".timer_dispatcher",
+    "TimerData": ".timer_dispatcher",
+    "BadDateTransform": ".date",
+    "DateTransformer": ".date",
+    "HumanDate": ".date",
+    "enum_docstrings": ".enum_docstrings",
+    "PaginationLayout": ".paginator",
+    "PaginationView": ".paginator",
+    "PastebinClient": ".pastebin_client",
+    "DUE_PRESETS": ".scheduling",
+    "WhenModal": ".scheduling",
+    "as_utc": ".scheduling",
+    "clip": ".scheduling",
+    "format_due": ".scheduling",
+    "get_user_tz": ".scheduling",
+    "local_text": ".scheduling",
+    "make_button": ".scheduling",
+    "make_select": ".scheduling",
+    "parse_future": ".scheduling",
+    "preset_due": ".scheduling",
+    "FriendlyTimeResult": ".time",
+    "FutureTime": ".time",
+    "HumanTime": ".time",
+    "RelativeDelta": ".time",
+    "ShortTime": ".time",
+    "Time": ".time",
+    "UserFriendlyTime": ".time",
+    "BaseLayoutView": ".views",
+    "BaseView": ".views",
+    "ConfirmationLayout": ".views",
+    "DeleteMessageButtonView": ".views",
+    "DisabledButtonView": ".views",
+    "DisambiguatorView": ".views",
+    "NoticeLayout": ".views",
+}
+
+for _name in (
+    "everyday_at",
+    "human_days",
+    "human_months",
+    "human_time",
+    "in_day",
+    "in_day_command",
+    "in_day_listener",
+    "in_month",
+    "in_month_command",
+    "in_month_listener",
+    "in_time",
+    "in_time_command",
+    "in_time_listener",
+    "resolve_current_day",
+    "resolve_current_month",
+    "resolve_current_time",
+    "seasonal_task",
+):
+    _EXPORT_MODULES[_name] = ".checks"
+
+for _name in (
+    "clip_text",
+    "code",
+    "dated",
+    "esc",
+    "file_size",
+    "format_clock_duration",
+    "format_compact_duration",
+    "format_count",
+    "format_duration",
+    "format_friendly_duration",
+    "human_join",
+    "human_timedelta",
+    "message_url",
+    "natural_time",
+    "parse_time",
+    "plural",
+    "safe",
+    "safe_text",
+    "shorten",
+    "truncate",
+    "valid_url",
+    "when",
+):
+    _EXPORT_MODULES[_name] = ".formats"
+
+
+def __getattr__(name: str):
+    module_name = _EXPORT_MODULES.get(name)
+    if module_name is None:
+        message = f"module {__name__!r} has no attribute {name!r}"
+        raise AttributeError(message)
+
+    value = getattr(import_module(module_name, __name__), name)
+    globals()[name] = value
+    return value
+
 
 __all__ = (
     "DUE_PRESETS",

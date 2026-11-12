@@ -1,10 +1,10 @@
 import os
 
-from dotenv import load_dotenv
-
 from limited_memory import is_limited_memory
 
-load_dotenv()
+from .environment import load_environment
+
+load_environment()
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
@@ -78,3 +78,35 @@ if LIMITED_MEMORY:
     }
 
     LOADABLE_COGS = LOADABLE_COGS - _cogs_to_remove
+
+EXTENSION_ENVIRONMENT = {
+    "extensions.supercell": (),
+}
+
+EXTENSION_CAPABILITIES = {
+    "extensions.fun.meme": ("Imgflip API service",),
+    "extensions.music": ("Lavalink service",),
+    "extensions.nasa": ("NASA API service",),
+}
+
+DATABASE_EXTENSIONS = {
+    "extensions.automod",
+    "extensions.config",
+    "extensions.giveaway",
+    "extensions.global_chat",
+    "extensions.highlight",
+    "extensions.hub",
+    "extensions.ipc",
+    "extensions.leveling",
+    "extensions.owner",
+    "extensions.reminder",
+    "extensions.starboard",
+    "extensions.stats",
+    "extensions.suggestion",
+    "extensions.supercell",
+    "extensions.tags",
+    "extensions.telephone",
+    "extensions.ticket",
+    "extensions.todo",
+    "extensions.welcomer",
+}

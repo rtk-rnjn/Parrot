@@ -14,11 +14,11 @@ from pathlib import Path
 import aiohttp
 import discord
 from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
-from dotenv import load_dotenv
 
-from core import Bot
+from core.environment import load_environment
+from core.startup import StartupAudit, audit_startup, extend_audit, probe_database_services, probe_http_services
 
-load_dotenv()
+load_environment()
 
 BOT_NAME = os.getenv("BOT_NAME") or "DiscordBot"
 USER_AGENT = os.getenv("BOT_USER_AGENT") or f"{BOT_NAME}/1.0.0 ({os.getenv('GITHUB_REPO')}; {os.getenv('EMAIL_ADDRESS')})"
@@ -43,10 +43,10 @@ class HTTPStats:
         self.status_classes: Counter[str] = Counter()  # "2xx", "4xx", ...
 
     @property
-    def in_flight(self) -> int:
+    def in_flight(self):
         return max(self.requests - self.responses - self.errors, 0)
 
-    def snapshot(self) -> dict[str, int]:
+    def snapshot(self):
         return {
             "requests": self.requests,
             "errors": self.errors,
@@ -202,7 +202,7 @@ def setup_logging(
         per_module_handler.close()
 
 
-logger = logging.getLogger("main")
+logger = logging.getLogger(__name__)
 
 
 def install_signal_handlers(stop: asyncio.Event) -> None:
@@ -224,9 +224,12 @@ def install_signal_handlers(stop: asyncio.Event) -> None:
             loop.add_signal_handler(sig, request_shutdown, sig.name)
 
 
-async def start_bot() -> None:
+async def start_bot(audit: StartupAudit) -> None:
+    from core import Bot  # noqa: PLC0415
+
     stop = asyncio.Event()
     install_signal_handlers(stop)
+    bot = None
 
     try:
         timeout = ClientTimeout(total=30, connect=10, sock_connect=10, sock_read=20)
@@ -239,17 +242,32 @@ async def start_bot() -> None:
                 connector=connector,
                 headers={"User-Agent": USER_AGENT},
                 trace_configs=[http_stats.trace_config()],
+                cookie_jar=aiohttp.DummyCookieJar(),
             ) as session,
             Bot() as bot,
         ):
             bot.set_http_session(session)
             bot.http_stats = http_stats
 
-            logger.debug("Initializing database connections (Redis & MongoDB)...")
+            logger.debug("Checking database connections (Redis & MongoDB)...")
+            audit = extend_audit(audit, await probe_database_services(bot.database))
+            bot.startup_capabilities = audit.capabilities
 
-            await bot.database.invalidate_redis()
-            await bot.database.ping_mongo_server()
-            await bot.database.ping_redis_server()
+            if bot.database is not None:
+                bot.startup_capabilities = audit.capabilities
+
+                if bot.startup_capabilities.get("Redis service", False):
+                    await bot.database.invalidate_redis()
+                else:
+                    logger.warning("Redis is unavailable; cache-backed features will be skipped.")
+
+                if not bot.startup_capabilities.get("MongoDB service", False):
+                    logger.warning("MongoDB is unavailable; database-backed features will be skipped.")
+                    bot.database = None
+                    bot.event_scheduler = None
+
+            audit = extend_audit(audit, await probe_http_services(session))
+            bot.startup_capabilities = audit.capabilities
 
             running = asyncio.create_task(bot.start(), name="Bot: start")
             stopping = asyncio.create_task(stop.wait(), name="Bot: wait for shutdown signal")
@@ -274,14 +292,19 @@ async def start_bot() -> None:
 
     finally:
         # `async with bot` already closes it after a normal run; this covers failures before that block.
-        if not bot.is_closed():
+        if bot is not None and not bot.is_closed():
             await bot.close()
 
 
 async def runner() -> None:
     logger.info("Starting %s runner...", BOT_NAME)
 
-    start_tasks = [start_bot()]
+    audit = audit_startup(LOGS_ROOT / "startup-report.txt")
+    if audit.has_fatal_failure:
+        message = "Startup checks failed. See the startup report for repair instructions."
+        raise RuntimeError(message)
+
+    start_tasks = [start_bot(audit)]
 
     await asyncio.gather(*start_tasks)
 

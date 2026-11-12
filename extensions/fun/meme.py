@@ -1204,4 +1204,8 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
 
 
 async def setup(bot: Bot) -> None:
-    await bot.add_cog(Meme(bot))
+    capabilities = getattr(bot, "startup_capabilities", {})
+    if capabilities.get("Imgflip API service", bool(os.getenv("IMAGE_FLIP_KEY"))):
+        await bot.add_cog(Meme(bot))
+    else:
+        logging.getLogger(__name__).warning("Skipping Imgflip commands: IMAGE_FLIP_KEY is missing or invalid.")

@@ -1677,4 +1677,8 @@ class NASA(commands.Cog, description="NASA data: pictures, imagery, asteroids an
 
 
 async def setup(bot: Bot) -> None:
-    await bot.add_cog(NASA(bot))
+    capabilities = getattr(bot, "startup_capabilities", {})
+    if capabilities.get("NASA API service", bool(os.getenv("NASA_API_KEY"))):
+        await bot.add_cog(NASA(bot))
+    else:
+        _log.warning("Skipping NASA commands: NASA_API_KEY is missing or invalid.")

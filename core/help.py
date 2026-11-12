@@ -15,8 +15,8 @@ import arrow
 import discord
 import pygit2
 from discord.ext import commands
-from dotenv import load_dotenv
 
+from .environment import load_environment
 from .utils import BaseLayoutView, NoticeLayout, human_join, truncate
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from .utils.database.models import CommandConfig
 
-load_dotenv()
+load_environment()
 
 __all__ = ("Help",)
 

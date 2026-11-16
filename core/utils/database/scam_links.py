@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from .base import DatabaseMixin
 from .cache_keys import RedisKeys
-from .mixin import DatabaseMixin
 
 __all__ = ("_ScamLinksMixin",)
 

@@ -4,8 +4,8 @@ from typing import Any
 
 from pymongo import UpdateOne
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import CommandConfig
 
 MISSING: Any = sentinel("MISSING")

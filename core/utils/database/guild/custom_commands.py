@@ -5,8 +5,8 @@ from typing import Any
 
 from bson import ObjectId
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import CustomCommand
 
 _DB_KEY = re.compile(r"^[A-Za-z0-9_-]{1,64}$")

@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Literal, cast
 
 from pymongo.errors import DuplicateKeyError
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from .defaults import EVENT_NAMES, default_guild_configuration
 
 if TYPE_CHECKING:

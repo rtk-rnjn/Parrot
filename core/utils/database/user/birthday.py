@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pymongo.asynchronous.collection import AsyncCollection
 
-from ..mixin import DatabaseMixin
+from ..base import DatabaseMixin
 from ..models import UserConfiguration
 
 

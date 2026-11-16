@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..mixin import DatabaseMixin
+from ..base import DatabaseMixin
 
 
 class _UserWeatherMixin(DatabaseMixin):

@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Any
 import discord
 from bson import ObjectId
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 
 if TYPE_CHECKING:
     from ..models import StarboardConfig, StarboardEntry

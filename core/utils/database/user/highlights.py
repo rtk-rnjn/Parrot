@@ -3,8 +3,8 @@ from __future__ import annotations
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.errors import DuplicateKeyError
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import UserConfiguration
 
 CACHE_TTL = 3600

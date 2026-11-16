@@ -7,8 +7,8 @@ import pymongo
 from bson import ObjectId
 from pymongo.results import InsertOneResult
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import GiveawayConfig, GiveawayEntry
 
 MISSING: Any = sentinel("MISSING")

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from bson import ObjectId
 
-from ..mixin import DatabaseMixin
+from ..base import DatabaseMixin
 
 if TYPE_CHECKING:
     from ..models import UserViolation

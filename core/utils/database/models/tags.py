@@ -6,7 +6,7 @@ from typing import TypedDict
 from bson import ObjectId
 
 
-class Tag(TypedDict):
+class Tag(TypedDict):  # collection
     _id: ObjectId
     guild_id: int
 

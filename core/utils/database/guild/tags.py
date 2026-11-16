@@ -9,8 +9,8 @@ from bson import ObjectId
 from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import Tag, TagUserUsage, TagUserUsageRow, TopTagUsage
 
 _CACHE_TTL = 6 * 60 * 60

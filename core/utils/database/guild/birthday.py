@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 
 MISSING: Any = sentinel("MISSING")
 

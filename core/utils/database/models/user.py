@@ -62,7 +62,7 @@ class WeatherSettings(TypedDict, total=False):
     lang: str
 
 
-class UserConfiguration(TypedDict):
+class UserConfiguration(TypedDict):  # Collection
     _id: DiscordId
     birthday: str
     timezone: str

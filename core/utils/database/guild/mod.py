@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any
 from bson import ObjectId
 from pymongo import ReturnDocument
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 
 if TYPE_CHECKING:
     from ..models import ModAction

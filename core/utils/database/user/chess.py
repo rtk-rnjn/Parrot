@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import discord
 
-from ..mixin import DatabaseMixin
+from ..base import DatabaseMixin
 
 __all__ = ("_UserChessMixin",)
 

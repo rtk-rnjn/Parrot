@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Literal, get_args
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import WelcomeConfig
 
 WelcomeStyle = Literal["text", "embed", "card"]

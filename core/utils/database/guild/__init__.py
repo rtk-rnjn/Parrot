@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..mixin import DatabaseMixin
+from ..base import DatabaseMixin
 from .afk import _GuildAfkMixin
 from .automod import _GuildAutomodMixin
 from .birthday import _GuildBirthdayMixin

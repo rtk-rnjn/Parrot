@@ -9,8 +9,8 @@ from typing import Any
 from bson import ObjectId
 from pymongo.asynchronous.collection import AsyncCollection
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import TodoItem, TodoPriority, TodoStatus, UserConfiguration
 
 CACHE_TTL_SECONDS = 3600

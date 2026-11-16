@@ -5,6 +5,9 @@ from typing import Literal, NotRequired, TypedDict
 
 from bson import ObjectId
 
+GiveawayEntryMode = Literal["button", "reaction"]
+WelcomeStyle = Literal["text", "embed", "card"]
+
 
 class LevelingConfig(TypedDict):
     enabled: bool
@@ -27,7 +30,7 @@ class GiveawayEntry(TypedDict):
     prize: str
     winners: int
     ends_at: datetime
-    entry_mode: Literal["button", "reaction"]
+    entry_mode: GiveawayEntryMode
     entrants: list[int]
     ended: bool
     created_at: datetime
@@ -42,8 +45,8 @@ class WelcomeConfig(TypedDict):
     on_member_leave_message: str | None
     on_member_leave_channel_id: int | None
 
-    on_member_join_style: NotRequired[Literal["text", "embed", "card"]]
-    on_member_leave_style: NotRequired[Literal["text", "embed", "card"]]
+    on_member_join_style: NotRequired[WelcomeStyle]
+    on_member_leave_style: NotRequired[WelcomeStyle]
     accent_color: NotRequired[int | None]
     banner_url: NotRequired[str | None]
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..mixin import DatabaseMixin
+from ..base import DatabaseMixin
 from .birthday import _UserBirthdayMixin
 from .chess import _UserChessMixin
 from .highlights import _UserHighlightsMixin

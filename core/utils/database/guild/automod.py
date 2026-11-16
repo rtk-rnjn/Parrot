@@ -5,8 +5,8 @@ from typing import Any, Literal, cast
 
 from pymongo.errors import DuplicateKeyError
 
+from ..base import DatabaseMixin
 from ..cache_keys import RedisKeys
-from ..mixin import DatabaseMixin
 from ..models import AutomodConfig, ConditionDict, EffectDict, RuleDict, TriggerDict
 
 MISSING: Any = sentinel("MISSING")

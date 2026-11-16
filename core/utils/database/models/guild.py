@@ -18,7 +18,7 @@ class ModeratorConfig(TypedDict):
     mute_role_id: int | None
 
 
-class UserViolation(TypedDict):
+class UserViolation(TypedDict):  # collection
     _id: ObjectId
     violation_name: Literal["default"] | str  # default name is "default"
     user_id: int
@@ -30,7 +30,7 @@ class UserViolation(TypedDict):
     metadata: dict[str, str]  # optional metadata for the violation, e.g. rule name, reason, etc.
 
 
-class GuildConfiguration(TypedDict):
+class GuildConfiguration(TypedDict):  # collection
     _id: DiscordId
     command_prefix: str
     hub_channel_id: int | None

@@ -41,9 +41,64 @@ class IndexesMixin(DatabaseMixin):
                     partialFilterExpression={"global_chat_config.enabled": True},
                 ),
                 IndexModel(
+                    [("global_chat_config.webhook_uri", ASCENDING)],
+                    name="global_chat_webhook",
+                    partialFilterExpression={
+                        "global_chat_config.enabled": True,
+                        "global_chat_config.webhook_uri": {"$exists": True, "$ne": None},
+                    },
+                ),
+                IndexModel(
                     [("telephone_config.channel_id", ASCENDING)],
                     name="telephone_enabled",
                     partialFilterExpression={"telephone_config.enabled": True},
+                ),
+                IndexModel(
+                    [("leveling_config.channel_id", ASCENDING)],
+                    name="leveling_enabled",
+                    partialFilterExpression={"leveling_config.enabled": True},
+                ),
+                IndexModel(
+                    [("giveaway_config.giveaway_channel_id", ASCENDING)],
+                    name="giveaway_enabled",
+                    partialFilterExpression={"giveaway_config.enabled": True},
+                ),
+                IndexModel(
+                    [("welcome_config.on_member_join_channel_id", ASCENDING)],
+                    name="welcome_join_channel",
+                    partialFilterExpression={"welcome_config.enabled": True},
+                ),
+                IndexModel(
+                    [("welcome_config.on_member_leave_channel_id", ASCENDING)],
+                    name="welcome_leave_channel",
+                    partialFilterExpression={"welcome_config.enabled": True},
+                ),
+                IndexModel(
+                    [("starboard_config.channel_id", ASCENDING)],
+                    name="starboard_enabled",
+                    partialFilterExpression={"starboard_config.enabled": True},
+                ),
+                IndexModel(
+                    [("birthday_config.channel_id", ASCENDING)],
+                    name="birthday_enabled",
+                    partialFilterExpression={"birthday_config.enabled": True},
+                ),
+                IndexModel(
+                    [("ticket_config.channel_id", ASCENDING)],
+                    name="ticket_enabled",
+                    partialFilterExpression={"ticket_config.enabled": True},
+                ),
+                IndexModel(
+                    [("ticket_config.bot_message_id", ASCENDING)],
+                    name="ticket_bot_message",
+                    partialFilterExpression={"ticket_config.bot_message_id": {"$exists": True, "$ne": None}},
+                ),
+                IndexModel([("hub_channel_id", ASCENDING)], name="guild_hub_channel"),
+                IndexModel([("suggestion_channel_id", ASCENDING)], name="guild_suggestion_channel"),
+                IndexModel(
+                    [("muted_members", ASCENDING)],
+                    name="guild_muted_members",
+                    partialFilterExpression={"muted_members": {"$exists": True, "$ne": []}},
                 ),
             ]
         )

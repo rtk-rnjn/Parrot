@@ -330,7 +330,7 @@ class Bot(commands.Bot):
             await self.database.register_guild(ctx.guild.id)
             await self.database.register_user(ctx.author.id)
 
-    async def get_or_fetch_member(self, guild: discord.Guild, member_id: int) -> discord.Member | None:
+    async def get_or_fetch_member(self, guild: discord.Guild, /, member_id: int) -> discord.Member | None:
         member = guild.get_member(member_id)
         if member is not None:
             return member
@@ -340,7 +340,7 @@ class Bot(commands.Bot):
         except discord.NotFound:
             return None
 
-    async def get_or_fetch_user(self, user_id: int) -> discord.User | None:
+    async def get_or_fetch_user(self, user_id: int, /) -> discord.User | None:
         """Return a cached user or fetch and cache it if unavailable."""
         user = self.get_user(user_id)
         if user is not None:

@@ -45,7 +45,7 @@ class IndexesMixin(DatabaseMixin):
                     name="global_chat_webhook",
                     partialFilterExpression={
                         "global_chat_config.enabled": True,
-                        "global_chat_config.webhook_uri": {"$exists": True, "$ne": None},
+                        "global_chat_config.webhook_uri": {"$exists": True},
                     },
                 ),
                 IndexModel(
@@ -91,14 +91,14 @@ class IndexesMixin(DatabaseMixin):
                 IndexModel(
                     [("ticket_config.bot_message_id", ASCENDING)],
                     name="ticket_bot_message",
-                    partialFilterExpression={"ticket_config.bot_message_id": {"$exists": True, "$ne": None}},
+                    partialFilterExpression={"ticket_config.bot_message_id": {"$exists": True}},
                 ),
                 IndexModel([("hub_channel_id", ASCENDING)], name="guild_hub_channel"),
                 IndexModel([("suggestion_channel_id", ASCENDING)], name="guild_suggestion_channel"),
                 IndexModel(
                     [("muted_members", ASCENDING)],
                     name="guild_muted_members",
-                    partialFilterExpression={"muted_members": {"$exists": True, "$ne": []}},
+                    partialFilterExpression={"muted_members": {"$exists": True}},
                 ),
             ]
         )

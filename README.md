@@ -4,7 +4,7 @@ Discord bot for server I love.
 
 ## Requirements
 
-- Python 3.14+
+- Python 3.15+
 - A configured Discord bot application and token
 - MongoDB and Redis configuration for persistence and caching
 - Optional Lavalink configuration for music features
@@ -12,7 +12,7 @@ Discord bot for server I love.
 Install the pinned dependencies in a virtual environment:
 
 ```bash
-python3.14 -m venv .venv
+python3.15 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 

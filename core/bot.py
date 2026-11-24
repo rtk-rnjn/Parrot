@@ -112,6 +112,8 @@ class Bot(commands.Bot):
 
         self.message_cache: cachetools.LRUCache[int, discord.Message] = cachetools.LRUCache(maxsize=2**12 if LIMITED_MEMORY else 2**16)
         self._cog_autoreload_task: asyncio.Task[None] | None = None
+        self._background_tasks: set[asyncio.Task] = set()
+        self._chunking: set[int] = set()
 
         self.socket_stats = Counter[str]()
 
@@ -151,7 +153,9 @@ class Bot(commands.Bot):
             )
 
             self._start_database_listeners()
-            self.loop.create_task(self.connect_lavalink_node(), name=f"{self.__class__.__name__}: connect_lavalink_node")
+            task = self.loop.create_task(self.connect_lavalink_node(), name=f"{self.__class__.__name__}: connect_lavalink_node")
+            self._background_tasks.add(task)
+            task.add_done_callback(self._background_tasks.discard)
 
     async def connect_lavalink_node(self) -> None:
         """Attempt to connect to a Lavalink node"""
@@ -269,10 +273,16 @@ class Bot(commands.Bot):
         spam_severity = self._check_for_spam(message)
         match spam_severity:
             case SpamSeverity.HIGH:
-                self.loop.create_task(self._temporarily_ban_user(ctx.author, duration=60), name=f"Temporary Ban: {ctx.author} ({ctx.author.id})")
+                task = self.loop.create_task(
+                    self._temporarily_ban_user(ctx.author, duration=60),
+                    name=f"Temporary Ban: {ctx.author} ({ctx.author.id})",
+                )
+                self._background_tasks.add(task)
+                task.add_done_callback(self._background_tasks.discard)
                 return
 
             case SpamSeverity.MEDIUM:
+                await ctx.message.add_reaction("\N{WARNING SIGN}")
                 return
 
             case SpamSeverity.LOW:
@@ -327,7 +337,15 @@ class Bot(commands.Bot):
     async def __before_invoke(self, ctx: commands.Context[Bot]) -> None:
         if ctx.guild is not None and not ctx.guild.chunked:
             await ctx.bot.wait_until_ready()
-            self.loop.create_task(ctx.guild.chunk())
+            guild_id = ctx.guild.id
+
+            if guild_id not in self._chunking:
+                self._chunking.add(guild_id)
+                task = self.loop.create_task(ctx.guild.chunk())
+                self._background_tasks.add(task)
+
+                task.add_done_callback(self._background_tasks.discard)
+                task.add_done_callback(lambda _: self._chunking.discard(guild_id))
 
             await self.database.register_guild(ctx.guild.id)
             await self.database.register_user(ctx.author.id)
@@ -583,9 +601,11 @@ class Bot(commands.Bot):
         # Cancel the consumers first so closing the stream underneath them cannot surface as a task error.
         for task in self._database_listener_tasks:
             task.cancel()
+
         for task in self._database_listener_tasks:
             with contextlib.suppress(asyncio.CancelledError, PyMongoError, RedisError):
                 await task
+
         self._database_listener_tasks = []
 
         if self.__mongodb_watcher is not None:

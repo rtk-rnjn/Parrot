@@ -53,6 +53,19 @@ from .image_validators import (
     validate_choice,
 )
 
+MIN_BULGE_R_THRESHOLD = 1e-06
+MIN_CRT_CURV_THRESHOLD = 0.01
+MAX_HALFTONE_3_MEAN_LIMIT = 32
+MIN_HALFTONE_RADIUS_THRESHOLD = 0.8
+MIN_BCS_1_0_THRESHOLD = 0.001
+MIN_PIXEL_SORT_ARR_3_LIMIT = 32
+MIN_PIXEL_SORT_S_IDX_LIMIT = 2
+MIN_JPEG_CRUSH_W_H_LIMIT = 32
+MIN_STAINED_GLASS_EDGE_IMG_LIMIT = 127
+MAX_STICKER_GETEXTREMA_0_LIMIT = 255
+MIN_STICKER_P_LIMIT = 80
+MAX_RAW_STEPS_COUNT = 8
+
 EffectFunc = Callable[..., Image.Image]
 
 
@@ -155,7 +168,7 @@ def bulge(img: Image.Image, strength: float = 0.5) -> Image.Image:
     mask = r < 1.0
     exponent = 1.0 / (1.0 + s) if s >= 0 else 1.0 - s * 1.5
     r_new = np.where(mask, np.power(np.clip(r, 1e-6, 1.0), exponent), r)
-    scale = np.where(r > 1e-6, r_new / np.maximum(r, 1e-6), 1.0)
+    scale = np.where(r > MIN_BULGE_R_THRESHOLD-6, r_new / np.maximum(r, 1e-6), 1.0)
     sx = cx + xs * scale
     sy = cy + ys * scale
     return from_array(_sample_bilinear(arr, sx, sy))
@@ -216,7 +229,7 @@ def crt(img: Image.Image, scanline: float = 0.45, curvature: float = 0.12) -> Im
     """CRT monitor look with scanlines, phosphor subpixel tint, vignette and barrel curve."""
     sc = clamp_float(scanline, 0.05, 0.9, "scanline")
     curv = clamp_float(curvature, 0.0, 0.4, "curvature")
-    warped = fisheye(img, curv) if curv > 0.01 else to_rgba(img)
+    warped = fisheye(img, curv) if curv > MIN_CRT_CURV_THRESHOLD else to_rgba(img)
     arr = to_array(warped).astype(np.float32)
     h, w = arr.shape[:2]
     # Scanlines every 2 rows
@@ -283,12 +296,12 @@ def halftone(img: Image.Image, dot_size: int = 8) -> Image.Image:
     for y in range(0, h, cell):
         for x in range(0, w, cell):
             block = arr[y : y + cell, x : x + cell]
-            if block[..., 3].mean() < 32:
+            if block[..., 3].mean() < MAX_HALFTONE_3_MEAN_LIMIT:
                 continue
             avg_rgb = tuple(int(c) for c in block[..., :3].mean(axis=(0, 1)))
             luma = (0.299 * avg_rgb[0] + 0.587 * avg_rgb[1] + 0.114 * avg_rgb[2]) / 255.0
             radius = (1.0 - luma * 0.85) * (cell * 0.62)
-            if radius >= 0.8:
+            if radius >= MIN_HALFTONE_RADIUS_THRESHOLD:
                 cx, cy = x + cell / 2.0, y + cell / 2.0
                 draw.ellipse((cx - radius, cy - radius, cx + radius, cy + radius), fill=(*avg_rgb, 255))
     canvas.putalpha(from_array(arr).getchannel("A"))
@@ -496,11 +509,11 @@ def bcs(
     s = clamp_float(saturation, 0.0, 3.0, "saturation")
     rgba = to_rgba(img)
     rgb = rgba.convert("RGB")
-    if abs(b - 1.0) > 1e-3:
+    if abs(b - 1.0) > MIN_BCS_1_0_THRESHOLD-3:
         rgb = ImageEnhance.Brightness(rgb).enhance(b)
-    if abs(c - 1.0) > 1e-3:
+    if abs(c - 1.0) > MIN_BCS_1_0_THRESHOLD-3:
         rgb = ImageEnhance.Contrast(rgb).enhance(c)
-    if abs(s - 1.0) > 1e-3:
+    if abs(s - 1.0) > MIN_BCS_1_0_THRESHOLD-3:
         rgb = ImageEnhance.Color(rgb).enhance(s)
     out = rgb.convert("RGBA")
     out.putalpha(rgba.getchannel("A"))
@@ -551,7 +564,7 @@ def pixel_sort(
     if direction == "vertical":
         arr = np.swapaxes(arr, 0, 1).copy()
     luma = _luminance(arr[..., :3])
-    mask = (luma >= lo) & (luma <= hi) & (arr[..., 3] > 32)
+    mask = (luma >= lo) & (luma <= hi) & (arr[..., 3] > MIN_PIXEL_SORT_ARR_3_LIMIT)
     h, _ = arr.shape[:2]
     for y in range(h):
         row_mask = mask[y]
@@ -561,7 +574,7 @@ def pixel_sort(
         starts = np.flatnonzero(padded[1:] & ~padded[:-1])
         ends = np.flatnonzero(~padded[1:] & padded[:-1])
         for s_idx, e_idx in zip(starts, ends, strict=False):
-            if e_idx - s_idx > 2:
+            if e_idx - s_idx > MIN_PIXEL_SORT_S_IDX_LIMIT:
                 order = np.argsort(luma[y, s_idx:e_idx])
                 arr[y, s_idx:e_idx] = arr[y, s_idx + order]
     if direction == "vertical":
@@ -604,7 +617,7 @@ def jpeg_crush(img: Image.Image, quality: int = 6, passes: int = 3) -> Image.Ima
         rgb.save(buf, format="JPEG", quality=max(1, q - i), subsampling=2)
         buf.seek(0)
         rgb = Image.open(buf).convert("RGB")
-        if i < p - 1 and min(w, h) > 32:
+        if i < p - 1 and min(w, h) > MIN_JPEG_CRUSH_W_H_LIMIT:
             rgb = rgb.resize((max(16, w - i * 2), max(16, h - i * 2)), Image.Resampling.BILINEAR).resize((w, h), Image.Resampling.NEAREST)
     out = rgb.convert("RGBA")
     out.putalpha(rgba.getchannel("A"))
@@ -711,7 +724,7 @@ def stained_glass(img: Image.Image, cells: int = 80, border: int = 1, seed: int 
         edge_mask[1:, :] |= label[1:, :] != label[:-1, :]
         if b_width > 1:
             edge_img = Image.fromarray((edge_mask * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(size=b_width * 2 + 1))
-            edge_mask = np.asarray(edge_img) > 127
+            edge_mask = np.asarray(edge_img) > MIN_STAINED_GLASS_EDGE_IMG_LIMIT
         out_rgb[edge_mask] = (20, 20, 26)
     return join_rgb_alpha(out_rgb, arr[..., 3])
 
@@ -744,7 +757,7 @@ def sticker(
     rgba = to_rgba(img)
     # If completely opaque, round the corners slightly so the sticker outline is visible
     alpha = rgba.getchannel("A")
-    if alpha.getextrema()[0] == 255:
+    if alpha.getextrema()[0] == MAX_STICKER_GETEXTREMA_0_LIMIT:
         rgba = rounded_cutout(rgba, 0.12)
     pad = thick + (14 if shadow else 4)
     w, h = rgba.size
@@ -753,7 +766,7 @@ def sticker(
     padded.paste(rgba, (pad, pad))
     a_mask = padded.getchannel("A")
     dilated = a_mask.filter(ImageFilter.MaxFilter(size=thick * 2 + 1)).filter(ImageFilter.GaussianBlur(1.2))
-    dilated = dilated.point(lambda p: 255 if p > 80 else p * 3)
+    dilated = dilated.point(lambda p: 255 if p > MIN_STICKER_P_LIMIT else p * 3)
     canvas = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
     if shadow:
         sh_mask = dilated.filter(ImageFilter.GaussianBlur(6.0))
@@ -902,7 +915,7 @@ def process_effect_chain(data: bytes, chain_spec: str) -> tuple[EncodedImage, li
     if not raw_steps:
         msg = "Provide at least one effect, e.g. `pixelate 8 | duotone | spin 45`."
         raise ImageValidationError(msg)
-    if len(raw_steps) > 8:
+    if len(raw_steps) > MAX_RAW_STEPS_COUNT:
         msg = "An effect chain can have at most 8 steps."
         raise ImageValidationError(msg)
     parsed = [_parse_step_token(s) for s in raw_steps]

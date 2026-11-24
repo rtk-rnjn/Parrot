@@ -565,7 +565,7 @@ class SnakeAndLaddersGame:
 
         is_surrendered = False
 
-        while True + 1 == 2:
+        while True:
             try:
                 reaction, user = await self.ctx.bot.wait_for("reaction_add", timeout=300, check=game_event_check)
 

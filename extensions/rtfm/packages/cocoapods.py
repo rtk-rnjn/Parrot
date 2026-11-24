@@ -22,6 +22,8 @@ from .utils import (
     version_key,
 )
 
+MIN_ALLOC_COUNT = 6
+
 
 class CocoaPodsRegistry(Registry):
     ecosystem = COCOAPODS
@@ -208,7 +210,7 @@ class CocoaPodsRegistry(Registry):
         allocations = ((data or {}).get("allocations")) or []
         hits: list[SearchHit] = []
         for alloc in allocations:
-            if not isinstance(alloc, list) or len(alloc) < 6 or not isinstance(alloc[5], list):
+            if not isinstance(alloc, list) or len(alloc) < MIN_ALLOC_COUNT or not isinstance(alloc[5], list):
                 continue
             for item in alloc[5]:
                 if not isinstance(item, dict) or not item.get("id"):

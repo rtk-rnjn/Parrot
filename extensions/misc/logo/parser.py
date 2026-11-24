@@ -8,6 +8,8 @@ from typing import Any
 
 from .utils import LogoRuntimeError, LogoSyntaxError, get_max_list_length, get_max_nesting_depth, get_max_source_length, get_max_word_length
 
+MAX_FORMAT_NUMBER_ABS_VALUE_THRESHOLD = 1000000000000000.0
+
 
 @dataclass(frozen=True)
 class WordToken:
@@ -219,7 +221,7 @@ def _format_number(value: float) -> str:
         return "0"
     if value == 0.0:
         return "0"
-    if value.is_integer() and abs(value) < 1e15:
+    if value.is_integer() and abs(value) < MAX_FORMAT_NUMBER_ABS_VALUE_THRESHOLD:
         return str(int(value))
     return f"{value:.10g}"
 

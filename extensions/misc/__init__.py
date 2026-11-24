@@ -44,6 +44,20 @@ from .news import NEWS_API_KEY, NEWS_CATEGORIES, NewsError, NewsView, fetch_news
 from .ttg import Truths, TTFlag
 from .weather import Weather
 
+MAX_INT_TO_ROMAN_N_LIMIT = 3999
+MIN_MISC_TURTLE_RUN_I_LIMIT = 20
+MIN_MISC_TURTLE_ANIMATE_I_LIMIT = 20
+MAX_MISC_RENDER_LATEX_PROC_RETURNCODE_LIMIT = 3
+HTTP_OK_STATUS = 200
+MAX_CLEANED_COUNT = 15
+MIN_CLEANED_COUNT = 9
+HTTP_BAD_REQUEST_STATUS = 400
+MAX_MISC_PRIME_FACTOR_CHECK_NUMBER_LIMIT = 2
+MAX_MISC_ON_THIS_DAY_M_LIMIT = 12
+MAX_MISC_ON_THIS_DAY_D_LIMIT = 31
+MAX_MISC_BUILD_HTTP_EMBED_CODE_LIMIT = 100
+MAX_MISC_BUILD_HTTP_EMBED_CODE_LIMIT_599 = 599
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -157,7 +171,7 @@ query ($search: String, $type: MediaType) {
 
 
 def int_to_roman(n: int) -> str:
-    if not 1 <= n <= 3999:
+    if not 1 <= n <= MAX_INT_TO_ROMAN_N_LIMIT:
         msg = "Number must be between 1 and 3999."
         raise ValueError(msg)
     result = []
@@ -753,7 +767,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
             line = f"{op}\n"
             notice = "[Output omitted]"
 
-            if i >= 20:
+            if i >= MIN_MISC_TURTLE_RUN_I_LIMIT:
                 omitted = True
                 break
 
@@ -801,7 +815,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
             line = f"{op}\n"
             notice = "[Output omitted]"
 
-            if i >= 20:
+            if i >= MIN_MISC_TURTLE_ANIMATE_I_LIMIT:
                 omitted = True
                 break
 
@@ -881,7 +895,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                 msg = "Rendering took too long."
                 raise LatexError(msg) from None
 
-        if proc.returncode == 3:
+        if proc.returncode == MAX_MISC_RENDER_LATEX_PROC_RETURNCODE_LIMIT:
             msg = "That equation is too large to render."
             raise LatexError(msg)
         if proc.returncode != 0 or not out.startswith(b"\x89PNG"):
@@ -1143,7 +1157,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                 headers=TRANSLATE_HEADERS,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
-                if response.status == 200:
+                if response.status == HTTP_OK_STATUS:
                     data = await response.json(content_type=None)
                     source = str(data.get("src") or "auto")
                     translated = "".join(sentence.get("trans", "") for sentence in data.get("sentences") or [])
@@ -1274,7 +1288,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     params={"rel_rhy": word, "max": 60},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Failed to fetch rhymes right now.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -1318,8 +1332,8 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         timeout=aiohttp.ClientTimeout(total=10),
                     ) as ant_resp,
                 ):
-                    syns = await syn_resp.json(loads=discord.utils._from_json) if syn_resp.status == 200 else []
-                    ants = await ant_resp.json(loads=discord.utils._from_json) if ant_resp.status == 200 else []
+                    syns = await syn_resp.json(loads=discord.utils._from_json) if syn_resp.status == HTTP_OK_STATUS else []
+                    ants = await ant_resp.json(loads=discord.utils._from_json) if ant_resp.status == HTTP_OK_STATUS else []
             except aiohttp.ClientError, TimeoutError:
                 await ctx.reply("Failed to connect to the thesaurus service.")
                 return
@@ -1352,7 +1366,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
     ) -> None:
         """Find valid dictionary anagrams and sub-anagrams from given letters."""
         cleaned = "".join(c.lower() for c in letters if c.isalpha())
-        if not cleaned or len(cleaned) > 15:
+        if not cleaned or len(cleaned) > MAX_CLEANED_COUNT:
             await ctx.reply("Please provide between 1 and 15 alphabetical characters.")
             return
 
@@ -1360,7 +1374,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         exact_matches = sorted(set(ANAGRAM_INDEX.get(key, [])))
 
         sub_matches: set[str] = set()
-        if len(cleaned) <= 9:
+        if len(cleaned) <= MIN_CLEANED_COUNT:
             for length in range(len(cleaned) - 1, max(2, len(cleaned) - 3), -1):
                 for comb in set(itertools.combinations(key, length)):
                     sub_key = "".join(comb)
@@ -1417,7 +1431,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     data={"text": text, "language": "auto"},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Grammar check service is currently unavailable.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -1547,7 +1561,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         headers={"Accept": "application/dns-json"},
                         timeout=aiohttp.ClientTimeout(total=8),
                     ) as resp:
-                        if resp.status != 200:
+                        if resp.status != HTTP_OK_STATUS:
                             continue
                         data = await resp.json(content_type=None)
                         answers = data.get("Answer", [])
@@ -1696,7 +1710,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                 await ctx.reply(embed=embed)
                 return
 
-        is_ok = 200 <= status < 400
+        is_ok = HTTP_OK_STATUS <= status < HTTP_BAD_REQUEST_STATUS
         color = discord.Color.green() if is_ok else discord.Color.orange()
         icon = "\N{LARGE GREEN CIRCLE}" if is_ok else "\N{LARGE YELLOW CIRCLE}"
         embed = (
@@ -1735,7 +1749,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     headers={"User-Agent": USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=20),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply(f"Failed to capture screenshot (HTTP {resp.status}).")
                         return
                     img_bytes = await resp.read()
@@ -1848,7 +1862,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     "https://api.wheretheiss.at/v1/satellites/25544",
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Could not fetch ISS telemetry at the moment.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -1890,7 +1904,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     headers={"User-Agent": USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Rocket launch schedule service is currently busy or unavailable.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -1941,7 +1955,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         number: Annotated[int, commands.Range[int, 1, 10**18]] = commands.parameter(description="The integer to test for primality and factorize."),
     ) -> None:
         """Check if a number is prime and compute its prime factorization."""
-        if number < 2:
+        if number < MAX_MISC_PRIME_FACTOR_CHECK_NUMBER_LIMIT:
             await ctx.reply(f"**{number}** is neither prime nor composite.")
             return
 
@@ -2020,7 +2034,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         now = arrow.utcnow()
         m = month if month is not None else now.month
         d = day if day is not None else now.day
-        if not (1 <= m <= 12 and 1 <= d <= 31):
+        if not (1 <= m <= MAX_MISC_ON_THIS_DAY_M_LIMIT and 1 <= d <= MAX_MISC_ON_THIS_DAY_D_LIMIT):
             await ctx.reply("Please provide a valid month (1-12) and day (1-31).")
             return
 
@@ -2031,7 +2045,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     headers={"User-Agent": USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Failed to fetch historical events for that date.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -2074,7 +2088,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     params={"language": "en"},
                     timeout=aiohttp.ClientTimeout(total=8),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Could not fetch a fun fact right now.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -2117,7 +2131,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
         async with ctx.typing():
             try:
                 async with self.bot.http_session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Could not fetch an animal image right now.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -2148,7 +2162,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         params={"api_key": TMDB_API_KEY, "query": query, "include_adult": "false"},
                         timeout=aiohttp.ClientTimeout(total=10),
                     ) as resp:
-                        data = await resp.json(loads=discord.utils._from_json) if resp.status == 200 else {}
+                        data = await resp.json(loads=discord.utils._from_json) if resp.status == HTTP_OK_STATUS else {}
                 except aiohttp.ClientError, TimeoutError:
                     await ctx.reply("Failed to reach TMDB.")
                     return
@@ -2188,7 +2202,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     params={"q": query},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply(
                             f"No results found for **{discord.utils.escape_markdown(query)}** "
                             "(Set `TMDB_API_KEY` in environment for full movie & TV TMDB catalog)."
@@ -2225,7 +2239,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     json={"query": ANILIST_QUERY, "variables": {"search": query.strip(), "type": media_type}},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply(f"No {media_type.lower()} found on AniList for **{discord.utils.escape_markdown(query)}**.")
                         return
                     payload = await resp.json(loads=discord.utils._from_json)
@@ -2306,7 +2320,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     headers={"User-Agent": USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Failed to query Open Library.")
                         return
                     data = await resp.json(loads=discord.utils._from_json)
@@ -2366,7 +2380,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                         },
                         timeout=aiohttp.ClientTimeout(total=10),
                     ) as resp:
-                        if resp.status == 200:
+                        if resp.status == HTTP_OK_STATUS:
                             lfm_data = await resp.json(loads=discord.utils._from_json)
                             tracks = (((lfm_data.get("results") or {}).get("trackmatches") or {}).get("track")) or []
                             if tracks:
@@ -2390,7 +2404,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                     headers={"User-Agent": USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp:
-                    if resp.status != 200:
+                    if resp.status != HTTP_OK_STATUS:
                         await ctx.reply("Failed to query MusicBrainz.")
                         return
                     mb_data = await resp.json(loads=discord.utils._from_json)
@@ -2438,7 +2452,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
                 phrase = status.phrase
                 description = status.description or "Standard HTTP status code."
             except ValueError:
-                if 100 <= code <= 599:
+                if MAX_MISC_BUILD_HTTP_EMBED_CODE_LIMIT <= code <= MAX_MISC_BUILD_HTTP_EMBED_CODE_LIMIT_599:
                     phrase = "Unassigned / Custom Status Code"
                     description = "This HTTP status code is non-standard or unassigned by IANA."
                 else:

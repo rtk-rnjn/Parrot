@@ -22,6 +22,14 @@ from .utils import (
     get_max_word_length,
 )
 
+MAX_LOGOINTERPRETER_VALUES_EQUAL_NA_NB_THRESHOLD = 1e-09
+MIN_LOGOINTERPRETER_SAFE_POWER_EXP_THRESHOLD = 1024.0
+MAX_VALS_COUNT = 2
+MAX_ARGS_COUNT = 3
+MIN_LOGOINTERPRETER_PRIM_EXP_X_THRESHOLD = 709.0
+MAX_LOGOINTERPRETER_PRIM_CHAR_CODE_LIMIT = 32
+MIN_LOGOINTERPRETER_PRIM_CHAR_CODE_LIMIT = 126
+
 
 @dataclass(frozen=True)
 class Procedure:
@@ -309,7 +317,7 @@ class LogoInterpreter:
         try:
             na = self._to_number(a)
             nb = self._to_number(b)
-            return abs(na - nb) <= 1e-9
+            return abs(na - nb) <= MAX_LOGOINTERPRETER_VALUES_EQUAL_NA_NB_THRESHOLD-9
         except LogoRuntimeError:
             sa = self._to_word_str(a).upper()
             sb = self._to_word_str(b).upper()
@@ -945,7 +953,7 @@ class LogoInterpreter:
         if base < 0.0 and not exp.is_integer():
             msg = "Negative base cannot be raised to a fractional power."
             raise LogoRuntimeError(msg)
-        if abs(base) > 1.0 and exp > 1024.0:
+        if abs(base) > 1.0 and exp > MIN_LOGOINTERPRETER_SAFE_POWER_EXP_THRESHOLD:
             msg = "Exponent is too large (numeric overflow)."
             raise LogoRuntimeError(msg)
         try:
@@ -1278,7 +1286,7 @@ class LogoInterpreter:
     def _prim_setpos(self, args: list[Any], env: Environment, is_tail: bool) -> None:
         lst = self._require_list(args[0], "SETPOS")
         vals = lst.values
-        if len(vals) != 2:
+        if len(vals) != MAX_VALS_COUNT:
             msg = f"SETPOS expects a list of 2 numbers [x y], got {len(vals)}."
             raise LogoRuntimeError(msg)
         self.turtle.set_xy(self._to_number(vals[0], "SETPOS"), self._to_number(vals[1], "SETPOS"))
@@ -1286,7 +1294,7 @@ class LogoInterpreter:
     def _prim_towards(self, args: list[Any], env: Environment, is_tail: bool) -> float:
         lst = self._require_list(args[0], "TOWARDS")
         vals = lst.values
-        if len(vals) != 2:
+        if len(vals) != MAX_VALS_COUNT:
             msg = f"TOWARDS expects a list of 2 numbers [x y], got {len(vals)}."
             raise LogoRuntimeError(msg)
         return self.turtle.towards(self._to_number(vals[0], "TOWARDS"), self._to_number(vals[1], "TOWARDS"))
@@ -1294,7 +1302,7 @@ class LogoInterpreter:
     def _prim_distance(self, args: list[Any], env: Environment, is_tail: bool) -> float:
         lst = self._require_list(args[0], "DISTANCE")
         vals = lst.values
-        if len(vals) != 2:
+        if len(vals) != MAX_VALS_COUNT:
             msg = f"DISTANCE expects a list of 2 numbers [x y], got {len(vals)}."
             raise LogoRuntimeError(msg)
         tx = self._to_number(vals[0], "DISTANCE")
@@ -1307,7 +1315,7 @@ class LogoInterpreter:
             return
         lst = self._require_list(args[0], "DOT")
         vals = lst.values
-        if len(vals) != 2:
+        if len(vals) != MAX_VALS_COUNT:
             msg = f"DOT expects a list of 2 numbers [x y], got {len(vals)}."
             raise LogoRuntimeError(msg)
         self.turtle.dot((self._to_number(vals[0], "DOT"), self._to_number(vals[1], "DOT")))
@@ -1382,7 +1390,7 @@ class LogoInterpreter:
         then_list = self._require_list(args[1], "IF")
         if cond:
             return self._execute_list(then_list, env, in_tail_pos=is_tail, allow_value=True)
-        if len(args) == 3:
+        if len(args) == MAX_ARGS_COUNT:
             else_list = self._require_list(args[2], "IF")
             return self._execute_list(else_list, env, in_tail_pos=is_tail, allow_value=True)
         return None
@@ -1607,7 +1615,7 @@ class LogoInterpreter:
 
     def _prim_exp(self, args: list[Any], env: Environment, is_tail: bool) -> float:
         x = self._to_number(args[0], "EXP")
-        if x > 709.0:
+        if x > MIN_LOGOINTERPRETER_PRIM_EXP_X_THRESHOLD:
             msg = "Numeric overflow in EXP."
             raise LogoRuntimeError(msg)
         return self._check_finite(math.exp(x))
@@ -1865,7 +1873,7 @@ class LogoInterpreter:
 
     def _prim_char(self, args: list[Any], env: Environment, is_tail: bool) -> str:
         code = self._require_int(args[0], "CHAR")
-        if code < 32 or code > 126:
+        if code < MAX_LOGOINTERPRETER_PRIM_CHAR_CODE_LIMIT or code > MIN_LOGOINTERPRETER_PRIM_CHAR_CODE_LIMIT:
             msg = f"CHAR code must be printable ASCII (32..126), got {code}."
             raise LogoRuntimeError(msg)
         return chr(code)

@@ -33,6 +33,10 @@ log = logging.getLogger(__name__)
 
 GREEN, RED, GOLD, BLUE, GREY = 0x5B8731, 0xB02E26, 0xFCA800, 0x3C8DBC, 0x6B6B6B
 VIEW_TIMEOUT = 300
+BYTES_PER_KILOBYTE = 1024
+MAX_MINECRAFT_ADDRESS_LENGTH = 253
+MAX_PLAYER_NAMES = 60
+MAX_WIKI_CACHE_ENTRIES = 60
 
 MCSRV = "https://api.mcsrvstat.us"
 MOJANG_NAME = "https://api.mojang.com/users/profiles/minecraft/"
@@ -76,7 +80,7 @@ def size(n: int | float | None) -> str:
         return "?"
     n = float(n)
     for unit in ("B", "KB", "MB", "GB"):
-        if n < 1024:
+        if n < BYTES_PER_KILOBYTE:
             return f"{n:.1f} {unit}" if unit != "B" else f"{int(n)} B"
         n /= 1024
     return f"{n:.1f} TB"
@@ -102,7 +106,7 @@ def offline_uuid(name: str) -> uuidlib.UUID:
 
 def clean_address(raw: str) -> str:
     a = re.sub(r"^\w+://", "", raw.strip()).split("/")[0].strip()
-    if not a or len(a) > 253 or not ADDR_RE.match(a):
+    if not a or len(a) > MAX_MINECRAFT_ADDRESS_LENGTH or not ADDR_RE.match(a):
         msg = "That doesn't look like a server address. Try `play.example.com` or `host:port`."
         raise MCError(msg)
     return a
@@ -329,8 +333,8 @@ class ServerView(BaseView):
         out = f"## \N{BUSTS IN SILHOUETTE} {int(player_data.get('online', 0)):,} / {int(player_data.get('max', 0)):,} online\n"
         if names:
             out += ", ".join(f"`{n}`" for n in names[:60])
-            if len(names) > 60:
-                out += f"\n\N{HORIZONTAL ELLIPSIS} +{len(names) - 60} more"
+            if len(names) > MAX_PLAYER_NAMES:
+                out += f"\n\N{HORIZONTAL ELLIPSIS} +{len(names) - MAX_PLAYER_NAMES} more"
         else:
             out += "The server doesn't publish a player list (normal for big networks, or query is disabled)."
         return out
@@ -639,8 +643,8 @@ class WikiView(BaseView):
             ents.append(
                 (
                     f"s:{i}",
-                    ("\N{DOWNWARDS ARROW WITH TIP RIGHTWARDS} " if s.level > 2 else "") + s.heading,
-                    "\N{PAGE FACING UP}" if s.level <= 2 else "\N{WHITE SMALL SQUARE}\N{VARIATION SELECTOR-16}",
+                    ("\N{DOWNWARDS ARROW WITH TIP RIGHTWARDS} " if s.level > 2 else "") + s.heading,  # noqa: PLR2004
+                    "\N{PAGE FACING UP}" if s.level <= 2 else "\N{WHITE SMALL SQUARE}\N{VARIATION SELECTOR-16}",  # noqa: PLR2004
                 )
             )
         for i, t in enumerate(article_instance.tables[:n_tab]):
@@ -1159,7 +1163,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
         for ed in ["java", "bedrock"] if edition == "auto" else [edition]:
             url = f"{MCSRV}/{'bedrock/' if ed == 'bedrock' else ''}3/{quote(addr, safe=':[]')}"
             status, data = await self.http(url, ttl=60, fresh=fresh)
-            if status == 429:
+            if status == 429:  # noqa: PLR2004
                 msg = "The status API is rate-limiting us. Try again in a minute."
                 raise MCError(msg)
             if not isinstance(data, dict):
@@ -1211,7 +1215,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
             uid = trimmed_query.replace("-", "").lower()
         elif NAME_RE.match(trimmed_query):
             status_code, d = await self.http(MOJANG_NAME + trimmed_query, ttl=600)
-            if status_code == 429:
+            if status_code == 429:  # noqa: PLR2004
                 msg = "Mojang is rate-limiting lookups. Try again shortly."
                 raise MCError(msg)
             if not d:
@@ -1222,7 +1226,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
             msg = "Enter a username (3-16 letters, numbers, `_`) or a UUID."
             raise MCError(msg)
         status_code, prof = await self.http(MOJANG_PROFILE + uid, ttl=600)
-        if status_code == 429:
+        if status_code == 429:  # noqa: PLR2004
             msg = "Mojang is rate-limiting profile lookups (limited per UUID). Try again in a minute."
             raise MCError(msg)
         if not prof:
@@ -1379,7 +1383,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
     async def mc_index(self, ver: str, kind: str, key: str = "name") -> dict:
         k = (ver, kind, key)
         if k not in self._idx:
-            if len(self._idx) > 60:
+            if len(self._idx) > MAX_WIKI_CACHE_ENTRIES:
                 self._idx.clear()
             data = await self.mc_data(ver, kind)
             self._idx[k] = {e[key]: e for e in data}
@@ -1405,7 +1409,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
                 return_exceptions=True,
             )
             for u, r in zip(urls, res, strict=False):
-                if isinstance(r, tuple) and r[0] == 200:
+                if isinstance(r, tuple) and r[0] == 200:  # noqa: PLR2004
                     return u
         return None
 

@@ -22,6 +22,8 @@ PASS_COUNT = 3
 PASS_DIRECTIONS = (("left", 1), ("right", -1), ("across", 2))
 QUEEN_RANK = 12
 LAST_TO_PLAY = 3
+SHORT_SPADE_HAND_LIMIT = 4
+SHORT_SUIT_HAND_LIMIT = 2
 
 
 def points(card: str) -> int:
@@ -132,12 +134,12 @@ class Hearts(CardGame):
             def danger(card: str) -> float:
                 rank, suit = rank_of(card), suit_of(card)
                 if card == QUEEN:
-                    return 50 if spades < 4 else 20
+                    return 50 if spades < SHORT_SPADE_HAND_LIMIT else 20
                 if suit == "S" and rank > QUEEN_RANK:
-                    return 40 if spades < 4 else 15
+                    return 40 if spades < SHORT_SPADE_HAND_LIMIT else 15
                 if suit == "H":
                     return rank * 2
-                return rank + (6 if sum(suit_of(c) == suit for c in hand) <= 2 else 0)
+                return rank + (6 if sum(suit_of(c) == suit for c in hand) <= SHORT_SUIT_HAND_LIMIT else 0)
 
             ranked = sorted(range(len(hand)), key=lambda i: danger(hand[i]), reverse=True)
             return ("select", tuple(ranked[:PASS_COUNT]))

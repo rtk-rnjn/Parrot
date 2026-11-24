@@ -172,7 +172,8 @@ class CVERecord:
 
         if self.cpes:
             cpe_lines = "\n".join(f"- `{c}`" for c in self.cpes[:25])
-            extra = f"\n-# *...and {len(self.cpes) - 25} more CPEs*" if len(self.cpes) > 25 else ""
+            max_cpes_to_display = 25
+            extra = f"\n-# *...and {len(self.cpes) - max_cpes_to_display} more CPEs*" if len(self.cpes) > max_cpes_to_display else ""
             sections.append(f"**Affected CPE 2.3 Identifiers ({len(self.cpes)})**\n{cpe_lines}{extra}")
 
         if self.credits:
@@ -181,7 +182,8 @@ class CVERecord:
 
         if self.references:
             ref_lines = "\n".join(f"- <{ref}>" for ref in self.references[:20])
-            extra = f"\n-# *...and {len(self.references) - 20} more references*" if len(self.references) > 20 else ""
+            max_references_to_display = 20
+            extra = f"\n-# *...and {len(self.references) - max_references_to_display} more references*" if len(self.references) > max_references_to_display else ""
             sections.append(f"**References & Advisories ({len(self.references)})**\n{ref_lines}{extra}")
 
         return _paginate_markdown("\n\n".join(sections), limit=ISSUE_PAGE_CHAR_LIMIT)

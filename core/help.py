@@ -39,6 +39,7 @@ COMMIT_COUNT = 3
 COMMIT_SUMMARY_LIMIT = 50
 SUGGESTION_COUNT = 3
 MAX_TEXT = 3800
+MAX_HELP_PATHS_TO_DISPLAY = 10
 
 DEFAULT_EMOJI = "\N{PACKAGE}"
 DOT = " \N{MIDDLE DOT} "
@@ -782,7 +783,7 @@ class HelpView(BaseLayoutView):
         await asyncio.to_thread(self.render)
         await interaction.response.edit_message(view=self)
 
-        shown = ", ".join(f"`{path}`" for path in paths[:10]) + (f" and {len(paths) - 10} more" if len(paths) > 10 else "")
+        shown = ", ".join(f"`{path}`" for path in paths[:MAX_HELP_PATHS_TO_DISPLAY]) + (f" and {len(paths) - MAX_HELP_PATHS_TO_DISPLAY} more" if len(paths) > MAX_HELP_PATHS_TO_DISPLAY else "")
         lines = [f"{'Enabled' if enabled else 'Disabled'} **{len(paths)}** command(s): {shown}"]
         for key, (label, template) in RULE_LABELS.items():
             ids = (rules or {}).get(key)

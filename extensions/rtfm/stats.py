@@ -15,6 +15,9 @@ import discord
 from discord.ext import commands
 lazy from PIL import Image, ImageDraw, ImageFont
 
+MAX_CF_COLOUR_RATING_LIMIT = 1200
+HTTP_OK_STATUS = 200
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -196,7 +199,7 @@ def lc_user_embed(data: dict[str, Any]) -> discord.Embed:
 
 
 def cf_colour(rating: int | None) -> int:
-    if rating is None or rating < 1200:
+    if rating is None or rating < MAX_CF_COLOUR_RATING_LIMIT:
         return 0x808080
     for limit, colour in ((1400, 0x008000), (1600, 0x03A89E), (1900, 0x0000FF), (2100, 0xAA00AA), (2400, 0xFF8C00)):
         if rating < limit:
@@ -353,7 +356,7 @@ class CodingStats(commands.Cog):
             async with self.bot.http_session.post(
                 LC_URL, json={"query": query, "variables": variables or {}}, headers=headers, timeout=HTTP_TIMEOUT
             ) as resp:
-                if resp.status != 200:
+                if resp.status != HTTP_OK_STATUS:
                     msg = f"LeetCode returned HTTP {resp.status}."
                     raise LookupFailed(msg)
                 payload = await resp.json(content_type=None)

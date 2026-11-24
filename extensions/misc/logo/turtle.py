@@ -11,6 +11,25 @@ lazy from PIL import Image, ImageChops, ImageDraw, ImageFont
 from .parser import LogoList
 from .utils import LogoRuntimeError, get_max_fills, get_max_gif_frames, get_max_pen_width, get_max_segments, get_max_turtles, get_max_word_length
 
+MAX_ITEMS_COUNT = 3
+MIN_PARSE_COLOR_ICOMP_LIMIT = 255
+MAX_HEX_VALUE_COUNT = 3
+MAX_TURTLE_INIT_WIDTH_LIMIT = 16
+MIN_TURTLE_INIT_WIDTH_LIMIT = 4096
+MAX_TURTLE_INIT_HEIGHT_LIMIT = 16
+MIN_TURTLE_INIT_HEIGHT_LIMIT = 4096
+MAX_TURTLE_SET_LABEL_HEIGHT_HEIGHT_LIMIT = 4
+MIN_TURTLE_SET_LABEL_HEIGHT_HEIGHT_LIMIT = 100
+MAX_TURTLE_GET_XCOR_ABS_VAL_THRESHOLD = 1e-09
+MAX_TURTLE_GET_YCOR_ABS_VAL_THRESHOLD = 1e-09
+MAX_TURTLE_GET_HEADING_ABS_VAL_THRESHOLD = 1e-09
+MAX_TURTLE_GET_HEADING_360_0_THRESHOLD = 1e-09
+MAX_TURTLE_TOWARDS_ABS_DX_THRESHOLD = 1e-12
+MAX_TURTLE_TOWARDS_ABS_DY_THRESHOLD = 1e-12
+MAX_TURTLE_TOWARDS_ABS_ANGLE_THRESHOLD = 1e-09
+MAX_PTS_COUNT = 3
+MAX_OP_POINTS_COUNT = 3
+
 MAX_COORD = 10_000.0
 
 # Standard 16-color MSWLogo palette (indices 0..15)
@@ -106,7 +125,7 @@ def parse_color(value: Any) -> tuple[int, int, int]:  # noqa: PLR0912, PLR0915
         items = None
 
     if items is not None:
-        if len(items) != 3:
+        if len(items) != MAX_ITEMS_COUNT:
             msg = f"RGB color list must have exactly 3 numbers, got {len(items)}."
             raise LogoRuntimeError(msg)
         rgb: list[int] = []
@@ -120,7 +139,7 @@ def parse_color(value: Any) -> tuple[int, int, int]:  # noqa: PLR0912, PLR0915
                 msg = f"RGB component must be an integer between 0 and 255, got {comp!r}."
                 raise LogoRuntimeError(msg)
             icomp = int(fcomp)
-            if icomp < 0 or icomp > 255:
+            if icomp < 0 or icomp > MIN_PARSE_COLOR_ICOMP_LIMIT:
                 msg = f"RGB component must be between 0 and 255, got {icomp}."
                 raise LogoRuntimeError(msg)
             rgb.append(icomp)
@@ -155,7 +174,7 @@ def parse_color(value: Any) -> tuple[int, int, int]:  # noqa: PLR0912, PLR0915
         hex_match = _HEX_COLOR_RE.fullmatch(cleaned)
         if hex_match:
             hex_value = hex_match.group(1)
-            if len(hex_value) == 3:
+            if len(hex_value) == MAX_HEX_VALUE_COUNT:
                 r = int(hex_value[0] * 2, 16)
                 g = int(hex_value[1] * 2, 16)
                 b = int(hex_value[2] * 2, 16)
@@ -235,7 +254,7 @@ class TurtleState:
 
 class Turtle:
     def __init__(self, width: int = 1000, height: int = 800) -> None:
-        if width < 16 or width > 4096 or height < 16 or height > 4096:
+        if width < MAX_TURTLE_INIT_WIDTH_LIMIT or width > MIN_TURTLE_INIT_WIDTH_LIMIT or height < MAX_TURTLE_INIT_HEIGHT_LIMIT or height > MIN_TURTLE_INIT_HEIGHT_LIMIT:
             msg = "Canvas dimensions must be between 16 and 4096 pixels."
             raise LogoRuntimeError(msg)
         self.width = width
@@ -485,7 +504,7 @@ class Turtle:
             state.pen_width = width
 
     def set_label_height(self, height: int) -> None:
-        if height < 4 or height > 100:
+        if height < MAX_TURTLE_SET_LABEL_HEIGHT_HEIGHT_LIMIT or height > MIN_TURTLE_SET_LABEL_HEIGHT_HEIGHT_LIMIT:
             msg = f"Label height must be between 4 and 100, got {height}."
             raise LogoRuntimeError(msg)
         for state in self._iter_active():
@@ -494,28 +513,28 @@ class Turtle:
     # Position & Coordinate reporters
     def get_xcor(self) -> float:
         val = self._primary.x - self.width / 2
-        return 0.0 if abs(val) < 1e-9 else round(val, 6)
+        return 0.0 if abs(val) < MAX_TURTLE_GET_XCOR_ABS_VAL_THRESHOLD-9 else round(val, 6)
 
     def get_ycor(self) -> float:
         val = self.height / 2 - self._primary.y
-        return 0.0 if abs(val) < 1e-9 else round(val, 6)
+        return 0.0 if abs(val) < MAX_TURTLE_GET_YCOR_ABS_VAL_THRESHOLD-9 else round(val, 6)
 
     def get_pos(self) -> tuple[float, float]:
         return (self.get_xcor(), self.get_ycor())
 
     def get_heading(self) -> float:
         val = self._primary.heading % 360.0
-        return 0.0 if abs(val) < 1e-9 or abs(val - 360.0) < 1e-9 else round(val, 6)
+        return 0.0 if abs(val) < MAX_TURTLE_GET_HEADING_ABS_VAL_THRESHOLD-9 or abs(val - 360.0) < MAX_TURTLE_GET_HEADING_360_0_THRESHOLD-9 else round(val, 6)
 
     def towards(self, x: float, y: float) -> float:
         tx = _require_finite(x, "X coordinate")
         ty = _require_finite(y, "Y coordinate")
         dx = tx - self.get_xcor()
         dy = ty - self.get_ycor()
-        if abs(dx) < 1e-12 and abs(dy) < 1e-12:
+        if abs(dx) < MAX_TURTLE_TOWARDS_ABS_DX_THRESHOLD-12 and abs(dy) < MAX_TURTLE_TOWARDS_ABS_DY_THRESHOLD-12:
             return 0.0
         angle = math.degrees(math.atan2(dx, dy)) % 360.0
-        return 0.0 if abs(angle) < 1e-9 else round(angle, 6)
+        return 0.0 if abs(angle) < MAX_TURTLE_TOWARDS_ABS_ANGLE_THRESHOLD-9 else round(angle, 6)
 
     def home(self) -> None:
         self.set_xy(0.0, 0.0)
@@ -669,7 +688,7 @@ class Turtle:
         for state in self._iter_active():
             pts = state.poly_path
             state.poly_path = None
-            if pts and len(pts) >= 3:
+            if pts and len(pts) >= MAX_PTS_COUNT:
                 self._record_op(PolygonFillOp(points=tuple(pts), fill_color=fill_color))
 
     def label(self, text: str) -> None:
@@ -728,7 +747,7 @@ class Turtle:
                 else:
                     draw.ellipse(bbox, fill=op.color)
             elif isinstance(op, PolygonFillOp):
-                if len(op.points) >= 3:
+                if len(op.points) >= MAX_OP_POINTS_COUNT:
                     draw.polygon(list(op.points), fill=op.fill_color)
             elif isinstance(op, FillOp):
                 ix = round(op.x)

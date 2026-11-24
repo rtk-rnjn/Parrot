@@ -17,6 +17,8 @@ from core.utils import format_clock_duration, plural, truncate
 from .models import PRESETS, LoopMode, Song
 from .ui import describe_song, format_progress
 
+MIN_SELF_PLAYER_QUEUE_COUNT = 2
+
 if TYPE_CHECKING:
     from discord.ext.commands import Context
 
@@ -474,7 +476,7 @@ class MusicPanel(discord.ui.LayoutView):
         return _vote_notice(await self.player.vote_stop(member), "Your vote to stop has been counted.")
 
     async def _shuffle(self, member: discord.Member) -> Notice | None:
-        if len(self.player.queue) < 2:
+        if len(self.player.queue) < MIN_SELF_PLAYER_QUEUE_COUNT:
             return Notice.info("There is nothing to shuffle.")
         return _vote_notice(await self.player.vote_shuffle(member), "Your vote to shuffle has been counted.")
 

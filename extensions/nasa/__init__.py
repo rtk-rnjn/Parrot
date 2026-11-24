@@ -25,6 +25,19 @@ from discord.ext import commands
 from core.utils.date import HumanDate
 from core.utils.views import BaseLayoutView
 
+HTTP_INTERNAL_SERVER_ERROR_STATUS = 500
+MIN_VALUE_COUNT = 512
+MIN_NASACLIENT_RESERVE_WINDOW_0_LIMIT = 3600
+HTTP_NOT_FOUND_STATUS = 404
+HTTP_OK_STATUS = 200
+HTTP_TOO_MANY_REQUESTS_STATUS = 429
+MAX_NASACLIENT_STORE_SELF_REMAINING_LIMIT = 50
+MAX_PROMPTMODAL_ON_ERROR_ERROR_CODE_LIMIT = 10062
+MAX_ASTEROIDPAGE_CAD_FALLBACK_DIST_AU_THRESHOLD = 0.05
+MAX_ASTEROIDPAGE_CAD_FALLBACK_H_VAL_THRESHOLD = 22.0
+MIN_ASTEROIDPAGE_FEED_START_DAYS_LIMIT = 6
+MIN_DONKIPAGE_FETCH_START_DAYS_LIMIT = 90
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -114,7 +127,7 @@ class NasaError(Exception):
     def __init__(self, message: str, *, status: int | None = None, server_error: bool = False) -> None:
         super().__init__(message)
         self.status = status
-        self.server_error = server_error or (status is not None and status >= 500)
+        self.server_error = server_error or (status is not None and status >= HTTP_INTERNAL_SERVER_ERROR_STATUS)
 
 
 @dataclass(slots=True)
@@ -148,7 +161,7 @@ def strip_html(text: object) -> str:
 
 
 def safe_url(value: object) -> str | None:
-    if isinstance(value, str) and value.startswith(("http://", "https://")) and len(value) <= 512:
+    if isinstance(value, str) and value.startswith(("http://", "https://")) and len(value) <= MIN_VALUE_COUNT:
         return value.strip().replace(" ", "%20")
     return None
 
@@ -219,7 +232,7 @@ class NasaClient:
             minutes = math.ceil((self.blocked_until - now) / 60)
             msg = f"NASA's rate limit was reached. Try again in about {minutes} minute(s)."
             raise NasaError(msg, status=429)
-        while self.window and now - self.window[0] > 3600:
+        while self.window and now - self.window[0] > MIN_NASACLIENT_RESERVE_WINDOW_0_LIMIT:
             self.window.popleft()
         if len(self.window) >= HOURLY_BUDGET:
             minutes = math.ceil((3600 - (now - self.window[0])) / 60)
@@ -248,7 +261,7 @@ class NasaClient:
             for candidate in (data.get("msg"), error.get("message") if isinstance(error, dict) else error, data.get("message")):
                 if isinstance(candidate, str) and candidate:
                     return clip(clean(candidate), 300)
-        if response.status == 404:
+        if response.status == HTTP_NOT_FOUND_STATUS:
             return "NASA couldn't find any data for that request (HTTP 404)."
         return f"NASA rejected the request (HTTP {response.status})."
 
@@ -285,13 +298,13 @@ class NasaClient:
                     self.track(response)
                     status = response.status
                     last_status = status
-                    if status == 200:
+                    if status == HTTP_OK_STATUS:
                         return await self.read(response, raw)
-                    if status == 429:
+                    if status == HTTP_TOO_MANY_REQUESTS_STATUS:
                         self.block(response)
                         msg = "NASA's rate limit was reached. Please try again in a while."
                         raise NasaError(msg, status=429)
-                    if status < 500:
+                    if status < HTTP_INTERNAL_SERVER_ERROR_STATUS:
                         raise NasaError(await self.explain(response), status=status)
                     failure = f"NASA is having problems right now (HTTP {status})."
             except aiohttp.ClientError, TimeoutError:
@@ -301,7 +314,7 @@ class NasaClient:
         raise NasaError(failure, status=last_status, server_error=True)
 
     def store(self, key: str, data: Any, ttl: float, auth: bool) -> None:
-        if auth and self.remaining is not None and self.remaining < 50:
+        if auth and self.remaining is not None and self.remaining < MAX_NASACLIENT_STORE_SELF_REMAINING_LIMIT:
             ttl *= 4
         if len(self.cache) >= CACHE_MAX:
             now = time.monotonic()
@@ -341,7 +354,7 @@ class NasaClient:
         try:
             data = await asyncio.shield(task)
         except NasaError as exc:
-            if (exc.server_error or exc.status == 429) and key in self.stale_cache:
+            if (exc.server_error or exc.status == HTTP_TOO_MANY_REQUESTS_STATUS) and key in self.stale_cache:
                 _log.warning("Serving stale cache for %s after error: %s", url, exc)
                 return self.stale_cache[key]
             raise
@@ -377,7 +390,7 @@ class PromptModal(discord.ui.Modal):
         await self.submit(interaction, [item.value.strip() for item in self.inputs])
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
-        if isinstance(error, discord.NotFound) and error.code == 10062:
+        if isinstance(error, discord.NotFound) and error.code == MAX_PROMPTMODAL_ON_ERROR_ERROR_CODE_LIMIT:
             _log.warning("NASA modal interaction expired before acknowledgement (10062)")
             return
         _log.error("NASA modal failed", exc_info=error)
@@ -734,7 +747,7 @@ class ApodPage(Page):
         try:
             entry = await self._request_apod(params, ttl)
         except NasaError as exc:
-            if not random and (exc.status == 404 or exc.server_error):
+            if not random and (exc.status == HTTP_NOT_FOUND_STATUS or exc.server_error):
                 fallback_date = (target or today_et) - datetime.timedelta(days=1)
                 try:
                     entry = await self._request_apod({"date": fallback_date.isoformat(), "thumbs": "true"}, 3600.0)
@@ -813,7 +826,7 @@ class EpicPage(Page):
                 last_err = None
                 break
             except NasaError as exc:
-                if exc.status == 404:
+                if exc.status == HTTP_NOT_FOUND_STATUS:
                     data = []
                     last_err = None
                     break
@@ -954,7 +967,7 @@ class MarsPage(Page):
             raw_photos = data.get(key) if isinstance(data, dict) else None
             photos = [photo for photo in raw_photos or [] if isinstance(photo, dict) and secure(photo.get("img_src"))][:100]
         except NasaError as exc:
-            if exc.status == 404 or exc.server_error:
+            if exc.status == HTTP_NOT_FOUND_STATUS or exc.server_error:
                 photos = await self._fetch_library_mars(rover, date)
             else:
                 raise
@@ -1091,7 +1104,7 @@ class AsteroidPage(Page):
                     "neo_reference_id": des,
                     "nasa_jpl_url": f"https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr={urllib.parse.quote(des)}",
                     "absolute_magnitude_h": record.get("h") or "unknown",
-                    "is_potentially_hazardous_asteroid": dist_au <= 0.05 and 0 < h_val <= 22.0,
+                    "is_potentially_hazardous_asteroid": dist_au <= MAX_ASTEROIDPAGE_CAD_FALLBACK_DIST_AU_THRESHOLD and 0 < h_val <= MAX_ASTEROIDPAGE_CAD_FALLBACK_H_VAL_THRESHOLD,
                     "is_sentry_object": False,
                     "estimated_diameter": {"meters": {"estimated_diameter_min": d_min, "estimated_diameter_max": d_max}},
                     "close_approach_data": [
@@ -1112,7 +1125,7 @@ class AsteroidPage(Page):
         if end < start:
             msg = "The end date comes before the start date."
             raise NasaError(msg)
-        if (end - start).days > 6:
+        if (end - start).days > MIN_ASTEROIDPAGE_FEED_START_DAYS_LIMIT:
             msg = "NASA only allows up to 7 days at a time."
             raise NasaError(msg)
         try:
@@ -1146,7 +1159,7 @@ class AsteroidPage(Page):
         try:
             data = await self.client.get(NEO_LOOKUP_URL.format(ident), ttl=21600.0)
         except NasaError as exc:
-            if exc.status == 404:
+            if exc.status == HTTP_NOT_FOUND_STATUS:
                 msg_0 = "NASA doesn't know that asteroid."
                 raise NasaError(msg_0) from None
             raise
@@ -1266,7 +1279,7 @@ class DonkiPage(Page):
         if end < start:
             msg = "The end date comes before the start date."
             raise NasaError(msg)
-        if (end - start).days > 90:
+        if (end - start).days > MIN_DONKIPAGE_FETCH_START_DAYS_LIMIT:
             msg = "Please keep the range within 90 days."
             raise NasaError(msg)
         params = {"startDate": start.isoformat(), "endDate": end.isoformat()}
@@ -1278,7 +1291,7 @@ class DonkiPage(Page):
                 last_err = None
                 break
             except NasaError as exc:
-                if exc.status == 404:
+                if exc.status == HTTP_NOT_FOUND_STATUS:
                     data = []
                     last_err = None
                     break
@@ -1394,7 +1407,7 @@ class LibraryPage(Page):
         try:
             data = await self.client.get(LIBRARY_URL, params, auth=False, ttl=3600.0)
         except NasaError as exc:
-            if exc.status == 404:
+            if exc.status == HTTP_NOT_FOUND_STATUS:
                 data = {}
             else:
                 raise
@@ -1644,7 +1657,7 @@ class NASA(commands.Cog, description="NASA data: pictures, imagery, asteroids an
                 try:
                     payload = await self.client.get(EARTH_URL, params, raw=True)
                 except NasaError as exc:
-                    if exc.status == 404 or exc.server_error:
+                    if exc.status == HTTP_NOT_FOUND_STATUS or exc.server_error:
                         payload = await self._fetch_gibs_earth(longitude, latitude, target_date)
                     else:
                         raise

@@ -38,6 +38,36 @@ from .image_validators import (
     validate_choice,
 )
 
+MAX_COLORS_COUNT = 16
+MAX_COLOR_COUNT = 3
+MIN_FBM_NOISE_HI_LO_THRESHOLD = 1e-06
+MIN_PLASMA_HI_LO_THRESHOLD = 1e-06
+MIN_FRACTAL_MAG2_THRESHOLD = 256.0
+MAX_GEOMETRIC_KIND_LIMIT = 2
+MAX_GEOMETRIC_KIND_LIMIT_3 = 3
+MAX_CELLULAR_GH_GW_THRESHOLD = 0.32
+MAX_CELLULAR_NBRS_LIMIT = 2
+MAX_CELLULAR_NBRS_LIMIT_3 = 3
+MAX_CELLULAR_RNG_RANDOM_THRESHOLD = 0.35
+MIN_SPIROGRAPH_K_PETALS_LIMIT = 2
+MAX_TRUCHET_RNG_RANDOM_THRESHOLD = 0.5
+MAX_MAZE_GRID_NONE_LIMIT = 2
+MAX_LSYSTEM_BRANCH_LENGTH_THRESHOLD = 2.0
+MAX_STARFIELD_RNG_RANDOM_THRESHOLD = 0.35
+MIN_STARFIELD_R_THRESHOLD = 2.4
+MIN_PFP_COLLAGE_TILE_PX_LIMIT = 32
+MAX_REL_LUMINANCE_CH_X_THRESHOLD = 0.03928
+MIN_RENDER_CONTRAST_CHECKER_RATIO_THRESHOLD = 4.5
+MIN_RENDER_CONTRAST_CHECKER_RATIO_THRESHOLD_7_0 = 7.0
+MIN_RENDER_CONTRAST_CHECKER_RATIO_THRESHOLD_3_0 = 3.0
+MAX_RENDER_QRCODE_FINDER_DR_LIMIT = 6
+MAX_RENDER_QRCODE_FINDER_DR_LIMIT_2 = 2
+MAX_RENDER_QRCODE_FINDER_DR_LIMIT_4 = 4
+MAX_RENDER_QRCODE_FINDER_DC_LIMIT = 2
+MAX_RENDER_QRCODE_FINDER_DC_LIMIT_4 = 4
+MAX_RENDER_QRCODE_ABS_DR_LIMIT = 2
+MAX_RENDER_QRCODE_ABS_DC_LIMIT = 2
+
 GRADIENT_KINDS = ("linear", "radial", "multicolor")
 NOISE_KINDS = ("gray", "color", "value", "fractal")
 FRACTAL_KINDS = ("mandelbrot", "julia")
@@ -72,12 +102,12 @@ def random_palette(rng: np.random.Generator, count: int) -> list[Color]:
 def _resolve_palette(colors: Sequence[Color] | None, rng: np.random.Generator, default_count: int) -> list[Color]:
     if not colors:
         return random_palette(rng, default_count)
-    if len(colors) > 16:
+    if len(colors) > MAX_COLORS_COUNT:
         msg = "Use at most 16 colours."
         raise ImageValidationError(msg)
     palette: list[Color] = []
     for color in colors:
-        if len(color) != 3:
+        if len(color) != MAX_COLOR_COUNT:
             msg = "Colours must have exactly three RGB components."
             raise ImageValidationError(msg)
         palette.append(tuple(clamp_int(c, 0, 255, "colour") for c in color))  # type: ignore[arg-type]
@@ -158,7 +188,7 @@ def _fbm_noise(rng: np.random.Generator, h: int, w: int, scale: int = 48, octave
         amplitude *= 0.5
     field /= max(total, 1e-6)
     lo, hi = float(field.min()), float(field.max())
-    return (field - lo) / (hi - lo) if hi - lo > 1e-6 else field
+    return (field - lo) / (hi - lo) if hi - lo > MIN_FBM_NOISE_HI_LO_THRESHOLD-6 else field
 
 
 def noise(
@@ -211,7 +241,7 @@ def plasma(
         f, phase = rng.uniform(1.0, 5.0), rng.uniform(0, tau)
         field += np.sin(tau * f * np.hypot(u - cx, v - cy) + phase)
     lo, hi = float(field.min()), float(field.max())
-    field = (field - lo) / (hi - lo) if hi - lo > 1e-6 else np.zeros_like(field)
+    field = (field - lo) / (hi - lo) if hi - lo > MIN_PLASMA_HI_LO_THRESHOLD-6 else np.zeros_like(field)
     if colors:
         ping_pong = 1.0 - np.abs(2.0 * field - 1.0)
         return _to_rgb_image(_lerp_palette(ping_pong, _resolve_palette(colors, rng, 2)))
@@ -257,7 +287,7 @@ def fractal(
     for i in range(max_iter):
         z = z * z + c
         mag2 = z.real * z.real + z.imag * z.imag
-        escaped = mag2 > 256.0
+        escaped = mag2 > MIN_FRACTAL_MAG2_THRESHOLD
         if escaped.any():
             hit = idx[escaped]
             smooth[hit] = i + 1 - np.log2(0.5 * np.log(mag2[escaped]))
@@ -344,9 +374,9 @@ def geometric(
         elif kind == 1:
             rw, rh = r * float(rng.uniform(0.5, 1.6)), r * float(rng.uniform(0.5, 1.6))
             draw.rectangle((cx - rw, cy - rh, cx + rw, cy + rh), fill=fill)
-        elif kind == 2:
+        elif kind == MAX_GEOMETRIC_KIND_LIMIT:
             draw.regular_polygon((cx, cy, r), int(rng.integers(3, 8)), rotation=float(rng.uniform(0, 360)), fill=fill)
-        elif kind == 3:
+        elif kind == MAX_GEOMETRIC_KIND_LIMIT_3:
             draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=fill, width=max(2, int(r * 0.18)))
         else:
             ang = float(rng.uniform(0, 2 * math.pi))
@@ -478,18 +508,18 @@ def cellular(
     gw, gh = max(8, w // cs), max(8, h // cs)
     grid = np.zeros((gh, gw), dtype=np.uint8)
     if kind == "life":
-        state = (rng.random((gh, gw)) < 0.32).astype(np.uint8)
+        state = (rng.random((gh, gw)) < MAX_CELLULAR_GH_GW_THRESHOLD).astype(np.uint8)
         age = state.copy().astype(np.float32)
         for _ in range(45):
             nbrs = sum(np.roll(np.roll(state, dy, axis=0), dx, axis=1) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if (dx, dy) != (0, 0))
-            state = (((state == 1) & ((nbrs == 2) | (nbrs == 3))) | ((state == 0) & (nbrs == 3))).astype(np.uint8)
+            state = (((state == 1) & ((nbrs == MAX_CELLULAR_NBRS_LIMIT) | (nbrs == MAX_CELLULAR_NBRS_LIMIT_3))) | ((state == 0) & (nbrs == MAX_CELLULAR_NBRS_LIMIT_3))).astype(np.uint8)
             age = np.where(state > 0, age + 1.0, age * 0.85)
         norm = age / max(float(age.max()), 1.0)
         rgb_small = _lerp_palette(norm, palette)
     else:
         rule_num = {"rule30": 30, "rule110": 110, "rule90": 90}[kind]
         grid[0, gw // 2] = 1
-        if rng.random() < 0.35:
+        if rng.random() < MAX_CELLULAR_RNG_RANDOM_THRESHOLD:
             grid[0] = rng.integers(0, 2, size=gw, dtype=np.uint8)
         for r in range(1, gh):
             left = np.roll(grid[r - 1], 1)
@@ -527,7 +557,7 @@ def spirograph(
         scale = 1.0 - layer_idx * 0.16
         if kind == "lissajous":
             fx = k_petals + layer_idx
-            fy = k_petals - 1 if k_petals > 2 else 3
+            fy = k_petals - 1 if k_petals > MIN_SPIROGRAPH_K_PETALS_LIMIT else 3
             phase = float(rng.uniform(0, math.pi))
             xs = cx + np.sin(fx * t / k_petals + phase) * radius * scale
             ys = cy + np.sin(fy * t / k_petals) * radius * scale
@@ -561,7 +591,7 @@ def truchet(
     for y in range(0, h + cs, cs):
         for x in range(0, w + cs, cs):
             col = palette[1 + int(rng.integers(0, len(palette) - 1))] if len(palette) > 1 else palette[0]
-            if rng.random() < 0.5:
+            if rng.random() < MAX_TRUCHET_RNG_RANDOM_THRESHOLD:
                 draw.arc((x - cs // 2, y - cs // 2, x + cs // 2, y + cs // 2), 0, 90, fill=col, width=stroke)
                 draw.arc((x + cs // 2, y + cs // 2, x + 3 * cs // 2, y + 3 * cs // 2), 180, 270, fill=col, width=stroke)
             else:
@@ -620,7 +650,7 @@ def maze(
     wall_c = np.asarray((18, 20, 28), dtype=np.uint8)
     floor_c = np.asarray(palette[0], dtype=np.uint8)
     sol_c = np.asarray(palette[-1], dtype=np.uint8)
-    rgb = np.where(grid[..., None] == 0, wall_c, np.where(grid[..., None] == 2, sol_c, floor_c))
+    rgb = np.where(grid[..., None] == 0, wall_c, np.where(grid[..., None] == MAX_MAZE_GRID_NONE_LIMIT, sol_c, floor_c))
     return Image.fromarray(rgb, mode="RGB").resize((w, h), Image.Resampling.NEAREST)
 
 
@@ -725,7 +755,7 @@ def lsystem(
     else:
 
         def _branch(x: float, y: float, length: float, angle: float, lvl: int) -> None:
-            if lvl <= 0 or length < 2.0:
+            if lvl <= 0 or length < MAX_LSYSTEM_BRANCH_LENGTH_THRESHOLD:
                 return
             nx = x + length * math.cos(angle)
             ny = y - length * math.sin(angle)
@@ -759,9 +789,9 @@ def starfield(
     for _ in range(n_stars):
         x, y = float(rng.uniform(0, w)), float(rng.uniform(0, h))
         r = float(rng.exponential(1.2))
-        col = palette[int(rng.integers(len(palette)))] if rng.random() < 0.35 else (255, 255, 255)
+        col = palette[int(rng.integers(len(palette)))] if rng.random() < MAX_STARFIELD_RNG_RANDOM_THRESHOLD else (255, 255, 255)
         draw.ellipse((x - r, y - r, x + r, y + r), fill=(*col, 235))
-        if r > 2.4:
+        if r > MIN_STARFIELD_R_THRESHOLD:
             spike = r * 3.5
             draw.line((x - spike, y, x + spike, y), fill=(*col, 180), width=1)
             draw.line((x, y - spike, x, y + spike), fill=(*col, 180), width=1)
@@ -1057,7 +1087,7 @@ def pfp_collage(
         make_rng(seed).shuffle(order)
     n = len(images)
     positions, (cw, ch) = _layout(n, layout, tile_px, gap_px)
-    while max(cw, ch) > MAX_OUTPUT_DIMENSION and tile_px > 32:
+    while max(cw, ch) > MAX_OUTPUT_DIMENSION and tile_px > MIN_PFP_COLLAGE_TILE_PX_LIMIT:
         tile_px = max(32, int(tile_px * 0.85))
         positions, (cw, ch) = _layout(n, layout, tile_px, gap_px)
     canvas = Image.new("RGBA", (cw, ch), (*bg, 255))
@@ -1322,7 +1352,7 @@ def render_colorblind_sim(data: bytes, kind: str = "deuteranopia") -> EncodedIma
 def _rel_luminance(col: Color) -> float:
     def _ch(v: int) -> float:
         x = v / 255.0
-        return x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4
+        return x / 12.92 if x <= MAX_REL_LUMINANCE_CH_X_THRESHOLD else ((x + 0.055) / 1.055) ** 2.4
 
     return 0.2126 * _ch(col[0]) + 0.7152 * _ch(col[1]) + 0.0722 * _ch(col[2])
 
@@ -1333,9 +1363,9 @@ def render_contrast_checker(color_a: str, color_b: str) -> tuple[EncodedImage, d
     cb = parse_hex_color(color_b, "color_b")
     la, lb = _rel_luminance(ca), _rel_luminance(cb)
     ratio = (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
-    aa_norm = "PASS" if ratio >= 4.5 else "FAIL"
-    aaa_norm = "PASS" if ratio >= 7.0 else "FAIL"
-    aa_large = "PASS" if ratio >= 3.0 else "FAIL"
+    aa_norm = "PASS" if ratio >= MIN_RENDER_CONTRAST_CHECKER_RATIO_THRESHOLD else "FAIL"
+    aaa_norm = "PASS" if ratio >= MIN_RENDER_CONTRAST_CHECKER_RATIO_THRESHOLD_7_0 else "FAIL"
+    aa_large = "PASS" if ratio >= MIN_RENDER_CONTRAST_CHECKER_RATIO_THRESHOLD_3_0 else "FAIL"
 
     canvas = Image.new("RGBA", (620, 240), (20, 22, 30, 255))
     draw = ImageDraw.Draw(canvas)
@@ -1395,8 +1425,8 @@ def render_qrcode(text: str, box_size: int = 12) -> EncodedImage:
                 rr, cc = r0 + dr, c0 + dc
                 if 0 <= rr < size and 0 <= cc < size:
                     reserved[rr, cc] = True
-                    in_outer = 0 <= dr <= 6 and (dc in (0, 6) or dr in (0, 6))
-                    in_inner = 2 <= dr <= 4 and 2 <= dc <= 4
+                    in_outer = 0 <= dr <= MAX_RENDER_QRCODE_FINDER_DR_LIMIT and (dc in (0, 6) or dr in (0, 6))
+                    in_inner = MAX_RENDER_QRCODE_FINDER_DR_LIMIT_2 <= dr <= MAX_RENDER_QRCODE_FINDER_DR_LIMIT_4 and MAX_RENDER_QRCODE_FINDER_DC_LIMIT <= dc <= MAX_RENDER_QRCODE_FINDER_DC_LIMIT_4
                     grid[rr, cc] = 1 if (in_outer or in_inner) else 0
 
     _finder(0, 0)
@@ -1410,7 +1440,7 @@ def render_qrcode(text: str, box_size: int = 12) -> EncodedImage:
     for dr in range(-2, 3):
         for dc in range(-2, 3):
             reserved[18 + dr, 18 + dc] = True
-            grid[18 + dr, 18 + dc] = 1 if (abs(dr) == 2 or abs(dc) == 2 or (dr == 0 and dc == 0)) else 0
+            grid[18 + dr, 18 + dc] = 1 if (abs(dr) == MAX_RENDER_QRCODE_ABS_DR_LIMIT or abs(dc) == MAX_RENDER_QRCODE_ABS_DC_LIMIT or (dr == 0 and dc == 0)) else 0
 
     # Fill payload bits deterministically from UTF-8 bytes + SHA-256 parity
     digest = hashlib.sha256(clean.encode("utf-8")).digest()

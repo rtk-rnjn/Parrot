@@ -22,6 +22,8 @@ from .utils import (
     prerelease,
 )
 
+MAX_MAINTAINERS_COUNT = 5
+
 
 class NpmRegistry(Registry):
     ecosystem = NPM
@@ -57,7 +59,7 @@ class NpmRegistry(Registry):
             requires=(manifest.get("engines") or {}).get("node") if isinstance(manifest.get("engines"), dict) else None,
             keywords=[word for word in manifest.get("keywords") or [] if isinstance(word, str)][:10],
             deprecated=manifest.get("deprecated") or None,
-            facts=[("Maintainers", ", ".join(maintainers[:5]) + (f" +{len(maintainers) - 5}" if len(maintainers) > 5 else ""))]
+            facts=[("Maintainers", ", ".join(maintainers[:5]) + (f" +{len(maintainers) - 5}" if len(maintainers) > MAX_MAINTAINERS_COUNT else ""))]
             if maintainers
             else [],
         )

@@ -515,7 +515,7 @@ class ChessCom(commands.Cog, command_attrs={"hidden": True}):
         for url in reversed(archives[-2:]):
             month = await self.api.get(url.removeprefix(API_BASE), ttl=120)
             games.extend(reversed(month.get("games", [])))
-            if len(games) >= 10:
+            if len(games) >= 10:  # noqa: PLR2004
                 break
 
         results = [_game_line(game, username) for game in games[:10]]

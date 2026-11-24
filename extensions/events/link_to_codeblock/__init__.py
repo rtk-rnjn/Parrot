@@ -82,7 +82,7 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
 
     def _track_reply(self, trigger_id: int, reply: discord.Message) -> None:
         self._replies.setdefault(trigger_id, []).append(reply)
-        while len(self._replies) > 200:
+        while len(self._replies) > 200:  # noqa: PLR2004
             self._replies.pop(next(iter(self._replies)))
 
     async def _fetch_response(self, url: str, response_format: str, **kwargs: Any) -> Any:

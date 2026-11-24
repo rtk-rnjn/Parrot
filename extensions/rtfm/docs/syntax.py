@@ -38,6 +38,8 @@ from .references import (
 )
 from .search import SiteIndex, tokens
 
+MIN_SHARES_WORD_LEN_N_LIMIT = 3
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
@@ -445,7 +447,7 @@ async def search_web(session: aiohttp.ClientSession, query: str, domains: tuple[
 def shares_word(query_words: set[str], name: str) -> bool:
     """`pointer` counts for "Pointers" and `records` for "Record Classes": one word must be a prefix of the other."""
     name_words = tokens(name).split()
-    return any(w == n or (min(len(w), len(n)) >= 3 and (n.startswith(w) or w.startswith(n))) for w in query_words for n in name_words)
+    return any(w == n or (min(len(w), len(n)) >= MIN_SHARES_WORD_LEN_N_LIMIT and (n.startswith(w) or w.startswith(n))) for w in query_words for n in name_words)
 
 
 def relevant(query: str, matches: list[tuple[str, Entry]]) -> bool:

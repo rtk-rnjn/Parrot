@@ -47,6 +47,28 @@ from .knowledge import (
     normalise_dunder,
 )
 
+MIN_EXTRACT_PEP_ABSTRACT_TOTAL_LIMIT = 700
+MAX_CLEAN_COUNT = 15
+MIN_EXTRACT_SPHINX_DOC_SECTION_IN_PARAGRAPHS_LIMIT = 900
+MAX_TUTORIAL_ITEMS_SCORE_LIMIT = 100
+MIN_RAW_COUNT = 60
+HTTP_NOT_FOUND_STATUS = 404
+HTTP_BAD_REQUEST_STATUS = 400
+MAX_PYTHON_PEP_VIEW_BEST_1_LIMIT = 55
+MAX_PYTHON_PYDOC_VIEW_FUZZY_1_LIMIT = 60
+MAX_PYTHON_STDLIB_VIEW_MATCH_1_LIMIT = 65
+MIN_PYTHON_ERROR_VIEW_MATCH_1_LIMIT = 65
+MAX_PYTHON_OPERATOR_VIEW_MATCH_1_LIMIT = 60
+MAX_PYTHON_GET_BUILTIN_INFO_MATCH_1_LIMIT = 65
+MAX_PYTHON_FETCH_COMPLEXITY_INFO_MATCH_1_LIMIT = 55
+MAX_PYTHON_RESOLVE_SPHINX_ENTRY_FUZZY_1_LIMIT = 60
+MAX_PYTHON_FIND_CURATED_MATCH_1_LIMIT = 60
+MAX_SELF_CVE_CACHE_COUNT = 64
+MAX_PYTHON_FETCH_GLOSSARY_ENTRY_MATCH_1_LIMIT = 60
+MAX_PYTHON_FETCH_KEYWORD_DETAILS_MATCH_1_LIMIT = 70
+MAX_PYTHON_GET_SPECIAL_METHODS_MATCH_1_LIMIT = 70
+MAX_CLEANED_COUNT = 80
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
 
@@ -285,7 +307,7 @@ def extract_pep_abstract(html: str) -> str | None:
             continue
         chunks.append(line)
         total += len(line)
-        if total >= 700:
+        if total >= MIN_EXTRACT_PEP_ABSTRACT_TOTAL_LIMIT:
             break
     if not chunks:
         return None
@@ -329,9 +351,9 @@ def extract_sphinx_doc_section(html: str, page_url: str, anchor: str | None) -> 
         if p.find_parent("div", class_="admonition"):
             continue
         clean = " ".join(p.get_text(" ").split()).strip()
-        if clean and len(clean) > 15:
+        if clean and len(clean) > MAX_CLEAN_COUNT:
             paragraphs.append(clean)
-        if sum(len(x) for x in paragraphs) >= 900:
+        if sum(len(x) for x in paragraphs) >= MIN_EXTRACT_SPHINX_DOC_SECTION_IN_PARAGRAPHS_LIMIT:
             break
 
     for dt in root.select("dl.py > dt[id]")[:25]:
@@ -344,7 +366,7 @@ def extract_sphinx_doc_section(html: str, page_url: str, anchor: str | None) -> 
 
 
 def tutorial_items(name: str, content: str, score: float | None = None) -> list[discord.ui.Item]:
-    subtitle = "Python Tutorial" + (f"{DOT}match {score:.0f}%" if score is not None and score < 100 else "")
+    subtitle = "Python Tutorial" + (f"{DOT}match {score:.0f}%" if score is not None and score < MAX_TUTORIAL_ITEMS_SCORE_LIMIT else "")
     return collect(
         header(f"Tutorial: `{name}`", subtitle),
         discord.ui.Separator(),
@@ -966,7 +988,7 @@ def pypi_license(info: dict[str, Any]) -> str | None:
     if isinstance(expression, str) and expression.strip():
         return safe(expression, 60)
     raw = info.get("license")
-    if isinstance(raw, str) and raw.strip() and len(raw) <= 60 and "\n" not in raw:
+    if isinstance(raw, str) and raw.strip() and len(raw) <= MIN_RAW_COUNT and "\n" not in raw:
         return safe(raw, 60)
     for classifier in info.get("classifiers") or []:
         if str(classifier).startswith("License :: "):
@@ -1206,9 +1228,9 @@ class Python(commands.Cog):
     async def fetch_bytes(self, url: str, *, missing: str = "Python documentation could not find that.") -> bytes:
         try:
             async with self.bot.http_session.get(url, timeout=REQUEST_TIMEOUT) as response:
-                if response.status == 404:
+                if response.status == HTTP_NOT_FOUND_STATUS:
                     raise PythonError(missing)
-                if response.status >= 400:
+                if response.status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"Upstream server returned HTTP {response.status}."
                     raise PythonError(msg)
                 return await response.read()
@@ -1220,9 +1242,9 @@ class Python(commands.Cog):
         headers = {"Accept": "application/json"}
         try:
             async with self.bot.http_session.get(url, headers=headers, timeout=REQUEST_TIMEOUT) as response:
-                if response.status == 404:
+                if response.status == HTTP_NOT_FOUND_STATUS:
                     raise PythonError(missing)
-                if response.status >= 400:
+                if response.status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"Upstream server returned HTTP {response.status}."
                     raise PythonError(msg)
                 return await response.json(content_type=None)
@@ -1421,7 +1443,7 @@ class Python(commands.Cog):
         else:
             title_map = {f"PEP {entry.get('number')}: {entry.get('title', '')}": key for key, entry in peps.items()}
             best = await asyncio.to_thread(extractOne, cleaned, list(title_map.keys()))
-            if best is None or best[1] < 55:
+            if best is None or best[1] < MAX_PYTHON_PEP_VIEW_BEST_1_LIMIT:
                 msg = f"Could not find a PEP matching {code(cleaned, 40)}. Give a number like `pep 8` or keywords like `pep type hints`."
                 raise PythonError(msg)
             pep_data = peps[title_map[best[0]]]
@@ -1507,7 +1529,7 @@ class Python(commands.Cog):
         if not matches:
             name_map = {e.name: e for e in api_entries}
             fuzzy = await asyncio.to_thread(extractOne, cleaned, list(name_map.keys()))
-            if fuzzy is None or fuzzy[1] < 60:
+            if fuzzy is None or fuzzy[1] < MAX_PYTHON_PYDOC_VIEW_FUZZY_1_LIMIT:
                 msg = f"No Python documentation entries matched {code(cleaned, 40)}."
                 raise PythonError(msg)
             matches = [name_map[fuzzy[0]]]
@@ -1564,7 +1586,7 @@ class Python(commands.Cog):
 
         if cleaned not in stdlib_names and cleaned not in STDLIB_CURATED:
             match = await asyncio.to_thread(extractOne, cleaned, sorted(stdlib_names))
-            if match is None or match[1] < 65:
+            if match is None or match[1] < MAX_PYTHON_STDLIB_VIEW_MATCH_1_LIMIT:
                 msg = f"{code(cleaned, 40)} is not a standard-library module in Python {platform.python_version()}."
                 raise PythonError(msg)
             cleaned = match[0]
@@ -1712,7 +1734,7 @@ class Python(commands.Cog):
         canonical = lookup.get(cleaned.casefold()) or lookup.get(cleaned.casefold() + "error")
         if canonical is None:
             match = await asyncio.to_thread(extractOne, cleaned, list(EXCEPTIONS_DB.keys()))
-            if match and match[1] >= 65:
+            if match and match[1] >= MIN_PYTHON_ERROR_VIEW_MATCH_1_LIMIT:
                 canonical = match[0]
 
         if canonical is not None:
@@ -1794,7 +1816,7 @@ class Python(commands.Cog):
                 for alias in entry.aliases:
                     alias_map[alias] = entry
             match = await asyncio.to_thread(extractOne, cleaned, list(alias_map.keys()))
-            if match is None or match[1] < 60:
+            if match is None or match[1] < MAX_PYTHON_OPERATOR_VIEW_MATCH_1_LIMIT:
                 symbols = " ".join(f"`{op.symbol}`" for op in OPERATORS_DB)
                 msg = f"Unknown operator {code(query, 30)}. Supported operators: {symbols}"
                 raise PythonError(msg)
@@ -1837,7 +1859,7 @@ class Python(commands.Cog):
                 msg = f"`{cleaned}` is a Python reserved keyword, not a built-in object. Use `syntax python {cleaned}` instead."
                 raise PythonError(msg)
             match = await asyncio.to_thread(extractOne, cleaned, list(public_builtins.keys()))
-            if match is None or match[1] < 65:
+            if match is None or match[1] < MAX_PYTHON_GET_BUILTIN_INFO_MATCH_1_LIMIT:
                 msg = f"{code(cleaned, 40)} is not a Python built-in function or type."
                 raise PythonError(msg)
             canonical = match[0]
@@ -1923,7 +1945,7 @@ class Python(commands.Cog):
                 for alias in entry.aliases:
                     alias_map[alias] = entry
             match = await asyncio.to_thread(extractOne, cleaned, list(alias_map.keys()))
-            if match is None or match[1] < 55:
+            if match is None or match[1] < MAX_PYTHON_FETCH_COMPLEXITY_INFO_MATCH_1_LIMIT:
                 topics = ", ".join(f"`{c.key}`" for c in COMPLEXITY_DB)
                 msg = f"No complexity entry matched {code(query, 30)}. Available topics: {topics}."
                 raise PythonError(msg)
@@ -1982,7 +2004,7 @@ class Python(commands.Cog):
             return matches[0]
         names = {e.name: e for e in inventory if e.domain_role.startswith("py:")}
         fuzzy = await asyncio.to_thread(extractOne, query, list(names))
-        if fuzzy is None or fuzzy[1] < 60:
+        if fuzzy is None or fuzzy[1] < MAX_PYTHON_RESOLVE_SPHINX_ENTRY_FUZZY_1_LIMIT:
             msg = f"No Python documentation entries matched {code(query, 40)}."
             raise PythonError(msg)
         return names[fuzzy[0]]
@@ -1993,7 +2015,7 @@ class Python(commands.Cog):
         item = names.get(cleaned)
         if item is None:
             match = await asyncio.to_thread(extractOne, cleaned, list(names))
-            if match is None or match[1] < 60:
+            if match is None or match[1] < MAX_PYTHON_FIND_CURATED_MATCH_1_LIMIT:
                 msg = f"No {noun} matched {code(query, 40)}. Available: {pack([i.key for i in items], 500)}"
                 raise PythonError(msg)
             item = names[match[0]]
@@ -2002,7 +2024,7 @@ class Python(commands.Cog):
     async def url_exists(self, url: str) -> bool:
         try:
             async with self.bot.http_session.head(url, timeout=REQUEST_TIMEOUT, allow_redirects=True) as response:
-                return response.status < 400
+                return response.status < HTTP_BAD_REQUEST_STATUS
         except TimeoutError, aiohttp.ClientError:
             return False
 
@@ -2026,10 +2048,10 @@ class Python(commands.Cog):
                 if response.status in {403, 429}:
                     msg = "NVD is rate-limiting requests right now. Try again in a minute."
                     raise PythonError(msg)
-                if response.status == 404:
+                if response.status == HTTP_NOT_FOUND_STATUS:
                     msg = "NVD has no data for that query, possibly because it doesn't know that exact Python version."
                     raise PythonError(msg)
-                if response.status >= 400:
+                if response.status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"NVD returned HTTP {response.status}."
                     raise PythonError(msg)
                 data = await response.json(content_type=None)
@@ -2046,7 +2068,7 @@ class Python(commands.Cog):
         if cached and time.monotonic() - cached[0] < CACHE_TTL:
             return cached[1]
         records = await asyncio.to_thread(parse_nvd, await self.get_nvd_vulnerabilities(params))
-        if len(self._cve_cache) >= 64:
+        if len(self._cve_cache) >= MAX_SELF_CVE_CACHE_COUNT:
             self._cve_cache.pop(min(self._cve_cache, key=lambda k: self._cve_cache[k][0]))
         self._cve_cache[key] = (time.monotonic(), records)
         return records
@@ -2072,7 +2094,7 @@ class Python(commands.Cog):
         entry = terms.get(cleaned)
         if entry is None:
             match = await asyncio.to_thread(extractOne, cleaned, list(terms))
-            if match is None or match[1] < 60:
+            if match is None or match[1] < MAX_PYTHON_FETCH_GLOSSARY_ENTRY_MATCH_1_LIMIT:
                 msg = f"No glossary term matched {code(query, 40)}."
                 raise PythonError(msg)
             entry = terms[match[0]]
@@ -2108,7 +2130,7 @@ class Python(commands.Cog):
         name = {k.casefold(): k for k in known}.get(cleaned.casefold())
         if name is None:
             match = await asyncio.to_thread(extractOne, cleaned, sorted(known))
-            if match is None or match[1] < 70:
+            if match is None or match[1] < MAX_PYTHON_FETCH_KEYWORD_DETAILS_MATCH_1_LIMIT:
                 msg = f"{code(cleaned, 30)} is not a Python keyword. Keywords: {pack(sorted(hard), 700)}"
                 raise PythonError(msg)
             name = match[0]
@@ -2147,7 +2169,7 @@ class Python(commands.Cog):
         info = lookup_dunder(query)
         if info is None:
             match = await asyncio.to_thread(extractOne, normalise_dunder(query), list(DUNDERS_DB))
-            if match is None or match[1] < 70:
+            if match is None or match[1] < MAX_PYTHON_GET_SPECIAL_METHODS_MATCH_1_LIMIT:
                 msg = f"No special method matched {code(query, 40)}. Try `__init__`, `__getitem__`, `__enter__`, `__add__`..."
                 raise PythonError(msg)
             info = DUNDERS_DB[match[0]]
@@ -2434,7 +2456,7 @@ class Python(commands.Cog):
 
     async def retrieve_source_details(self, ctx: commands.Context[Bot], raw: str) -> PythonView:
         cleaned = raw.strip().strip("`").removesuffix("()")
-        if len(cleaned) > 80 or not DOTTED_NAME_PATTERN.match(cleaned):
+        if len(cleaned) > MAX_CLEANED_COUNT or not DOTTED_NAME_PATTERN.match(cleaned):
             msg = "Give a dotted name like `asyncio.run` or `pathlib.Path.glob`."
             raise PythonError(msg)
         info = await asyncio.to_thread(inspect_source, cleaned)

@@ -31,6 +31,10 @@ ACE = 14
 STRAIGHT_FLUSH, QUADS, FULL_HOUSE, FLUSH, STRAIGHT, TRIPS, TWO_PAIR, PAIR = 8, 7, 6, 5, 4, 3, 2, 1
 HEADS_UP = 2
 FLOP = 3
+FIVE_CARD_HAND_SIZE = 5
+FOUR_OF_A_KIND_COUNT = 4
+THREE_OF_A_KIND_COUNT = 3
+PAIR_RANK_COUNT = 2
 
 
 def _straight_high(ranks: set[int]) -> int | None:
@@ -43,7 +47,7 @@ def evaluate(cards: Sequence[str]) -> tuple[int, ...]:  # noqa: PLR0911
     """Score any 2 to 7 cards as the best five-card poker hand; bigger tuples beat smaller ones."""
     ranks = sorted((rank_of(c) for c in cards), reverse=True)
     suits = Counter(suit_of(c) for c in cards)
-    flush_suit = next((s for s, n in suits.items() if n >= 5), None)
+    flush_suit = next((s for s, n in suits.items() if n >= FIVE_CARD_HAND_SIZE), None)
     flush_ranks = sorted((rank_of(c) for c in cards if suit_of(c) == flush_suit), reverse=True) if flush_suit else []
 
     if flush_ranks:
@@ -53,21 +57,21 @@ def evaluate(cards: Sequence[str]) -> tuple[int, ...]:  # noqa: PLR0911
 
     groups = sorted(Counter(ranks).items(), key=lambda item: (item[1], item[0]), reverse=True)
     (top, count), *rest = groups
-    if count == 4:
+    if count == FOUR_OF_A_KIND_COUNT:
         return (QUADS, top, max(r for r in ranks if r != top))
-    if count == 3 and rest and rest[0][1] >= 2:
+    if count == THREE_OF_A_KIND_COUNT and rest and rest[0][1] >= PAIR_RANK_COUNT:
         return (FULL_HOUSE, top, rest[0][0])
     if flush_ranks:
-        return (FLUSH, *flush_ranks[:5])
+        return (FLUSH, *flush_ranks[:FIVE_CARD_HAND_SIZE])
     high = _straight_high(set(ranks))
     if high is not None:
         return (STRAIGHT, high)
-    if count == 3:
+    if count == THREE_OF_A_KIND_COUNT:
         return (TRIPS, top, *[r for r in ranks if r != top][:2])
-    if count == 2 and rest and rest[0][1] == 2:
+    if count == PAIR_RANK_COUNT and rest and rest[0][1] == PAIR_RANK_COUNT:
         second = rest[0][0]
         return (TWO_PAIR, top, second, max(r for r in ranks if r not in (top, second)))
-    if count == 2:
+    if count == PAIR_RANK_COUNT:
         return (PAIR, top, *[r for r in ranks if r != top][:3])
     return (0, *ranks[:5])
 

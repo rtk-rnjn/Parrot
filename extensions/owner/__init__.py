@@ -26,6 +26,10 @@ lazy from matplotlib.figure import Figure
 
 from .panel import OwnerPanel
 
+MAX_NAMES_COUNT = 4
+MIN_PICKED_COUNT = 2
+MIN_ACTIVE_COUNT = 3
+
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
@@ -155,9 +159,9 @@ def _plot_socket(ax: Axes, samples: list[Sample], top_n: int, events: list[str] 
 
     if names:
         # headroom so the legend sits above the lines instead of on top of them
-        rows = -(-len(names) // 2) if len(names) > 4 else len(names)
+        rows = -(-len(names) // 2) if len(names) > MAX_NAMES_COUNT else len(names)
         ax.set_ylim(0, ceiling * (1.12 + 0.045 * rows))
-        _legend(ax, loc="upper left", ncol=2 if len(names) > 4 else 1)
+        _legend(ax, loc="upper left", ncol=2 if len(names) > MAX_NAMES_COUNT else 1)
 
 
 def _event_summary(samples: list[Sample], names: list[str]) -> str:
@@ -374,7 +378,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         cutoff = datetime.now(UTC) - timedelta(seconds=seconds)
         picked = [s for s in self.samples if s.ts >= cutoff]
-        if len(picked) < 2:
+        if len(picked) < MIN_PICKED_COUNT:
             msg = "Not enough samples yet, give it a couple of minutes."
             raise commands.BadArgument(msg)
         return picked, text
@@ -514,7 +518,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             active = sorted(active, key=totals.__getitem__, reverse=True)[: len(PALETTE)]
             notes.append(f"Showing the {len(PALETTE)} busiest matches.")
 
-        title = f"{', '.join(active) if len(active) <= 3 else f'{len(active)} events'}, last {label} (UTC)"
+        title = f"{', '.join(active) if len(active) <= MIN_ACTIVE_COUNT else f'{len(active)} events'}, last {label} (UTC)"
         async with ctx.typing():
             file = await self._render(partial(render_socket_chart, events=active), samples, title)
 

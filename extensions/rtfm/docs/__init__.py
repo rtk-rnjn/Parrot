@@ -33,6 +33,9 @@ from .references import PAGE_SITES, DetailInfo, Entries, Entry, detail_page, fet
 from .search import Index, LiveIndex, SiteIndex
 from .sites import SITES, DocSite
 
+MIN_ONE_LINE_COUNT = 90
+MIN_PARTS_COUNT = 2
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
@@ -372,7 +375,7 @@ def underlying(obj: object) -> object:
 
 def format_signature(prefix: str, name: str, sig: inspect.Signature) -> str:
     one_line = f"{prefix}{name}{sig}"
-    if len(one_line) <= 90 or not sig.parameters:
+    if len(one_line) <= MIN_ONE_LINE_COUNT or not sig.parameters:
         return one_line
 
     params = list(sig.parameters.values())
@@ -505,7 +508,7 @@ def render_sections(raw: str | None) -> dict[str, str]:
 
 def _attribute_fallback(site: str, parts: list[str], role: str | None, version: str | None) -> DetailInfo | None:
     """Instance attributes (discord.py's `Client.user`) only exist in the class docstring."""
-    if len(parts) < 2:
+    if len(parts) < MIN_PARTS_COUNT:
         return None
     owner = resolve(site, parts[:-1])
     if owner is _MISSING or not (inspect.isclass(owner) or inspect.ismodule(owner)):

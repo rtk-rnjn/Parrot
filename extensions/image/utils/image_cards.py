@@ -20,6 +20,10 @@ from .image_utils import (
 )
 from .image_validators import Color, clamp_int, validate_choice
 
+MIN_RENDER_SHIP_PCT_LIMIT = 50
+MIN_RENDER_SHIP_FILL_W_LIMIT = 8
+MIN_RENDER_CARD_TEMPLATE_7_11_LIMIT = 3
+
 CARD_STYLES = ("wanted", "idcard", "trading", "polaroid", "magazine")
 
 
@@ -43,7 +47,7 @@ def render_ship(
     bg.alpha_composite(av_a, (56, 46))
     bg.alpha_composite(av_b, (760 - 56 - 168, 46))
     cx, cy = 380, 125
-    heart_col = (255, 75, 125, 255) if pct >= 50 else (180, 110, 150, 255)
+    heart_col = (255, 75, 125, 255) if pct >= MIN_RENDER_SHIP_PCT_LIMIT else (180, 110, 150, 255)
     draw.ellipse((cx - 38, cy - 34, cx + 4, cy + 8), fill=heart_col)
     draw.ellipse((cx - 4, cy - 34, cx + 38, cy + 8), fill=heart_col)
     draw.polygon([(cx - 40, cy - 8), (cx + 40, cy - 8), (cx, cy + 44)], fill=heart_col)
@@ -53,7 +57,7 @@ def render_ship(
     bx0, by0, bx1, by1 = 160, 245, 600, 273
     draw.rounded_rectangle((bx0, by0, bx1, by1), radius=14, fill=(28, 12, 38, 220), outline=(255, 160, 195, 180), width=2)
     fill_w = int((bx1 - bx0 - 6) * (pct / 100.0))
-    if fill_w > 8:
+    if fill_w > MIN_RENDER_SHIP_FILL_W_LIMIT:
         draw.rounded_rectangle((bx0 + 3, by0 + 3, bx0 + 3 + fill_w, by1 - 3), radius=11, fill=(255, 85, 140, 255))
     draw.text((140, 228), name_a[:18], fill=(245, 230, 245, 255), font=font_sm, anchor="mm")
     draw.text((620, 228), name_b[:18], fill=(245, 230, 245, 255), font=font_sm, anchor="mm")
@@ -154,7 +158,7 @@ def render_card_template(  # noqa: PLR0915
         draw.text((275, 185), f"STATUS: {subtitle[:26]}", fill=(60, 72, 95, 255), font=load_font(18, bold=True))
         draw.text((275, 230), "CLEARANCE: LEVEL 5", fill=(28, 64, 148, 255), font=load_font(18, bold=True))
         for bx in range(275, 620, 6):
-            if (bx * 7) % 11 > 3:
+            if (bx * 7) % 11 > MIN_RENDER_CARD_TEMPLATE_7_11_LIMIT:
                 draw.rectangle((bx, 290, bx + 3, 350), fill=(25, 25, 30, 255))
         return encode_image(canvas)
     if style == "trading":

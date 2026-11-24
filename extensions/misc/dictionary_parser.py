@@ -5,6 +5,13 @@ from dataclasses import dataclass, field
 
 import discord
 
+MAX_EXPANDED_PARTS_COUNT = 2
+MAX_WORD_PART_SPLIT_COUNT = 2
+MAX_VALID_SUBS_COUNT = 2
+MAX_EMBED_FIELDS_COUNT = 24
+MIN_EMBED_FIELDS_COUNT = 25
+MAX_DERIV_VALUE_COUNT = 1024
+
 # Maps canonical lowercase POS tokens to (Full Human-Readable Label, Emoji Icon, Hex Color)
 POS_CANONICAL_MAP: dict[str, tuple[str, str, int]] = {
     # Nouns
@@ -309,7 +316,7 @@ def expand_pos_tag(raw_pos: str) -> tuple[str, str, int]:
                 primary_icon = icon
                 primary_color = color
         connector = " or " if " or " in cleaned else " & "
-        if len(expanded_parts) > 2:
+        if len(expanded_parts) > MAX_EXPANDED_PARTS_COUNT:
             combined = ", ".join(expanded_parts[:-1]) + f", {connector.strip()} " + expanded_parts[-1]
         else:
             combined = connector.join(expanded_parts)
@@ -476,7 +483,7 @@ def _extract_trailing_derivatives(body: str) -> tuple[str, list[tuple[str, str]]
             break
         word_part = found_derivative.group(1).strip()
         pos_part = found_derivative.group(2).strip()
-        if len(word_part.split()) > 2:
+        if len(word_part.split()) > MAX_WORD_PART_SPLIT_COUNT:
             break
         full_pos, _, _ = expand_pos_tag(pos_part)
         short_pos = re.sub(r"\s*\([^)]*\)", "", full_pos)
@@ -530,7 +537,7 @@ def _parse_senses(body: str) -> list[SenseItem]:  # noqa: PLR0912
                 valid_subs.append(sm)
                 expected_ord += 1
 
-        if len(valid_subs) >= 2:
+        if len(valid_subs) >= MAX_VALID_SUBS_COUNT:
             lead_in = chunk[: valid_subs[0].start()].strip()
             subs: list[tuple[str, str]] = []
             for s_idx, sm in enumerate(valid_subs):
@@ -756,16 +763,16 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
         base_field_name = f"{block.icon} {block.expanded_pos}"
 
         for idx, chunk in enumerate(chunks):
-            if len(embed.fields) >= 24:  # Leave 1 slot for derivatives if needed
+            if len(embed.fields) >= MAX_EMBED_FIELDS_COUNT:  # Leave 1 slot for derivatives if needed
                 break
             field_name = base_field_name if idx == 0 else f"{block.icon} {block.expanded_pos} (Part {idx + 1})"
             embed.add_field(name=field_name[:256], value=chunk, inline=False)
 
     # 4. Derived Words & Phrases Field (if present)
-    if all_derivatives and len(embed.fields) < 25:
+    if all_derivatives and len(embed.fields) < MIN_EMBED_FIELDS_COUNT:
         deriv_items = [f"**{word}** *({pos})*" for word, pos in all_derivatives]
         deriv_value = "  \N{BULLET}  ".join(deriv_items)
-        if len(deriv_value) > 1024:
+        if len(deriv_value) > MAX_DERIV_VALUE_COUNT:
             deriv_value = deriv_value[:1021] + "..."
         embed.add_field(
             name="\N{HERB} Derived Words & Related Forms",

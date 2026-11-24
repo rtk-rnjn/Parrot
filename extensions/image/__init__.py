@@ -46,6 +46,8 @@ from .utils.image_utils import (
 )
 from .utils.image_validators import MAX_DOWNLOAD_BYTES, ImageValidationError, clamp_float, clamp_int, inspect_image, parse_color_list, parse_hex_color
 
+MAX_IMAGECOG_SURPRISE_CMD_RNG_RANDOM_THRESHOLD = 0.35
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -2169,7 +2171,7 @@ class ImageCog(ImageCogBase, commands.Cog, name="Image"):
     ) -> None:
         """Apply a random effect or run a random procedural generator with a fresh seed."""
         rng = random.Random()
-        pick_gen = kind == "generator" or (kind == "any" and rng.random() < 0.35)
+        pick_gen = kind == "generator" or (kind == "any" and rng.random() < MAX_IMAGECOG_SURPRISE_CMD_RNG_RANDOM_THRESHOLD)
         if pick_gen:
             gname = rng.choice(list(GENERATORS.keys()))
             await self._run_generator(ctx, gname, f"Surprise Generator: {gname.title()}", {"seed": secrets.randbelow(2**31)}, {"Generator": gname})

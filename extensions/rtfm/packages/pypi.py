@@ -28,6 +28,8 @@ from .utils import (
     version_key,
 )
 
+MIN_LICENCE_COUNT = 40
+
 
 class PyPIRegistry(Registry):
     ecosystem = PYPI
@@ -51,7 +53,7 @@ class PyPIRegistry(Registry):
             if classifier.startswith("License :: "):
                 return classifier.rsplit(" :: ", 1)[-1]
         licence = (info.get("license") or "").strip()
-        return licence if licence and len(licence) <= 40 and "\n" not in licence else None
+        return licence if licence and len(licence) <= MIN_LICENCE_COUNT and "\n" not in licence else None
 
     async def info(self, name: str) -> PackageInfo:
         data, stats = await asyncio.gather(

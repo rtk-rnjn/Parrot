@@ -25,6 +25,8 @@ from extensions.supercell.render import font
 
 from .blackjack_table import BACK, GOLD, KINDS, _felt, _sprite, card_store, card_url
 
+MAX_AFK_TURNS = 2
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
@@ -104,7 +106,7 @@ class Seat:
 
     @property
     def is_bot(self) -> bool:
-        return self.user is None or self.afk >= 2
+        return self.user is None or self.afk >= MAX_AFK_TURNS
 
     @property
     def tag(self) -> str:

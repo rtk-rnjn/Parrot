@@ -18,6 +18,8 @@ from discord.ext import commands
 from core import FutureTime
 from core.utils import PaginationView
 
+MAX_ENTRY_TARGET_IDS_COUNT = 3
+
 if TYPE_CHECKING:
     from core import Bot
     from core.utils.database.models import ModAction as ModActionDict
@@ -442,7 +444,7 @@ class Mod(commands.Cog, name="Moderation"):
         emoji, title, _ = _ACTION_META.get(entry.action, ("\N{SHIELD}", entry.action.title(), discord.Colour.default()))
         moderator = f"<@{entry.moderator_id}>" if entry.moderator_id else "System"
         targets = ", ".join(f"<@{target_id}>" for target_id in entry.target_ids[:3])
-        if len(entry.target_ids) > 3:
+        if len(entry.target_ids) > MAX_ENTRY_TARGET_IDS_COUNT:
             targets += f" +{len(entry.target_ids) - 3}"
         reason = _truncate(entry.reason or "No reason provided", 60)
         details = " \N{BULLET} ".join(part for part in (targets, f"by {moderator}", reason) if part)

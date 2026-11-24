@@ -32,6 +32,21 @@ POKEAPI_BASE_URL: Final[str] = "https://pokeapi.co/api/v2"
 MAX_CACHE_ENTRIES: Final[int] = 256
 WTP_TIMEOUT_SECONDS: Final[float] = 45.0
 POKEDEX_TIMEOUT_SECONDS: Final[float] = 300.0
+POKEMON_NOT_FOUND_STATUS: Final[int] = 404
+HTTP_OK_STATUS: Final[int] = 200
+MAX_IMAGE_CACHE_ENTRIES: Final[int] = 128
+MALE_GENDER_CODE: Final[int] = 2
+INCHES_PER_FOOT: Final[int] = 12
+QUADRUPLE_TYPE_DAMAGE: Final[float] = 4.0
+DOUBLE_TYPE_DAMAGE: Final[float] = 2.0
+HALF_TYPE_DAMAGE: Final[float] = 0.5
+QUARTER_TYPE_DAMAGE: Final[float] = 0.25
+MAX_VARIANT_CHOICES: Final[int] = 25
+CURRENT_POKEDEX_LIMIT: Final[int] = 1025
+MAX_GUESS_HINTS: Final[int] = 4
+MIN_GUESS_LENGTH: Final[int] = 3
+MIN_ACCEPTED_ANSWER_LENGTH: Final[int] = 6
+FUZZY_ANSWER_MATCH_SCORE: Final[int] = 88
 
 TYPE_COLOURS: Final[dict[str, int]] = {
     "normal": 0xA8A77A,
@@ -323,7 +338,7 @@ class PokemonDataService:
         session = self.bot.http_session
         try:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=12)) as response:
-                if response.status == 404:
+                if response.status == POKEMON_NOT_FOUND_STATUS:
                     return None
                 response.raise_for_status()
                 return await response.json(loads=discord.utils._from_json)
@@ -339,7 +354,7 @@ class PokemonDataService:
         session = self.bot.http_session
         try:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=12)) as response:
-                if response.status != 200:
+                if response.status != HTTP_OK_STATUS:
                     return None
                 data = await response.read()
         except (aiohttp.ClientError, TimeoutError) as exc:
@@ -347,7 +362,7 @@ class PokemonDataService:
             return None
 
         self._image_cache[url] = data
-        if len(self._image_cache) > 128:
+        if len(self._image_cache) > MAX_IMAGE_CACHE_ENTRIES:
             self._image_cache.popitem(last=False)
         return data
 
@@ -498,7 +513,7 @@ class PokemonDataService:
             parts.append(f"at {_clean_name(d['location']['name'])}")
         if d.get("gender") == 1:
             parts.append("(\N{FEMALE SIGN} only)")
-        elif d.get("gender") == 2:
+        elif d.get("gender") == MALE_GENDER_CODE:
             parts.append("(\N{MALE SIGN} only)")
         if d.get("needs_overworld_rain"):
             parts.append("(Rain)")
@@ -910,7 +925,7 @@ class PokedexLayoutView(BaseLayoutView):
         feet_total = e.height_m * 39.3701
         feet = int(feet_total // 12)
         inches = round(feet_total % 12)
-        if inches == 12:
+        if inches == INCHES_PER_FOOT:
             feet += 1
             inches = 0
         lbs = e.weight_kg * 2.20462
@@ -944,17 +959,17 @@ class PokedexLayoutView(BaseLayoutView):
         stat_lines.append(f"**Base Stat Total (BST):** `{e.bst}`")
 
         # Group defensive multipliers
-        quad_weak = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (4\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m >= 4.0]
-        weak = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (2\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m == 2.0]
+        quad_weak = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (4\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m >= QUADRUPLE_TYPE_DAMAGE]
+        weak = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (2\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m == DOUBLE_TYPE_DAMAGE]
         resist = [
             f"{TYPE_EMOJIS.get(t, '')} {t.title()} (\N{VULGAR FRACTION ONE HALF}\N{MULTIPLICATION SIGN})"
             for t, m in e.type_defenses.items()
-            if m == 0.5
+            if m == HALF_TYPE_DAMAGE
         ]
         quad_resist = [
             f"{TYPE_EMOJIS.get(t, '')} {t.title()} (\N{VULGAR FRACTION ONE QUARTER}\N{MULTIPLICATION SIGN})"
             for t, m in e.type_defenses.items()
-            if m == 0.25
+            if m == QUARTER_TYPE_DAMAGE
         ]
         immune = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (0\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m == 0.0]
 
@@ -1042,7 +1057,7 @@ class PokedexLayoutView(BaseLayoutView):
                 )
 
         for var in e.varieties:
-            if var.slug not in seen_slugs and len(options) < 25:
+            if var.slug not in seen_slugs and len(options) < MAX_VARIANT_CHOICES:
                 seen_slugs.add(var.slug)
                 options.append(
                     discord.SelectOption(
@@ -1122,7 +1137,7 @@ class PokedexLayoutView(BaseLayoutView):
             label=f"#{e.species_id + 1:04d}",
             emoji="\N{BLACK RIGHT-POINTING TRIANGLE}\N{VARIATION SELECTOR-16}",
             style=discord.ButtonStyle.secondary,
-            disabled=(e.species_id >= 1025),
+            disabled=(e.species_id >= CURRENT_POKEDEX_LIMIT),
         )
 
         async def _go_prev(interaction: discord.Interaction) -> None:
@@ -1317,7 +1332,7 @@ class WhosThatPokemonLayoutView(BaseLayoutView):
             label=f"Get Hint ({self.hints_revealed}/4)",
             emoji="\N{ELECTRIC LIGHT BULB}",
             style=discord.ButtonStyle.primary,
-            disabled=(self.hints_revealed >= 4),
+            disabled=(self.hints_revealed >= MAX_GUESS_HINTS),
         )
         give_up_btn = discord.ui.Button[Self](
             label="Give Up",
@@ -1329,7 +1344,7 @@ class WhosThatPokemonLayoutView(BaseLayoutView):
             if self.settled:
                 await interaction.response.defer()
                 return
-            if self.hints_revealed < 4:
+            if self.hints_revealed < MAX_GUESS_HINTS:
                 self.hints_revealed += 1
             self.rebuild_active_layout()
             await interaction.response.edit_message(view=self)
@@ -1621,12 +1636,15 @@ class Pokemon(commands.Cog, command_attrs={"hidden": True}):
                 if msg.channel.id != ctx.channel.id or msg.author.bot:
                     return False
                 candidate = _normalize_guess(msg.content)
-                if not candidate or len(candidate) < 3:
+                if not candidate or len(candidate) < MIN_GUESS_LENGTH:
                     return False
                 if candidate in accepted:
                     return True
                 # Allow minor 1-character typo on longer Pokémon names via RapidFuzz ratio
-                return any(len(target) >= 6 and fuzz.ratio(candidate, target) >= 88 for target in accepted)
+                return any(
+                    len(target) >= MIN_ACCEPTED_ANSWER_LENGTH and fuzz.ratio(candidate, target) >= FUZZY_ANSWER_MATCH_SCORE
+                    for target in accepted
+                )
 
             while not view.settled:
                 remaining = WTP_TIMEOUT_SECONDS - (time.monotonic() - view.started_at)

@@ -15,6 +15,8 @@ from .api import CLASH_ROYALE, NotFound, Tag, enc, parse_time
 from .base import Page
 from .base import Supercell as SupercellCog
 
+MIN_CLASHROYALE_BATTLES_INDEX_LIMIT = 10
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -319,7 +321,7 @@ class ClashRoyale(SupercellCog, command_attrs={"hidden": True}):
             else:
                 draws, icon = draws + 1, "\N{MEDIUM WHITE CIRCLE}"
 
-            if index >= 10:
+            if index >= MIN_CLASHROYALE_BATTLES_INDEX_LIMIT:
                 continue
 
             names = human_join([safe_text(o.get("name", "?"), 20) for o in opponents], final="&")

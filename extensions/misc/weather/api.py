@@ -13,6 +13,22 @@ from typing import TYPE_CHECKING, Any
 import aiohttp
 from discord.ext import commands
 
+MIN_SYNTHESIZE_MINUTELY_NEXT_POP_THRESHOLD = 0.35
+MAX_SYNTHESIZE_MINUTELY_I_LIMIT = 15
+MIN_AGGREGATE_MAX_POP_THRESHOLD = 0.15
+MIN_BUILD_FALLBACK_OVERVIEW_OR_0_THRESHOLD = 0.35
+MAX_TZ_STR_COUNT = 6
+MIN_FROM_DAY_SUMMARY_PRECIP_LIMIT = 10
+MIN_FROM_DAY_SUMMARY_PRECIP_THRESHOLD = 0.5
+MIN_FROM_DAY_SUMMARY_CLOUDS_LIMIT = 85
+MIN_FROM_DAY_SUMMARY_CLOUDS_LIMIT_50 = 50
+MIN_FROM_DAY_SUMMARY_CLOUDS_LIMIT_20 = 20
+HTTP_OK_STATUS = 200
+MAX_WEATHERCLIENT_RESOLVE_LAT_LIMIT = 90
+MAX_WEATHERCLIENT_RESOLVE_LON_LIMIT = 180
+MIN_VALID_LATITUDE = -90
+MIN_VALID_LONGITUDE = -180
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
@@ -251,7 +267,7 @@ def _synthesize_minutely(now: dict[str, Any], hourly: list[dict[str, Any]]) -> l
         s1 = float((first.get("snow") or {}).get("1h") or 0.0)
         next_rate = r1 + s1
         next_pop = float(first.get("pop") or 0.0)
-        if next_rate == 0.0 and next_pop >= 0.35:
+        if next_rate == 0.0 and next_pop >= MIN_SYNTHESIZE_MINUTELY_NEXT_POP_THRESHOLD:
             next_rate = round(next_pop * 2.2, 2)
 
     if rate_0 == 0.0 and next_rate == 0.0:
@@ -262,7 +278,7 @@ def _synthesize_minutely(now: dict[str, Any], hourly: list[dict[str, Any]]) -> l
         t = i / 59
         smooth_t = (1 - math.cos(math.pi * t)) / 2
         val = rate_0 * (1 - smooth_t) + next_rate * smooth_t
-        if rate_0 == 0.0 and next_pop >= 0.35 and i < 15:
+        if rate_0 == 0.0 and next_pop >= MIN_SYNTHESIZE_MINUTELY_NEXT_POP_THRESHOLD and i < MAX_SYNTHESIZE_MINUTELY_I_LIMIT:
             val = 0.0
         points.append({"dt": base_dt + i * 60, "precipitation": max(0.0, round(val, 2))})
     return points
@@ -298,7 +314,7 @@ def _aggregate(hourly: list[dict[str, Any]], offset: int, current: dict[str, Any
             f"{desc} with a high of {units.temp(max_t)} and low of {units.temp(min_t)}.",
             f"Average humidity {mean_humidity:.0f}% and winds around {units.speed(mean_wind)}.",
         ]
-        if max_pop >= 0.15:
+        if max_pop >= MIN_AGGREGATE_MAX_POP_THRESHOLD:
             summary_parts.append(f"Up to {max_pop * 100:.0f}% chance of precipitation.")
 
         result.append(
@@ -431,7 +447,7 @@ def build_fallback_overview(
         upcoming = daily[1:5]
         hi_week = max(d["temp"]["max"] for d in upcoming)
         lo_week = min(d["temp"]["min"] for d in upcoming)
-        wet_days = [datetime.fromtimestamp(d["dt"] + offset, UTC).strftime("%A") for d in upcoming if (d.get("pop") or 0) >= 0.35]
+        wet_days = [datetime.fromtimestamp(d["dt"] + offset, UTC).strftime("%A") for d in upcoming if (d.get("pop") or 0) >= MIN_BUILD_FALLBACK_OVERVIEW_OR_0_THRESHOLD]
         rain_clause = f"notable rain chances on **{', '.join(wet_days)}**" if wet_days else "mostly dry conditions across the upcoming days"
         sentences.append(
             f"Looking ahead over the next {len(upcoming)} days, temperatures will span **{units.temp(lo_week)}** to **{units.temp(hi_week)}** with {rain_clause}."
@@ -461,7 +477,7 @@ def from_day_summary(payload: dict[str, Any], units: Units, offset: int = 0) -> 
     date_str = payload.get("date", "1970-01-01")
     dt_obj = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=UTC)
     tz_str = payload.get("tz") or ""
-    if tz_str and (len(tz_str) == 6 and tz_str[0] in "+-"):
+    if tz_str and (len(tz_str) == MAX_TZ_STR_COUNT and tz_str[0] in "+-"):
         sign = -1 if tz_str[0] == "-" else 1
         offset = sign * (int(tz_str[1:3]) * 3600 + int(tz_str[4:6]) * 60)
 
@@ -482,15 +498,15 @@ def from_day_summary(payload: dict[str, Any], units: Units, offset: int = 0) -> 
     eve_temp = float(temps.get("evening", day_temp))
     night_temp = float(temps.get("night", min_temp))
 
-    if precip >= 10:
+    if precip >= MIN_FROM_DAY_SUMMARY_PRECIP_LIMIT:
         weather = [{"id": 502, "main": "Rain", "description": "heavy intensity rain", "icon": "10d"}]
-    elif precip >= 0.5:
+    elif precip >= MIN_FROM_DAY_SUMMARY_PRECIP_THRESHOLD:
         weather = [{"id": 500, "main": "Rain", "description": "light rain", "icon": "10d"}]
-    elif clouds >= 85:
+    elif clouds >= MIN_FROM_DAY_SUMMARY_CLOUDS_LIMIT:
         weather = [{"id": 804, "main": "Clouds", "description": "overcast clouds", "icon": "04d"}]
-    elif clouds >= 50:
+    elif clouds >= MIN_FROM_DAY_SUMMARY_CLOUDS_LIMIT_50:
         weather = [{"id": 803, "main": "Clouds", "description": "broken clouds", "icon": "03d"}]
-    elif clouds >= 20:
+    elif clouds >= MIN_FROM_DAY_SUMMARY_CLOUDS_LIMIT_20:
         weather = [{"id": 801, "main": "Clouds", "description": "few clouds", "icon": "02d"}]
     else:
         weather = [{"id": 800, "main": "Clear", "description": "clear sky", "icon": "01d"}]
@@ -571,7 +587,7 @@ class WeatherClient:
             message = "OpenWeather did not respond. Try again shortly."
             raise Unavailable(message) from error
 
-        if status == 200:
+        if status == HTTP_OK_STATUS:
             return payload
 
         detail = payload.get("message", "") if isinstance(payload, dict) else ""
@@ -604,7 +620,7 @@ class WeatherClient:
     async def _fetch_bytes(self, url: str, *, params: dict[str, Any] | None = None, ttl: int = 86_400) -> bytes | None:
         try:
             async with self._gate, self.bot.http_session.get(url, params=params, timeout=TIMEOUT) as response:
-                if response.status != 200:
+                if response.status != HTTP_OK_STATUS:
                     return None
                 raw = await response.read()
         except TimeoutError, aiohttp.ClientError:
@@ -648,7 +664,7 @@ class WeatherClient:
         coordinate_match = _COORD_RE.match(cleaned)
         if coordinate_match:
             lat, lon = float(coordinate_match.group(1)), float(coordinate_match.group(2))
-            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            if not (MIN_VALID_LATITUDE <= lat <= MAX_WEATHERCLIENT_RESOLVE_LAT_LIMIT and MIN_VALID_LONGITUDE <= lon <= MAX_WEATHERCLIENT_RESOLVE_LON_LIMIT):
                 msg = "Coordinates must be between -90..90 latitude and -180..180 longitude."
                 raise WeatherError(msg)
             try:

@@ -16,6 +16,8 @@ from discord.ext import commands, tasks
 
 from core.utils import message_url, shorten
 
+MIN_GALLERY_COUNT = 10
+
 if TYPE_CHECKING:
     from core import Bot
     from core.utils.database.models import StarboardConfig, StarboardEntry
@@ -101,12 +103,12 @@ class StarboardEntryView(discord.ui.LayoutView):
         gallery: list[discord.MediaGalleryItem] = []
         links: list[str] = []
         for attachment in message.attachments:
-            if (attachment.content_type or "").startswith(("image/", "video/")) and len(gallery) < 10:
+            if (attachment.content_type or "").startswith(("image/", "video/")) and len(gallery) < MIN_GALLERY_COUNT:
                 gallery.append(discord.MediaGalleryItem(attachment.url, description=attachment.description, spoiler=attachment.is_spoiler() or nsfw))
             else:
                 links.append(f"[{attachment.filename}]({attachment.url})")
         for embed in message.embeds:
-            if embed.type == "image" and embed.url and len(gallery) < 10:
+            if embed.type == "image" and embed.url and len(gallery) < MIN_GALLERY_COUNT:
                 gallery.append(discord.MediaGalleryItem(embed.url, spoiler=nsfw))
         if gallery:
             children.append(discord.ui.MediaGallery(*gallery))

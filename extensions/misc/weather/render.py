@@ -14,6 +14,35 @@ lazy import cv2
 lazy import numpy as np
 lazy from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
+MAX_THEME_FOR_CODE_LIMIT = 800
+MIN_THEME_FOR_CODE_LIMIT = 800
+MAX_THEME_FOR_GROUP_LIMIT = 2
+MAX_THEME_FOR_GROUP_LIMIT_6 = 6
+MAX_CLOCK_D_HOUR_LIMIT = 12
+MAX_HOUR_LABEL_D_HOUR_LIMIT = 12
+MAX_GLASS_TINT_3_LIMIT = 255
+MAX_MOON_PHASE_THRESHOLD = 0.5
+MIN_TEMP_NUM_COUNT = 2
+MAX_CURRENT_CARD_HUMIDITY_LIMIT = 30
+MAX_CURRENT_CARD_HUMIDITY_LIMIT_65 = 65
+MAX_CURRENT_CARD_PRESSURE_LIMIT = 1000
+MAX_CURRENT_CARD_PRESSURE_LIMIT_1022 = 1022
+MIN_CURRENT_CARD_METRES_LIMIT = 10000
+MIN_CURRENT_CARD_METRES_LIMIT_5000 = 5000
+MIN_CURRENT_CARD_METRES_LIMIT_2000 = 2000
+MAX_CURRENT_CARD_CLOUDS_LIMIT = 20
+MAX_CURRENT_CARD_CLOUDS_LIMIT_50 = 50
+MAX_CURRENT_CARD_CLOUDS_LIMIT_85 = 85
+MIN_HOURLY_CARD_POP_THRESHOLD = 0.15
+MIN_MINUTELY_CARD_VALUE_THRESHOLD = 0.01
+MAX_ANIMATE_GROUP_LIMIT = 6
+MAX_ANIMATE_WEATHER_ID_LIMIT = 800
+MAX_ANIMATE_ID_100_LIMIT = 8
+MIN_ANIMATE_WEATHER_ID_LIMIT = 800
+MIN_ANIMATE_WEATHER_ID_LIMIT_700 = 700
+MAX_ANIMATE_GROUP_LIMIT_2 = 2
+MAX_ANIMATE_F_LIMIT = 6
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -124,15 +153,15 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.Im
 def theme_for(code: int, night: bool) -> Theme:
     """Return a Discord-dark surface pair and a vibrant weather-matched Discord accent colour."""
     group = code // 100
-    if code == 800:
+    if code == MAX_THEME_FOR_CODE_LIMIT:
         accent = BLURPLE if night else DISCORD_YELLOW
-    elif code > 800:
+    elif code > MIN_THEME_FOR_CODE_LIMIT:
         accent = (130, 148, 192) if night else DISCORD_BLUE
-    elif group == 2:
+    elif group == MAX_THEME_FOR_GROUP_LIMIT:
         accent = DISCORD_PURPLE
     elif group in {3, 5}:
         accent = BLURPLE if night else DISCORD_BLUE
-    elif group == 6:
+    elif group == MAX_THEME_FOR_GROUP_LIMIT_6:
         accent = (165, 215, 255)
     else:
         accent = DISCORD_ORANGE
@@ -157,12 +186,12 @@ def local(ts: float, offset: int) -> datetime:
 
 def clock(ts: float, offset: int) -> str:
     d = local(ts, offset)
-    return f"{d.hour % 12 or 12}:{d.minute:02d} {'AM' if d.hour < 12 else 'PM'}"
+    return f"{d.hour % 12 or 12}:{d.minute:02d} {'AM' if d.hour < MAX_CLOCK_D_HOUR_LIMIT else 'PM'}"
 
 
 def hour_label(ts: float, offset: int) -> str:
     d = local(ts, offset)
-    return f"{d.hour % 12 or 12} {'AM' if d.hour < 12 else 'PM'}"
+    return f"{d.hour % 12 or 12} {'AM' if d.hour < MAX_HOUR_LABEL_D_HOUR_LIMIT else 'PM'}"
 
 
 def wind_dir(deg: float | None) -> str:
@@ -284,7 +313,7 @@ def glass(
     border: RGBA = BORDER,
 ) -> None:
     """Draw a crisp Discord dark UI card container with a 1px border."""
-    if tint[3] < 255:
+    if tint[3] < MAX_GLASS_TINT_3_LIMIT:
         x0, y0, x1, y1 = box
         overlay = Image.new("RGBA", (x1 - x0, y1 - y0), (0, 0, 0, 0))
         odraw = ImageDraw.Draw(overlay, "RGBA")
@@ -450,7 +479,7 @@ def moon(img: Image.Image, centre: tuple[int, int], radius: int, phase: float) -
     x, y = (xx - size / 2) / scale, (yy - size / 2) / scale
     half_width = np.sqrt(np.maximum(radius**2 - y**2, 0))
     t = math.cos(2 * math.pi * phase)
-    lit = (x >= t * half_width) & (x <= half_width) if phase < 0.5 else (x >= -half_width) & (x <= -t * half_width)
+    lit = (x >= t * half_width) & (x <= half_width) if phase < MAX_MOON_PHASE_THRESHOLD else (x >= -half_width) & (x <= -t * half_width)
     disc = (x**2 + y**2) <= radius**2
 
     rgba = np.zeros((size, size, 4), np.uint8)
@@ -550,7 +579,7 @@ def current_card(  # noqa: PLR0915
     paste_icon(img, icon, (108, 198), 124, accent=theme.accent)
 
     temp_num = f"{current['temp']:.0f}"
-    num_size = 76 if len(temp_num) <= 2 else 64
+    num_size = 76 if len(temp_num) <= MIN_TEMP_NUM_COUNT else 64
     num_face = font(num_size, True)
     tx, ty = 184, 144
     draw.text((tx, ty), temp_num, font=num_face, fill=WHITE, anchor="la")
@@ -653,12 +682,12 @@ def current_card(  # noqa: PLR0915
         0,
         "Humidity",
         f"{humidity}%",
-        "Comfortable" if 30 <= humidity <= 65 else ("Dry air" if humidity < 30 else "Humid"),
+        "Comfortable" if MAX_CURRENT_CARD_HUMIDITY_LIMIT <= humidity <= MAX_CURRENT_CARD_HUMIDITY_LIMIT_65 else ("Dry air" if humidity < MAX_CURRENT_CARD_HUMIDITY_LIMIT else "Humid"),
         bar_frac=humidity / 100,
         bar_colour=DISCORD_BLUE,
     )
 
-    p_label = "Low" if pressure < 1000 else ("Normal" if pressure <= 1022 else "High")
+    p_label = "Low" if pressure < MAX_CURRENT_CARD_PRESSURE_LIMIT else ("Normal" if pressure <= MAX_CURRENT_CARD_PRESSURE_LIMIT_1022 else "High")
     metric_tile(
         2,
         0,
@@ -669,14 +698,14 @@ def current_card(  # noqa: PLR0915
     )
 
     metres = visibility if visibility is not None else 10_000
-    vis_label = "Clear view" if metres >= 10_000 else ("Good" if metres >= 5000 else ("Moderate" if metres >= 2000 else "Low visibility"))
+    vis_label = "Clear view" if metres >= MIN_CURRENT_CARD_METRES_LIMIT else ("Good" if metres >= MIN_CURRENT_CARD_METRES_LIMIT_5000 else ("Moderate" if metres >= MIN_CURRENT_CARD_METRES_LIMIT_2000 else "Low visibility"))
     metric_tile(
         0,
         1,
         "Visibility",
         units.distance(metres),
         vis_label,
-        dot_colour=DISCORD_GREEN if metres >= 5000 else DISCORD_YELLOW,
+        dot_colour=DISCORD_GREEN if metres >= MIN_CURRENT_CARD_METRES_LIMIT_5000 else DISCORD_YELLOW,
     )
 
     uvi_val = current.get("uvi")
@@ -690,7 +719,7 @@ def current_card(  # noqa: PLR0915
         bar_colour=uv_colour,
     )
 
-    cloud_desc = "Clear sky" if clouds < 20 else ("Scattered" if clouds < 50 else ("Broken" if clouds < 85 else "Overcast"))
+    cloud_desc = "Clear sky" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT else ("Scattered" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT_50 else ("Broken" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT_85 else "Overcast"))
     metric_tile(
         2,
         1,
@@ -811,9 +840,9 @@ def hourly_card(*, place: str, points: list[dict], icons: dict[str, bytes | None
     for i, point in enumerate(points):
         pop = float(point.get("pop") or 0.0)
         h = max(4, int(pop * max_bar_h))
-        col = (*DISCORD_BLUE, 255) if pop >= 0.15 else (68, 72, 80, 255)
+        col = (*DISCORD_BLUE, 255) if pop >= MIN_HOURLY_CARD_POP_THRESHOLD else (68, 72, 80, 255)
         draw.rounded_rectangle((xs[i] - bar_w / 2, base_y - h, xs[i] + bar_w / 2, base_y), 4, fill=col)
-        if pop >= 0.15 and i in slot_point_indices:
+        if pop >= MIN_HOURLY_CARD_POP_THRESHOLD and i in slot_point_indices:
             put(draw, (xs[i], base_y - h - 11), f"{pop * 100:.0f}%", 12, bold=True, fill=(*DISCORD_BLUE, 255), anchor="mm")
 
     put(draw, (550, 645), "OpenWeather \N{MIDDLE DOT} Discord Weather Suite", 12, fill=FAINT, anchor="mm")
@@ -997,7 +1026,7 @@ def minutely_card(*, place: str, minutely: list[dict], now: int, weather: dict, 
 
     for i, point in enumerate(points):
         value = float(point.get("precipitation") or 0.0)
-        h = max(4, int(value / peak * height)) if value > 0.01 else 4
+        h = max(4, int(value / peak * height)) if value > MIN_MINUTELY_CARD_VALUE_THRESHOLD else 4
         intensity = min(1.0, value / peak)
         col = (
             (
@@ -1006,7 +1035,7 @@ def minutely_card(*, place: str, minutely: list[dict], now: int, weather: dict, 
                 int(DISCORD_BLUE[2] * (1 - intensity) + BLURPLE[2] * intensity),
                 255,
             )
-            if value > 0.01
+            if value > MIN_MINUTELY_CARD_VALUE_THRESHOLD
             else (64, 68, 75, 255)
         )
         draw.rounded_rectangle((left + i * width + 1.5, base - h, left + (i + 1) * width - 1.5, base), 3, fill=col)
@@ -1209,7 +1238,7 @@ def animate(card: bytes, weather_id: int, night: bool, *, frames: int = 36, widt
 
     group = weather_id // 100
     rain = group in {2, 3, 5}
-    snow = group == 6
+    snow = group == MAX_ANIMATE_GROUP_LIMIT
     count = 170 if rain else 110 if snow else 0
     x0, y0 = rng.uniform(0, w, count), rng.uniform(0, h, count)
     cycles = rng.integers(2, 4, count) if rain else rng.integers(1, 2, count)
@@ -1236,13 +1265,13 @@ def animate(card: bytes, weather_id: int, night: bool, *, frames: int = 36, widt
         if count:
             image.alpha_composite(layer.image(0.55))
 
-        if (weather_id == 800 and night) or (weather_id // 100 == 8 and weather_id > 800 and night):
+        if (weather_id == MAX_ANIMATE_WEATHER_ID_LIMIT and night) or (weather_id // 100 == MAX_ANIMATE_ID_100_LIMIT and weather_id > MIN_ANIMATE_WEATHER_ID_LIMIT and night):
             sparkle = Layer((w, h))
             for sx, sy, sp in stars:
                 brightness = 0.5 + 0.5 * math.sin(2 * math.pi * (t + sp))
                 sparkle.circle((sx, sy), 1.1 + brightness, (210, 220, 255))
             image.alpha_composite(sparkle.image(0.7, blur=0.5))
-        elif weather_id >= 700 or weather_id == 800:
+        elif weather_id >= MIN_ANIMATE_WEATHER_ID_LIMIT_700 or weather_id == MAX_ANIMATE_WEATHER_ID_LIMIT:
             mist = Layer((w, h))
             for k in range(3):
                 cx = (k * w / 3 + t * w) % w
@@ -1259,10 +1288,10 @@ def animate(card: bytes, weather_id: int, night: bool, *, frames: int = 36, widt
                         cv2.LINE_AA,
                     )
             mist.rgb[:] = (180, 190, 215)
-            image.alpha_composite(mist.image(0.06 if weather_id == 800 else 0.12, blur=34))
+            image.alpha_composite(mist.image(0.06 if weather_id == MAX_ANIMATE_WEATHER_ID_LIMIT else 0.12, blur=34))
 
-        if group == 2 and f in {5, 6, 18}:
-            flash = Image.new("RGBA", image.size, (190, 180, 255, 45 if f != 6 else 80))
+        if group == MAX_ANIMATE_GROUP_LIMIT_2 and f in {5, 6, 18}:
+            flash = Image.new("RGBA", image.size, (190, 180, 255, 45 if f != MAX_ANIMATE_F_LIMIT else 80))
             image.alpha_composite(flash)
         out.append(image.convert("RGB").quantize(colors=160, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG))
 

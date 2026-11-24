@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime
 from collections.abc import Sequence
 from typing import Any, Literal
+from urllib.parse import urlparse
 
 import arrow
 import discord
@@ -171,15 +172,28 @@ def code(text: str, limit: int = 60) -> str:
 def file_size(size: int) -> str:
     value = float(size)
     for unit in ("B", "KB", "MB", "GB"):
-        if value < 1024 or unit == "GB":
+        if value < 1024 or unit == "GB":  # noqa: PLR2004
             return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
         value /= 1024
     return f"{size} B"
 
 
 def valid_url(url: str | None) -> bool:
-    return bool(url) and url.startswith(("http://", "https://")) and len(url) <= 512
+    max_length = 512
+    if not url or len(url) > max_length:
+        return False
 
+    url = str(url).strip()
+
+    try:
+        parsed = urlparse(url)
+        return (
+            parsed.scheme in ("http", "https")
+            and bool(parsed.netloc)
+            and "." in (parsed.hostname or "")
+        )
+    except ValueError:
+        return False
 
 def esc(value: Any) -> str:
     return discord.utils.escape_mentions(discord.utils.escape_markdown(str(value)))
@@ -267,7 +281,7 @@ def human_join(seq: Sequence[str], delim: str = ", ", final: str = "or") -> str:
     """
     if len(seq) <= 1:
         return "".join(seq)
-    if len(seq) == 2:
+    if len(seq) == 2:  # noqa: PLR2004
         return f"{seq[0]} {final} {seq[1]}"
     return f"{delim.join(seq[:-1])} {final} {seq[-1]}"
 

@@ -74,7 +74,7 @@ class _GuildWelcomerMixin(DatabaseMixin):
             if style is not MISSING and style not in WELCOME_STYLES:
                 msg = f"style must be one of {WELCOME_STYLES}, got {style!r}"
                 raise ValueError(msg)
-        if accent_color not in (MISSING, None) and not 0 <= accent_color <= 0xFFFFFF:
+        if accent_color not in (MISSING, None) and not 0 <= accent_color <= 0xFFFFFF:  # noqa: PLR2004
             msg = "accent_color must be between 0x000000 and 0xFFFFFF"
             raise ValueError(msg)
         if banner_url not in (MISSING, None) and not banner_url.startswith("https://"):

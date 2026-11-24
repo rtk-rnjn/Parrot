@@ -58,6 +58,8 @@ from .utils import (
     versions_items,
 )
 
+MAX_QUERY_LENGTH = 100
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable
 
@@ -987,7 +989,7 @@ class Packages(commands.Cog, name="Packages"):
 
     async def search_view(self, ctx: commands.Context[Bot], eco: Ecosystem, query: str) -> PackageView:
         query = " ".join(query.split())
-        if not query or len(query) > 100:
+        if not query or len(query) > MAX_QUERY_LENGTH:
             msg = "The search query must be between 1 and 100 characters."
             raise RegistryError(msg)
 

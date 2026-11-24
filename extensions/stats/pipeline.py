@@ -25,6 +25,8 @@ from .config import StatsConfig
 from .events import Event
 from .schema import Collections, utcnow
 
+MIN_EVENTPIPELINE_ENQUEUE_DROP_LOG_LIMIT = 30
+
 log = logging.getLogger(__name__)
 DUP_KEY = 11000
 
@@ -94,7 +96,7 @@ class EventPipeline:
         if len(self._queue) >= limit:
             self.metrics.dropped += 1
             now = time.monotonic()
-            if now - self._last_drop_log > 30:
+            if now - self._last_drop_log > MIN_EVENTPIPELINE_ENQUEUE_DROP_LOG_LIMIT:
                 self._last_drop_log = now
                 log.error("stats queue full (%d); dropping %s events (total dropped=%d)", len(self._queue), event.kind, self.metrics.dropped)
             return False

@@ -22,6 +22,11 @@ from bs4 import BeautifulSoup, Tag
 from bs4.element import NavigableString
 from markdownify import MarkdownConverter
 
+MAX_RENDER_PAGE_COUNT_N_LIMIT = 4
+MAX_DOCCONVERTER_CONVERT_HN_N_LIMIT = 3
+MAX_CELLS_COUNT = 3
+MAX_PARTS_COUNT = 2
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable
 
@@ -180,7 +185,7 @@ def render_page(data: bytes, url: str, fragment: str, role: str | None, site: Pa
 
     if signature is None:  # a short code block right under the intro is the call form (`useState(initialState)`)
         fence = re.search(r"```[^\n]*\n(.*?)```\n?", sections["Overview"], re.S)
-        if fence and fence[1].strip().count("\n") < 4:
+        if fence and fence[1].strip().count("\n") < MAX_RENDER_PAGE_COUNT_N_LIMIT:
             signature = fence[1].strip()
             sections["Overview"] = sections["Overview"].replace(fence[0], "", 1).strip()
     return detail(title, role=role, signature=signature, sections=sections, language=site.language)
@@ -270,7 +275,7 @@ class DocConverter(MarkdownConverter):
         text = " ".join(text.split())
         if not text:
             return ""
-        return f"\n\n### {text}\n\n" if n <= 3 else f"\n\n**{text}**\n\n"
+        return f"\n\n### {text}\n\n" if n <= MAX_DOCCONVERTER_CONVERT_HN_N_LIMIT else f"\n\n**{text}**\n\n"
 
     # Discord renders neither definition lists nor tables, so flatten both into plain lines.
 
@@ -299,7 +304,7 @@ class DocConverter(MarkdownConverter):
             return ""
         if any("```" in cell for cell in cells):  # cppreference puts version-specific code in table cells
             return "\n".join(cells) + "\n"
-        if len(cells) == 3 and cells[1] == "-":  # cppreference's parameter tables: name, dash, description
+        if len(cells) == MAX_CELLS_COUNT and cells[1] == "-":  # cppreference's parameter tables: name, dash, description
             return f"**{cells[0]}** - {cells[2]}\n"
         if el.find("th") is not None and len(cells) > 1:
             return f"{cells[0]} - {DOT.join(cells[1:])}\n"
@@ -528,7 +533,7 @@ async def load_cppreference(session: aiohttp.ClientSession, base: str) -> Entrie
     entries: Entries = {}
     for name, rel in symbols.items():
         parts = rel.strip("/").split("/")
-        role = parts[1].replace("_", " ") if len(parts) > 2 else None
+        role = parts[1].replace("_", " ") if len(parts) > MAX_PARTS_COUNT else None
         entries[unique_name(entries, name, role)] = Entry(url=f"{CPP_ORIGIN}{rel}", role=role, detail="cppreference")
     return entries
 

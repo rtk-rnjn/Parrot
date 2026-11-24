@@ -20,6 +20,15 @@ from yarl import URL
 
 from core.utils import BaseLayoutView, DisambiguatorView, NoticeLayout
 
+MIN_ELEMENTVIEW_RENDER_YPOS_LIMIT = 9
+MAX_ENERGIES_COUNT = 3
+HTTP_BAD_REQUEST_STATUS = 400
+MAX_VALUE_COUNT = 300
+MAX_QUERY_LENGTH = 100
+MAX_PROBE_COUNT = 2
+MIN_S_COUNT = 40
+MAX_STATEMENTS_COUNT = 8
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -119,7 +128,7 @@ class ElementView(BaseLayoutView):
         next_el = self.table.by_number.get(self.number + 1)
 
         period, xpos, ypos = el.get("period"), el.get("xpos"), el.get("ypos")
-        position = f"Period {period}, f-block" if ypos and ypos >= 9 else f"Period {period}, Group {xpos}"
+        position = f"Period {period}, f-block" if ypos and ypos >= MIN_ELEMENTVIEW_RENDER_YPOS_LIMIT else f"Period {period}, Group {xpos}"
         header = (
             f"# {el['symbol']} — {el['name']}\n"
             f"-# No. {el['number']} · {(el.get('category') or 'unknown').capitalize()} · {el.get('phase') or '?'} · {position}"
@@ -137,7 +146,7 @@ class ElementView(BaseLayoutView):
         energies = el.get("ionization_energies") or []
         ionization = " · ".join(f"{_ordinal(i)}: {e:,.6g}" for i, e in enumerate(energies[:3], start=1))
         if ionization:
-            ionization += " kJ/mol" + (f" (+{len(energies) - 3} more)" if len(energies) > 3 else "")
+            ionization += " kJ/mol" + (f" (+{len(energies) - 3} more)" if len(energies) > MAX_ENERGIES_COUNT else "")
 
         config = el.get("electron_configuration")
         atomic = _lines(
@@ -372,14 +381,14 @@ class PubChemClient:
                 raise PubChemNotFound(url)
             if resp.status in (429, 503):
                 raise PubChemBusy(url)
-            if resp.status >= 400:
+            if resp.status >= HTTP_BAD_REQUEST_STATUS:
                 msg = f"HTTP {resp.status} for {url}"
                 raise PubChemError(msg)
             return await resp.json(content_type=None)
 
     async def lookup(self, namespace: Namespace, value: str) -> Compound:
         value = value.strip()
-        if not value or len(value) > 300 or (namespace == "cid" and not value.isdigit()):
+        if not value or len(value) > MAX_VALUE_COUNT or (namespace == "cid" and not value.isdigit()):
             raise PubChemNotFound(value)
 
         key = f"compound:{namespace}:{value.lower()}"
@@ -453,14 +462,14 @@ class PubChemClient:
         shorter prefixes ("beneze" -> "bene", "ben") and rank the pooled names locally with RapidFuzz.
         """
         query = query.strip()
-        if not query or len(query) > 100:
+        if not query or len(query) > MAX_QUERY_LENGTH:
             return []
 
         names = list(await self.autocomplete(query))
         if not names:
             probes: list[str] = []
             for probe in (query[: max(3, len(query) - 2)], query[:3]):
-                if len(probe) >= 2 and probe.lower() != query.lower() and probe not in probes:
+                if len(probe) >= MAX_PROBE_COUNT and probe.lower() != query.lower() and probe not in probes:
                     probes.append(probe)
             for probe in probes:
                 names += await self.autocomplete(probe)
@@ -514,7 +523,7 @@ class PubChemClient:
 
 def format_names(synonyms: list[str]) -> str:
     cas = [s for s in synonyms if CAS_RE.fullmatch(s)]
-    others = [s for s in synonyms if not CAS_RE.fullmatch(s) and len(s) <= 40 and not ID_LIKE_RE.fullmatch(s)]
+    others = [s for s in synonyms if not CAS_RE.fullmatch(s) and len(s) <= MIN_S_COUNT and not ID_LIKE_RE.fullmatch(s)]
     body = _lines(
         ("CAS", " · ".join(dict.fromkeys(cas[:3])) or None),
         ("Also known as", " · ".join(dict.fromkeys(others[:12])) or None),
@@ -537,7 +546,7 @@ def format_safety(ghs: dict[str, Any] | None) -> str:
     body = _lines(("Signal", ghs["signal"]), ("Pictograms", " · ".join(ghs["pictograms"]) or None))
     if statements:
         shown = "\n".join(f"- {shorten(s, 130, placeholder='…')}" for s in statements[:8])
-        if len(statements) > 8:
+        if len(statements) > MAX_STATEMENTS_COUNT:
             shown += f"\n-# +{len(statements) - 8} more on PubChem"
         body += f"\n**Hazard statements**\n{shown}"
     if ghs["precautions"]:

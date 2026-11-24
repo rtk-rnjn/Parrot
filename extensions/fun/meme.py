@@ -26,6 +26,9 @@ load_dotenv()
 
 PURPLE, GREEN, RED, GOLD, BLUE = 0x8E44AD, 0x2ECC71, 0xE74C3C, 0xF1C40F, 0x3498DB
 VIEW_TIMEOUT = 300
+TEMPLATES_PER_PAGE = 25
+MAX_CAPTION_BOXES_PER_PAGE = 5
+TEMPLATE_PREVIEW_LINES = 12
 
 API_BASE = "https://api.imgflip.com"
 FONTS: list[tuple[str, str, str]] = [
@@ -260,7 +263,7 @@ class CaptionModal(discord.ui.Modal):
         auto_generate: bool = True,
     ) -> None:
         end_idx = min(template.box_count, start_index + 5)
-        title_suffix = f" ({start_index + 1}-{end_idx})" if template.box_count > 5 else ""
+        title_suffix = f" ({start_index + 1}-{end_idx})" if template.box_count > 5 else ""  # noqa: PLR2004
         super().__init__(
             title=clip(f"Caption: {template.name}{title_suffix}", 45),
             timeout=VIEW_TIMEOUT,
@@ -276,9 +279,9 @@ class CaptionModal(discord.ui.Modal):
         for offset in range(count):
             idx = start_index + offset
             default_val = self.current_boxes[idx] if idx < len(self.current_boxes) else ""
-            if template.box_count == 2 and idx == 0:
+            if template.box_count == 2 and idx == 0:  # noqa: PLR2004
                 text_label = "Top Text (Box 1)"
-            elif template.box_count == 2 and idx == 1:
+            elif template.box_count == 2 and idx == 1:  # noqa: PLR2004
                 text_label = "Bottom Text (Box 2)"
             else:
                 text_label = f"Box #{idx + 1} Text"
@@ -592,7 +595,7 @@ class MemeStudioView(BaseView):
         for idx, t in enumerate(chunk[:12], start + 1):
             marker = "\N{SMALL ORANGE DIAMOND}" if t.id == self.template.id else "\N{BULLET}"
             lines.append(f"{marker} **{idx}. {esc(t.name)}** (`#{t.id}`) \N{EM DASH} {t.box_count} boxes")
-        if len(chunk) > 12:
+        if len(chunk) > TEMPLATE_PREVIEW_LINES:
             lines.append(f"-# \N{HORIZONTAL ELLIPSIS} and {len(chunk) - 12} more in the dropdown menu below.")
         return "\n".join(lines)
 
@@ -717,13 +720,13 @@ class MemeStudioView(BaseView):
 
         action_row: list[discord.ui.Button] = [
             button(
-                "Edit Text" if t.box_count <= 5 else "Edit Boxes 1-5",
+                "Edit Text" if t.box_count <= MAX_CAPTION_BOXES_PER_PAGE else "Edit Boxes 1-5",
                 self._open_caption_modal(0),
                 emoji="\N{MEMO}",
                 style=discord.ButtonStyle.success,
             )
         ]
-        if t.box_count > 5:
+        if t.box_count > MAX_CAPTION_BOXES_PER_PAGE:
             action_row.append(
                 button(
                     f"Edit Boxes 6-{min(10, t.box_count)}",
@@ -761,7 +764,7 @@ class MemeStudioView(BaseView):
         c.add_item(discord.ui.ActionRow(*action_row[:5]))
 
         util_row: list[discord.ui.Button] = []
-        if len(self.templates) > 25:
+        if len(self.templates) > TEMPLATES_PER_PAGE:
             max_page = max(0, (len(self.templates) - 1) // 25)
             util_row.append(
                 button(
@@ -903,7 +906,7 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
         url = f"{API_BASE}{endpoint}"
         try:
             async with self.session.request(method, url, params=params, data=form, headers=headers) as r:
-                if r.status == 429:
+                if r.status == 429:  # noqa: PLR2004
                     msg = "Imgflip API is rate-limiting requests right now. Try again in a moment."
                     raise MemeError(msg)
                 payload = await r.json(content_type=None)

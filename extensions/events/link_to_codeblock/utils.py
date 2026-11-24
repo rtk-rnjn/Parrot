@@ -162,15 +162,15 @@ def _ts(value: str) -> datetime:
 
 def _cvss_Appearance(score: float | None, *, is_kev: bool = False) -> tuple[str, str, int]:  # noqa: PLR0911
     """Return (severity_label, tag, hex_colour) for a CVSS score and KEV status."""
-    if is_kev and (score is None or score >= 7.0):
+    if is_kev and (score is None or score >= 7.0):  # noqa: PLR2004
         return "CRITICAL (KEV)", "[KEV]", DARK_RED
     if score is None:
         return "UNKNOWN", "[?]", GRAY
-    if score >= 9.0:
+    if score >= 9.0:  # noqa: PLR2004
         return "CRITICAL", "[CRIT]", RED
-    if score >= 7.0:
+    if score >= 7.0:  # noqa: PLR2004
         return "HIGH", "[HIGH]", ORANGE
-    if score >= 4.0:
+    if score >= 4.0:  # noqa: PLR2004
         return "MEDIUM", "[MED]", YELLOW
     if score > 0.0:
         return "LOW", "[LOW]", GREEN

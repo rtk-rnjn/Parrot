@@ -4,6 +4,8 @@ import re
 import zlib
 from dataclasses import dataclass
 
+MIN_PARTS_COUNT = 5
+
 SPHINX_INV_LINE = re.compile(r"(.+?)\s+(\S+:\S+)\s+(-?\d+)\s+(\S+)\s+(.*)")
 INV_MAGIC = b"# Sphinx inventory version 2"
 
@@ -38,7 +40,7 @@ class SphinxEntry:
 
 def _split_inventory(raw: bytes) -> tuple[str, bytes] | None:
     parts = raw.split(b"\n", 4)
-    if len(parts) < 5 or not parts[0].startswith(INV_MAGIC) or b"zlib" not in parts[3]:
+    if len(parts) < MIN_PARTS_COUNT or not parts[0].startswith(INV_MAGIC) or b"zlib" not in parts[3]:
         return None
     project = parts[1].decode("utf-8", "replace").strip().removeprefix("# Project: ")
     return project, parts[4]

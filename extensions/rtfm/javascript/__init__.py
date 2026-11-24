@@ -48,6 +48,30 @@ from .knowledge import (
     normalise_symbol,
 )
 
+MIN_LINE_COUNT = 25
+MIN_EXTRACT_PROPOSAL_ABSTRACT_TOTAL_LIMIT = 700
+MAX_PARAGRAPHS_COUNT = 3
+MAX_LINE_COUNT = 20
+MIN_EXTRACT_MDN_DOC_SECTION_IN_PARAGRAPHS_LIMIT = 900
+MAX_LINE_COUNT_15 = 15
+MIN_EXTRACT_MDN_GLOSSARY_IN_PARAGRAPHS_LIMIT = 950
+MAX_TUTORIAL_ITEMS_SCORE_LIMIT = 100
+HTTP_NOT_FOUND_STATUS = 404
+HTTP_BAD_REQUEST_STATUS = 400
+MAX_JAVASCRIPT_TC39_VIEW_BEST_1_LIMIT = 55
+MAX_JAVASCRIPT_RETRIEVE_NODE_API_REFERENCE_MATCH_1_LIMIT = 65
+MIN_JAVASCRIPT_FETCH_JAVA_SCRIPT_ERROR_INFO_MATCH_1_LIMIT = 65
+MAX_JAVASCRIPT_FETCH_JAVAS_CRIPT_OPERATOR_INFO_MATCH_1_LIMIT = 60
+MAX_JAVASCRIPT_GET_JAVA_SCRIPT_BUILTIN_INFO_MATCH_1_LIMIT = 65
+MAX_JAVASCRIPT_FETCH_JAVA_SCRIPT_COMPLEXITY_INFO_MATCH_1_LIMIT = 55
+MAX_JAVASCRIPT_FIND_CURATED_MATCH_1_LIMIT = 60
+MAX_SELF_CVE_CACHE_COUNT = 64
+MAX_JAVASCRIPT_GET_JAVA_SCRIPT_KEYWORD_DETAILS_MATCH_1_LIMIT = 70
+MAX_JAVASCRIPT_FETCH_JAVA_SCRIPT_SYMBOL_DETAILS_MATCH_1_LIMIT = 65
+MIN_TOKEN_LENGTH = 2
+MAX_JAVASCRIPT_RETRIEVE_JS_EDITIONS_SUMMARY_NUM_LIMIT = 6
+MAX_CLEANED_COUNT = 80
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
 
@@ -310,14 +334,14 @@ def extract_proposal_abstract(html: str) -> str | None:
     total = 0
     for p in root.find_all("p", recursive=True)[:10]:
         line = " ".join(p.get_text(" ").split()).strip()
-        if not line or len(line) < 25:
+        if not line or len(line) < MIN_LINE_COUNT:
             continue
         low = line.casefold()
         if low.startswith(("stage:", "champion:", "champions:", "author:", "authors:", "status:")):
             continue
         paragraphs.append(line)
         total += len(line)
-        if total >= 700 or len(paragraphs) >= 3:
+        if total >= MIN_EXTRACT_PROPOSAL_ABSTRACT_TOTAL_LIMIT or len(paragraphs) >= MAX_PARAGRAPHS_COUNT:
             break
     if not paragraphs:
         return None
@@ -343,9 +367,9 @@ def extract_mdn_doc_section(html: str) -> tuple[str | None, str, list[str]]:
         if p.find_parent(["div", "aside"], class_=re.compile(r"notecard|callout| warning|deprecated")):
             continue
         line = " ".join(p.get_text(" ").split()).strip()
-        if line and len(line) > 20:
+        if line and len(line) > MAX_LINE_COUNT:
             paragraphs.append(line)
-        if sum(len(x) for x in paragraphs) >= 900 or len(paragraphs) >= 3:
+        if sum(len(x) for x in paragraphs) >= MIN_EXTRACT_MDN_DOC_SECTION_IN_PARAGRAPHS_LIMIT or len(paragraphs) >= MAX_PARAGRAPHS_COUNT:
             break
 
     members: list[str] = []
@@ -391,9 +415,9 @@ def extract_mdn_glossary(html: str, title_fallback: str, page_url: str) -> Gloss
     paragraphs: list[str] = []
     for p in root.find_all("p", recursive=True)[:5]:
         line = " ".join(p.get_text(" ").split()).strip()
-        if line and len(line) > 15:
+        if line and len(line) > MAX_LINE_COUNT_15:
             paragraphs.append(line)
-        if sum(len(x) for x in paragraphs) >= 950 or len(paragraphs) >= 3:
+        if sum(len(x) for x in paragraphs) >= MIN_EXTRACT_MDN_GLOSSARY_IN_PARAGRAPHS_LIMIT or len(paragraphs) >= MAX_PARAGRAPHS_COUNT:
             break
 
     related: list[str] = []
@@ -524,7 +548,7 @@ def extract_mdn_compat_notes(html: str) -> list[tuple[str, str]]:
 
 
 def tutorial_items(name: str, content: str, score: float | None = None) -> list[discord.ui.Item]:
-    subtitle = "JavaScript Tutorial" + (f"{DOT}match {score:.0f}%" if score is not None and score < 100 else "")
+    subtitle = "JavaScript Tutorial" + (f"{DOT}match {score:.0f}%" if score is not None and score < MAX_TUTORIAL_ITEMS_SCORE_LIMIT else "")
     return collect(
         header(f"Tutorial: `{name}`", subtitle),
         discord.ui.Separator(),
@@ -1163,9 +1187,9 @@ class JavaScript(commands.Cog):
     async def fetch_bytes(self, url: str, *, missing: str = "JavaScript documentation could not find that.") -> bytes:
         try:
             async with self.bot.http_session.get(url, timeout=REQUEST_TIMEOUT) as response:
-                if response.status == 404:
+                if response.status == HTTP_NOT_FOUND_STATUS:
                     raise JavaScriptError(missing)
-                if response.status >= 400:
+                if response.status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"Upstream server returned HTTP {response.status}."
                     raise JavaScriptError(msg)
                 return await response.read()
@@ -1179,9 +1203,9 @@ class JavaScript(commands.Cog):
         headers = {"Accept": "application/json"}
         try:
             async with self.bot.http_session.get(url, params=params, headers=headers, timeout=REQUEST_TIMEOUT) as response:
-                if response.status == 404:
+                if response.status == HTTP_NOT_FOUND_STATUS:
                     raise JavaScriptError(missing)
-                if response.status >= 400:
+                if response.status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"Upstream server returned HTTP {response.status}."
                     raise JavaScriptError(msg)
                 return await response.json(content_type=None)
@@ -1336,7 +1360,7 @@ class JavaScript(commands.Cog):
                 if prop_id:
                     search_map[prop_id] = p
             best = await asyncio.to_thread(extractOne, cleaned, list(search_map.keys()))
-            if best is None or best[1] < 55:
+            if best is None or best[1] < MAX_JAVASCRIPT_TC39_VIEW_BEST_1_LIMIT:
                 msg = f"Could not find a TC39 proposal matching {code(cleaned, 40)}. Try keywords like `tc39 temporal`, `tc39 signals`, or `tc39 stage 3`."
                 raise JavaScriptError(msg)
             selected = search_map[best[0]]
@@ -1457,7 +1481,7 @@ class JavaScript(commands.Cog):
 
         if cleaned not in known_modules:
             match = await asyncio.to_thread(extractOne, cleaned, sorted(known_modules))
-            if match is None or match[1] < 65:
+            if match is None or match[1] < MAX_JAVASCRIPT_RETRIEVE_NODE_API_REFERENCE_MATCH_1_LIMIT:
                 msg = f"{code(cleaned, 40)} is not a known Node.js built-in module."
                 raise JavaScriptError(msg)
             cleaned = match[0]
@@ -1564,7 +1588,7 @@ class JavaScript(commands.Cog):
         canonical = lookup.get(cleaned.casefold()) or lookup.get(cleaned.casefold() + "error")
         if canonical is None:
             match = await asyncio.to_thread(extractOne, cleaned, list(ERRORS_DB.keys()))
-            if match and match[1] >= 65:
+            if match and match[1] >= MIN_JAVASCRIPT_FETCH_JAVA_SCRIPT_ERROR_INFO_MATCH_1_LIMIT:
                 canonical = match[0]
 
         if canonical is not None:
@@ -1641,7 +1665,7 @@ class JavaScript(commands.Cog):
                 for alias in entry.aliases:
                     alias_map[alias] = entry
             match = await asyncio.to_thread(extractOne, cleaned, list(alias_map.keys()))
-            if match is None or match[1] < 60:
+            if match is None or match[1] < MAX_JAVASCRIPT_FETCH_JAVAS_CRIPT_OPERATOR_INFO_MATCH_1_LIMIT:
                 symbols = " ".join(f"`{op.symbol}`" for op in OPERATORS_DB)
                 msg = f"Unknown operator {code(query, 30)}. Supported operators: {symbols}"
                 raise JavaScriptError(msg)
@@ -1690,7 +1714,7 @@ class JavaScript(commands.Cog):
         canonical = curated_map.get(cleaned.casefold()) or std_map.get(cleaned.casefold())
         if canonical is None:
             match = await asyncio.to_thread(extractOne, cleaned, all_names)
-            if match is None or match[1] < 65:
+            if match is None or match[1] < MAX_JAVASCRIPT_GET_JAVA_SCRIPT_BUILTIN_INFO_MATCH_1_LIMIT:
                 msg = f"{code(cleaned, 40)} is not a standard JavaScript built-in object or global function."
                 raise JavaScriptError(msg)
             canonical = match[0]
@@ -1756,7 +1780,7 @@ class JavaScript(commands.Cog):
                 for alias in entry.aliases:
                     alias_map[alias] = entry
             match = await asyncio.to_thread(extractOne, cleaned, list(alias_map.keys()))
-            if match is None or match[1] < 55:
+            if match is None or match[1] < MAX_JAVASCRIPT_FETCH_JAVA_SCRIPT_COMPLEXITY_INFO_MATCH_1_LIMIT:
                 topics = ", ".join(f"`{c.key}`" for c in COMPLEXITY_DB)
                 msg = f"No complexity entry matched {code(query, 30)}. Available topics: {topics}."
                 raise JavaScriptError(msg)
@@ -1814,7 +1838,7 @@ class JavaScript(commands.Cog):
         item = names.get(cleaned)
         if item is None:
             match = await asyncio.to_thread(extractOne, cleaned, list(names))
-            if match is None or match[1] < 60:
+            if match is None or match[1] < MAX_JAVASCRIPT_FIND_CURATED_MATCH_1_LIMIT:
                 msg = f"No {noun} matched {code(query, 40)}. Available: {pack([i.key for i in items], 500)}"
                 raise JavaScriptError(msg)
             item = names[match[0]]
@@ -1823,7 +1847,7 @@ class JavaScript(commands.Cog):
     async def url_exists(self, url: str) -> bool:
         try:
             async with self.bot.http_session.head(url, timeout=REQUEST_TIMEOUT, allow_redirects=True) as response:
-                return response.status < 400
+                return response.status < HTTP_BAD_REQUEST_STATUS
         except TimeoutError, aiohttp.ClientError:
             return False
 
@@ -1834,10 +1858,10 @@ class JavaScript(commands.Cog):
                 if response.status in {403, 429}:
                     msg = "NVD is rate-limiting requests right now. Try again in a minute."
                     raise JavaScriptError(msg)
-                if response.status == 404:
+                if response.status == HTTP_NOT_FOUND_STATUS:
                     msg = "NVD has no data for that query, possibly because it doesn't know that exact Node.js version."
                     raise JavaScriptError(msg)
-                if response.status >= 400:
+                if response.status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"NVD returned HTTP {response.status}."
                     raise JavaScriptError(msg)
                 data = await response.json(content_type=None)
@@ -1854,7 +1878,7 @@ class JavaScript(commands.Cog):
         if cached and time.monotonic() - cached[0] < CACHE_TTL:
             return cached[1]
         records = await asyncio.to_thread(parse_nvd, await self.fetch_nvd(params))
-        if len(self._cve_cache) >= 64:
+        if len(self._cve_cache) >= MAX_SELF_CVE_CACHE_COUNT:
             self._cve_cache.pop(min(self._cve_cache, key=lambda k: self._cve_cache[k][0]))
         self._cve_cache[key] = (time.monotonic(), records)
         return records
@@ -1949,7 +1973,7 @@ class JavaScript(commands.Cog):
         name = {k.casefold(): k for k in known}.get(cleaned.casefold())
         if name is None:
             match = await asyncio.to_thread(extractOne, cleaned, sorted(known))
-            if match is None or match[1] < 70:
+            if match is None or match[1] < MAX_JAVASCRIPT_GET_JAVA_SCRIPT_KEYWORD_DETAILS_MATCH_1_LIMIT:
                 msg = f"{code(cleaned, 30)} is not a JavaScript keyword. Reserved keywords: {pack(sorted(JS_HARD_KEYWORDS), 700)}"
                 raise JavaScriptError(msg)
             name = match[0]
@@ -1993,7 +2017,7 @@ class JavaScript(commands.Cog):
         info = lookup_symbol(query)
         if info is None:
             match = await asyncio.to_thread(extractOne, normalise_symbol(query), list(SYMBOLS_DB))
-            if match is None or match[1] < 65:
+            if match is None or match[1] < MAX_JAVASCRIPT_FETCH_JAVA_SCRIPT_SYMBOL_DETAILS_MATCH_1_LIMIT:
                 msg = f"No well-known Symbol or protocol method matched {code(query, 40)}. Try `Symbol.iterator`, `Symbol.toPrimitive`, `Symbol.dispose`, `toJSON`..."
                 raise JavaScriptError(msg)
             info = SYMBOLS_DB[match[0]]
@@ -2037,9 +2061,9 @@ class JavaScript(commands.Cog):
             token = match.group(1).lower()
             if token == "next":  # noqa: S105
                 year = current_year
-            elif len(token) <= 2:
+            elif len(token) <= MIN_TOKEN_LENGTH:
                 num = int(token)
-                if num < 6:
+                if num < MAX_JAVASCRIPT_RETRIEVE_JS_EDITIONS_SUMMARY_NUM_LIMIT:
                     msg = "Give an ECMAScript edition from `ES6` (`ES2015`) onwards."
                     raise JavaScriptError(msg)
                 year = str(2009 + num)
@@ -2366,7 +2390,7 @@ class JavaScript(commands.Cog):
 
     async def fetch_java_script_source(self, ctx: commands.Context[Bot], raw: str) -> JavaScriptView:
         cleaned = raw.strip().strip("`").removesuffix("()").removeprefix("node:")
-        if len(cleaned) > 80 or not DOTTED_NAME_PATTERN.match(cleaned):
+        if len(cleaned) > MAX_CLEANED_COUNT or not DOTTED_NAME_PATTERN.match(cleaned):
             msg = "Give a Node.js module or dotted symbol like `fs`, `events.EventEmitter`, or `util.promisify`."
             raise JavaScriptError(msg)
 

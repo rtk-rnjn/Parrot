@@ -50,6 +50,9 @@ from .python import Python
 from .stats import CodingStats
 from .used import build_embeds, execute_run, parse_man_page
 
+MAX_LINES_COUNT = 2
+MAX_MATCHES_COUNT = 15
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -551,7 +554,7 @@ class Developer(*DEPENDENCIES, commands.Cog):
         text = text.strip()
         if text.startswith("```") and text.endswith("```"):
             lines = text.splitlines()
-            if len(lines) >= 2:
+            if len(lines) >= MAX_LINES_COUNT:
                 return "\n".join(lines[1:-1]).strip()
         return text
 
@@ -644,7 +647,7 @@ class Developer(*DEPENDENCIES, commands.Cog):
                 if m.groupdict():
                     line += f" | Named: {m.groupdict()}"
                 lines.append(line)
-            if len(matches) > 15:
+            if len(matches) > MAX_MATCHES_COUNT:
                 lines.append(f"... and {len(matches) - 15} more matches.")
             return len(matches), "\n".join(lines)
 

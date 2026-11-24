@@ -14,6 +14,12 @@ from discord.ext import commands
 from . import render
 from .api import LANGUAGES, MAP_LAYERS, UNITS, LocationNotFound, Place, Units, WeatherClient, WeatherError, from_day_summary, icon_url, lunar_phase
 
+MIN_RAIN_OUTLOOK_OR_0_THRESHOLD = 0.01
+MAX_RAIN_OUTLOOK_OR_0_THRESHOLD = 0.01
+MIN_RAIN_OUTLOOK_DRY_AFTER_LIMIT = 55
+MIN_TEXT_LENGTH = 58
+MAX_PLACESELECT_INIT_PLACE_LAT_THRESHOLD = 0.01
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
 
@@ -56,7 +62,7 @@ def rain_outlook(minutely: list[dict[str, Any]], now: int, units: Units) -> str:
     if not points:
         return "No precipitation expected over the next 60 minutes."
 
-    wet = [i for i, m in enumerate(points) if (m.get("precipitation") or 0) > 0.01]
+    wet = [i for i, m in enumerate(points) if (m.get("precipitation") or 0) > MIN_RAIN_OUTLOOK_OR_0_THRESHOLD]
     if not wet:
         return "No precipitation expected over the next 60 minutes."
 
@@ -64,8 +70,8 @@ def rain_outlook(minutely: list[dict[str, Any]], now: int, units: Units) -> str:
     peak_str = f"{units.precip(peak)}/h"
 
     if wet[0] == 0:
-        dry_after = next((i for i, m in enumerate(points) if (m.get("precipitation") or 0) <= 0.01), None)
-        if dry_after is None or dry_after >= 55:
+        dry_after = next((i for i, m in enumerate(points) if (m.get("precipitation") or 0) <= MAX_RAIN_OUTLOOK_OR_0_THRESHOLD), None)
+        if dry_after is None or dry_after >= MIN_RAIN_OUTLOOK_DRY_AFTER_LIMIT:
             return f"Precipitation continuing for the next hour (peak {peak_str})."
         return f"Precipitation ending in ~{dry_after} min (peak {peak_str})."
 
@@ -80,7 +86,7 @@ def _accent_colour(weather_id: int, night: bool) -> discord.Colour:
 
 
 def clip_headline(text: str) -> str:
-    return text if len(text) <= 58 else f"{text[:55]}\N{HORIZONTAL ELLIPSIS}"
+    return text if len(text) <= MIN_TEXT_LENGTH else f"{text[:55]}\N{HORIZONTAL ELLIPSIS}"
 
 
 def _parse_history_window(
@@ -372,7 +378,7 @@ class _PlaceSelect(ui.Select["WeatherDashboard"]):
                 value=str(idx),
                 emoji="\N{ROUND PUSHPIN}",
                 description=f"{place.lat:.3f}, {place.lon:.3f}",
-                default=(place.title == dashboard.place.title and abs(place.lat - dashboard.place.lat) < 0.01),
+                default=(place.title == dashboard.place.title and abs(place.lat - dashboard.place.lat) < MAX_PLACESELECT_INIT_PLACE_LAT_THRESHOLD),
             )
             for idx, place in enumerate(dashboard.candidates[:25])
         ]

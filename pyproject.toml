@@ -87,7 +87,6 @@ select = [
 ignore = [
     "E501",     # Line too long; formatter/linter uses 150-character limit
     "PLR0913",  # Too many arguments
-    "PLR2004",  # Magic value comparison
     "ASYNC109",
     "S101",     # assert
     "S311",     # random module

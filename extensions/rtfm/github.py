@@ -17,6 +17,20 @@ from discord.ext import commands
 
 from core.utils import BaseLayoutView, NoticeLayout, code, file_size, safe, truncate, valid_url
 
+MIN_REPOSITORY_ITEMS_SIZE_TOTAL_THRESHOLD = 0.001
+MAX_TOPICS_COUNT = 10
+MAX_NAMES_COUNT = 10
+MAX_ASSETS_COUNT = 5
+MAX_ASSETS_COUNT_6 = 6
+MAX_FILES_COUNT = 300
+MAX_LINES_COUNT = 18
+MAX_SNIPPET_COUNT = 1200
+HTTP_BAD_REQUEST_STATUS = 400
+HTTP_NOT_FOUND_STATUS = 404
+HTTP_TOO_MANY_REQUESTS_STATUS = 429
+HTTP_FORBIDDEN_STATUS = 403
+HTTP_UNAVAILABLE_FOR_LEGAL_REASONS_STATUS = 451
+
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
 
@@ -292,7 +306,7 @@ def repository_items(data: dict[str, Any], languages: dict[str, int]) -> list[di
     total = sum(languages.values())
     if total:
         top_languages = sorted(languages.items(), key=lambda item: item[1], reverse=True)[:5]
-        breakdown = DOT.join(f"`{name}` {size / total * 100:.1f}%" for name, size in top_languages if size / total >= 0.001)
+        breakdown = DOT.join(f"`{name}` {size / total * 100:.1f}%" for name, size in top_languages if size / total >= MIN_REPOSITORY_ITEMS_SIZE_TOTAL_THRESHOLD)
 
     homepage = data.get("homepage") or ""
     if homepage and not homepage.startswith("http"):
@@ -311,7 +325,7 @@ def repository_items(data: dict[str, Any], languages: dict[str, int]) -> list[di
     topics = data.get("topics") or []
     topic_line = None
     if topics:
-        topic_line = text(" ".join(f"`{topic}`" for topic in topics[:10]) + (f" +{len(topics) - 10} more" if len(topics) > 10 else ""))
+        topic_line = text(" ".join(f"`{topic}`" for topic in topics[:10]) + (f" +{len(topics) - 10} more" if len(topics) > MAX_TOPICS_COUNT else ""))
 
     return collect(top, discord.ui.Separator(), stats, details, topic_line)
 
@@ -387,7 +401,7 @@ def label_names(data: dict[str, Any]) -> str | None:
     if not names:
         return None
     shown = " ".join(f"`{name}`" for name in names[:10])
-    return shown + (f" +{len(names) - 10} more" if len(names) > 10 else "")
+    return shown + (f" +{len(names) - 10} more" if len(names) > MAX_NAMES_COUNT else "")
 
 
 def title_block(repo: RepoRef, data: dict[str, Any], number: int, state: tuple[str, discord.Colour, str]) -> discord.ui.Item:
@@ -509,8 +523,8 @@ def release_items(repo: RepoRef, release: dict[str, Any], *, latest: bool) -> li
             f"[{truncate(asset['name'], 45)}]({asset['browser_download_url']}) - {file_size(asset['size'])}{DOT}{asset['download_count']:,} downloads"
             for asset in assets[:5]
         ]
-        if len(assets) > 5:
-            lines.append(f"-# and {len(assets) - 5} more asset{'' if len(assets) == 6 else 's'}")
+        if len(assets) > MAX_ASSETS_COUNT:
+            lines.append(f"-# and {len(assets) - 5} more asset{'' if len(assets) == MAX_ASSETS_COUNT_6 else 's'}")
         asset_block = text("**Assets**\n" + "\n".join(lines))
 
     return collect(
@@ -537,7 +551,7 @@ def compare_items(repo: RepoRef, base: str, head: str, data: dict[str, Any]) -> 
     files = data.get("files") or []
     additions = sum(file.get("additions", 0) for file in files)
     deletions = sum(file.get("deletions", 0) for file in files)
-    capped = "+" if len(files) >= 300 else ""
+    capped = "+" if len(files) >= MAX_FILES_COUNT else ""
     stats = text(
         f"{summary}\n"
         f"**{data.get('total_commits', 0)}** commit{'' if data.get('total_commits') == 1 else 's'}{DOT}"
@@ -638,8 +652,8 @@ def gist_items(data: dict[str, Any], file: dict[str, Any]) -> list[discord.ui.It
     else:
         lines = content.replace("\r\n", "\n").split("\n")
         snippet = "\n".join(lines[:18])
-        cut = len(lines) > 18
-        if len(snippet) > 1200:
+        cut = len(lines) > MAX_LINES_COUNT
+        if len(snippet) > MAX_SNIPPET_COUNT:
             snippet, cut = snippet[:1200], True
         extension = PurePosixPath(filename).suffix.lstrip(".").lower()
         fence = re.sub(r"[^a-z0-9+#-]", "", extension or (language or "").lower())
@@ -673,7 +687,7 @@ class GitHub(commands.Cog):
 
         try:
             async with self.bot.http_session.get(f"{GITHUB_API_URL}{path}", params=params, headers=headers, timeout=REQUEST_TIMEOUT) as response:
-                if response.status < 400:
+                if response.status < HTTP_BAD_REQUEST_STATUS:
                     return await response.json(loads=discord.utils._from_json)
 
                 status = response.status
@@ -688,15 +702,15 @@ class GitHub(commands.Cog):
             raise GitHubError(msg) from error
 
         message = body.get("message", "") if isinstance(body, dict) else ""
-        if status == 404:
+        if status == HTTP_NOT_FOUND_STATUS:
             raise GitHubError(missing)
-        if status == 429 or (status == 403 and (remaining == "0" or "rate limit" in message.lower())):
+        if status == HTTP_TOO_MANY_REQUESTS_STATUS or (status == HTTP_FORBIDDEN_STATUS and (remaining == "0" or "rate limit" in message.lower())):
             retry = ""
             if reset and reset.isdigit():
                 retry = f" Try again {discord.utils.format_dt(datetime.fromtimestamp(int(reset), tz=UTC), 'R')}."
             msg = f"GitHub's API rate limit has been reached.{retry}"
             raise GitHubError(msg)
-        if status == 451:
+        if status == HTTP_UNAVAILABLE_FOR_LEGAL_REASONS_STATUS:
             msg = "GitHub cannot show this because it was blocked for legal reasons."
             raise GitHubError(msg)
         detail = f": {truncate(message, 200)}" if message else "."

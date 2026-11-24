@@ -9,6 +9,9 @@ from .image_effects_basic import _sample_bilinear
 from .image_utils import from_array, make_rng, to_array, to_rgba
 from .image_validators import clamp_float, clamp_int, validate_choice
 
+MIN_BULGE_R_THRESHOLD = 1e-06
+MIN_CRT_CURVATURE_THRESHOLD = 0.01
+
 
 def gaussian_blur(img: Image.Image, radius: float = 6.0) -> Image.Image:
     r = clamp_float(radius, 0.5, 32.0, "radius")
@@ -86,7 +89,7 @@ def bulge(img: Image.Image, strength: float = 0.5) -> Image.Image:
     mask = r < 1.0
     exponent = 1.0 / (1.0 + s) if s >= 0 else 1.0 - s * 1.5
     r_new = np.where(mask, np.power(np.clip(r, 1e-6, 1.0), exponent), r)
-    scale = np.where(r > 1e-6, r_new / np.maximum(r, 1e-6), 1.0)
+    scale = np.where(r > MIN_BULGE_R_THRESHOLD-6, r_new / np.maximum(r, 1e-6), 1.0)
     return from_array(_sample_bilinear(arr, cx + xs * scale, cy + ys * scale))
 
 
@@ -129,7 +132,7 @@ def melt(img: Image.Image, intensity: float = 0.4, seed: int | None = None) -> I
 
 def crt(img: Image.Image, scanline: float = 0.45, curvature: float = 0.12) -> Image.Image:
     sc = clamp_float(scanline, 0.05, 0.9, "scanline")
-    warped = fisheye(img, clamp_float(curvature, 0.0, 0.4, "curvature")) if curvature > 0.01 else to_rgba(img)
+    warped = fisheye(img, clamp_float(curvature, 0.0, 0.4, "curvature")) if curvature > MIN_CRT_CURVATURE_THRESHOLD else to_rgba(img)
     arr = to_array(warped).astype(np.float32)
     h, w = arr.shape[:2]
     arr[1::2, :, :3] *= 1.0 - sc

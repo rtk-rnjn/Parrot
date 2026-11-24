@@ -13,6 +13,9 @@ from .constants import DOT, GO_MOD_DIRECTIVE, GO_REQUIRE_BLOCK, GO_REQUIRE_SINGL
 from .ecosystem import GO
 from .utils import DependencyList, PackageInfo, Registry, RegistryError, SearchHit, SearchResult, VersionEntry, VersionList, prerelease, version_key
 
+MAX_PARTS_COUNT = 2
+MAX_PARTS_COUNT_3 = 3
+
 
 class GoRegistry(Registry):
     ecosystem = GO
@@ -43,7 +46,7 @@ class GoRegistry(Registry):
             for raw in block.splitlines():
                 line, _, comment = raw.partition("//")
                 parts = line.strip().split()
-                if len(parts) >= 2:
+                if len(parts) >= MAX_PARTS_COUNT:
                     add_line(parts[0], parts[1], comment)
 
         for match in GO_REQUIRE_SINGLE.finditer(content):
@@ -159,7 +162,7 @@ class GoRegistry(Registry):
         repo = meta.get("repository")
         if not repo and module.startswith(("github.com/", "gitlab.com/", "bitbucket.org/", "codeberg.org/")):
             parts = module.split("/")
-            if len(parts) >= 3:
+            if len(parts) >= MAX_PARTS_COUNT_3:
                 repo = f"https://{parts[0]}/{parts[1]}/{parts[2]}"
 
         facts_list: list[tuple[str, str]] = []

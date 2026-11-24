@@ -26,6 +26,8 @@ lazy from PIL import Image, ImageDraw, ImageFont
 from core.utils.formats import format_count as fmt_count
 from core.utils.formats import truncate
 
+MIN_XS_COUNT = 31
+
 log = logging.getLogger(__name__)
 
 FIG_W, FIG_H, DPI = 7.5, 4.0, 120
@@ -130,7 +132,7 @@ def render_time_series(
         _style_axes(ax, theme)
         xs = [d.replace(tzinfo=None) for d, _ in series]  # naive-UTC for matplotlib date handling
         ys = [float(v) for _, v in series]
-        ax.plot(xs, ys, color=theme.accent, linewidth=2.6, marker="o" if len(xs) <= 31 else None, markersize=4.5)
+        ax.plot(xs, ys, color=theme.accent, linewidth=2.6, marker="o" if len(xs) <= MIN_XS_COUNT else None, markersize=4.5)
         ax.fill_between(xs, ys, color=theme.accent, alpha=0.18)
         ax.set_ylim(bottom=0)
         ax.yaxis.set_major_locator(MaxNLocator(nbins=4, integer=(kind == "count")))

@@ -17,6 +17,9 @@ from .player import LavalinkPlayer, LocalPlayer, MusicPlayer, SessionMixin, Vote
 from .sources import Resolved, ResolveError, local_available, resolve
 from .ui import describe_song
 
+MIN_PARTS_COUNT = 3
+MIN_PLAYER_QUEUE_COUNT = 2
+
 if TYPE_CHECKING:
     from discord.ext.commands import Context
 
@@ -34,7 +37,7 @@ def parse_clock(text: str) -> int | None:
         parts = [float(part) for part in text.strip().split(":")]
     except ValueError:
         return None
-    if not 1 <= len(parts) <= 3 or any(part < 0 for part in parts):
+    if not 1 <= len(parts) <= MIN_PARTS_COUNT or any(part < 0 for part in parts):
         return None
 
     seconds = 0.0
@@ -402,7 +405,7 @@ class Music(commands.Cog):
             return
         player, member = got
 
-        if len(player.queue) < 2:
+        if len(player.queue) < MIN_PLAYER_QUEUE_COUNT:
             await ctx.reply(view=Notice.info("There is nothing to shuffle."))
             return
 

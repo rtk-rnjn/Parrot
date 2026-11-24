@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 
 from core.utils import BaseLayoutView, truncate
 
+HTTP_OK_STATUS = 200
+HTTP_TOO_MANY_REQUESTS_STATUS = 429
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -71,9 +74,9 @@ async def fetch_news(*, topic: str | None, session: aiohttp.ClientSession) -> li
         msg = "Bot couldn't reach the news service. Please try again later."
         raise NewsError(msg) from exc
 
-    if status != 200 or data.get("status") != "ok":
+    if status != HTTP_OK_STATUS or data.get("status") != "ok":
         code = data.get("code", "")
-        if code == "rateLimited" or status == 429:
+        if code == "rateLimited" or status == HTTP_TOO_MANY_REQUESTS_STATUS:
             msg = "The daily news limit has been reached. Please try again later."
             raise NewsError(msg)
         if code.startswith("apiKey"):

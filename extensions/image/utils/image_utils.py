@@ -23,6 +23,10 @@ from .image_validators import (
     validate_choice,
 )
 
+MAX_FROM_ARRAY_A_NDIM_LIMIT = 2
+MAX_FROM_ARRAY_SHAPE_2_LIMIT = 3
+MIN_EXTRACT_DOMINANT_PALETTE_ARR_3_LIMIT = 32
+
 _LANCZOS = Image.Resampling.LANCZOS
 
 
@@ -89,7 +93,7 @@ def from_array(arr: np.ndarray) -> Image.Image:
     if a.size == 0 or a.ndim not in (2, 3) or min(a.shape[:2]) < 1:
         msg = "Cannot build an image from an empty or malformed array."
         raise ImageValidationError(msg)
-    if a.ndim == 2:
+    if a.ndim == MAX_FROM_ARRAY_A_NDIM_LIMIT:
         a = a[..., None]
     if a.shape[2] not in (1, 3, 4):
         msg = "Image arrays must have 1, 3 or 4 channels."
@@ -98,7 +102,7 @@ def from_array(arr: np.ndarray) -> Image.Image:
         a = np.clip(np.rint(np.nan_to_num(a.astype(np.float64))), 0, 255).astype(np.uint8)
     if a.shape[2] == 1:
         a = np.repeat(a, 3, axis=2)
-    if a.shape[2] == 3:
+    if a.shape[2] == MAX_FROM_ARRAY_SHAPE_2_LIMIT:
         alpha = np.full((*a.shape[:2], 1), 255, dtype=np.uint8)
         a = np.concatenate([a, alpha], axis=2)
     return Image.fromarray(np.ascontiguousarray(a))
@@ -192,7 +196,7 @@ def extract_dominant_palette(img: Image.Image, count: int = 6) -> list[Color]:
     count = clamp_int(count, 1, 16, "count")
     rgba = fit_within(to_rgba(img), 256)
     arr = np.asarray(rgba, dtype=np.uint8)
-    visible = arr[arr[..., 3] >= 32][:, :3]
+    visible = arr[arr[..., 3] >= MIN_EXTRACT_DOMINANT_PALETTE_ARR_3_LIMIT][:, :3]
     if visible.size == 0:
         return [(128, 128, 128)] * count
     sample_w = max(1, math.isqrt(len(visible)))

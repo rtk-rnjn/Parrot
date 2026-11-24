@@ -16,6 +16,11 @@ from core import Bot
 
 from .parser import View
 
+MIN_VALID_WORD_LENGTH = 3
+HEX_BASE = 16
+BINARY_BASE = 2
+ORDINAL_SUFFIX_BOUNDARY = 4
+
 SMALL = 3
 ORIGINAL = 4
 BIG = 5
@@ -45,7 +50,7 @@ Bases = Literal[2, 10, 16]
 # fmt: off
 
 def ordinal(number: int, /) -> str:
-    return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < 4) * number % 10 :: 4]}'
+    return f'{number}{"tsnrhtdd"[(number // 10 % 10 != 1) * (number % 10 < ORDINAL_SUFFIX_BOUNDARY) * number % 10 :: 4]}'
 
 
 DIE = {
@@ -238,7 +243,7 @@ class Board:
 
         # Check chain is valid
         chain = self.get_chain(equation)
-        return len(chain) >= 3 and self.board_contains(chain)
+        return len(chain) >= MIN_VALID_WORD_LENGTH and self.board_contains(chain)
 
     def points(self, equation: str) -> int:
         return POINTS[len(self.get_chain(equation))] if self.is_legal(equation) else -1
@@ -272,9 +277,9 @@ class Game(discord.ui.View):
             state = " ".join(emoji) + "\n" + state
 
         number = self.board.number
-        if self.board.base == 16:
+        if self.board.base == HEX_BASE:
             number = hex(number)
-        elif self.board.base == 2:
+        elif self.board.base == BINARY_BASE:
             number = bin(number)
         state += f"\n\n The magic number is **{number}**!"
 

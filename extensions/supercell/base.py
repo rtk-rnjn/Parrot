@@ -15,6 +15,8 @@ from core.utils.views import MAX_TEXT_LENGTH, BaseLayoutView, NoticeLayout
 
 from .api import Game, ImageStore, NotFound, SupercellClient, SupercellError, enc
 
+MIN_NAME_STRIP_LENGTH = 3
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -187,7 +189,7 @@ class Supercell(commands.Cog):
         return clan["tag"]
 
     async def search_clans(self, ctx: commands.Context[Bot], name: str, **params: Any) -> str:
-        if len(name.strip()) < 3:
+        if len(name.strip()) < MIN_NAME_STRIP_LENGTH:
             message = "Clan searches need at least three characters."
             raise SupercellError(message)
 

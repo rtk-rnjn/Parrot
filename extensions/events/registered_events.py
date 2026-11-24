@@ -109,13 +109,13 @@ def mention(target: Any) -> str:
 
 
 def add(embed: discord.Embed, name: str, value: Any, *, inline: bool = False) -> None:
-    if value in (None, "", []) or len(embed.fields) >= 25:
+    if value in (None, "", []) or len(embed.fields) >= 25:  # noqa: PLR2004
         return
     embed.add_field(name=name, value=clip(str(value)), inline=inline)
 
 
 def fit(embed: discord.Embed) -> discord.Embed:
-    while len(embed) > 5900 and embed.fields:
+    while len(embed) > 5900 and embed.fields:  # noqa: PLR2004
         embed.remove_field(len(embed.fields) - 1)
     return embed
 
@@ -620,7 +620,7 @@ class RegisteredEvents(commands.Cog, command_attrs={"hidden": True}):
 
         for label, text, filename in (("Before", old_text, "before.txt"), ("After", new_text, "after.txt")):
             add(embed, label, text)
-            if len(text) > 1024:
+            if len(text) > 1024:  # noqa: PLR2004
                 files.append(text_file(filename, text))
 
         add(embed, "Sent", stamp(after.created_at))

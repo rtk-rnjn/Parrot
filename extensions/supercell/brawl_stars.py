@@ -16,6 +16,9 @@ from .api import BRAWL_STARS, NotFound, SupercellError, Tag, enc, parse_time
 from .base import Page
 from .base import Supercell as SupercellCog
 
+MIN_BRAWLSTARS_OVERVIEW_RANK_0_LIMIT = 30
+MIN_BRAWLSTARS_BATTLES_INDEX_LIMIT = 10
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -218,7 +221,7 @@ class BrawlStars(SupercellCog, command_attrs={"hidden": True}):
             ("Duo wins", _num(player, "duoVictories")),
             ("Brawlers", str(count)),
             ("Max power", str(sum(1 for b in brawlers if b.get("power", 0) >= MAX_POWER))),
-            ("Rank 30+", str(sum(1 for b in brawlers if b.get("rank", 0) >= 30))),
+            ("Rank 30+", str(sum(1 for b in brawlers if b.get("rank", 0) >= MIN_BRAWLSTARS_OVERVIEW_RANK_0_LIMIT))),
             ("Top brawler", brawlers[0]["name"].title() if brawlers else "-"),
             ("Avg / brawler", f"{total // count:,}" if count else "-"),
             ("XP points", _num(player, "expPoints")),
@@ -281,7 +284,7 @@ class BrawlStars(SupercellCog, command_attrs={"hidden": True}):
             elif result == "draw":
                 draws += 1
 
-            if index >= 10:
+            if index >= MIN_BRAWLSTARS_BATTLES_INDEX_LIMIT:
                 continue
 
             participants = [p for team in battle.get("teams", []) for p in team] or battle.get("players", [])

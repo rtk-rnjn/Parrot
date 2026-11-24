@@ -8,6 +8,9 @@ lazy from PIL import Image
 from .image_utils import from_array, join_rgb_alpha, make_rng, resize_rgba, to_array, to_rgba
 from .image_validators import Color, ImageValidationError, clamp_float, clamp_int, parse_hex_color, validate_choice
 
+MAX_GLITCH_RNG_RANDOM_THRESHOLD = 0.5
+MIN_EDGE_PEAK_THRESHOLD = 1e-06
+
 _LUMA: Final = np.array([0.299, 0.587, 0.114], dtype=np.float32)
 MIRROR_MODES = ("left", "right", "top", "bottom", "quad")
 
@@ -68,7 +71,7 @@ def glitch(img: Image.Image, intensity: float = 0.5, seed: int | None = None) ->
         bw = min(w, int(rng.integers(1, max(2, w // 4) + 1)))
         y = int(rng.integers(0, h - bh + 1))
         x = int(rng.integers(0, w - bw + 1))
-        if rng.random() < 0.5:
+        if rng.random() < MAX_GLITCH_RNG_RANDOM_THRESHOLD:
             sy = int(rng.integers(0, h - bh + 1))
             sx = int(rng.integers(0, w - bw + 1))
             arr[y : y + bh, x : x + bw] = arr[sy : sy + bh, sx : sx + bw].copy()
@@ -152,6 +155,6 @@ def edge(img: Image.Image, strength: float = 1.0) -> Image.Image:
     gy = (p[2:, :-2] + 2 * p[2:, 1:-1] + p[2:, 2:]) - (p[:-2, :-2] + 2 * p[:-2, 1:-1] + p[:-2, 2:])
     magnitude = np.hypot(gx, gy)
     peak = float(np.percentile(magnitude, 99))
-    scaled = magnitude / peak if peak > 1e-6 else np.zeros_like(magnitude)
+    scaled = magnitude / peak if peak > MIN_EDGE_PEAK_THRESHOLD-6 else np.zeros_like(magnitude)
     gray = np.rint(np.clip(scaled * gain, 0.0, 1.0) * 255).astype(np.uint8)
     return join_rgb_alpha(np.repeat(gray[..., None], 3, axis=2), arr[..., 3])

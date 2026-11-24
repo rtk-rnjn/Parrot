@@ -17,6 +17,10 @@ from core.utils import BaseLayoutView, code, dated, file_size, parse_time, safe,
 from .constants import DEFAULT_HEADERS, DEPENDENCY_BUDGET, DOT, GROUP_BUDGET, MAX_GROUPS, MAX_RESPONSE, SEARCH_LIMIT, TIMEOUT, VERSION_PATTERN
 from .ecosystem import COCOAPODS, HEX, MAVEN, PACKAGIST, PYPI, SWIFT
 
+HTTP_TOO_MANY_REQUESTS_STATUS = 429
+HTTP_BAD_REQUEST_STATUS = 400
+MAX_DEPENDENCY_ITEMS_REMAINING_LIMIT = 80
+
 if TYPE_CHECKING:
     from .ecosystem import Ecosystem
 
@@ -215,11 +219,11 @@ class Fetcher:
                 status = response.status
                 if status in (404, 410):
                     raise RegistryError(missing)
-                if status == 429:
+                if status == HTTP_TOO_MANY_REQUESTS_STATUS:
                     retry = response.headers.get("Retry-After")
                     msg = f"{source} is rate limiting requests right now." + (f" Try again in {retry} seconds." if retry and retry.isdigit() else "")
                     raise RegistryError(msg)
-                if status >= 400:
+                if status >= HTTP_BAD_REQUEST_STATUS:
                     msg = f"{source} returned an error ({status})."
                     raise RegistryError(msg)
 
@@ -635,7 +639,7 @@ def dependency_items(eco: Ecosystem, deps: DependencyList) -> list[discord.ui.It
     remaining = DEPENDENCY_BUDGET
     groups = list(deps.groups.items())
     for title, entries in groups[:MAX_GROUPS]:
-        if remaining < 80:
+        if remaining < MAX_DEPENDENCY_ITEMS_REMAINING_LIMIT:
             break
         block = pack(entries, min(GROUP_BUDGET, remaining))
         remaining -= len(block)

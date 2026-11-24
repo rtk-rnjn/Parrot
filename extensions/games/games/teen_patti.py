@@ -12,6 +12,16 @@ if TYPE_CHECKING:
     from .card_core import Action, Seat
 
 HAND_NAMES = {6: "Trail", 5: "Pure Sequence", 4: "Sequence", 3: "Color", 2: "Pair", 1: "High Card"}
+HEADS_UP_PLAYER_COUNT = 2
+AI_SEE_CHANCE = 0.3
+AI_PACK_STRENGTH = 0.25
+AI_PACK_CHANCE = 0.5
+AI_RAISE_STRENGTH = 0.85
+AI_RAISE_CHANCE = 0.6
+AI_SHOW_STRENGTH = 0.55
+AI_SHOW_CHANCE = 0.5
+AI_BLIND_RAISE_CHANCE = 0.1
+AI_BLIND_SHOW_CHANCE = 0.25
 
 
 def rank_hand(cards: list[str]) -> tuple:
@@ -87,7 +97,7 @@ class TeenPatti(CardGame):
         for hand_no in range(1, self.MAX_HANDS + 1):
             self.hand_no = hand_no
             players = [s for s in self.seats if self.state[s].chips >= self.BOOT]
-            if len(players) < 2 or not any(s.user is not None and self.state[s].chips >= self.BOOT for s in self.seats):
+            if len(players) < HEADS_UP_PLAYER_COUNT or not any(s.user is not None and self.state[s].chips >= self.BOOT for s in self.seats):
                 break
             await self.play_hand(players, hand_no - 1)
             await self.pause(3.5)
@@ -177,7 +187,7 @@ class TeenPatti(CardGame):
             out = {"pack"}
             if chaal <= state.chips:
                 out.add("chaal")
-                if len(live) == 2:
+                if len(live) == HEADS_UP_PLAYER_COUNT:
                     out.add("show")
             if self.stake < self.MAX_STAKE and raise_cost <= state.chips:
                 out.add("raise")
@@ -194,7 +204,7 @@ class TeenPatti(CardGame):
                 ButtonSpec("chaal", f"{prefix}Chaal ${chaal}", discord.ButtonStyle.success, disabled="chaal" not in ok),
                 ButtonSpec("raise", f"{prefix}Raise ${raise_cost}", discord.ButtonStyle.primary, disabled="raise" not in ok),
             ]
-            if len(live) == 2:
+            if len(live) == HEADS_UP_PLAYER_COUNT:
                 buttons.append(ButtonSpec("show", f"Show ${chaal}", disabled="show" not in ok))
             buttons.append(ButtonSpec("pack", "Pack", discord.ButtonStyle.danger))
 
@@ -212,22 +222,22 @@ class TeenPatti(CardGame):
             return None if action[0] in allowed() else "You can't do that right now."
 
         def ai() -> Action:
-            if not state.seen and (self.stake > self.BOOT * 2 or random.random() < 0.3):
+            if not state.seen and (self.stake > self.BOOT * 2 or random.random() < AI_SEE_CHANCE):
                 state.seen = True
             ok = allowed()  # after deciding whether to see: seen players pay double
 
             choice = "chaal"
             if state.seen:
                 power = strength(state.hand)
-                if power < 0.25 and (self.stake >= self.BOOT * 2 or random.random() < 0.5):
+                if power < AI_PACK_STRENGTH and (self.stake >= self.BOOT * 2 or random.random() < AI_PACK_CHANCE):
                     choice = "pack"
-                elif power > 0.85 and "raise" in ok and random.random() < 0.6:
+                elif power > AI_RAISE_STRENGTH and "raise" in ok and random.random() < AI_RAISE_CHANCE:
                     choice = "raise"
-                elif power > 0.55 and "show" in ok and random.random() < 0.5:
+                elif power > AI_SHOW_STRENGTH and "show" in ok and random.random() < AI_SHOW_CHANCE:
                     choice = "show"
-            elif "raise" in ok and random.random() < 0.1:
+            elif "raise" in ok and random.random() < AI_BLIND_RAISE_CHANCE:
                 choice = "raise"
-            elif "show" in ok and random.random() < 0.25:
+            elif "show" in ok and random.random() < AI_BLIND_SHOW_CHANCE:
                 choice = "show"
 
             return (choice if choice in ok else "pack", ())

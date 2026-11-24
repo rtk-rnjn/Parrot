@@ -676,7 +676,7 @@ class PastebinClient:
 
     async def list_pastes(self, limit: int = 50) -> list[Paste]:
         """List the logged-in user's pastes (1-1000, newest first)."""
-        if not 1 <= limit <= 1000:
+        if not 1 <= limit <= 1000:  # noqa: PLR2004
             msg = "limit must be between 1 and 1000"
             raise ValidationError(msg)
         user_key = await self._require_user_key()

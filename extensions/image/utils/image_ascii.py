@@ -6,6 +6,14 @@ lazy from PIL import Image
 from .image_utils import load_image, resize_rgba, to_array, to_rgba
 from .image_validators import Color, ImageValidationError, clamp_int
 
+MIN_RAMP_COUNT = 2
+MIN_ASCII_ART_COLS_LIMIT = 8
+MAX_ASCII_ART_ARR_3_LIMIT = 40
+MAX_COLORED_ASCII_FROM_BYTES_A_LIMIT = 40
+MIN_BRAILLE_FROM_BYTES_COLS_LIMIT = 8
+MIN_BRAILLE_FROM_BYTES_ARR_3_LIMIT = 40
+MAX_EMOJI_MOSAIC_FROM_BYTES_A_LIMIT = 40
+
 ASCII_RAMP = " .:-=+*#%@"
 _LUMA = np.array([0.299, 0.587, 0.114], dtype=np.float32)
 
@@ -25,7 +33,7 @@ def ascii_art(
     """Render an image as ASCII text that is guaranteed to fit ``max_chars``."""
     cols = clamp_int(columns, 8, 120, "columns")
     cap = clamp_int(max_chars, 100, 4000, "max_chars")
-    if not isinstance(ramp, str) or len(ramp) < 2 or "`" in ramp:
+    if not isinstance(ramp, str) or len(ramp) < MIN_RAMP_COUNT or "`" in ramp:
         msg = "The ASCII ramp needs at least two characters and no backticks."
         raise ImageValidationError(msg)
     chars = np.array(list(ramp[::-1] if invert_ramp else ramp))
@@ -35,13 +43,13 @@ def ascii_art(
     def rows_for(c: int) -> int:
         return max(1, round(h / w * c * 0.5))
 
-    while cols > 8 and rows_for(cols) * (cols + 1) - 1 > cap:
+    while cols > MIN_ASCII_ART_COLS_LIMIT and rows_for(cols) * (cols + 1) - 1 > cap:
         cols -= 1
     rows = rows_for(cols)
     arr = to_array(resize_rgba(rgba, (cols, rows), Image.Resampling.BOX))
     index = np.rint(_luminance(arr[..., :3]) / 255.0 * (len(chars) - 1)).astype(np.intp)
     grid = chars[index]
-    grid[arr[..., 3] < 40] = " "
+    grid[arr[..., 3] < MAX_ASCII_ART_ARR_3_LIMIT] = " "
     lines = ["".join(row) for row in grid]
     max_rows = max(1, (cap + 1) // (cols + 1))
     return "\n".join(lines[:max_rows])
@@ -80,7 +88,7 @@ def colored_ascii_from_bytes(data: bytes, columns: int = 38, max_chars: int = 18
         last_code: int | None = None
         for x in range(cols):
             r, g, b, a = arr[y, x]
-            if a < 40:
+            if a < MAX_COLORED_ASCII_FROM_BYTES_A_LIMIT:
                 row_parts.append(" ")
                 continue
             luma = 0.299 * r + 0.587 * g + 0.114 * b
@@ -118,14 +126,14 @@ def braille_from_bytes(data: bytes, columns: int = 44, invert_dots: bool = False
     cols = clamp_int(columns, 8, 80, "columns")
     w, h = img.size
     rows = max(1, round(h / w * cols * 0.5))
-    while cols > 8 and rows * (cols + 1) > max_chars:
+    while cols > MIN_BRAILLE_FROM_BYTES_COLS_LIMIT and rows * (cols + 1) > max_chars:
         cols -= 1
         rows = max(1, round(h / w * cols * 0.5))
     arr = to_array(resize_rgba(img, (cols * 2, rows * 4), Image.Resampling.BOX))
     luma = _luminance(arr[..., :3])
     thresh = float(np.median(luma))
     active = (luma < thresh) if invert_dots else (luma >= thresh)
-    active &= arr[..., 3] >= 40
+    active &= arr[..., 3] >= MIN_BRAILLE_FROM_BYTES_ARR_3_LIMIT
     lines: list[str] = []
     for r in range(rows):
         chars: list[str] = []
@@ -166,7 +174,7 @@ def emoji_mosaic_from_bytes(data: bytes, columns: int = 22) -> str:
         row_chars: list[str] = []
         for x in range(cols):
             r, g, b, a = arr[y, x]
-            if a < 40:
+            if a < MAX_EMOJI_MOSAIC_FROM_BYTES_A_LIMIT:
                 row_chars.append("\N{BLACK LARGE SQUARE}")
                 continue
             dists = np.sum((rgbs - np.array([r, g, b], dtype=np.float32)) ** 2, axis=1)

@@ -31,9 +31,9 @@ def parse_color(raw: str) -> int | None:
     value = raw.strip().removeprefix("#").removeprefix("0x")
     if not value:
         return None
-    if len(value) == 3:
+    if len(value) == 3:  # noqa: PLR2004
         value = "".join(char * 2 for char in value)
-    if len(value) != 6 or any(char not in string.hexdigits for char in value):
+    if len(value) != 6 or any(char not in string.hexdigits for char in value):  # noqa: PLR2004
         msg = "Accent color must be a hex code like `#5865F2`."
         raise ValueError(msg)
     return int(value, 16)

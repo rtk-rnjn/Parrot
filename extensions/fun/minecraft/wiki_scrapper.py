@@ -13,6 +13,12 @@ import aiohttp
 from bs4 import BeautifulSoup, FeatureNotFound, Tag
 from bs4.element import Comment, NavigableString
 
+WIKI_ROOT_HEADING_LEVEL = 2
+MAX_RELATED_LINKS = 12
+MAX_TABLE_HEADER_ROWS = 3
+MIN_IMAGE_WIDTH = 100
+MAX_WIKI_CACHE_ENTRIES = 400
+
 if TYPE_CHECKING:
     from core import Bot
 
@@ -384,8 +390,8 @@ class WikiParser:
                     continue
                 skipping = False
                 sec = WikiSection(heading=text, level=level)
-                if level <= 2 or cur_top is None:
-                    sec.level = 2 if level <= 2 else level
+                if level <= WIKI_ROOT_HEADING_LEVEL or cur_top is None:
+                    sec.level = WIKI_ROOT_HEADING_LEVEL if level <= WIKI_ROOT_HEADING_LEVEL else level
                     sections.append(sec)
                     cur_top = cur = sec
                 else:
@@ -396,7 +402,7 @@ class WikiParser:
                 continue
             if not seen_heading:
                 lead.append(payload)
-                if tag is not None and len(related) < 12:
+                if tag is not None and len(related) < MAX_RELATED_LINKS:
                     for a in tag.select("a[href]"):
                         t = self.title_from_href(a["href"])
                         if t and t.lower() != title.lower() and t not in related:
@@ -467,7 +473,7 @@ class WikiParser:
             cells = tr.find_all(["th", "td"], recursive=False)
             if not cells:
                 continue
-            if all(c.name == "th" for c in cells) and r < 3 and len(header_rows) == r:
+            if all(c.name == "th" for c in cells) and r < MAX_TABLE_HEADER_ROWS and len(header_rows) == r:
                 header_rows.append(r)
             c = 0
             for cell in cells:
@@ -518,7 +524,7 @@ class WikiParser:
         summary, sections, related = self._sections(root, title)
         thumb = None
         for im in images:  # first reasonably large image as fallback lead image
-            if im["width"].isdigit() and int(im["width"]) >= 100:
+            if im["width"].isdigit() and int(im["width"]) >= MIN_IMAGE_WIDTH:
                 thumb = im["src"]
                 break
         return WikiArticle(
@@ -609,7 +615,7 @@ class WikiClient:
                 await asyncio.sleep(2.0)
                 last_exc = WikiError("wiki is lagging, try again shortly")
                 continue
-            if len(self._cache) > 400:
+            if len(self._cache) > MAX_WIKI_CACHE_ENTRIES:
                 now = time.monotonic()
                 self._cache = {k: v for k, v in self._cache.items() if v[0] > now}
             self._cache[key] = (time.monotonic() + ttl, data)

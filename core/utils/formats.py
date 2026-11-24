@@ -171,15 +171,18 @@ def code(text: str, limit: int = 60) -> str:
 
 def file_size(size: int) -> str:
     value = float(size)
+    top_g = 2**10
+
     for unit in ("B", "KB", "MB", "GB"):
-        if value < 1024 or unit == "GB":  # noqa: PLR2004
+        if value < top_g or unit == "GB":
             return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
-        value /= 1024
+        value /= top_g
+
     return f"{size} B"
 
 
 def valid_url(url: str | None) -> bool:
-    max_length = 512
+    max_length = 2**9
     if not url or len(url) > max_length:
         return False
 

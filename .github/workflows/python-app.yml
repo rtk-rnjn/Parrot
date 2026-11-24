@@ -24,6 +24,14 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.txt
 
+      - name: Install system build dependencies for google-re2
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libre2-dev libabsl-dev pybind11-dev
+          if command -v bazel >/dev/null 2>&1; then
+            sudo rm -f "$(command -v bazel)"
+          fi
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip

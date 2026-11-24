@@ -283,6 +283,12 @@ class Bot(commands.Bot):
                 return
 
             case SpamSeverity.MEDIUM:
+                if (
+                    message.guild is not None
+                    and isinstance(message.guild.me, discord.Member)
+                    and not message.channel.permissions_for(message.guild.me).add_reactions
+                ):
+                    return
                 with contextlib.suppress(discord.HTTPException):
                     await ctx.message.add_reaction("\N{WARNING SIGN}")
                 return

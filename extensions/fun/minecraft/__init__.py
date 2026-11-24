@@ -1082,7 +1082,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.session = self.bot.http_session
-        self.cache = cachetools.TTLCache(maxsize=1024, ttl=60)
+        self.cache = cachetools.TLRUCache(maxsize=1024, ttu=lambda _key, value, now: now + value[0])
         self._wikis: dict[str, WikiClient] = {}
         self._idx: dict[tuple, dict] = {}
 
@@ -1103,11 +1103,11 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
         ok: tuple[int, ...] = (200,),
         fresh: bool = False,
     ) -> tuple[int, Any]:
-        key = (method, url, tuple(sorted((params or {}).items())))
+        key = (method, url, tuple(sorted((params or {}).items())), ttl)
         if not fresh:
-            hit = self.cache.get(key)
-            if hit is not None:
-                return hit
+            cached = self.cache.get(key)
+            if cached is not None:
+                return cached[1]
         assert self.session
         try:
             async with self.session.request(method, url, params=params) as r:
@@ -1123,8 +1123,8 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
             msg = f"Couldn't reach the upstream service ({type(e).__name__})."
             raise MCError(msg) from None
         res = (status, data)
-        if status in ok or status in (204, 404):
-            self.cache[key] = res
+        if ttl > 0 and (status in ok or status in (204, 404)):
+            self.cache[key] = (ttl, res)
         return res
 
     async def send(self, ctx: commands.Context[Any], view: BaseView) -> None:

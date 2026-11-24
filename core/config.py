@@ -11,6 +11,7 @@ DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 LIMITED_MEMORY = is_limited_memory()
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+SHARD_ID = int(os.getenv("SHARD_ID") or 0)
 
 RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in (
     "true",

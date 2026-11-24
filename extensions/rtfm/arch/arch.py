@@ -299,6 +299,7 @@ class ArchScraper:
         self._timeout = aiohttp.ClientTimeout(total=timeout)
         self._retries = max(1, retries)
         self._semaphore = asyncio.Semaphore(max_concurrency)
+        self._cache_ttl = cache_ttl
         self._cache = cachetools.TTLCache(cache_size, ttl=cache_ttl) if cache_ttl > 0 else cachetools.Cache(cache_size)
 
     async def __aenter__(self) -> Self:
@@ -346,7 +347,7 @@ class ArchScraper:
         kind: Literal["json", "bytes"] = "json",
     ) -> Any:
         key = (url, tuple(params), kind)
-        cached = self._cache.get(key)
+        cached = self._cache.get(key) if self._cache_ttl > 0 else None
         if cached is not None:
             return cached
 
@@ -368,7 +369,8 @@ class ArchScraper:
             msg = f"Request to {url} failed: {error!r}"
             raise UpstreamError(msg) from error
 
-        self._cache[key] = result
+        if self._cache_ttl > 0:
+            self._cache[key] = result
         return result
 
     async def search_packages(

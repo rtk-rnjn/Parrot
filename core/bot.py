@@ -34,6 +34,7 @@ from .config import (
     LOADABLE_COGS,
     OWNER_ID,
     RESTRICTED_MODE,
+    SHARD_ID,
     SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET,
 )
@@ -46,8 +47,8 @@ if TYPE_CHECKING:
 
 _ = load_dotenv()
 
-
 _log = logging.getLogger(__name__)
+
 SHUTDOWN_STEP_TIMEOUT = 10
 SPAM_HIGH_THRESHOLD = 5
 SPAM_MEDIUM_THRESHOLD = 3
@@ -88,7 +89,7 @@ class Bot(commands.Bot):
             allowed_mentions=discord.AllowedMentions(everyone=False, replied_user=False, roles=False),
             member_cache_flags=discord.MemberCacheFlags.from_intents(intents),
             strip_after_prefix=True,
-            shard_id=1,
+            shard_id=SHARD_ID,
             max_messages=2**9 if LIMITED_MEMORY else 2**12,  # RAM issues guyz
             owner_ids={int(OWNER_ID)} if OWNER_ID else None,
             enable_debug_events=not LIMITED_MEMORY,
@@ -282,7 +283,8 @@ class Bot(commands.Bot):
                 return
 
             case SpamSeverity.MEDIUM:
-                await ctx.message.add_reaction("\N{WARNING SIGN}")
+                with contextlib.suppress(discord.HTTPException):
+                    await ctx.message.add_reaction("\N{WARNING SIGN}")
                 return
 
             case SpamSeverity.LOW:

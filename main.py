@@ -17,7 +17,7 @@ from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
 from dotenv import load_dotenv
 
 from core import Bot
-from version_manger import version_manager
+from version_manager import version_manager
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ if os.getenv("GITHUB_REPO") is not None and os.getenv("EMAIL_ADDRESS") is not No
 elif os.getenv("BOT_USER_AGENT") is not None:
     USER_AGENT: str = os.getenv("BOT_USER_AGENT")  # pyright: ignore[reportAssignmentType]
 else:
-    USER_AGENT = f"{BOT_NAME}/{version} (curl/7; +https://curl.se/)"
+    USER_AGENT = f"{BOT_NAME}/{version} (Discord bot)"
 
 LOGS_ROOT = Path(os.getenv("LOGS_DIR", "logs"))
 LOG_FORMAT = "[{asctime}] [{levelname:<8}] {name}:{funcName}:{lineno} - {message}"

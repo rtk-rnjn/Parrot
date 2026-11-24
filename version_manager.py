@@ -18,8 +18,8 @@ class Version(typing.TypedDict):
 class VersionManager:
     VALID_STAGES: typing.ClassVar[set] = {"alpha", "beta", "rc", None}
 
-    def __init__(self, file_path: str = "version.json"):
-        self.file_path = Path(file_path)
+    def __init__(self, file_path: str | Path | None = None):
+        self.file_path = Path(file_path) if file_path is not None else Path(__file__).with_name("version.json")
         self.data = self.read()
 
     def read(self) -> Version:
@@ -66,7 +66,12 @@ class VersionManager:
             msg = "version_name must be a string"
             raise ValueError(msg)
 
-        if data["stage"] not in self.VALID_STAGES:
+        stage = data["stage"]
+        if stage is not None and not isinstance(stage, str):
+            msg = "stage must be a string or null"
+            raise ValueError(msg)
+
+        if stage not in self.VALID_STAGES:
             msg = "Invalid release stage"
             raise ValueError(msg)
 

@@ -6,7 +6,7 @@ import io
 import logging
 import math
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
@@ -101,12 +101,6 @@ async def _reporting(ctx: commands.Context):
 
 def _now() -> datetime:
     return datetime.now(UTC)
-
-
-def _seconds_until_utc_midnight() -> float:
-    now = _now()
-    tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-    return (tomorrow - now).total_seconds() + 5
 
 
 def _bar(part: int, whole: int, width: int = 14) -> str:
@@ -451,7 +445,7 @@ class CodingStats(commands.Cog):
         if not history:
             msg = f"`{handle}` hasn't taken part in any rated contests yet."
             raise LookupFailed(msg)
-        self._lc_cache[key] = history
+        self._cf_cache[key] = history
         return history
 
     @commands.group(name="codeforces", aliases=["cf"], invoke_without_command=True)

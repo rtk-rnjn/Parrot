@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
@@ -11,6 +10,7 @@ from typing import Any, Literal, Self
 from urllib.parse import quote
 
 import aiohttp
+import cachetools
 import orjson
 from lxml import etree
 from lxml import html as lxml_html
@@ -263,37 +263,6 @@ class NewsItem:
     published: datetime.datetime | None
 
 
-class _TTLCache:
-    def __init__(self, ttl: float, maxsize: int) -> None:
-        self._ttl = ttl
-        self._maxsize = maxsize
-        self._data: dict[Any, tuple[float, Any]] = {}
-
-    def get(self, key: Any) -> Any | None:
-        item = self._data.get(key)
-        if item is None:
-            return None
-
-        expires, value = item
-        if expires < time.monotonic():
-            del self._data[key]
-            return None
-
-        return value
-
-    def set(self, key: Any, value: Any) -> None:
-        if self._ttl <= 0:
-            return
-
-        if len(self._data) >= self._maxsize:
-            self._data.pop(next(iter(self._data)))  # evict the oldest entry
-
-        self._data[key] = (time.monotonic() + self._ttl, value)
-
-    def clear(self) -> None:
-        self._data.clear()
-
-
 class ArchScraper:
     """Async client for Arch Linux's public endpoints: official repos, the AUR, the wiki and the news feed.
 
@@ -330,7 +299,7 @@ class ArchScraper:
         self._timeout = aiohttp.ClientTimeout(total=timeout)
         self._retries = max(1, retries)
         self._semaphore = asyncio.Semaphore(max_concurrency)
-        self._cache = _TTLCache(cache_ttl, cache_size)
+        self._cache = cachetools.TTLCache(cache_size, ttl=cache_ttl) if cache_ttl > 0 else cachetools.Cache(cache_size)
 
     async def __aenter__(self) -> Self:
         return self
@@ -399,7 +368,7 @@ class ArchScraper:
             msg = f"Request to {url} failed: {error!r}"
             raise UpstreamError(msg) from error
 
-        self._cache.set(key, result)
+        self._cache[key] = result
         return result
 
     async def search_packages(

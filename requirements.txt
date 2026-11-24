@@ -8,6 +8,7 @@ discord.py[speed,voice]
 docstring_parser
 english-words
 google-re2
+cachetools
 humanfriendly
 humanize
 jishaku[procinfo]

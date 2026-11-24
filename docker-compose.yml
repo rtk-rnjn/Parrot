@@ -48,6 +48,9 @@ services:
     restart: unless-stopped
     environment:
       - JAVA_TOOL_OPTIONS=-Xmx6G
+      - LAVALINK_SERVER_PASSWORD=${LAVALINK_SERVER_PASSWORD}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
     volumes:
       - ./application.yml:/opt/Lavalink/application.yml
       - ./plugins/:/opt/Lavalink/plugins/
@@ -57,8 +60,6 @@ services:
       - 2333
     ports:
       - "2333:2333"
-    env_file:
-      - .env
 
 volumes:
   mongodb_data:

@@ -17,13 +17,19 @@ from aiohttp import AsyncResolver, ClientSession, ClientTimeout, TCPConnector
 from dotenv import load_dotenv
 
 from core import Bot
+from version_manger import version_manager
 
 load_dotenv()
 
 BOT_NAME = os.getenv("BOT_NAME") or "DiscordBot"
-USER_AGENT = os.getenv("BOT_USER_AGENT") or f"{BOT_NAME}/1.0.0 ({os.getenv('GITHUB_REPO')}; {os.getenv('EMAIL_ADDRESS')})"
+version = version_manager.get_version()
 
-LIMITED_MEMORY = True
+if os.getenv("GITHUB_REPO") is not None and os.getenv("EMAIL_ADDRESS") is not None:
+    USER_AGENT = f"{BOT_NAME}/{version} ({os.getenv('GITHUB_REPO')}; {os.getenv('EMAIL_ADDRESS')})"
+elif os.getenv("BOT_USER_AGENT") is not None:
+    USER_AGENT: str = os.getenv("BOT_USER_AGENT")  # pyright: ignore[reportAssignmentType]
+else:
+    USER_AGENT = f"{BOT_NAME}/{version} (curl/7; +https://curl.se/)"
 
 LOGS_ROOT = Path(os.getenv("LOGS_DIR", "logs"))
 LOG_FORMAT = "[{asctime}] [{levelname:<8}] {name}:{funcName}:{lineno} - {message}"
@@ -187,11 +193,16 @@ def setup_logging(
     root_logger.addHandler(queue_handler)
 
     # Ensure key libraries emit DEBUG records and propagate to the root queue handler.
-    for logger_name in ("core", "server", "discord", "uvicorn", "uvicorn.error", "uvicorn.access", "aiohttp"):
+    for logger_name in ("core", "server", "uvicorn", "uvicorn.error", "uvicorn.access", "aiohttp"):
         mod_logger = logging.getLogger(logger_name)
         mod_logger.setLevel(logging.DEBUG)
         mod_logger.handlers.clear()
         mod_logger.propagate = True
+
+    mod_logger = logging.getLogger("discord")
+    mod_logger.setLevel(logging.INFO)
+    mod_logger.handlers.clear()
+    mod_logger.propagate = True
 
     logging.captureWarnings(True)
     listener.start()
@@ -242,6 +253,8 @@ async def start_bot() -> None:
             ) as session,
             Bot() as bot,
         ):
+            bot.VERSION = version_manager.get_full_version()
+
             bot.set_http_session(session)
             bot.http_stats = http_stats
 

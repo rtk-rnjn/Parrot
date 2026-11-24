@@ -88,6 +88,16 @@ class GlobalChat(commands.Cog):
         if message.author.bot or message.guild is None or not isinstance(message.channel, discord.TextChannel):
             return
 
+        max_content_length = 1980
+        if len(message.content) > max_content_length:
+            _log.warning(
+                "Global chat message from %s in guild %s exceeds %d characters; ignoring.",
+                message.author,
+                message.guild.id,
+                max_content_length,
+            )
+            return
+
         if not message.content.strip() or message.content.startswith(COMMAND_PREFIXES):
             return
 

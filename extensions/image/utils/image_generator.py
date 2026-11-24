@@ -188,7 +188,7 @@ def _fbm_noise(rng: np.random.Generator, h: int, w: int, scale: int = 48, octave
         amplitude *= 0.5
     field /= max(total, 1e-6)
     lo, hi = float(field.min()), float(field.max())
-    return (field - lo) / (hi - lo) if hi - lo > MIN_FBM_NOISE_HI_LO_THRESHOLD-6 else field
+    return (field - lo) / (hi - lo) if hi - lo > MIN_FBM_NOISE_HI_LO_THRESHOLD - 6 else field
 
 
 def noise(
@@ -241,7 +241,7 @@ def plasma(
         f, phase = rng.uniform(1.0, 5.0), rng.uniform(0, tau)
         field += np.sin(tau * f * np.hypot(u - cx, v - cy) + phase)
     lo, hi = float(field.min()), float(field.max())
-    field = (field - lo) / (hi - lo) if hi - lo > MIN_PLASMA_HI_LO_THRESHOLD-6 else np.zeros_like(field)
+    field = (field - lo) / (hi - lo) if hi - lo > MIN_PLASMA_HI_LO_THRESHOLD - 6 else np.zeros_like(field)
     if colors:
         ping_pong = 1.0 - np.abs(2.0 * field - 1.0)
         return _to_rgb_image(_lerp_palette(ping_pong, _resolve_palette(colors, rng, 2)))
@@ -512,7 +512,10 @@ def cellular(
         age = state.copy().astype(np.float32)
         for _ in range(45):
             nbrs = sum(np.roll(np.roll(state, dy, axis=0), dx, axis=1) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if (dx, dy) != (0, 0))
-            state = (((state == 1) & ((nbrs == MAX_CELLULAR_NBRS_LIMIT) | (nbrs == MAX_CELLULAR_NBRS_LIMIT_3))) | ((state == 0) & (nbrs == MAX_CELLULAR_NBRS_LIMIT_3))).astype(np.uint8)
+            state = (
+                ((state == 1) & ((nbrs == MAX_CELLULAR_NBRS_LIMIT) | (nbrs == MAX_CELLULAR_NBRS_LIMIT_3)))
+                | ((state == 0) & (nbrs == MAX_CELLULAR_NBRS_LIMIT_3))
+            ).astype(np.uint8)
             age = np.where(state > 0, age + 1.0, age * 0.85)
         norm = age / max(float(age.max()), 1.0)
         rgb_small = _lerp_palette(norm, palette)
@@ -1426,7 +1429,10 @@ def render_qrcode(text: str, box_size: int = 12) -> EncodedImage:
                 if 0 <= rr < size and 0 <= cc < size:
                     reserved[rr, cc] = True
                     in_outer = 0 <= dr <= MAX_RENDER_QRCODE_FINDER_DR_LIMIT and (dc in (0, 6) or dr in (0, 6))
-                    in_inner = MAX_RENDER_QRCODE_FINDER_DR_LIMIT_2 <= dr <= MAX_RENDER_QRCODE_FINDER_DR_LIMIT_4 and MAX_RENDER_QRCODE_FINDER_DC_LIMIT <= dc <= MAX_RENDER_QRCODE_FINDER_DC_LIMIT_4
+                    in_inner = (
+                        MAX_RENDER_QRCODE_FINDER_DR_LIMIT_2 <= dr <= MAX_RENDER_QRCODE_FINDER_DR_LIMIT_4
+                        and MAX_RENDER_QRCODE_FINDER_DC_LIMIT <= dc <= MAX_RENDER_QRCODE_FINDER_DC_LIMIT_4
+                    )
                     grid[rr, cc] = 1 if (in_outer or in_inner) else 0
 
     _finder(0, 0)
@@ -1440,7 +1446,9 @@ def render_qrcode(text: str, box_size: int = 12) -> EncodedImage:
     for dr in range(-2, 3):
         for dc in range(-2, 3):
             reserved[18 + dr, 18 + dc] = True
-            grid[18 + dr, 18 + dc] = 1 if (abs(dr) == MAX_RENDER_QRCODE_ABS_DR_LIMIT or abs(dc) == MAX_RENDER_QRCODE_ABS_DC_LIMIT or (dr == 0 and dc == 0)) else 0
+            grid[18 + dr, 18 + dc] = (
+                1 if (abs(dr) == MAX_RENDER_QRCODE_ABS_DR_LIMIT or abs(dc) == MAX_RENDER_QRCODE_ABS_DC_LIMIT or (dr == 0 and dc == 0)) else 0
+            )
 
     # Fill payload bits deterministically from UTF-8 bytes + SHA-256 parity
     digest = hashlib.sha256(clean.encode("utf-8")).digest()

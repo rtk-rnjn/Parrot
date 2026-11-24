@@ -183,7 +183,11 @@ class CVERecord:
         if self.references:
             ref_lines = "\n".join(f"- <{ref}>" for ref in self.references[:20])
             max_references_to_display = 20
-            extra = f"\n-# *...and {len(self.references) - max_references_to_display} more references*" if len(self.references) > max_references_to_display else ""
+            extra = (
+                f"\n-# *...and {len(self.references) - max_references_to_display} more references*"
+                if len(self.references) > max_references_to_display
+                else ""
+            )
             sections.append(f"**References & Advisories ({len(self.references)})**\n{ref_lines}{extra}")
 
         return _paginate_markdown("\n\n".join(sections), limit=ISSUE_PAGE_CHAR_LIMIT)

@@ -1104,7 +1104,8 @@ class AsteroidPage(Page):
                     "neo_reference_id": des,
                     "nasa_jpl_url": f"https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr={urllib.parse.quote(des)}",
                     "absolute_magnitude_h": record.get("h") or "unknown",
-                    "is_potentially_hazardous_asteroid": dist_au <= MAX_ASTEROIDPAGE_CAD_FALLBACK_DIST_AU_THRESHOLD and 0 < h_val <= MAX_ASTEROIDPAGE_CAD_FALLBACK_H_VAL_THRESHOLD,
+                    "is_potentially_hazardous_asteroid": dist_au <= MAX_ASTEROIDPAGE_CAD_FALLBACK_DIST_AU_THRESHOLD
+                    and 0 < h_val <= MAX_ASTEROIDPAGE_CAD_FALLBACK_H_VAL_THRESHOLD,
                     "is_sentry_object": False,
                     "estimated_diameter": {"meters": {"estimated_diameter_min": d_min, "estimated_diameter_max": d_max}},
                     "close_approach_data": [

@@ -254,7 +254,12 @@ class TurtleState:
 
 class Turtle:
     def __init__(self, width: int = 1000, height: int = 800) -> None:
-        if width < MAX_TURTLE_INIT_WIDTH_LIMIT or width > MIN_TURTLE_INIT_WIDTH_LIMIT or height < MAX_TURTLE_INIT_HEIGHT_LIMIT or height > MIN_TURTLE_INIT_HEIGHT_LIMIT:
+        if (
+            width < MAX_TURTLE_INIT_WIDTH_LIMIT
+            or width > MIN_TURTLE_INIT_WIDTH_LIMIT
+            or height < MAX_TURTLE_INIT_HEIGHT_LIMIT
+            or height > MIN_TURTLE_INIT_HEIGHT_LIMIT
+        ):
             msg = "Canvas dimensions must be between 16 and 4096 pixels."
             raise LogoRuntimeError(msg)
         self.width = width
@@ -513,28 +518,32 @@ class Turtle:
     # Position & Coordinate reporters
     def get_xcor(self) -> float:
         val = self._primary.x - self.width / 2
-        return 0.0 if abs(val) < MAX_TURTLE_GET_XCOR_ABS_VAL_THRESHOLD-9 else round(val, 6)
+        return 0.0 if abs(val) < MAX_TURTLE_GET_XCOR_ABS_VAL_THRESHOLD - 9 else round(val, 6)
 
     def get_ycor(self) -> float:
         val = self.height / 2 - self._primary.y
-        return 0.0 if abs(val) < MAX_TURTLE_GET_YCOR_ABS_VAL_THRESHOLD-9 else round(val, 6)
+        return 0.0 if abs(val) < MAX_TURTLE_GET_YCOR_ABS_VAL_THRESHOLD - 9 else round(val, 6)
 
     def get_pos(self) -> tuple[float, float]:
         return (self.get_xcor(), self.get_ycor())
 
     def get_heading(self) -> float:
         val = self._primary.heading % 360.0
-        return 0.0 if abs(val) < MAX_TURTLE_GET_HEADING_ABS_VAL_THRESHOLD-9 or abs(val - 360.0) < MAX_TURTLE_GET_HEADING_360_0_THRESHOLD-9 else round(val, 6)
+        return (
+            0.0
+            if abs(val) < MAX_TURTLE_GET_HEADING_ABS_VAL_THRESHOLD - 9 or abs(val - 360.0) < MAX_TURTLE_GET_HEADING_360_0_THRESHOLD - 9
+            else round(val, 6)
+        )
 
     def towards(self, x: float, y: float) -> float:
         tx = _require_finite(x, "X coordinate")
         ty = _require_finite(y, "Y coordinate")
         dx = tx - self.get_xcor()
         dy = ty - self.get_ycor()
-        if abs(dx) < MAX_TURTLE_TOWARDS_ABS_DX_THRESHOLD-12 and abs(dy) < MAX_TURTLE_TOWARDS_ABS_DY_THRESHOLD-12:
+        if abs(dx) < MAX_TURTLE_TOWARDS_ABS_DX_THRESHOLD - 12 and abs(dy) < MAX_TURTLE_TOWARDS_ABS_DY_THRESHOLD - 12:
             return 0.0
         angle = math.degrees(math.atan2(dx, dy)) % 360.0
-        return 0.0 if abs(angle) < MAX_TURTLE_TOWARDS_ABS_ANGLE_THRESHOLD-9 else round(angle, 6)
+        return 0.0 if abs(angle) < MAX_TURTLE_TOWARDS_ABS_ANGLE_THRESHOLD - 9 else round(angle, 6)
 
     def home(self) -> None:
         self.set_xy(0.0, 0.0)

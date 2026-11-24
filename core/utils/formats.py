@@ -190,13 +190,10 @@ def valid_url(url: str | None) -> bool:
 
     try:
         parsed = urlparse(url)
-        return (
-            parsed.scheme in ("http", "https")
-            and bool(parsed.netloc)
-            and "." in (parsed.hostname or "")
-        )
+        return parsed.scheme in ("http", "https") and bool(parsed.netloc) and "." in (parsed.hostname or "")
     except ValueError:
         return False
+
 
 def esc(value: Any) -> str:
     return discord.utils.escape_mentions(discord.utils.escape_markdown(str(value)))

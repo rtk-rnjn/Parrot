@@ -89,7 +89,7 @@ def bulge(img: Image.Image, strength: float = 0.5) -> Image.Image:
     mask = r < 1.0
     exponent = 1.0 / (1.0 + s) if s >= 0 else 1.0 - s * 1.5
     r_new = np.where(mask, np.power(np.clip(r, 1e-6, 1.0), exponent), r)
-    scale = np.where(r > MIN_BULGE_R_THRESHOLD-6, r_new / np.maximum(r, 1e-6), 1.0)
+    scale = np.where(r > MIN_BULGE_R_THRESHOLD - 6, r_new / np.maximum(r, 1e-6), 1.0)
     return from_array(_sample_bilinear(arr, cx + xs * scale, cy + ys * scale))
 
 

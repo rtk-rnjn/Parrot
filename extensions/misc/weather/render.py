@@ -682,7 +682,9 @@ def current_card(  # noqa: PLR0915
         0,
         "Humidity",
         f"{humidity}%",
-        "Comfortable" if MAX_CURRENT_CARD_HUMIDITY_LIMIT <= humidity <= MAX_CURRENT_CARD_HUMIDITY_LIMIT_65 else ("Dry air" if humidity < MAX_CURRENT_CARD_HUMIDITY_LIMIT else "Humid"),
+        "Comfortable"
+        if MAX_CURRENT_CARD_HUMIDITY_LIMIT <= humidity <= MAX_CURRENT_CARD_HUMIDITY_LIMIT_65
+        else ("Dry air" if humidity < MAX_CURRENT_CARD_HUMIDITY_LIMIT else "Humid"),
         bar_frac=humidity / 100,
         bar_colour=DISCORD_BLUE,
     )
@@ -698,7 +700,15 @@ def current_card(  # noqa: PLR0915
     )
 
     metres = visibility if visibility is not None else 10_000
-    vis_label = "Clear view" if metres >= MIN_CURRENT_CARD_METRES_LIMIT else ("Good" if metres >= MIN_CURRENT_CARD_METRES_LIMIT_5000 else ("Moderate" if metres >= MIN_CURRENT_CARD_METRES_LIMIT_2000 else "Low visibility"))
+    vis_label = (
+        "Clear view"
+        if metres >= MIN_CURRENT_CARD_METRES_LIMIT
+        else (
+            "Good"
+            if metres >= MIN_CURRENT_CARD_METRES_LIMIT_5000
+            else ("Moderate" if metres >= MIN_CURRENT_CARD_METRES_LIMIT_2000 else "Low visibility")
+        )
+    )
     metric_tile(
         0,
         1,
@@ -719,7 +729,11 @@ def current_card(  # noqa: PLR0915
         bar_colour=uv_colour,
     )
 
-    cloud_desc = "Clear sky" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT else ("Scattered" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT_50 else ("Broken" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT_85 else "Overcast"))
+    cloud_desc = (
+        "Clear sky"
+        if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT
+        else ("Scattered" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT_50 else ("Broken" if clouds < MAX_CURRENT_CARD_CLOUDS_LIMIT_85 else "Overcast"))
+    )
     metric_tile(
         2,
         1,
@@ -1265,7 +1279,9 @@ def animate(card: bytes, weather_id: int, night: bool, *, frames: int = 36, widt
         if count:
             image.alpha_composite(layer.image(0.55))
 
-        if (weather_id == MAX_ANIMATE_WEATHER_ID_LIMIT and night) or (weather_id // 100 == MAX_ANIMATE_ID_100_LIMIT and weather_id > MIN_ANIMATE_WEATHER_ID_LIMIT and night):
+        if (weather_id == MAX_ANIMATE_WEATHER_ID_LIMIT and night) or (
+            weather_id // 100 == MAX_ANIMATE_ID_100_LIMIT and weather_id > MIN_ANIMATE_WEATHER_ID_LIMIT and night
+        ):
             sparkle = Layer((w, h))
             for sx, sy, sp in stars:
                 brightness = 0.5 + 0.5 * math.sin(2 * math.pi * (t + sp))

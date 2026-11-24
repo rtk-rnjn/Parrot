@@ -959,7 +959,9 @@ class PokedexLayoutView(BaseLayoutView):
         stat_lines.append(f"**Base Stat Total (BST):** `{e.bst}`")
 
         # Group defensive multipliers
-        quad_weak = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (4\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m >= QUADRUPLE_TYPE_DAMAGE]
+        quad_weak = [
+            f"{TYPE_EMOJIS.get(t, '')} {t.title()} (4\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m >= QUADRUPLE_TYPE_DAMAGE
+        ]
         weak = [f"{TYPE_EMOJIS.get(t, '')} {t.title()} (2\N{MULTIPLICATION SIGN})" for t, m in e.type_defenses.items() if m == DOUBLE_TYPE_DAMAGE]
         resist = [
             f"{TYPE_EMOJIS.get(t, '')} {t.title()} (\N{VULGAR FRACTION ONE HALF}\N{MULTIPLICATION SIGN})"
@@ -1642,8 +1644,7 @@ class Pokemon(commands.Cog, command_attrs={"hidden": True}):
                     return True
                 # Allow minor 1-character typo on longer Pokémon names via RapidFuzz ratio
                 return any(
-                    len(target) >= MIN_ACCEPTED_ANSWER_LENGTH and fuzz.ratio(candidate, target) >= FUZZY_ANSWER_MATCH_SCORE
-                    for target in accepted
+                    len(target) >= MIN_ACCEPTED_ANSWER_LENGTH and fuzz.ratio(candidate, target) >= FUZZY_ANSWER_MATCH_SCORE for target in accepted
                 )
 
             while not view.settled:

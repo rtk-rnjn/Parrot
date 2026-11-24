@@ -155,6 +155,6 @@ def edge(img: Image.Image, strength: float = 1.0) -> Image.Image:
     gy = (p[2:, :-2] + 2 * p[2:, 1:-1] + p[2:, 2:]) - (p[:-2, :-2] + 2 * p[:-2, 1:-1] + p[:-2, 2:])
     magnitude = np.hypot(gx, gy)
     peak = float(np.percentile(magnitude, 99))
-    scaled = magnitude / peak if peak > MIN_EDGE_PEAK_THRESHOLD-6 else np.zeros_like(magnitude)
+    scaled = magnitude / peak if peak > MIN_EDGE_PEAK_THRESHOLD - 6 else np.zeros_like(magnitude)
     gray = np.rint(np.clip(scaled * gain, 0.0, 1.0) * 255).astype(np.uint8)
     return join_rgb_alpha(np.repeat(gray[..., None], 3, axis=2), arr[..., 3])

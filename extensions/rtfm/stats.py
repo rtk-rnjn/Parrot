@@ -6,11 +6,11 @@ import io
 import logging
 import math
 import re
-import time
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
+import cachetools
 import discord
 from discord.ext import commands
 lazy from PIL import Image, ImageDraw, ImageFont
@@ -97,30 +97,6 @@ async def _reporting(ctx: commands.Context):
         yield
     except LookupFailed as exc:
         await ctx.send(str(exc), allowed_mentions=discord.AllowedMentions.none())
-
-
-class TTLCache:
-    """Tiny in-memory cache with per-entry expiry and a size bound."""
-
-    def __init__(self, ttl: float, maxsize: int = 256) -> None:
-        self.ttl = ttl
-        self.maxsize = maxsize
-        self._data: dict[Any, tuple[float, Any]] = {}
-
-    def get(self, key: Any) -> Any | None:
-        item = self._data.get(key)
-        if item is None:
-            return None
-        if item[0] < time.monotonic():
-            del self._data[key]
-            return None
-        return item[1]
-
-    def set(self, key: Any, value: Any, ttl: float | None = None) -> None:
-        self._data.pop(key, None)
-        self._data[key] = (time.monotonic() + (self.ttl if ttl is None else ttl), value)
-        while len(self._data) > self.maxsize:
-            del self._data[next(iter(self._data))]  # dicts keep insertion order -> oldest first
 
 
 def _now() -> datetime:
@@ -217,6 +193,8 @@ def cf_profile_embed(u: dict[str, Any]) -> discord.Embed:
     real_name = " ".join(filter(None, (u.get("firstName"), u.get("lastName"))))
     if real_name:
         embed.description = discord.utils.escape_markdown(real_name)
+
+    rank = str(rank)
 
     embed.add_field(name="Rating", value=f"**{rating}** ({rank.title()})" if rating is not None else "Unrated")
     peak = u.get("maxRating")
@@ -345,8 +323,8 @@ class CodingStats(commands.Cog):
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
-        self._lc_cache = TTLCache(600)
-        self._cf_cache = TTLCache(300)
+        self._lc_cache = cachetools.TTLCache(300, ttl=300)
+        self._cf_cache = cachetools.TTLCache(300, ttl=300)
         self._cf_lock = asyncio.Lock()
         self._cf_last = 0.0
 
@@ -378,7 +356,8 @@ class CodingStats(commands.Cog):
         if not daily:
             msg = "LeetCode didn't return today's challenge."
             raise LookupFailed(msg)
-        self._lc_cache.set("daily", daily, ttl=min(900, _seconds_until_utc_midnight()))  # the daily rolls over at 00:00 UTC
+        self._lc_cache["daily"] = daily
+
         return daily
 
     async def _lc_user(self, username: str) -> dict[str, Any]:
@@ -393,7 +372,7 @@ class CodingStats(commands.Cog):
         if not data.get("matchedUser"):
             msg = f"No LeetCode user named `{username}`."
             raise LookupFailed(msg)
-        self._lc_cache.set(key, data)
+        self._lc_cache[key] = data
         return data
 
     @commands.group(name="leetcode", aliases=["lc"], invoke_without_command=True)
@@ -459,7 +438,7 @@ class CodingStats(commands.Cog):
         if hit is not None:
             return hit
         user = (await self._cf_call("user.info", {"handles": handle}, handle))[0]
-        self._cf_cache.set(key, user)
+        self._cf_cache[key] = user
         return user
 
     async def _cf_history(self, handle: str) -> list[dict[str, Any]]:
@@ -472,7 +451,7 @@ class CodingStats(commands.Cog):
         if not history:
             msg = f"`{handle}` hasn't taken part in any rated contests yet."
             raise LookupFailed(msg)
-        self._cf_cache.set(key, history)
+        self._lc_cache[key] = history
         return history
 
     @commands.group(name="codeforces", aliases=["cf"], invoke_without_command=True)

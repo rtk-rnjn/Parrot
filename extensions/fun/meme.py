@@ -4,12 +4,12 @@ import contextlib
 import logging
 import os
 import random as randomlib
-import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 import aiohttp
+import cachetools
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -831,34 +831,13 @@ class MemeStudioView(BaseView):
         self.add_item(c)
 
 
-class TTLCache:
-    def __init__(self, maxsize: int = 256) -> None:
-        self._d: dict[Any, tuple[float, Any]] = {}
-        self._max = maxsize
-
-    def get(self, k: Any) -> Any:
-        v = self._d.get(k)
-        if v and v[0] > time.monotonic():
-            return v[1]
-        self._d.pop(k, None)
-        return None
-
-    def set(self, k: Any, val: Any, ttl: float) -> None:
-        if len(self._d) >= self._max:
-            now = time.monotonic()
-            self._d = {a: b for a, b in self._d.items() if b[0] > now}
-            if len(self._d) >= self._max:
-                self._d.pop(next(iter(self._d)))
-        self._d[k] = (time.monotonic() + ttl, val)
-
-
 class Meme(commands.Cog, command_attrs={"hidden": True}):
     """Interactive Meme Studio and generator powered by the free Imgflip API."""
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.session: aiohttp.ClientSession = self.bot.http_session
-        self.cache = TTLCache()
+        self.cache = cachetools.TTLCache(maxsize=100, ttl=1800)  # 30 minutes
 
     @property
     def api_key(self) -> str | None:
@@ -936,7 +915,9 @@ class Meme(commands.Cog, command_attrs={"hidden": True}):
         if not templates:
             msg = "Imgflip returned an empty template list."
             raise MemeError(msg)
-        self.cache.set("trending_memes", templates, ttl=1800)
+
+        self.cache["trending_memes"] = templates
+
         return templates
 
     async def search_templates(self, query: str) -> list[MemeTemplate]:

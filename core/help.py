@@ -783,7 +783,9 @@ class HelpView(BaseLayoutView):
         await asyncio.to_thread(self.render)
         await interaction.response.edit_message(view=self)
 
-        shown = ", ".join(f"`{path}`" for path in paths[:MAX_HELP_PATHS_TO_DISPLAY]) + (f" and {len(paths) - MAX_HELP_PATHS_TO_DISPLAY} more" if len(paths) > MAX_HELP_PATHS_TO_DISPLAY else "")
+        shown = ", ".join(f"`{path}`" for path in paths[:MAX_HELP_PATHS_TO_DISPLAY]) + (
+            f" and {len(paths) - MAX_HELP_PATHS_TO_DISPLAY} more" if len(paths) > MAX_HELP_PATHS_TO_DISPLAY else ""
+        )
         lines = [f"{'Enabled' if enabled else 'Disabled'} **{len(paths)}** command(s): {shown}"]
         for key, (label, template) in RULE_LABELS.items():
             ids = (rules or {}).get(key)

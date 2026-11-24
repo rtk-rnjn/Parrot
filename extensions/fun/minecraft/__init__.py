@@ -7,7 +7,6 @@ import hashlib
 import json
 import logging
 import re
-import time
 import uuid as uuidlib
 from collections import Counter
 from collections.abc import Awaitable, Callable
@@ -17,6 +16,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 from urllib.parse import quote
 
 import aiohttp
+import cachetools
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -1076,34 +1076,13 @@ class VersionView(BaseView):
         self.add_item(version_container)
 
 
-class TTLCache:
-    def __init__(self, maxsize: int = 600) -> None:
-        self._d: dict[Any, tuple[float, Any]] = {}
-        self._max = maxsize
-
-    def get(self, k: Any) -> Any:
-        v = self._d.get(k)
-        if v and v[0] > time.monotonic():
-            return v[1]
-        self._d.pop(k, None)
-        return None
-
-    def set(self, k: Any, val: Any, ttl: float) -> None:
-        if len(self._d) >= self._max:
-            now = time.monotonic()
-            self._d = {a: b for a, b in self._d.items() if b[0] > now}
-            if len(self._d) >= self._max:
-                self._d.pop(next(iter(self._d)))
-        self._d[k] = (time.monotonic() + ttl, val)
-
-
 class Minecraft(commands.Cog, command_attrs={"hidden": True}):
     """Everything Minecraft: servers, players, wiki, items, and versions."""
 
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.session = self.bot.http_session
-        self.cache = TTLCache()
+        self.cache = cachetools.TTLCache(maxsize=1024, ttl=60)
         self._wikis: dict[str, WikiClient] = {}
         self._idx: dict[tuple, dict] = {}
 
@@ -1145,7 +1124,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
             raise MCError(msg) from None
         res = (status, data)
         if status in ok or status in (204, 404):
-            self.cache.set(key, res, ttl)
+            self.cache[key] = res
         return res
 
     async def send(self, ctx: commands.Context[Any], view: BaseView) -> None:
@@ -1449,7 +1428,7 @@ class Minecraft(commands.Cog, command_attrs={"hidden": True}):
         if not item and not block:
             return None
         base = item or block
-        disp = base["displayName"]
+        disp = base["displayName"] if base is not None else name.replace("_", " ").title()
         formatted_item_details = [f"**ID** `minecraft:{name}`"]
         if item:
             formatted_item_details.append(f"**Registry ID** `{item['id']}` *(changes between versions)*")

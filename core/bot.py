@@ -15,6 +15,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
+import cachetools
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -63,7 +64,6 @@ class SpamSeverity(Enum):
 
 
 class Bot(commands.Bot):
-    VERSION = "1.0.0 (Rewrite)"
     DEFAULT_PREFIX = os.environ.get("DEFAULT_PREFIX", "?")
 
     if TYPE_CHECKING:
@@ -110,7 +110,7 @@ class Bot(commands.Bot):
         self.lavalink_node_pool = pomice.NodePool()
         self.default_lavalink_node: pomice.Node | None = None
 
-        self.message_cache: dict[int, discord.Message] = {}
+        self.message_cache: cachetools.LRUCache[int, discord.Message] = cachetools.LRUCache(maxsize=2**12 if LIMITED_MEMORY else 2**16)
         self._cog_autoreload_task: asyncio.Task[None] | None = None
 
         self.socket_stats = Counter[str]()
@@ -122,6 +122,8 @@ class Bot(commands.Bot):
         self.__mongodb_watcher = None
         self._database_listener_tasks: list[asyncio.Task[None]] = []
         self.http_stats: HTTPStats | None = None
+
+        self.VERSION: str = ""
 
     @override
     async def setup_hook(self) -> None:

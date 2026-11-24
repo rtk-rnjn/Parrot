@@ -447,7 +447,11 @@ def build_fallback_overview(
         upcoming = daily[1:5]
         hi_week = max(d["temp"]["max"] for d in upcoming)
         lo_week = min(d["temp"]["min"] for d in upcoming)
-        wet_days = [datetime.fromtimestamp(d["dt"] + offset, UTC).strftime("%A") for d in upcoming if (d.get("pop") or 0) >= MIN_BUILD_FALLBACK_OVERVIEW_OR_0_THRESHOLD]
+        wet_days = [
+            datetime.fromtimestamp(d["dt"] + offset, UTC).strftime("%A")
+            for d in upcoming
+            if (d.get("pop") or 0) >= MIN_BUILD_FALLBACK_OVERVIEW_OR_0_THRESHOLD
+        ]
         rain_clause = f"notable rain chances on **{', '.join(wet_days)}**" if wet_days else "mostly dry conditions across the upcoming days"
         sentences.append(
             f"Looking ahead over the next {len(upcoming)} days, temperatures will span **{units.temp(lo_week)}** to **{units.temp(hi_week)}** with {rain_clause}."
@@ -664,7 +668,9 @@ class WeatherClient:
         coordinate_match = _COORD_RE.match(cleaned)
         if coordinate_match:
             lat, lon = float(coordinate_match.group(1)), float(coordinate_match.group(2))
-            if not (MIN_VALID_LATITUDE <= lat <= MAX_WEATHERCLIENT_RESOLVE_LAT_LIMIT and MIN_VALID_LONGITUDE <= lon <= MAX_WEATHERCLIENT_RESOLVE_LON_LIMIT):
+            if not (
+                MIN_VALID_LATITUDE <= lat <= MAX_WEATHERCLIENT_RESOLVE_LAT_LIMIT and MIN_VALID_LONGITUDE <= lon <= MAX_WEATHERCLIENT_RESOLVE_LON_LIMIT
+            ):
                 msg = "Coordinates must be between -90..90 latitude and -180..180 longitude."
                 raise WeatherError(msg)
             try:

@@ -17,7 +17,7 @@ RESTRICTED_MODE = os.environ.get("RESTRICTED_MODE", "False").lower() in (
     "1",
     "yes",
 )
-LAVALINK_PASSWORD = os.environ.get("LAVALINK_PASSWORD", "youshallnotpass")
+LAVALINK_PASSWORD = os.environ.get("LAVALINK_SERVER_PASSWORD", "youshallnotpass")
 OWNER_ID = os.getenv("OWNER_ID")
 
 os.environ["JISHAKU_HIDE"] = "True"

@@ -168,7 +168,7 @@ def bulge(img: Image.Image, strength: float = 0.5) -> Image.Image:
     mask = r < 1.0
     exponent = 1.0 / (1.0 + s) if s >= 0 else 1.0 - s * 1.5
     r_new = np.where(mask, np.power(np.clip(r, 1e-6, 1.0), exponent), r)
-    scale = np.where(r > MIN_BULGE_R_THRESHOLD-6, r_new / np.maximum(r, 1e-6), 1.0)
+    scale = np.where(r > MIN_BULGE_R_THRESHOLD - 6, r_new / np.maximum(r, 1e-6), 1.0)
     sx = cx + xs * scale
     sy = cy + ys * scale
     return from_array(_sample_bilinear(arr, sx, sy))
@@ -509,11 +509,11 @@ def bcs(
     s = clamp_float(saturation, 0.0, 3.0, "saturation")
     rgba = to_rgba(img)
     rgb = rgba.convert("RGB")
-    if abs(b - 1.0) > MIN_BCS_1_0_THRESHOLD-3:
+    if abs(b - 1.0) > MIN_BCS_1_0_THRESHOLD - 3:
         rgb = ImageEnhance.Brightness(rgb).enhance(b)
-    if abs(c - 1.0) > MIN_BCS_1_0_THRESHOLD-3:
+    if abs(c - 1.0) > MIN_BCS_1_0_THRESHOLD - 3:
         rgb = ImageEnhance.Contrast(rgb).enhance(c)
-    if abs(s - 1.0) > MIN_BCS_1_0_THRESHOLD-3:
+    if abs(s - 1.0) > MIN_BCS_1_0_THRESHOLD - 3:
         rgb = ImageEnhance.Color(rgb).enhance(s)
     out = rgb.convert("RGBA")
     out.putalpha(rgba.getchannel("A"))

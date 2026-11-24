@@ -317,7 +317,7 @@ class LogoInterpreter:
         try:
             na = self._to_number(a)
             nb = self._to_number(b)
-            return abs(na - nb) <= MAX_LOGOINTERPRETER_VALUES_EQUAL_NA_NB_THRESHOLD-9
+            return abs(na - nb) <= MAX_LOGOINTERPRETER_VALUES_EQUAL_NA_NB_THRESHOLD - 9
         except LogoRuntimeError:
             sa = self._to_word_str(a).upper()
             sb = self._to_word_str(b).upper()

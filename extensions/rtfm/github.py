@@ -306,7 +306,9 @@ def repository_items(data: dict[str, Any], languages: dict[str, int]) -> list[di
     total = sum(languages.values())
     if total:
         top_languages = sorted(languages.items(), key=lambda item: item[1], reverse=True)[:5]
-        breakdown = DOT.join(f"`{name}` {size / total * 100:.1f}%" for name, size in top_languages if size / total >= MIN_REPOSITORY_ITEMS_SIZE_TOTAL_THRESHOLD)
+        breakdown = DOT.join(
+            f"`{name}` {size / total * 100:.1f}%" for name, size in top_languages if size / total >= MIN_REPOSITORY_ITEMS_SIZE_TOTAL_THRESHOLD
+        )
 
     homepage = data.get("homepage") or ""
     if homepage and not homepage.startswith("http"):

@@ -26,23 +26,37 @@ lazy from matplotlib.figure import Figure
 
 from .panel import OwnerPanel
 
-MAX_NAMES_COUNT = 4
-MIN_PICKED_COUNT = 2
-MIN_ACTIVE_COUNT = 3
-
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
     from core import Bot
 
 
+MAX_NAMES_COUNT = 4
+MIN_PICKED_COUNT = 2
+MIN_ACTIVE_COUNT = 3
 RETENTION_MINUTES = 24 * 60  # 1 sample/min -> 24h. ~1440 tiny objects.
 DEFAULT_WINDOW = "1h"
+REDIS_RESULT_LIMIT = 1980
+BG = "#2b2d31"
+PANEL = "#1e1f22"
+FG = "#dbdee1"
+GRID = "#3f4147"
+PALETTE = [
+    "#5865f2",
+    "#57f287",
+    "#fee75c",
+    "#eb459e",
+    "#ed4245",
+    "#3ba5ff",
+    "#f59e0b",
+    "#a78bfa",
+    "#2dd4bf",
+    "#94a3b8",
+]
 
 
 _log = logging.getLogger(__name__)
-
-REDIS_RESULT_LIMIT = 1980
 
 
 def pool_snapshot(session: aiohttp.ClientSession | None) -> tuple[int, int, bool]:
@@ -84,24 +98,6 @@ class Sample:
     @property
     def socket_total(self) -> int:
         return sum(self.socket_delta.values())
-
-
-BG = "#2b2d31"
-PANEL = "#1e1f22"
-FG = "#dbdee1"
-GRID = "#3f4147"
-PALETTE = [
-    "#5865f2",
-    "#57f287",
-    "#fee75c",
-    "#eb459e",
-    "#ed4245",
-    "#3ba5ff",
-    "#f59e0b",
-    "#a78bfa",
-    "#2dd4bf",
-    "#94a3b8",
-]
 
 
 def _style(ax: Axes, title: str, ylabel: str | None = None) -> None:
@@ -405,18 +401,20 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         async with ctx.typing():
             file = await self._render(render_dashboard, samples, f"Bot metrics, last {label} ({len(samples)} samples, UTC)")
 
-        embed = discord.Embed(color=discord.Color.blurple(), timestamp=discord.utils.utcnow())
-        embed.add_field(name="CPU", value=f"{last.proc_cpu:.1f}% bot / {last.sys_cpu:.1f}% sys")
-        embed.add_field(name="RAM", value=f"{last.rss_mb:.0f} MB / {last.sys_mem_pct:.0f}% sys")
-        embed.add_field(name="Latency", value=f"{last.latency_ms:.0f} ms (lag {last.loop_lag_ms:.0f} ms)")
-        embed.add_field(name="Tasks / threads", value=f"{last.tasks} / {last.threads}")
-        embed.add_field(name="Gateway", value=f"{last.socket_total} events/min")
-        embed.add_field(
-            name="HTTP pool",
-            value=f"{in_use} busy, {idle} idle, session {'closed' if closed else 'open'}",
+        embed = (
+            discord.Embed(color=discord.Color.blurple(), timestamp=discord.utils.utcnow())
+            .add_field(name="CPU", value=f"{last.proc_cpu:.1f}% bot / {last.sys_cpu:.1f}% sys")
+            .add_field(name="RAM", value=f"{last.rss_mb:.0f} MB / {last.sys_mem_pct:.0f}% sys")
+            .add_field(name="Latency", value=f"{last.latency_ms:.0f} ms (lag {last.loop_lag_ms:.0f} ms)")
+            .add_field(name="Tasks / threads", value=f"{last.tasks} / {last.threads}")
+            .add_field(name="Gateway", value=f"{last.socket_total} events/min")
+            .add_field(
+                name="HTTP pool",
+                value=f"{in_use} busy, {idle} idle, session {'closed' if closed else 'open'}",
+            )
+            .set_image(url="attachment://metrics.png")
+            .set_footer(text=f"{len(self.samples)}/{RETENTION_MINUTES} samples held in memory")
         )
-        embed.set_image(url="attachment://metrics.png")
-        embed.set_footer(text=f"{len(self.samples)}/{RETENTION_MINUTES} samples held in memory")
         await ctx.reply(embed=embed, file=file)
 
     @metrics.command(name="cpu")

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from .utils.database.models import CommandConfig
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 __all__ = ("Help",)
 

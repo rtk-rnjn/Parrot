@@ -45,13 +45,15 @@ if TYPE_CHECKING:
     from extensions.reminder import Reminder
     from main import HTTPStats
 
-_ = load_dotenv()
+_ = load_dotenv(verbose=True)
 
 _log = logging.getLogger(__name__)
 
 SHUTDOWN_STEP_TIMEOUT = 10
 SPAM_HIGH_THRESHOLD = 5
 SPAM_MEDIUM_THRESHOLD = 3
+SPAM_COUNTER_MAXSIZE = 10_000
+SPAM_COUNTER_TTL_SECONDS = 60
 MAX_AUTOCOMPLETE_RESULTS = 25
 
 EXTENSIONS_DIRECTORY = Path(__file__).resolve().parents[1] / "extensions"
@@ -119,7 +121,10 @@ class Bot(commands.Bot):
         self.socket_stats = Counter[str]()
 
         self.spam_control = commands.CooldownMapping.from_cooldown(3, 6, commands.BucketType.user)
-        self.spam_counter = Counter[int]()
+        self.spam_counter: cachetools.TTLCache[int, int] = cachetools.TTLCache(
+            maxsize=SPAM_COUNTER_MAXSIZE,
+            ttl=SPAM_COUNTER_TTL_SECONDS,
+        )
         self.temporary_ban_list: dict[int, float] = {}  # user_id -> timestamp of when the ban expires
 
         self.__mongodb_watcher = None
@@ -265,11 +270,11 @@ class Bot(commands.Bot):
 
         await self.process_commands(message)
 
-    async def process_commands(self, message: discord.Message, /) -> None:
-        ctx: commands.Context[Bot] = await self.get_context(message, cls=commands.Context)
+    async def check_message_spam(self, ctx: commands.Context[Bot], /) -> bool:
+        message = ctx.message
 
         if ctx.author.id in self.temporary_ban_list:
-            return
+            return True
 
         spam_severity = self._check_for_spam(message)
         match spam_severity:
@@ -280,7 +285,7 @@ class Bot(commands.Bot):
                 )
                 self._background_tasks.add(task)
                 task.add_done_callback(self._background_tasks.discard)
-                return
+                return True
 
             case SpamSeverity.MEDIUM:
                 if (
@@ -288,36 +293,38 @@ class Bot(commands.Bot):
                     and isinstance(message.guild.me, discord.Member)
                     and not message.channel.permissions_for(message.guild.me).add_reactions
                 ):
-                    return
+                    return True
+
                 with contextlib.suppress(discord.HTTPException):
                     await ctx.message.add_reaction("\N{WARNING SIGN}")
-                return
+
+                return True
 
             case SpamSeverity.LOW:
-                return
+                return True
 
             case SpamSeverity.NONE:
-                pass
+                return False
 
-        await self.invoke(ctx)
-
-    async def invoke(self, ctx: commands.Context[Bot]) -> None:
+    @override
+    async def can_run(self, ctx: commands.Context[Bot], /, *, call_once: bool = False) -> bool:
         disabled = await self.is_command_disabled(ctx)
+        if disabled:
+            raise commands.DisabledCommand()
 
-        if disabled and ctx.command is not None:
-            await ctx.command.dispatch_error(ctx, commands.DisabledCommand())
-        else:
-            await super().invoke(ctx)
+        return await super().can_run(ctx, call_once=call_once)
 
     def _check_for_spam(self, message: discord.Message) -> SpamSeverity:
         bucket = self.spam_control.get_bucket(message)
         retry_after = bucket.update_rate_limit(message.created_at.timestamp()) if bucket else None
         if retry_after is not None:
-            self.spam_counter[message.author.id] += 1
-            if self.spam_counter[message.author.id] >= SPAM_HIGH_THRESHOLD:
+            user_id = message.author.id
+            strike_count = self.spam_counter.get(user_id, 0) + 1
+            self.spam_counter[user_id] = strike_count
+            if strike_count >= SPAM_HIGH_THRESHOLD:
                 return SpamSeverity.HIGH
 
-            if self.spam_counter[message.author.id] >= SPAM_MEDIUM_THRESHOLD:
+            if strike_count >= SPAM_MEDIUM_THRESHOLD:
                 return SpamSeverity.MEDIUM
 
             return SpamSeverity.LOW
@@ -489,7 +496,8 @@ class Bot(commands.Bot):
     async def __check_once(self, ctx: commands.Context[Bot]) -> bool:
         if RESTRICTED_MODE:
             return await self.is_owner(ctx.author)
-        return True
+
+        return not await self.check_message_spam(ctx)
 
     async def get_or_fetch_message(self, channel: discord.abc.Messageable, message_id: int) -> discord.Message:
         """Return a cached message or fetch and cache it if unavailable."""

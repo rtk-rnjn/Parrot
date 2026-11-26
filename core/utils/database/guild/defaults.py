@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 from .events import EVENT_NAME
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 DEFAULT_PREFIX = os.getenv("DEFAULT_PREFIX", "?")
 

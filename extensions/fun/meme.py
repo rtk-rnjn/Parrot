@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from core import Bot
 
 log = logging.getLogger(__name__)
-load_dotenv()
+load_dotenv(verbose=True)
 
 PURPLE, GREEN, RED, GOLD, BLUE = 0x8E44AD, 0x2ECC71, 0xE74C3C, 0xF1C40F, 0x3498DB
 VIEW_TIMEOUT = 300

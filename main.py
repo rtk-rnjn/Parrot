@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 from core import Bot
 from version_manager import version_manager
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 BOT_NAME = os.getenv("BOT_NAME") or "DiscordBot"
 version = version_manager.get_version()

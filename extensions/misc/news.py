@@ -18,7 +18,7 @@ HTTP_TOO_MANY_REQUESTS_STATUS = 429
 if TYPE_CHECKING:
     from core import Bot
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 NEWS_API_URL = "https://newsapi.org/v2"

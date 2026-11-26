@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 from limited_memory import is_limited_memory
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 

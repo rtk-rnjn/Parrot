@@ -29,7 +29,7 @@ from .announcement import Announcements
 if TYPE_CHECKING:
     from core import Bot
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 _log = logging.getLogger(__name__)
 
@@ -678,7 +678,7 @@ class Meta(commands.Cog):
             embed.set_thumbnail(url=role.icon.url)
         return await ctx.reply(embed=embed)
 
-    @commands.command(name="channelinfo")
+    @commands.command(name="channelinfo", aliases=["channel-info", "channel_info"])
     async def channel_info(
         self,
         ctx: commands.Context[Bot],

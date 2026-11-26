@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from core.utils.paginator import PaginationView
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 if TYPE_CHECKING:
     from core import Bot

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 __all__ = ("EVENT_NAMES", "SETTING_SECTIONS", "DatabaseManager", "GuildSettingSection")
 
-load_dotenv()
+load_dotenv(verbose=True)
 
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://admin:password@localhost:27017/")
 

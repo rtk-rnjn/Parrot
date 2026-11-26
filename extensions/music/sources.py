@@ -14,7 +14,7 @@ lazy import pomice
 
 from .models import Song
 
-load_dotenv()
+load_dotenv(verbose=True)
 try:
     if os.getenv("ENABLE_YTDL", "").lower() == "true":
         import yt_dlp

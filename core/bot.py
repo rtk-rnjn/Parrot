@@ -497,7 +497,14 @@ class Bot(commands.Bot):
         if RESTRICTED_MODE:
             return await self.is_owner(ctx.author)
 
-        return not await self.check_message_spam(ctx)
+        return True
+
+    @override
+    async def invoke(self, ctx: commands.Context[Bot], /) -> None:
+        if await self.check_message_spam(ctx):
+            return
+
+        await super().invoke(ctx)
 
     async def get_or_fetch_message(self, channel: discord.abc.Messageable, message_id: int) -> discord.Message:
         """Return a cached message or fetch and cache it if unavailable."""

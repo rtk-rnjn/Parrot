@@ -246,14 +246,12 @@ async def start_bot() -> None:
         connector = TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET, ttl_dns_cache=300)
         http_stats = HTTPStats()
 
-        async with (
-            ClientSession(
-                timeout=timeout,
-                connector=connector,
-                headers={"User-Agent": USER_AGENT},
-                trace_configs=[http_stats.trace_config()],
-            ) as session
-        ):
+        async with ClientSession(
+            timeout=timeout,
+            connector=connector,
+            headers={"User-Agent": USER_AGENT},
+            trace_configs=[http_stats.trace_config()],
+        ) as session:
             bot.VERSION = version_manager.get_full_version()
 
             bot.set_http_session(session)

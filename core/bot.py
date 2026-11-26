@@ -308,8 +308,7 @@ class Bot(commands.Bot):
 
     @override
     async def can_run(self, ctx: commands.Context[Bot], /, *, call_once: bool = False) -> bool:
-        disabled = await self.is_command_disabled(ctx)
-        if disabled:
+        if call_once and await self.is_command_disabled(ctx):
             raise commands.DisabledCommand()
 
         return await super().can_run(ctx, call_once=call_once)
@@ -501,7 +500,7 @@ class Bot(commands.Bot):
 
     @override
     async def invoke(self, ctx: commands.Context[Bot], /) -> None:
-        if await self.check_message_spam(ctx):
+        if ctx.command is not None and await self.check_message_spam(ctx):
             return
 
         await super().invoke(ctx)

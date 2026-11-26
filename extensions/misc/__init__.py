@@ -18,11 +18,12 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated
-from urllib.parse import quote, urlparse
+from typing import TYPE_CHECKING, Annotated, Any
+from urllib.parse import quote, urljoin, urlparse
 
 import arrow
 import discord
+from aiohttp.abc import AbstractResolver
 from discord.ext import commands, tasks
 from rapidfuzz import fuzz, process
 lazy import aiohttp
@@ -57,6 +58,10 @@ MAX_MISC_ON_THIS_DAY_M_LIMIT = 12
 MAX_MISC_ON_THIS_DAY_D_LIMIT = 31
 MAX_MISC_BUILD_HTTP_EMBED_CODE_LIMIT = 100
 MAX_MISC_BUILD_HTTP_EMBED_CODE_LIMIT_599 = 599
+MAX_PUBLIC_URL_REDIRECTS = 5
+PUBLIC_WEB_PORTS = frozenset({80, 443})
+PUBLIC_HTTPS_PORT = 443
+HTTP_REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 
 if TYPE_CHECKING:
     from core import Bot
@@ -225,20 +230,123 @@ def calculate_moon_phase(dt: datetime.datetime) -> tuple[str, str, float, float]
     return "New Moon", "\N{NEW MOON SYMBOL}", illumination, age
 
 
-def is_public_host(hostname: str) -> bool:
-    """Validate that a hostname does not resolve to private or loopback IP space."""
-    if not hostname or hostname.lower() == "localhost":
-        return False
+def _is_public_ip(address: str | int) -> bool:
     try:
-        ip = ipaddress.ip_address(hostname)
-        return not (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved)
+        ip = ipaddress.ip_address(str(address).split("%", maxsplit=1)[0])
     except ValueError:
-        return True
+        return False
+
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
+        ip = ip.ipv4_mapped
+
+    return ip.is_global and not (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved or ip.is_unspecified)
 
 
-def fetch_ssl_cert(hostname: str, port: int = 443) -> dict:
+async def resolve_public_host(hostname: str, port: int):
+    """Resolve a hostname and reject it unless every resolved address is public."""
+    if not hostname or any(char.isspace() for char in hostname):
+        message = "Invalid hostname"
+        raise ValueError(message)
+
+    loop = asyncio.get_running_loop()
+    try:
+        results = await asyncio.wait_for(
+            loop.getaddrinfo(hostname, port, type=socket.SOCK_STREAM, proto=socket.IPPROTO_TCP),
+            timeout=5,
+        )
+    except OSError as exc:
+        message = "Hostname could not be resolved"
+        raise ValueError(message) from exc
+
+    addresses = list(dict.fromkeys(result[4][0] for result in results))
+    if not addresses or any(not _is_public_ip(address) for address in addresses):
+        message = "Hostname must resolve only to public IP addresses"
+        raise ValueError(message)
+    return addresses
+
+
+async def is_public_host(hostname: str) -> bool:
+    """Check that every resolved address for a hostname is globally routable."""
+    try:
+        await resolve_public_host(hostname, PUBLIC_HTTPS_PORT)
+    except OSError, ValueError:
+        return False
+    return True
+
+
+class _PinnedResolver(AbstractResolver):
+    """Resolve only one validated hostname to the IPs checked for this request."""
+
+    def __init__(self, hostname: str, addresses: list[str | int]) -> None:
+        self.hostname = hostname.rstrip(".").casefold()
+        self.addresses = addresses
+
+    async def resolve(self, host: str, port: int = 0, family: int = socket.AF_INET) -> list[dict[str, Any]]:
+        if host.rstrip(".").casefold() != self.hostname:
+            message = "Resolver received an unexpected hostname"
+            raise OSError(message)
+
+        return [
+            {
+                "hostname": host,
+                "host": address,
+                "port": port,
+                "family": socket.AF_INET6 if ":" in str(address) else socket.AF_INET,
+                "proto": socket.IPPROTO_TCP,
+                "flags": socket.AI_NUMERICHOST,
+            }
+            for address in self.addresses
+        ]
+
+    async def close(self) -> None:
+        return None
+
+
+async def fetch_public_url_status(url: str, *, timeout: float = 10, headers: dict[str, str] | None = None) -> tuple[int, str]:
+    """Fetch a public URL without following unchecked redirects or resolving twice."""
+    current_url = url
+    for redirect_count in range(MAX_PUBLIC_URL_REDIRECTS + 1):
+        parsed = urlparse(current_url)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
+            message = "URL must be an HTTP(S) URL without embedded credentials"
+            raise ValueError(message)
+
+        try:
+            port = parsed.port or (PUBLIC_HTTPS_PORT if parsed.scheme == "https" else 80)
+        except ValueError as exc:
+            message = "URL has an invalid port"
+            raise ValueError(message) from exc
+        if port not in PUBLIC_WEB_PORTS:
+            message = "Only public web ports 80 and 443 are allowed"
+            raise ValueError(message)
+
+        hostname = parsed.hostname
+        addresses = await resolve_public_host(hostname, port)
+        resolver = _PinnedResolver(hostname, addresses)
+        connector = aiohttp.TCPConnector(resolver=resolver, use_dns_cache=False, force_close=True)
+        async with (
+            aiohttp.ClientSession(
+                connector=connector,
+                timeout=aiohttp.ClientTimeout(total=timeout),
+                headers=headers,
+            ) as session,
+            session.get(current_url, allow_redirects=False) as response,
+        ):
+            location = response.headers.get("Location")
+            if response.status not in HTTP_REDIRECT_STATUSES or not location:
+                return response.status, str(response.url)
+            if redirect_count >= MAX_PUBLIC_URL_REDIRECTS:
+                message = "Too many redirects"
+                raise ValueError(message)
+            current_url = urljoin(current_url, location)
+
+    message = "Too many redirects"
+    raise ValueError(message)
+
+
+def fetch_ssl_cert(hostname: str, address: str, port: int = 443) -> dict:
     ctx = ssl.create_default_context()
-    with socket.create_connection((hostname, port), timeout=8) as sock, ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
+    with socket.create_connection((address, port), timeout=8) as sock, ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
         cert = ssock.getpeercert()
         cipher = ssock.cipher()
         version = ssock.version()
@@ -246,7 +354,8 @@ def fetch_ssl_cert(hostname: str, port: int = 443) -> dict:
 
 
 async def query_whois_server(server: str, query: str) -> str:
-    reader, writer = await asyncio.wait_for(asyncio.open_connection(server, 43), timeout=8)
+    addresses = await resolve_public_host(server, 43)
+    reader, writer = await asyncio.wait_for(asyncio.open_connection(str(addresses[0]), 43), timeout=8)
     try:
         writer.write(f"{query}\r\n".encode())
         await writer.drain()
@@ -1497,7 +1606,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
     ) -> None:
         """Look up geolocation and network info for an IP address or domain."""
         target = target.strip()
-        if not is_public_host(target):
+        if not await is_public_host(target):
             await ctx.reply("Please provide a valid public IP address or domain.")
             return
 
@@ -1586,7 +1695,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
     ) -> None:
         """Perform a WHOIS lookup for a domain or IP address."""
         domain = urlparse(domain).netloc or domain.strip().lower().split("/")[0]
-        if not domain or not is_public_host(domain):
+        if not domain or not await is_public_host(domain):
             await ctx.reply("Please provide a valid public domain or IP.")
             return
 
@@ -1639,15 +1748,21 @@ class Misc(commands.Cog, name="Miscellaneous"):
         hostname: str = commands.parameter(description="The hostname to inspect SSL certificate for."),
     ) -> None:
         """Inspect the SSL/TLS certificate of a domain."""
-        hostname = urlparse(hostname).netloc or hostname.strip().split("/")[0]
-        hostname = hostname.split(":")[0]
-        if not hostname or not is_public_host(hostname):
+        raw_hostname = hostname.strip()
+        parsed_hostname = urlparse(raw_hostname if "://" in raw_hostname else f"//{raw_hostname}")
+        hostname = parsed_hostname.hostname or ""
+        try:
+            port = parsed_hostname.port or 443
+        except ValueError:
+            port = 0
+        if not hostname or parsed_hostname.username or parsed_hostname.password or port != PUBLIC_HTTPS_PORT:
             await ctx.reply("Please provide a valid public hostname.")
             return
 
         async with ctx.typing():
             try:
-                info = await asyncio.to_thread(fetch_ssl_cert, hostname)
+                addresses = await resolve_public_host(hostname, port)
+                info = await asyncio.to_thread(fetch_ssl_cert, hostname, str(addresses[0]), port)
             except Exception as exc:
                 await ctx.reply(f"Could not retrieve SSL certificate for `{hostname}`: {exc}")
                 return
@@ -1685,22 +1800,19 @@ class Misc(commands.Cog, name="Miscellaneous"):
             url = f"https://{url}"
 
         parsed = urlparse(url)
-        if not parsed.hostname or not is_public_host(parsed.hostname):
+        if not parsed.hostname:
             await ctx.reply("Please provide a valid public URL.")
             return
 
         async with ctx.typing():
             start = time.perf_counter()
             try:
-                async with self.bot.http_session.get(
+                status, final_url = await fetch_public_url_status(
                     url,
                     headers={"User-Agent": USER_AGENT},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                    allow_redirects=True,
-                ) as resp:
-                    elapsed_ms = (time.perf_counter() - start) * 1000
-                    status = resp.status
-                    final_url = str(resp.url)
+                    timeout=10,
+                )
+                elapsed_ms = (time.perf_counter() - start) * 1000
             except Exception as exc:
                 embed = discord.Embed(
                     title=f"\N{LARGE RED CIRCLE} {parsed.hostname} appears to be DOWN",
@@ -1737,7 +1849,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
             url = f"https://{url}"
 
         parsed = urlparse(url)
-        if not parsed.hostname or not is_public_host(parsed.hostname):
+        if not parsed.hostname or not await is_public_host(parsed.hostname):
             await ctx.reply("Please provide a valid public website URL.")
             return
 

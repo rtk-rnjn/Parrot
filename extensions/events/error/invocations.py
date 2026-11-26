@@ -30,7 +30,6 @@ class CommandLog(commands.Cog, command_attrs={"hidden": True}):
                 "message_id": ctx.message.id,
                 "channel_id": ctx.channel.id,
                 "guild_id": ctx.guild.id,
-                "message_content": ctx.message.content,
                 "is_command_failed": ctx.command_failed,
             },
         )

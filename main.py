@@ -154,7 +154,7 @@ class PerModuleFileHandler(logging.Handler):
 def setup_logging(
     logs_dir: Path = LOGS_ROOT,
     console_level: int = logging.INFO,
-    file_level: int = logging.DEBUG,
+    file_level: int = logging.INFO,
 ):
     """Configure non-blocking console + per-module DEBUG file logging."""
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -239,6 +239,8 @@ async def start_bot() -> None:
     stop = asyncio.Event()
     install_signal_handlers(stop)
 
+    bot = Bot()
+
     try:
         timeout = ClientTimeout(total=30, connect=10, sock_connect=10, sock_read=20)
         connector = TCPConnector(resolver=AsyncResolver(), family=socket.AF_INET, ttl_dns_cache=300)
@@ -250,8 +252,7 @@ async def start_bot() -> None:
                 connector=connector,
                 headers={"User-Agent": USER_AGENT},
                 trace_configs=[http_stats.trace_config()],
-            ) as session,
-            Bot() as bot,
+            ) as session
         ):
             bot.VERSION = version_manager.get_full_version()
 

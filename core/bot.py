@@ -24,7 +24,6 @@ from pymongo.errors import PyMongoError
 from redis.exceptions import RedisError
 from watchfiles import awatch
 lazy import aiohttp
-lazy import jishaku
 lazy import pomice
 
 from .config import (
@@ -140,8 +139,6 @@ class Bot(commands.Bot):
 
         await self.event_scheduler.ensure_indexes()
         await self.event_scheduler.ensure_schema()
-
-        await self.load_extension(jishaku.__name__)
 
         count = 0
         for extention in LOADABLE_COGS:

@@ -17,6 +17,8 @@ import psutil
 from colorama import Fore
 from discord.ext import commands, tasks
 from humanfriendly import InvalidTimespan, parse_timespan
+from jishaku.cog import OPTIONAL_FEATURES, STANDARD_FEATURES
+from jishaku.features.baseclass import Feature
 from rapidfuzz import fuzz, process
 lazy import aiohttp
 lazy import matplotlib.dates as mdates
@@ -116,7 +118,7 @@ def _legend(ax: Axes, **kw: Any) -> None:
     ax.legend(fontsize=7, facecolor=BG, edgecolor=GRID, labelcolor=FG, **kw)
 
 
-def _annotate_peak(ax: Axes, xs: list[datetime], ys: list[int], color: str) -> None:
+def _annotate_peak(ax: Axes, xs: list, ys: list[int], color: str) -> None:
     peak = max(ys, default=0)
     if peak <= 0:
         return
@@ -137,7 +139,7 @@ def _annotate_peak(ax: Axes, xs: list[datetime], ys: list[int], color: str) -> N
 
 def _plot_socket(ax: Axes, samples: list[Sample], top_n: int, events: list[str] | None = None) -> None:
     """One line per event type. `events` selects specific ones, otherwise the busiest `top_n`."""
-    xs = [s.ts for s in samples]
+    xs: list = [s.ts for s in samples]
     totals: Counter[str] = Counter()
     for s in samples:
         totals.update(s.socket_delta)
@@ -186,7 +188,7 @@ DrawFn = Callable[[Any, "list[Sample]"], None]
 
 
 def _draw_cpu(ax: Axes, samples: list[Sample]) -> None:
-    xs = [s.ts for s in samples]
+    xs: list = [s.ts for s in samples]
     _style(ax, "CPU", "%")
     ax.plot(xs, [s.proc_cpu for s in samples], color=PALETTE[0], label="bot (% of 1 core)")
     ax.plot(xs, [s.sys_cpu for s in samples], color=PALETTE[1], label="system (% total)")
@@ -194,7 +196,7 @@ def _draw_cpu(ax: Axes, samples: list[Sample]) -> None:
 
 
 def _draw_memory(ax: Axes, samples: list[Sample]) -> None:
-    xs = [s.ts for s in samples]
+    xs: list = [s.ts for s in samples]
     _style(ax, "Memory", "bot RSS (MB)")
     ax.plot(xs, [s.rss_mb for s in samples], color=PALETTE[0], label="bot RSS")
     ax2 = ax.twinx()
@@ -208,7 +210,7 @@ def _draw_memory(ax: Axes, samples: list[Sample]) -> None:
 
 
 def _draw_latency(ax: Axes, samples: list[Sample]) -> None:
-    xs = [s.ts for s in samples]
+    xs: list = [s.ts for s in samples]
     _style(ax, "Latency & event-loop lag", "ms")
     ax.plot(xs, [s.latency_ms for s in samples], color=PALETTE[5], label="gateway latency")
     ax.plot(xs, [s.loop_lag_ms for s in samples], color=PALETTE[4], label="worst loop lag")
@@ -221,7 +223,7 @@ def _draw_socket(ax: Axes, samples: list[Sample], top_n: int = 6) -> None:
 
 
 def _draw_http(ax: Axes, samples: list[Sample]) -> None:
-    xs = [s.ts for s in samples]
+    xs: list = [s.ts for s in samples]
     _style(ax, "aiohttp / min", "count")
     ax.plot(xs, [s.http_requests for s in samples], color=PALETTE[0], label="requests")
     ax.plot(xs, [s.http_new_conns for s in samples], color=PALETTE[1], label="new conns")
@@ -232,7 +234,7 @@ def _draw_http(ax: Axes, samples: list[Sample]) -> None:
 
 
 def _draw_runtime(ax: Axes, samples: list[Sample]) -> None:
-    xs = [s.ts for s in samples]
+    xs: list = [s.ts for s in samples]
     _style(ax, "Runtime gauges", "count")
     ax.plot(xs, [s.tasks for s in samples], color=PALETTE[3], label="asyncio tasks")
     ax.plot(xs, [s.threads for s in samples], color=PALETTE[6], label="threads")
@@ -270,12 +272,12 @@ def render_socket_chart(samples: list[Sample], title: str, events: list[str] | N
     return _finish(fig, title)
 
 
-class Owner(commands.Cog, command_attrs={"hidden": True}):
+class OwnerFeature:
     """Bot owner tools for extensions, evaluation and maintenance."""
 
-    def __init__(self, bot: Bot) -> None:
-        self.bot = bot
+    bot: Bot
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.samples: deque[Sample] = deque(maxlen=RETENTION_MINUTES)
 
         self._process = psutil.Process()
@@ -287,6 +289,8 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         self._max_lag = 0.0
         self._lag_task: asyncio.Task[None] | None = None
         self._render_lock = asyncio.Lock()
+
+        super().__init__(*args, **kwargs)
 
         _log.debug("Cog loaded: %s", self.__class__.__name__)
 
@@ -391,7 +395,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
             file = await self._render(partial(render_panel, draw), samples, f"{name}, last {label} (UTC)")
         await ctx.reply(file=file)
 
-    @commands.group(name="perf", aliases=["vitals"], invoke_without_command=True)
+    @Feature.Command(parent="jsk", name="perf", aliases=["vitals"], invoke_without_command=True)
     async def metrics(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """Runtime dashboard (CPU, RAM, latency, loop lag, gateway events, aiohttp)."""
         samples, label = self._window(window)
@@ -417,27 +421,27 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         )
         await ctx.reply(embed=embed, file=file)
 
-    @metrics.command(name="cpu")
+    @Feature.Command(parent="metrics", name="cpu")
     async def metrics_cpu(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """Bot and system CPU usage."""
         await self._send_panel(ctx, _draw_cpu, "CPU", window)
 
-    @metrics.command(name="memory", aliases=["ram", "mem"])
+    @Feature.Command(parent="metrics", name="memory", aliases=["ram", "mem"])
     async def metrics_memory(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """Bot RSS and system memory usage."""
         await self._send_panel(ctx, _draw_memory, "Memory", window)
 
-    @metrics.command(name="latency", aliases=["lag", "ping"])
+    @Feature.Command(parent="metrics", name="latency", aliases=["lag", "ping"])
     async def metrics_latency(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """Gateway latency and worst event-loop lag."""
         await self._send_panel(ctx, _draw_latency, "Latency & loop lag", window)
 
-    @metrics.command(name="http", aliases=["aiohttp", "net"])
+    @Feature.Command(parent="metrics", name="http", aliases=["aiohttp", "net"])
     async def metrics_http(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """aiohttp requests, connections and errors per minute."""
         await self._send_panel(ctx, _draw_http, "aiohttp", window)
 
-    @metrics.command(name="runtime", aliases=["tasks", "gauges"])
+    @Feature.Command(parent="metrics", name="runtime", aliases=["tasks", "gauges"])
     async def metrics_runtime(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
         """asyncio tasks, threads and HTTP pool size."""
         await self._send_panel(ctx, _draw_runtime, "Runtime gauges", window)
@@ -473,7 +477,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         return resolved, problems
 
-    @metrics.command(name="socket", aliases=["sockets", "gateway"])
+    @Feature.Command(parent="metrics", name="socket", aliases=["sockets", "gateway"])
     async def metrics_socket(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW, *events: str) -> None:
         """Gateway events per minute as lines, optionally filtered.
 
@@ -522,18 +526,12 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
         await ctx.reply("\n".join([_event_summary(samples, active), *notes]), file=file)
 
-    async def cog_check(self, ctx: commands.Context[Bot]) -> bool:
-        if await self.bot.is_owner(ctx.author):
-            return True
-
-        raise commands.NotOwner()
-
     def _format_traceback(self, error: Exception) -> str:
         tb = traceback.format_exception(type(error), error, error.__traceback__)
         tb_str = "".join(tb)
         return f"```ansi\n{Fore.RED}{tb_str}{Fore.RESET}\n```"
 
-    @commands.command(name="redis-repl", aliases=["redis-cli", "redis"])
+    @Feature.Command(parent="jsk", name="redis-repl", aliases=["redis-cli", "redis"])
     async def redis_repl(self, ctx: commands.Context[Bot]) -> None:
         """Run raw Redis commands from chat until `exit`. Monitoring lives in the owner panel."""
         await ctx.reply("\N{VIDEO GAME} Redis REPL session started. Type `exit` to quit.")
@@ -541,11 +539,9 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
         def check(m: discord.Message) -> bool:
             return m.author == ctx.author and m.channel == ctx.channel
 
-        love = ...  # idk what is love, so just a placeholder
-
-        while love is not True or False:
+        while True:
             try:
-                msg = await self.bot.wait_for("message", check=check, timeout=300)
+                msg = await ctx.bot.wait_for("message", check=check, timeout=300)
             except TimeoutError:
                 await ctx.reply("\N{ALARM CLOCK} Redis REPL session timed out.")
                 break
@@ -556,7 +552,7 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
 
             codeblock = Codeblock.convert_raw(msg.content)
             try:
-                result = await self.bot.database.redis_client.execute_command(codeblock.content)
+                result = await ctx.bot.database.redis_client.execute_command(codeblock.content)
                 if len(str(result)) > REDIS_RESULT_LIMIT:
                     await msg.reply("\N{WARNING SIGN} Result is too long to display.")
                 else:
@@ -565,17 +561,21 @@ class Owner(commands.Cog, command_attrs={"hidden": True}):
                 tb_fmt = self._format_traceback(e)
                 await msg.reply(tb_fmt)
 
-    @commands.command(name="owner", aliases=["panel", "dev"])
+    @Feature.Command(parent="jsk", name="panel", aliases=["owner", "dev"])
     async def owner(self, ctx: commands.Context[Bot]) -> None:
         """Open the owner panel: bot runtime, Redis, MongoDB, Lavalink and asyncio tasks in one tabbed message."""
-        panel = OwnerPanel(ctx.author, bot=self.bot)
+        panel = OwnerPanel(ctx.author, bot=ctx.bot)
         await panel.start(ctx)
 
-    @commands.command(name="echo", rest_is_raw=True)
+    @Feature.Command(parent="jsk", name="echo", rest_is_raw=True)
     async def echo(self, ctx: commands.Context[Bot], *, message: str) -> None:
         """Echo a message."""
         await ctx.reply(message)
 
 
+class Jishaku(OwnerFeature, *OPTIONAL_FEATURES, *STANDARD_FEATURES):
+    """Jishaku with Parrot's owner and diagnostics commands."""
+
+
 async def setup(bot: Bot) -> None:
-    await bot.add_cog(Owner(bot))
+    await bot.add_cog(Jishaku(bot=bot))

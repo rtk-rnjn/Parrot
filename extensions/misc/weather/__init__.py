@@ -680,55 +680,37 @@ class WeatherDashboard(ui.LayoutView):
                 return None
         return self._air_data
 
-    async def render_active_page(self) -> discord.File | None:  # noqa: PLR0912, PLR0915
-        current = self.data["current"]
-        weather = current["weather"][0]
-        offset = self.data.get("timezone_offset", 0)
-        night = weather["icon"].endswith("n")
-        colour = _accent_colour(weather["id"], night)
-        thumb = icon_url(weather["icon"])
-        alerts = self.data.get("alerts") or []
-
-        if self.page == "alerts":
-            if not alerts:
-                note = (
-                    f"No active government weather alerts for **{self.place.title}**."
-                    if self.data.get("_source") == "onecall"
-                    else f"No active weather alerts reported for **{self.place.title}** (government alert feeds require One Call 3.0)."
-                )
-                self._build_layout(
-                    summary=note,
-                    filename=None,
-                    colour=colour,
-                    thumb_url=thumb,
-                )
-                return None
-
-            idx = min(self.alert_index, len(alerts) - 1)
-            alert = alerts[idx]
-            event = alert.get("event") or "Weather Advisory"
-            sender = alert.get("sender_name") or "National Weather Service"
-            start_ts = alert.get("start")
-            end_ts = alert.get("end")
-            desc = (alert.get("description") or "No additional details provided.").strip()
-            tags = ", ".join(alert.get("tags") or [])
-
-            meta_lines = [f"**\N{WARNING SIGN} {event} ({idx + 1}/{len(alerts)})**", f"**Issued by:** {sender}"]
-            if start_ts and end_ts:
-                meta_lines.append(f"**Window:** <t:{int(start_ts)}:f> \N{RIGHTWARDS ARROW} <t:{int(end_ts)}:f> (<t:{int(end_ts)}:R>)")
-            if tags:
-                meta_lines.append(f"**Tags:** {tags}")
-
-            self._build_layout(
-                summary="\n".join(meta_lines),
-                filename=None,
-                colour=discord.Colour.from_rgb(235, 85, 75),
-                thumb_url=thumb,
-                alert_body=desc[:3500],
+    def _render_alerts_page(self, alerts: list[dict[str, Any]], colour: discord.Colour, thumb: str) -> None:
+        if not alerts:
+            summary = (
+                f"No active government weather alerts for **{self.place.title}**."
+                if self.data.get("_source") == "onecall"
+                else f"No active weather alerts reported for **{self.place.title}** (government alert feeds require One Call 3.0)."
             )
-            return None
+            self._build_layout(summary=summary, filename=None, colour=colour, thumb_url=thumb)
+            return
 
-        cache_key = (
+        index = min(self.alert_index, len(alerts) - 1)
+        alert = alerts[index]
+        event = alert.get("event") or "Weather Advisory"
+        sender = alert.get("sender_name") or "National Weather Service"
+        start, end = alert.get("start"), alert.get("end")
+        lines = [f"**\N{WARNING SIGN} {event} ({index + 1}/{len(alerts)})**", f"**Issued by:** {sender}"]
+        if start and end:
+            lines.append(f"**Window:** <t:{int(start)}:f> \N{RIGHTWARDS ARROW} <t:{int(end)}:f> (<t:{int(end)}:R>)")
+        tags = ", ".join(alert.get("tags") or [])
+        if tags:
+            lines.append(f"**Tags:** {tags}")
+        self._build_layout(
+            summary="\n".join(lines),
+            filename=None,
+            colour=discord.Colour.from_rgb(235, 85, 75),
+            thumb_url=thumb,
+            alert_body=(alert.get("description") or "No additional details provided.").strip()[:3500],
+        )
+
+    def _weather_cache_key(self, current: dict[str, Any]) -> tuple[Any, ...]:
+        return (
             self.page,
             self.place.title,
             round(self.place.lat, 3),
@@ -741,207 +723,200 @@ class WeatherDashboard(ui.LayoutView):
             current["dt"],
         )
 
-        raw = self._card_cache.get(cache_key)
-        ext = "gif" if (self.animated and self.page in {"current", "hourly", "day"}) else "png"
-        summary = ""
-
-        if self.page == "current":
-            air = await self._ensure_air()
-            aqi = air["current"]["main"]["aqi"] if air else None
-            daily = self.data.get("daily") or []
-            hi_lo = (daily[0]["temp"]["max"], daily[0]["temp"]["min"]) if daily else None
-            hourly = self.data.get("hourly") or []
-            pop = hourly[0].get("pop") if hourly else None
-            moon_phase = (daily[0].get("moon_phase") if daily else None) or lunar_phase(current["dt"])
-            banner = f"\N{WARNING SIGN} {len(alerts)} Alert{'s' if len(alerts) > 1 else ''}" if alerts else None
-
-            if raw is None:
-                icon_bytes = await self.client.icon(weather["icon"])
-                card = await asyncio.to_thread(
-                    render.current_card,
-                    place=self.place.title,
-                    current=current,
-                    units=self.units,
-                    offset=offset,
-                    icon=icon_bytes,
-                    hi_lo=hi_lo,
-                    pop=pop,
-                    aqi=aqi,
-                    moon_phase=moon_phase,
-                    banner=banner,
-                )
-                if self.animated:
-                    card = await asyncio.to_thread(render.animate, card, weather["id"], night)
-                self._card_cache[cache_key] = card
-                raw = card
-
-            summary_parts = [
-                f"**{self.units.temp(current['temp'])}** ({weather['description'].title()}, feels like {self.units.temp(current['feels_like'])})",
-            ]
-            if self.data.get("minutely"):
-                summary_parts.append(rain_outlook(self.data["minutely"], current["dt"], self.units))
-            if alerts:
-                top_event = alerts[0].get("event") or "Weather Alert"
-                summary_parts.append(f"\N{WARNING SIGN} **{top_event}** active \N{EM DASH} switch to the **Alerts** view for details.")
-            summary = "\n".join(summary_parts)
-
-        elif self.page == "hourly":
-            points = (self.data.get("hourly") or [])[:24]
-            if not points:
-                self._build_layout(
-                    summary="Hourly forecast data is unavailable for this location.",
-                    filename=None,
-                    colour=colour,
-                    thumb_url=thumb,
-                )
-                return None
-
-            step = points[1]["dt"] - points[0]["dt"] if len(points) > 1 else 3600
-            if raw is None:
-                icons = await self.client.icons(p["weather"][0]["icon"] for p in points)
-                card = await asyncio.to_thread(
-                    render.hourly_card,
-                    place=self.place.title,
-                    points=points,
-                    icons=icons,
-                    units=self.units,
-                    offset=offset,
-                    step=step,
-                )
-                if self.animated:
-                    card = await asyncio.to_thread(render.animate, card, weather["id"], night)
-                self._card_cache[cache_key] = card
-                raw = card
-
-            temps = [p["temp"] for p in points]
-            max_pop = max((p.get("pop") or 0) for p in points)
-            max_wind = max((p.get("wind_speed") or 0) for p in points)
-            summary = (
-                f"Range **{self.units.temp(min(temps))} \N{RIGHTWARDS ARROW} {self.units.temp(max(temps))}**  \N{MIDDLE DOT}  "
-                f"Peak rain chance **{max_pop * 100:.0f}%**  \N{MIDDLE DOT}  "
-                f"Peak wind **{self.units.speed(max_wind)}**"
+    async def _render_current_card(
+        self,
+        cache_key: tuple[Any, ...],
+        raw: bytes | None,
+        current: dict[str, Any],
+        weather: dict[str, Any],
+        alerts: list[dict[str, Any]],
+        offset: int,
+        night: bool,
+    ) -> tuple[bytes, str]:
+        air = await self._ensure_air()
+        daily, hourly = self.data.get("daily") or [], self.data.get("hourly") or []
+        if raw is None:
+            icon = await self.client.icon(weather["icon"])
+            raw = await asyncio.to_thread(
+                render.current_card,
+                place=self.place.title,
+                current=current,
+                units=self.units,
+                offset=offset,
+                icon=icon,
+                hi_lo=(daily[0]["temp"]["max"], daily[0]["temp"]["min"]) if daily else None,
+                pop=hourly[0].get("pop") if hourly else None,
+                aqi=air["current"]["main"]["aqi"] if air else None,
+                moon_phase=(daily[0].get("moon_phase") if daily else None) or lunar_phase(current["dt"]),
+                banner=f"\N{WARNING SIGN} {len(alerts)} Alert{'s' if len(alerts) > 1 else ''}" if alerts else None,
             )
+            if self.animated:
+                raw = await asyncio.to_thread(render.animate, raw, weather["id"], night)
+            self._card_cache[cache_key] = raw
 
-        elif self.page == "daily":
-            days = (self.data.get("daily") or [])[:8]
-            if not days:
-                self._build_layout(
-                    summary="Daily forecast data is unavailable for this location.",
-                    filename=None,
-                    colour=colour,
-                    thumb_url=thumb,
-                )
-                return None
+        summary_parts = [
+            f"**{self.units.temp(current['temp'])}** ({weather['description'].title()}, feels like {self.units.temp(current['feels_like'])})"
+        ]
+        if self.data.get("minutely"):
+            summary_parts.append(rain_outlook(self.data["minutely"], current["dt"], self.units))
+        if alerts:
+            top_event = alerts[0].get("event") or "Weather Alert"
+            summary_parts.append(f"\N{WARNING SIGN} **{top_event}** active \N{EM DASH} switch to the **Alerts** view for details.")
+        return raw, "\n".join(summary_parts)
 
-            if raw is None:
-                icons = await self.client.icons(d["weather"][0]["icon"] for d in days)
-                raw = await asyncio.to_thread(
-                    render.daily_card,
-                    place=self.place.title,
-                    days=days,
-                    icons=icons,
-                    units=self.units,
-                    offset=offset,
-                    today=current["dt"],
-                )
-                self._card_cache[cache_key] = raw
-
-            week_lo = min(d["temp"]["min"] for d in days)
-            week_hi = max(d["temp"]["max"] for d in days)
-            wettest = max(days, key=lambda d: d.get("pop") or 0)
-            wet_date = render.local(wettest["dt"], offset)
-            summary = (
-                f"{len(days)}-day range **{self.units.temp(week_lo)} \N{EM DASH} {self.units.temp(week_hi)}**  \N{MIDDLE DOT}  "
-                f"Highest rain chance **{(wettest.get('pop') or 0) * 100:.0f}%** on **{wet_date:%a %d %b}**"
+    async def _render_hourly_card(
+        self, cache_key: tuple[Any, ...], raw: bytes | None, weather: dict[str, Any], offset: int, night: bool, colour: discord.Colour, thumb: str
+    ) -> tuple[bytes, str] | None:
+        points = (self.data.get("hourly") or [])[:24]
+        if not points:
+            self._build_layout(summary="Hourly forecast data is unavailable for this location.", filename=None, colour=colour, thumb_url=thumb)
+            return None
+        step = points[1]["dt"] - points[0]["dt"] if len(points) > 1 else 3600
+        if raw is None:
+            icons = await self.client.icons(point["weather"][0]["icon"] for point in points)
+            raw = await asyncio.to_thread(
+                render.hourly_card, place=self.place.title, points=points, icons=icons, units=self.units, offset=offset, step=step
             )
-
-        elif self.page == "day":
-            days = self.data.get("daily") or []
-            idx = min(self.day_index or 0, max(0, len(days) - 1))
-            day = days[idx]
-            day_weather = day["weather"][0]
-            if raw is None:
-                icon_bytes = await self.client.icon(day_weather["icon"])
-                card = await asyncio.to_thread(
-                    render.day_card,
-                    place=self.place.title,
-                    day=day,
-                    icon=icon_bytes,
-                    units=self.units,
-                    offset=offset,
-                )
-                if self.animated:
-                    card = await asyncio.to_thread(render.animate, card, day_weather["id"], False)
-                self._card_cache[cache_key] = card
-                raw = card
-
-            dt_val = render.local(day["dt"], offset)
-            day_summary = day.get("summary") or (
-                f"{day_weather['description'].title()} with a high of {self.units.temp(day['temp']['max'])} "
-                f"and low of {self.units.temp(day['temp']['min'])}."
-            )
-            summary = f"**{dt_val:%A, %d %B %Y}** \N{EM DASH} {day_summary}"
-
-        elif self.page == "minutely":
-            minutely = self.data.get("minutely") or []
-            headline = rain_outlook(minutely, current["dt"], self.units)
-            if not minutely:
-                synthesized = [{"dt": current["dt"] + i * 60, "precipitation": float((current.get("rain") or {}).get("1h", 0))} for i in range(60)]
-            else:
-                synthesized = minutely
-
-            if raw is None:
-                raw = await asyncio.to_thread(
-                    render.minutely_card,
-                    place=self.place.title,
-                    minutely=synthesized,
-                    now=current["dt"],
-                    weather=weather,
-                    units=self.units,
-                    headline=clip_headline(headline),
-                )
-                self._card_cache[cache_key] = raw
-
-            summary = headline
-
-        elif self.page == "air":
-            air = await self._ensure_air()
-            if air is None:
-                self._build_layout(
-                    summary="Air quality data is currently unavailable for this location.",
-                    filename=None,
-                    colour=colour,
-                    thumb_url=thumb,
-                )
-                return None
-
-            if raw is None:
-                raw = await asyncio.to_thread(
-                    render.air_card,
-                    place=self.place.title,
-                    air=air,
-                    weather=weather,
-                    offset=offset,
-                )
-                self._card_cache[cache_key] = raw
-
-            aqi = air["current"]["main"]["aqi"]
-            comp = air["current"]["components"]
-            summary = (
-                f"**AQI {aqi}/5 ({render.AQI_NAMES.get(aqi, 'Unknown')})**  \N{MIDDLE DOT}  "
-                f"PM2.5 **{comp.get('pm2_5', 0):.1f} \N{MICRO SIGN}g/m\N{SUPERSCRIPT THREE}**  \N{MIDDLE DOT}  "
-                f"PM10 **{comp.get('pm10', 0):.1f} \N{MICRO SIGN}g/m\N{SUPERSCRIPT THREE}**  \N{MIDDLE DOT}  "
-                f"O\N{SUBSCRIPT THREE} **{comp.get('o3', 0):.1f} \N{MICRO SIGN}g/m\N{SUPERSCRIPT THREE}**"
-            )
-
-        filename = f"weather.{ext}"
-        self._build_layout(
-            summary=summary,
-            filename=filename,
-            colour=colour,
-            thumb_url=thumb,
+            if self.animated:
+                raw = await asyncio.to_thread(render.animate, raw, weather["id"], night)
+            self._card_cache[cache_key] = raw
+        temps = [point["temp"] for point in points]
+        max_pop = max((point.get("pop") or 0) for point in points)
+        max_wind = max((point.get("wind_speed") or 0) for point in points)
+        summary = (
+            f"Range **{self.units.temp(min(temps))} \N{RIGHTWARDS ARROW} {self.units.temp(max(temps))}**  \N{MIDDLE DOT}  "
+            f"Peak rain chance **{max_pop * 100:.0f}%**  \N{MIDDLE DOT}  Peak wind **{self.units.speed(max_wind)}**"
         )
-        return discord.File(BytesIO(raw), filename=filename)  # pyright: ignore[reportArgumentType]
+        return raw, summary
+
+    async def _render_daily_card(
+        self, cache_key: tuple[Any, ...], raw: bytes | None, current: dict[str, Any], offset: int, colour: discord.Colour, thumb: str
+    ) -> tuple[bytes, str] | None:
+        days = (self.data.get("daily") or [])[:8]
+        if not days:
+            self._build_layout(summary="Daily forecast data is unavailable for this location.", filename=None, colour=colour, thumb_url=thumb)
+            return None
+        if raw is None:
+            icons = await self.client.icons(day["weather"][0]["icon"] for day in days)
+            raw = await asyncio.to_thread(
+                render.daily_card, place=self.place.title, days=days, icons=icons, units=self.units, offset=offset, today=current["dt"]
+            )
+            self._card_cache[cache_key] = raw
+        lowest = min(day["temp"]["min"] for day in days)
+        highest = max(day["temp"]["max"] for day in days)
+        wettest = max(days, key=lambda day: day.get("pop") or 0)
+        date = render.local(wettest["dt"], offset)
+        summary = (
+            f"{len(days)}-day range **{self.units.temp(lowest)} \N{EM DASH} {self.units.temp(highest)}**  \N{MIDDLE DOT}  "
+            f"Highest rain chance **{(wettest.get('pop') or 0) * 100:.0f}%** on **{date:%a %d %b}**"
+        )
+        return raw, summary
+
+    async def _render_day_card(
+        self, cache_key: tuple[Any, ...], raw: bytes | None, offset: int, colour: discord.Colour, thumb: str
+    ) -> tuple[bytes, str] | None:
+        days = self.data.get("daily") or []
+        if not days:
+            self._build_layout(summary="Daily forecast data is unavailable for this location.", filename=None, colour=colour, thumb_url=thumb)
+            return None
+        day = days[min(self.day_index or 0, len(days) - 1)]
+        weather = day["weather"][0]
+        if raw is None:
+            icon = await self.client.icon(weather["icon"])
+            raw = await asyncio.to_thread(render.day_card, place=self.place.title, day=day, icon=icon, units=self.units, offset=offset)
+            if self.animated:
+                raw = await asyncio.to_thread(render.animate, raw, weather["id"], False)
+            self._card_cache[cache_key] = raw
+        date = render.local(day["dt"], offset)
+        summary = (
+            day.get("summary")
+            or f"{weather['description'].title()} with a high of {self.units.temp(day['temp']['max'])} and low of {self.units.temp(day['temp']['min'])}."
+        )
+        return raw, f"**{date:%A, %d %B %Y}** \N{EM DASH} {summary}"
+
+    async def _render_minutely_card(
+        self, cache_key: tuple[Any, ...], raw: bytes | None, current: dict[str, Any], weather: dict[str, Any]
+    ) -> tuple[bytes, str]:
+        minutely = self.data.get("minutely") or []
+        headline = rain_outlook(minutely, current["dt"], self.units)
+        synthesized = minutely or [
+            {"dt": current["dt"] + minute * 60, "precipitation": float((current.get("rain") or {}).get("1h", 0))} for minute in range(60)
+        ]
+        if raw is None:
+            raw = await asyncio.to_thread(
+                render.minutely_card,
+                place=self.place.title,
+                minutely=synthesized,
+                now=current["dt"],
+                weather=weather,
+                units=self.units,
+                headline=clip_headline(headline),
+            )
+            self._card_cache[cache_key] = raw
+        return raw, headline
+
+    async def _render_air_card(
+        self, cache_key: tuple[Any, ...], raw: bytes | None, weather: dict[str, Any], offset: int, colour: discord.Colour, thumb: str
+    ) -> tuple[bytes, str] | None:
+        air = await self._ensure_air()
+        if air is None:
+            self._build_layout(summary="Air quality data is currently unavailable for this location.", filename=None, colour=colour, thumb_url=thumb)
+            return None
+        if raw is None:
+            raw = await asyncio.to_thread(render.air_card, place=self.place.title, air=air, weather=weather, offset=offset)
+            self._card_cache[cache_key] = raw
+        aqi = air["current"]["main"]["aqi"]
+        components = air["current"]["components"]
+        summary = (
+            f"**AQI {aqi}/5 ({render.AQI_NAMES.get(aqi, 'Unknown')})**  \N{MIDDLE DOT}  "
+            f"PM2.5 **{components.get('pm2_5', 0):.1f} \N{MICRO SIGN}g/m\N{SUPERSCRIPT THREE}**  \N{MIDDLE DOT}  "
+            f"PM10 **{components.get('pm10', 0):.1f} \N{MICRO SIGN}g/m\N{SUPERSCRIPT THREE}**  \N{MIDDLE DOT}  "
+            f"O\N{SUBSCRIPT THREE} **{components.get('o3', 0):.1f} \N{MICRO SIGN}g/m\N{SUPERSCRIPT THREE}**"
+        )
+        return raw, summary
+
+    async def render_active_page(self) -> discord.File | None:
+        current = self.data["current"]
+        weather = current["weather"][0]
+        offset = self.data.get("timezone_offset", 0)
+        night = weather["icon"].endswith("n")
+        colour = _accent_colour(weather["id"], night)
+        thumb = icon_url(weather["icon"])
+        alerts = self.data.get("alerts") or []
+        if self.page == "alerts":
+            self._render_alerts_page(alerts, colour, thumb)
+            return None
+
+        cache_key = self._weather_cache_key(current)
+        raw = self._card_cache.get(cache_key)
+        renderer = {
+            "current": self._render_current_card,
+            "hourly": self._render_hourly_card,
+            "daily": self._render_daily_card,
+            "day": self._render_day_card,
+            "minutely": self._render_minutely_card,
+            "air": self._render_air_card,
+        }.get(self.page)
+        if renderer is None:
+            return None
+        if self.page == "current":
+            result = await renderer(cache_key, raw, current, weather, alerts, offset, night)
+        elif self.page == "hourly":
+            result = await renderer(cache_key, raw, weather, offset, night, colour, thumb)
+        elif self.page == "daily":
+            result = await renderer(cache_key, raw, current, offset, colour, thumb)
+        elif self.page == "day":
+            result = await renderer(cache_key, raw, offset, colour, thumb)
+        elif self.page == "minutely":
+            result = await renderer(cache_key, raw, current, weather)
+        else:
+            result = await renderer(cache_key, raw, weather, offset, colour, thumb)
+        if result is None:
+            return None
+        raw, summary = result
+        filename = f"weather.{'gif' if self.animated and self.page in {'current', 'hourly', 'day'} else 'png'}"
+        self._build_layout(summary=summary, filename=filename, colour=colour, thumb_url=thumb)
+        return discord.File(BytesIO(raw), filename=filename)
 
     async def refresh_message(self, interaction: discord.Interaction, *, deferred: bool = False) -> None:
         if not deferred and not interaction.response.is_done():

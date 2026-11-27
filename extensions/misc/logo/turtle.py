@@ -108,7 +108,57 @@ def _require_finite(value: float, name: str = "Value") -> float:
     return float(value)
 
 
-def parse_color(value: Any) -> tuple[int, int, int]:  # noqa: PLR0912, PLR0915
+def _parse_rgb_color(components: tuple[Any, ...]) -> tuple[int, int, int]:
+    if len(components) != MAX_ITEMS_COUNT:
+        msg = f"RGB color list must have exactly 3 numbers, got {len(components)}."
+        raise LogoRuntimeError(msg)
+    rgb: list[int] = []
+    for component in components:
+        try:
+            number = float(component)
+        except (TypeError, ValueError) as exc:
+            msg = f"Invalid RGB component: {component!r}."
+            raise LogoRuntimeError(msg) from exc
+        if not math.isfinite(number) or not number.is_integer():
+            msg = f"RGB component must be an integer between 0 and 255, got {component!r}."
+            raise LogoRuntimeError(msg)
+        integer = int(number)
+        if integer < 0 or integer > MIN_PARSE_COLOR_ICOMP_LIMIT:
+            msg = f"RGB component must be between 0 and 255, got {integer}."
+            raise LogoRuntimeError(msg)
+        rgb.append(integer)
+    return (rgb[0], rgb[1], rgb[2])
+
+
+def _parse_palette_index(value: float | int) -> tuple[int, int, int]:
+    number = float(value)
+    if not math.isfinite(number) or not number.is_integer():
+        msg = f"Color palette index must be an integer between 0 and 15, got {value!r}."
+        raise LogoRuntimeError(msg)
+    index = int(number)
+    if index in PALETTE:
+        return PALETTE[index]
+    msg = f"Color palette index must be between 0 and 15, got {index}."
+    raise LogoRuntimeError(msg)
+
+
+def _parse_named_color(value: str) -> tuple[int, int, int] | None:
+    cleaned = value.strip().removeprefix('"')
+    upper = cleaned.upper()
+    if upper in COLORS:
+        return COLORS[upper]
+    if re.fullmatch(r"[+-]?\d+", cleaned):
+        return _parse_palette_index(int(cleaned))
+    match = _HEX_COLOR_RE.fullmatch(cleaned)
+    if match is None:
+        return None
+    hex_value = match.group(1)
+    if len(hex_value) == MAX_HEX_VALUE_COUNT:
+        return (int(hex_value[0] * 2, 16), int(hex_value[1] * 2, 16), int(hex_value[2] * 2, 16))
+    return (int(hex_value[0:2], 16), int(hex_value[2:4], 16), int(hex_value[4:6], 16))
+
+
+def parse_color(value: Any) -> tuple[int, int, int]:
     """
     Parses a Logo color specification:
     - RGB list/tuple of 3 integers in 0..255: `[255 0 128]`
@@ -118,71 +168,15 @@ def parse_color(value: Any) -> tuple[int, int, int]:  # noqa: PLR0912, PLR0915
     Raises `LogoRuntimeError` for any unknown or invalid color.
     """
     if isinstance(value, LogoList):
-        items = value.values
-    elif isinstance(value, (list, tuple)):
-        items = tuple(value)
-    else:
-        items = None
-
-    if items is not None:
-        if len(items) != MAX_ITEMS_COUNT:
-            msg = f"RGB color list must have exactly 3 numbers, got {len(items)}."
-            raise LogoRuntimeError(msg)
-        rgb: list[int] = []
-        for comp in items:
-            try:
-                fcomp = float(comp)
-            except (TypeError, ValueError) as exc:
-                msg = f"Invalid RGB component: {comp!r}."
-                raise LogoRuntimeError(msg) from exc
-            if not math.isfinite(fcomp) or not fcomp.is_integer():
-                msg = f"RGB component must be an integer between 0 and 255, got {comp!r}."
-                raise LogoRuntimeError(msg)
-            icomp = int(fcomp)
-            if icomp < 0 or icomp > MIN_PARSE_COLOR_ICOMP_LIMIT:
-                msg = f"RGB component must be between 0 and 255, got {icomp}."
-                raise LogoRuntimeError(msg)
-            rgb.append(icomp)
-        return (rgb[0], rgb[1], rgb[2])
-
+        return _parse_rgb_color(value.values)
+    if isinstance(value, (list, tuple)):
+        return _parse_rgb_color(tuple(value))
     if isinstance(value, (int, float)) and not isinstance(value, bool):
-        fval = float(value)
-        if not math.isfinite(fval) or not fval.is_integer():
-            msg = f"Color palette index must be an integer between 0 and 15, got {value!r}."
-            raise LogoRuntimeError(msg)
-        idx = int(fval)
-        if idx in PALETTE:
-            return PALETTE[idx]
-        msg = f"Color palette index must be between 0 and 15, got {idx}."
-        raise LogoRuntimeError(msg)
-
+        return _parse_palette_index(value)
     if isinstance(value, str):
-        cleaned = value.strip()
-        cleaned = cleaned.removeprefix('"')
-        upper = cleaned.upper()
-        if upper in COLORS:
-            return COLORS[upper]
-
-        # Check integer palette index passed as string (e.g. "4)
-        if re.fullmatch(r"[+-]?\d+", cleaned):
-            idx = int(cleaned)
-            if idx in PALETTE:
-                return PALETTE[idx]
-            msg = f"Color palette index must be between 0 and 15, got {idx}."
-            raise LogoRuntimeError(msg)
-
-        hex_match = _HEX_COLOR_RE.fullmatch(cleaned)
-        if hex_match:
-            hex_value = hex_match.group(1)
-            if len(hex_value) == MAX_HEX_VALUE_COUNT:
-                r = int(hex_value[0] * 2, 16)
-                g = int(hex_value[1] * 2, 16)
-                b = int(hex_value[2] * 2, 16)
-            else:
-                r = int(hex_value[0:2], 16)
-                g = int(hex_value[2:4], 16)
-                b = int(hex_value[4:6], 16)
-            return (r, g, b)
+        parsed = _parse_named_color(value)
+        if parsed is not None:
+            return parsed
 
     msg = f"Unknown or invalid color: {value!r}."
     raise LogoRuntimeError(msg)

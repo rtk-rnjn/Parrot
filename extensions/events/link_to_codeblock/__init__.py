@@ -548,7 +548,70 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             sources_used=["NIST NVD"],
         )
 
-    def _enrich_from_mitre_v5(self, record: CVERecord | None, data: dict[str, Any]) -> CVERecord:  # noqa: PLR0912, PLR0915
+    @staticmethod
+    def _mitre_v5_cwe_ids(cna: dict[str, Any], record: CVERecord | None) -> list[str]:
+        cwe_ids = list(record.cwe_ids) if record else []
+        for problem_type in cna.get("problemTypes") or []:
+            for desc in problem_type.get("descriptions") or []:
+                cwe = desc.get("cweId") or desc.get("description")
+                if cwe and cwe not in cwe_ids:
+                    cwe_ids.append(cwe)
+        return cwe_ids
+
+    @staticmethod
+    def _mitre_v5_affected_products(cna: dict[str, Any], record: CVERecord | None) -> list[str]:
+        products = list(record.affected_products) if record else []
+        for affected in cna.get("affected") or []:
+            vendor = affected.get("vendor") or "unknown"
+            product = affected.get("product") or "unknown"
+            versions = [
+                f"{version.get('version')} ({version.get('status', 'affected')})"
+                for version in (affected.get("versions") or [])[:4]
+                if version.get("version")
+            ]
+            version_text = f": {', '.join(versions)}" if versions else ""
+            entry = f"{vendor}/{product}{version_text}"
+            if entry not in products:
+                products.append(entry)
+        return products
+
+    @staticmethod
+    def _mitre_v5_credits(cna: dict[str, Any], record: CVERecord | None) -> list[str]:
+        formatted_credits = list(record.credits) if record else []
+        for credit in cna.get("credits") or []:
+            value = credit.get("value")
+            credit_type = credit.get("type")
+            if value:
+                formatted = f"{value} ({credit_type})" if credit_type else value
+                if formatted not in formatted_credits:
+                    formatted_credits.append(formatted)
+        return formatted_credits
+
+    @staticmethod
+    def _mitre_v5_cvss(cna: dict[str, Any], record: CVERecord | None) -> tuple[float | None, str | None]:
+        score = record.cvss if record else None
+        version = record.cvss_version if record else None
+        if score is None:
+            for metric in cna.get("metrics") or []:
+                for key, label in (("cvssV4_0", "4.0"), ("cvssV3_1", "3.1"), ("cvssV3_0", "3.0"), ("cvssV2_0", "2.0")):
+                    if key in metric and metric[key].get("baseScore") is not None:
+                        score = float(metric[key]["baseScore"])
+                        version = label
+                        break
+                if score is not None:
+                    break
+        return score, version
+
+    @staticmethod
+    def _mitre_v5_references(cna: dict[str, Any], record: CVERecord | None) -> list[str]:
+        refs = list(record.references) if record else []
+        for reference in cna.get("references") or []:
+            url = reference.get("url")
+            if url and url not in refs:
+                refs.append(url)
+        return refs
+
+    def _enrich_from_mitre_v5(self, record: CVERecord | None, data: dict[str, Any]) -> CVERecord:
         meta = data.get("cveMetadata") or {}
         cve_id = (meta.get("cveId") or (record.cve_id if record else "UNKNOWN")).upper()
         state = meta.get("state") or "PUBLISHED"
@@ -566,52 +629,11 @@ class LinkToCodeblock(commands.Cog, command_attrs={"hidden": True}):
             descriptions[0]["value"] if descriptions else "",
         )
 
-        cwe_ids = list(record.cwe_ids) if record else []
-        for pt in cna.get("problemTypes") or []:
-            for desc in pt.get("descriptions") or []:
-                cwe = desc.get("cweId") or desc.get("description")
-                if cwe and cwe not in cwe_ids:
-                    cwe_ids.append(cwe)
-
-        affected_products: list[str] = list(record.affected_products) if record else []
-        for aff in cna.get("affected") or []:
-            vendor = aff.get("vendor") or "unknown"
-            product = aff.get("product") or "unknown"
-            versions = [f"{v.get('version')} ({v.get('status', 'affected')})" for v in (aff.get("versions") or [])[:4] if v.get("version")]
-            ver_str = f": {', '.join(versions)}" if versions else ""
-            entry = f"{vendor}/{product}{ver_str}"
-            if entry not in affected_products:
-                affected_products.append(entry)
-
-        credits_list: list[str] = list(record.credits) if record else []
-        for cred in cna.get("credits") or []:
-            val = cred.get("value")
-            ctype = cred.get("type")
-            if val:
-                formatted = f"{val} ({ctype})" if ctype else val
-                if formatted not in credits_list:
-                    credits_list.append(formatted)
-
-        cvss_score = record.cvss if record else None
-        cvss_ver = record.cvss_version if record else None
-        if cvss_score is None:
-            for m in cna.get("metrics") or []:
-                for key, ver_label in (
-                    ("cvssV4_0", "4.0"),
-                    ("cvssV3_1", "3.1"),
-                    ("cvssV3_0", "3.0"),
-                    ("cvssV2_0", "2.0"),
-                ):
-                    if key in m and m[key].get("baseScore") is not None:
-                        cvss_score = float(m[key]["baseScore"])
-                        cvss_ver = ver_label
-                        break
-
-        refs = list(record.references) if record else []
-        for r in cna.get("references") or []:
-            url = r.get("url")
-            if url and url not in refs:
-                refs.append(url)
+        cwe_ids = self._mitre_v5_cwe_ids(cna, record)
+        affected_products = self._mitre_v5_affected_products(cna, record)
+        credits_list = self._mitre_v5_credits(cna, record)
+        cvss_score, cvss_ver = self._mitre_v5_cvss(cna, record)
+        refs = self._mitre_v5_references(cna, record)
 
         if record is None:
             return CVERecord(

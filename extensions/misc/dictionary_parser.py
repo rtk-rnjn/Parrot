@@ -700,7 +700,41 @@ def _chunk_lines_for_embed_field(lines: list[str], max_len: int = 1024) -> list[
     return chunks or ["\N{EM DASH}"]
 
 
-def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # noqa: PLR0912
+def _add_pos_block(embed: discord.Embed, block: POSBlock) -> list[tuple[str, str]]:
+    field_lines: list[str] = []
+    if block.inflection_note:
+        field_lines.append(f"\N{MEMO} *{block.inflection_note}*")
+
+    for sense in block.senses:
+        if sense.subsenses:
+            header = f"**{sense.number}.**" if sense.number else "\N{BULLET}"
+            field_lines.append(f"{header} {sense.main_text}" if sense.main_text else header)
+            field_lines.extend(f"> **{letter})** {text}" for letter, text in sense.subsenses)
+        elif sense.number:
+            field_lines.append(f"**{sense.number}.** {sense.main_text}")
+        elif sense.main_text:
+            field_lines.append(f"\N{BULLET} {sense.main_text}")
+
+    base_name = f"{block.icon} {block.expanded_pos}"
+    for index, chunk in enumerate(_chunk_lines_for_embed_field(field_lines, max_len=1024)):
+        if len(embed.fields) >= MAX_EMBED_FIELDS_COUNT:
+            break
+        name = base_name if index == 0 else f"{base_name} (Part {index + 1})"
+        embed.add_field(name=name[:256], value=chunk, inline=False)
+    return block.derivatives
+
+
+def _add_derivative_field(embed: discord.Embed, derivatives: list[tuple[str, str]]) -> None:
+    if not derivatives or len(embed.fields) >= MIN_EMBED_FIELDS_COUNT:
+        return
+    items = [f"**{word}** *({pos})*" for word, pos in derivatives]
+    value = "  \N{BULLET}  ".join(items)
+    if len(value) > MAX_DERIV_VALUE_COUNT:
+        value = value[:1021] + "..."
+    embed.add_field(name="\N{HERB} Derived Words & Related Forms", value=value, inline=False)
+
+
+def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:
     """
     Converts a `(key, value)` pair from `dictionary.json` into a richly formatted
     `discord.Embed` with full part-of-speech labels, structured numbered senses,
@@ -735,50 +769,11 @@ def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:  # no
         color=primary_color,
     )
 
-    # 3. Add a Structured Field for Each Part of Speech
     all_derivatives: list[tuple[str, str]] = []
-
     for block in entry.pos_blocks:
-        all_derivatives.extend(block.derivatives)
+        all_derivatives.extend(_add_pos_block(embed, block))
 
-        field_lines: list[str] = []
-        if block.inflection_note:
-            field_lines.append(f"\N{MEMO} *{block.inflection_note}*")
-
-        for sense in block.senses:
-            if sense.subsenses:
-                header_prefix = f"**{sense.number}.**" if sense.number else "\N{BULLET}"
-                if sense.main_text:
-                    field_lines.append(f"{header_prefix} {sense.main_text}")
-                else:
-                    field_lines.append(f"{header_prefix}")
-                for sub_letter, sub_text in sense.subsenses:
-                    field_lines.append(f"> **{sub_letter})** {sub_text}")
-            elif sense.number:
-                field_lines.append(f"**{sense.number}.** {sense.main_text}")
-            elif sense.main_text:
-                field_lines.append(f"\N{BULLET} {sense.main_text}")
-
-        chunks = _chunk_lines_for_embed_field(field_lines, max_len=1024)
-        base_field_name = f"{block.icon} {block.expanded_pos}"
-
-        for idx, chunk in enumerate(chunks):
-            if len(embed.fields) >= MAX_EMBED_FIELDS_COUNT:  # Leave 1 slot for derivatives if needed
-                break
-            field_name = base_field_name if idx == 0 else f"{block.icon} {block.expanded_pos} (Part {idx + 1})"
-            embed.add_field(name=field_name[:256], value=chunk, inline=False)
-
-    # 4. Derived Words & Phrases Field (if present)
-    if all_derivatives and len(embed.fields) < MIN_EMBED_FIELDS_COUNT:
-        deriv_items = [f"**{word}** *({pos})*" for word, pos in all_derivatives]
-        deriv_value = "  \N{BULLET}  ".join(deriv_items)
-        if len(deriv_value) > MAX_DERIV_VALUE_COUNT:
-            deriv_value = deriv_value[:1021] + "..."
-        embed.add_field(
-            name="\N{HERB} Derived Words & Related Forms",
-            value=deriv_value,
-            inline=False,
-        )
+    _add_derivative_field(embed, all_derivatives)
 
     # 5. Etymology Footer
     if entry.etymology:

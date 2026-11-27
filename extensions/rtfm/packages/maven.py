@@ -35,6 +35,46 @@ def _strip_ns(tag: str) -> str:
     return tag.rsplit("}", 1)[-1] if "}" in tag else tag
 
 
+def _parse_pom_properties(element: ET.Element) -> dict[str, str]:
+    return {_strip_ns(prop.tag): prop.text.strip() for prop in element if prop.text and prop.text.strip()}
+
+
+def _parse_pom_scm(element: ET.Element) -> str | None:
+    for child in element:
+        if _strip_ns(child.tag) in {"url", "connection"} and child.text:
+            return child.text.strip().removeprefix("scm:git:")
+    return None
+
+
+def _parse_pom_licenses(element: ET.Element) -> list[str]:
+    return [child.text.strip() for license_entry in element for child in license_entry if _strip_ns(child.tag) == "name" and child.text]
+
+
+def _parse_pom_developers(element: ET.Element) -> list[str]:
+    names: list[str] = []
+    for developer in element:
+        name = next((child.text.strip() for child in developer if _strip_ns(child.tag) in {"name", "id"} and child.text), None)
+        if name:
+            names.append(name)
+    return names
+
+
+def _parse_pom_dependencies(element: ET.Element, properties: dict[str, str]) -> dict[str, list[str]]:
+    by_scope: dict[str, list[str]] = {}
+    for dependency in element:
+        values = {_strip_ns(child.tag): (child.text or "").strip() for child in dependency}
+        group_id, artifact_id = values.get("groupId"), values.get("artifactId")
+        if not group_id or not artifact_id:
+            continue
+        version = values.get("version")
+        if version and version.startswith("${") and version.endswith("}"):
+            version = properties.get(version[2:-1], version)
+        coordinate = f"{group_id}:{artifact_id}" + (f":{version}" if version else "")
+        scope = "Optional" if values.get("optional", "").lower() == "true" else (values.get("scope") or "compile").capitalize()
+        by_scope.setdefault(scope, []).append(coordinate)
+    return by_scope
+
+
 class MavenRegistry(Registry):
     ecosystem = MAVEN
     search_url = "https://search.maven.org/solrsearch/select"
@@ -99,7 +139,7 @@ class MavenRegistry(Registry):
             return None
 
     @staticmethod
-    def parse_pom_metadata(root: ET.Element | None) -> dict[str, Any]:  # noqa: PLR0912
+    def parse_pom_metadata(root: ET.Element | None) -> dict[str, Any]:
         if root is None:
             return {}
 
@@ -114,50 +154,20 @@ class MavenRegistry(Registry):
         for child in root:
             tag = _strip_ns(child.tag)
             if tag == "properties":
-                for prop in child:
-                    if prop.text and prop.text.strip():
-                        props[_strip_ns(prop.tag)] = prop.text.strip()
+                props.update(_parse_pom_properties(child))
             elif tag == "description" and child.text:
                 description = " ".join(child.text.split())
             elif tag == "url" and child.text:
                 url = child.text.strip()
             elif tag == "scm":
-                for sub in child:
-                    if _strip_ns(sub.tag) in ("url", "connection") and sub.text and not scm_url:
-                        scm_url = sub.text.strip().removeprefix("scm:git:")
+                scm_url = scm_url or _parse_pom_scm(child)
             elif tag == "licenses":
-                for lic in child:
-                    licenses.extend(sub.text.strip() for sub in lic if _strip_ns(sub.tag) == "name" and sub.text)
+                licenses.extend(_parse_pom_licenses(child))
             elif tag == "developers":
-                for dev in child:
-                    for sub in dev:
-                        if _strip_ns(sub.tag) in ("name", "id") and sub.text:
-                            developers.append(sub.text.strip())
-                            break
+                developers.extend(_parse_pom_developers(child))
             elif tag == "dependencies":
-                for dep in child:
-                    g_val = a_val = v_val = scope_val = None
-                    optional_val = False
-                    for sub in dep:
-                        stag = _strip_ns(sub.tag)
-                        text_val = (sub.text or "").strip()
-                        if stag == "groupId":
-                            g_val = text_val
-                        elif stag == "artifactId":
-                            a_val = text_val
-                        elif stag == "version":
-                            v_val = text_val
-                        elif stag == "scope":
-                            scope_val = text_val
-                        elif stag == "optional":
-                            optional_val = text_val.lower() == "true"
-
-                    if g_val and a_val:
-                        if v_val and v_val.startswith("${") and v_val.endswith("}"):
-                            v_val = props.get(v_val[2:-1], v_val)
-                        coord = f"{g_val}:{a_val}" + (f":{v_val}" if v_val else "")
-                        group_label = "Optional" if optional_val else (scope_val or "compile").capitalize()
-                        deps_by_scope.setdefault(group_label, []).append(coord)
+                for scope, coordinates in _parse_pom_dependencies(child, props).items():
+                    deps_by_scope.setdefault(scope, []).extend(coordinates)
 
         java_req = props.get("maven.compiler.release") or props.get("maven.compiler.target") or props.get("java.version") or props.get("jdk.version")
         return {

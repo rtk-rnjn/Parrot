@@ -14,14 +14,14 @@ class IndexesMixin(DatabaseMixin):
 
     async def ensure_indexes(self) -> None:
         """Create all indexes. Safe to call on every startup (idempotent)."""
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(self._ensure_guild_indexes())
-            tg.create_task(self._ensure_giveaway_indexes())
-            tg.create_task(self._ensure_starboard_indexes())
-            tg.create_task(self._ensure_violation_indexes())
-            tg.create_task(self._ensure_mod_action_indexes())
-            tg.create_task(self._ensure_command_config_indexes())
-            tg.create_task(self._ensure_tag_indexes())
+        async with asyncio.TaskGroup() as task_group:
+            task_group.create_task(self._ensure_guild_indexes())
+            task_group.create_task(self._ensure_giveaway_indexes())
+            task_group.create_task(self._ensure_starboard_indexes())
+            task_group.create_task(self._ensure_violation_indexes())
+            task_group.create_task(self._ensure_mod_action_indexes())
+            task_group.create_task(self._ensure_command_config_indexes())
+            task_group.create_task(self._ensure_tag_indexes())
 
     async def _ensure_tag_indexes(self) -> None:
         await self.tags_collection.create_indexes(

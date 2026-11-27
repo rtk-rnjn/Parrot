@@ -472,63 +472,78 @@ class PokemonDataService:
         return multipliers
 
     @staticmethod
-    def _format_evolution_details(details_list: list[dict[str, Any]]) -> str | None:  # noqa: PLR0912
+    def _format_evolution_trigger(d: dict[str, Any]) -> str | None:
+        trigger = (d.get("trigger") or {}).get("name", "")
+        if trigger == "level-up":
+            return f"Lv. {d['min_level']}" if d.get("min_level") else "Level up"
+        if trigger == "use-item":
+            item_name = (d.get("item") or {}).get("name")
+            return f"Use {_clean_name(item_name)}" if item_name else "Use Item"
+        if trigger == "trade":
+            return "Trade"
+        if trigger == "shed":
+            return "Lv. 20 (Empty slot + Pok\N{LATIN SMALL LETTER E WITH ACUTE} Ball)"
+        return _clean_name(trigger) if trigger else None
+
+    @staticmethod
+    def _format_relative_stats(d: dict[str, Any]) -> str:
+        rel_stat = d["relative_physical_stats"]
+        if rel_stat == 1:
+            return "(Atk > Def)"
+        if rel_stat == -1:
+            return "(Atk < Def)"
+        return "(Atk = Def)"
+
+    @staticmethod
+    def _format_evolution_details(details_list: list[dict[str, Any]]) -> str | None:
         if not details_list:
             return None
 
-        d = details_list[0]
-        trigger = (d.get("trigger") or {}).get("name", "")
+        evolution_detail = details_list[0]
         parts: list[str] = []
+        trigger = PokemonDataService._format_evolution_trigger(evolution_detail)
+        if trigger:
+            parts.append(trigger)
 
-        if trigger == "level-up":
-            if d.get("min_level"):
-                parts.append(f"Lv. {d['min_level']}")
-            else:
-                parts.append("Level up")
-        elif trigger == "use-item":
-            item_name = (d.get("item") or {}).get("name")
-            parts.append(f"Use {_clean_name(item_name)}" if item_name else "Use Item")
-        elif trigger == "trade":
-            parts.append("Trade")
-        elif trigger == "shed":
-            parts.append("Lv. 20 (Empty slot + Pok\N{LATIN SMALL LETTER E WITH ACUTE} Ball)")
-        elif trigger:
-            parts.append(_clean_name(trigger))
-
-        if d.get("held_item"):
-            parts.append(f"holding {_clean_name(d['held_item']['name'])}")
-        if d.get("min_happiness"):
-            parts.append(f"Happiness \N{GREATER-THAN OR EQUAL TO} {d['min_happiness']}")
-        if d.get("min_affection"):
-            parts.append(f"Affection \N{GREATER-THAN OR EQUAL TO} {d['min_affection']}")
-        if d.get("min_beauty"):
-            parts.append(f"Beauty \N{GREATER-THAN OR EQUAL TO} {d['min_beauty']}")
-        if d.get("time_of_day"):
-            parts.append(f"({str(d['time_of_day']).title()})")
-        if d.get("known_move"):
-            parts.append(f"knowing {_clean_name(d['known_move']['name'])}")
-        if d.get("known_move_type"):
-            parts.append(f"knowing {d['known_move_type']['name'].title()} move")
-        if d.get("location"):
-            parts.append(f"at {_clean_name(d['location']['name'])}")
-        if d.get("gender") == 1:
-            parts.append("(\N{FEMALE SIGN} only)")
-        elif d.get("gender") == MALE_GENDER_CODE:
-            parts.append("(\N{MALE SIGN} only)")
-        if d.get("needs_overworld_rain"):
-            parts.append("(Rain)")
-        if d.get("turn_upside_down"):
-            parts.append("(Turn upside down)")
-        if d.get("relative_physical_stats") is not None:
-            rel_stat = d["relative_physical_stats"]
-            if rel_stat == 1:
-                parts.append("(Atk > Def)")
-            elif rel_stat == -1:
-                parts.append("(Atk < Def)")
-            else:
-                parts.append("(Atk = Def)")
-
+        parts.extend(PokemonDataService._format_evolution_requirements(evolution_detail))
         return " ".join(parts) if parts else None
+
+    @staticmethod
+    def _format_evolution_requirements(detail: dict[str, Any]) -> list[str]:
+        parts: list[str] = []
+        if detail.get("held_item"):
+            parts.append(f"holding {_clean_name(detail['held_item']['name'])}")
+        if detail.get("min_happiness"):
+            parts.append(f"Happiness \N{GREATER-THAN OR EQUAL TO} {detail['min_happiness']}")
+        if detail.get("min_affection"):
+            parts.append(f"Affection \N{GREATER-THAN OR EQUAL TO} {detail['min_affection']}")
+        if detail.get("min_beauty"):
+            parts.append(f"Beauty \N{GREATER-THAN OR EQUAL TO} {detail['min_beauty']}")
+        if detail.get("time_of_day"):
+            parts.append(f"({str(detail['time_of_day']).title()})")
+        if detail.get("known_move"):
+            parts.append(f"knowing {_clean_name(detail['known_move']['name'])}")
+        if detail.get("known_move_type"):
+            parts.append(f"knowing {detail['known_move_type']['name'].title()} move")
+        if detail.get("location"):
+            parts.append(f"at {_clean_name(detail['location']['name'])}")
+        parts.extend(PokemonDataService._format_evolution_special_conditions(detail))
+        return parts
+
+    @staticmethod
+    def _format_evolution_special_conditions(detail: dict[str, Any]) -> list[str]:
+        parts = []
+        if detail.get("gender") == 1:
+            parts.append("(\N{FEMALE SIGN} only)")
+        elif detail.get("gender") == MALE_GENDER_CODE:
+            parts.append("(\N{MALE SIGN} only)")
+        if detail.get("needs_overworld_rain"):
+            parts.append("(Rain)")
+        if detail.get("turn_upside_down"):
+            parts.append("(Turn upside down)")
+        if detail.get("relative_physical_stats") is not None:
+            parts.append(PokemonDataService._format_relative_stats(detail))
+        return parts
 
     def _parse_evolution_chain(self, node: dict[str, Any]) -> EvolutionStep:
         species_info = node.get("species") or {}
@@ -581,22 +596,13 @@ class PokemonDataService:
             tutor=tuple(sorted(tutor)),
         )
 
-    async def get_pokemon(self, identifier: str | int) -> PokemonEntry | None:  # noqa: PLR0911, PLR0912, PLR0915
-        """Fetch a complete PokemonEntry by ID or slug, utilizing the in-memory LRU cache."""
-        cache_key = identifier.lower().strip() if isinstance(identifier, str) else identifier
-        if cache_key in self._entry_cache:
-            self._entry_cache.move_to_end(cache_key)
-            return self._entry_cache[cache_key]
-
+    async def _fetch_pokemon_species(self, cache_key: str | int) -> tuple[dict[str, Any], dict[str, Any]] | None:
         pokemon_data = await self._request_json(f"{POKEAPI_BASE_URL}/pokemon/{cache_key}")
         species_data: dict[str, Any] | None = None
-
         if pokemon_data is None:
-            # Fallback: the user may have queried a species slug whose default variety has a suffix (e.g. deoxys -> deoxys-normal)
             species_data = await self._request_json(f"{POKEAPI_BASE_URL}/pokemon-species/{cache_key}")
             if species_data is None:
                 return None
-
             varieties_raw = species_data.get("varieties") or []
             default_variety = next(
                 (v for v in varieties_raw if v.get("is_default")),
@@ -610,130 +616,146 @@ class PokemonDataService:
             pokemon_data = await self._request_json(f"{POKEAPI_BASE_URL}/pokemon/{default_poke_slug}")
             if pokemon_data is None:
                 return None
-
         species_url = (pokemon_data.get("species") or {}).get("url")
         if species_data is None and species_url:
             species_data = await self._request_json(species_url)
-
         if species_data is None:
             return None
+        return pokemon_data, species_data
 
-        # Fetch evolution chain and type defenses concurrently
+    async def _fetch_evolution_and_defenses(
+        self, pokemon_data: dict[str, Any], species_data: dict[str, Any]
+    ) -> tuple[tuple[str, ...], dict[str, Any] | None, dict[str, float]]:
         evo_url = (species_data.get("evolution_chain") or {}).get("url")
         types = tuple(str(t["type"]["name"]) for t in sorted(pokemon_data.get("types") or [], key=lambda x: x.get("slot", 0)))
-
         evo_task = self._request_json(evo_url) if evo_url else asyncio.sleep(0, result=None)
-        defenses_task = self.compute_type_defenses(types)
-        evo_data, type_defenses = await asyncio.gather(evo_task, defenses_task)
+        evo_data, type_defenses = await asyncio.gather(evo_task, self.compute_type_defenses(types))
+        return types, evo_data, type_defenses
 
-        evolution_root: EvolutionStep | None = None
-        if isinstance(evo_data, dict) and "chain" in evo_data:
-            evolution_root = self._parse_evolution_chain(evo_data["chain"])
-
-        # Localized names
-        english_name: str | None = None
-        japanese_name: str | None = None
-        romaji_name: str | None = None
+    @staticmethod
+    def _species_names(species_data: dict[str, Any], poke_slug: str) -> tuple[str | None, str | None, str, str, str, str]:
+        english_name = japanese_name = romaji_name = None
         for name_entry in species_data.get("names") or []:
-            lang = (name_entry.get("language") or {}).get("name")
-            if lang == "en":
+            language = (name_entry.get("language") or {}).get("name")
+            if language == "en":
                 english_name = name_entry.get("name")
-            elif lang == "ja-Hrkt":
+            elif language == "ja-Hrkt":
                 japanese_name = name_entry.get("name")
-            elif lang == "roomaji":
+            elif language == "roomaji":
                 romaji_name = name_entry.get("name")
 
-        poke_slug = str(pokemon_data.get("name", ""))
         species_slug = str(species_data.get("name", poke_slug))
         display_name = english_name or _clean_name(poke_slug)
         if poke_slug != species_slug and poke_slug.startswith(f"{species_slug}-"):
             suffix = _clean_name(poke_slug[len(species_slug) + 1 :])
             display_name = f"{display_name} ({suffix})"
 
-        # Genus
         genus = "Pok\N{LATIN SMALL LETTER E WITH ACUTE}mon"
-        for g_entry in species_data.get("genera") or []:
-            if (g_entry.get("language") or {}).get("name") == "en":
-                genus = str(g_entry.get("genus", "Pok\N{LATIN SMALL LETTER E WITH ACUTE}mon"))
+        for genus_entry in species_data.get("genera") or []:
+            if (genus_entry.get("language") or {}).get("name") == "en":
+                genus = str(genus_entry.get("genus", genus))
                 break
 
-        # Flavor text (pick latest clean English entry)
         flavor_text = "No Pok\N{LATIN SMALL LETTER E WITH ACUTE}dex description available for this Pok\N{LATIN SMALL LETTER E WITH ACUTE}mon."
-        en_flavors = [
-            str(f.get("flavor_text", "")) for f in (species_data.get("flavor_text_entries") or []) if (f.get("language") or {}).get("name") == "en"
+        english_flavors = [
+            str(entry.get("flavor_text", ""))
+            for entry in (species_data.get("flavor_text_entries") or [])
+            if (entry.get("language") or {}).get("name") == "en"
         ]
-        if en_flavors:
-            raw_flavor = en_flavors[-1]
-            flavor_text = re.sub(r"[\n\f\r\s]+", " ", raw_flavor).strip()
+        if english_flavors:
+            flavor_text = re.sub(r"[\n\f\r\s]+", " ", english_flavors[-1]).strip()
+        return japanese_name, romaji_name, species_slug, display_name, genus, flavor_text
 
-        # Abilities
-        abilities = tuple(
+    @staticmethod
+    def _pokemon_abilities(pokemon_data: dict[str, Any]) -> tuple[PokemonAbility, ...]:
+        return tuple(
             PokemonAbility(
-                name=_clean_name(str(ab["ability"]["name"])),
-                slug=str(ab["ability"]["name"]),
-                is_hidden=bool(ab.get("is_hidden", False)),
-                slot=int(ab.get("slot", 1)),
+                name=_clean_name(str(ability["ability"]["name"])),
+                slug=str(ability["ability"]["name"]),
+                is_hidden=bool(ability.get("is_hidden", False)),
+                slot=int(ability.get("slot", 1)),
             )
-            for ab in sorted(pokemon_data.get("abilities") or [], key=lambda x: x.get("slot", 0))
-            if ab.get("ability")
+            for ability in sorted(pokemon_data.get("abilities") or [], key=lambda item: item.get("slot", 0))
+            if ability.get("ability")
         )
 
-        # Stats
+    @staticmethod
+    def _pokemon_stats(pokemon_data: dict[str, Any]) -> dict[str, int]:
         stats: dict[str, int] = {}
-        for st in pokemon_data.get("stats") or []:
-            st_name = str((st.get("stat") or {}).get("name", ""))
-            if st_name:
-                stats[st_name] = int(st.get("base_stat", 0))
+        for stat in pokemon_data.get("stats") or []:
+            stat_name = str((stat.get("stat") or {}).get("name", ""))
+            if stat_name:
+                stats[stat_name] = int(stat.get("base_stat", 0))
+        return stats
 
-        # Sprites & Artwork
+    @staticmethod
+    def _pokemon_artwork(pokemon_data: dict[str, Any]) -> tuple[str | None, ...]:
         sprites = pokemon_data.get("sprites") or {}
-        other_sprites = sprites.get("other") or {}
-        official_art = other_sprites.get("official-artwork") or {}
-        home_art = other_sprites.get("home") or {}
-        showdown_art = other_sprites.get("showdown") or {}
-
-        artwork_url = official_art.get("front_default") or home_art.get("front_default") or sprites.get("front_default")
-        shiny_artwork_url = official_art.get("front_shiny") or home_art.get("front_shiny") or sprites.get("front_shiny")
-        front_sprite_url = sprites.get("front_default")
-        shiny_sprite_url = sprites.get("front_shiny")
-        showdown_sprite_url = showdown_art.get("front_default")
-
+        other = sprites.get("other") or {}
+        official = other.get("official-artwork") or {}
+        home = other.get("home") or {}
+        showdown = other.get("showdown") or {}
         cries = pokemon_data.get("cries") or {}
-        cry_url = cries.get("latest") or cries.get("legacy")
+        return (
+            official.get("front_default") or home.get("front_default") or sprites.get("front_default"),
+            official.get("front_shiny") or home.get("front_shiny") or sprites.get("front_shiny"),
+            sprites.get("front_default"),
+            sprites.get("front_shiny"),
+            showdown.get("front_default"),
+            cries.get("latest") or cries.get("legacy"),
+        )
 
-        # Held items
-        held_items: list[tuple[str, int]] = []
-        for hi in pokemon_data.get("held_items") or []:
-            item_name = _clean_name(str((hi.get("item") or {}).get("name", "")))
-            v_details = hi.get("version_details") or []
-            rarity = int(v_details[-1].get("rarity", 0)) if v_details else 0
+    @staticmethod
+    def _held_items(pokemon_data: dict[str, Any]) -> tuple[tuple[str, int], ...]:
+        held_items = []
+        for item in pokemon_data.get("held_items") or []:
+            item_name = _clean_name(str((item.get("item") or {}).get("name", "")))
+            versions = item.get("version_details") or []
+            rarity = int(versions[-1].get("rarity", 0)) if versions else 0
             if item_name:
                 held_items.append((item_name, rarity))
+        return tuple(held_items)
 
-        # Varieties
-        varieties: list[PokemonVariety] = []
-        for var in species_data.get("varieties") or []:
-            p_obj = var.get("pokemon") or {}
-            v_slug = str(p_obj.get("name", ""))
-            v_id = _extract_id_from_url(str(p_obj.get("url", ""))) or 0
-            if v_slug:
+    @staticmethod
+    def _pokemon_varieties(species_data: dict[str, Any]) -> tuple[PokemonVariety, ...]:
+        varieties = []
+        for variety in species_data.get("varieties") or []:
+            pokemon = variety.get("pokemon") or {}
+            slug = str(pokemon.get("name", ""))
+            if slug:
                 varieties.append(
                     PokemonVariety(
-                        name=_clean_name(v_slug),
-                        slug=v_slug,
-                        pokemon_id=v_id,
-                        is_default=bool(var.get("is_default", False)),
+                        name=_clean_name(slug),
+                        slug=slug,
+                        pokemon_id=_extract_id_from_url(str(pokemon.get("url", ""))) or 0,
+                        is_default=bool(variety.get("is_default", False)),
                     )
                 )
+        return tuple(varieties)
+
+    def _build_pokemon_entry(
+        self,
+        pokemon_data: dict[str, Any],
+        species_data: dict[str, Any],
+        evo_data: dict[str, Any] | None,
+        types: tuple[str, ...],
+        type_defenses: dict[str, float],
+    ) -> PokemonEntry:
+        poke_slug = str(pokemon_data.get("name", ""))
+        names = self._species_names(species_data, poke_slug)
+        japanese_name, romaji_name, species_slug, display_name, genus, flavor_text = names
+        evolution_root: EvolutionStep | None = None
+        if isinstance(evo_data, dict) and "chain" in evo_data:
+            evolution_root = self._parse_evolution_chain(evo_data["chain"])
 
         gen_slug = str((species_data.get("generation") or {}).get("name", ""))
         generation = ROMAN_GENERATIONS.get(gen_slug, _clean_name(gen_slug) or "Unknown")
-
         egg_groups = tuple(_clean_name(str(eg.get("name", ""))) for eg in (species_data.get("egg_groups") or []) if eg.get("name"))
         habitat_raw = (species_data.get("habitat") or {}).get("name")
         growth_raw = (species_data.get("growth_rate") or {}).get("name")
+        artwork_url, shiny_artwork_url, front_sprite_url, shiny_sprite_url, showdown_sprite_url, cry_url = self._pokemon_artwork(pokemon_data)
 
-        entry = PokemonEntry(
+        return PokemonEntry(
             id=int(pokemon_data.get("id", 0)),
             species_id=int(species_data.get("id", pokemon_data.get("id", 0))),
             slug=poke_slug,
@@ -745,8 +767,8 @@ class PokemonDataService:
             generation=generation,
             flavor_text=flavor_text,
             types=types,
-            abilities=abilities,
-            stats=stats,
+            abilities=self._pokemon_abilities(pokemon_data),
+            stats=self._pokemon_stats(pokemon_data),
             height_m=int(pokemon_data.get("height", 0)) / 10.0,
             weight_kg=int(pokemon_data.get("weight", 0)) / 10.0,
             base_experience=pokemon_data.get("base_experience"),
@@ -766,19 +788,32 @@ class PokemonDataService:
             shiny_sprite_url=shiny_sprite_url,
             showdown_sprite_url=showdown_sprite_url,
             cry_url=cry_url,
-            held_items=tuple(held_items),
+            held_items=self._held_items(pokemon_data),
             moves=self._parse_moves(pokemon_data.get("moves") or []),
             evolution_root=evolution_root,
-            varieties=tuple(varieties),
+            varieties=self._pokemon_varieties(species_data),
             type_defenses=type_defenses,
         )
 
-        # Cache under id, species_id, and slugs so all future lookups reuse this instance
+    def _cache_pokemon(self, entry: PokemonEntry) -> None:
         for key in {entry.id, entry.species_id, entry.slug, entry.species_slug}:
             self._entry_cache[key] = entry
         while len(self._entry_cache) > MAX_CACHE_ENTRIES:
             self._entry_cache.popitem(last=False)
 
+    async def get_pokemon(self, identifier: str | int) -> PokemonEntry | None:
+        """Fetch a complete PokemonEntry by ID or slug, utilizing the in-memory LRU cache."""
+        cache_key = identifier.lower().strip() if isinstance(identifier, str) else identifier
+        if cache_key in self._entry_cache:
+            self._entry_cache.move_to_end(cache_key)
+            return self._entry_cache[cache_key]
+        data = await self._fetch_pokemon_species(cache_key)
+        if data is None:
+            return None
+        pokemon_data, species_data = data
+        types, evo_data, defenses = await self._fetch_evolution_and_defenses(pokemon_data, species_data)
+        entry = self._build_pokemon_entry(pokemon_data, species_data, evo_data, types, defenses)
+        self._cache_pokemon(entry)
         return entry
 
     @staticmethod
@@ -1574,7 +1609,7 @@ class Pokemon(commands.Cog, command_attrs={"hidden": True}):
         aliases=("wtp", "pokequiz", "guesspokemon"),
     )
     @commands.cooldown(1, 5, commands.BucketType.channel)
-    async def whos_that_pokemon(self, ctx: commands.Context[Bot], generation: str | None = None) -> None:  # noqa: PLR0912, PLR0915
+    async def whos_that_pokemon(self, ctx: commands.Context[Bot], generation: str | None = None) -> None:
         """Start a 'Who's That Pok\N{LATIN SMALL LETTER E WITH ACUTE}mon?' silhouette guessing game in the current channel.
 
         Optionally specify a generation (e.g. ``1``\N{EN DASH}``9`` or ``gen1``\N{EN DASH}``gen9``).
@@ -1631,58 +1666,55 @@ class Pokemon(commands.Cog, command_attrs={"hidden": True}):
                 timeout=WTP_TIMEOUT_SECONDS,
             )
             view.message = await ctx.reply(view=view, file=hidden_card)
-
-            accepted = entry.accepted_names()
-
-            def _check_guess(msg: discord.Message) -> bool:
-                if msg.channel.id != ctx.channel.id or msg.author.bot:
-                    return False
-                candidate = _normalize_guess(msg.content)
-                if not candidate or len(candidate) < MIN_GUESS_LENGTH:
-                    return False
-                if candidate in accepted:
-                    return True
-                # Allow minor 1-character typo on longer Pokémon names via RapidFuzz ratio
-                return any(
-                    len(target) >= MIN_ACCEPTED_ANSWER_LENGTH and fuzz.ratio(candidate, target) >= FUZZY_ANSWER_MATCH_SCORE for target in accepted
-                )
-
-            while not view.settled:
-                remaining = WTP_TIMEOUT_SECONDS - (time.monotonic() - view.started_at)
-                if remaining <= 0:
-                    await view.settle_game(winner=None, reason="Time's up! Nobody guessed in time.")
-                    break
-
-                msg_task = asyncio.create_task(self.bot.wait_for("message", check=_check_guess, timeout=remaining))
-                done_task = asyncio.create_task(view.done_event.wait())
-
-                done, pending = await asyncio.wait(
-                    {msg_task, done_task},
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-                for task in pending:
-                    task.cancel()
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await task
-
-                if done_task in done and view.settled:
-                    break
-
-                if msg_task in done:
-                    try:
-                        winning_msg = msg_task.result()
-                    except TimeoutError:
-                        await view.settle_game(winner=None, reason="Time's up! Nobody guessed in time.")
-                        break
-                    else:
-                        uid = winning_msg.author.id
-                        self._session_stats[uid] = self._session_stats.get(uid, 0) + 1
-                        with contextlib.suppress(discord.HTTPException):
-                            await winning_msg.add_reaction("\N{PARTY POPPER}")
-                        await view.settle_game(winner=winning_msg.author)
-                        break
+            await self._wait_for_wtp_guess(ctx, view, entry)
         finally:
             self._active_wtp_channels.discard(ctx.channel.id)
+
+    async def _wait_for_wtp_guess(
+        self,
+        ctx: commands.Context[Bot],
+        view: WhosThatPokemonLayoutView,
+        entry: PokemonEntry,
+    ) -> None:
+        accepted = entry.accepted_names()
+
+        def check_guess(message: discord.Message) -> bool:
+            if message.channel.id != ctx.channel.id or message.author.bot:
+                return False
+            candidate = _normalize_guess(message.content)
+            if not candidate or len(candidate) < MIN_GUESS_LENGTH:
+                return False
+            if candidate in accepted:
+                return True
+            return any(len(target) >= MIN_ACCEPTED_ANSWER_LENGTH and fuzz.ratio(candidate, target) >= FUZZY_ANSWER_MATCH_SCORE for target in accepted)
+
+        while not view.settled:
+            remaining = WTP_TIMEOUT_SECONDS - (time.monotonic() - view.started_at)
+            if remaining <= 0:
+                await view.settle_game(winner=None, reason="Time's up! Nobody guessed in time.")
+                break
+
+            message_task = asyncio.create_task(self.bot.wait_for("message", check=check_guess, timeout=remaining))
+            done_task = asyncio.create_task(view.done_event.wait())
+            done, pending = await asyncio.wait({message_task, done_task}, return_when=asyncio.FIRST_COMPLETED)
+            for task in pending:
+                task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
+
+            if done_task in done and view.settled:
+                break
+            if message_task in done:
+                try:
+                    winning_message = message_task.result()
+                except TimeoutError:
+                    await view.settle_game(winner=None, reason="Time's up! Nobody guessed in time.")
+                    break
+                self._session_stats[winning_message.author.id] = self._session_stats.get(winning_message.author.id, 0) + 1
+                with contextlib.suppress(discord.HTTPException):
+                    await winning_message.add_reaction("\N{PARTY POPPER}")
+                await view.settle_game(winner=winning_message.author)
+                break
 
 
 async def setup(bot: Bot) -> None:

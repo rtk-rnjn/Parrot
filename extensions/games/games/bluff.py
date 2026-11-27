@@ -188,60 +188,62 @@ class Bluff(CardGame):
         self.starter = self.seats.index(winner)
         return None
 
+    def _turn_prompt(self, hand: list[str], chosen: dict[str, str | None], *, starting: bool, waiting: bool) -> PromptSpec:
+        rank = self.claim or chosen["rank"]
+        buttons: list[ButtonSpec] = []
+        local = {}
+        if starting:
+            for candidate in DISPLAY_ORDER:
+                style = discord.ButtonStyle.primary if candidate == chosen["rank"] else discord.ButtonStyle.secondary
+                buttons.append(ButtonSpec(f"rank:{candidate}", rank_name(candidate), style))
+                local[f"rank:{candidate}"] = lambda candidate=candidate: chosen.__setitem__("rank", candidate)
+        else:
+            buttons.append(ButtonSpec("pass", "Pass", discord.ButtonStyle.secondary))
+        if self.last is not None:
+            buttons.append(ButtonSpec("call", "Call Bluff!", discord.ButtonStyle.danger, emoji="\N{LYING FACE}"))
+
+        select = None
+        if not waiting:
+            confirm = f"Play as {plural(rank)}" if rank else "Play"
+            select = SelectSpec("Choose up to four cards", 1, self.MAX_PLAY, [(i, label(card)) for i, card in enumerate(hand)], confirm)
+
+        if waiting:
+            assert self.last is not None
+            caption = f"**{self.last.seat.name}** has no cards left! Call their bluff now or **pass** to let them win."
+        elif starting:
+            caption = "You start the round: pick the **rank** you're claiming, choose the cards, then play."
+        else:
+            assert self.last is not None
+            caption = f"Claim: **{plural(self.claim or '')}** \N{MIDDLE DOT} **{self.last.seat.name}** just played **{len(self.last.cards)}**."
+        caption += f"\nPile: **{len(self.pile)}** cards \N{MIDDLE DOT} claimed so far: **{self.claimed}**"
+        return PromptSpec(cards=hand, caption=caption, select=select, buttons=buttons, local=local)
+
+    def _validate_turn(self, action: Action, hand: list[str], chosen: dict[str, str | None], *, starting: bool, waiting: bool) -> str | None:
+        kind, picks = action
+        if kind == "call":
+            return None if self.last is not None else "There's nothing to call yet."
+        if kind == "pass":
+            return "You start this round, so you have to play." if starting else None
+        if waiting:
+            return "You can only call bluff or pass right now."
+        if not 1 <= len(set(picks)) <= self.MAX_PLAY or any(not 0 <= index < len(hand) for index in picks):
+            return f"Pick between 1 and {self.MAX_PLAY} cards."
+        if starting and chosen["rank"] is None:
+            return "Pick the rank you're claiming first."
+        return None
+
     async def take_turn(self, seat: Seat) -> tuple[str, list[str]]:
         hand = self.hands[seat]
         starting = self.claim is None
-        waiting = self.last is not None and not self.hands[self.last.seat]  # the last player went out; only call or pass
+        waiting = self.last is not None and not self.hands[self.last.seat]
         chosen: dict[str, str | None] = {"rank": None}
-
-        def build() -> PromptSpec:
-            rank = self.claim or chosen["rank"]
-            buttons: list[ButtonSpec] = []
-            local = {}
-            if starting:
-                for candidate in DISPLAY_ORDER:
-                    style = discord.ButtonStyle.primary if candidate == chosen["rank"] else discord.ButtonStyle.secondary
-                    buttons.append(ButtonSpec(f"rank:{candidate}", rank_name(candidate), style))
-                    local[f"rank:{candidate}"] = lambda candidate=candidate: chosen.__setitem__("rank", candidate)
-            else:
-                buttons.append(ButtonSpec("pass", "Pass", discord.ButtonStyle.secondary))
-            if self.last is not None:
-                buttons.append(ButtonSpec("call", "Call Bluff!", discord.ButtonStyle.danger, emoji="\N{LYING FACE}"))
-
-            select = None
-            if not waiting:
-                confirm = f"Play as {plural(rank)}" if rank else "Play"
-                select = SelectSpec("Choose up to four cards", 1, self.MAX_PLAY, [(i, label(c)) for i, c in enumerate(hand)], confirm)
-
-            if waiting:
-                assert self.last is not None
-                caption = f"**{self.last.seat.name}** has no cards left! Call their bluff now or **pass** to let them win."
-            elif starting:
-                caption = "You start the round: pick the **rank** you're claiming, choose the cards, then play."
-            else:
-                assert self.last is not None
-                caption = f"Claim: **{plural(self.claim or '')}** \N{MIDDLE DOT} **{self.last.seat.name}** just played **{len(self.last.cards)}**."
-            caption += f"\nPile: **{len(self.pile)}** cards \N{MIDDLE DOT} claimed so far: **{self.claimed}**"
-            return PromptSpec(cards=hand, caption=caption, select=select, buttons=buttons, local=local)
-
-        def validate(action: Action) -> str | None:
-            kind, picks = action
-            if kind == "call":
-                return None if self.last is not None else "There's nothing to call yet."
-            if kind == "pass":
-                return "You start this round, so you have to play." if starting else None
-            if waiting:
-                return "You can only call bluff or pass right now."
-            if not 1 <= len(set(picks)) <= self.MAX_PLAY or any(not 0 <= i < len(hand) for i in picks):
-                return f"Pick between 1 and {self.MAX_PLAY} cards."
-            if starting and chosen["rank"] is None:
-                return "Pick the rank you're claiming first."
-            return None
-
-        def ai() -> Action:
-            return self.bot_move(seat, chosen, starting=starting, waiting=waiting)
-
-        action = await self.decide(seat, caption=f"{seat.mention}'s turn.", build=build, validate=validate, ai=ai)
+        action = await self.decide(
+            seat,
+            caption=f"{seat.mention}'s turn.",
+            build=lambda: self._turn_prompt(hand, chosen, starting=starting, waiting=waiting),
+            validate=lambda move: self._validate_turn(move, hand, chosen, starting=starting, waiting=waiting),
+            ai=lambda: self.bot_move(seat, chosen, starting=starting, waiting=waiting),
+        )
         kind, picks = action
         if kind in {"call", "pass"}:
             return kind, []

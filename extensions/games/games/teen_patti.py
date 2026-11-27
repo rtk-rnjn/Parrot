@@ -179,75 +179,72 @@ class TeenPatti(CardGame):
         new_stake = min(self.stake * 2, self.MAX_STAKE)
         return self.stake * multiplier, new_stake * multiplier, new_stake
 
+    def _allowed_actions(self, state: PlayerState, live: list[Seat]) -> set[str]:
+        chaal, raise_cost, _ = self.costs(state)
+        allowed = {"pack"}
+        if chaal <= state.chips:
+            allowed.add("chaal")
+            if len(live) == HEADS_UP_PLAYER_COUNT:
+                allowed.add("show")
+        if self.stake < self.MAX_STAKE and raise_cost <= state.chips:
+            allowed.add("raise")
+        return allowed
+
+    def _turn_prompt(self, state: PlayerState, live: list[Seat]) -> PromptSpec:
+        chaal, raise_cost, _ = self.costs(state)
+        allowed = self._allowed_actions(state, live)
+        prefix = "" if state.seen else "Blind "
+        buttons = []
+        if not state.seen:
+            buttons.append(ButtonSpec("see", "See cards", emoji="\N{EYES}"))
+        buttons.extend(
+            (
+                ButtonSpec("chaal", f"{prefix}Chaal ${chaal}", discord.ButtonStyle.success, disabled="chaal" not in allowed),
+                ButtonSpec("raise", f"{prefix}Raise ${raise_cost}", discord.ButtonStyle.primary, disabled="raise" not in allowed),
+            )
+        )
+        if len(live) == HEADS_UP_PLAYER_COUNT:
+            buttons.append(ButtonSpec("show", f"Show ${chaal}", disabled="show" not in allowed))
+        buttons.append(ButtonSpec("pack", "Pack", discord.ButtonStyle.danger))
+
+        status = f"Your hand: **{HAND_NAMES[rank_hand(state.hand)[0]]}**" if state.seen else "You are playing **blind** - cards hidden."
+        caption = f"**Pot** `${self.pot}` \N{MIDDLE DOT} **Stake** `${self.stake}` \N{MIDDLE DOT} **Your chips** `${state.chips}`\n{status}"
+        return PromptSpec(
+            cards=state.hand,
+            caption=caption,
+            hidden=not state.seen,
+            buttons=buttons,
+            local={"see": lambda: setattr(state, "seen", True)},
+        )
+
+    def _choose_ai_action(self, state: PlayerState, live: list[Seat]) -> Action:
+        if not state.seen and (self.stake > self.BOOT * 2 or random.random() < AI_SEE_CHANCE):
+            state.seen = True
+        allowed = self._allowed_actions(state, live)
+
+        choice = "chaal"
+        if state.seen:
+            power = strength(state.hand)
+            if power < AI_PACK_STRENGTH and (self.stake >= self.BOOT * 2 or random.random() < AI_PACK_CHANCE):
+                choice = "pack"
+            elif power > AI_RAISE_STRENGTH and "raise" in allowed and random.random() < AI_RAISE_CHANCE:
+                choice = "raise"
+            elif power > AI_SHOW_STRENGTH and "show" in allowed and random.random() < AI_SHOW_CHANCE:
+                choice = "show"
+        elif "raise" in allowed and random.random() < AI_BLIND_RAISE_CHANCE:
+            choice = "raise"
+        elif "show" in allowed and random.random() < AI_BLIND_SHOW_CHANCE:
+            choice = "show"
+        return (choice if choice in allowed else "pack", ())
+
     async def take_turn(self, seat: Seat, live: list[Seat]) -> str:
         state = self.state[seat]
-
-        def allowed() -> set[str]:
-            chaal, raise_cost, _ = self.costs(state)
-            out = {"pack"}
-            if chaal <= state.chips:
-                out.add("chaal")
-                if len(live) == HEADS_UP_PLAYER_COUNT:
-                    out.add("show")
-            if self.stake < self.MAX_STAKE and raise_cost <= state.chips:
-                out.add("raise")
-            return out
-
-        def build() -> PromptSpec:
-            chaal, raise_cost, _ = self.costs(state)
-            ok = allowed()
-            prefix = "" if state.seen else "Blind "
-            buttons = []
-            if not state.seen:
-                buttons.append(ButtonSpec("see", "See cards", emoji="\N{EYES}"))
-            buttons += [
-                ButtonSpec("chaal", f"{prefix}Chaal ${chaal}", discord.ButtonStyle.success, disabled="chaal" not in ok),
-                ButtonSpec("raise", f"{prefix}Raise ${raise_cost}", discord.ButtonStyle.primary, disabled="raise" not in ok),
-            ]
-            if len(live) == HEADS_UP_PLAYER_COUNT:
-                buttons.append(ButtonSpec("show", f"Show ${chaal}", disabled="show" not in ok))
-            buttons.append(ButtonSpec("pack", "Pack", discord.ButtonStyle.danger))
-
-            status = f"Your hand: **{HAND_NAMES[rank_hand(state.hand)[0]]}**" if state.seen else "You are playing **blind** - cards hidden."
-            caption = f"**Pot** `${self.pot}` \N{MIDDLE DOT} **Stake** `${self.stake}` \N{MIDDLE DOT} **Your chips** `${state.chips}`\n{status}"
-            return PromptSpec(
-                cards=state.hand,
-                caption=caption,
-                hidden=not state.seen,
-                buttons=buttons,
-                local={"see": lambda: setattr(state, "seen", True)},
-            )
-
-        def validate(action: Action) -> str | None:
-            return None if action[0] in allowed() else "You can't do that right now."
-
-        def ai() -> Action:
-            if not state.seen and (self.stake > self.BOOT * 2 or random.random() < AI_SEE_CHANCE):
-                state.seen = True
-            ok = allowed()  # after deciding whether to see: seen players pay double
-
-            choice = "chaal"
-            if state.seen:
-                power = strength(state.hand)
-                if power < AI_PACK_STRENGTH and (self.stake >= self.BOOT * 2 or random.random() < AI_PACK_CHANCE):
-                    choice = "pack"
-                elif power > AI_RAISE_STRENGTH and "raise" in ok and random.random() < AI_RAISE_CHANCE:
-                    choice = "raise"
-                elif power > AI_SHOW_STRENGTH and "show" in ok and random.random() < AI_SHOW_CHANCE:
-                    choice = "show"
-            elif "raise" in ok and random.random() < AI_BLIND_RAISE_CHANCE:
-                choice = "raise"
-            elif "show" in ok and random.random() < AI_BLIND_SHOW_CHANCE:
-                choice = "show"
-
-            return (choice if choice in ok else "pack", ())
-
         action = await self.decide(
             seat,
             caption=f"{seat.mention}'s turn - pot `${self.pot}`, stake `${self.stake}`.",
-            build=build,
-            validate=validate,
-            ai=ai,
+            build=lambda: self._turn_prompt(state, live),
+            validate=lambda move: None if move[0] in self._allowed_actions(state, live) else "You can't do that right now.",
+            ai=lambda: self._choose_ai_action(state, live),
         )
         return action[0]
 

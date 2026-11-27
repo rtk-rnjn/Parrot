@@ -748,7 +748,109 @@ class LogoInterpreter:
             return len(self.procedures[name].parameters)
         return 0
 
-    def _invoke_named(  # noqa: PLR0912, PLR0915
+    @staticmethod
+    def _resolve_raw_variable(stream: _TokenStream, env: Environment) -> Any:
+        token = stream.next()
+        assert isinstance(token, VarToken)
+        return env.get(token.name) if env.has(token.name) else token.name
+
+    @staticmethod
+    def _is_closing_parenthesis(stream: _TokenStream) -> bool:
+        token = stream.peek()
+        return isinstance(token, SymbolToken) and token.name == ")"
+
+    def _collect_variadic_primitive_args(self, name: str, spec: PrimitiveSpec, stream: _TokenStream, env: Environment) -> list[Any]:
+        args: list[Any] = []
+        while not stream.at_end():
+            peeked = stream.peek()
+            if isinstance(peeked, SymbolToken) and peeked.name == ")":
+                break
+            if not args and spec.raw_first_var_fallback and isinstance(peeked, VarToken):
+                args.append(self._resolve_raw_variable(stream, env))
+            else:
+                args.append(self._eval_expr(stream, env, stop_on_attached_minus=True))
+        if len(args) < spec.min_arity:
+            msg = f"{name} expects at least {spec.min_arity} argument(s), got {len(args)}."
+            raise LogoRuntimeError(msg)
+        if spec.max_arity != -1 and len(args) > spec.max_arity:
+            msg = f"{name} expects at most {spec.max_arity} argument(s), got {len(args)}."
+            raise LogoRuntimeError(msg)
+        return args
+
+    def _collect_fixed_primitive_args(
+        self,
+        name: str,
+        spec: PrimitiveSpec,
+        stream: _TokenStream,
+        env: Environment,
+        *,
+        caller_stop_on_minus: bool,
+    ) -> list[Any]:
+        args = []
+        arity = spec.default_arity
+        for index in range(arity):
+            if stream.at_end() or self._is_closing_parenthesis(stream):
+                msg = f"{name} expects {arity} argument(s), got {index}."
+                raise LogoRuntimeError(msg)
+            peeked = stream.peek()
+            if index == 0 and spec.raw_first_var_fallback and isinstance(peeked, VarToken):
+                args.append(self._resolve_raw_variable(stream, env))
+                continue
+            has_more_args = index < arity - 1 or caller_stop_on_minus
+            args.append(self._eval_expr(stream, env, stop_on_attached_minus=has_more_args))
+        return args
+
+    def _invoke_primitive(
+        self,
+        name: str,
+        spec: PrimitiveSpec,
+        stream: _TokenStream,
+        env: Environment,
+        *,
+        variadic_until_paren: bool,
+        in_tail_pos: bool,
+        caller_stop_on_minus: bool,
+    ) -> Any:
+        if variadic_until_paren:
+            args = self._collect_variadic_primitive_args(name, spec, stream, env)
+        else:
+            args = self._collect_fixed_primitive_args(name, spec, stream, env, caller_stop_on_minus=caller_stop_on_minus)
+        next_token = stream.peek()
+        if name == "IF" and not variadic_until_paren and isinstance(next_token, SymbolToken) and next_token.name == "ELSE":
+            stream.next()
+            if stream.at_end():
+                msg = "Expected list after ELSE."
+                raise LogoSyntaxError(msg)
+            args.append(self._eval_expr(stream, env, stop_on_attached_minus=caller_stop_on_minus))
+        return spec.handler(args, env, in_tail_pos and stream.at_end())
+
+    def _collect_procedure_args(
+        self,
+        name: str,
+        procedure: Procedure,
+        stream: _TokenStream,
+        env: Environment,
+        *,
+        variadic_until_paren: bool,
+        caller_stop_on_minus: bool,
+    ) -> list[Any]:
+        args = []
+        if variadic_until_paren:
+            while not stream.at_end() and not self._is_closing_parenthesis(stream):
+                args.append(self._eval_expr(stream, env, stop_on_attached_minus=True))
+        else:
+            for index, _ in enumerate(procedure.parameters):
+                if stream.at_end() or self._is_closing_parenthesis(stream):
+                    msg = f"{name} expects {len(procedure.parameters)} argument(s), got {index}."
+                    raise LogoRuntimeError(msg)
+                has_more_args = index < len(procedure.parameters) - 1 or caller_stop_on_minus
+                args.append(self._eval_expr(stream, env, stop_on_attached_minus=has_more_args))
+        if len(args) != len(procedure.parameters):
+            msg = f"{name} expects {len(procedure.parameters)} argument(s), got {len(args)}."
+            raise LogoRuntimeError(msg)
+        return args
+
+    def _invoke_named(
         self,
         name: str,
         call_tok: SymbolToken,
@@ -760,104 +862,29 @@ class LogoInterpreter:
         caller_stop_on_minus: bool = False,
     ) -> Any:
         self._tick()
-        if name in self.primitives:
-            spec = self.primitives[name]
-            args: list[Any] = []
-
-            if variadic_until_paren:
-                while not stream.at_end():
-                    peeked = stream.peek()
-                    if isinstance(peeked, SymbolToken) and peeked.name == ")":
-                        break
-                    if len(args) == 0 and spec.raw_first_var_fallback and isinstance(peeked, VarToken):
-                        vtok = stream.next()
-                        assert isinstance(vtok, VarToken)
-                        args.append(env.get(vtok.name) if env.has(vtok.name) else vtok.name)
-                    else:
-                        args.append(
-                            self._eval_expr(
-                                stream,
-                                env,
-                                stop_on_attached_minus=True,
-                            )
-                        )
-                if len(args) < spec.min_arity:
-                    msg = f"{name} expects at least {spec.min_arity} argument(s), got {len(args)}."
-                    raise LogoRuntimeError(msg)
-                if spec.max_arity != -1 and len(args) > spec.max_arity:
-                    msg = f"{name} expects at most {spec.max_arity} argument(s), got {len(args)}."
-                    raise LogoRuntimeError(msg)
-            else:
-                arity = spec.default_arity
-                for idx in range(arity):
-                    if stream.at_end():
-                        msg = f"{name} expects {arity} argument(s), got {idx}."
-                        raise LogoRuntimeError(msg)
-                    peeked = stream.peek()
-                    if isinstance(peeked, SymbolToken) and peeked.name == ")":
-                        msg = f"{name} expects {arity} argument(s), got {idx}."
-                        raise LogoRuntimeError(msg)
-                    if idx == 0 and spec.raw_first_var_fallback and isinstance(peeked, VarToken):
-                        vtok = stream.next()
-                        assert isinstance(vtok, VarToken)
-                        args.append(env.get(vtok.name) if env.has(vtok.name) else vtok.name)
-                    else:
-                        more_args_Remain = (idx < arity - 1) or caller_stop_on_minus
-                        args.append(
-                            self._eval_expr(
-                                stream,
-                                env,
-                                stop_on_attached_minus=more_args_Remain,
-                            )
-                        )
-                # Special convenience for IF with 3 arguments without parens: `IF cond [then] [else]`
-                if name == "IF" and not stream.at_end():
-                    nxt = stream.peek()
-                    if isinstance(nxt, SymbolToken) and nxt.name == "ELSE":
-                        stream.next()
-                        if stream.at_end():
-                            msg = "Expected list after ELSE."
-                            raise LogoSyntaxError(msg)
-                        args.append(self._eval_expr(stream, env, stop_on_attached_minus=caller_stop_on_minus))
-
-            is_tail = in_tail_pos and stream.at_end()
-            return spec.handler(args, env, is_tail)
-
-        # User-defined procedure
+        spec = self.primitives.get(name)
+        if spec is not None:
+            return self._invoke_primitive(
+                name,
+                spec,
+                stream,
+                env,
+                variadic_until_paren=variadic_until_paren,
+                in_tail_pos=in_tail_pos,
+                caller_stop_on_minus=caller_stop_on_minus,
+            )
         proc = self.procedures.get(name)
         if proc is None:
             msg = f"Unknown procedure: {name}"
             raise LogoRuntimeError(msg)
-
-        arity = len(proc.parameters)
-        args = []
-        if variadic_until_paren:
-            while not stream.at_end():
-                peeked = stream.peek()
-                if isinstance(peeked, SymbolToken) and peeked.name == ")":
-                    break
-                args.append(self._eval_expr(stream, env, stop_on_attached_minus=True))
-            if len(args) != arity:
-                msg = f"{name} expects {arity} argument(s), got {len(args)}."
-                raise LogoRuntimeError(msg)
-        else:
-            for idx in range(arity):
-                if stream.at_end():
-                    msg = f"{name} expects {arity} argument(s), got {idx}."
-                    raise LogoRuntimeError(msg)
-                peeked = stream.peek()
-                if isinstance(peeked, SymbolToken) and peeked.name == ")":
-                    msg = f"{name} expects {arity} argument(s), got {idx}."
-                    raise LogoRuntimeError(msg)
-                more_args_remain = (idx < arity - 1) or caller_stop_on_minus
-                args.append(
-                    self._eval_expr(
-                        stream,
-                        env,
-                        stop_on_attached_minus=more_args_remain,
-                    )
-                )
-
+        args = self._collect_procedure_args(
+            name,
+            proc,
+            stream,
+            env,
+            variadic_until_paren=variadic_until_paren,
+            caller_stop_on_minus=caller_stop_on_minus,
+        )
         if in_tail_pos and stream.at_end():
             raise _TailCallSignal(proc, args)
 

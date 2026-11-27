@@ -229,7 +229,48 @@ def codes_needed(view: TableView) -> set[str]:
     return codes
 
 
-def render_table(view: TableView, images: dict[str, bytes | None]) -> bytes:  # noqa: PLR0912
+def _put_table_card(img: Image.Image, images: dict[str, bytes | None], code: str, x: float, y: float, width: int, height: int) -> None:
+    img.alpha_composite(_sprite(code, images.get(code), width, height), (int(x), int(y)))
+
+
+def _render_table_seat(
+    img: Image.Image,
+    draw: ImageDraw.ImageDraw,
+    seat: SeatView,
+    images: dict[str, bytes | None],
+    sx: int,
+    sy: int,
+) -> None:
+    top = sy - 70
+    if seat.active:
+        _tint(img, (sx - 88, top - 8, sx + 88, top + 146), 18, (255, 255, 255, 18), GOLD, 3)
+    _pill(draw, sx, top + 2, truncate(seat.name, 16), "gold" if seat.active else "dark", 17)
+
+    info = _seat_info(seat)
+    if info:
+        _pill_row(draw, sx, top + 38, info, 14)
+
+    card_y = top + 68
+    if seat.shown:
+        shown = seat.shown[:7]
+        span = 50 + 32 * (len(shown) - 1)
+        for index, code in enumerate(shown):
+            _put_table_card(img, images, code, sx - span // 2 + index * 32, card_y, 50, 70)
+    elif seat.cards:
+        count = min(seat.cards, 5)
+        span = 50 + 16 * (count - 1)
+        x0 = sx - span // 2
+        for index in range(count):
+            _put_table_card(img, images, BACK, x0 + index * 16, card_y, 50, 70)
+        badge_x = x0 + span + 16
+        draw.ellipse((badge_x - 14, card_y + 21, badge_x + 14, card_y + 49), fill=(0, 0, 0, 170))
+        draw.text((badge_x, card_y + 35), str(seat.cards), font=font(15), fill=(255, 255, 255, 255), anchor="mm")
+
+    if seat.dim:
+        _tint(img, (sx - 88, top - 8, sx + 88, top + 146), 18, (0, 0, 0, 115))
+
+
+def render_table(view: TableView, images: dict[str, bytes | None]) -> bytes:
     size = (900, 620)
     cx, cy = 450, 310
     img = _felt(size)
@@ -237,19 +278,16 @@ def render_table(view: TableView, images: dict[str, bytes | None]) -> bytes:  # 
     draw.rounded_rectangle((12, 12, 887, 607), 26, outline=(214, 170, 70, 130), width=3)
     draw.rounded_rectangle((22, 22, 877, 597), 20, outline=(255, 255, 255, 28), width=1)
 
-    def put(code: str, x: float, y: float, w: int, h: int) -> None:
-        img.alpha_composite(_sprite(code, images.get(code), w, h), (int(x), int(y)))
-
     cw, ch = 72, 100
     row_w = len(view.centre) * (cw + 8) - 8
     left = cx - row_w // 2
     if view.stack:
         stack_x = left - 96 if view.centre else cx - cw // 2
         for k in range(min(view.stack, 4)):
-            put(BACK, stack_x + k * 4, cy - 50 - k * 3, cw, ch)
+            _put_table_card(img, images, BACK, stack_x + k * 4, cy - 50 - k * 3, cw, ch)
         _pill(draw, stack_x + cw // 2, cy + 56, f"\N{MULTIPLICATION SIGN}{view.stack}", "dark", 15)
     for k, code in enumerate(view.centre):
-        put(code, left + k * (cw + 8), cy - 50, cw, ch)
+        _put_table_card(img, images, code, left + k * (cw + 8), cy - 50, cw, ch)
     if view.note:
         _pill(draw, cx, cy + 84, view.note, "dark", 17)
 
@@ -258,38 +296,11 @@ def render_table(view: TableView, images: dict[str, bytes | None]) -> bytes:  # 
         angle = math.radians(90 + 360 * i / len(view.seats))
         spots.append((cx + 340 * math.cos(angle), cy + 225 * math.sin(angle)))
         sx, sy = int(spots[-1][0]), int(spots[-1][1])
-        top = sy - 70
-
-        if seat.active:
-            _tint(img, (sx - 88, top - 8, sx + 88, top + 146), 18, (255, 255, 255, 18), GOLD, 3)
-        _pill(draw, sx, top + 2, truncate(seat.name, 16), "gold" if seat.active else "dark", 17)
-
-        info = _seat_info(seat)
-        if info:
-            _pill_row(draw, sx, top + 38, info, 14)
-
-        card_y = top + 68
-        if seat.shown:
-            shown = seat.shown[:7]
-            span = 50 + 32 * (len(shown) - 1)
-            for k, code in enumerate(shown):
-                put(code, sx - span // 2 + k * 32, card_y, 50, 70)
-        elif seat.cards:
-            count = min(seat.cards, 5)
-            span = 50 + 16 * (count - 1)
-            x0 = sx - span // 2
-            for k in range(count):
-                put(BACK, x0 + k * 16, card_y, 50, 70)
-            bx = x0 + span + 16
-            draw.ellipse((bx - 14, card_y + 21, bx + 14, card_y + 49), fill=(0, 0, 0, 170))
-            draw.text((bx, card_y + 35), str(seat.cards), font=font(15), fill=(255, 255, 255, 255), anchor="mm")
-
-        if seat.dim:
-            _tint(img, (sx - 88, top - 8, sx + 88, top + 146), 18, (0, 0, 0, 115))
+        _render_table_seat(img, draw, seat, images, sx, sy)
 
     for seat, (sx, sy) in zip(view.seats, spots, strict=True):
         if seat.played:
-            put(seat.played, cx + (sx - cx) * 0.46 - 35, cy + (sy - cy) * 0.46 - 48, 70, 96)
+            _put_table_card(img, images, seat.played, cx + (sx - cx) * 0.46 - 35, cy + (sy - cy) * 0.46 - 48, 70, 96)
 
     mask = Image.new("L", size, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), 32, fill=255)

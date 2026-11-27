@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import io
 import logging
+import shlex
 import traceback
 from collections import Counter, deque
 from collections.abc import Callable
@@ -18,6 +19,7 @@ from colorama import Fore
 from discord.ext import commands, tasks
 from humanfriendly import InvalidTimespan, parse_timespan
 from jishaku.cog import OPTIONAL_FEATURES, STANDARD_FEATURES
+from jishaku.exception_handling import ReplResponseReactor
 from jishaku.features.baseclass import Feature
 from rapidfuzz import fuzz, process
 lazy import aiohttp
@@ -40,6 +42,8 @@ MIN_ACTIVE_COUNT = 3
 RETENTION_MINUTES = 24 * 60  # 1 sample/min -> 24h. ~1440 tiny objects.
 DEFAULT_WINDOW = "1h"
 REDIS_RESULT_LIMIT = 1980
+INLINE_RESULT_LIMIT = 1900
+
 BG = "#2b2d31"
 PANEL = "#1e1f22"
 FG = "#dbdee1"
@@ -272,7 +276,7 @@ def render_socket_chart(samples: list[Sample], title: str, events: list[str] | N
     return _finish(fig, title)
 
 
-class OwnerFeature:
+class OwnerFeature(Feature):
     """Bot owner tools for extensions, evaluation and maintenance."""
 
     bot: Bot
@@ -531,7 +535,7 @@ class OwnerFeature:
         tb_str = "".join(tb)
         return f"```ansi\n{Fore.RED}{tb_str}{Fore.RESET}\n```"
 
-    @Feature.Command(parent="jsk", name="redis-repl", aliases=["redis-cli", "redis"])
+    @Feature.Command(parent="jsk", name="redis-repl", aliases=["redis-cli"])
     async def redis_repl(self, ctx: commands.Context[Bot]) -> None:
         """Run raw Redis commands from chat until `exit`. Monitoring lives in the owner panel."""
         await ctx.reply("\N{VIDEO GAME} Redis REPL session started. Type `exit` to quit.")
@@ -560,6 +564,39 @@ class OwnerFeature:
             except Exception as e:
                 tb_fmt = self._format_traceback(e)
                 await msg.reply(tb_fmt)
+
+    async def _send_inline_result(
+        self,
+        ctx: commands.Context[Bot],
+        output: str,
+        *,
+        filename: str,
+        language: str = "json",
+    ) -> None:
+        if len(output) <= INLINE_RESULT_LIMIT:
+            await ctx.reply(f"```{language}\n{output}\n```")
+            return
+
+        await ctx.reply(file=discord.File(io.BytesIO(output.encode()), filename=filename))
+
+    @Feature.Command(parent="jsk", name="redis", invoke_without_command=True, ignore_extra=False)
+    async def jsk_redis(self, ctx: commands.Context[Bot], *, query: str) -> None:
+        """Run one inline Redis command, e.g. `jsk redis GET some:key`."""
+        try:
+            redis_args = shlex.split(query)
+        except ValueError as exc:
+            await ctx.reply(f"Could not parse Redis arguments: {exc}")
+            return
+
+        if not redis_args:
+            await ctx.reply("Provide a Redis command, for example `jsk redis GET some:key`.")
+            return
+
+        async with ReplResponseReactor(ctx.message):
+            with self.submit(ctx):
+                result = await ctx.bot.database.redis_client.execute_command(*redis_args)
+
+        await self._send_inline_result(ctx, repr(result), filename="redis-result.txt", language="text")
 
     @Feature.Command(parent="jsk", name="panel", aliases=["owner", "dev"])
     async def owner(self, ctx: commands.Context[Bot]) -> None:

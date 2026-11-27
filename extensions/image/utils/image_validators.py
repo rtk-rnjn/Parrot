@@ -66,6 +66,7 @@ def inspect_image(data: bytes) -> ImageInfo:
         ImageValidationError: if the data is empty, too large, not a supported
             format, inconsistent, unreadable, or exceeds dimension / pixel /
             frame limits (decompression-bomb protection).
+
     """
     if not isinstance(data, (bytes, bytearray)) or not data:
         msg = "The image is empty."

@@ -247,7 +247,6 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
     @staticmethod
     def _snakify(message: str) -> str:
         """Sssnakifffiesss a sstring."""
-
         simple_fricatives = ["f", "s", "z", "h", "F", "S", "Z", "H"]
         complex_fricatives = ["th", "sh", "Th", "Sh"]
 
@@ -656,7 +655,6 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         """Hatches your personal snake.
         Written by Momo and kel.
         """
-
         snake_name = random.choice(list(snakes.keys()))
         snake_image = snakes[snake_name]
 
@@ -683,7 +681,6 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         This was created by Mushy and Cardium,
         and modified by Urthas and lemon.
         """
-
         question = random.choice(self.snake_quizzes)
         answer = question["answerkey"]
         options = {key: question["options"][key] for key in ANSWERS_EMOJI}
@@ -716,6 +713,7 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
             lucy + python = luthon
             joseph + taipan = joseipan
         This was written by Iceman, and modified for inclusion into the bot by lemon.
+
         """
         snake_name = await self._get_snake_name()
         snake_name = snake_name["name"]
@@ -763,7 +761,6 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         Written by Momo and kel.
         Modified by lemon.
         """
-
         if ctx.channel in self.active_sal:
             await ctx.reply(f"{ctx.author.mention} A game is already in progress in this channel.")
             return
@@ -783,7 +780,6 @@ class Snakes(commands.Cog, command_attrs={"hidden": True}):
         """Create an interesting little card from a snake.
         Created by juan and Someone during the first code jam.
         """
-
         if name is None:
             name_obj = await self._get_snake_name()
             name = name_obj["scientific"]

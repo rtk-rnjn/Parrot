@@ -61,7 +61,6 @@ class Hanukkah(commands.Cog, command_attrs={"hidden": True}):
 
         This command is only available during the months of November and December.
         """
-
         hanukkah_dates = await self.fetch_hanukkah_dates()
         start_day = hanukkah_dates[0]
         end_day = hanukkah_dates[-1]

@@ -814,7 +814,7 @@ class Misc(commands.Cog, name="Miscellaneous"):
 
     @commands.command(name="boxplot", aliases=["box", "boxwhisker", "numsetdata"])
     async def _boxplot(self, ctx: commands.Context[Bot], *numbers: float) -> None:
-        """Plots the providednumber data set in a box & whisker plot
+        """Plots the providednumber data set in a box & whisker plot.
 
         showing Min, Max, Mean, Q1, Median and Q3.
         Numbers should be seperated by spaces per data point.
@@ -1055,7 +1055,6 @@ class Misc(commands.Cog, name="Miscellaneous"):
 
         AFK status will be automatically removed when you send a message in the server.
         """
-
         if ctx.guild is None or not isinstance(ctx.author, discord.Member):
             return
 
@@ -1083,7 +1082,6 @@ class Misc(commands.Cog, name="Miscellaneous"):
     @commands.Cog.listener("on_message")
     async def on_afk_message(self, message: discord.Message) -> None:
         """Handle AFK notifications and automatically remove AFK status."""
-
         if message.guild is None or message.author.bot:
             return
 
@@ -1290,7 +1288,6 @@ class Misc(commands.Cog, name="Miscellaneous"):
         Reply to a message to translate it, or type the text yourself.
         Put a language code first to pick the target, e.g. translate hi Hello.
         """
-
         languages = LANGUAGE_CODES
 
         if to.lower() not in languages:

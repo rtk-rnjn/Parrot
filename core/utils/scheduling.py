@@ -80,6 +80,7 @@ async def parse_future(interaction: discord.Interaction[Bot], text: str) -> date
     ------
     commands.BadArgument
         If the text cannot be parsed or lies in the past.
+
     """
     tz = await get_user_tz(interaction.client, interaction.user.id)
     return FutureTime(text.strip(), now=interaction.created_at, tzinfo=tz).dt

@@ -450,7 +450,7 @@ class Fun(commands.Cog, ColorHandler):
 
     @commands.group(name="random", invoke_without_command=True)
     async def random_command(self, ctx: commands.Context[Bot]):
-        """Some fun commands regarding RNG"""
+        """Some fun commands regarding RNG."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -563,7 +563,6 @@ class Fun(commands.Cog, ColorHandler):
 
         It sends a UUID v1, v4, v6, v7, and v8.
         """
-
         contents = [
             "`UUID v1:` " + str(uuid.uuid1()),
             "`UUID v4:` " + str(uuid.uuid4()),
@@ -581,7 +580,6 @@ class Fun(commands.Cog, ColorHandler):
         number_of_sides: Annotated[int, commands.Range[int, 2, 100]] = commands.parameter(description="The number of sides on the dice.", default=6),
     ):
         """Roll a specified number of dice with a specified number of sides."""
-
         results = [random.randint(1, number_of_sides) for _ in range(number_of_dice)]
         await ctx.reply(f"\N{GAME DIE} You rolled: {', '.join(map(str, results))}")
 
@@ -601,7 +599,7 @@ class Fun(commands.Cog, ColorHandler):
             description="The lower bound of the guessing range.",
         ),
     ):
-        """Guess the number game
+        """Guess the number game.
 
         Number of chances is calculated using log2(upper - lower + 1) and rounded to the nearest integer.
         This makes the game more 50% fair, as it gives the user a reasonable number of chances to guess the number.
@@ -1209,8 +1207,7 @@ class Fun(commands.Cog, ColorHandler):
     @commands.command()
     @commands.max_concurrency(1, per=commands.BucketType.user)
     async def madlibs(self, ctx: commands.Context[Bot]) -> None:
-        """
-        Play Madlibs with the bot!
+        """Play Madlibs with the bot!
         Madlibs is a game where the player is asked to enter a word that
         fits a random part of speech (e.g. noun, adjective, verb, plural noun, etc.)
         a random amount of times, depending on the story chosen by the bot at the beginning.

@@ -205,7 +205,6 @@ class Suggestion(commands.Cog, command_attrs={"hidden": True}):
         - APPROVED / OK / ACCEPT / ALRIGHT
         - DUPLICATE / COPY / SAME
         """
-
         if TYPE_CHECKING:
             assert ctx.guild is not None
 

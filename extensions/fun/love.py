@@ -407,7 +407,6 @@ class Love(commands.Cog, command_attrs={"hidden": True}):
           - nickname
         Any two arguments will always yield the same result, regardless of the order of arguments.
         """
-
         who_user = discord.utils.escape_markdown(who.display_name)
         whom_user = discord.utils.escape_markdown(whom.display_name)
 

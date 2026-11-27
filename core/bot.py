@@ -161,7 +161,7 @@ class Bot(commands.Bot):
             task.add_done_callback(self._background_tasks.discard)
 
     async def connect_lavalink_node(self) -> None:
-        """Attempt to connect to a Lavalink node"""
+        """Attempt to connect to a Lavalink node."""
         try:
             await self.__create_lavalink_node()
             return
@@ -504,7 +504,6 @@ class Bot(commands.Bot):
 
     async def get_or_fetch_message(self, channel: discord.abc.Messageable, message_id: int) -> discord.Message:
         """Return a cached message or fetch and cache it if unavailable."""
-
         for message in self.cached_messages:
             if message.id == message_id:
                 return message

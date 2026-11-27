@@ -246,6 +246,7 @@ def human_timedelta(
     -------
     str
         The description, or ``"now"`` if there is no difference.
+
     """
     now = _as_utc(source or datetime.datetime.now(_UTC))
     target = _as_utc(dt)

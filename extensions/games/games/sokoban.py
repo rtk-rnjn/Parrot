@@ -56,8 +56,7 @@ class GameState:
 
 @dataclass
 class SokobanGame:
-    """
-    Sokoban game engine.
+    """Sokoban game engine.
 
     Level characters:
 
@@ -131,13 +130,11 @@ class SokobanGame:
         return found_player
 
     def display_board(self) -> str:
-        """
-        Render the board using Discord emojis.
+        """Render the board using Discord emojis.
 
         The board is NOT put inside a code block because custom
         Discord emojis need to be rendered by Discord.
         """
-
         lines: list[str] = []
 
         for row in range(self.rows):
@@ -180,14 +177,13 @@ class SokobanGame:
         self.history.append(GameState(player=self.player, blocks=frozenset(self.blocks), moves=self.moves))
 
     def move(self, direction: Direction) -> bool:  # noqa: PLR0911
-        """
-        Attempt to move the player.
+        """Attempt to move the player.
 
         Returns:
             True  -> game state changed
             False -> movement was blocked
-        """
 
+        """
         new_player = self.player.moved(direction)
 
         if not self.is_inside(new_player):

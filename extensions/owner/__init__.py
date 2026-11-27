@@ -442,12 +442,12 @@ class OwnerFeature(Feature):
 
     @Feature.Command(parent="metrics", name="http", aliases=["aiohttp", "net"])
     async def metrics_http(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
-        """aiohttp requests, connections and errors per minute."""
+        """Aiohttp requests, connections and errors per minute."""
         await self._send_panel(ctx, _draw_http, "aiohttp", window)
 
     @Feature.Command(parent="metrics", name="runtime", aliases=["tasks", "gauges"])
     async def metrics_runtime(self, ctx: commands.Context[Bot], window: str = DEFAULT_WINDOW) -> None:
-        """asyncio tasks, threads and HTTP pool size."""
+        """Asyncio tasks, threads and HTTP pool size."""
         await self._send_panel(ctx, _draw_runtime, "Runtime gauges", window)
 
     def _resolve_events(self, queries: tuple[str, ...]) -> tuple[list[str], list[str]]:

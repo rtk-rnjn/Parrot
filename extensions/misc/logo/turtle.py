@@ -159,8 +159,7 @@ def _parse_named_color(value: str) -> tuple[int, int, int] | None:
 
 
 def parse_color(value: Any) -> tuple[int, int, int]:
-    """
-    Parses a Logo color specification:
+    """Parses a Logo color specification:
     - RGB list/tuple of 3 integers in 0..255: `[255 0 128]`
     - MSWLogo palette index 0..15 (int or float or numeric word)
     - Named color word: `"RED`, `"BLUE`, etc.
@@ -803,8 +802,7 @@ class Turtle:
         duration_ms: int = 50,
         scale: float = 0.5,
     ) -> BytesIO:
-        """
-        Tier 2 feature: Renders an animated GIF showing the drawing progression.
+        """Tier 2 feature: Renders an animated GIF showing the drawing progression.
         Enforces hard caps on frame count (`MAX_GIF_FRAMES`), frame duration, and pixel count.
         """
         frame_cap = min(max_frames or get_max_gif_frames(), get_max_gif_frames())

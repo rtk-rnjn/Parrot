@@ -12,7 +12,7 @@ __all__ = ("enum_docstrings",)
 
 
 def enum_docstrings[E: Enum](enum: type[E]) -> type[E]:
-    '''Attach docstrings to enum members
+    '''Attach docstrings to enum members.
 
     Docstrings are string literals that appear directly below the enum member
     assignment expression:

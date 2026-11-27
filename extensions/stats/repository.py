@@ -184,7 +184,7 @@ class StatsRepository:
         user_id: str | None = None,
         channel_id: str | None = None,
     ) -> dict[str, int]:
-        """messages / voice_ms / commands / failed / rejected for the scope (guild, user or channel)."""
+        """Messages / voice_ms / commands / failed / rejected for the scope (guild, user or channel)."""
         extra = {k: v for k, v in (("user_id", user_id), ("channel_id", channel_id)) if v}
         filter_criteria = {"$match": _range(guild_id, start, end, **extra)}
 

@@ -294,8 +294,7 @@ class ParsedDictionaryEntry:
 
 
 def expand_pos_tag(raw_pos: str) -> tuple[str, str, int]:
-    """
-    Expands any abbreviated POS string (e.g., 'n.', 'v.intr.', 'predic. Adj.',
+    """Expands any abbreviated POS string (e.g., 'n.', 'v.intr.', 'predic. Adj.',
     'n. & v.', 'adj., n., & adv.') into (Full English Label, Emoji Icon, Color).
     """
     cleaned = re.sub(r"\s+", " ", raw_pos.strip()).lower()
@@ -333,8 +332,7 @@ def expand_pos_tag(raw_pos: str) -> tuple[str, str, int]:
 
 
 def expand_inline_abbreviations(text: str) -> str:
-    """
-    Expands grammatical, inflectional, and usage abbreviations inside text
+    """Expands grammatical, inflectional, and usage abbreviations inside text
     and formats *cross-references cleanly.
     """
     if not text:
@@ -370,8 +368,7 @@ def expand_inline_abbreviations(text: str) -> str:
 
 
 def _is_inflection_or_pos_grammar_note(raw_paren_inner: str) -> bool:
-    """
-    Determines whether a leading `(note)` right after the POS tag is a
+    """Determines whether a leading `(note)` right after the POS tag is a
     word-form/inflection/grammar header (e.g., `(-ting)`, `(pl. -ies)`,
     `(usu. in passive)`) rather than a sense-specific context note like `(of a door etc.)`.
     """
@@ -470,9 +467,8 @@ def format_etymology(raw_etym: str) -> str:
 
 
 def _extract_trailing_derivatives(body: str) -> tuple[str, list[tuple[str, str]]]:
-    """
-    Detects and extracts trailing derivative word forms at the end of a POS block,
-    e.g., '... some definition. Abandonment n. Abashedly adv.'
+    """Detects and extracts trailing derivative word forms at the end of a POS block,
+    e.g., '... some definition. Abandonment n. Abashedly adv.'.
     """
     derivatives: list[tuple[str, str]] = []
     deriv_pattern = re.compile(rf"(?:^|(?<=[\.\?!])\s+)([A-Z][a-zA-Z\-']+(?:\s*\([^)]+\))?)\s+({_ATOMIC_POS_PATTERN})\s*$")
@@ -494,8 +490,7 @@ def _extract_trailing_derivatives(body: str) -> tuple[str, list[tuple[str, str]]
 
 
 def _parse_senses(body: str) -> list[SenseItem]:  # noqa: PLR0912
-    """
-    Splits a POS block body into numbered senses (1, 2, 3...) and lettered
+    """Splits a POS block body into numbered senses (1, 2, 3...) and lettered
     sub-senses (a, B, C... \N{EM DASH} noting uppercase B/C after periods in the dataset).
     """
     text = body.strip()
@@ -565,8 +560,7 @@ def _parse_senses(body: str) -> list[SenseItem]:  # noqa: PLR0912
 
 
 def parse_dictionary_entry(raw_key: str, raw_value: str) -> ParsedDictionaryEntry:
-    """
-    Parses a raw (key, value) pair from `dictionary.json` into a structured
+    """Parses a raw (key, value) pair from `dictionary.json` into a structured
     `ParsedDictionaryEntry` with all POS tags and abbreviations expanded.
     """
     # 1. Extract headword & optional homograph trailing number (e.g. "Bank1" -> "Bank", "1")
@@ -672,8 +666,7 @@ def parse_dictionary_entry(raw_key: str, raw_value: str) -> ParsedDictionaryEntr
 
 
 def _chunk_lines_for_embed_field(lines: list[str], max_len: int = 1024) -> list[str]:
-    """
-    Splits formatted sense lines into chunks guaranteed to be <= 1024 characters
+    """Splits formatted sense lines into chunks guaranteed to be <= 1024 characters
     so `embed.add_field` never raises a Discord HTTPException.
     """
     chunks: list[str] = []
@@ -735,8 +728,7 @@ def _add_derivative_field(embed: discord.Embed, derivatives: list[tuple[str, str
 
 
 def build_definition_embed(raw_key: str, raw_value: str) -> discord.Embed:
-    """
-    Converts a `(key, value)` pair from `dictionary.json` into a richly formatted
+    """Converts a `(key, value)` pair from `dictionary.json` into a richly formatted
     `discord.Embed` with full part-of-speech labels, structured numbered senses,
     sub-senses, derived words, and word origin.
     """

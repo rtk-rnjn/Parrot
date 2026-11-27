@@ -110,6 +110,7 @@ class DuckGame:
             rows (int, optional): Rows in the game board. Defaults to 4.
             columns (int, optional): Columns in the game board. Defaults to 3.
             minimum_solutions (int, optional): Minimum acceptable number of solutions in the board. Defaults to 1.
+
         """
         self.rows = rows
         self.columns = columns

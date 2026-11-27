@@ -1503,7 +1503,6 @@ class Mod(commands.Cog, name="Moderation"):
         Members with Manage Messages can search up to 1000 messages.
         Members without can search up to 25 messages.
         """
-
         assert isinstance(ctx.me, discord.Member)
         assert isinstance(ctx.author, discord.Member)
 
@@ -1607,7 +1606,6 @@ class Mod(commands.Cog, name="Moderation"):
         detailing which users got removed and how many messages got removed.
         The purge is also recorded in the moderation log.
         """
-
         await ctx.defer()
 
         predicates: list[Callable[[discord.Message], Any]] = self._prepare_purge_predicates(flags)
@@ -1691,7 +1689,6 @@ class Mod(commands.Cog, name="Moderation"):
 
         This command searches through the specified number of messages in the channel and removes all reactions from messages that have them.
         """
-
         total_reactions = 0
         async for message in ctx.history(limit=search, before=ctx.message):
             if len(message.reactions):
@@ -1740,7 +1737,6 @@ class Mod(commands.Cog, name="Moderation"):
         self, ctx: commands.Context[Bot], role: discord.Role, members: list[discord.Member], *, target: Literal["bots", "humans", "members"]
     ) -> discord.Message:
         """Assign a role to multiple members with a rolling progress display."""
-
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
@@ -1850,7 +1846,6 @@ class Mod(commands.Cog, name="Moderation"):
         role: discord.Role = commands.parameter(description="The role to assign to humans."),  # noqa: B008
     ) -> discord.Message:
         """Assign a role to all humans in the server."""
-
         if TYPE_CHECKING:
             assert ctx.guild is not None
 
@@ -1870,7 +1865,6 @@ class Mod(commands.Cog, name="Moderation"):
         role: discord.Role = commands.parameter(description="The role to assign to everyone."),  # noqa: B008
     ) -> discord.Message:
         """Assign a role to everyone in the server."""
-
         if TYPE_CHECKING:
             assert ctx.guild is not None
 

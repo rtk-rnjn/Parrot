@@ -115,7 +115,8 @@ class TrackQueue:
 @dataclasses.dataclass(frozen=True, slots=True)
 class Preset:
     """One "remix" preset. ``build`` makes Lavalink filters; ``ffmpeg`` is the equivalent ``-af`` chain used by the
-    local fallback so presets keep working when Lavalink is down."""
+    local fallback so presets keep working when Lavalink is down.
+    """
 
     key: str
     label: str

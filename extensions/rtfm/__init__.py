@@ -200,7 +200,6 @@ class Developer(*DEPENDENCIES, commands.Cog):
         text: str = commands.parameter(description="The text to convert."),
     ) -> discord.Message:
         """Returns number representation of characters in text."""
-
         return await ctx.reply(" ".join([str(ord(letter)) for letter in text]))
 
     @commands.command()
@@ -308,7 +307,6 @@ class Developer(*DEPENDENCIES, commands.Cog):
         query: str = commands.parameter(description="The search terms to look for."),
     ) -> discord.Message:
         """Send some articles from RealPython that match the search terms."""
-
         MAX_DESCRIPTION_LENGTH = 150
 
         if not query.strip():
@@ -437,7 +435,6 @@ class Developer(*DEPENDENCIES, commands.Cog):
     @cheat_sh.command(name="search", aliases=["find", "s"])
     async def cheat_search(self, ctx: commands.Context, *terms: str) -> None:
         """Keyword search: `cheat search snapshot` or `cheat search python currying`."""
-
         return await self.cheat_repository.search(ctx, *terms)
 
     @cheat_sh.command(name="list", aliases=["ls", "topics"])
@@ -447,7 +444,6 @@ class Developer(*DEPENDENCIES, commands.Cog):
         language: str | None = commands.parameter(default=None, description="Only list topics for this language"),
     ) -> None:
         """List all topics (`cheat list`) or the topics of one language (`cheat list go`)."""
-
         return await self.cheat_repository.list(ctx, language)
 
     @cheat_sh.command(name="learn", aliases=["tutorial"])
@@ -484,7 +480,6 @@ class Developer(*DEPENDENCIES, commands.Cog):
         language: str | None = commands.parameter(default=None, description="Only pick from this language"),
     ) -> None:
         """A random cheat sheet, optionally within a language."""
-
         await self.cheat_repository.random(ctx, language)
 
     @cheat_sh.command(name="languages", aliases=["langs", "language"])

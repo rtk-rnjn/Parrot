@@ -55,7 +55,6 @@ def _cgroup_cpu_limit() -> float | None:
 @lru_cache(maxsize=1)
 def get_system_resources() -> dict[str, float]:
     """Get effective RAM and CPU count."""
-
     total_ram = psutil.virtual_memory().total
 
     if os.name == "nt":
@@ -97,7 +96,6 @@ def is_limited_memory(
     min_cpus: float = 2.0,
 ) -> bool:
     """Check whether the system has insufficient resources."""
-
     res = get_system_resources()
 
     return res["ram_gb"] < min_ram_gb or res["cpus"] < min_cpus

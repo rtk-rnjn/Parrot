@@ -384,7 +384,6 @@ class Meta(commands.Cog):
         includes the exact timestamp of when the bot started, formatted in a
         way that Discord will render as a relative time (e.g., "2 hours ago").
         """
-
         started_at = self.bot.started_at
 
         if started_at is None:
@@ -408,7 +407,6 @@ class Meta(commands.Cog):
         counts for human users and bot accounts. No embed is used, so the
         information is returned directly as a simple text message.
         """
-
         assert ctx.guild is not None, "This command can only be used in a server."
 
         humans = sum(not member.bot for member in ctx.guild.members)
@@ -441,7 +439,6 @@ class Meta(commands.Cog):
         The embed uses the member's current display colour and avatar, with the
         member ID shown in the footer.
         """
-
         if TYPE_CHECKING:
             assert isinstance(ctx.author, discord.Member), "This command can only be used in a server."
             assert ctx.guild is not None, "This command can only be used in a server."

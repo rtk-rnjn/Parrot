@@ -281,6 +281,7 @@ class ArchScraper:
         Maximum number of simultaneous in-flight requests from this scraper.
     cache_ttl, cache_size
         In-memory response cache. ``cache_ttl=0`` disables it.
+
     """
 
     def __init__(

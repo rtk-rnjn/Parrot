@@ -1,5 +1,4 @@
-"""
-pastebin_client
+"""pastebin_client.
 ===============
 
 Async, rate-limited wrapper for the Pastebin API (https://pastebin.com/doc_api),
@@ -238,8 +237,7 @@ class Paste:
 
 
 class RateLimiter:
-    """
-    Async sliding-window limiter: at most ``max_calls`` per ``period`` seconds,
+    """Async sliding-window limiter: at most ``max_calls`` per ``period`` seconds,
     and at least ``min_interval`` seconds between consecutive calls.
 
     Waiters are served in FIFO order. ``block_for`` lets the client impose a
@@ -361,8 +359,7 @@ def _to_key(paste: str | Paste) -> str:
 
 
 class PastebinClient:
-    """
-    Async Pastebin client.
+    """Async Pastebin client.
 
     Parameters
     ----------
@@ -389,6 +386,7 @@ class PastebinClient:
         Retries on network errors / 5xx / 429.
     timeout:
         Per-request total timeout in seconds.
+
     """
 
     def __init__(
@@ -476,8 +474,7 @@ class PastebinClient:
         api_errors: bool = True,
         not_found_on_404: bool = False,
     ) -> str:
-        """
-        Perform a throttled request with retries and return the response text.
+        """Perform a throttled request with retries and return the response text.
 
         ``api_errors=False`` skips the "errors-as-text" check (used for public raw
         pastes, whose content could legitimately start with any string).
@@ -588,8 +585,7 @@ class PastebinClient:
         visibility: Visibility | None = None,
         expiry: Expiry | None = None,
     ) -> Paste:
-        """
-        Create a paste and return it.
+        """Create a paste and return it.
 
         ``syntax`` is a Pastebin format code, e.g. ``"text"``, ``"python"``,
         ``"json"``, ``"markdown"``, ``"diff"`` (see https://pastebin.com/doc_api#5).
@@ -651,8 +647,7 @@ class PastebinClient:
         )
 
     async def get_raw(self, paste: str | Paste) -> str:
-        """
-        Fetch a paste's raw text. Tries the public ``/raw/`` endpoint first and,
+        """Fetch a paste's raw text. Tries the public ``/raw/`` endpoint first and,
         if the client is authenticated, falls back to the authenticated API
         (which also works for your own private pastes).
         """

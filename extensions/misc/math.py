@@ -136,7 +136,6 @@ def tokenize(text: str) -> list[Token]:
     listed above (``.`` attribute access, ``_``, brackets, quotes, ``;`` ...)
     can ever reach SymPy's ``parse_expr``.
     """
-
     text = text.strip()
     tokens: list[Token] = []
     position = 0
@@ -189,7 +188,6 @@ def _valid_shape_token(kind: str, token: str, following: str | None, depth: int,
 
 def _plausible_shape(tokens: list[Token], known: frozenset[str]) -> bool:
     """Check that tokens form something expression-shaped (not that it parses)."""
-
     depth = 0
     previous: Token | None = None
     valid = bool(tokens)
@@ -232,7 +230,6 @@ def _plausible_shape(tokens: list[Token], known: frozenset[str]) -> bool:
 
 def _has_math_signal(tokens: list[Token]) -> bool:
     """A function call, or a binary operator between two operands."""
-
     for index, (kind, token) in enumerate(tokens):
         if kind == NAME and token in FUNCTIONS:
             return True
@@ -254,7 +251,6 @@ def looks_like_math(text: str, known_names: Iterable[str] = ()) -> bool:  # noqa
     unless they are supported functions/constants or a variable the caller
     already knows about (``known_names``); single letters (``x``, ``y2``) are.
     """
-
     text = text.strip()
 
     if not text or len(text) > MAX_DETECT_LENGTH or "\n" in text:
@@ -368,7 +364,6 @@ def _validate_tokens(tokens: list[Token]) -> None:
 
 def _build(tokens: list[Token], variables: Mapping[str, Expr]) -> Expr:
     """Turn validated tokens into an *unevaluated* SymPy tree."""
-
     _validate_tokens(tokens)
 
     source = " ".join(token for _, token in tokens)
@@ -400,7 +395,6 @@ def _build(tokens: list[Token], variables: Mapping[str, Expr]) -> Expr:
 
 def parse_input(text: str, variables: Mapping[str, Expr]) -> Expression | Assignment:
     """Parse an expression or a simple ``name = expression`` assignment."""
-
     text = text.strip()
 
     if not text:
@@ -443,7 +437,6 @@ def parse_input(text: str, variables: Mapping[str, Expr]) -> Expression | Assign
 
 def _check_power(base: Integer, exponent: Integer) -> None:
     """Refuse exact powers that would produce absurdly large integers."""
-
     if not (base.is_Rational and exponent.is_Rational) or base in {0, 1, -1}:
         return
 
@@ -456,7 +449,6 @@ def _check_power(base: Integer, exponent: Integer) -> None:
 
 def _evaluate_tree(expression: Expr) -> Expr:
     """Evaluate bottom-up, checking every power *before* SymPy computes it."""
-
     if not expression.args:
         return expression
 
@@ -484,7 +476,6 @@ def _validate_result(value: Expr) -> None:
 
 def _number(value: Expr) -> str:
     """Format a numeric value with 12 significant digits."""
-
     return str(mpmath.nstr(sympy.N(value, 15), 12))
 
 
@@ -494,7 +485,6 @@ def _compact(text: str) -> str:
 
 def _render(value: Integer) -> tuple[str | None, str | None]:
     """Return ``(exact, approximation)``; either may be ``None``."""
-
     if value.is_Float:
         return _number(value), None
 
@@ -547,7 +537,6 @@ def evaluate_input(text: str, variables: Mapping[str, Expr]) -> Evaluation:
     here: split a ``command:`` prefix off in ``parse_input`` and dispatch on it
     below, reusing the same tokenizer, variables and guards.
     """
-
     parsed = parse_input(text, variables)
     value = _evaluate_tree(parsed.value)
     _validate_result(value)
@@ -635,12 +624,10 @@ class Math(commands.Cog):
         Alternatives: ``("guild", guild_id)``, ``("channel", channel_id)`` or
         ``("guild-user", guild_id, user_id)``.
         """
-
         return ("user", user_id)
 
     async def _calculate(self, content: str, scope: Hashable) -> str:
         """Evaluate ``content`` in ``scope`` and return the Discord reply text."""
-
         variables = self.store.get(scope)
 
         try:

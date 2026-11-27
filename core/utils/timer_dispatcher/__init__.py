@@ -71,7 +71,6 @@ class AsyncTimerDispatcher:
 
     def __init__(self, bot: Bot, /, *, collection: AsyncCollection[Any] | None = None) -> None:
         """Initialize the timer manager using the bot's MongoDB and event loop."""
-
         self.timers_collection: AsyncCollection[TimerData] = collection or bot.database.mongo_db["timers"]
 
         # Event used to put the dispatcher to sleep while there are no timers.
@@ -231,7 +230,6 @@ class AsyncTimerDispatcher:
 
     async def __dispatch_timer(self, **data: Unpack[TimerData]) -> None:
         """Dispatch a single timer without involving the main dispatcher loop."""
-
         await discord.utils.sleep_until(data["expires_at"])
 
         await self.__call_timer(**data)

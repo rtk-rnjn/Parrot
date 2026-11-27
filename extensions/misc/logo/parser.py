@@ -52,8 +52,7 @@ class SymbolToken:
 
 
 class LogoList:  # noqa: PLW1641
-    """
-    A bracketed Logo list `[ ... ]` that acts both as a sequence of data values
+    """A bracketed Logo list `[ ... ]` that acts both as a sequence of data values
     (numbers, strings, sublists) and as an executable token stream for control
     primitives (`REPEAT`, `IF`, `IFELSE`, `WHILE`, `UNTIL`, `FOR`, `FOREACH`, `RUN`).
     """
@@ -426,8 +425,7 @@ def tokenize_and_read(source: str) -> tuple[Token, ...]:
 
 
 class LogoParser:
-    """
-    Lisp-style tokenizer and bracket reader for MSWLogo.
+    """Lisp-style tokenizer and bracket reader for MSWLogo.
     Replaces the rigid Lark LALR grammar while preserving the `LogoParser().parse(source)` API.
     """
 

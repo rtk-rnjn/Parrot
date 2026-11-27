@@ -188,6 +188,7 @@ class HumanDate:
     has_time: :class:`bool`
     remaining: :class:`str`
         Whatever followed the date, for commands like ``!remind 23 March 2004 ...``.
+
     """
 
     __slots__ = ("date", "datetime", "has_time", "has_year", "remaining")

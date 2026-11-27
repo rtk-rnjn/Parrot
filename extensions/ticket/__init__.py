@@ -99,7 +99,7 @@ class Ticket(commands.Cog):
     @ticket.command(name="open", aliases=["create"])
     @commands.bot_has_guild_permissions(create_private_threads=True)
     async def ticket_open(self, ctx: commands.Context[Bot]) -> None:
-        """Open a new ticket; without using the buttons"""
+        """Open a new ticket; without using the buttons."""
         if TYPE_CHECKING:
             assert ctx.guild is not None
             assert isinstance(ctx.author, discord.Member)

@@ -26,6 +26,7 @@ __all__ = ("EVENT_NAMES", "SETTING_SECTIONS", "DatabaseManager", "GuildSettingSe
 load_dotenv(verbose=True)
 
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://admin:password@localhost:27017/")
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", None)
 
 CACHE_TTL_SECONDS = 3600
 
@@ -67,6 +68,8 @@ class DatabaseManager(
     def __init__(self, bot: Bot, /) -> None:
         self.bot = bot
 
+        kwargs: dict = {"password": REDIS_PASSWORD} if REDIS_PASSWORD else {}
+
         pool = BlockingConnectionPool(
             host="localhost",
             port=6379,
@@ -77,6 +80,7 @@ class DatabaseManager(
             socket_connect_timeout=1.0,
             socket_timeout=1.0,
             health_check_interval=30,
+            **kwargs
         )
 
         self.redis_client = Redis.from_pool(pool)
